@@ -11,6 +11,7 @@ import (
 	v4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
 	v5 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v5"
 	v6 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v6"
+	v7 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v7"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
@@ -20,6 +21,7 @@ import (
 	migrationV5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
 	migrationV6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
 	migrationV7 "github.com/allora-network/allora-chain/x/emissions/migrations/v7"
+	migrationV8 "github.com/allora-network/allora-chain/x/emissions/migrations/v8"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -37,7 +39,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 7
+const ConsensusVersion = 8
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -62,6 +64,7 @@ func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	v4.RegisterTypes(cdc)
 	v5.RegisterTypes(cdc)
 	v6.RegisterTypes(cdc)
+	v7.RegisterTypes(cdc)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the state module.
@@ -79,6 +82,7 @@ func (AppModule) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	v4.RegisterInterfaces(registry)
 	v5.RegisterInterfaces(registry)
 	v6.RegisterInterfaces(registry)
+	v7.RegisterInterfaces(registry)
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
@@ -118,6 +122,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV7.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 6 to 7: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 7, func(ctx sdk.Context) error {
+		return migrationV8.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 7 to 8: %v", types.ModuleName, err))
 	}
 }
 

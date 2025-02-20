@@ -1,5 +1,5 @@
 syntax = "proto3";
-package emissions.v7;
+package emissions.v8;
 
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
@@ -253,6 +253,10 @@ message OptionalParams {
   repeated bool global_reputer_whitelist_enabled = 57 [(amino.dont_omitempty) = true];
   repeated bool global_admin_whitelist_appended = 58 [(amino.dont_omitempty) = true];
   repeated uint64 max_whitelist_input_array_length = 59 [(amino.dont_omitempty) = true];
+  repeated string min_weight_threshold_for_stdnorm = 60 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message UpdateParamsRequest {

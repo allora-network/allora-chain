@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             (unknown)
-// source: emissions/v7/query.proto
+// source: emissions/v8/query.proto
 
-package emissionsv7
+package emissionsv8
 
 import (
 	context "context"
@@ -19,111 +19,114 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	QueryService_GetParams_FullMethodName                                           = "/emissions.v7.QueryService/GetParams"
-	QueryService_GetNextTopicId_FullMethodName                                      = "/emissions.v7.QueryService/GetNextTopicId"
-	QueryService_GetTopic_FullMethodName                                            = "/emissions.v7.QueryService/GetTopic"
-	QueryService_GetWorkerLatestInferenceByTopicId_FullMethodName                   = "/emissions.v7.QueryService/GetWorkerLatestInferenceByTopicId"
-	QueryService_GetInferencesAtBlock_FullMethodName                                = "/emissions.v7.QueryService/GetInferencesAtBlock"
-	QueryService_GetLatestTopicInferences_FullMethodName                            = "/emissions.v7.QueryService/GetLatestTopicInferences"
-	QueryService_GetForecastsAtBlock_FullMethodName                                 = "/emissions.v7.QueryService/GetForecastsAtBlock"
-	QueryService_GetNetworkLossBundleAtBlock_FullMethodName                         = "/emissions.v7.QueryService/GetNetworkLossBundleAtBlock"
-	QueryService_GetTotalStake_FullMethodName                                       = "/emissions.v7.QueryService/GetTotalStake"
-	QueryService_GetReputerStakeInTopic_FullMethodName                              = "/emissions.v7.QueryService/GetReputerStakeInTopic"
-	QueryService_GetMultiReputerStakeInTopic_FullMethodName                         = "/emissions.v7.QueryService/GetMultiReputerStakeInTopic"
-	QueryService_GetStakeFromReputerInTopicInSelf_FullMethodName                    = "/emissions.v7.QueryService/GetStakeFromReputerInTopicInSelf"
-	QueryService_GetDelegateStakeInTopicInReputer_FullMethodName                    = "/emissions.v7.QueryService/GetDelegateStakeInTopicInReputer"
-	QueryService_GetStakeFromDelegatorInTopicInReputer_FullMethodName               = "/emissions.v7.QueryService/GetStakeFromDelegatorInTopicInReputer"
-	QueryService_GetStakeFromDelegatorInTopic_FullMethodName                        = "/emissions.v7.QueryService/GetStakeFromDelegatorInTopic"
-	QueryService_GetTopicStake_FullMethodName                                       = "/emissions.v7.QueryService/GetTopicStake"
-	QueryService_GetStakeRemovalsUpUntilBlock_FullMethodName                        = "/emissions.v7.QueryService/GetStakeRemovalsUpUntilBlock"
-	QueryService_GetDelegateStakeRemovalsUpUntilBlock_FullMethodName                = "/emissions.v7.QueryService/GetDelegateStakeRemovalsUpUntilBlock"
-	QueryService_GetStakeRemovalInfo_FullMethodName                                 = "/emissions.v7.QueryService/GetStakeRemovalInfo"
-	QueryService_GetDelegateStakeRemovalInfo_FullMethodName                         = "/emissions.v7.QueryService/GetDelegateStakeRemovalInfo"
-	QueryService_GetWorkerNodeInfo_FullMethodName                                   = "/emissions.v7.QueryService/GetWorkerNodeInfo"
-	QueryService_GetReputerNodeInfo_FullMethodName                                  = "/emissions.v7.QueryService/GetReputerNodeInfo"
-	QueryService_IsWorkerRegisteredInTopicId_FullMethodName                         = "/emissions.v7.QueryService/IsWorkerRegisteredInTopicId"
-	QueryService_IsReputerRegisteredInTopicId_FullMethodName                        = "/emissions.v7.QueryService/IsReputerRegisteredInTopicId"
-	QueryService_GetNetworkInferencesAtBlock_FullMethodName                         = "/emissions.v7.QueryService/GetNetworkInferencesAtBlock"
-	QueryService_GetNetworkInferencesAtBlockOutlierResistant_FullMethodName         = "/emissions.v7.QueryService/GetNetworkInferencesAtBlockOutlierResistant"
-	QueryService_GetLatestNetworkInferences_FullMethodName                          = "/emissions.v7.QueryService/GetLatestNetworkInferences"
-	QueryService_GetLatestNetworkInferencesOutlierResistant_FullMethodName          = "/emissions.v7.QueryService/GetLatestNetworkInferencesOutlierResistant"
-	QueryService_GetLatestAvailableNetworkInferences_FullMethodName                 = "/emissions.v7.QueryService/GetLatestAvailableNetworkInferences"
-	QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_FullMethodName = "/emissions.v7.QueryService/GetLatestAvailableNetworkInferencesOutlierResistant"
-	QueryService_IsWorkerNonceUnfulfilled_FullMethodName                            = "/emissions.v7.QueryService/IsWorkerNonceUnfulfilled"
-	QueryService_IsReputerNonceUnfulfilled_FullMethodName                           = "/emissions.v7.QueryService/IsReputerNonceUnfulfilled"
-	QueryService_GetUnfulfilledWorkerNonces_FullMethodName                          = "/emissions.v7.QueryService/GetUnfulfilledWorkerNonces"
-	QueryService_GetUnfulfilledReputerNonces_FullMethodName                         = "/emissions.v7.QueryService/GetUnfulfilledReputerNonces"
-	QueryService_GetInfererNetworkRegret_FullMethodName                             = "/emissions.v7.QueryService/GetInfererNetworkRegret"
-	QueryService_GetForecasterNetworkRegret_FullMethodName                          = "/emissions.v7.QueryService/GetForecasterNetworkRegret"
-	QueryService_GetOneInForecasterNetworkRegret_FullMethodName                     = "/emissions.v7.QueryService/GetOneInForecasterNetworkRegret"
-	QueryService_IsWhitelistAdmin_FullMethodName                                    = "/emissions.v7.QueryService/IsWhitelistAdmin"
-	QueryService_GetTopicLastWorkerCommitInfo_FullMethodName                        = "/emissions.v7.QueryService/GetTopicLastWorkerCommitInfo"
-	QueryService_GetTopicLastReputerCommitInfo_FullMethodName                       = "/emissions.v7.QueryService/GetTopicLastReputerCommitInfo"
-	QueryService_GetTopicRewardNonce_FullMethodName                                 = "/emissions.v7.QueryService/GetTopicRewardNonce"
-	QueryService_GetReputerLossBundlesAtBlock_FullMethodName                        = "/emissions.v7.QueryService/GetReputerLossBundlesAtBlock"
-	QueryService_GetStakeReputerAuthority_FullMethodName                            = "/emissions.v7.QueryService/GetStakeReputerAuthority"
-	QueryService_GetDelegateStakePlacement_FullMethodName                           = "/emissions.v7.QueryService/GetDelegateStakePlacement"
-	QueryService_GetDelegateStakeUponReputer_FullMethodName                         = "/emissions.v7.QueryService/GetDelegateStakeUponReputer"
-	QueryService_GetDelegateRewardPerShare_FullMethodName                           = "/emissions.v7.QueryService/GetDelegateRewardPerShare"
-	QueryService_GetStakeRemovalForReputerAndTopicId_FullMethodName                 = "/emissions.v7.QueryService/GetStakeRemovalForReputerAndTopicId"
-	QueryService_GetDelegateStakeRemoval_FullMethodName                             = "/emissions.v7.QueryService/GetDelegateStakeRemoval"
-	QueryService_GetPreviousTopicWeight_FullMethodName                              = "/emissions.v7.QueryService/GetPreviousTopicWeight"
-	QueryService_GetTotalSumPreviousTopicWeights_FullMethodName                     = "/emissions.v7.QueryService/GetTotalSumPreviousTopicWeights"
-	QueryService_TopicExists_FullMethodName                                         = "/emissions.v7.QueryService/TopicExists"
-	QueryService_IsTopicActive_FullMethodName                                       = "/emissions.v7.QueryService/IsTopicActive"
-	QueryService_GetTopicFeeRevenue_FullMethodName                                  = "/emissions.v7.QueryService/GetTopicFeeRevenue"
-	QueryService_GetInfererScoreEma_FullMethodName                                  = "/emissions.v7.QueryService/GetInfererScoreEma"
-	QueryService_GetForecasterScoreEma_FullMethodName                               = "/emissions.v7.QueryService/GetForecasterScoreEma"
-	QueryService_GetReputerScoreEma_FullMethodName                                  = "/emissions.v7.QueryService/GetReputerScoreEma"
-	QueryService_GetInferenceScoresUntilBlock_FullMethodName                        = "/emissions.v7.QueryService/GetInferenceScoresUntilBlock"
-	QueryService_GetPreviousTopicQuantileForecasterScoreEma_FullMethodName          = "/emissions.v7.QueryService/GetPreviousTopicQuantileForecasterScoreEma"
-	QueryService_GetPreviousTopicQuantileInfererScoreEma_FullMethodName             = "/emissions.v7.QueryService/GetPreviousTopicQuantileInfererScoreEma"
-	QueryService_GetPreviousTopicQuantileReputerScoreEma_FullMethodName             = "/emissions.v7.QueryService/GetPreviousTopicQuantileReputerScoreEma"
-	QueryService_GetWorkerInferenceScoresAtBlock_FullMethodName                     = "/emissions.v7.QueryService/GetWorkerInferenceScoresAtBlock"
-	QueryService_GetCurrentLowestInfererScore_FullMethodName                        = "/emissions.v7.QueryService/GetCurrentLowestInfererScore"
-	QueryService_GetForecastScoresUntilBlock_FullMethodName                         = "/emissions.v7.QueryService/GetForecastScoresUntilBlock"
-	QueryService_GetWorkerForecastScoresAtBlock_FullMethodName                      = "/emissions.v7.QueryService/GetWorkerForecastScoresAtBlock"
-	QueryService_GetCurrentLowestForecasterScore_FullMethodName                     = "/emissions.v7.QueryService/GetCurrentLowestForecasterScore"
-	QueryService_GetReputersScoresAtBlock_FullMethodName                            = "/emissions.v7.QueryService/GetReputersScoresAtBlock"
-	QueryService_GetCurrentLowestReputerScore_FullMethodName                        = "/emissions.v7.QueryService/GetCurrentLowestReputerScore"
-	QueryService_GetListeningCoefficient_FullMethodName                             = "/emissions.v7.QueryService/GetListeningCoefficient"
-	QueryService_GetPreviousReputerRewardFraction_FullMethodName                    = "/emissions.v7.QueryService/GetPreviousReputerRewardFraction"
-	QueryService_GetPreviousInferenceRewardFraction_FullMethodName                  = "/emissions.v7.QueryService/GetPreviousInferenceRewardFraction"
-	QueryService_GetPreviousForecastRewardFraction_FullMethodName                   = "/emissions.v7.QueryService/GetPreviousForecastRewardFraction"
-	QueryService_GetPreviousPercentageRewardToStakedReputers_FullMethodName         = "/emissions.v7.QueryService/GetPreviousPercentageRewardToStakedReputers"
-	QueryService_GetTotalRewardToDistribute_FullMethodName                          = "/emissions.v7.QueryService/GetTotalRewardToDistribute"
-	QueryService_GetNaiveInfererNetworkRegret_FullMethodName                        = "/emissions.v7.QueryService/GetNaiveInfererNetworkRegret"
-	QueryService_GetOneOutInfererInfererNetworkRegret_FullMethodName                = "/emissions.v7.QueryService/GetOneOutInfererInfererNetworkRegret"
-	QueryService_GetOneOutInfererForecasterNetworkRegret_FullMethodName             = "/emissions.v7.QueryService/GetOneOutInfererForecasterNetworkRegret"
-	QueryService_GetOneOutForecasterInfererNetworkRegret_FullMethodName             = "/emissions.v7.QueryService/GetOneOutForecasterInfererNetworkRegret"
-	QueryService_GetOneOutForecasterForecasterNetworkRegret_FullMethodName          = "/emissions.v7.QueryService/GetOneOutForecasterForecasterNetworkRegret"
-	QueryService_GetActiveTopicsAtBlock_FullMethodName                              = "/emissions.v7.QueryService/GetActiveTopicsAtBlock"
-	QueryService_GetNextChurningBlockByTopicId_FullMethodName                       = "/emissions.v7.QueryService/GetNextChurningBlockByTopicId"
-	QueryService_GetCountInfererInclusionsInTopic_FullMethodName                    = "/emissions.v7.QueryService/GetCountInfererInclusionsInTopic"
-	QueryService_GetCountForecasterInclusionsInTopic_FullMethodName                 = "/emissions.v7.QueryService/GetCountForecasterInclusionsInTopic"
-	QueryService_GetActiveReputersForTopic_FullMethodName                           = "/emissions.v7.QueryService/GetActiveReputersForTopic"
-	QueryService_GetActiveForecastersForTopic_FullMethodName                        = "/emissions.v7.QueryService/GetActiveForecastersForTopic"
-	QueryService_GetActiveInferersForTopic_FullMethodName                           = "/emissions.v7.QueryService/GetActiveInferersForTopic"
-	QueryService_IsWhitelistedGlobalWorker_FullMethodName                           = "/emissions.v7.QueryService/IsWhitelistedGlobalWorker"
-	QueryService_IsWhitelistedGlobalReputer_FullMethodName                          = "/emissions.v7.QueryService/IsWhitelistedGlobalReputer"
-	QueryService_IsWhitelistedGlobalAdmin_FullMethodName                            = "/emissions.v7.QueryService/IsWhitelistedGlobalAdmin"
-	QueryService_IsTopicWorkerWhitelistEnabled_FullMethodName                       = "/emissions.v7.QueryService/IsTopicWorkerWhitelistEnabled"
-	QueryService_IsTopicReputerWhitelistEnabled_FullMethodName                      = "/emissions.v7.QueryService/IsTopicReputerWhitelistEnabled"
-	QueryService_IsWhitelistedTopicCreator_FullMethodName                           = "/emissions.v7.QueryService/IsWhitelistedTopicCreator"
-	QueryService_IsWhitelistedGlobalActor_FullMethodName                            = "/emissions.v7.QueryService/IsWhitelistedGlobalActor"
-	QueryService_IsWhitelistedTopicWorker_FullMethodName                            = "/emissions.v7.QueryService/IsWhitelistedTopicWorker"
-	QueryService_IsWhitelistedTopicReputer_FullMethodName                           = "/emissions.v7.QueryService/IsWhitelistedTopicReputer"
-	QueryService_CanUpdateAllGlobalWhitelists_FullMethodName                        = "/emissions.v7.QueryService/CanUpdateAllGlobalWhitelists"
-	QueryService_CanUpdateGlobalWorkerWhitelist_FullMethodName                      = "/emissions.v7.QueryService/CanUpdateGlobalWorkerWhitelist"
-	QueryService_CanUpdateGlobalReputerWhitelist_FullMethodName                     = "/emissions.v7.QueryService/CanUpdateGlobalReputerWhitelist"
-	QueryService_CanUpdateParams_FullMethodName                                     = "/emissions.v7.QueryService/CanUpdateParams"
-	QueryService_CanUpdateTopicWhitelist_FullMethodName                             = "/emissions.v7.QueryService/CanUpdateTopicWhitelist"
-	QueryService_CanCreateTopic_FullMethodName                                      = "/emissions.v7.QueryService/CanCreateTopic"
-	QueryService_CanSubmitWorkerPayload_FullMethodName                              = "/emissions.v7.QueryService/CanSubmitWorkerPayload"
-	QueryService_CanSubmitReputerPayload_FullMethodName                             = "/emissions.v7.QueryService/CanSubmitReputerPayload"
-	QueryService_GetTopicInitialInfererEmaScore_FullMethodName                      = "/emissions.v7.QueryService/GetTopicInitialInfererEmaScore"
-	QueryService_GetTopicInitialForecasterEmaScore_FullMethodName                   = "/emissions.v7.QueryService/GetTopicInitialForecasterEmaScore"
-	QueryService_GetTopicInitialReputerEmaScore_FullMethodName                      = "/emissions.v7.QueryService/GetTopicInitialReputerEmaScore"
+	QueryService_GetParams_FullMethodName                                           = "/emissions.v8.QueryService/GetParams"
+	QueryService_GetNextTopicId_FullMethodName                                      = "/emissions.v8.QueryService/GetNextTopicId"
+	QueryService_GetTopic_FullMethodName                                            = "/emissions.v8.QueryService/GetTopic"
+	QueryService_GetWorkerLatestInferenceByTopicId_FullMethodName                   = "/emissions.v8.QueryService/GetWorkerLatestInferenceByTopicId"
+	QueryService_GetInferencesAtBlock_FullMethodName                                = "/emissions.v8.QueryService/GetInferencesAtBlock"
+	QueryService_GetLatestTopicInferences_FullMethodName                            = "/emissions.v8.QueryService/GetLatestTopicInferences"
+	QueryService_GetForecastsAtBlock_FullMethodName                                 = "/emissions.v8.QueryService/GetForecastsAtBlock"
+	QueryService_GetNetworkLossBundleAtBlock_FullMethodName                         = "/emissions.v8.QueryService/GetNetworkLossBundleAtBlock"
+	QueryService_GetTotalStake_FullMethodName                                       = "/emissions.v8.QueryService/GetTotalStake"
+	QueryService_GetReputerStakeInTopic_FullMethodName                              = "/emissions.v8.QueryService/GetReputerStakeInTopic"
+	QueryService_GetMultiReputerStakeInTopic_FullMethodName                         = "/emissions.v8.QueryService/GetMultiReputerStakeInTopic"
+	QueryService_GetStakeFromReputerInTopicInSelf_FullMethodName                    = "/emissions.v8.QueryService/GetStakeFromReputerInTopicInSelf"
+	QueryService_GetDelegateStakeInTopicInReputer_FullMethodName                    = "/emissions.v8.QueryService/GetDelegateStakeInTopicInReputer"
+	QueryService_GetStakeFromDelegatorInTopicInReputer_FullMethodName               = "/emissions.v8.QueryService/GetStakeFromDelegatorInTopicInReputer"
+	QueryService_GetStakeFromDelegatorInTopic_FullMethodName                        = "/emissions.v8.QueryService/GetStakeFromDelegatorInTopic"
+	QueryService_GetTopicStake_FullMethodName                                       = "/emissions.v8.QueryService/GetTopicStake"
+	QueryService_GetStakeRemovalsUpUntilBlock_FullMethodName                        = "/emissions.v8.QueryService/GetStakeRemovalsUpUntilBlock"
+	QueryService_GetDelegateStakeRemovalsUpUntilBlock_FullMethodName                = "/emissions.v8.QueryService/GetDelegateStakeRemovalsUpUntilBlock"
+	QueryService_GetStakeRemovalInfo_FullMethodName                                 = "/emissions.v8.QueryService/GetStakeRemovalInfo"
+	QueryService_GetDelegateStakeRemovalInfo_FullMethodName                         = "/emissions.v8.QueryService/GetDelegateStakeRemovalInfo"
+	QueryService_GetWorkerNodeInfo_FullMethodName                                   = "/emissions.v8.QueryService/GetWorkerNodeInfo"
+	QueryService_GetReputerNodeInfo_FullMethodName                                  = "/emissions.v8.QueryService/GetReputerNodeInfo"
+	QueryService_IsWorkerRegisteredInTopicId_FullMethodName                         = "/emissions.v8.QueryService/IsWorkerRegisteredInTopicId"
+	QueryService_IsReputerRegisteredInTopicId_FullMethodName                        = "/emissions.v8.QueryService/IsReputerRegisteredInTopicId"
+	QueryService_GetNetworkInferencesAtBlock_FullMethodName                         = "/emissions.v8.QueryService/GetNetworkInferencesAtBlock"
+	QueryService_GetNetworkInferencesAtBlockOutlierResistant_FullMethodName         = "/emissions.v8.QueryService/GetNetworkInferencesAtBlockOutlierResistant"
+	QueryService_GetLatestNetworkInferences_FullMethodName                          = "/emissions.v8.QueryService/GetLatestNetworkInferences"
+	QueryService_GetLatestNetworkInferencesOutlierResistant_FullMethodName          = "/emissions.v8.QueryService/GetLatestNetworkInferencesOutlierResistant"
+	QueryService_GetLatestAvailableNetworkInferences_FullMethodName                 = "/emissions.v8.QueryService/GetLatestAvailableNetworkInferences"
+	QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_FullMethodName = "/emissions.v8.QueryService/GetLatestAvailableNetworkInferencesOutlierResistant"
+	QueryService_IsWorkerNonceUnfulfilled_FullMethodName                            = "/emissions.v8.QueryService/IsWorkerNonceUnfulfilled"
+	QueryService_IsReputerNonceUnfulfilled_FullMethodName                           = "/emissions.v8.QueryService/IsReputerNonceUnfulfilled"
+	QueryService_GetUnfulfilledWorkerNonces_FullMethodName                          = "/emissions.v8.QueryService/GetUnfulfilledWorkerNonces"
+	QueryService_GetUnfulfilledReputerNonces_FullMethodName                         = "/emissions.v8.QueryService/GetUnfulfilledReputerNonces"
+	QueryService_GetInfererNetworkRegret_FullMethodName                             = "/emissions.v8.QueryService/GetInfererNetworkRegret"
+	QueryService_GetForecasterNetworkRegret_FullMethodName                          = "/emissions.v8.QueryService/GetForecasterNetworkRegret"
+	QueryService_GetOneInForecasterNetworkRegret_FullMethodName                     = "/emissions.v8.QueryService/GetOneInForecasterNetworkRegret"
+	QueryService_IsWhitelistAdmin_FullMethodName                                    = "/emissions.v8.QueryService/IsWhitelistAdmin"
+	QueryService_GetTopicLastWorkerCommitInfo_FullMethodName                        = "/emissions.v8.QueryService/GetTopicLastWorkerCommitInfo"
+	QueryService_GetTopicLastReputerCommitInfo_FullMethodName                       = "/emissions.v8.QueryService/GetTopicLastReputerCommitInfo"
+	QueryService_GetTopicRewardNonce_FullMethodName                                 = "/emissions.v8.QueryService/GetTopicRewardNonce"
+	QueryService_GetReputerLossBundlesAtBlock_FullMethodName                        = "/emissions.v8.QueryService/GetReputerLossBundlesAtBlock"
+	QueryService_GetStakeReputerAuthority_FullMethodName                            = "/emissions.v8.QueryService/GetStakeReputerAuthority"
+	QueryService_GetDelegateStakePlacement_FullMethodName                           = "/emissions.v8.QueryService/GetDelegateStakePlacement"
+	QueryService_GetDelegateStakeUponReputer_FullMethodName                         = "/emissions.v8.QueryService/GetDelegateStakeUponReputer"
+	QueryService_GetDelegateRewardPerShare_FullMethodName                           = "/emissions.v8.QueryService/GetDelegateRewardPerShare"
+	QueryService_GetStakeRemovalForReputerAndTopicId_FullMethodName                 = "/emissions.v8.QueryService/GetStakeRemovalForReputerAndTopicId"
+	QueryService_GetDelegateStakeRemoval_FullMethodName                             = "/emissions.v8.QueryService/GetDelegateStakeRemoval"
+	QueryService_GetPreviousTopicWeight_FullMethodName                              = "/emissions.v8.QueryService/GetPreviousTopicWeight"
+	QueryService_GetTotalSumPreviousTopicWeights_FullMethodName                     = "/emissions.v8.QueryService/GetTotalSumPreviousTopicWeights"
+	QueryService_TopicExists_FullMethodName                                         = "/emissions.v8.QueryService/TopicExists"
+	QueryService_IsTopicActive_FullMethodName                                       = "/emissions.v8.QueryService/IsTopicActive"
+	QueryService_GetTopicFeeRevenue_FullMethodName                                  = "/emissions.v8.QueryService/GetTopicFeeRevenue"
+	QueryService_GetInfererScoreEma_FullMethodName                                  = "/emissions.v8.QueryService/GetInfererScoreEma"
+	QueryService_GetForecasterScoreEma_FullMethodName                               = "/emissions.v8.QueryService/GetForecasterScoreEma"
+	QueryService_GetReputerScoreEma_FullMethodName                                  = "/emissions.v8.QueryService/GetReputerScoreEma"
+	QueryService_GetInferenceScoresUntilBlock_FullMethodName                        = "/emissions.v8.QueryService/GetInferenceScoresUntilBlock"
+	QueryService_GetPreviousTopicQuantileForecasterScoreEma_FullMethodName          = "/emissions.v8.QueryService/GetPreviousTopicQuantileForecasterScoreEma"
+	QueryService_GetPreviousTopicQuantileInfererScoreEma_FullMethodName             = "/emissions.v8.QueryService/GetPreviousTopicQuantileInfererScoreEma"
+	QueryService_GetPreviousTopicQuantileReputerScoreEma_FullMethodName             = "/emissions.v8.QueryService/GetPreviousTopicQuantileReputerScoreEma"
+	QueryService_GetWorkerInferenceScoresAtBlock_FullMethodName                     = "/emissions.v8.QueryService/GetWorkerInferenceScoresAtBlock"
+	QueryService_GetCurrentLowestInfererScore_FullMethodName                        = "/emissions.v8.QueryService/GetCurrentLowestInfererScore"
+	QueryService_GetForecastScoresUntilBlock_FullMethodName                         = "/emissions.v8.QueryService/GetForecastScoresUntilBlock"
+	QueryService_GetWorkerForecastScoresAtBlock_FullMethodName                      = "/emissions.v8.QueryService/GetWorkerForecastScoresAtBlock"
+	QueryService_GetCurrentLowestForecasterScore_FullMethodName                     = "/emissions.v8.QueryService/GetCurrentLowestForecasterScore"
+	QueryService_GetReputersScoresAtBlock_FullMethodName                            = "/emissions.v8.QueryService/GetReputersScoresAtBlock"
+	QueryService_GetCurrentLowestReputerScore_FullMethodName                        = "/emissions.v8.QueryService/GetCurrentLowestReputerScore"
+	QueryService_GetListeningCoefficient_FullMethodName                             = "/emissions.v8.QueryService/GetListeningCoefficient"
+	QueryService_GetPreviousReputerRewardFraction_FullMethodName                    = "/emissions.v8.QueryService/GetPreviousReputerRewardFraction"
+	QueryService_GetPreviousInferenceRewardFraction_FullMethodName                  = "/emissions.v8.QueryService/GetPreviousInferenceRewardFraction"
+	QueryService_GetPreviousForecastRewardFraction_FullMethodName                   = "/emissions.v8.QueryService/GetPreviousForecastRewardFraction"
+	QueryService_GetPreviousPercentageRewardToStakedReputers_FullMethodName         = "/emissions.v8.QueryService/GetPreviousPercentageRewardToStakedReputers"
+	QueryService_GetTotalRewardToDistribute_FullMethodName                          = "/emissions.v8.QueryService/GetTotalRewardToDistribute"
+	QueryService_GetNaiveInfererNetworkRegret_FullMethodName                        = "/emissions.v8.QueryService/GetNaiveInfererNetworkRegret"
+	QueryService_GetOneOutInfererInfererNetworkRegret_FullMethodName                = "/emissions.v8.QueryService/GetOneOutInfererInfererNetworkRegret"
+	QueryService_GetOneOutInfererForecasterNetworkRegret_FullMethodName             = "/emissions.v8.QueryService/GetOneOutInfererForecasterNetworkRegret"
+	QueryService_GetOneOutForecasterInfererNetworkRegret_FullMethodName             = "/emissions.v8.QueryService/GetOneOutForecasterInfererNetworkRegret"
+	QueryService_GetOneOutForecasterForecasterNetworkRegret_FullMethodName          = "/emissions.v8.QueryService/GetOneOutForecasterForecasterNetworkRegret"
+	QueryService_GetActiveTopicsAtBlock_FullMethodName                              = "/emissions.v8.QueryService/GetActiveTopicsAtBlock"
+	QueryService_GetNextChurningBlockByTopicId_FullMethodName                       = "/emissions.v8.QueryService/GetNextChurningBlockByTopicId"
+	QueryService_GetCountInfererInclusionsInTopic_FullMethodName                    = "/emissions.v8.QueryService/GetCountInfererInclusionsInTopic"
+	QueryService_GetCountForecasterInclusionsInTopic_FullMethodName                 = "/emissions.v8.QueryService/GetCountForecasterInclusionsInTopic"
+	QueryService_GetActiveReputersForTopic_FullMethodName                           = "/emissions.v8.QueryService/GetActiveReputersForTopic"
+	QueryService_GetActiveForecastersForTopic_FullMethodName                        = "/emissions.v8.QueryService/GetActiveForecastersForTopic"
+	QueryService_GetActiveInferersForTopic_FullMethodName                           = "/emissions.v8.QueryService/GetActiveInferersForTopic"
+	QueryService_IsWhitelistedGlobalWorker_FullMethodName                           = "/emissions.v8.QueryService/IsWhitelistedGlobalWorker"
+	QueryService_IsWhitelistedGlobalReputer_FullMethodName                          = "/emissions.v8.QueryService/IsWhitelistedGlobalReputer"
+	QueryService_IsWhitelistedGlobalAdmin_FullMethodName                            = "/emissions.v8.QueryService/IsWhitelistedGlobalAdmin"
+	QueryService_IsTopicWorkerWhitelistEnabled_FullMethodName                       = "/emissions.v8.QueryService/IsTopicWorkerWhitelistEnabled"
+	QueryService_IsTopicReputerWhitelistEnabled_FullMethodName                      = "/emissions.v8.QueryService/IsTopicReputerWhitelistEnabled"
+	QueryService_IsWhitelistedTopicCreator_FullMethodName                           = "/emissions.v8.QueryService/IsWhitelistedTopicCreator"
+	QueryService_IsWhitelistedGlobalActor_FullMethodName                            = "/emissions.v8.QueryService/IsWhitelistedGlobalActor"
+	QueryService_IsWhitelistedTopicWorker_FullMethodName                            = "/emissions.v8.QueryService/IsWhitelistedTopicWorker"
+	QueryService_IsWhitelistedTopicReputer_FullMethodName                           = "/emissions.v8.QueryService/IsWhitelistedTopicReputer"
+	QueryService_CanUpdateAllGlobalWhitelists_FullMethodName                        = "/emissions.v8.QueryService/CanUpdateAllGlobalWhitelists"
+	QueryService_CanUpdateGlobalWorkerWhitelist_FullMethodName                      = "/emissions.v8.QueryService/CanUpdateGlobalWorkerWhitelist"
+	QueryService_CanUpdateGlobalReputerWhitelist_FullMethodName                     = "/emissions.v8.QueryService/CanUpdateGlobalReputerWhitelist"
+	QueryService_CanUpdateParams_FullMethodName                                     = "/emissions.v8.QueryService/CanUpdateParams"
+	QueryService_CanUpdateTopicWhitelist_FullMethodName                             = "/emissions.v8.QueryService/CanUpdateTopicWhitelist"
+	QueryService_CanCreateTopic_FullMethodName                                      = "/emissions.v8.QueryService/CanCreateTopic"
+	QueryService_CanSubmitWorkerPayload_FullMethodName                              = "/emissions.v8.QueryService/CanSubmitWorkerPayload"
+	QueryService_CanSubmitReputerPayload_FullMethodName                             = "/emissions.v8.QueryService/CanSubmitReputerPayload"
+	QueryService_GetTopicInitialInfererEmaScore_FullMethodName                      = "/emissions.v8.QueryService/GetTopicInitialInfererEmaScore"
+	QueryService_GetTopicInitialForecasterEmaScore_FullMethodName                   = "/emissions.v8.QueryService/GetTopicInitialForecasterEmaScore"
+	QueryService_GetTopicInitialReputerEmaScore_FullMethodName                      = "/emissions.v8.QueryService/GetTopicInitialReputerEmaScore"
+	QueryService_GetLatestRegretStdNorm_FullMethodName                              = "/emissions.v8.QueryService/GetLatestRegretStdNorm"
+	QueryService_GetLatestInfererWeight_FullMethodName                              = "/emissions.v8.QueryService/GetLatestInfererWeight"
+	QueryService_GetLatestForecasterWeight_FullMethodName                           = "/emissions.v8.QueryService/GetLatestForecasterWeight"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -241,6 +244,12 @@ type QueryServiceClient interface {
 	GetTopicInitialForecasterEmaScore(ctx context.Context, in *GetTopicInitialForecasterEmaScoreRequest, opts ...grpc.CallOption) (*GetTopicInitialForecasterEmaScoreResponse, error)
 	// GetTopicInitialReputerEmaScore returns the initial EMA score for reputers in a topic
 	GetTopicInitialReputerEmaScore(ctx context.Context, in *GetTopicInitialReputerEmaScoreRequest, opts ...grpc.CallOption) (*GetTopicInitialReputerEmaScoreResponse, error)
+	// Get latest regret stdnorm for a topic
+	GetLatestRegretStdNorm(ctx context.Context, in *GetLatestRegretStdNormRequest, opts ...grpc.CallOption) (*GetLatestRegretStdNormResponse, error)
+	// Get latest inferer weight for a topic and actor
+	GetLatestInfererWeight(ctx context.Context, in *GetLatestInfererWeightRequest, opts ...grpc.CallOption) (*GetLatestInfererWeightResponse, error)
+	// Get latest forecaster weight for a topic and actor
+	GetLatestForecasterWeight(ctx context.Context, in *GetLatestForecasterWeightRequest, opts ...grpc.CallOption) (*GetLatestForecasterWeightResponse, error)
 }
 
 type queryServiceClient struct {
@@ -1301,6 +1310,36 @@ func (c *queryServiceClient) GetTopicInitialReputerEmaScore(ctx context.Context,
 	return out, nil
 }
 
+func (c *queryServiceClient) GetLatestRegretStdNorm(ctx context.Context, in *GetLatestRegretStdNormRequest, opts ...grpc.CallOption) (*GetLatestRegretStdNormResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLatestRegretStdNormResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetLatestRegretStdNorm_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetLatestInfererWeight(ctx context.Context, in *GetLatestInfererWeightRequest, opts ...grpc.CallOption) (*GetLatestInfererWeightResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLatestInfererWeightResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetLatestInfererWeight_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetLatestForecasterWeight(ctx context.Context, in *GetLatestForecasterWeightRequest, opts ...grpc.CallOption) (*GetLatestForecasterWeightResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLatestForecasterWeightResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetLatestForecasterWeight_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility.
@@ -1416,6 +1455,12 @@ type QueryServiceServer interface {
 	GetTopicInitialForecasterEmaScore(context.Context, *GetTopicInitialForecasterEmaScoreRequest) (*GetTopicInitialForecasterEmaScoreResponse, error)
 	// GetTopicInitialReputerEmaScore returns the initial EMA score for reputers in a topic
 	GetTopicInitialReputerEmaScore(context.Context, *GetTopicInitialReputerEmaScoreRequest) (*GetTopicInitialReputerEmaScoreResponse, error)
+	// Get latest regret stdnorm for a topic
+	GetLatestRegretStdNorm(context.Context, *GetLatestRegretStdNormRequest) (*GetLatestRegretStdNormResponse, error)
+	// Get latest inferer weight for a topic and actor
+	GetLatestInfererWeight(context.Context, *GetLatestInfererWeightRequest) (*GetLatestInfererWeightResponse, error)
+	// Get latest forecaster weight for a topic and actor
+	GetLatestForecasterWeight(context.Context, *GetLatestForecasterWeightRequest) (*GetLatestForecasterWeightResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1740,6 +1785,15 @@ func (UnimplementedQueryServiceServer) GetTopicInitialForecasterEmaScore(context
 }
 func (UnimplementedQueryServiceServer) GetTopicInitialReputerEmaScore(context.Context, *GetTopicInitialReputerEmaScoreRequest) (*GetTopicInitialReputerEmaScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicInitialReputerEmaScore not implemented")
+}
+func (UnimplementedQueryServiceServer) GetLatestRegretStdNorm(context.Context, *GetLatestRegretStdNormRequest) (*GetLatestRegretStdNormResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestRegretStdNorm not implemented")
+}
+func (UnimplementedQueryServiceServer) GetLatestInfererWeight(context.Context, *GetLatestInfererWeightRequest) (*GetLatestInfererWeightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestInfererWeight not implemented")
+}
+func (UnimplementedQueryServiceServer) GetLatestForecasterWeight(context.Context, *GetLatestForecasterWeightRequest) (*GetLatestForecasterWeightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestForecasterWeight not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 func (UnimplementedQueryServiceServer) testEmbeddedByValue()                      {}
@@ -3652,11 +3706,65 @@ func _QueryService_GetTopicInitialReputerEmaScore_Handler(srv interface{}, ctx c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_GetLatestRegretStdNorm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLatestRegretStdNormRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetLatestRegretStdNorm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetLatestRegretStdNorm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetLatestRegretStdNorm(ctx, req.(*GetLatestRegretStdNormRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetLatestInfererWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLatestInfererWeightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetLatestInfererWeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetLatestInfererWeight_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetLatestInfererWeight(ctx, req.(*GetLatestInfererWeightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetLatestForecasterWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLatestForecasterWeightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetLatestForecasterWeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetLatestForecasterWeight_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetLatestForecasterWeight(ctx, req.(*GetLatestForecasterWeightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var QueryService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "emissions.v7.QueryService",
+	ServiceName: "emissions.v8.QueryService",
 	HandlerType: (*QueryServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -4079,7 +4187,19 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetTopicInitialReputerEmaScore",
 			Handler:    _QueryService_GetTopicInitialReputerEmaScore_Handler,
 		},
+		{
+			MethodName: "GetLatestRegretStdNorm",
+			Handler:    _QueryService_GetLatestRegretStdNorm_Handler,
+		},
+		{
+			MethodName: "GetLatestInfererWeight",
+			Handler:    _QueryService_GetLatestInfererWeight_Handler,
+		},
+		{
+			MethodName: "GetLatestForecasterWeight",
+			Handler:    _QueryService_GetLatestForecasterWeight_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "emissions/v7/query.proto",
+	Metadata: "emissions/v8/query.proto",
 }

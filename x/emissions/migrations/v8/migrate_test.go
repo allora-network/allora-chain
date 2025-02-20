@@ -1,10 +1,10 @@
-package v7_test
+package v8_test
 
 import (
 	"testing"
 
-	v7 "github.com/allora-network/allora-chain/x/emissions/migrations/v7"
-	oldV6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
+	oldV7Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
+	v8 "github.com/allora-network/allora-chain/x/emissions/migrations/v8"
 
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 
@@ -28,7 +28,7 @@ import (
 	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 )
 
-type EmissionsV6MigrationTestSuite struct {
+type EmissionsV7MigrationTestSuite struct {
 	suite.Suite
 	ctrl *gomock.Controller
 
@@ -37,11 +37,11 @@ type EmissionsV6MigrationTestSuite struct {
 	emissionsKeeper *keeper.Keeper
 }
 
-func TestEmissionsV6MigrationTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV6MigrationTestSuite))
+func TestEmissionsV7MigrationTestSuite(t *testing.T) {
+	suite.Run(t, new(EmissionsV7MigrationTestSuite))
 }
 
-func (s *EmissionsV6MigrationTestSuite) SetupTest() {
+func (s *EmissionsV7MigrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
 	key := storetypes.NewKVStoreKey(emissionstypes.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
@@ -67,13 +67,13 @@ func (s *EmissionsV6MigrationTestSuite) SetupTest() {
 // In this test we check that the emissions module params have been migrated
 // and the expected new fields are added and set to true:
 // GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
+func (s *EmissionsV7MigrationTestSuite) TestMigrateParams() {
 	storageService := s.emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
 	defaultParams := emissionstypes.DefaultParams()
-	paramsOld := oldV6Types.Params{
+	paramsOld := oldV7Types.Params{
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
@@ -125,13 +125,11 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
-	err := v7.MigrateParams(s.ctx, store, cdc)
+	err := v8.MigrateParams(s.ctx, store, cdc)
 	s.Require().NoError(err)
 
 	// TO BE ADDED VIA DEFAULT PARAMS:
-	// - InferenceOutlierDetectionThreshold
-	// - InferenceOutlierDetectionAlpha
-	// - LambdaInitialScore
+	// MinWeightThresholdForStdnorm
 	paramsExpected := defaultParams
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -189,4 +187,5 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 	s.Require().True(paramsExpected.GlobalReputerWhitelistEnabled)
 	s.Require().True(paramsExpected.GlobalAdminWhitelistAppended)
 	s.Require().Equal(paramsExpected.MaxWhitelistInputArrayLength, params.MaxWhitelistInputArrayLength)
+	s.Require().Equal(paramsExpected.MinWeightThresholdForStdnorm, params.MinWeightThresholdForStdnorm)
 }

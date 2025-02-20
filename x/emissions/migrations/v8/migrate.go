@@ -1,4 +1,4 @@
-package v7
+package v8
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldV6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
+	oldV7Types "github.com/allora-network/allora-chain/x/emissions/migrations/v8/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -14,32 +14,33 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-// MigrateStore migrates the store from version 5 to version 6
+// MigrateStore migrates the store from version 6 to version 7
 // It does the following:
-// - Migrate params to add and set GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-// - Iterates through all topics to turn on their respective worker and reputer whitelists
+// - Migrate params to add and set MinWeightThresholdForStdnorm
+// - Adds new empty stores
+// - Adds queries for this empty stores
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
-	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 6 TO VERSION 7")
-	ctx.Logger().Info("MIGRATING STORE FROM VERSION 6 TO VERSION 7")
+	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 7 TO VERSION 8")
+	ctx.Logger().Info("MIGRATING STORE FROM VERSION 7 TO VERSION 8")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 6 TO VERSION 7")
+	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 7 TO VERSION 8")
 	// This also flips on global and topic creator whitelists
 	if err := MigrateParams(ctx, store, cdc); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 6 TO VERSION 7")
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 7 TO VERSION 8")
 		return err
 	}
 
-	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 6 TO VERSION 7 COMPLETE")
+	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 7 TO VERSION 8 COMPLETE")
 	return nil
 }
 
 // Migrate params for this new version
 // The changes are the addition of GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
 func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV6Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
+	oldParams := oldV7Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -53,13 +54,7 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
-	//       InferenceOutlierDetectionAlpha
-	//       InferenceOutlierDetectionThreshold
-	//       LambdaInitialScore
-	//       GlobalWorkerWhitelistEnabled
-	//       GlobalReputerWhitelistEnabled
-	//       GlobalAdminWhitelistAppended
-	//       MaxInputArrayLength
+	//       MinWeightThresholdForStdnorm
 	newParams := emissionstypes.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
@@ -107,14 +102,15 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 		GlobalWhitelistEnabled:              oldParams.GlobalWhitelistEnabled,
 		TopicCreatorWhitelistEnabled:        oldParams.TopicCreatorWhitelistEnabled,
 		MinExperiencedWorkerRegrets:         oldParams.MinExperiencedWorkerRegrets,
+		InferenceOutlierDetectionThreshold:  defaultParams.InferenceOutlierDetectionThreshold,
+		InferenceOutlierDetectionAlpha:      defaultParams.InferenceOutlierDetectionAlpha,
+		LambdaInitialScore:                  defaultParams.LambdaInitialScore,
+		GlobalWorkerWhitelistEnabled:        defaultParams.GlobalWorkerWhitelistEnabled,
+		GlobalReputerWhitelistEnabled:       defaultParams.GlobalReputerWhitelistEnabled,
+		GlobalAdminWhitelistAppended:        defaultParams.GlobalAdminWhitelistAppended,
+		MaxWhitelistInputArrayLength:        defaultParams.MaxWhitelistInputArrayLength,
 		// NEW PARAMS
-		InferenceOutlierDetectionThreshold: defaultParams.InferenceOutlierDetectionThreshold,
-		InferenceOutlierDetectionAlpha:     defaultParams.InferenceOutlierDetectionAlpha,
-		LambdaInitialScore:                 defaultParams.LambdaInitialScore,
-		GlobalWorkerWhitelistEnabled:       defaultParams.GlobalWorkerWhitelistEnabled,
-		GlobalReputerWhitelistEnabled:      defaultParams.GlobalReputerWhitelistEnabled,
-		GlobalAdminWhitelistAppended:       defaultParams.GlobalAdminWhitelistAppended,
-		MaxWhitelistInputArrayLength:       defaultParams.MaxWhitelistInputArrayLength,
+		MinWeightThresholdForStdnorm: defaultParams.MinWeightThresholdForStdnorm,
 	}
 
 	ctx.Logger().Info(fmt.Sprintf("MIGRATED PARAMS: %+v", newParams))
