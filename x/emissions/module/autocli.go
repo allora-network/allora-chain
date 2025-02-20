@@ -920,7 +920,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetLatestInfererWeight",
 					Use:       "latest-inferer-weight [topic-id] [actor-id]",
-					Short:     "Get the latest inferer weight",
+					Short:     "Get the latest inferer weight for an actor in a topic",
 					Long:      "Get the latest weight for an inferer in a specific topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{
@@ -936,7 +936,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetLatestForecasterWeight",
 					Use:       "latest-forecaster-weight [topic-id] [actor-id]",
-					Short:     "Get the latest forecaster weight",
+					Short:     "Get the latest forecaster weight for an actor in a topic",
 					Long:      "Get the latest weight for a forecaster in a specific topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{
