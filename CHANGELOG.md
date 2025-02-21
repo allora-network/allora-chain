@@ -61,6 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* [#752](https://github.com/allora-network/allora-chain/pull/752) Updated cosmos-sdk to `v0.50.12`
+
 ### Deprecated
 
 ### Removed
@@ -68,6 +70,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+
+# [Released]
 
 # v0.9.0
 
@@ -169,8 +174,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#713](https://github.com/allora-network/allora-chain/pull/713) Proto generation keeps codec.go files
 
 ### Security
-
-# [Released]
 
 ## v0.7.0
 
