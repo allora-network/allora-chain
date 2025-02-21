@@ -2,7 +2,6 @@ package inferencesynthesis
 
 import (
 	"fmt"
-	"sort"
 
 	"cosmossdk.io/log"
 
@@ -506,17 +505,8 @@ func (w *RegretInformedWeights) NormalizeWeights() error {
 	var err error
 
 	// Get sorted worker lists
-	infererWorkers := make([]string, 0, len(w.Inferers))
-	for worker := range w.Inferers { // nolint: maprange  //  iteration to keep order in array
-		infererWorkers = append(infererWorkers, worker)
-	}
-	sort.Strings(infererWorkers)
-
-	forecasterWorkers := make([]string, 0, len(w.Forecasters))
-	for worker := range w.Forecasters { // nolint: maprange  //  iteration to keep order in array
-		forecasterWorkers = append(forecasterWorkers, worker)
-	}
-	sort.Strings(forecasterWorkers)
+	infererWorkers := alloraMath.GetSortedKeys(w.Inferers)
+	forecasterWorkers := alloraMath.GetSortedKeys(w.Forecasters)
 
 	// Sum weights in deterministic order
 	for _, worker := range infererWorkers {
@@ -559,17 +549,19 @@ func (w *RegretInformedWeights) NormalizeWeights() error {
 
 // StoreLatestNormalizedWeights sets the latest weights for the given topic
 func StoreLatestNormalizedWeights(ctx sdk.Context, k keeper.Keeper, topicId TopicId, weights RegretInformedWeights) error {
-	// Set inferer weights. nolint maprange: order is not relevant
-	for worker, weight := range weights.Inferers { // nolint: maprange
-		err := k.SetLatestInfererWeight(ctx, topicId, worker, weight)
+	// Set inferer weights
+	infererWorkers := alloraMath.GetSortedKeys(weights.Inferers)
+	for _, worker := range infererWorkers {
+		err := k.SetLatestInfererWeight(ctx, topicId, worker, weights.Inferers[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error setting latest inferer weight for worker %s", worker)
 		}
 	}
 
-	// Set forecaster weights. nolint maprange: order is not relevant.
-	for worker, weight := range weights.Forecasters { // nolint: maprange
-		err := k.SetLatestForecasterWeight(ctx, topicId, worker, weight)
+	// Set forecaster weights
+	forecasterWorkers := alloraMath.GetSortedKeys(weights.Forecasters)
+	for _, worker := range forecasterWorkers {
+		err := k.SetLatestForecasterWeight(ctx, topicId, worker, weights.Forecasters[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error setting latest forecaster weight for worker %s", worker)
 		}
