@@ -24,6 +24,7 @@ type CalcForecastImpliedInferencesArgs struct {
 	EpsilonTopic         alloraMath.Dec
 	PNorm                alloraMath.Dec
 	CNorm                alloraMath.Dec
+	StdDevPlusEpsilon    alloraMath.Dec
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
@@ -127,16 +128,17 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					infererToRegretOut = infererRegretsForThisForecaster
 					forecasterToRegretOut = make(map[Forecaster]*alloraMath.Dec, 0)
 
-					weights, err := calcWeightsGivenWorkers(
-						calcWeightsGivenWorkersArgs{
-							logger:             args.Logger,
-							inferers:           args.Inferers,
-							forecasters:        args.Forecasters,
-							infererToRegret:    infererToRegretOut,
-							forecasterToRegret: forecasterToRegretOut,
-							epsilonTopic:       args.EpsilonTopic,
-							pNorm:              args.PNorm,
-							cNorm:              args.CNorm,
+					weights, err := CalcWeightsGivenWorkers(
+						CalcWeightsGivenWorkersArgs{
+							Logger:             args.Logger,
+							Inferers:           args.Inferers,
+							Forecasters:        args.Forecasters,
+							InfererToRegret:    infererToRegretOut,
+							ForecasterToRegret: forecasterToRegretOut,
+							EpsilonTopic:       args.EpsilonTopic,
+							PNorm:              args.PNorm,
+							CNorm:              args.CNorm,
+							StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
 						},
 					)
 					if err != nil {

@@ -75,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* [#747](https://github.com/allora-network/allora-chain/pull/747) New stdnorm calc + weights onchain
+
 ### Deprecated
 
 ### Removed
@@ -84,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#748](https://github.com/allora-network/allora-chain/pull/748) Add nonce to rewards events
 
 ### Security
+
 
 # v0.8.3
 

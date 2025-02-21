@@ -171,3 +171,29 @@ func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, bl
 		Score:       score,
 	}
 }
+
+func NewRegretStdNormSetEventBase(topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) proto.Message {
+	return &EventRegretStdNormSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Stdnorm:     stdNorm,
+	}
+}
+
+func NewInfererWeightSetEventBase(topicId uint64, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
+	return &EventInfererWeightSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Address:     address,
+		Weight:      weight,
+	}
+}
+
+func NewForecasterWeightSetEventBase(topicId uint64, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
+	return &EventForecasterWeightSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Address:     address,
+		Weight:      weight,
+	}
+}

@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -127,7 +128,7 @@ func CloseReputerNonce(
 
 	types.EmitNewNetworkLossSetEvent(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
 
-	err = synth.GetCalcSetNetworkRegrets(
+	regrets, err := synth.GetCalcSetNetworkRegrets(
 		synth.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   ctx,
 			K:                     *k,
@@ -144,6 +145,78 @@ func CloseReputerNonce(
 	if err != nil {
 		return err
 	}
+
+	// Calculate the regret_stdnorm and the weights (multistep process).
+	// 0. Get inferer and forecaster regrets
+	infererRegrets := regrets.InfererRegrets
+	inferers := alloraMath.GetSortedKeys(infererRegrets)
+	forecasterRegrets := regrets.ForecasterRegrets
+	forecasters := alloraMath.GetSortedKeys(forecasterRegrets)
+
+	// 2. Calculate the regret_stdnorm to be used in
+	// 2.a Calculate the regret_stdnorm filtered by ∫the previous weights. If not, apply stddev.
+	stdDevPlusEpsilon, err := synth.CalcRegretStdDevFilteredByWeights(
+		synth.CalcRegretStdDevFilteredByWeightsArgs{
+			Ctx:                 ctx,
+			K:                   k,
+			Logger:              ctx.Logger(),
+			TopicId:             topic.Id,
+			Inferers:            inferers,
+			Forecasters:         forecasters,
+			InfererToRegret:     infererRegrets,
+			ForecasterToRegret:  forecasterRegrets,
+			NegligibleThreshold: params.MinWeightThresholdForStdnorm,
+			EpsilonTopic:        topic.Epsilon,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	// 2.b ... and store it.
+	err = k.SetLatestRegretStdNorm(ctx, topic.Id, stdDevPlusEpsilon)
+	if err != nil {
+		return err
+	}
+
+	// 3. Calculate the new weights
+	newWeights, err := synth.CalcWeightsGivenWorkers(
+		synth.CalcWeightsGivenWorkersArgs{
+			Logger:             ctx.Logger(),
+			Inferers:           inferers,
+			Forecasters:        forecasters,
+			InfererToRegret:    infererRegrets,
+			ForecasterToRegret: forecasterRegrets,
+			EpsilonTopic:       topic.Epsilon,
+			PNorm:              topic.PNorm,
+			CNorm:              params.CNorm,
+			StdDevPlusEpsilon:  stdDevPlusEpsilon,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	// 4. Normalize weights! This was not done before, but it is needed for the filter of non-negligible weights.
+	err = newWeights.NormalizeWeights()
+	if err != nil {
+		return err
+	}
+
+	// 5. Store the new weights
+	err = synth.StoreLatestNormalizedWeights(ctx, *k, topic.Id, newWeights)
+	if err != nil {
+		return err
+	}
+
+	// Emit events: the regret stdnorm set event
+	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
+	for _, inferer := range inferers {
+		types.EmitNewInfererWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, inferer, newWeights.Inferers[inferer])
+	}
+	for _, forecaster := range forecasters {
+		types.EmitNewForecasterWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, forecaster, newWeights.Forecasters[forecaster])
+	}
+	// -- end of regrets_stdnorm and weights multistep process
 
 	_, err = k.FulfillReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {

@@ -2,14 +2,14 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev7 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v7"
+	statev8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev7.QueryService_ServiceDesc.ServiceName,
+			Service: statev8.QueryService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "GetParams",
@@ -905,13 +905,57 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetLatestRegretStdNorm",
+					Use:       "latest-regret-std-norm [topic-id]",
+					Short:     "Get the latest regret standard norm for a topic",
+					Long:      "Get the latest regret standard norm value for the specified topic ID",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{
+							ProtoField: "topic_id",
+							Optional:   false,
+						},
+					},
+				},
+				{
+					RpcMethod: "GetLatestInfererWeight",
+					Use:       "latest-inferer-weight [topic-id] [actor-id]",
+					Short:     "Get the latest inferer weight for an actor in a topic",
+					Long:      "Get the latest weight for an inferer in a specific topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{
+							ProtoField: "topic_id",
+							Optional:   false,
+						},
+						{
+							ProtoField: "actor_id",
+							Optional:   false,
+						},
+					},
+				},
+				{
+					RpcMethod: "GetLatestForecasterWeight",
+					Use:       "latest-forecaster-weight [topic-id] [actor-id]",
+					Short:     "Get the latest forecaster weight for an actor in a topic",
+					Long:      "Get the latest weight for a forecaster in a specific topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{
+							ProtoField: "topic_id",
+							Optional:   false,
+						},
+						{
+							ProtoField: "actor_id",
+							Optional:   false,
+						},
+					},
+				},
 			},
 			SubCommands:          nil,
 			EnhanceCustomCommand: false,
 			Short:                "Emissions module query commands",
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: statev7.MsgService_ServiceDesc.ServiceName,
+			Service: statev8.MsgService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",

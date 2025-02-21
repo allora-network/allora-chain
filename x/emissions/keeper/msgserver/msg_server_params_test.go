@@ -73,6 +73,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		GlobalReputerWhitelistEnabled:       []bool{true},
 		GlobalAdminWhitelistAppended:        []bool{true},
 		MaxWhitelistInputArrayLength:        []uint64{10},
+		MinWeightThresholdForStdnorm:        []alloraMath.Dec{alloraMath.MustNewDecFromString("0.000001")},
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -140,6 +141,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.GlobalReputerWhitelistEnabled[0], updatedParams.GlobalReputerWhitelistEnabled)
 	require.Equal(newParams.GlobalAdminWhitelistAppended[0], updatedParams.GlobalAdminWhitelistAppended)
 	require.Equal(newParams.MaxWhitelistInputArrayLength[0], updatedParams.MaxWhitelistInputArrayLength)
+	require.Equal(newParams.MinWeightThresholdForStdnorm[0], updatedParams.MinWeightThresholdForStdnorm)
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
@@ -206,6 +208,7 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 		GlobalReputerWhitelistEnabled:       nil,
 		GlobalAdminWhitelistAppended:        nil,
 		MaxWhitelistInputArrayLength:        nil,
+		MinWeightThresholdForStdnorm:        nil,
 	}
 
 	// Creating the UpdateParamsRequest message with a non-whitelisted user

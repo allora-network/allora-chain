@@ -96,6 +96,9 @@ func NewGenesisState() *GenesisState {
 		TopicReputerWhitelistEnabled:                   []uint64{},
 		LastMedianInferences:                           []*TopicIdAndDec{},
 		MadInferences:                                  []*TopicIdAndDec{},
+		LatestRegretStdNorm:                            []*TopicIdAndDec{},
+		LatestInfererWeights:                           []*TopicIdActorIdDec{},
+		LatestForecasterWeights:                        []*TopicIdActorIdDec{},
 	}
 }
 

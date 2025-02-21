@@ -49,7 +49,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v8.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -108,7 +108,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v8.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -167,7 +167,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v8.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -226,7 +226,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v8.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -285,7 +285,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v8.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -344,7 +344,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v8.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -409,7 +409,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventNetworkLossSet", event.Type)
+	require.Equal(t, "emissions.v8.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 3)
@@ -442,7 +442,7 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventForecastTaskScoreSet", event.Type)
+	require.Equal(t, "emissions.v8.EventForecastTaskScoreSet", event.Type)
 
 	require.Contains(t, event.Attributes[0].Key, "score")
 	require.Contains(t, event.Attributes[0].Value, "10")
@@ -465,9 +465,9 @@ func TestNewLastCommitSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 3)
 
-	require.Equal(t, "emissions.v7.EventWorkerLastCommitSet", events[0].Type)
-	require.Equal(t, "emissions.v7.EventWorkerLastCommitSet", events[1].Type)
-	require.Equal(t, "emissions.v7.EventReputerLastCommitSet", events[2].Type)
+	require.Equal(t, "emissions.v8.EventWorkerLastCommitSet", events[0].Type)
+	require.Equal(t, "emissions.v8.EventWorkerLastCommitSet", events[1].Type)
+	require.Equal(t, "emissions.v8.EventReputerLastCommitSet", events[2].Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "block_height")
 	require.Contains(t, events[0].Attributes[1].Key, "nonce")
@@ -504,7 +504,7 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	require.Equal(t, "emissions.v7.EventTopicRewardsSet", events[0].Type)
+	require.Equal(t, "emissions.v8.EventTopicRewardsSet", events[0].Type)
 	require.Contains(t, events[0].Attributes[0].Key, "rewards")
 	require.Contains(t, events[0].Attributes[0].Value, `["0","10","20","30","40"]`)
 	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
@@ -543,7 +543,7 @@ func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 3)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventEMAScoresSet", event.Type)
+	require.Equal(t, "emissions.v8.EventEMAScoresSet", event.Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "actor_type")
 	require.Contains(t, events[0].Attributes[0].Value, "\"ACTOR_TYPE_INFERER_UNSPECIFIED\"")
@@ -584,7 +584,7 @@ func TestEmitNewListeningCoefficientsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventListeningCoefficientsSet", event.Type)
+	require.Equal(t, "emissions.v8.EventListeningCoefficientsSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -651,7 +651,7 @@ func TestEmitNewInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v8.EventInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -708,7 +708,7 @@ func TestEmitNewForecasterNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventForecasterNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v8.EventForecasterNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -764,7 +764,7 @@ func TestEmitNewNaiveInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventNaiveInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v8.EventNaiveInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -819,7 +819,7 @@ func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v7.EventTopicInitialRegretSet", event.Type)
+	require.Equal(t, "emissions.v8.EventTopicInitialRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)

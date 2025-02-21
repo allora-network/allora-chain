@@ -3,7 +3,6 @@ package migutils_test
 import (
 	"fmt"
 	rand "math/rand/v2"
-	"strings"
 	"testing"
 
 	"cosmossdk.io/collections"
@@ -133,6 +132,6 @@ func runSafelyClearWholeMapCase[K, V any](
 	for _, key := range keys {
 		_, err := m.Get(testDB.TestCtx.Ctx, key)
 		require.Error(t, err)
-		require.True(t, strings.Contains(err.Error(), "collections: not found"))
+		require.Contains(t, err.Error(), "collections: not found")
 	}
 }
