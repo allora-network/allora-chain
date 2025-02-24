@@ -27,6 +27,7 @@ NETWORK_PREFIX="192.168.250"
 VALIDATORS_IP_START=10
 VALIDATORS_RPC_PORT_START=26657
 VALIDATORS_API_PORT_START=1317
+VALIDATORS_GRPC_PORT_START=9090
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-localnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
@@ -42,6 +43,11 @@ ACCOUNTS_TOKENS=1000000
 
 ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE=${LOCALNET_DATADIR}/compose_l1.yaml
+
+# Add near the top with other setup
+CERT_DIR="${LOCALNET_DATADIR}/certs"
+mkdir -p $CERT_DIR
+chmod 777 $CERT_DIR  # Add this line for permissive access
 
 if [ -d "$LOCALNET_DATADIR" ]; then
     echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
@@ -124,6 +130,14 @@ docker run -t \
         put -t string -v "$FAUCET_ADDRESS" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
 echo "Faucet addr: $FAUCET_ADDRESS"
 
+# Generate self-signed certificate (before the validator loop)
+docker run -t \
+    -u 0:0 \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=/bin/sh \
+    $DOCKER_IMAGE \
+    -c 'mkdir -p /data/certs && openssl req -x509 -newkey rsa:4096 -keyout /data/certs/server.key -out /data/certs/server.crt -days 365 -nodes -subj "/CN=localhost" && chmod 666 /data/certs/server.key /data/certs/server.crt'
+
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     valName="${VALIDATOR_PREFIX}${i}"
     echo "Running cosmovisor init for $valName"
@@ -152,6 +166,17 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
             $DOCKER_IMAGE \
             /usr/local/bin/allorad-${UPGRADE_VERSION} /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin/allorad
     fi
+
+    # Configure gRPC with TLS
+    mkdir -p ${LOCALNET_DATADIR}/${valName}/config/certs
+    cp ${CERT_DIR}/* ${LOCALNET_DATADIR}/${valName}/config/certs/
+    
+    docker run -t \
+        -u $(id -u):$(id -g) \
+        -v ${LOCALNET_DATADIR}:/data \
+        --entrypoint=/bin/sh \
+        $DOCKER_IMAGE \
+        -c 'sed -i "s|enable = true|enable = true\n# TLS certificate path\ntls_cert_file = \"../config/certs/server.crt\"\n# TLS key path\ntls_key_file = \"../config/certs/server.key\"|" /data/'${valName}'/config/app.toml && sed -i "s|address = \"localhost:9090\"|address = \"0.0.0.0:'$((VALIDATORS_GRPC_PORT_START+i))'\"|" /data/'${valName}'/config/app.toml'
 done
 
 echo "Generate L1 peers, put them in persisent-peers and in genesis.json"
@@ -179,6 +204,7 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     moniker="${VALIDATOR_PREFIX}${i}" \
     validatorPort=$((VALIDATORS_RPC_PORT_START+i)) \
     validatorApiPort=$((VALIDATORS_API_PORT_START+i)) \
+    validatorGrpcPort=$((VALIDATORS_GRPC_PORT_START+i)) \
     PEERS=$PEERS \
     NETWORK_PREFIX=$NETWORK_PREFIX \
     LOCALNET_DATADIR=$LOCALNET_DATADIR \
@@ -240,6 +266,8 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "  - 'docker compose -f $L1_COMPOSE down' -- To stop all the validators"
     echo "  - http://localhost:2665[7-...] -- Validators RPC address, port = 26657 + VALIDATOR_NUMBER"
     echo "  -   - 'curl http://localhost:26658/status|jq .' -- To get validator1 (26657+1=26658) RPC address"
+    echo "  - gRPC endpoints available at localhost:909[0-...] -- gRPC address, port = 9090 + VALIDATOR_NUMBER"
+    echo "  - Example query: grpcurl -plaintext localhost:9090 list"
     echo "To use allorad commands, you can specify \'$LOCALNET_DATADIR/genesis\' as --home, eg.:"
     echo "  - 'allorad --home $LOCALNET_DATADIR/genesis status'"
 else
