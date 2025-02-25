@@ -44,10 +44,6 @@ ACCOUNTS_TOKENS=1000000
 ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE=${LOCALNET_DATADIR}/compose_l1.yaml
 
-# Add near the top with other setup
-CERT_DIR="${LOCALNET_DATADIR}/certs"
-mkdir -p $CERT_DIR
-chmod 777 $CERT_DIR  # Add this line for permissive access
 
 if [ -d "$LOCALNET_DATADIR" ]; then
     echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
@@ -60,6 +56,20 @@ if [ -d "$LOCALNET_DATADIR" ]; then
     fi
 fi
 mkdir -p $LOCALNET_DATADIR
+
+# --- start certificate and nginx configuration generation ---
+if [ "${TLS_PROXY:-false}" == "true" ]; then
+    CERT_DIR="${CERT_DIR:-${LOCALNET_DATADIR}/certs}"
+    mkdir -p $CERT_DIR
+    chmod 777 $CERT_DIR  # Add this line for permissive access
+    # Generate self-signed certificate (before the validator loop)
+    openssl req -x509 -newkey rsa:4096 -keyout $CERT_DIR/server.key -out $CERT_DIR/server.crt -days 365 -nodes -subj "/CN=localhost"
+    chmod 644 $CERT_DIR/server.*
+    # Generate nginx.conf for TLS termination
+    cp nginx.conf.tmpl ${LOCALNET_DATADIR}/nginx.conf
+fi
+# --- end certificate and nginx configuration generation ---
+
 
 UID_GID="$(id -u):$(id -g)"
 # echo "NETWORK_PREFIX=$NETWORK_PREFIX" >> ${ENV_L1}
@@ -130,13 +140,6 @@ docker run -t \
         put -t string -v "$FAUCET_ADDRESS" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
 echo "Faucet addr: $FAUCET_ADDRESS"
 
-# Generate self-signed certificate (before the validator loop)
-docker run -t \
-    -u 0:0 \
-    -v ${LOCALNET_DATADIR}:/data \
-    --entrypoint=/bin/sh \
-    $DOCKER_IMAGE \
-    -c 'mkdir -p /data/certs && openssl req -x509 -newkey rsa:4096 -keyout /data/certs/server.key -out /data/certs/server.crt -days 365 -nodes -subj "/CN=localhost" && chmod 666 /data/certs/server.key /data/certs/server.crt'
 
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     valName="${VALIDATOR_PREFIX}${i}"
@@ -167,16 +170,6 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
             /usr/local/bin/allorad-${UPGRADE_VERSION} /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin/allorad
     fi
 
-    # Configure gRPC with TLS
-    mkdir -p ${LOCALNET_DATADIR}/${valName}/config/certs
-    cp ${CERT_DIR}/* ${LOCALNET_DATADIR}/${valName}/config/certs/
-    
-    docker run -t \
-        -u $(id -u):$(id -g) \
-        -v ${LOCALNET_DATADIR}:/data \
-        --entrypoint=/bin/sh \
-        $DOCKER_IMAGE \
-        -c 'sed -i "s|enable = true|enable = true\n# TLS certificate path\ntls_cert_file = \"../config/certs/server.crt\"\n# TLS key path\ntls_key_file = \"../config/certs/server.key\"|" /data/'${valName}'/config/app.toml && sed -i "s|address = \"localhost:9090\"|address = \"0.0.0.0:'$((VALIDATORS_GRPC_PORT_START+i))'\"|" /data/'${valName}'/config/app.toml'
 done
 
 echo "Generate L1 peers, put them in persisent-peers and in genesis.json"
@@ -199,6 +192,16 @@ done
 echo "PEERS=$PEERS" >> ${ENV_L1}
 echo "Generate docker compose file"
 NETWORK_PREFIX=$NETWORK_PREFIX envsubst < compose_l1_header.yaml > $L1_COMPOSE
+
+# --- start adding nginx configuration to compose file ---
+if [ "${TLS_PROXY:-false}" == "true" ]; then
+    CERT_DIR=$CERT_DIR \
+    LOCALNET_DATADIR=$LOCALNET_DATADIR \
+    NETWORK_PREFIX=$NETWORK_PREFIX \
+    envsubst < tls_proxy.tmpl >> $L1_COMPOSE
+fi
+# --- end nginx configuration ---
+
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     ipAddress="${NETWORK_PREFIX}.$((VALIDATORS_IP_START+i))" \
     moniker="${VALIDATOR_PREFIX}${i}" \
