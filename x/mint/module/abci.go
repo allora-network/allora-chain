@@ -77,6 +77,13 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		// mint the amount of tokens required to pay out the emissions
 		tokensToMint := blockEmission.Sub(ecosystemBalance)
 		if tokensToMint.GT(ecosystemMintSupplyRemaining) {
+			sdkCtx.Logger().Warn("Not enough tokens in the ecosystem mint supply to pay rewards",
+				"blockEmission", blockEmission,
+				"ecosystemBalance", ecosystemBalance,
+				"ecosystemMintSupplyRemaining", ecosystemMintSupplyRemaining,
+			)
+			// Reduce the block emission as we don't have enough tokens
+			blockEmission = blockEmission.Sub(tokensToMint).Add(ecosystemMintSupplyRemaining)
 			tokensToMint = ecosystemMintSupplyRemaining
 		}
 		coins := sdk.NewCoins(sdk.NewCoin(moduleParams.MintDenom, tokensToMint))
