@@ -69,6 +69,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+* [#756](https://github.com/allora-network/allora-chain/pull/756) Prevent ecosystem rewards after its supply hit
+
+# [Released]
+
 # v0.9.0
 
 ### Added
@@ -169,8 +173,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#713](https://github.com/allora-network/allora-chain/pull/713) Proto generation keeps codec.go files
 
 ### Security
-
-# [Released]
 
 ## v0.7.0
 
