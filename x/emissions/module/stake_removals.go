@@ -71,7 +71,7 @@ func RemoveStakes(
 		// Update the stake data structures
 		err = k.RemoveReputerStake(
 			cacheSdkCtx,
-			currentBlock,
+			stakeRemoval.BlockRemovalCompleted,
 			stakeRemoval.TopicId,
 			stakeRemoval.Reputer,
 			stakeRemoval.Amount,
