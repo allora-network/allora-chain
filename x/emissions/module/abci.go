@@ -27,11 +27,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
-	err = RemoveStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	err = RemoveStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 	if err != nil {
 		sdkCtx.Logger().Error("Error removing stakes: ", err)
 	}
-	err = RemoveDelegateStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	err = RemoveDelegateStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 	if err != nil {
 		sdkCtx.Logger().Error("Error removing delegate stakes: ", err)
 	}
