@@ -58,11 +58,10 @@ func RemoveStakes(
 		return errors.Wrapf(err, "Unable to get stake removals for block %d", currentBlock)
 	}
 	if limitHit {
-		return errors.Wrapf(
-			err,
-			"Hit limit of number of stake removals we can process up until block %d, only removing %d",
-			currentBlock,
-			limitToProcess,
+		sdkCtx.Logger().Warn(
+			"Hit limit of number of stake removals we can process in this block",
+			"blockHeight", currentBlock,
+			"limitToProcess", limitToProcess,
 		)
 	}
 	for _, stakeRemoval := range removals {
@@ -129,11 +128,10 @@ func RemoveDelegateStakes(
 		return errors.Wrapf(err, "Unable to get stake removals for block %d", currentBlock)
 	}
 	if limitHit {
-		return errors.Wrapf(
-			err,
-			"Hit limit of number of stake removals we can process up until block %d, only removing %d",
-			currentBlock,
-			limitToProcess,
+		sdkCtx.Logger().Warn(
+			"Hit limit of number of stake removals we can process in this block",
+			"blockHeight", currentBlock,
+			"limitToProcess", limitToProcess,
 		)
 	}
 	for _, stakeRemoval := range removals {
