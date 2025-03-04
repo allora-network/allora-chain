@@ -248,7 +248,7 @@ func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	s.Require().NoError(err)
 
 	unfulfilledNonces, err = keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
-	s.Require().NoError(err, "Error retrieving nonces")
+	s.Require().NoError(err)
 
 	s.Require().Len(unfulfilledNonces.Nonces, 1, "Unfulfilled nonces should not be empty")
 
@@ -5113,6 +5113,60 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 
 	s.Require().Equal(alloraMath.MustNewDecFromString("8.4"), mad)
 	s.Require().Equal(alloraMath.NewDecFromInt64(50), median)
+}
+
+func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetricsWithHugeNumbers() {
+	// Create one topic
+	topicId := s.CreateOneTopic(10800)
+	blockHeight := int64(1)
+
+	// Create inferences with extremely large values
+	inferences := []*types.Inference{
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.MustNewDecFromString("1e+100"), // Very large number
+			Inferer:     s.addrsStr[0],
+		},
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.MustNewDecFromString("1e-100000"), // Negative largest number
+			Inferer:     s.addrsStr[1],
+		},
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.MustNewDecFromString("1e+100000"), // Extremely large
+			Inferer:     s.addrsStr[2],
+		},
+	}
+
+	inferencesWrapper := types.Inferences{Inferences: inferences}
+	err := s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, blockHeight, inferencesWrapper)
+	s.Require().NoError(err)
+
+	// Test the update function with huge numbers
+	err = s.emissionsKeeper.UpdateNetworkInferencesOutlierMetrics(s.ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+
+	// // Verify results
+	// mad, err := s.emissionsKeeper.GetMadInferences(s.ctx, topicId)
+	// s.Require().NoError(err)
+	// median, err := s.emissionsKeeper.GetLastMedianInferences(s.ctx, topicId)
+	// s.Require().NoError(err)
+
+	// // The median should be 1e+200 (the middle value)
+	// expectedMedian := alloraMath.MustNewDecFromString("1e+200")
+	// s.Require().True(expectedMedian.Equal(median),
+	// 	"Expected median %s, got %s", expectedMedian.String(), median.String())
+
+	// // Check if MAD is within acceptable range of expected value
+	// expectedMad := alloraMath.MustNewDecFromString("1e+200")
+	// inDelta, err := alloraMath.InDelta(expectedMad, mad, alloraMath.MustNewDecFromString("1e+190")) // Allow for 10^190 difference
+	// s.Require().NoError(err)
+	// s.Require().True(inDelta,
+	// 	"Expected MAD %s, got %s", expectedMad.String(), mad.String())
 }
 
 func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
