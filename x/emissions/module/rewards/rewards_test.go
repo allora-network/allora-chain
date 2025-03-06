@@ -2362,6 +2362,7 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		GlobalAdminWhitelistAppended:        nil,
 		MaxWhitelistInputArrayLength:        nil,
 		MinWeightThresholdForStdnorm:        nil,
+		DataLimitExponent:                   nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{

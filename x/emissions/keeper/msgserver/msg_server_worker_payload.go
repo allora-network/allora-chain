@@ -34,17 +34,17 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
 	}
 
+	moduleParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params")
+	}
 	blockHeight := sdkCtx.BlockHeight()
-	err = msg.WorkerDataBundle.Validate()
+	err = msg.WorkerDataBundle.Validate(moduleParams)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Worker invalid data for block: %d", blockHeight)
 	}
 
-	moduleParams, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params")
-	}
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {
 		return nil, err

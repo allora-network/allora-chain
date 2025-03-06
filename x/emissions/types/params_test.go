@@ -64,6 +64,7 @@ func TestDefaultParams(t *testing.T) {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		DataLimitExponent:                   uint64(40),
 	}
 
 	params := DefaultParams()

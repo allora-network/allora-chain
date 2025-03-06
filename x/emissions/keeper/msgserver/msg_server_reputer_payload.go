@@ -16,9 +16,13 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
 	blockHeight := sdkCtx.BlockHeight()
-	err = msg.ReputerValueBundle.Validate()
+
+	moduleParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for reputer: %v", &msg.ReputerValueBundle.ValueBundle.Reputer)
+	}
+	err = msg.ReputerValueBundle.Validate(moduleParams)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Reputer invalid data for block: %d", blockHeight)
@@ -31,10 +35,6 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, types.ErrNotPermittedToSubmitReputerPayload
 	}
 
-	moduleParams, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params for reputer: %v", &msg.ReputerValueBundle.ValueBundle.Reputer)
-	}
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {
 		return nil, err

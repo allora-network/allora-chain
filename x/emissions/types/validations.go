@@ -2,6 +2,8 @@ package types
 
 import (
 	"encoding/hex"
+	fmt "fmt"
+	"strconv"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -18,6 +20,52 @@ var (
 )
 
 /// EXTERNAL TYPE VALIDATIONS
+
+func ValidateIncomingDataDec(value alloraMath.Dec, params Params) error {
+	if ValidateDec(value) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value is invalid")
+	}
+	if value.IsZero() {
+		return nil
+	}
+
+	baseStringPositive := "1e"
+	baseStringNegative := "-1e"
+	exponentStringPositive := strconv.FormatUint(params.DataLimitExponent, 10)
+	exponentStringNegative := "-" + exponentStringPositive
+	// negative leftmost boundary -1e+DataLimitExponent
+	minNegativeDataNumericalValue, err := alloraMath.NewDecFromString(baseStringNegative + exponentStringPositive)
+	if err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "failed to convert data limit exponent to decimal")
+	}
+	// negative rightmost boundary -1e-DataLimitExponent
+	maxNegativeDataNumericalValue, err := alloraMath.NewDecFromString(baseStringNegative + exponentStringNegative)
+	if err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "failed to convert data limit exponent to decimal")
+	}
+	// positive leftmost boundary 1e-DataLimitExponent
+	minPositiveDataNumericalValue, err := alloraMath.NewDecFromString(baseStringPositive + exponentStringNegative)
+	if err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "failed to convert data limit exponent to decimal")
+	}
+	// positive rightmost boundary 1e+DataLimitExponent
+	maxPositiveDataNumericalValue, err := alloraMath.NewDecFromString(baseStringPositive + exponentStringPositive)
+	if err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "failed to convert data limit exponent to decimal")
+	}
+
+	// Set the boundaries on valid data
+	if value.Lt(minNegativeDataNumericalValue) {
+		return errors.Wrap(sdkerrors.ErrInvalidType, fmt.Sprintf("value %s cannot be less than -1e to DataLimitExponent %d", value, params.DataLimitExponent))
+	}
+	if value.Gt(maxNegativeDataNumericalValue) && value.Lt(minPositiveDataNumericalValue) {
+		return errors.Wrap(sdkerrors.ErrInvalidType, fmt.Sprintf("value %s cannot have higher precision than DataLimitExponent %d", value, params.DataLimitExponent))
+	}
+	if value.Gt(maxPositiveDataNumericalValue) {
+		return errors.Wrap(sdkerrors.ErrInvalidType, fmt.Sprintf("value %s cannot be greater than 1e to DataLimitExponent %d", value, params.DataLimitExponent))
+	}
+	return nil
+}
 
 // ValidateDec checks if the given value is a valid Dec by our standards
 func ValidateDec(value alloraMath.Dec) error {
@@ -104,7 +152,7 @@ func (gs *GenesisState) Validate() error {
 }
 
 // validate that an inference follows the expected format
-func (inference *Inference) Validate() error {
+func (inference *Inference) Validate(params Params) error {
 	if inference == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference cannot be nil")
 	}
@@ -117,7 +165,7 @@ func (inference *Inference) Validate() error {
 	if err := ValidateBlockHeight(inference.BlockHeight); err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid inferer address (%s)", err)
 	}
-	if err := ValidateDec(inference.Value); err != nil {
+	if err := ValidateIncomingDataDec(inference.Value, params); err != nil {
 		return errors.Wrap(err, "inference value is invalid")
 	}
 	// ExtraData not validated as it is not used by the chain
@@ -126,7 +174,7 @@ func (inference *Inference) Validate() error {
 }
 
 // validate that a forecast follows the expected format
-func (forecast *Forecast) Validate() error {
+func (forecast *Forecast) Validate(params Params) error {
 	if forecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
 	}
@@ -146,7 +194,7 @@ func (forecast *Forecast) Validate() error {
 		if err := ValidateBech32(elem.Inferer); err != nil {
 			return errors.Wrap(err, "forecast inferer address is invalid")
 		}
-		if err := ValidateDec(elem.Value); err != nil {
+		if err := ValidateIncomingDataDec(elem.Value, params); err != nil {
 			return errors.Wrap(err, "forecast value is invalid")
 		}
 	}
@@ -155,7 +203,7 @@ func (forecast *Forecast) Validate() error {
 }
 
 // validate that a worker data bundle follows the expected format
-func (bundle *WorkerDataBundle) Validate() error {
+func (bundle *WorkerDataBundle) Validate(params Params) error {
 	if bundle == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
 	}
@@ -187,7 +235,7 @@ func (bundle *WorkerDataBundle) Validate() error {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
 	}
 	if bundle.InferenceForecastsBundle.Inference != nil {
-		if err := bundle.InferenceForecastsBundle.Inference.Validate(); err != nil {
+		if err := bundle.InferenceForecastsBundle.Inference.Validate(params); err != nil {
 			return err
 		}
 		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
@@ -202,7 +250,7 @@ func (bundle *WorkerDataBundle) Validate() error {
 		}
 	}
 	if bundle.InferenceForecastsBundle.Forecast != nil {
-		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
+		if err := bundle.InferenceForecastsBundle.Forecast.Validate(params); err != nil {
 			return err
 		}
 		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
@@ -236,7 +284,7 @@ func (bundle *WorkerDataBundle) Validate() error {
 }
 
 // validate that a value bundle follows the expected format
-func (bundle *ValueBundle) Validate() error {
+func (bundle *ValueBundle) Validate(params Params) error {
 	if bundle == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
@@ -251,14 +299,14 @@ func (bundle *ValueBundle) Validate() error {
 	}
 	// extraData is not checked as it is not used by the chain
 
-	if err := ValidateDec(bundle.CombinedValue); err != nil {
+	if err := ValidateIncomingDataDec(bundle.CombinedValue, params); err != nil {
 		return errors.Wrap(err, "value bundle combined value is invalid")
 	}
 
 	// nil values for bundle.InfererValues are interpreted to mean that there
 	// are no inferer values for this bundle, and are allowed
 	for _, infererValue := range bundle.InfererValues {
-		if err := infererValue.Validate(); err != nil {
+		if err := infererValue.Validate(params); err != nil {
 			return errors.Wrap(err, "value bundle inferer value is invalid")
 		}
 	}
@@ -266,7 +314,7 @@ func (bundle *ValueBundle) Validate() error {
 	// nil values for bundle.ForecasterValues are interpreted to mean that there
 	// are no forecaster values for this bundle, and are allowed
 	for _, forecasterValue := range bundle.ForecasterValues {
-		if err := forecasterValue.Validate(); err != nil {
+		if err := forecasterValue.Validate(params); err != nil {
 			return errors.Wrap(err, "value bundle forecaster value is invalid")
 		}
 	}
@@ -278,7 +326,7 @@ func (bundle *ValueBundle) Validate() error {
 	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
 	// are no one out inferer values for this bundle, and are allowed
 	for _, oneOutInfererValue := range bundle.OneOutInfererValues {
-		if err := oneOutInfererValue.Validate(); err != nil {
+		if err := oneOutInfererValue.Validate(params); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer value is invalid")
 		}
 	}
@@ -286,7 +334,7 @@ func (bundle *ValueBundle) Validate() error {
 	// nil values for bundle.OneOutForecasterValues are interpreted to mean that there
 	// are no one out forecaster values for this bundle, and are allowed
 	for _, oneOutForecasterValue := range bundle.OneOutForecasterValues {
-		if err := oneOutForecasterValue.Validate(); err != nil {
+		if err := oneOutForecasterValue.Validate(params); err != nil {
 			return errors.Wrap(err, "value bundle one out forecaster value is invalid")
 		}
 	}
@@ -294,7 +342,7 @@ func (bundle *ValueBundle) Validate() error {
 	// nil values for bundle.OneInForecasterValues are interpreted to mean that there
 	// are no one in forecaster values for this bundle, and are allowed
 	for _, oneInForecasterValue := range bundle.OneInForecasterValues {
-		if err := oneInForecasterValue.Validate(); err != nil {
+		if err := oneInForecasterValue.Validate(params); err != nil {
 			return errors.Wrap(err, "value bundle one in forecaster value is invalid")
 		}
 	}
@@ -302,7 +350,7 @@ func (bundle *ValueBundle) Validate() error {
 	// nil values for bundle.OneOutInfererForecasterValues are interpreted to mean that there
 	// are no one out inferer forecaster values for this bundle, and are allowed
 	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
-		if err := oneOutInfererForecaster.Validate(); err != nil {
+		if err := oneOutInfererForecaster.Validate(params); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
 		}
 	}
@@ -310,7 +358,7 @@ func (bundle *ValueBundle) Validate() error {
 }
 
 // validate that a reputer value bundle follows the expected format
-func (bundle *ReputerValueBundle) Validate() error {
+func (bundle *ReputerValueBundle) Validate(params Params) error {
 	if bundle.ValueBundle == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
@@ -326,7 +374,7 @@ func (bundle *ReputerValueBundle) Validate() error {
 	}
 
 	// validate the value bundle
-	if err := bundle.ValueBundle.Validate(); err != nil {
+	if err := bundle.ValueBundle.Validate(params); err != nil {
 		return errors.Wrap(err, "value bundle is invalid")
 	}
 
@@ -434,13 +482,13 @@ func (topic Topic) Validate(params Params) error {
 }
 
 // validate that a worker attributed value follows the expected format
-func (workerValue *WorkerAttributedValue) Validate() error {
+func (workerValue *WorkerAttributedValue) Validate(params Params) error {
 	_, err := sdk.AccAddressFromBech32(workerValue.Worker)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
 	}
 
-	if err := ValidateDec(workerValue.Value); err != nil {
+	if err := ValidateIncomingDataDec(workerValue.Value, params); err != nil {
 		return err
 	}
 
@@ -448,13 +496,13 @@ func (workerValue *WorkerAttributedValue) Validate() error {
 }
 
 // validate that a withheld worker attributed value follows the expected format
-func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
+func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate(params Params) error {
 	_, err := sdk.AccAddressFromBech32(withheldWorkerValue.Worker)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
 	}
 
-	if err := ValidateDec(withheldWorkerValue.Value); err != nil {
+	if err := ValidateIncomingDataDec(withheldWorkerValue.Value, params); err != nil {
 		return err
 	}
 
@@ -462,7 +510,7 @@ func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
 }
 
 // validate that a types.OneOutInfererForecasterValues follows the expected format
-func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate() error {
+func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate(params Params) error {
 	if err := ValidateBech32(oneOutInfererForecasterValues.Forecaster); err != nil {
 		return errors.Wrap(err, "one out inferer forecaster values forecaster is invalid")
 	}
@@ -470,7 +518,7 @@ func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate() e
 		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
 	}
 	for _, oneOutInfererValue := range oneOutInfererForecasterValues.OneOutInfererValues {
-		if err := oneOutInfererValue.Validate(); err != nil {
+		if err := oneOutInfererValue.Validate(params); err != nil {
 			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
 		}
 	}
@@ -478,12 +526,12 @@ func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate() e
 }
 
 // validate that a types.ReputerValueBundles follows the expected format
-func (bundle *ReputerValueBundles) Validate() error {
+func (bundle *ReputerValueBundles) Validate(params Params) error {
 	if bundle.ReputerValueBundles == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidType, "reputer value bundles cannot be nil")
 	}
 	for i, reputerValueBundle := range bundle.ReputerValueBundles {
-		if err := reputerValueBundle.Validate(); err != nil {
+		if err := reputerValueBundle.Validate(params); err != nil {
 			return errors.Wrapf(err, "reputer value bundle at index %d is invalid", i)
 		}
 	}

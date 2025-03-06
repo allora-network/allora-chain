@@ -1430,10 +1430,14 @@ func (k *Keeper) InsertInference(
 	topicId TopicId,
 	inference types.Inference,
 ) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
-	err := inference.Validate()
+	err = inference.Validate(params)
 	if err != nil {
 		return errorsmod.Wrap(err, "inference is invalid")
 	}
@@ -1608,7 +1612,11 @@ func (k *Keeper) InsertForecast(
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
-	err := forecast.Validate()
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+	err = forecast.Validate(params)
 	if err != nil {
 		return errorsmod.Wrap(err, "forecast is invalid")
 	}
@@ -1842,10 +1850,14 @@ func (k *Keeper) InsertReputerLoss(
 	topicId TopicId,
 	reputerLoss types.ReputerValueBundle,
 ) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
-	err := reputerLoss.Validate()
+	err = reputerLoss.Validate(params)
 	if err != nil {
 		return errorsmod.Wrap(err, "reputer loss is invalid")
 	}
@@ -1877,7 +1889,11 @@ func (k *Keeper) InsertActiveReputerLosses(
 	if err := types.ValidateBlockHeight(block); err != nil {
 		return errorsmod.Wrap(err, "block height validation failed")
 	}
-	if err := reputerLossBundles.Validate(); err != nil {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+	if err := reputerLossBundles.Validate(params); err != nil {
 		// in the singular case of a bundle that has been filtered, we allow
 		// the signature validation to fail. This is secure because we already do
 		// bundle validation in CloseReputerNonce before calling this function
@@ -1916,7 +1932,11 @@ func (k *Keeper) InsertNetworkLossBundleAtBlock(
 	if err := types.ValidateBlockHeight(block); err != nil {
 		return errorsmod.Wrap(err, "block height validation failed")
 	}
-	if err := lossBundle.Validate(); err != nil {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+	if err := lossBundle.Validate(params); err != nil {
 		return errorsmod.Wrap(err, "loss bundle validation failed")
 	}
 	key := collections.Join(topicId, block)
