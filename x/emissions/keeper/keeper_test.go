@@ -5127,6 +5127,8 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetricsWithHugeNumbe
 		BlockHeight: blockHeight,
 		Value:       alloraMath.MustNewDecFromString("1e+41"), // Very large number
 		Inferer:     s.addrsStr[0],
+		ExtraData:   []byte("data"),
+		Proof:       "",
 	}
 
 	// iterate through inferences and insert each one individually
@@ -5138,6 +5140,8 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetricsWithHugeNumbe
 		BlockHeight: blockHeight,
 		Value:       alloraMath.MustNewDecFromString("1e+39"), // Very large number
 		Inferer:     s.addrsStr[0],
+		ExtraData:   []byte("data"),
+		Proof:       "",
 	}
 	// iterate through inferences and insert each one individually
 	err = s.emissionsKeeper.InsertInference(s.ctx, topicId, inference1e39)
@@ -5839,6 +5843,8 @@ func (s *KeeperTestSuite) TestInsertInferenceDataValidation() {
 				BlockHeight: 100,
 				Value:       value,
 				Inferer:     inferer,
+				ExtraData:   []byte("data"),
+				Proof:       "",
 			}
 
 			// Try to insert the inference
@@ -5964,6 +5970,7 @@ func (s *KeeperTestSuite) TestInsertForecastDataValidation() {
 				BlockHeight:      1,
 				Forecaster:       forecaster,
 				ForecastElements: forecastElements,
+				ExtraData:        []byte("data"),
 			}
 
 			// Try to insert the forecast

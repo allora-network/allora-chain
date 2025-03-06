@@ -140,7 +140,7 @@ func (s *ValidationsTestSuite) TestValidateIncomingDataDec() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			params := types.Params{
+			params := types.Params{ //nolint:exhaustruct
 				DataLimitExponent: tc.exponent,
 			}
 
