@@ -669,3 +669,43 @@ func MedianAbsoluteDeviation(data []Dec) (medianAbsoluteDeviation Dec, median De
 
 	return medianAbsoluteDeviation, median, nil
 }
+
+// GetSmoothedAlpha computes a smoothing factor based on a given interval,
+// adjusting the exponential moving average update rate.
+// It generalizes the per-topic alpha calculation from Equation 54.
+func GetSmoothedAlpha(epochLength int64, baseIntervalDec Dec, baseAlpha Dec) (Dec, error) {
+	// Ensure epochLength and baseInterval are positive
+	if epochLength <= 0 {
+		return ZeroDec(), errorsmod.Wrap(ErrOutOfRange, "epochLength and baseInterval must be positive")
+	}
+	if baseIntervalDec.Lte(ZeroDec()) {
+		return ZeroDec(), errorsmod.Wrap(ErrOutOfRange, "baseInterval must be positive")
+	}
+
+	epochLengthDec := NewDecFromInt64(epochLength)
+	// Compute scaling factor (EpochLength / BaseInterval)
+	scalingFactor, err := epochLengthDec.Quo(baseIntervalDec)
+	if err != nil {
+		return ZeroDec(), errorsmod.Wrap(err, "error computing scaling factor")
+	}
+
+	// Compute (1 - baseAlpha)
+	oneMinusBaseAlpha, err := OneDec().Sub(baseAlpha)
+	if err != nil {
+		return ZeroDec(), errorsmod.Wrap(err, "error computing (1 - baseAlpha)")
+	}
+
+	// Compute (1 - baseAlpha)^(EpochLength / BaseInterval)
+	expTerm, err := Pow(oneMinusBaseAlpha, scalingFactor)
+	if err != nil {
+		return ZeroDec(), errorsmod.Wrap(err, "error computing exponentiation")
+	}
+
+	// Compute smoothed alpha: 1 - (1 - baseAlpha)^(EpochLength / BaseInterval)
+	smoothedAlpha, err := OneDec().Sub(expTerm)
+	if err != nil {
+		return ZeroDec(), errorsmod.Wrap(err, "error computing smoothed alpha")
+	}
+
+	return smoothedAlpha, nil
+}

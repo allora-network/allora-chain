@@ -42,6 +42,11 @@ func (k *Keeper) GetCurrentTopicWeight(
 	stakeImportance alloraMath.Dec,
 	feeImportance alloraMath.Dec,
 ) (weight alloraMath.Dec, topicRevenue cosmosMath.Int, err error) {
+	blocksPerWeek, err := k.calculateBlocksPerWeek(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate blocks per week")
+	}
+
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic stake")
@@ -80,12 +85,17 @@ func (k *Keeper) GetCurrentTopicWeight(
 		if err != nil {
 			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
 		}
-		weight, err = alloraMath.CalcEma(topicRewardAlpha, targetWeight, previousTopicWeight, noPrior)
+
+		// Calculate alpha
+		topicSmoothedAlpha, err := alloraMath.GetSmoothedAlpha(topicEpochLength, blocksPerWeek, topicRewardAlpha)
+		if err != nil {
+			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get smoothed alpha")
+		}
+		weightNew, err := alloraMath.CalcEma(topicSmoothedAlpha, targetWeight, previousTopicWeight, noPrior)
 		if err != nil {
 			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate EMA")
 		}
-
-		return weight, topicFeeRevenue, nil
+		return weightNew, topicFeeRevenue, nil
 	}
 
 	return alloraMath.ZeroDec(), topicFeeRevenue, nil

@@ -3170,7 +3170,7 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 
 // return the blocks per week
 // defined as the blocks per month divided by 4.345
-func calculateBlocksPerWeek(ctx sdk.Context, k Keeper) (alloraMath.Dec, error) {
+func (k *Keeper) calculateBlocksPerWeek(ctx context.Context) (alloraMath.Dec, error) {
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting params")
@@ -3243,7 +3243,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		ctx.Logger().Warn(fmt.Sprintf("Blocks per epoch is zero for topic %d. Skipping fee revenue drip.", topicId))
 		return nil
 	}
-	blocksPerWeek, err := calculateBlocksPerWeek(ctx, *k)
+	blocksPerWeek, err := k.calculateBlocksPerWeek(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "error calculating blocks per week")
 	}
