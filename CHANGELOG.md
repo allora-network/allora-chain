@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* [#764](https://github.com/allora-network/allora-chain/pull/764) TopicRewardAlpha using weekly cadence
+
 ### Deprecated
 
 ### Removed
