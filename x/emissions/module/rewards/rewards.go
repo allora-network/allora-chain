@@ -633,10 +633,17 @@ func payoutRewards(
 				ret = append(ret, errors.Wrapf(err, "failed to decode payout address: %s", reward.Address))
 				continue
 			}
+
+			nodeInfo, err := k.GetWorkerInfo(ctx, reward.Address)
+			if err != nil {
+				ret = append(ret, errors.Wrapf(err, "failed to get worker info: %s", reward.Address))
+				continue
+			}
+
 			err = k.SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraRewardsAccountName,
-				reward.Address,
+				nodeInfo.Owner,
 				coins,
 			)
 			if err != nil {
@@ -644,7 +651,7 @@ func payoutRewards(
 					err,
 					"failed to send coins from rewards module to payout address %s, %s",
 					types.AlloraRewardsAccountName,
-					reward.Address,
+					nodeInfo.Owner,
 				))
 				continue
 			}
