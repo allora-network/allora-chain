@@ -343,7 +343,7 @@ func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) 
 	}
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if errors.IsOf(err, types.ErrTopicAlreadyActive) || errors.IsOf(err, types.ErrTopicCannotBeActivated) {
+	if errors.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
 		sdkCtx.Logger().Info(fmt.Sprintf("Failed to add topic at next epoch %d, %d, %v", topicId, epochEndBlock, err))
 		return nil
 	} else if err != nil {
