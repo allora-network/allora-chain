@@ -4,8 +4,8 @@ package emissions.v9;
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "emissions/v3/reputer.proto";
-import "emissions/v3/worker.proto";
+import "emissions/v9/inputreputer.proto";
+import "emissions/v9/inputworker.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
@@ -257,7 +257,6 @@ message OptionalParams {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  repeated uint64 data_limit_exponent = 61 [(amino.dont_omitempty) = true];
 }
 
 message UpdateParamsRequest {
@@ -326,7 +325,7 @@ message InsertReputerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  emissions.v3.ReputerValueBundle reputer_value_bundle = 2;
+  BoundedReputerValueBundle reputer_value_bundle = 2;
 }
 
 message InsertReputerPayloadResponse {}
@@ -335,7 +334,7 @@ message InsertWorkerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  emissions.v3.WorkerDataBundle worker_data_bundle = 2;
+  BoundedWorkerDataBundle worker_data_bundle = 2;
 }
 
 message InsertWorkerPayloadResponse {}

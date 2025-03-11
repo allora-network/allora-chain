@@ -17,7 +17,7 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	worker string,
 	workerAddr sdk.AccAddress,
 ) (
-	reputerValueBundle types.ValueBundle,
+	reputerValueBundle types.BoundedValueBundle,
 	expectedInferences types.Inferences,
 	expectedForecasts types.Forecasts,
 	topicId uint64,
@@ -82,42 +82,49 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 		},
 	}
 
-	reputerValueBundle = types.ValueBundle{
+	reputerValueBundle = types.BoundedValueBundle{
 		TopicId:             topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &workerNonce},
 		Reputer:             reputerAddr.String(),
 		ExtraData:           nil,
-		CombinedValue:       alloraMath.NewDecFromInt64(100),
-		InfererValues: []*types.WorkerAttributedValue{
+		CombinedValue:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		InfererValues: []*types.BoundedWorkerAttributedValue{
 			{
 				Worker: workerAddr.String(),
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		ForecasterValues: []*types.WorkerAttributedValue{
+		ForecasterValues: []*types.BoundedWorkerAttributedValue{
 			{
 				Worker: workerAddr.String(),
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		NaiveValue:          alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+		NaiveValue:          alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		OneOutInfererValues: []*types.BoundedWithheldWorkerAttributedValue{},
+		OneOutForecasterValues: []*types.BoundedWithheldWorkerAttributedValue{
 			{
 				Worker: workerAddr.String(),
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
+		OneInForecasterValues: []*types.BoundedWorkerAttributedValue{
 			{
 				Worker: workerAddr.String(),
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
 		OneOutInfererForecasterValues: nil,
 	}
 
 	return reputerValueBundle, expectedInferences, expectedForecasts, topicId
+}
+
+func (s *MsgServerTestSuite) signBoundedValueBundle(boundedReputerValueBundle *types.BoundedValueBundle, privateKey secp256k1.PrivKey) []byte {
+	require := s.Require()
+	reputerValueBundle, err := boundedReputerValueBundle.Convert()
+	require.NoError(err, "Convert should not return an error")
+	return s.signValueBundle(reputerValueBundle, privateKey)
 }
 
 func (s *MsgServerTestSuite) signValueBundle(reputerValueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) []byte {
@@ -136,15 +143,15 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	reputerAddr sdk.AccAddress,
 	reputerPrivateKey secp256k1.PrivKey,
 	reputerPublicKeyHex string,
-	reputerValueBundle *types.ValueBundle,
+	reputerValueBundle *types.BoundedValueBundle,
 ) error {
 	ctx, msgServer := s.ctx, s.msgServer
-	valueBundleSignature := s.signValueBundle(reputerValueBundle, reputerPrivateKey)
+	valueBundleSignature := s.signBoundedValueBundle(reputerValueBundle, reputerPrivateKey)
 
 	// Create a InsertReputerPayloadRequest message
 	lossesMsg := &types.InsertReputerPayloadRequest{
 		Sender: reputerAddr.String(),
-		ReputerValueBundle: &types.ReputerValueBundle{
+		ReputerValueBundle: &types.BoundedReputerValueBundle{
 			ValueBundle: reputerValueBundle,
 			Signature:   valueBundleSignature,
 			Pubkey:      reputerPublicKeyHex,
@@ -240,12 +247,12 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	reputerValueBundle.Reputer = s.addrsStr[3]
-	valueBundleSignature := s.signValueBundle(&reputerValueBundle, reputerPrivateKey)
+	valueBundleSignature := s.signBoundedValueBundle(&reputerValueBundle, reputerPrivateKey)
 
 	// Create a InsertReputerPayloadRequest message
 	lossesMsg := &types.InsertReputerPayloadRequest{
 		Sender: reputerAddr.String(),
-		ReputerValueBundle: &types.ReputerValueBundle{
+		ReputerValueBundle: &types.BoundedReputerValueBundle{
 			ValueBundle: &reputerValueBundle,
 			Signature:   valueBundleSignature,
 			Pubkey:      reputerPublicKeyHex,

@@ -71,7 +71,6 @@ var (
 	fd_Params_global_admin_whitelist_appended           protoreflect.FieldDescriptor
 	fd_Params_max_whitelist_input_array_length          protoreflect.FieldDescriptor
 	fd_Params_min_weight_threshold_for_stdnorm          protoreflect.FieldDescriptor
-	fd_Params_data_limit_exponent                       protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -131,7 +130,6 @@ func init() {
 	fd_Params_global_admin_whitelist_appended = md_Params.Fields().ByName("global_admin_whitelist_appended")
 	fd_Params_max_whitelist_input_array_length = md_Params.Fields().ByName("max_whitelist_input_array_length")
 	fd_Params_min_weight_threshold_for_stdnorm = md_Params.Fields().ByName("min_weight_threshold_for_stdnorm")
-	fd_Params_data_limit_exponent = md_Params.Fields().ByName("data_limit_exponent")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -523,12 +521,6 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.DataLimitExponent != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.DataLimitExponent)
-		if !f(fd_Params_data_limit_exponent, value) {
-			return
-		}
-	}
 }
 
 // Has reports whether a field is populated.
@@ -652,8 +644,6 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.MaxWhitelistInputArrayLength != uint64(0)
 	case "emissions.v9.Params.min_weight_threshold_for_stdnorm":
 		return x.MinWeightThresholdForStdnorm != ""
-	case "emissions.v9.Params.data_limit_exponent":
-		return x.DataLimitExponent != uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.Params"))
@@ -778,8 +768,6 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.MaxWhitelistInputArrayLength = uint64(0)
 	case "emissions.v9.Params.min_weight_threshold_for_stdnorm":
 		x.MinWeightThresholdForStdnorm = ""
-	case "emissions.v9.Params.data_limit_exponent":
-		x.DataLimitExponent = uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.Params"))
@@ -958,9 +946,6 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v9.Params.min_weight_threshold_for_stdnorm":
 		value := x.MinWeightThresholdForStdnorm
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.Params.data_limit_exponent":
-		value := x.DataLimitExponent
-		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.Params"))
@@ -1089,8 +1074,6 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.MaxWhitelistInputArrayLength = value.Uint()
 	case "emissions.v9.Params.min_weight_threshold_for_stdnorm":
 		x.MinWeightThresholdForStdnorm = value.Interface().(string)
-	case "emissions.v9.Params.data_limit_exponent":
-		x.DataLimitExponent = value.Uint()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.Params"))
@@ -1219,8 +1202,6 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field max_whitelist_input_array_length of message emissions.v9.Params is not mutable"))
 	case "emissions.v9.Params.min_weight_threshold_for_stdnorm":
 		panic(fmt.Errorf("field min_weight_threshold_for_stdnorm of message emissions.v9.Params is not mutable"))
-	case "emissions.v9.Params.data_limit_exponent":
-		panic(fmt.Errorf("field data_limit_exponent of message emissions.v9.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.Params"))
@@ -1342,8 +1323,6 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v9.Params.min_weight_threshold_for_stdnorm":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.Params.data_limit_exponent":
-		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.Params"))
@@ -1604,9 +1583,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
-		if x.DataLimitExponent != 0 {
-			n += 2 + runtime.Sov(uint64(x.DataLimitExponent))
-		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -1635,13 +1611,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
-		}
-		if x.DataLimitExponent != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.DataLimitExponent))
-			i--
-			dAtA[i] = 0x3
-			i--
-			dAtA[i] = 0xe8
 		}
 		if len(x.MinWeightThresholdForStdnorm) > 0 {
 			i -= len(x.MinWeightThresholdForStdnorm)
@@ -3535,25 +3504,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.MinWeightThresholdForStdnorm = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 61:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DataLimitExponent", wireType)
-				}
-				x.DataLimitExponent = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.DataLimitExponent |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -3681,7 +3631,6 @@ type Params struct {
 	GlobalAdminWhitelistAppended       bool   `protobuf:"varint,58,opt,name=global_admin_whitelist_appended,json=globalAdminWhitelistAppended,proto3" json:"global_admin_whitelist_appended,omitempty"`
 	MaxWhitelistInputArrayLength       uint64 `protobuf:"varint,59,opt,name=max_whitelist_input_array_length,json=maxWhitelistInputArrayLength,proto3" json:"max_whitelist_input_array_length,omitempty"`
 	MinWeightThresholdForStdnorm       string `protobuf:"bytes,60,opt,name=min_weight_threshold_for_stdnorm,json=minWeightThresholdForStdnorm,proto3" json:"min_weight_threshold_for_stdnorm,omitempty"`
-	DataLimitExponent                  uint64 `protobuf:"varint,61,opt,name=data_limit_exponent,json=dataLimitExponent,proto3" json:"data_limit_exponent,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -4082,13 +4031,6 @@ func (x *Params) GetMinWeightThresholdForStdnorm() string {
 	return ""
 }
 
-func (x *Params) GetDataLimitExponent() uint64 {
-	if x != nil {
-		return x.DataLimitExponent
-	}
-	return 0
-}
-
 var File_emissions_v9_params_proto protoreflect.FileDescriptor
 
 var file_emissions_v9_params_proto_rawDesc = []byte{
@@ -4098,7 +4040,7 @@ var file_emissions_v9_params_proto_rawDesc = []byte{
 	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f,
 	0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
 	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe4, 0x25,
+	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb4, 0x25,
 	0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73,
 	0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x12, 0x39, 0x0a, 0x19, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x65, 0x72, 0x69, 0x61, 0x6c,
@@ -4386,10 +4328,7 @@ var file_emissions_v9_params_proto_rawDesc = []byte{
 	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68,
 	0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x1c, 0x6d, 0x69,
 	0x6e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x54, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64,
-	0x46, 0x6f, 0x72, 0x53, 0x74, 0x64, 0x6e, 0x6f, 0x72, 0x6d, 0x12, 0x2e, 0x0a, 0x13, 0x64, 0x61,
-	0x74, 0x61, 0x5f, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x5f, 0x65, 0x78, 0x70, 0x6f, 0x6e, 0x65, 0x6e,
-	0x74, 0x18, 0x3d, 0x20, 0x01, 0x28, 0x04, 0x52, 0x11, 0x64, 0x61, 0x74, 0x61, 0x4c, 0x69, 0x6d,
-	0x69, 0x74, 0x45, 0x78, 0x70, 0x6f, 0x6e, 0x65, 0x6e, 0x74, 0x4a, 0x04, 0x08, 0x04, 0x10, 0x05,
+	0x46, 0x6f, 0x72, 0x53, 0x74, 0x64, 0x6e, 0x6f, 0x72, 0x6d, 0x4a, 0x04, 0x08, 0x04, 0x10, 0x05,
 	0x4a, 0x04, 0x08, 0x1a, 0x10, 0x1b, 0x4a, 0x04, 0x08, 0x1b, 0x10, 0x1c, 0x4a, 0x04, 0x08, 0x27,
 	0x10, 0x28, 0x4a, 0x04, 0x08, 0x29, 0x10, 0x2a, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x5f, 0x74, 0x6f,
 	0x70, 0x69, 0x63, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x1b,

@@ -325,7 +325,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//Inferences []*TopicIdActorIdInference
 	for _, topicIdActorIdInference := range data.Inferences {
 		if topicIdActorIdInference != nil {
-			if err := topicIdActorIdInference.Inference.Validate(data.Params); err != nil {
+			if err := topicIdActorIdInference.Inference.Validate(); err != nil {
 				return errors.Wrap(err, "inference in list is invalid")
 			}
 			if err := k.inferences.Set(ctx,
@@ -341,7 +341,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// Forecasts []*TopicIdActorIdForecast
 	for _, topicIdActorIdForecast := range data.Forecasts {
 		if topicIdActorIdForecast != nil {
-			if err := topicIdActorIdForecast.Forecast.Validate(data.Params); err != nil {
+			if err := topicIdActorIdForecast.Forecast.Validate(); err != nil {
 				return errors.Wrap(err, "forecast in list is invalid")
 			}
 			if err := k.forecasts.Set(ctx,
@@ -416,7 +416,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		if topicIdBlockHeightInferences != nil {
 			for _, inference := range topicIdBlockHeightInferences.Inferences.Inferences {
 				if inference != nil {
-					if err := inference.Validate(data.Params); err != nil {
+					if err := inference.Validate(); err != nil {
 						return errors.Wrap(err, "inference validation failed")
 					}
 				}
@@ -433,7 +433,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		if topicIdBlockHeightForecasts != nil {
 			for _, forecast := range topicIdBlockHeightForecasts.Forecasts.Forecasts {
 				if forecast != nil {
-					if err := forecast.Validate(data.Params); err != nil {
+					if err := forecast.Validate(); err != nil {
 						return errors.Wrap(err, "forecast validation failed")
 					}
 				}
@@ -449,7 +449,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//AllLossBundles []*TopicIdBlockHeightReputerValueBundles
 	for _, topicIdBlockHeightReputerValueBundles := range data.AllLossBundles {
 		if topicIdBlockHeightReputerValueBundles != nil {
-			if err := topicIdBlockHeightReputerValueBundles.ReputerValueBundles.Validate(data.Params); err != nil {
+			if err := topicIdBlockHeightReputerValueBundles.ReputerValueBundles.Validate(); err != nil {
 				return errors.Wrap(err, "reputer value bundles validation failed")
 			}
 			if err := k.allLossBundles.Set(ctx,
@@ -463,7 +463,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//NetworkLossBundles []*TopicIdBlockHeightValueBundles
 	for _, topicIdBlockHeightValueBundles := range data.NetworkLossBundles {
 		if topicIdBlockHeightValueBundles != nil {
-			if err := topicIdBlockHeightValueBundles.ValueBundle.Validate(data.Params); err != nil {
+			if err := topicIdBlockHeightValueBundles.ValueBundle.Validate(); err != nil {
 				return errors.Wrap(err, "value bundle validation failed")
 			}
 			if err := k.networkLossBundles.Set(ctx,

@@ -96,7 +96,6 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			GlobalAdminWhitelistAppended:        nil,
 			MaxWhitelistInputArrayLength:        nil,
 			MinWeightThresholdForStdnorm:        nil,
-			DataLimitExponent:                   nil,
 		},
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)
@@ -164,7 +163,6 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			GlobalAdminWhitelistAppended:        nil,
 			MaxWhitelistInputArrayLength:        nil,
 			MinWeightThresholdForStdnorm:        nil,
-			DataLimitExponent:                   nil,
 		},
 	}
 	_, err = m.Client.BroadcastTx(ctx, m.BobAcc, updateParamRequest)
@@ -236,7 +234,6 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			GlobalAdminWhitelistAppended:        nil,
 			MaxWhitelistInputArrayLength:        nil,
 			MinWeightThresholdForStdnorm:        nil,
-			DataLimitExponent:                   nil,
 		},
 	}
 	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)

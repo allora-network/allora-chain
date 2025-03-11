@@ -137,7 +137,6 @@ func (s *EmissionsV8MigrationTestSuite) TestMigrateParams() {
 	s.Require().NoError(err)
 
 	// TO BE ADDED VIA DEFAULT PARAMS:
-	// DataLimitExponent
 	paramsExpected := defaultParams
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -196,6 +195,4 @@ func (s *EmissionsV8MigrationTestSuite) TestMigrateParams() {
 	s.Require().True(paramsExpected.GlobalAdminWhitelistAppended)
 	s.Require().Equal(paramsExpected.MaxWhitelistInputArrayLength, params.MaxWhitelistInputArrayLength)
 	s.Require().Equal(paramsExpected.MinWeightThresholdForStdnorm, params.MinWeightThresholdForStdnorm)
-	// new params
-	s.Require().Equal(paramsExpected.DataLimitExponent, params.DataLimitExponent)
 }

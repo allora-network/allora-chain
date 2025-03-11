@@ -4,4 +4,4 @@ This package contains the logic from the Inference Synthesis Section of the Allo
 
 # Incoming Data Limitation
 
-The numerical data uses a large Decimal type. Incoming data is limited by the `DataLimitExponent` parameter in the `Params` struct.
+The internal numerical data uses a large Decimal type. However, the incoming data layer imposes limitations on the values that can be sent.

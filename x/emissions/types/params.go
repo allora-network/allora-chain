@@ -66,7 +66,6 @@ func DefaultParams() Params {
 		GlobalAdminWhitelistAppended:        true,                                         // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
 		MaxWhitelistInputArrayLength:        uint64(2000),                                 // maximum length of input arrays for whitelist operations
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),  // minimum weight threshold for stdnorm calculation
-		DataLimitExponent:                   uint64(40),                                   // data limit exponent
 	}
 }
 
@@ -227,9 +226,6 @@ func (p Params) Validate() error {
 	}
 	if err := validateMinWeightThresholdForStdnorm(p.MinWeightThresholdForStdnorm); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: min weight threshold for stdnorm")
-	}
-	if err := validateDataLimitExponent(p.DataLimitExponent); err != nil {
-		return errorsmod.Wrap(err, "params validation failure: data limit exponent")
 	}
 	return nil
 }
@@ -696,16 +692,6 @@ func validateMinWeightThresholdForStdnorm(i alloraMath.Dec) error {
 		return err
 	} else if i.IsNegative() {
 		return ErrValidationMustBeGreaterthanZero
-	}
-	return nil
-}
-
-func validateDataLimitExponent(i uint64) error {
-	if i == 0 {
-		return ErrValidationMustBeGreaterthanZero
-	}
-	if i > 100000 {
-		return ErrInvalidValue
 	}
 	return nil
 }

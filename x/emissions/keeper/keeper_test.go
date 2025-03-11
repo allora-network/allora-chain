@@ -4003,7 +4003,6 @@ func mockUninitializedParams() types.Params {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
-		DataLimitExponent:                   uint64(40),
 	}
 }
 
@@ -5116,38 +5115,6 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 	s.Require().Equal(alloraMath.NewDecFromInt64(50), median)
 }
 
-func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetricsWithHugeNumbers() {
-	// Create one topic
-	topicId := s.CreateOneTopic(10800)
-	blockHeight := int64(1)
-
-	// Create inferences with extremely large values
-	inference1e41 := types.Inference{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("1e+41"), // Very large number
-		Inferer:     s.addrsStr[0],
-		ExtraData:   []byte("data"),
-		Proof:       "",
-	}
-
-	// iterate through inferences and insert each one individually
-	err := s.emissionsKeeper.InsertInference(s.ctx, topicId, inference1e41)
-	s.Require().Error(err)
-
-	inference1e39 := types.Inference{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("1e+39"), // Very large number
-		Inferer:     s.addrsStr[0],
-		ExtraData:   []byte("data"),
-		Proof:       "",
-	}
-	// iterate through inferences and insert each one individually
-	err = s.emissionsKeeper.InsertInference(s.ctx, topicId, inference1e39)
-	s.Require().NoError(err)
-}
-
 func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 	topicId := s.CreateOneTopic(10800)
 
@@ -5726,419 +5693,416 @@ func (s *KeeperTestSuite) TestLatestRegretStdNormFunctions() {
 	s.Require().Error(err, "Setting zero regret stdNorm should fail")
 }
 
-func (s *KeeperTestSuite) TestInsertInferenceDataValidation() {
+// func (s *KeeperTestSuite) TestInsertInferenceDataValidation() {
 
-	testCases := []struct {
-		name        string
-		value       string
-		exponent    uint64
-		expectError bool
-	}{
-		// Zero value tests
-		{
-			name:        "zero value is valid",
-			value:       "0",
-			exponent:    40,
-			expectError: false,
-		},
+// 	testCases := []struct {
+// 		name        string
+// 		value       string
+// 		exponent    uint64
+// 		expectError bool
+// 	}{
+// 		// Zero value tests
+// 		{
+// 			name:        "zero value is valid",
+// 			value:       "0",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
 
-		// Positive boundary tests
-		{
-			name:        "positive value at max boundary (1e+40)",
-			value:       "1e+40",
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "positive value above max boundary (1e+41)",
-			value:       "1e+41",
-			exponent:    40,
-			expectError: true,
-		},
-		{
-			name:        "positive value below max boundary (1e+39)",
-			value:       "1e+39",
-			exponent:    40,
-			expectError: false,
-		},
+// 		// Positive boundary tests
+// 		{
+// 			name:        "positive value at max boundary (1e+40)",
+// 			value:       "1e+40",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "positive value above max boundary (1e+41)",
+// 			value:       "1e+41",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 		{
+// 			name:        "positive value below max boundary (1e+39)",
+// 			value:       "1e+39",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
 
-		// Negative boundary tests
-		{
-			name:        "negative value at min boundary (-1e+40)",
-			value:       "-1e+40",
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "negative value below min boundary (-1e+41)",
-			value:       "-1e+41",
-			exponent:    40,
-			expectError: true,
-		},
+// 		// Negative boundary tests
+// 		{
+// 			name:        "negative value at min boundary (-1e+40)",
+// 			value:       "-1e+40",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "negative value below min boundary (-1e+41)",
+// 			value:       "-1e+41",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
 
-		// Precision boundary tests
-		{
-			name:        "positive value at min precision boundary (1e-40)",
-			value:       "1e-40",
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "positive value below min precision boundary (1e-41)",
-			value:       "1e-41",
-			exponent:    40,
-			expectError: true,
-		},
+// 		// Precision boundary tests
+// 		{
+// 			name:        "positive value at min precision boundary (1e-40)",
+// 			value:       "1e-40",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "positive value below min precision boundary (1e-41)",
+// 			value:       "1e-41",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
 
-		// Normal value tests
-		{
-			name:        "normal positive decimal",
-			value:       "123.456",
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "normal negative decimal",
-			value:       "-123.456",
-			exponent:    40,
-			expectError: false,
-		},
+// 		// Normal value tests
+// 		{
+// 			name:        "normal positive decimal",
+// 			value:       "123.456",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "normal negative decimal",
+// 			value:       "-123.456",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
 
-		// Extreme value tests
-		{
-			name:        "extremely large positive value",
-			value:       "1e+100000",
-			exponent:    40,
-			expectError: true,
-		},
-		{
-			name:        "extremely small positive value",
-			value:       "1e-100000",
-			exponent:    40,
-			expectError: true,
-		},
-	}
+// 		// Extreme value tests
+// 		{
+// 			name:        "extremely large positive value",
+// 			value:       "1e+100000",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 		{
+// 			name:        "extremely small positive value",
+// 			value:       "1e-100000",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 	}
 
-	topicId := s.CreateOneTopic(10800)
-	inferer := s.addrsStr[0]
+// 	topicId := s.CreateOneTopic(10800)
+// 	inferer := s.addrsStr[0]
 
-	for _, tc := range testCases {
-		s.Run(tc.name, func() {
-			// Create a keeper with test parameters
-			ctx := s.ctx
-			k := s.emissionsKeeper
+// 	for _, tc := range testCases {
+// 		s.Run(tc.name, func() {
+// 			// Create a keeper with test parameters
+// 			ctx := s.ctx
+// 			k := s.emissionsKeeper
 
-			// Set params with test exponent
-			params := types.DefaultParams()
-			params.DataLimitExponent = tc.exponent
-			err := k.SetParams(ctx, params)
-			s.Require().NoError(err)
+// 			// Set params with test exponent
+// 			params := types.DefaultParams()
+// 			err := k.SetParams(ctx, params)
+// 			s.Require().NoError(err)
 
-			// Create test inference
-			value, err := alloraMath.NewDecFromString(tc.value)
-			s.Require().NoError(err, "Error creating decimal from string")
+// 			// Create test inference
+// 			value, err := alloraMath.NewDecFromString(tc.value)
+// 			s.Require().NoError(err, "Error creating decimal from string")
 
-			inference := types.Inference{
-				TopicId:     topicId,
-				BlockHeight: 100,
-				Value:       value,
-				Inferer:     inferer,
-				ExtraData:   []byte("data"),
-				Proof:       "",
-			}
+// 			inference := types.Inference{
+// 				TopicId:     topicId,
+// 				BlockHeight: 100,
+// 				Value:       value,
+// 				Inferer:     inferer,
+// 				ExtraData:   []byte("data"),
+// 				Proof:       "",
+// 			}
 
-			// Try to insert the inference
-			err = k.InsertInference(ctx, topicId, inference)
+// 			// Try to insert the inference
+// 			err = k.InsertInference(ctx, topicId, inference)
 
-			if tc.expectError {
-				s.Require().Error(err, "Expected insertion error for value %s", tc.value)
-			} else {
-				s.Require().NoError(err, "Expected no insertion error for value %s", tc.value)
-			}
-		})
-	}
-}
+// 			if tc.expectError {
+// 				s.Require().Error(err, "Expected insertion error for value %s", tc.value)
+// 			} else {
+// 				s.Require().NoError(err, "Expected no insertion error for value %s", tc.value)
+// 			}
+// 		})
+// 	}
+// }
 
-func (s *KeeperTestSuite) TestInsertForecastDataValidation() {
-	testCases := []struct {
-		name        string
-		values      []string
-		exponent    uint64
-		expectError bool
-	}{
-		// Zero value tests
-		{
-			name:        "zero values are valid",
-			values:      []string{"0", "0", "0"},
-			exponent:    40,
-			expectError: false,
-		},
-		// Positive boundary tests
-		{
-			name:        "positive values at max boundary (1e+40)",
-			values:      []string{"1e+40", "1e+40", "1e+40"},
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "one value above max boundary (1e+41)",
-			values:      []string{"1e+40", "1e+41", "1e+40"},
-			exponent:    40,
-			expectError: true,
-		},
-		{
-			name:        "positive values below max boundary (1e+39)",
-			values:      []string{"1e+39", "1e+39", "1e+39"},
-			exponent:    40,
-			expectError: false,
-		},
-		// Negative boundary tests
-		{
-			name:        "negative values at min boundary (-1e+40)",
-			values:      []string{"-1e+40", "-1e+40", "-1e+40"},
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "one value below min boundary (-1e+41)",
-			values:      []string{"-1e+40", "-1e+41", "-1e+40"},
-			exponent:    40,
-			expectError: true,
-		},
+// func (s *KeeperTestSuite) TestInsertForecastDataValidation() {
+// 	testCases := []struct {
+// 		name        string
+// 		values      []string
+// 		exponent    uint64
+// 		expectError bool
+// 	}{
+// 		// Zero value tests
+// 		{
+// 			name:        "zero values are valid",
+// 			values:      []string{"0", "0", "0"},
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		// Positive boundary tests
+// 		{
+// 			name:        "positive values at max boundary (1e+40)",
+// 			values:      []string{"1e+40", "1e+40", "1e+40"},
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "one value above max boundary (1e+41)",
+// 			values:      []string{"1e+40", "1e+41", "1e+40"},
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 		{
+// 			name:        "positive values below max boundary (1e+39)",
+// 			values:      []string{"1e+39", "1e+39", "1e+39"},
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		// Negative boundary tests
+// 		{
+// 			name:        "negative values at min boundary (-1e+40)",
+// 			values:      []string{"-1e+40", "-1e+40", "-1e+40"},
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "one value below min boundary (-1e+41)",
+// 			values:      []string{"-1e+40", "-1e+41", "-1e+40"},
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
 
-		// Precision boundary tests
-		{
-			name:        "values at min precision boundary (1e-40)",
-			values:      []string{"1e-40", "1e-40", "1e-40"},
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "one value below min precision boundary (1e-41)",
-			values:      []string{"1e-40", "1e-41", "1e-40"},
-			exponent:    40,
-			expectError: true,
-		},
+// 		// Precision boundary tests
+// 		{
+// 			name:        "values at min precision boundary (1e-40)",
+// 			values:      []string{"1e-40", "1e-40", "1e-40"},
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "one value below min precision boundary (1e-41)",
+// 			values:      []string{"1e-40", "1e-41", "1e-40"},
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
 
-		// Mixed normal value tests
-		{
-			name:        "mixed normal decimals",
-			values:      []string{"123.456", "-789.012", "345.678"},
-			exponent:    40,
-			expectError: false,
-		},
+// 		// Mixed normal value tests
+// 		{
+// 			name:        "mixed normal decimals",
+// 			values:      []string{"123.456", "-789.012", "345.678"},
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
 
-		// Extreme value tests
-		{
-			name:        "one extremely large value",
-			values:      []string{"123.456", "1e+100000", "345.678"},
-			exponent:    40,
-			expectError: true,
-		},
-		{
-			name:        "one extremely small value",
-			values:      []string{"123.456", "1e-100000", "345.678"},
-			exponent:    40,
-			expectError: true,
-		},
-	}
+// 		// Extreme value tests
+// 		{
+// 			name:        "one extremely large value",
+// 			values:      []string{"123.456", "1e+100000", "345.678"},
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 		{
+// 			name:        "one extremely small value",
+// 			values:      []string{"123.456", "1e-100000", "345.678"},
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 	}
 
-	topicId := s.CreateOneTopic(10800)
-	forecaster := s.addrsStr[0]
-	// inferers from 1 to 3
-	for _, tc := range testCases {
-		s.Run(tc.name, func() {
-			// Set params with test exponent
-			params := types.DefaultParams()
-			params.DataLimitExponent = tc.exponent
-			err := s.emissionsKeeper.SetParams(s.ctx, params)
-			s.Require().NoError(err)
+// 	topicId := s.CreateOneTopic(10800)
+// 	forecaster := s.addrsStr[0]
+// 	// inferers from 1 to 3
+// 	for _, tc := range testCases {
+// 		s.Run(tc.name, func() {
+// 			// Set params with test exponent
+// 			params := types.DefaultParams()
+// 			err := s.emissionsKeeper.SetParams(s.ctx, params)
+// 			s.Require().NoError(err)
 
-			forecastElements := make([]*types.ForecastElement, len(tc.values))
-			for i, valueStr := range tc.values {
-				value, err := alloraMath.NewDecFromString(valueStr)
-				s.Require().NoError(err, "Error creating decimal from string")
+// 			forecastElements := make([]*types.ForecastElement, len(tc.values))
+// 			for i, valueStr := range tc.values {
+// 				value, err := alloraMath.NewDecFromString(valueStr)
+// 				s.Require().NoError(err, "Error creating decimal from string")
 
-				forecastElements[i] = &types.ForecastElement{
-					Inferer: s.addrsStr[i+1],
-					Value:   value,
-				}
-			}
+// 				forecastElements[i] = &types.ForecastElement{
+// 					Inferer: s.addrsStr[i+1],
+// 					Value:   value,
+// 				}
+// 			}
 
-			forecast := types.Forecast{
-				TopicId:          topicId,
-				BlockHeight:      1,
-				Forecaster:       forecaster,
-				ForecastElements: forecastElements,
-				ExtraData:        []byte("data"),
-			}
+// 			forecast := types.Forecast{
+// 				TopicId:          topicId,
+// 				BlockHeight:      1,
+// 				Forecaster:       forecaster,
+// 				ForecastElements: forecastElements,
+// 				ExtraData:        []byte("data"),
+// 			}
 
-			// Try to insert the forecast
-			err = s.emissionsKeeper.InsertForecast(s.ctx, topicId, forecast)
+// 			// Try to insert the forecast
+// 			err = s.emissionsKeeper.InsertForecast(s.ctx, topicId, forecast)
 
-			if tc.expectError {
-				s.Require().Error(err, "Expected insertion error for values %v", tc.values)
-			} else {
-				s.Require().NoError(err, "Expected no insertion error for values %v", tc.values)
-			}
-		})
-	}
-}
+// 			if tc.expectError {
+// 				s.Require().Error(err, "Expected insertion error for values %v", tc.values)
+// 			} else {
+// 				s.Require().NoError(err, "Expected no insertion error for values %v", tc.values)
+// 			}
+// 		})
+// 	}
+// }
 
-func (s *KeeperTestSuite) TestInsertReputerLossDataValidation() {
-	testCases := []struct {
-		name        string
-		value       string
-		exponent    uint64
-		expectError bool
-	}{
-		// Zero value tests
-		{
-			name:        "zero value is valid",
-			value:       "0",
-			exponent:    40,
-			expectError: false,
-		},
-		// Positive boundary tests
-		{
-			name:        "positive value at max boundary (1e+40)",
-			value:       "1e+40",
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "positive value above max boundary (1e+41)",
-			value:       "1e+41",
-			exponent:    40,
-			expectError: true,
-		},
-		// Negative boundary tests
-		{
-			name:        "negative value at min boundary (-1e+40)",
-			value:       "-1e+40",
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "negative value below min boundary (-1e+41)",
-			value:       "-1e+41",
-			exponent:    40,
-			expectError: true,
-		},
-		// Precision boundary tests
-		{
-			name:        "value at min precision boundary (1e-40)",
-			value:       "1e-40",
-			exponent:    40,
-			expectError: false,
-		},
-		{
-			name:        "value below min precision boundary (1e-41)",
-			value:       "1e-41",
-			exponent:    40,
-			expectError: true,
-		},
-		// Normal value tests
-		{
-			name:        "normal decimal",
-			value:       "123.456",
-			exponent:    40,
-			expectError: false,
-		},
-		// Extreme value tests
-		{
-			name:        "extremely large value",
-			value:       "1e+100000",
-			exponent:    40,
-			expectError: true,
-		},
-	}
+// func (s *KeeperTestSuite) TestInsertReputerLossDataValidation() {
+// 	testCases := []struct {
+// 		name        string
+// 		value       string
+// 		exponent    uint64
+// 		expectError bool
+// 	}{
+// 		// Zero value tests
+// 		{
+// 			name:        "zero value is valid",
+// 			value:       "0",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		// Positive boundary tests
+// 		{
+// 			name:        "positive value at max boundary (1e+40)",
+// 			value:       "1e+40",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "positive value above max boundary (1e+41)",
+// 			value:       "1e+41",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 		// Negative boundary tests
+// 		{
+// 			name:        "negative value at min boundary (-1e+40)",
+// 			value:       "-1e+40",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "negative value below min boundary (-1e+41)",
+// 			value:       "-1e+41",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 		// Precision boundary tests
+// 		{
+// 			name:        "value at min precision boundary (1e-40)",
+// 			value:       "1e-40",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		{
+// 			name:        "value below min precision boundary (1e-41)",
+// 			value:       "1e-41",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 		// Normal value tests
+// 		{
+// 			name:        "normal decimal",
+// 			value:       "123.456",
+// 			exponent:    40,
+// 			expectError: false,
+// 		},
+// 		// Extreme value tests
+// 		{
+// 			name:        "extremely large value",
+// 			value:       "1e+100000",
+// 			exponent:    40,
+// 			expectError: true,
+// 		},
+// 	}
 
-	topicId := s.CreateOneTopic(10800)
+// 	topicId := s.CreateOneTopic(10800)
 
-	for _, tc := range testCases {
-		s.Run(tc.name, func() {
-			// Set params with test exponent
-			params := types.DefaultParams()
-			params.DataLimitExponent = tc.exponent
-			err := s.emissionsKeeper.SetParams(s.ctx, params)
-			s.Require().NoError(err)
+// 	for _, tc := range testCases {
+// 		s.Run(tc.name, func() {
+// 			// Set params with test exponent
+// 			params := types.DefaultParams()
+// 			err := s.emissionsKeeper.SetParams(s.ctx, params)
+// 			s.Require().NoError(err)
 
-			value, err := alloraMath.NewDecFromString(tc.value)
-			s.Require().NoError(err, "Error creating decimal from string")
+// 			value, err := alloraMath.NewDecFromString(tc.value)
+// 			s.Require().NoError(err, "Error creating decimal from string")
 
-			// Create value bundle with populated arrays
-			valueBundle := &types.ValueBundle{
-				Reputer: s.addrsStr[0],
-				ReputerRequestNonce: &types.ReputerRequestNonce{
-					ReputerNonce: &types.Nonce{BlockHeight: 100},
-				},
-				TopicId:       topicId,
-				CombinedValue: value,
-				ExtraData:     []byte("data"),
-				// Add single entries to each array with the same test value
-				InfererValues: []*types.WorkerAttributedValue{
-					{
-						Worker: s.addrsStr[1],
-						Value:  value,
-					},
-				},
-				ForecasterValues: []*types.WorkerAttributedValue{
-					{
-						Worker: s.addrsStr[2],
-						Value:  value,
-					},
-				},
-				NaiveValue: value,
-				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-					{
-						Worker: s.addrsStr[1],
-						Value:  value,
-					},
-				},
-				OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-					{
-						Worker: s.addrsStr[2],
-						Value:  value,
-					},
-				},
-				OneInForecasterValues: []*types.WorkerAttributedValue{
-					{
-						Worker: s.addrsStr[2],
-						Value:  value,
-					},
-				},
-				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
-					{
-						Forecaster: s.addrsStr[2],
-						OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-							{
-								Worker: s.addrsStr[1],
-								Value:  value,
-							},
-						},
-					},
-				},
-			}
+// 			// Create value bundle with populated arrays
+// 			valueBundle := &types.ValueBundle{
+// 				Reputer: s.addrsStr[0],
+// 				ReputerRequestNonce: &types.ReputerRequestNonce{
+// 					ReputerNonce: &types.Nonce{BlockHeight: 100},
+// 				},
+// 				TopicId:       topicId,
+// 				CombinedValue: value,
+// 				ExtraData:     []byte("data"),
+// 				// Add single entries to each array with the same test value
+// 				InfererValues: []*types.WorkerAttributedValue{
+// 					{
+// 						Worker: s.addrsStr[1],
+// 						Value:  value,
+// 					},
+// 				},
+// 				ForecasterValues: []*types.WorkerAttributedValue{
+// 					{
+// 						Worker: s.addrsStr[2],
+// 						Value:  value,
+// 					},
+// 				},
+// 				NaiveValue: value,
+// 				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+// 					{
+// 						Worker: s.addrsStr[1],
+// 						Value:  value,
+// 					},
+// 				},
+// 				OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+// 					{
+// 						Worker: s.addrsStr[2],
+// 						Value:  value,
+// 					},
+// 				},
+// 				OneInForecasterValues: []*types.WorkerAttributedValue{
+// 					{
+// 						Worker: s.addrsStr[2],
+// 						Value:  value,
+// 					},
+// 				},
+// 				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+// 					{
+// 						Forecaster: s.addrsStr[2],
+// 						OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+// 							{
+// 								Worker: s.addrsStr[1],
+// 								Value:  value,
+// 							},
+// 						},
+// 					},
+// 				},
+// 			}
 
-			// Sign the value bundle
-			signature := s.signValueBundle(valueBundle, s.privKeys[0])
+// 			// Sign the value bundle
+// 			signature := s.signValueBundle(valueBundle, s.privKeys[0])
 
-			// Create reputer value bundle
-			reputerValueBundle := types.ReputerValueBundle{
-				ValueBundle: valueBundle,
-				Signature:   signature,
-				Pubkey:      s.pubKeyHexStr[0],
-			}
+// 			// Create reputer value bundle
+// 			reputerValueBundle := types.ReputerValueBundle{
+// 				ValueBundle: valueBundle,
+// 				Signature:   signature,
+// 				Pubkey:      s.pubKeyHexStr[0],
+// 			}
 
-			// Try to insert the reputer loss
-			err = s.emissionsKeeper.InsertReputerLoss(s.ctx, topicId, reputerValueBundle)
+// 			// Try to insert the reputer loss
+// 			err = s.emissionsKeeper.InsertReputerLoss(s.ctx, topicId, reputerValueBundle)
 
-			if tc.expectError {
-				s.Require().Error(err, "Expected insertion error for value %s", tc.value)
-			} else {
-				s.Require().NoError(err, "Expected no insertion error for value %s", tc.value)
-			}
-		})
-	}
-}
+// 			if tc.expectError {
+// 				s.Require().Error(err, "Expected insertion error for value %s", tc.value)
+// 			} else {
+// 				s.Require().NoError(err, "Expected no insertion error for value %s", tc.value)
+// 			}
+// 		})
+// 	}
+// }

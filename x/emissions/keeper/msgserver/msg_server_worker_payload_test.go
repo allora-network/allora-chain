@@ -62,39 +62,39 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := types.InsertWorkerPayloadRequest{
 		Sender: worker,
-		WorkerDataBundle: &types.WorkerDataBundle{
+		WorkerDataBundle: &types.BoundedWorkerDataBundle{
 			Worker:  worker,
 			Nonce:   &nonce,
 			TopicId: topic.Id,
-			InferenceForecastsBundle: &types.InferenceForecastBundle{
-				Inference: &types.Inference{
+			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
+				Inference: &types.BoundedInference{
 					TopicId:     topic.Id,
 					BlockHeight: nonce.BlockHeight,
 					Inferer:     worker,
-					Value:       alloraMath.NewDecFromInt64(100),
+					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.Forecast{
+				Forecast: &types.BoundedForecast{
 					TopicId:     topic.Id,
 					BlockHeight: nonce.BlockHeight,
 					Forecaster:  worker,
-					ForecastElements: []*types.ForecastElement{
+					ForecastElements: []*types.BoundedForecastElement{
 						{
 							Inferer: worker,
-							Value:   alloraMath.NewDecFromInt64(100),
+							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 						},
 						{
 							Inferer: Inferer2,
-							Value:   alloraMath.NewDecFromInt64(101),
+							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(101)),
 						},
 						{
 							Inferer: Inferer3,
-							Value:   alloraMath.NewDecFromInt64(102),
+							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(102)),
 						},
 						{
 							Inferer: Inferer4,
-							Value:   alloraMath.NewDecFromInt64(103),
+							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(103)),
 						},
 					},
 					ExtraData: nil,
@@ -372,7 +372,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 		GlobalAdminWhitelistAppended:        nil,
 		MaxWhitelistInputArrayLength:        nil,
 		MinWeightThresholdForStdnorm:        nil,
-		DataLimitExponent:                   nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -524,7 +523,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 	// BEGIN MODIFICATION
 	forecast := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast
 	originalElement := forecast.ForecastElements[0]
-	duplicateElement := &types.ForecastElement{
+	duplicateElement := &types.BoundedForecastElement{
 		Inferer: originalElement.Inferer,
 		Value:   originalElement.Value,
 	}
@@ -589,31 +588,31 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	require.NoError(err)
 	s.CreateOneTopic()
 
-	forecastElements := []*types.ForecastElement{}
+	forecastElements := []*types.BoundedForecastElement{}
 	for i := 0; i < 1000000; i++ {
-		forecastElements = append(forecastElements, &types.ForecastElement{
+		forecastElements = append(forecastElements, &types.BoundedForecastElement{
 			Inferer: InfererAddr,
-			Value:   alloraMath.NewDecFromInt64(100),
+			Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 		})
 	}
 
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: worker,
-		WorkerDataBundle: &types.WorkerDataBundle{
+		WorkerDataBundle: &types.BoundedWorkerDataBundle{
 			TopicId: topicId,
 			Worker:  InfererAddr,
 			Nonce:   &nonce,
-			InferenceForecastsBundle: &types.InferenceForecastBundle{
-				Inference: &types.Inference{
+			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
+				Inference: &types.BoundedInference{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
 					Inferer:     InfererAddr,
-					Value:       alloraMath.NewDecFromInt64(100),
+					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.Forecast{
+				Forecast: &types.BoundedForecast{
 					TopicId:          topicId,
 					BlockHeight:      nonce.BlockHeight,
 					Forecaster:       ForecasterAddr,
@@ -676,31 +675,31 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: worker,
-		WorkerDataBundle: &types.WorkerDataBundle{
+		WorkerDataBundle: &types.BoundedWorkerDataBundle{
 			Worker:  Inferer,
 			TopicId: topicId,
 			Nonce:   &nonce,
-			InferenceForecastsBundle: &types.InferenceForecastBundle{
-				Inference: &types.Inference{
+			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
+				Inference: &types.BoundedInference{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
 					Inferer:     Inferer,
-					Value:       alloraMath.NewDecFromInt64(100),
+					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.Forecast{
+				Forecast: &types.BoundedForecast{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
 					Forecaster:  Forecaster,
-					ForecastElements: []*types.ForecastElement{
+					ForecastElements: []*types.BoundedForecastElement{
 						{
 							Inferer: Inferer,
-							Value:   alloraMath.NewDecFromInt64(100),
+							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 						},
 						{
 							Inferer: Inferer2,
-							Value:   alloraMath.NewDecFromInt64(100),
+							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 						},
 					},
 					ExtraData: nil,
@@ -781,7 +780,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 		GlobalAdminWhitelistAppended:        nil,
 		MaxWhitelistInputArrayLength:        nil,
 		MinWeightThresholdForStdnorm:        nil,
-		DataLimitExponent:                   nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{

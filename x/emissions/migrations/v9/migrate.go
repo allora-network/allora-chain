@@ -50,11 +50,9 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 		return errorsmod.Wrapf(err, "failed to unmarshal old parameters")
 	}
 
-	defaultParams := emissionstypes.DefaultParams()
+	// defaultParams := emissionstypes.DefaultParams()
 
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
-	// ADDED:
-	//        DataLimitExponent
 	newParams := emissionstypes.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
@@ -111,7 +109,6 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 		MaxWhitelistInputArrayLength:        oldParams.MaxWhitelistInputArrayLength,
 		MinWeightThresholdForStdnorm:        oldParams.MinWeightThresholdForStdnorm,
 		// NEW PARAMS
-		DataLimitExponent: defaultParams.DataLimitExponent,
 	}
 
 	ctx.Logger().Info(fmt.Sprintf("MIGRATED PARAMS: %+v", newParams))

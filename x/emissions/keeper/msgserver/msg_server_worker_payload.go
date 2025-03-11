@@ -39,7 +39,12 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(err, "Error getting params")
 	}
 	blockHeight := sdkCtx.BlockHeight()
-	err = msg.WorkerDataBundle.Validate(moduleParams)
+	wdb, err := msg.WorkerDataBundle.Convert()
+	if err != nil {
+		return nil, errorsmod.Wrapf(err,
+			"Worker bad data format for block: %d", blockHeight)
+	}
+	err = wdb.Validate()
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Worker invalid data for block: %d", blockHeight)
@@ -50,8 +55,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, err
 	}
 
-	nonce := msg.WorkerDataBundle.Nonce
-	topicId := msg.WorkerDataBundle.TopicId
+	nonce := wdb.Nonce
+	topicId := wdb.TopicId
 
 	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
@@ -73,7 +78,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		)
 	}
 
-	isWorkerRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
+	isWorkerRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, wdb.Worker)
 	if err != nil {
 		return nil, err
 	} else if !isWorkerRegistered {
@@ -86,12 +91,12 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	}
 
 	// Process Inferences
-	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
-		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
+	if wdb.InferenceForecastsBundle.Inference != nil {
+		inference := wdb.InferenceForecastsBundle.Inference
 		if inference == nil {
 			return nil, errorsmod.Wrapf(types.ErrNoValidInferences, "Inference not found")
 		}
-		if inference.TopicId != msg.WorkerDataBundle.TopicId {
+		if inference.TopicId != wdb.TopicId {
 			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId,
 				"inferer not using the same topic as bundle")
 		}
@@ -103,12 +108,12 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	}
 
 	// Process Forecasts
-	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
-		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+	if wdb.InferenceForecastsBundle.Forecast != nil {
+		forecast := wdb.InferenceForecastsBundle.Forecast
 		if len(forecast.ForecastElements) == 0 {
 			return nil, errorsmod.Wrapf(types.ErrNoValidForecastElements, "No valid forecast elements found in Forecast")
 		}
-		if forecast.TopicId != msg.WorkerDataBundle.TopicId {
+		if forecast.TopicId != wdb.TopicId {
 			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "forecaster not using the same topic as bundle")
 		}
 

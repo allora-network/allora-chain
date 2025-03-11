@@ -38,27 +38,27 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: InfererAddress1,
-		WorkerDataBundle: &types.WorkerDataBundle{
+		WorkerDataBundle: &types.BoundedWorkerDataBundle{
 			Worker:  InfererAddress1,
 			Nonce:   &nonce,
 			TopicId: topicId,
-			InferenceForecastsBundle: &types.InferenceForecastBundle{
-				Inference: &types.Inference{
+			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
+				Inference: &types.BoundedInference{
 					TopicId:     topicId,
 					BlockHeight: blockHeight,
 					Inferer:     InfererAddress1,
-					Value:       alloraMath.NewDecFromInt64(100),
+					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.Forecast{
+				Forecast: &types.BoundedForecast{
 					TopicId:     topicId,
 					BlockHeight: blockHeight,
 					Forecaster:  InfererAddress1,
-					ForecastElements: []*types.ForecastElement{
+					ForecastElements: []*types.BoundedForecastElement{
 						{
 							Inferer: InfererAddress1,
-							Value:   alloraMath.NewDecFromInt64(100),
+							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 						},
 					},
 					ExtraData: nil,
@@ -135,47 +135,47 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 		BlockHeight: BlockHeightCurrent,
 	}
 
-	reputerValueBundle := &types.ValueBundle{
+	reputerValueBundle := &types.BoundedValueBundle{
 		TopicId: topicId,
 		Reputer: reputerAddr,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
 		},
 		ExtraData:     nil,
-		CombinedValue: alloraMath.NewDecFromInt64(100),
-		InfererValues: []*types.WorkerAttributedValue{
+		CombinedValue: alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		InfererValues: []*types.BoundedWorkerAttributedValue{
 			{
 				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		ForecasterValues: []*types.WorkerAttributedValue{
+		ForecasterValues: []*types.BoundedWorkerAttributedValue{
 			{
 				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		NaiveValue: alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+		NaiveValue: alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		OneOutInfererValues: []*types.BoundedWithheldWorkerAttributedValue{
 			// There cannot be a 1-out inferer value if there is just 1 inferer => this will be ignored by msgserver
 			{
 				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+		OneOutForecasterValues: []*types.BoundedWithheldWorkerAttributedValue{
 			{
 				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
 		// Just as valid:
 		// OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
 		// OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
+		OneInForecasterValues: []*types.BoundedWorkerAttributedValue{
 			{
 				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
 		OneOutInfererForecasterValues: nil,
@@ -198,7 +198,7 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 
 	lossesMsg := &types.InsertReputerPayloadRequest{
 		Sender: reputerAddr,
-		ReputerValueBundle: &types.ReputerValueBundle{
+		ReputerValueBundle: &types.BoundedReputerValueBundle{
 			ValueBundle: reputerValueBundle,
 			Signature:   valueBundleSignature,
 			Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
