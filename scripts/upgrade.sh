@@ -5,11 +5,11 @@
 # to the network to trigger the upgrade process.
 
 # Update the variables below to match current conditions and desired upgrade
-current_verison=v0.5.0
-new_version=v0.6.0
+current_version=v0.8.3
+new_version=v0.9.0
 expedited=true
 deposit=50000000uallo
-num_minutes_between_proposal_and_upgrade=6
+num_minutes_between_proposal_and_upgrade=780
 avg_block_time=5 # seconds
 current_height=10000
 
@@ -19,8 +19,8 @@ height=$((60*num_minutes_between_proposal_and_upgrade/avg_block_time+current_hei
 # To get the authority address, run this command on the validator:
 # allorad q upgrade authority | grep address | awk '{print $2}'
 #
-authority=allo1 # replace with the actual address
+authority=allo10d07y265gmmuvt4z0w9aw880jnsr700j53fxp2 # replace with the actual address
 
-json='{"messages":[{"@type":"/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade","authority":"'$authority'","plan":{"name":"'$new_version'","time":"0001-01-01T00:00:00Z","height":"'$height'","info":"","upgraded_client_state":null}}],"metadata":"ipfs://CID","deposit":"'$deposit'","title":"'$new_version'","summary":"Upgrade from '$current_verison' to '$new_version'","expedited":'$expedited'}'
+json='{"messages":[{"@type":"/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade","authority":"'$authority'","plan":{"name":"'$new_version'","time":"0001-01-01T00:00:00Z","height":"'$height'","info":"","upgraded_client_state":null}}],"metadata":"ipfs://CID","deposit":"'$deposit'","title":"'$new_version'","summary":"Upgrade from '$current_version' to '$new_version'","expedited":'$expedited'}'
 
 echo "json='$json' && echo \"\$json\" | jq . > upgrade.json"

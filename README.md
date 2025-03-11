@@ -238,6 +238,29 @@ allorad --home="$APP_HOME" \
    --keyring-backend=test --chain-id ${NETWORK}
 ```
 
+## Running a Local Network 
+
+To just run a local network, execute the following commands:
+
+```bash
+bash test/local_testnet_l1.sh
+```
+
+### GRPC nginx proxy 
+
+It is possible to add a GRPC proxy to local network, to configure an nginx proxy on a common GRPC port with TLS certificate, via setting the `TLS_PROXY` environment variable to `true`. It will use port 9443 for the proxy.
+
+```bash
+TLS_PROXY=true bash test/local_testnet_l1.sh
+```
+
+Certificate directory can be set via `CERT_DIR` environment variable.
+
+```bash
+CERT_DIR=/path/to/certs TLS_PROXY=true bash test/local_testnet_l1.sh
+```
+
+
 ## Run Integration Tests
 
 To run integration tests, execute the following commands:

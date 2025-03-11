@@ -1,0 +1,12 @@
+
+  tls-proxy:
+    image: nginx:alpine
+    container_name: tls-proxy
+    volumes:
+        - ${CERT_DIR}:/etc/nginx/certs
+        - ${LOCALNET_DATADIR}/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+        - "9443:9443"
+    networks:
+        local-net:
+            ipv4_address: "${NETWORK_PREFIX}.20"
