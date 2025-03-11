@@ -69,6 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* [#765](https://github.com/allora-network/allora-chain/pull/765) Fix rounding precision issues in mint module
+
 ### Security
 
 # v0.9.0
