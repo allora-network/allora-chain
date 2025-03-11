@@ -676,7 +676,7 @@ func MedianAbsoluteDeviation(data []Dec) (medianAbsoluteDeviation Dec, median De
 func GetSmoothedAlpha(epochLength int64, baseIntervalDec Dec, baseAlpha Dec) (Dec, error) {
 	// Ensure epochLength and baseInterval are positive
 	if epochLength <= 0 {
-		return ZeroDec(), errorsmod.Wrap(ErrOutOfRange, "epochLength and baseInterval must be positive")
+		return ZeroDec(), errorsmod.Wrap(ErrOutOfRange, "epochLength must be positive")
 	}
 	if baseIntervalDec.Lte(ZeroDec()) {
 		return ZeroDec(), errorsmod.Wrap(ErrOutOfRange, "baseInterval must be positive")
