@@ -1916,8 +1916,7 @@ func (k *Keeper) InsertNetworkLossBundleAtBlock(
 	if err := types.ValidateBlockHeight(block); err != nil {
 		return errorsmod.Wrap(err, "block height validation failed")
 	}
-	err := lossBundle.Validate()
-	if err != nil {
+	if err := lossBundle.Validate(); err != nil {
 		return errorsmod.Wrap(err, "loss bundle validation failed")
 	}
 	key := collections.Join(topicId, block)
