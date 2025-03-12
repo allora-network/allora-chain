@@ -226,6 +226,7 @@ func TestInputInferenceForecastBundleConvert(t *testing.T) {
 
 // Helper function to create BoundedExp40Dec for testing
 func mustNewBoundedExp40Dec(t *testing.T, s string) math.BoundedExp40Dec {
+	t.Helper()
 	dec, err := math.NewBoundedExp40DecFromString(s)
 	require.NoError(t, err)
 	return dec

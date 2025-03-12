@@ -134,6 +134,6 @@ func (bd BoundedExp40Dec) ToDec() (Dec, error) {
 	return bd.Dec, nil
 }
 
-func (x BoundedExp40Dec) Equal(y BoundedExp40Dec) bool {
-	return x.Cmp(y.Dec) == 0
+func (bd BoundedExp40Dec) Equal(y BoundedExp40Dec) bool {
+	return bd.Cmp(y.Dec) == 0
 }
