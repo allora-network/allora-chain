@@ -63,7 +63,6 @@ func UpdateNoncesOfActiveTopics(
 		ctx,
 		weights,
 		moduleParams.MaxActiveTopicsPerBlock,
-		block,
 	)
 	if err != nil {
 		return errors.Wrapf(err, "failed to skim top topics by weight")
