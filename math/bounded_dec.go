@@ -15,7 +15,7 @@ const (
 // BoundedExp40Dec represents a decimal with enforced value boundaries.
 // It wraps the base Dec type and enforces limits during marshaling/unmarshaling.
 type BoundedExp40Dec struct {
-	Dec
+	dec Dec
 }
 
 // validateBounds checks if the decimal is within the allowed bounds
@@ -65,7 +65,7 @@ func NewBoundedExp40Dec(d Dec) (BoundedExp40Dec, error) {
 	if err := validateBounds(d); err != nil {
 		return BoundedExp40Dec{}, err
 	}
-	return BoundedExp40Dec{Dec: d}, nil
+	return BoundedExp40Dec{dec: d}, nil
 }
 
 // NewBoundedExp40DecFromString creates a new BoundedExp40Dec from a string
@@ -79,20 +79,18 @@ func NewBoundedExp40DecFromString(s string) (BoundedExp40Dec, error) {
 
 // Marshal implements the gogo proto custom type interface
 func (bd BoundedExp40Dec) Marshal() ([]byte, error) {
-	// Validate before marshaling
-	if err := validateBounds(bd.Dec); err != nil {
+	if err := validateBounds(bd.dec); err != nil {
 		return nil, err
 	}
-	return bd.Dec.Marshal()
+	return bd.dec.Marshal()
 }
 
 // Unmarshal implements the gogo proto custom type interface
 func (bd *BoundedExp40Dec) Unmarshal(data []byte) error {
-	if err := bd.Dec.Unmarshal(data); err != nil {
+	if err := bd.dec.Unmarshal(data); err != nil {
 		return err
 	}
-	// Validate after unmarshaling
-	if err := validateBounds(bd.Dec); err != nil {
+	if err := validateBounds(bd.dec); err != nil {
 		return err
 	}
 	return nil
@@ -100,18 +98,18 @@ func (bd *BoundedExp40Dec) Unmarshal(data []byte) error {
 
 // MarshalJSON implements json.Marshaler
 func (bd BoundedExp40Dec) MarshalJSON() ([]byte, error) {
-	if err := validateBounds(bd.Dec); err != nil {
+	if err := validateBounds(bd.dec); err != nil {
 		return nil, err
 	}
-	return bd.Dec.MarshalJSON()
+	return bd.dec.MarshalJSON()
 }
 
 // UnmarshalJSON implements json.Unmarshaler
 func (bd *BoundedExp40Dec) UnmarshalJSON(bz []byte) error {
-	if err := bd.Dec.UnmarshalJSON(bz); err != nil {
+	if err := bd.dec.UnmarshalJSON(bz); err != nil {
 		return err
 	}
-	if err := validateBounds(bd.Dec); err != nil {
+	if err := validateBounds(bd.dec); err != nil {
 		return err
 	}
 	return nil
@@ -119,21 +117,25 @@ func (bd *BoundedExp40Dec) UnmarshalJSON(bz []byte) error {
 
 // Size returns the encoded size of BoundedExp40Dec
 func (bd BoundedExp40Dec) Size() int {
-	return bd.Dec.Size()
+	return bd.dec.Size()
 }
 
 // MarshalTo serializes BoundedExp40Dec into a given buffer
 func (bd BoundedExp40Dec) MarshalTo(data []byte) (int, error) {
-	if err := validateBounds(bd.Dec); err != nil {
+	if err := validateBounds(bd.dec); err != nil {
 		return 0, err
 	}
-	return bd.Dec.MarshalTo(data)
+	return bd.dec.MarshalTo(data)
 }
 
 func (bd BoundedExp40Dec) ToDec() (Dec, error) {
-	return bd.Dec, nil
+	return bd.dec, nil
 }
 
 func (bd BoundedExp40Dec) Equal(y BoundedExp40Dec) bool {
-	return bd.Cmp(y.Dec) == 0
+	return bd.dec.Equal(y.dec)
+}
+
+func (bd BoundedExp40Dec) String() string {
+	return bd.dec.String()
 }
