@@ -22,7 +22,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for reputer: %v", &msg.ReputerValueBundle.ValueBundle.Reputer)
 	}
-	rvb, err := msg.ReputerValueBundle.NewInputReputerValueBundleFromInput()
+	rvb, err := types.NewInputReputerValueBundleFromInput(msg.ReputerValueBundle)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Reputer bad data format for block: %d", blockHeight)

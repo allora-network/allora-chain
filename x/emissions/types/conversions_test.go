@@ -45,7 +45,7 @@ func TestInputInferenceConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.NewInferenceFromInput()
+			got, err := NewInferenceFromInput(tt.input)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -91,7 +91,7 @@ func TestInputForecastElementConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.NewForecastElementFromInput()
+			got, err := NewForecastElementFromInput(tt.input)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -144,7 +144,7 @@ func TestInputForecastConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.NewForecastFromInput()
+			got, err := NewForecastFromInput(tt.input)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -208,7 +208,7 @@ func TestInputInferenceForecastBundleConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.NewInferenceForecastBundleFromInput()
+			got, err := NewInferenceForecastBundleFromInput(tt.input)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -313,7 +313,7 @@ func TestInputValueBundleConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.NewValueBundleFromInput()
+			got, err := NewValueBundleFromInput(tt.input)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

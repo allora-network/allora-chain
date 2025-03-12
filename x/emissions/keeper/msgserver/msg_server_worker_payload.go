@@ -39,7 +39,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(err, "Error getting params")
 	}
 	blockHeight := sdkCtx.BlockHeight()
-	wdb, err := msg.WorkerDataBundle.NewWorkerDataBundleFromInput()
+	wdb, err := types.NewWorkerDataBundleFromInput(msg.WorkerDataBundle)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Worker bad data format for block: %d", blockHeight)

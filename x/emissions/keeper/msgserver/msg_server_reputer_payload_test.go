@@ -122,7 +122,7 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 
 func (s *MsgServerTestSuite) signInputValueBundle(InputReputerValueBundle *types.InputValueBundle, privateKey secp256k1.PrivKey) []byte {
 	require := s.Require()
-	reputerValueBundle, err := InputReputerValueBundle.NewValueBundleFromInput()
+	reputerValueBundle, err := types.NewValueBundleFromInput(InputReputerValueBundle)
 	require.NoError(err, "Convert should not return an error")
 	return s.signValueBundle(reputerValueBundle, privateKey)
 }

@@ -1160,7 +1160,7 @@ func signValueBundle(valueBundle *types.ValueBundle, privateKey secp256k1.PrivKe
 }
 
 func signInputValueBundle(InputValueBundle *types.InputValueBundle, privateKey secp256k1.PrivKey) ([]byte, error) {
-	valueBundle, err := InputValueBundle.NewValueBundleFromInput()
+	valueBundle, err := types.NewValueBundleFromInput(InputValueBundle)
 	if err != nil {
 		return nil, err
 	}
@@ -1189,7 +1189,7 @@ func signInputInferenceForecastBundle(
 	InputInferenceForecastBundle *types.InputInferenceForecastBundle,
 	privateKey secp256k1.PrivKey,
 ) ([]byte, error) {
-	bundle, err := InputInferenceForecastBundle.NewInferenceForecastBundleFromInput()
+	bundle, err := types.NewInferenceForecastBundleFromInput(InputInferenceForecastBundle)
 	if err != nil {
 		return nil, err
 	}
