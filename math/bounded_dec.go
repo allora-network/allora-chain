@@ -19,7 +19,7 @@ type BoundedExp40Dec struct {
 }
 
 // validateBounds checks if the decimal is within the allowed bounds
-func validateBounds(d Dec, exponent uint64) error {
+func validateBounds(d Dec) error {
 	if !d.IsFinite() {
 		return errorsmod.Wrap(ErrOutOfRange, "value must be finite")
 	}
@@ -36,15 +36,15 @@ func validateBounds(d Dec, exponent uint64) error {
 
 	// Create boundary values for the magnitude
 	baseString := "1e"
-	minValue, _ := NewDecFromString(baseString + fmt.Sprintf("-%d", exponent))
-	maxValue, _ := NewDecFromString(baseString + fmt.Sprintf("%d", exponent))
+	minValue, _ := NewDecFromString(baseString + fmt.Sprintf("-%d", DataLimitExponent))
+	maxValue, _ := NewDecFromString(baseString + fmt.Sprintf("%d", DataLimitExponent))
 
 	// Check magnitude boundaries
 	if absValue.Lt(minValue) {
-		return errorsmod.Wrapf(ErrOutOfRange, "value %s cannot have higher precision than %d", d, exponent)
+		return errorsmod.Wrapf(ErrOutOfRange, "value %s cannot have higher precision than %d", d, DataLimitExponent)
 	}
 	if absValue.Gt(maxValue) {
-		return errorsmod.Wrapf(ErrOutOfRange, "value %s cannot be greater than ±1e%d", d, exponent)
+		return errorsmod.Wrapf(ErrOutOfRange, "value %s cannot be greater than ±1e%d", d, DataLimitExponent)
 	}
 
 	return nil
@@ -62,7 +62,7 @@ func MustNewBoundedExp40Dec(d Dec) BoundedExp40Dec {
 
 // NewBoundedExp40Dec creates a new BoundedExp40Dec from a Dec
 func NewBoundedExp40Dec(d Dec) (BoundedExp40Dec, error) {
-	if err := validateBounds(d, DataLimitExponent); err != nil {
+	if err := validateBounds(d); err != nil {
 		return BoundedExp40Dec{}, err
 	}
 	return BoundedExp40Dec{Dec: d}, nil
@@ -80,7 +80,7 @@ func NewBoundedExp40DecFromString(s string) (BoundedExp40Dec, error) {
 // Marshal implements the gogo proto custom type interface
 func (bd BoundedExp40Dec) Marshal() ([]byte, error) {
 	// Validate before marshaling
-	if err := validateBounds(bd.Dec, DataLimitExponent); err != nil {
+	if err := validateBounds(bd.Dec); err != nil {
 		return nil, err
 	}
 	return bd.Dec.Marshal()
@@ -92,7 +92,7 @@ func (bd *BoundedExp40Dec) Unmarshal(data []byte) error {
 		return err
 	}
 	// Validate after unmarshaling
-	if err := validateBounds(bd.Dec, DataLimitExponent); err != nil {
+	if err := validateBounds(bd.Dec); err != nil {
 		return err
 	}
 	return nil
@@ -100,7 +100,7 @@ func (bd *BoundedExp40Dec) Unmarshal(data []byte) error {
 
 // MarshalJSON implements json.Marshaler
 func (bd BoundedExp40Dec) MarshalJSON() ([]byte, error) {
-	if err := validateBounds(bd.Dec, DataLimitExponent); err != nil {
+	if err := validateBounds(bd.Dec); err != nil {
 		return nil, err
 	}
 	return bd.Dec.MarshalJSON()
@@ -111,7 +111,7 @@ func (bd *BoundedExp40Dec) UnmarshalJSON(bz []byte) error {
 	if err := bd.Dec.UnmarshalJSON(bz); err != nil {
 		return err
 	}
-	if err := validateBounds(bd.Dec, DataLimitExponent); err != nil {
+	if err := validateBounds(bd.Dec); err != nil {
 		return err
 	}
 	return nil
@@ -124,7 +124,7 @@ func (bd BoundedExp40Dec) Size() int {
 
 // MarshalTo serializes BoundedExp40Dec into a given buffer
 func (bd BoundedExp40Dec) MarshalTo(data []byte) (int, error) {
-	if err := validateBounds(bd.Dec, DataLimitExponent); err != nil {
+	if err := validateBounds(bd.Dec); err != nil {
 		return 0, err
 	}
 	return bd.Dec.MarshalTo(data)

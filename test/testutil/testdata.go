@@ -549,14 +549,6 @@ func signValueBundle(valueBundle *emissionstypes.ValueBundle, privateKey secp256
 	return valueBundleSignature
 }
 
-func signInputValueBundle(InputValueBundle *emissionstypes.InputValueBundle, privateKey secp256k1.PrivKey) []byte {
-	valueBundle, err := InputValueBundle.NewValueBundleFromInput()
-	if err != nil {
-		panic(err)
-	}
-	return signValueBundle(valueBundle, privateKey)
-}
-
 // helper struct for GetReputersDataFromCsv
 type ReputerKey struct {
 	Address    string

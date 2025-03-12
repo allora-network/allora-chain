@@ -27,7 +27,7 @@ func TestInputInferenceConvert(t *testing.T) {
 		{
 			name:    "nil input",
 			input:   nil,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "valid input",
@@ -77,7 +77,7 @@ func TestInputForecastElementConvert(t *testing.T) {
 		{
 			name:    "nil input",
 			input:   nil,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "valid input",
@@ -118,7 +118,7 @@ func TestInputForecastConvert(t *testing.T) {
 		{
 			name:    "nil input",
 			input:   nil,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "valid input",
@@ -194,7 +194,7 @@ func TestInputInferenceForecastBundleConvert(t *testing.T) {
 		{
 			name:    "nil input",
 			input:   nil,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "valid input",
@@ -249,7 +249,7 @@ func TestInputValueBundleConvert(t *testing.T) {
 		{
 			name:    "nil input",
 			input:   nil,
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "valid input with all fields",

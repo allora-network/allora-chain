@@ -377,32 +377,6 @@ func createReputerValueBundle(
 	}
 }
 
-// Generate a ReputerValueBundle:of
-func signReputerValueBundle(
-	m *testcommon.TestConfig,
-	reputer Actor,
-	valueBundle emissionstypes.ValueBundle,
-) *emissionstypes.ReputerValueBundle {
-	valueBundle.Reputer = reputer.addr
-	// Sign
-	src := make([]byte, 0)
-	src, err := valueBundle.XXX_Marshal(src, true)
-	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
-
-	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(reputer.name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	require.NoError(m.T, err, "Sign should not return an error")
-	reputerPublicKeyBytes := pubKey.Bytes()
-
-	// Create a InsertReputerPayloadRequest message
-	reputerValueBundle := &emissionstypes.ReputerValueBundle{
-		ValueBundle: &valueBundle,
-		Signature:   valueBundleSignature,
-		Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
-	}
-
-	return reputerValueBundle
-}
-
 func signInputReputerValueBundle(
 	m *testcommon.TestConfig,
 	reputer Actor,
