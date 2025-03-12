@@ -15,35 +15,35 @@ import (
 )
 
 var (
-	md_BoundedInference              protoreflect.MessageDescriptor
-	fd_BoundedInference_topic_id     protoreflect.FieldDescriptor
-	fd_BoundedInference_block_height protoreflect.FieldDescriptor
-	fd_BoundedInference_inferer      protoreflect.FieldDescriptor
-	fd_BoundedInference_value        protoreflect.FieldDescriptor
-	fd_BoundedInference_extra_data   protoreflect.FieldDescriptor
-	fd_BoundedInference_proof        protoreflect.FieldDescriptor
+	md_InputInference              protoreflect.MessageDescriptor
+	fd_InputInference_topic_id     protoreflect.FieldDescriptor
+	fd_InputInference_block_height protoreflect.FieldDescriptor
+	fd_InputInference_inferer      protoreflect.FieldDescriptor
+	fd_InputInference_value        protoreflect.FieldDescriptor
+	fd_InputInference_extra_data   protoreflect.FieldDescriptor
+	fd_InputInference_proof        protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedInference = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedInference")
-	fd_BoundedInference_topic_id = md_BoundedInference.Fields().ByName("topic_id")
-	fd_BoundedInference_block_height = md_BoundedInference.Fields().ByName("block_height")
-	fd_BoundedInference_inferer = md_BoundedInference.Fields().ByName("inferer")
-	fd_BoundedInference_value = md_BoundedInference.Fields().ByName("value")
-	fd_BoundedInference_extra_data = md_BoundedInference.Fields().ByName("extra_data")
-	fd_BoundedInference_proof = md_BoundedInference.Fields().ByName("proof")
+	md_InputInference = File_emissions_v9_inputworker_proto.Messages().ByName("InputInference")
+	fd_InputInference_topic_id = md_InputInference.Fields().ByName("topic_id")
+	fd_InputInference_block_height = md_InputInference.Fields().ByName("block_height")
+	fd_InputInference_inferer = md_InputInference.Fields().ByName("inferer")
+	fd_InputInference_value = md_InputInference.Fields().ByName("value")
+	fd_InputInference_extra_data = md_InputInference.Fields().ByName("extra_data")
+	fd_InputInference_proof = md_InputInference.Fields().ByName("proof")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedInference)(nil)
+var _ protoreflect.Message = (*fastReflection_InputInference)(nil)
 
-type fastReflection_BoundedInference BoundedInference
+type fastReflection_InputInference InputInference
 
-func (x *BoundedInference) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedInference)(x)
+func (x *InputInference) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputInference)(x)
 }
 
-func (x *BoundedInference) slowProtoReflect() protoreflect.Message {
+func (x *InputInference) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -55,43 +55,43 @@ func (x *BoundedInference) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedInference_messageType fastReflection_BoundedInference_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedInference_messageType{}
+var _fastReflection_InputInference_messageType fastReflection_InputInference_messageType
+var _ protoreflect.MessageType = fastReflection_InputInference_messageType{}
 
-type fastReflection_BoundedInference_messageType struct{}
+type fastReflection_InputInference_messageType struct{}
 
-func (x fastReflection_BoundedInference_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedInference)(nil)
+func (x fastReflection_InputInference_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputInference)(nil)
 }
-func (x fastReflection_BoundedInference_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedInference)
+func (x fastReflection_InputInference_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputInference)
 }
-func (x fastReflection_BoundedInference_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedInference
+func (x fastReflection_InputInference_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputInference
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedInference) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedInference
+func (x *fastReflection_InputInference) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputInference
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedInference) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedInference_messageType
+func (x *fastReflection_InputInference) Type() protoreflect.MessageType {
+	return _fastReflection_InputInference_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedInference) New() protoreflect.Message {
-	return new(fastReflection_BoundedInference)
+func (x *fastReflection_InputInference) New() protoreflect.Message {
+	return new(fastReflection_InputInference)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedInference) Interface() protoreflect.ProtoMessage {
-	return (*BoundedInference)(x)
+func (x *fastReflection_InputInference) Interface() protoreflect.ProtoMessage {
+	return (*InputInference)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -99,40 +99,40 @@ func (x *fastReflection_BoundedInference) Interface() protoreflect.ProtoMessage 
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedInference) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputInference) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_BoundedInference_topic_id, value) {
+		if !f(fd_InputInference_topic_id, value) {
 			return
 		}
 	}
 	if x.BlockHeight != int64(0) {
 		value := protoreflect.ValueOfInt64(x.BlockHeight)
-		if !f(fd_BoundedInference_block_height, value) {
+		if !f(fd_InputInference_block_height, value) {
 			return
 		}
 	}
 	if x.Inferer != "" {
 		value := protoreflect.ValueOfString(x.Inferer)
-		if !f(fd_BoundedInference_inferer, value) {
+		if !f(fd_InputInference_inferer, value) {
 			return
 		}
 	}
 	if x.Value != "" {
 		value := protoreflect.ValueOfString(x.Value)
-		if !f(fd_BoundedInference_value, value) {
+		if !f(fd_InputInference_value, value) {
 			return
 		}
 	}
 	if len(x.ExtraData) != 0 {
 		value := protoreflect.ValueOfBytes(x.ExtraData)
-		if !f(fd_BoundedInference_extra_data, value) {
+		if !f(fd_InputInference_extra_data, value) {
 			return
 		}
 	}
 	if x.Proof != "" {
 		value := protoreflect.ValueOfString(x.Proof)
-		if !f(fd_BoundedInference_proof, value) {
+		if !f(fd_InputInference_proof, value) {
 			return
 		}
 	}
@@ -149,25 +149,25 @@ func (x *fastReflection_BoundedInference) Range(f func(protoreflect.FieldDescrip
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedInference) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputInference) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInference.topic_id":
+	case "emissions.v9.InputInference.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v9.BoundedInference.block_height":
+	case "emissions.v9.InputInference.block_height":
 		return x.BlockHeight != int64(0)
-	case "emissions.v9.BoundedInference.inferer":
+	case "emissions.v9.InputInference.inferer":
 		return x.Inferer != ""
-	case "emissions.v9.BoundedInference.value":
+	case "emissions.v9.InputInference.value":
 		return x.Value != ""
-	case "emissions.v9.BoundedInference.extra_data":
+	case "emissions.v9.InputInference.extra_data":
 		return len(x.ExtraData) != 0
-	case "emissions.v9.BoundedInference.proof":
+	case "emissions.v9.InputInference.proof":
 		return x.Proof != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInference"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -177,25 +177,25 @@ func (x *fastReflection_BoundedInference) Has(fd protoreflect.FieldDescriptor) b
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInference) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputInference) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInference.topic_id":
+	case "emissions.v9.InputInference.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v9.BoundedInference.block_height":
+	case "emissions.v9.InputInference.block_height":
 		x.BlockHeight = int64(0)
-	case "emissions.v9.BoundedInference.inferer":
+	case "emissions.v9.InputInference.inferer":
 		x.Inferer = ""
-	case "emissions.v9.BoundedInference.value":
+	case "emissions.v9.InputInference.value":
 		x.Value = ""
-	case "emissions.v9.BoundedInference.extra_data":
+	case "emissions.v9.InputInference.extra_data":
 		x.ExtraData = nil
-	case "emissions.v9.BoundedInference.proof":
+	case "emissions.v9.InputInference.proof":
 		x.Proof = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInference"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -205,31 +205,31 @@ func (x *fastReflection_BoundedInference) Clear(fd protoreflect.FieldDescriptor)
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedInference) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInference) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedInference.topic_id":
+	case "emissions.v9.InputInference.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v9.BoundedInference.block_height":
+	case "emissions.v9.InputInference.block_height":
 		value := x.BlockHeight
 		return protoreflect.ValueOfInt64(value)
-	case "emissions.v9.BoundedInference.inferer":
+	case "emissions.v9.InputInference.inferer":
 		value := x.Inferer
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.BoundedInference.value":
+	case "emissions.v9.InputInference.value":
 		value := x.Value
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.BoundedInference.extra_data":
+	case "emissions.v9.InputInference.extra_data":
 		value := x.ExtraData
 		return protoreflect.ValueOfBytes(value)
-	case "emissions.v9.BoundedInference.proof":
+	case "emissions.v9.InputInference.proof":
 		value := x.Proof
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInference"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInference does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInference does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -243,25 +243,25 @@ func (x *fastReflection_BoundedInference) Get(descriptor protoreflect.FieldDescr
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInference) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputInference) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInference.topic_id":
+	case "emissions.v9.InputInference.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v9.BoundedInference.block_height":
+	case "emissions.v9.InputInference.block_height":
 		x.BlockHeight = value.Int()
-	case "emissions.v9.BoundedInference.inferer":
+	case "emissions.v9.InputInference.inferer":
 		x.Inferer = value.Interface().(string)
-	case "emissions.v9.BoundedInference.value":
+	case "emissions.v9.InputInference.value":
 		x.Value = value.Interface().(string)
-	case "emissions.v9.BoundedInference.extra_data":
+	case "emissions.v9.InputInference.extra_data":
 		x.ExtraData = value.Bytes()
-	case "emissions.v9.BoundedInference.proof":
+	case "emissions.v9.InputInference.proof":
 		x.Proof = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInference"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -275,60 +275,60 @@ func (x *fastReflection_BoundedInference) Set(fd protoreflect.FieldDescriptor, v
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInference) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInference) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInference.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.BoundedInference is not mutable"))
-	case "emissions.v9.BoundedInference.block_height":
-		panic(fmt.Errorf("field block_height of message emissions.v9.BoundedInference is not mutable"))
-	case "emissions.v9.BoundedInference.inferer":
-		panic(fmt.Errorf("field inferer of message emissions.v9.BoundedInference is not mutable"))
-	case "emissions.v9.BoundedInference.value":
-		panic(fmt.Errorf("field value of message emissions.v9.BoundedInference is not mutable"))
-	case "emissions.v9.BoundedInference.extra_data":
-		panic(fmt.Errorf("field extra_data of message emissions.v9.BoundedInference is not mutable"))
-	case "emissions.v9.BoundedInference.proof":
-		panic(fmt.Errorf("field proof of message emissions.v9.BoundedInference is not mutable"))
+	case "emissions.v9.InputInference.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.InputInference is not mutable"))
+	case "emissions.v9.InputInference.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v9.InputInference is not mutable"))
+	case "emissions.v9.InputInference.inferer":
+		panic(fmt.Errorf("field inferer of message emissions.v9.InputInference is not mutable"))
+	case "emissions.v9.InputInference.value":
+		panic(fmt.Errorf("field value of message emissions.v9.InputInference is not mutable"))
+	case "emissions.v9.InputInference.extra_data":
+		panic(fmt.Errorf("field extra_data of message emissions.v9.InputInference is not mutable"))
+	case "emissions.v9.InputInference.proof":
+		panic(fmt.Errorf("field proof of message emissions.v9.InputInference is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInference"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInference does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedInference) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInference) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInference.topic_id":
+	case "emissions.v9.InputInference.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v9.BoundedInference.block_height":
+	case "emissions.v9.InputInference.block_height":
 		return protoreflect.ValueOfInt64(int64(0))
-	case "emissions.v9.BoundedInference.inferer":
+	case "emissions.v9.InputInference.inferer":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.BoundedInference.value":
+	case "emissions.v9.InputInference.value":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.BoundedInference.extra_data":
+	case "emissions.v9.InputInference.extra_data":
 		return protoreflect.ValueOfBytes(nil)
-	case "emissions.v9.BoundedInference.proof":
+	case "emissions.v9.InputInference.proof":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInference"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInference does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedInference) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputInference) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedInference", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputInference", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -336,7 +336,7 @@ func (x *fastReflection_BoundedInference) WhichOneof(d protoreflect.OneofDescrip
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedInference) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputInference) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -347,7 +347,7 @@ func (x *fastReflection_BoundedInference) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInference) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputInference) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -359,7 +359,7 @@ func (x *fastReflection_BoundedInference) SetUnknown(fields protoreflect.RawFiel
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedInference) IsValid() bool {
+func (x *fastReflection_InputInference) IsValid() bool {
 	return x != nil
 }
 
@@ -369,9 +369,9 @@ func (x *fastReflection_BoundedInference) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedInference) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputInference) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedInference)
+		x := input.Message.Interface().(*InputInference)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -415,7 +415,7 @@ func (x *fastReflection_BoundedInference) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedInference)
+		x := input.Message.Interface().(*InputInference)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -483,7 +483,7 @@ func (x *fastReflection_BoundedInference) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedInference)
+		x := input.Message.Interface().(*InputInference)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -515,10 +515,10 @@ func (x *fastReflection_BoundedInference) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedInference: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputInference: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedInference: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputInference: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -724,77 +724,77 @@ func (x *fastReflection_BoundedInference) ProtoMethods() *protoiface.Methods {
 	}
 }
 
-var _ protoreflect.List = (*_BoundedInferences_1_list)(nil)
+var _ protoreflect.List = (*_InputInferences_1_list)(nil)
 
-type _BoundedInferences_1_list struct {
-	list *[]*BoundedInference
+type _InputInferences_1_list struct {
+	list *[]*InputInference
 }
 
-func (x *_BoundedInferences_1_list) Len() int {
+func (x *_InputInferences_1_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_BoundedInferences_1_list) Get(i int) protoreflect.Value {
+func (x *_InputInferences_1_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
-func (x *_BoundedInferences_1_list) Set(i int, value protoreflect.Value) {
+func (x *_InputInferences_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedInference)
+	concreteValue := valueUnwrapped.Interface().(*InputInference)
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_BoundedInferences_1_list) Append(value protoreflect.Value) {
+func (x *_InputInferences_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedInference)
+	concreteValue := valueUnwrapped.Interface().(*InputInference)
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_BoundedInferences_1_list) AppendMutable() protoreflect.Value {
-	v := new(BoundedInference)
+func (x *_InputInferences_1_list) AppendMutable() protoreflect.Value {
+	v := new(InputInference)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedInferences_1_list) Truncate(n int) {
+func (x *_InputInferences_1_list) Truncate(n int) {
 	for i := n; i < len(*x.list); i++ {
 		(*x.list)[i] = nil
 	}
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_BoundedInferences_1_list) NewElement() protoreflect.Value {
-	v := new(BoundedInference)
+func (x *_InputInferences_1_list) NewElement() protoreflect.Value {
+	v := new(InputInference)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedInferences_1_list) IsValid() bool {
+func (x *_InputInferences_1_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_BoundedInferences            protoreflect.MessageDescriptor
-	fd_BoundedInferences_inferences protoreflect.FieldDescriptor
+	md_InputInferences            protoreflect.MessageDescriptor
+	fd_InputInferences_inferences protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedInferences = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedInferences")
-	fd_BoundedInferences_inferences = md_BoundedInferences.Fields().ByName("inferences")
+	md_InputInferences = File_emissions_v9_inputworker_proto.Messages().ByName("InputInferences")
+	fd_InputInferences_inferences = md_InputInferences.Fields().ByName("inferences")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedInferences)(nil)
+var _ protoreflect.Message = (*fastReflection_InputInferences)(nil)
 
-type fastReflection_BoundedInferences BoundedInferences
+type fastReflection_InputInferences InputInferences
 
-func (x *BoundedInferences) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedInferences)(x)
+func (x *InputInferences) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputInferences)(x)
 }
 
-func (x *BoundedInferences) slowProtoReflect() protoreflect.Message {
+func (x *InputInferences) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -806,43 +806,43 @@ func (x *BoundedInferences) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedInferences_messageType fastReflection_BoundedInferences_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedInferences_messageType{}
+var _fastReflection_InputInferences_messageType fastReflection_InputInferences_messageType
+var _ protoreflect.MessageType = fastReflection_InputInferences_messageType{}
 
-type fastReflection_BoundedInferences_messageType struct{}
+type fastReflection_InputInferences_messageType struct{}
 
-func (x fastReflection_BoundedInferences_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedInferences)(nil)
+func (x fastReflection_InputInferences_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputInferences)(nil)
 }
-func (x fastReflection_BoundedInferences_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedInferences)
+func (x fastReflection_InputInferences_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputInferences)
 }
-func (x fastReflection_BoundedInferences_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedInferences
+func (x fastReflection_InputInferences_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputInferences
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedInferences) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedInferences
+func (x *fastReflection_InputInferences) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputInferences
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedInferences) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedInferences_messageType
+func (x *fastReflection_InputInferences) Type() protoreflect.MessageType {
+	return _fastReflection_InputInferences_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedInferences) New() protoreflect.Message {
-	return new(fastReflection_BoundedInferences)
+func (x *fastReflection_InputInferences) New() protoreflect.Message {
+	return new(fastReflection_InputInferences)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedInferences) Interface() protoreflect.ProtoMessage {
-	return (*BoundedInferences)(x)
+func (x *fastReflection_InputInferences) Interface() protoreflect.ProtoMessage {
+	return (*InputInferences)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -850,10 +850,10 @@ func (x *fastReflection_BoundedInferences) Interface() protoreflect.ProtoMessage
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedInferences) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputInferences) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if len(x.Inferences) != 0 {
-		value := protoreflect.ValueOfList(&_BoundedInferences_1_list{list: &x.Inferences})
-		if !f(fd_BoundedInferences_inferences, value) {
+		value := protoreflect.ValueOfList(&_InputInferences_1_list{list: &x.Inferences})
+		if !f(fd_InputInferences_inferences, value) {
 			return
 		}
 	}
@@ -870,15 +870,15 @@ func (x *fastReflection_BoundedInferences) Range(f func(protoreflect.FieldDescri
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedInferences) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputInferences) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferences.inferences":
+	case "emissions.v9.InputInferences.inferences":
 		return len(x.Inferences) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferences"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -888,15 +888,15 @@ func (x *fastReflection_BoundedInferences) Has(fd protoreflect.FieldDescriptor) 
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferences) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputInferences) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferences.inferences":
+	case "emissions.v9.InputInferences.inferences":
 		x.Inferences = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferences"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -906,19 +906,19 @@ func (x *fastReflection_BoundedInferences) Clear(fd protoreflect.FieldDescriptor
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedInferences) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInferences) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedInferences.inferences":
+	case "emissions.v9.InputInferences.inferences":
 		if len(x.Inferences) == 0 {
-			return protoreflect.ValueOfList(&_BoundedInferences_1_list{})
+			return protoreflect.ValueOfList(&_InputInferences_1_list{})
 		}
-		listValue := &_BoundedInferences_1_list{list: &x.Inferences}
+		listValue := &_InputInferences_1_list{list: &x.Inferences}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferences"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferences does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferences does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -932,17 +932,17 @@ func (x *fastReflection_BoundedInferences) Get(descriptor protoreflect.FieldDesc
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferences) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputInferences) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferences.inferences":
+	case "emissions.v9.InputInferences.inferences":
 		lv := value.List()
-		clv := lv.(*_BoundedInferences_1_list)
+		clv := lv.(*_InputInferences_1_list)
 		x.Inferences = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferences"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -956,45 +956,45 @@ func (x *fastReflection_BoundedInferences) Set(fd protoreflect.FieldDescriptor, 
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferences) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInferences) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferences.inferences":
+	case "emissions.v9.InputInferences.inferences":
 		if x.Inferences == nil {
-			x.Inferences = []*BoundedInference{}
+			x.Inferences = []*InputInference{}
 		}
-		value := &_BoundedInferences_1_list{list: &x.Inferences}
+		value := &_InputInferences_1_list{list: &x.Inferences}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferences"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferences does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedInferences) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInferences) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferences.inferences":
-		list := []*BoundedInference{}
-		return protoreflect.ValueOfList(&_BoundedInferences_1_list{list: &list})
+	case "emissions.v9.InputInferences.inferences":
+		list := []*InputInference{}
+		return protoreflect.ValueOfList(&_InputInferences_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferences"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferences does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedInferences) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputInferences) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedInferences", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputInferences", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1002,7 +1002,7 @@ func (x *fastReflection_BoundedInferences) WhichOneof(d protoreflect.OneofDescri
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedInferences) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputInferences) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -1013,7 +1013,7 @@ func (x *fastReflection_BoundedInferences) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferences) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputInferences) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -1025,7 +1025,7 @@ func (x *fastReflection_BoundedInferences) SetUnknown(fields protoreflect.RawFie
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedInferences) IsValid() bool {
+func (x *fastReflection_InputInferences) IsValid() bool {
 	return x != nil
 }
 
@@ -1035,9 +1035,9 @@ func (x *fastReflection_BoundedInferences) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedInferences) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputInferences) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedInferences)
+		x := input.Message.Interface().(*InputInferences)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1065,7 +1065,7 @@ func (x *fastReflection_BoundedInferences) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedInferences)
+		x := input.Message.Interface().(*InputInferences)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1111,7 +1111,7 @@ func (x *fastReflection_BoundedInferences) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedInferences)
+		x := input.Message.Interface().(*InputInferences)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1143,10 +1143,10 @@ func (x *fastReflection_BoundedInferences) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedInferences: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputInferences: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedInferences: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputInferences: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -1178,7 +1178,7 @@ func (x *fastReflection_BoundedInferences) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Inferences = append(x.Inferences, &BoundedInference{})
+				x.Inferences = append(x.Inferences, &InputInference{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Inferences[len(x.Inferences)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -1219,27 +1219,27 @@ func (x *fastReflection_BoundedInferences) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_BoundedForecastElement         protoreflect.MessageDescriptor
-	fd_BoundedForecastElement_inferer protoreflect.FieldDescriptor
-	fd_BoundedForecastElement_value   protoreflect.FieldDescriptor
+	md_InputForecastElement         protoreflect.MessageDescriptor
+	fd_InputForecastElement_inferer protoreflect.FieldDescriptor
+	fd_InputForecastElement_value   protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedForecastElement = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedForecastElement")
-	fd_BoundedForecastElement_inferer = md_BoundedForecastElement.Fields().ByName("inferer")
-	fd_BoundedForecastElement_value = md_BoundedForecastElement.Fields().ByName("value")
+	md_InputForecastElement = File_emissions_v9_inputworker_proto.Messages().ByName("InputForecastElement")
+	fd_InputForecastElement_inferer = md_InputForecastElement.Fields().ByName("inferer")
+	fd_InputForecastElement_value = md_InputForecastElement.Fields().ByName("value")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedForecastElement)(nil)
+var _ protoreflect.Message = (*fastReflection_InputForecastElement)(nil)
 
-type fastReflection_BoundedForecastElement BoundedForecastElement
+type fastReflection_InputForecastElement InputForecastElement
 
-func (x *BoundedForecastElement) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedForecastElement)(x)
+func (x *InputForecastElement) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputForecastElement)(x)
 }
 
-func (x *BoundedForecastElement) slowProtoReflect() protoreflect.Message {
+func (x *InputForecastElement) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1251,43 +1251,43 @@ func (x *BoundedForecastElement) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedForecastElement_messageType fastReflection_BoundedForecastElement_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedForecastElement_messageType{}
+var _fastReflection_InputForecastElement_messageType fastReflection_InputForecastElement_messageType
+var _ protoreflect.MessageType = fastReflection_InputForecastElement_messageType{}
 
-type fastReflection_BoundedForecastElement_messageType struct{}
+type fastReflection_InputForecastElement_messageType struct{}
 
-func (x fastReflection_BoundedForecastElement_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedForecastElement)(nil)
+func (x fastReflection_InputForecastElement_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputForecastElement)(nil)
 }
-func (x fastReflection_BoundedForecastElement_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedForecastElement)
+func (x fastReflection_InputForecastElement_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputForecastElement)
 }
-func (x fastReflection_BoundedForecastElement_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedForecastElement
+func (x fastReflection_InputForecastElement_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputForecastElement
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedForecastElement) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedForecastElement
+func (x *fastReflection_InputForecastElement) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputForecastElement
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedForecastElement) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedForecastElement_messageType
+func (x *fastReflection_InputForecastElement) Type() protoreflect.MessageType {
+	return _fastReflection_InputForecastElement_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedForecastElement) New() protoreflect.Message {
-	return new(fastReflection_BoundedForecastElement)
+func (x *fastReflection_InputForecastElement) New() protoreflect.Message {
+	return new(fastReflection_InputForecastElement)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedForecastElement) Interface() protoreflect.ProtoMessage {
-	return (*BoundedForecastElement)(x)
+func (x *fastReflection_InputForecastElement) Interface() protoreflect.ProtoMessage {
+	return (*InputForecastElement)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -1295,16 +1295,16 @@ func (x *fastReflection_BoundedForecastElement) Interface() protoreflect.ProtoMe
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedForecastElement) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputForecastElement) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Inferer != "" {
 		value := protoreflect.ValueOfString(x.Inferer)
-		if !f(fd_BoundedForecastElement_inferer, value) {
+		if !f(fd_InputForecastElement_inferer, value) {
 			return
 		}
 	}
 	if x.Value != "" {
 		value := protoreflect.ValueOfString(x.Value)
-		if !f(fd_BoundedForecastElement_value, value) {
+		if !f(fd_InputForecastElement_value, value) {
 			return
 		}
 	}
@@ -1321,17 +1321,17 @@ func (x *fastReflection_BoundedForecastElement) Range(f func(protoreflect.FieldD
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedForecastElement) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputForecastElement) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecastElement.inferer":
+	case "emissions.v9.InputForecastElement.inferer":
 		return x.Inferer != ""
-	case "emissions.v9.BoundedForecastElement.value":
+	case "emissions.v9.InputForecastElement.value":
 		return x.Value != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecastElement"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecastElement"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecastElement does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecastElement does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1341,17 +1341,17 @@ func (x *fastReflection_BoundedForecastElement) Has(fd protoreflect.FieldDescrip
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecastElement) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputForecastElement) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecastElement.inferer":
+	case "emissions.v9.InputForecastElement.inferer":
 		x.Inferer = ""
-	case "emissions.v9.BoundedForecastElement.value":
+	case "emissions.v9.InputForecastElement.value":
 		x.Value = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecastElement"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecastElement"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecastElement does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecastElement does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1361,19 +1361,19 @@ func (x *fastReflection_BoundedForecastElement) Clear(fd protoreflect.FieldDescr
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedForecastElement) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecastElement) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedForecastElement.inferer":
+	case "emissions.v9.InputForecastElement.inferer":
 		value := x.Inferer
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.BoundedForecastElement.value":
+	case "emissions.v9.InputForecastElement.value":
 		value := x.Value
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecastElement"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecastElement"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecastElement does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecastElement does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1387,17 +1387,17 @@ func (x *fastReflection_BoundedForecastElement) Get(descriptor protoreflect.Fiel
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecastElement) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputForecastElement) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecastElement.inferer":
+	case "emissions.v9.InputForecastElement.inferer":
 		x.Inferer = value.Interface().(string)
-	case "emissions.v9.BoundedForecastElement.value":
+	case "emissions.v9.InputForecastElement.value":
 		x.Value = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecastElement"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecastElement"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecastElement does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecastElement does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1411,44 +1411,44 @@ func (x *fastReflection_BoundedForecastElement) Set(fd protoreflect.FieldDescrip
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecastElement) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecastElement) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecastElement.inferer":
-		panic(fmt.Errorf("field inferer of message emissions.v9.BoundedForecastElement is not mutable"))
-	case "emissions.v9.BoundedForecastElement.value":
-		panic(fmt.Errorf("field value of message emissions.v9.BoundedForecastElement is not mutable"))
+	case "emissions.v9.InputForecastElement.inferer":
+		panic(fmt.Errorf("field inferer of message emissions.v9.InputForecastElement is not mutable"))
+	case "emissions.v9.InputForecastElement.value":
+		panic(fmt.Errorf("field value of message emissions.v9.InputForecastElement is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecastElement"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecastElement"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecastElement does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecastElement does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedForecastElement) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecastElement) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecastElement.inferer":
+	case "emissions.v9.InputForecastElement.inferer":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.BoundedForecastElement.value":
+	case "emissions.v9.InputForecastElement.value":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecastElement"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecastElement"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecastElement does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecastElement does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedForecastElement) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputForecastElement) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedForecastElement", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputForecastElement", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1456,7 +1456,7 @@ func (x *fastReflection_BoundedForecastElement) WhichOneof(d protoreflect.OneofD
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedForecastElement) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputForecastElement) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -1467,7 +1467,7 @@ func (x *fastReflection_BoundedForecastElement) GetUnknown() protoreflect.RawFie
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecastElement) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputForecastElement) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -1479,7 +1479,7 @@ func (x *fastReflection_BoundedForecastElement) SetUnknown(fields protoreflect.R
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedForecastElement) IsValid() bool {
+func (x *fastReflection_InputForecastElement) IsValid() bool {
 	return x != nil
 }
 
@@ -1489,9 +1489,9 @@ func (x *fastReflection_BoundedForecastElement) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedForecastElement) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputForecastElement) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedForecastElement)
+		x := input.Message.Interface().(*InputForecastElement)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1521,7 +1521,7 @@ func (x *fastReflection_BoundedForecastElement) ProtoMethods() *protoiface.Metho
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedForecastElement)
+		x := input.Message.Interface().(*InputForecastElement)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1565,7 +1565,7 @@ func (x *fastReflection_BoundedForecastElement) ProtoMethods() *protoiface.Metho
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedForecastElement)
+		x := input.Message.Interface().(*InputForecastElement)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1597,10 +1597,10 @@ func (x *fastReflection_BoundedForecastElement) ProtoMethods() *protoiface.Metho
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedForecastElement: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputForecastElement: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedForecastElement: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputForecastElement: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -1702,85 +1702,85 @@ func (x *fastReflection_BoundedForecastElement) ProtoMethods() *protoiface.Metho
 	}
 }
 
-var _ protoreflect.List = (*_BoundedForecast_4_list)(nil)
+var _ protoreflect.List = (*_InputForecast_4_list)(nil)
 
-type _BoundedForecast_4_list struct {
-	list *[]*BoundedForecastElement
+type _InputForecast_4_list struct {
+	list *[]*InputForecastElement
 }
 
-func (x *_BoundedForecast_4_list) Len() int {
+func (x *_InputForecast_4_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_BoundedForecast_4_list) Get(i int) protoreflect.Value {
+func (x *_InputForecast_4_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
-func (x *_BoundedForecast_4_list) Set(i int, value protoreflect.Value) {
+func (x *_InputForecast_4_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedForecastElement)
+	concreteValue := valueUnwrapped.Interface().(*InputForecastElement)
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_BoundedForecast_4_list) Append(value protoreflect.Value) {
+func (x *_InputForecast_4_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedForecastElement)
+	concreteValue := valueUnwrapped.Interface().(*InputForecastElement)
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_BoundedForecast_4_list) AppendMutable() protoreflect.Value {
-	v := new(BoundedForecastElement)
+func (x *_InputForecast_4_list) AppendMutable() protoreflect.Value {
+	v := new(InputForecastElement)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedForecast_4_list) Truncate(n int) {
+func (x *_InputForecast_4_list) Truncate(n int) {
 	for i := n; i < len(*x.list); i++ {
 		(*x.list)[i] = nil
 	}
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_BoundedForecast_4_list) NewElement() protoreflect.Value {
-	v := new(BoundedForecastElement)
+func (x *_InputForecast_4_list) NewElement() protoreflect.Value {
+	v := new(InputForecastElement)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedForecast_4_list) IsValid() bool {
+func (x *_InputForecast_4_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_BoundedForecast                   protoreflect.MessageDescriptor
-	fd_BoundedForecast_topic_id          protoreflect.FieldDescriptor
-	fd_BoundedForecast_block_height      protoreflect.FieldDescriptor
-	fd_BoundedForecast_forecaster        protoreflect.FieldDescriptor
-	fd_BoundedForecast_forecast_elements protoreflect.FieldDescriptor
-	fd_BoundedForecast_extra_data        protoreflect.FieldDescriptor
+	md_InputForecast                   protoreflect.MessageDescriptor
+	fd_InputForecast_topic_id          protoreflect.FieldDescriptor
+	fd_InputForecast_block_height      protoreflect.FieldDescriptor
+	fd_InputForecast_forecaster        protoreflect.FieldDescriptor
+	fd_InputForecast_forecast_elements protoreflect.FieldDescriptor
+	fd_InputForecast_extra_data        protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedForecast = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedForecast")
-	fd_BoundedForecast_topic_id = md_BoundedForecast.Fields().ByName("topic_id")
-	fd_BoundedForecast_block_height = md_BoundedForecast.Fields().ByName("block_height")
-	fd_BoundedForecast_forecaster = md_BoundedForecast.Fields().ByName("forecaster")
-	fd_BoundedForecast_forecast_elements = md_BoundedForecast.Fields().ByName("forecast_elements")
-	fd_BoundedForecast_extra_data = md_BoundedForecast.Fields().ByName("extra_data")
+	md_InputForecast = File_emissions_v9_inputworker_proto.Messages().ByName("InputForecast")
+	fd_InputForecast_topic_id = md_InputForecast.Fields().ByName("topic_id")
+	fd_InputForecast_block_height = md_InputForecast.Fields().ByName("block_height")
+	fd_InputForecast_forecaster = md_InputForecast.Fields().ByName("forecaster")
+	fd_InputForecast_forecast_elements = md_InputForecast.Fields().ByName("forecast_elements")
+	fd_InputForecast_extra_data = md_InputForecast.Fields().ByName("extra_data")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedForecast)(nil)
+var _ protoreflect.Message = (*fastReflection_InputForecast)(nil)
 
-type fastReflection_BoundedForecast BoundedForecast
+type fastReflection_InputForecast InputForecast
 
-func (x *BoundedForecast) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedForecast)(x)
+func (x *InputForecast) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputForecast)(x)
 }
 
-func (x *BoundedForecast) slowProtoReflect() protoreflect.Message {
+func (x *InputForecast) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1792,43 +1792,43 @@ func (x *BoundedForecast) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedForecast_messageType fastReflection_BoundedForecast_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedForecast_messageType{}
+var _fastReflection_InputForecast_messageType fastReflection_InputForecast_messageType
+var _ protoreflect.MessageType = fastReflection_InputForecast_messageType{}
 
-type fastReflection_BoundedForecast_messageType struct{}
+type fastReflection_InputForecast_messageType struct{}
 
-func (x fastReflection_BoundedForecast_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedForecast)(nil)
+func (x fastReflection_InputForecast_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputForecast)(nil)
 }
-func (x fastReflection_BoundedForecast_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedForecast)
+func (x fastReflection_InputForecast_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputForecast)
 }
-func (x fastReflection_BoundedForecast_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedForecast
+func (x fastReflection_InputForecast_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputForecast
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedForecast) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedForecast
+func (x *fastReflection_InputForecast) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputForecast
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedForecast) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedForecast_messageType
+func (x *fastReflection_InputForecast) Type() protoreflect.MessageType {
+	return _fastReflection_InputForecast_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedForecast) New() protoreflect.Message {
-	return new(fastReflection_BoundedForecast)
+func (x *fastReflection_InputForecast) New() protoreflect.Message {
+	return new(fastReflection_InputForecast)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedForecast) Interface() protoreflect.ProtoMessage {
-	return (*BoundedForecast)(x)
+func (x *fastReflection_InputForecast) Interface() protoreflect.ProtoMessage {
+	return (*InputForecast)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -1836,34 +1836,34 @@ func (x *fastReflection_BoundedForecast) Interface() protoreflect.ProtoMessage {
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedForecast) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputForecast) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_BoundedForecast_topic_id, value) {
+		if !f(fd_InputForecast_topic_id, value) {
 			return
 		}
 	}
 	if x.BlockHeight != int64(0) {
 		value := protoreflect.ValueOfInt64(x.BlockHeight)
-		if !f(fd_BoundedForecast_block_height, value) {
+		if !f(fd_InputForecast_block_height, value) {
 			return
 		}
 	}
 	if x.Forecaster != "" {
 		value := protoreflect.ValueOfString(x.Forecaster)
-		if !f(fd_BoundedForecast_forecaster, value) {
+		if !f(fd_InputForecast_forecaster, value) {
 			return
 		}
 	}
 	if len(x.ForecastElements) != 0 {
-		value := protoreflect.ValueOfList(&_BoundedForecast_4_list{list: &x.ForecastElements})
-		if !f(fd_BoundedForecast_forecast_elements, value) {
+		value := protoreflect.ValueOfList(&_InputForecast_4_list{list: &x.ForecastElements})
+		if !f(fd_InputForecast_forecast_elements, value) {
 			return
 		}
 	}
 	if len(x.ExtraData) != 0 {
 		value := protoreflect.ValueOfBytes(x.ExtraData)
-		if !f(fd_BoundedForecast_extra_data, value) {
+		if !f(fd_InputForecast_extra_data, value) {
 			return
 		}
 	}
@@ -1880,23 +1880,23 @@ func (x *fastReflection_BoundedForecast) Range(f func(protoreflect.FieldDescript
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedForecast) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputForecast) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecast.topic_id":
+	case "emissions.v9.InputForecast.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v9.BoundedForecast.block_height":
+	case "emissions.v9.InputForecast.block_height":
 		return x.BlockHeight != int64(0)
-	case "emissions.v9.BoundedForecast.forecaster":
+	case "emissions.v9.InputForecast.forecaster":
 		return x.Forecaster != ""
-	case "emissions.v9.BoundedForecast.forecast_elements":
+	case "emissions.v9.InputForecast.forecast_elements":
 		return len(x.ForecastElements) != 0
-	case "emissions.v9.BoundedForecast.extra_data":
+	case "emissions.v9.InputForecast.extra_data":
 		return len(x.ExtraData) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecast"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecast"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecast does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecast does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1906,23 +1906,23 @@ func (x *fastReflection_BoundedForecast) Has(fd protoreflect.FieldDescriptor) bo
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecast) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputForecast) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecast.topic_id":
+	case "emissions.v9.InputForecast.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v9.BoundedForecast.block_height":
+	case "emissions.v9.InputForecast.block_height":
 		x.BlockHeight = int64(0)
-	case "emissions.v9.BoundedForecast.forecaster":
+	case "emissions.v9.InputForecast.forecaster":
 		x.Forecaster = ""
-	case "emissions.v9.BoundedForecast.forecast_elements":
+	case "emissions.v9.InputForecast.forecast_elements":
 		x.ForecastElements = nil
-	case "emissions.v9.BoundedForecast.extra_data":
+	case "emissions.v9.InputForecast.extra_data":
 		x.ExtraData = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecast"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecast"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecast does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecast does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1932,31 +1932,31 @@ func (x *fastReflection_BoundedForecast) Clear(fd protoreflect.FieldDescriptor) 
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedForecast) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecast) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedForecast.topic_id":
+	case "emissions.v9.InputForecast.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v9.BoundedForecast.block_height":
+	case "emissions.v9.InputForecast.block_height":
 		value := x.BlockHeight
 		return protoreflect.ValueOfInt64(value)
-	case "emissions.v9.BoundedForecast.forecaster":
+	case "emissions.v9.InputForecast.forecaster":
 		value := x.Forecaster
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.BoundedForecast.forecast_elements":
+	case "emissions.v9.InputForecast.forecast_elements":
 		if len(x.ForecastElements) == 0 {
-			return protoreflect.ValueOfList(&_BoundedForecast_4_list{})
+			return protoreflect.ValueOfList(&_InputForecast_4_list{})
 		}
-		listValue := &_BoundedForecast_4_list{list: &x.ForecastElements}
+		listValue := &_InputForecast_4_list{list: &x.ForecastElements}
 		return protoreflect.ValueOfList(listValue)
-	case "emissions.v9.BoundedForecast.extra_data":
+	case "emissions.v9.InputForecast.extra_data":
 		value := x.ExtraData
 		return protoreflect.ValueOfBytes(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecast"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecast"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecast does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecast does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1970,25 +1970,25 @@ func (x *fastReflection_BoundedForecast) Get(descriptor protoreflect.FieldDescri
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecast) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputForecast) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecast.topic_id":
+	case "emissions.v9.InputForecast.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v9.BoundedForecast.block_height":
+	case "emissions.v9.InputForecast.block_height":
 		x.BlockHeight = value.Int()
-	case "emissions.v9.BoundedForecast.forecaster":
+	case "emissions.v9.InputForecast.forecaster":
 		x.Forecaster = value.Interface().(string)
-	case "emissions.v9.BoundedForecast.forecast_elements":
+	case "emissions.v9.InputForecast.forecast_elements":
 		lv := value.List()
-		clv := lv.(*_BoundedForecast_4_list)
+		clv := lv.(*_InputForecast_4_list)
 		x.ForecastElements = *clv.list
-	case "emissions.v9.BoundedForecast.extra_data":
+	case "emissions.v9.InputForecast.extra_data":
 		x.ExtraData = value.Bytes()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecast"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecast"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecast does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecast does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2002,61 +2002,61 @@ func (x *fastReflection_BoundedForecast) Set(fd protoreflect.FieldDescriptor, va
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecast) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecast) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecast.forecast_elements":
+	case "emissions.v9.InputForecast.forecast_elements":
 		if x.ForecastElements == nil {
-			x.ForecastElements = []*BoundedForecastElement{}
+			x.ForecastElements = []*InputForecastElement{}
 		}
-		value := &_BoundedForecast_4_list{list: &x.ForecastElements}
+		value := &_InputForecast_4_list{list: &x.ForecastElements}
 		return protoreflect.ValueOfList(value)
-	case "emissions.v9.BoundedForecast.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.BoundedForecast is not mutable"))
-	case "emissions.v9.BoundedForecast.block_height":
-		panic(fmt.Errorf("field block_height of message emissions.v9.BoundedForecast is not mutable"))
-	case "emissions.v9.BoundedForecast.forecaster":
-		panic(fmt.Errorf("field forecaster of message emissions.v9.BoundedForecast is not mutable"))
-	case "emissions.v9.BoundedForecast.extra_data":
-		panic(fmt.Errorf("field extra_data of message emissions.v9.BoundedForecast is not mutable"))
+	case "emissions.v9.InputForecast.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.InputForecast is not mutable"))
+	case "emissions.v9.InputForecast.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v9.InputForecast is not mutable"))
+	case "emissions.v9.InputForecast.forecaster":
+		panic(fmt.Errorf("field forecaster of message emissions.v9.InputForecast is not mutable"))
+	case "emissions.v9.InputForecast.extra_data":
+		panic(fmt.Errorf("field extra_data of message emissions.v9.InputForecast is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecast"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecast"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecast does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecast does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedForecast) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecast) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecast.topic_id":
+	case "emissions.v9.InputForecast.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v9.BoundedForecast.block_height":
+	case "emissions.v9.InputForecast.block_height":
 		return protoreflect.ValueOfInt64(int64(0))
-	case "emissions.v9.BoundedForecast.forecaster":
+	case "emissions.v9.InputForecast.forecaster":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.BoundedForecast.forecast_elements":
-		list := []*BoundedForecastElement{}
-		return protoreflect.ValueOfList(&_BoundedForecast_4_list{list: &list})
-	case "emissions.v9.BoundedForecast.extra_data":
+	case "emissions.v9.InputForecast.forecast_elements":
+		list := []*InputForecastElement{}
+		return protoreflect.ValueOfList(&_InputForecast_4_list{list: &list})
+	case "emissions.v9.InputForecast.extra_data":
 		return protoreflect.ValueOfBytes(nil)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecast"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecast"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecast does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecast does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedForecast) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputForecast) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedForecast", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputForecast", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2064,7 +2064,7 @@ func (x *fastReflection_BoundedForecast) WhichOneof(d protoreflect.OneofDescript
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedForecast) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputForecast) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2075,7 +2075,7 @@ func (x *fastReflection_BoundedForecast) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecast) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputForecast) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2087,7 +2087,7 @@ func (x *fastReflection_BoundedForecast) SetUnknown(fields protoreflect.RawField
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedForecast) IsValid() bool {
+func (x *fastReflection_InputForecast) IsValid() bool {
 	return x != nil
 }
 
@@ -2097,9 +2097,9 @@ func (x *fastReflection_BoundedForecast) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedForecast) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputForecast) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedForecast)
+		x := input.Message.Interface().(*InputForecast)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2141,7 +2141,7 @@ func (x *fastReflection_BoundedForecast) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedForecast)
+		x := input.Message.Interface().(*InputForecast)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2211,7 +2211,7 @@ func (x *fastReflection_BoundedForecast) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedForecast)
+		x := input.Message.Interface().(*InputForecast)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2243,10 +2243,10 @@ func (x *fastReflection_BoundedForecast) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedForecast: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputForecast: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedForecast: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputForecast: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -2348,7 +2348,7 @@ func (x *fastReflection_BoundedForecast) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.ForecastElements = append(x.ForecastElements, &BoundedForecastElement{})
+				x.ForecastElements = append(x.ForecastElements, &InputForecastElement{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.ForecastElements[len(x.ForecastElements)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -2422,77 +2422,77 @@ func (x *fastReflection_BoundedForecast) ProtoMethods() *protoiface.Methods {
 	}
 }
 
-var _ protoreflect.List = (*_BoundedForecasts_1_list)(nil)
+var _ protoreflect.List = (*_InputForecasts_1_list)(nil)
 
-type _BoundedForecasts_1_list struct {
-	list *[]*BoundedForecast
+type _InputForecasts_1_list struct {
+	list *[]*InputForecast
 }
 
-func (x *_BoundedForecasts_1_list) Len() int {
+func (x *_InputForecasts_1_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_BoundedForecasts_1_list) Get(i int) protoreflect.Value {
+func (x *_InputForecasts_1_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
-func (x *_BoundedForecasts_1_list) Set(i int, value protoreflect.Value) {
+func (x *_InputForecasts_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedForecast)
+	concreteValue := valueUnwrapped.Interface().(*InputForecast)
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_BoundedForecasts_1_list) Append(value protoreflect.Value) {
+func (x *_InputForecasts_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedForecast)
+	concreteValue := valueUnwrapped.Interface().(*InputForecast)
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_BoundedForecasts_1_list) AppendMutable() protoreflect.Value {
-	v := new(BoundedForecast)
+func (x *_InputForecasts_1_list) AppendMutable() protoreflect.Value {
+	v := new(InputForecast)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedForecasts_1_list) Truncate(n int) {
+func (x *_InputForecasts_1_list) Truncate(n int) {
 	for i := n; i < len(*x.list); i++ {
 		(*x.list)[i] = nil
 	}
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_BoundedForecasts_1_list) NewElement() protoreflect.Value {
-	v := new(BoundedForecast)
+func (x *_InputForecasts_1_list) NewElement() protoreflect.Value {
+	v := new(InputForecast)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedForecasts_1_list) IsValid() bool {
+func (x *_InputForecasts_1_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_BoundedForecasts           protoreflect.MessageDescriptor
-	fd_BoundedForecasts_forecasts protoreflect.FieldDescriptor
+	md_InputForecasts           protoreflect.MessageDescriptor
+	fd_InputForecasts_forecasts protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedForecasts = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedForecasts")
-	fd_BoundedForecasts_forecasts = md_BoundedForecasts.Fields().ByName("forecasts")
+	md_InputForecasts = File_emissions_v9_inputworker_proto.Messages().ByName("InputForecasts")
+	fd_InputForecasts_forecasts = md_InputForecasts.Fields().ByName("forecasts")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedForecasts)(nil)
+var _ protoreflect.Message = (*fastReflection_InputForecasts)(nil)
 
-type fastReflection_BoundedForecasts BoundedForecasts
+type fastReflection_InputForecasts InputForecasts
 
-func (x *BoundedForecasts) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedForecasts)(x)
+func (x *InputForecasts) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputForecasts)(x)
 }
 
-func (x *BoundedForecasts) slowProtoReflect() protoreflect.Message {
+func (x *InputForecasts) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2504,43 +2504,43 @@ func (x *BoundedForecasts) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedForecasts_messageType fastReflection_BoundedForecasts_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedForecasts_messageType{}
+var _fastReflection_InputForecasts_messageType fastReflection_InputForecasts_messageType
+var _ protoreflect.MessageType = fastReflection_InputForecasts_messageType{}
 
-type fastReflection_BoundedForecasts_messageType struct{}
+type fastReflection_InputForecasts_messageType struct{}
 
-func (x fastReflection_BoundedForecasts_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedForecasts)(nil)
+func (x fastReflection_InputForecasts_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputForecasts)(nil)
 }
-func (x fastReflection_BoundedForecasts_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedForecasts)
+func (x fastReflection_InputForecasts_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputForecasts)
 }
-func (x fastReflection_BoundedForecasts_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedForecasts
+func (x fastReflection_InputForecasts_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputForecasts
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedForecasts) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedForecasts
+func (x *fastReflection_InputForecasts) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputForecasts
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedForecasts) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedForecasts_messageType
+func (x *fastReflection_InputForecasts) Type() protoreflect.MessageType {
+	return _fastReflection_InputForecasts_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedForecasts) New() protoreflect.Message {
-	return new(fastReflection_BoundedForecasts)
+func (x *fastReflection_InputForecasts) New() protoreflect.Message {
+	return new(fastReflection_InputForecasts)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedForecasts) Interface() protoreflect.ProtoMessage {
-	return (*BoundedForecasts)(x)
+func (x *fastReflection_InputForecasts) Interface() protoreflect.ProtoMessage {
+	return (*InputForecasts)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -2548,10 +2548,10 @@ func (x *fastReflection_BoundedForecasts) Interface() protoreflect.ProtoMessage 
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedForecasts) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputForecasts) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if len(x.Forecasts) != 0 {
-		value := protoreflect.ValueOfList(&_BoundedForecasts_1_list{list: &x.Forecasts})
-		if !f(fd_BoundedForecasts_forecasts, value) {
+		value := protoreflect.ValueOfList(&_InputForecasts_1_list{list: &x.Forecasts})
+		if !f(fd_InputForecasts_forecasts, value) {
 			return
 		}
 	}
@@ -2568,15 +2568,15 @@ func (x *fastReflection_BoundedForecasts) Range(f func(protoreflect.FieldDescrip
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedForecasts) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputForecasts) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecasts.forecasts":
+	case "emissions.v9.InputForecasts.forecasts":
 		return len(x.Forecasts) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecasts"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecasts"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecasts does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecasts does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2586,15 +2586,15 @@ func (x *fastReflection_BoundedForecasts) Has(fd protoreflect.FieldDescriptor) b
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecasts) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputForecasts) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecasts.forecasts":
+	case "emissions.v9.InputForecasts.forecasts":
 		x.Forecasts = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecasts"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecasts"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecasts does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecasts does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2604,19 +2604,19 @@ func (x *fastReflection_BoundedForecasts) Clear(fd protoreflect.FieldDescriptor)
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedForecasts) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecasts) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedForecasts.forecasts":
+	case "emissions.v9.InputForecasts.forecasts":
 		if len(x.Forecasts) == 0 {
-			return protoreflect.ValueOfList(&_BoundedForecasts_1_list{})
+			return protoreflect.ValueOfList(&_InputForecasts_1_list{})
 		}
-		listValue := &_BoundedForecasts_1_list{list: &x.Forecasts}
+		listValue := &_InputForecasts_1_list{list: &x.Forecasts}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecasts"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecasts"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecasts does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecasts does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2630,17 +2630,17 @@ func (x *fastReflection_BoundedForecasts) Get(descriptor protoreflect.FieldDescr
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecasts) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputForecasts) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecasts.forecasts":
+	case "emissions.v9.InputForecasts.forecasts":
 		lv := value.List()
-		clv := lv.(*_BoundedForecasts_1_list)
+		clv := lv.(*_InputForecasts_1_list)
 		x.Forecasts = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecasts"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecasts"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecasts does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecasts does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2654,45 +2654,45 @@ func (x *fastReflection_BoundedForecasts) Set(fd protoreflect.FieldDescriptor, v
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecasts) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecasts) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecasts.forecasts":
+	case "emissions.v9.InputForecasts.forecasts":
 		if x.Forecasts == nil {
-			x.Forecasts = []*BoundedForecast{}
+			x.Forecasts = []*InputForecast{}
 		}
-		value := &_BoundedForecasts_1_list{list: &x.Forecasts}
+		value := &_InputForecasts_1_list{list: &x.Forecasts}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecasts"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecasts"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecasts does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecasts does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedForecasts) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputForecasts) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedForecasts.forecasts":
-		list := []*BoundedForecast{}
-		return protoreflect.ValueOfList(&_BoundedForecasts_1_list{list: &list})
+	case "emissions.v9.InputForecasts.forecasts":
+		list := []*InputForecast{}
+		return protoreflect.ValueOfList(&_InputForecasts_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedForecasts"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputForecasts"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedForecasts does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputForecasts does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedForecasts) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputForecasts) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedForecasts", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputForecasts", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2700,7 +2700,7 @@ func (x *fastReflection_BoundedForecasts) WhichOneof(d protoreflect.OneofDescrip
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedForecasts) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputForecasts) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2711,7 +2711,7 @@ func (x *fastReflection_BoundedForecasts) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedForecasts) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputForecasts) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2723,7 +2723,7 @@ func (x *fastReflection_BoundedForecasts) SetUnknown(fields protoreflect.RawFiel
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedForecasts) IsValid() bool {
+func (x *fastReflection_InputForecasts) IsValid() bool {
 	return x != nil
 }
 
@@ -2733,9 +2733,9 @@ func (x *fastReflection_BoundedForecasts) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedForecasts) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputForecasts) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedForecasts)
+		x := input.Message.Interface().(*InputForecasts)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2763,7 +2763,7 @@ func (x *fastReflection_BoundedForecasts) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedForecasts)
+		x := input.Message.Interface().(*InputForecasts)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2809,7 +2809,7 @@ func (x *fastReflection_BoundedForecasts) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedForecasts)
+		x := input.Message.Interface().(*InputForecasts)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2841,10 +2841,10 @@ func (x *fastReflection_BoundedForecasts) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedForecasts: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputForecasts: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedForecasts: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputForecasts: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -2876,7 +2876,7 @@ func (x *fastReflection_BoundedForecasts) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Forecasts = append(x.Forecasts, &BoundedForecast{})
+				x.Forecasts = append(x.Forecasts, &InputForecast{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Forecasts[len(x.Forecasts)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -2917,27 +2917,27 @@ func (x *fastReflection_BoundedForecasts) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_BoundedInferenceForecastBundle           protoreflect.MessageDescriptor
-	fd_BoundedInferenceForecastBundle_inference protoreflect.FieldDescriptor
-	fd_BoundedInferenceForecastBundle_forecast  protoreflect.FieldDescriptor
+	md_InputInferenceForecastBundle           protoreflect.MessageDescriptor
+	fd_InputInferenceForecastBundle_inference protoreflect.FieldDescriptor
+	fd_InputInferenceForecastBundle_forecast  protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedInferenceForecastBundle = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedInferenceForecastBundle")
-	fd_BoundedInferenceForecastBundle_inference = md_BoundedInferenceForecastBundle.Fields().ByName("inference")
-	fd_BoundedInferenceForecastBundle_forecast = md_BoundedInferenceForecastBundle.Fields().ByName("forecast")
+	md_InputInferenceForecastBundle = File_emissions_v9_inputworker_proto.Messages().ByName("InputInferenceForecastBundle")
+	fd_InputInferenceForecastBundle_inference = md_InputInferenceForecastBundle.Fields().ByName("inference")
+	fd_InputInferenceForecastBundle_forecast = md_InputInferenceForecastBundle.Fields().ByName("forecast")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedInferenceForecastBundle)(nil)
+var _ protoreflect.Message = (*fastReflection_InputInferenceForecastBundle)(nil)
 
-type fastReflection_BoundedInferenceForecastBundle BoundedInferenceForecastBundle
+type fastReflection_InputInferenceForecastBundle InputInferenceForecastBundle
 
-func (x *BoundedInferenceForecastBundle) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedInferenceForecastBundle)(x)
+func (x *InputInferenceForecastBundle) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputInferenceForecastBundle)(x)
 }
 
-func (x *BoundedInferenceForecastBundle) slowProtoReflect() protoreflect.Message {
+func (x *InputInferenceForecastBundle) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2949,43 +2949,43 @@ func (x *BoundedInferenceForecastBundle) slowProtoReflect() protoreflect.Message
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedInferenceForecastBundle_messageType fastReflection_BoundedInferenceForecastBundle_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedInferenceForecastBundle_messageType{}
+var _fastReflection_InputInferenceForecastBundle_messageType fastReflection_InputInferenceForecastBundle_messageType
+var _ protoreflect.MessageType = fastReflection_InputInferenceForecastBundle_messageType{}
 
-type fastReflection_BoundedInferenceForecastBundle_messageType struct{}
+type fastReflection_InputInferenceForecastBundle_messageType struct{}
 
-func (x fastReflection_BoundedInferenceForecastBundle_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedInferenceForecastBundle)(nil)
+func (x fastReflection_InputInferenceForecastBundle_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputInferenceForecastBundle)(nil)
 }
-func (x fastReflection_BoundedInferenceForecastBundle_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedInferenceForecastBundle)
+func (x fastReflection_InputInferenceForecastBundle_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputInferenceForecastBundle)
 }
-func (x fastReflection_BoundedInferenceForecastBundle_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedInferenceForecastBundle
+func (x fastReflection_InputInferenceForecastBundle_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputInferenceForecastBundle
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedInferenceForecastBundle) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedInferenceForecastBundle
+func (x *fastReflection_InputInferenceForecastBundle) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputInferenceForecastBundle
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedInferenceForecastBundle) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedInferenceForecastBundle_messageType
+func (x *fastReflection_InputInferenceForecastBundle) Type() protoreflect.MessageType {
+	return _fastReflection_InputInferenceForecastBundle_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedInferenceForecastBundle) New() protoreflect.Message {
-	return new(fastReflection_BoundedInferenceForecastBundle)
+func (x *fastReflection_InputInferenceForecastBundle) New() protoreflect.Message {
+	return new(fastReflection_InputInferenceForecastBundle)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedInferenceForecastBundle) Interface() protoreflect.ProtoMessage {
-	return (*BoundedInferenceForecastBundle)(x)
+func (x *fastReflection_InputInferenceForecastBundle) Interface() protoreflect.ProtoMessage {
+	return (*InputInferenceForecastBundle)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -2993,16 +2993,16 @@ func (x *fastReflection_BoundedInferenceForecastBundle) Interface() protoreflect
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedInferenceForecastBundle) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputInferenceForecastBundle) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Inference != nil {
 		value := protoreflect.ValueOfMessage(x.Inference.ProtoReflect())
-		if !f(fd_BoundedInferenceForecastBundle_inference, value) {
+		if !f(fd_InputInferenceForecastBundle_inference, value) {
 			return
 		}
 	}
 	if x.Forecast != nil {
 		value := protoreflect.ValueOfMessage(x.Forecast.ProtoReflect())
-		if !f(fd_BoundedInferenceForecastBundle_forecast, value) {
+		if !f(fd_InputInferenceForecastBundle_forecast, value) {
 			return
 		}
 	}
@@ -3019,17 +3019,17 @@ func (x *fastReflection_BoundedInferenceForecastBundle) Range(f func(protoreflec
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedInferenceForecastBundle) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputInferenceForecastBundle) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferenceForecastBundle.inference":
+	case "emissions.v9.InputInferenceForecastBundle.inference":
 		return x.Inference != nil
-	case "emissions.v9.BoundedInferenceForecastBundle.forecast":
+	case "emissions.v9.InputInferenceForecastBundle.forecast":
 		return x.Forecast != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferenceForecastBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferenceForecastBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferenceForecastBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferenceForecastBundle does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3039,17 +3039,17 @@ func (x *fastReflection_BoundedInferenceForecastBundle) Has(fd protoreflect.Fiel
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferenceForecastBundle) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputInferenceForecastBundle) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferenceForecastBundle.inference":
+	case "emissions.v9.InputInferenceForecastBundle.inference":
 		x.Inference = nil
-	case "emissions.v9.BoundedInferenceForecastBundle.forecast":
+	case "emissions.v9.InputInferenceForecastBundle.forecast":
 		x.Forecast = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferenceForecastBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferenceForecastBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferenceForecastBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferenceForecastBundle does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3059,19 +3059,19 @@ func (x *fastReflection_BoundedInferenceForecastBundle) Clear(fd protoreflect.Fi
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedInferenceForecastBundle) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInferenceForecastBundle) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedInferenceForecastBundle.inference":
+	case "emissions.v9.InputInferenceForecastBundle.inference":
 		value := x.Inference
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "emissions.v9.BoundedInferenceForecastBundle.forecast":
+	case "emissions.v9.InputInferenceForecastBundle.forecast":
 		value := x.Forecast
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferenceForecastBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferenceForecastBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferenceForecastBundle does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferenceForecastBundle does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3085,17 +3085,17 @@ func (x *fastReflection_BoundedInferenceForecastBundle) Get(descriptor protorefl
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferenceForecastBundle) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputInferenceForecastBundle) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferenceForecastBundle.inference":
-		x.Inference = value.Message().Interface().(*BoundedInference)
-	case "emissions.v9.BoundedInferenceForecastBundle.forecast":
-		x.Forecast = value.Message().Interface().(*BoundedForecast)
+	case "emissions.v9.InputInferenceForecastBundle.inference":
+		x.Inference = value.Message().Interface().(*InputInference)
+	case "emissions.v9.InputInferenceForecastBundle.forecast":
+		x.Forecast = value.Message().Interface().(*InputForecast)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferenceForecastBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferenceForecastBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferenceForecastBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferenceForecastBundle does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3109,52 +3109,52 @@ func (x *fastReflection_BoundedInferenceForecastBundle) Set(fd protoreflect.Fiel
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferenceForecastBundle) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInferenceForecastBundle) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferenceForecastBundle.inference":
+	case "emissions.v9.InputInferenceForecastBundle.inference":
 		if x.Inference == nil {
-			x.Inference = new(BoundedInference)
+			x.Inference = new(InputInference)
 		}
 		return protoreflect.ValueOfMessage(x.Inference.ProtoReflect())
-	case "emissions.v9.BoundedInferenceForecastBundle.forecast":
+	case "emissions.v9.InputInferenceForecastBundle.forecast":
 		if x.Forecast == nil {
-			x.Forecast = new(BoundedForecast)
+			x.Forecast = new(InputForecast)
 		}
 		return protoreflect.ValueOfMessage(x.Forecast.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferenceForecastBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferenceForecastBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferenceForecastBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferenceForecastBundle does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedInferenceForecastBundle) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputInferenceForecastBundle) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedInferenceForecastBundle.inference":
-		m := new(BoundedInference)
+	case "emissions.v9.InputInferenceForecastBundle.inference":
+		m := new(InputInference)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
-	case "emissions.v9.BoundedInferenceForecastBundle.forecast":
-		m := new(BoundedForecast)
+	case "emissions.v9.InputInferenceForecastBundle.forecast":
+		m := new(InputForecast)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedInferenceForecastBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputInferenceForecastBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedInferenceForecastBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputInferenceForecastBundle does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedInferenceForecastBundle) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputInferenceForecastBundle) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedInferenceForecastBundle", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputInferenceForecastBundle", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3162,7 +3162,7 @@ func (x *fastReflection_BoundedInferenceForecastBundle) WhichOneof(d protoreflec
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedInferenceForecastBundle) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputInferenceForecastBundle) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -3173,7 +3173,7 @@ func (x *fastReflection_BoundedInferenceForecastBundle) GetUnknown() protoreflec
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedInferenceForecastBundle) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputInferenceForecastBundle) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -3185,7 +3185,7 @@ func (x *fastReflection_BoundedInferenceForecastBundle) SetUnknown(fields protor
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedInferenceForecastBundle) IsValid() bool {
+func (x *fastReflection_InputInferenceForecastBundle) IsValid() bool {
 	return x != nil
 }
 
@@ -3195,9 +3195,9 @@ func (x *fastReflection_BoundedInferenceForecastBundle) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedInferenceForecastBundle) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputInferenceForecastBundle) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedInferenceForecastBundle)
+		x := input.Message.Interface().(*InputInferenceForecastBundle)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -3227,7 +3227,7 @@ func (x *fastReflection_BoundedInferenceForecastBundle) ProtoMethods() *protoifa
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedInferenceForecastBundle)
+		x := input.Message.Interface().(*InputInferenceForecastBundle)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -3285,7 +3285,7 @@ func (x *fastReflection_BoundedInferenceForecastBundle) ProtoMethods() *protoifa
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedInferenceForecastBundle)
+		x := input.Message.Interface().(*InputInferenceForecastBundle)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -3317,10 +3317,10 @@ func (x *fastReflection_BoundedInferenceForecastBundle) ProtoMethods() *protoifa
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedInferenceForecastBundle: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputInferenceForecastBundle: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedInferenceForecastBundle: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputInferenceForecastBundle: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -3353,7 +3353,7 @@ func (x *fastReflection_BoundedInferenceForecastBundle) ProtoMethods() *protoifa
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Inference == nil {
-					x.Inference = &BoundedInference{}
+					x.Inference = &InputInference{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Inference); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -3389,7 +3389,7 @@ func (x *fastReflection_BoundedInferenceForecastBundle) ProtoMethods() *protoifa
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Forecast == nil {
-					x.Forecast = &BoundedForecast{}
+					x.Forecast = &InputForecast{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Forecast); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -3431,35 +3431,35 @@ func (x *fastReflection_BoundedInferenceForecastBundle) ProtoMethods() *protoifa
 }
 
 var (
-	md_BoundedWorkerDataBundle                                       protoreflect.MessageDescriptor
-	fd_BoundedWorkerDataBundle_worker                                protoreflect.FieldDescriptor
-	fd_BoundedWorkerDataBundle_nonce                                 protoreflect.FieldDescriptor
-	fd_BoundedWorkerDataBundle_topic_id                              protoreflect.FieldDescriptor
-	fd_BoundedWorkerDataBundle_inference_forecasts_bundle            protoreflect.FieldDescriptor
-	fd_BoundedWorkerDataBundle_inferences_forecasts_bundle_signature protoreflect.FieldDescriptor
-	fd_BoundedWorkerDataBundle_pubkey                                protoreflect.FieldDescriptor
+	md_InputWorkerDataBundle                                       protoreflect.MessageDescriptor
+	fd_InputWorkerDataBundle_worker                                protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_nonce                                 protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_topic_id                              protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_inference_forecasts_bundle            protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_inferences_forecasts_bundle_signature protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_pubkey                                protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedWorkerDataBundle = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedWorkerDataBundle")
-	fd_BoundedWorkerDataBundle_worker = md_BoundedWorkerDataBundle.Fields().ByName("worker")
-	fd_BoundedWorkerDataBundle_nonce = md_BoundedWorkerDataBundle.Fields().ByName("nonce")
-	fd_BoundedWorkerDataBundle_topic_id = md_BoundedWorkerDataBundle.Fields().ByName("topic_id")
-	fd_BoundedWorkerDataBundle_inference_forecasts_bundle = md_BoundedWorkerDataBundle.Fields().ByName("inference_forecasts_bundle")
-	fd_BoundedWorkerDataBundle_inferences_forecasts_bundle_signature = md_BoundedWorkerDataBundle.Fields().ByName("inferences_forecasts_bundle_signature")
-	fd_BoundedWorkerDataBundle_pubkey = md_BoundedWorkerDataBundle.Fields().ByName("pubkey")
+	md_InputWorkerDataBundle = File_emissions_v9_inputworker_proto.Messages().ByName("InputWorkerDataBundle")
+	fd_InputWorkerDataBundle_worker = md_InputWorkerDataBundle.Fields().ByName("worker")
+	fd_InputWorkerDataBundle_nonce = md_InputWorkerDataBundle.Fields().ByName("nonce")
+	fd_InputWorkerDataBundle_topic_id = md_InputWorkerDataBundle.Fields().ByName("topic_id")
+	fd_InputWorkerDataBundle_inference_forecasts_bundle = md_InputWorkerDataBundle.Fields().ByName("inference_forecasts_bundle")
+	fd_InputWorkerDataBundle_inferences_forecasts_bundle_signature = md_InputWorkerDataBundle.Fields().ByName("inferences_forecasts_bundle_signature")
+	fd_InputWorkerDataBundle_pubkey = md_InputWorkerDataBundle.Fields().ByName("pubkey")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedWorkerDataBundle)(nil)
+var _ protoreflect.Message = (*fastReflection_InputWorkerDataBundle)(nil)
 
-type fastReflection_BoundedWorkerDataBundle BoundedWorkerDataBundle
+type fastReflection_InputWorkerDataBundle InputWorkerDataBundle
 
-func (x *BoundedWorkerDataBundle) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedWorkerDataBundle)(x)
+func (x *InputWorkerDataBundle) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputWorkerDataBundle)(x)
 }
 
-func (x *BoundedWorkerDataBundle) slowProtoReflect() protoreflect.Message {
+func (x *InputWorkerDataBundle) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -3471,43 +3471,43 @@ func (x *BoundedWorkerDataBundle) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedWorkerDataBundle_messageType fastReflection_BoundedWorkerDataBundle_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedWorkerDataBundle_messageType{}
+var _fastReflection_InputWorkerDataBundle_messageType fastReflection_InputWorkerDataBundle_messageType
+var _ protoreflect.MessageType = fastReflection_InputWorkerDataBundle_messageType{}
 
-type fastReflection_BoundedWorkerDataBundle_messageType struct{}
+type fastReflection_InputWorkerDataBundle_messageType struct{}
 
-func (x fastReflection_BoundedWorkerDataBundle_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedWorkerDataBundle)(nil)
+func (x fastReflection_InputWorkerDataBundle_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputWorkerDataBundle)(nil)
 }
-func (x fastReflection_BoundedWorkerDataBundle_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedWorkerDataBundle)
+func (x fastReflection_InputWorkerDataBundle_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputWorkerDataBundle)
 }
-func (x fastReflection_BoundedWorkerDataBundle_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedWorkerDataBundle
+func (x fastReflection_InputWorkerDataBundle_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputWorkerDataBundle
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedWorkerDataBundle) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedWorkerDataBundle
+func (x *fastReflection_InputWorkerDataBundle) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputWorkerDataBundle
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedWorkerDataBundle) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedWorkerDataBundle_messageType
+func (x *fastReflection_InputWorkerDataBundle) Type() protoreflect.MessageType {
+	return _fastReflection_InputWorkerDataBundle_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedWorkerDataBundle) New() protoreflect.Message {
-	return new(fastReflection_BoundedWorkerDataBundle)
+func (x *fastReflection_InputWorkerDataBundle) New() protoreflect.Message {
+	return new(fastReflection_InputWorkerDataBundle)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedWorkerDataBundle) Interface() protoreflect.ProtoMessage {
-	return (*BoundedWorkerDataBundle)(x)
+func (x *fastReflection_InputWorkerDataBundle) Interface() protoreflect.ProtoMessage {
+	return (*InputWorkerDataBundle)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -3515,40 +3515,40 @@ func (x *fastReflection_BoundedWorkerDataBundle) Interface() protoreflect.ProtoM
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedWorkerDataBundle) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputWorkerDataBundle) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Worker != "" {
 		value := protoreflect.ValueOfString(x.Worker)
-		if !f(fd_BoundedWorkerDataBundle_worker, value) {
+		if !f(fd_InputWorkerDataBundle_worker, value) {
 			return
 		}
 	}
 	if x.Nonce != nil {
 		value := protoreflect.ValueOfMessage(x.Nonce.ProtoReflect())
-		if !f(fd_BoundedWorkerDataBundle_nonce, value) {
+		if !f(fd_InputWorkerDataBundle_nonce, value) {
 			return
 		}
 	}
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_BoundedWorkerDataBundle_topic_id, value) {
+		if !f(fd_InputWorkerDataBundle_topic_id, value) {
 			return
 		}
 	}
 	if x.InferenceForecastsBundle != nil {
 		value := protoreflect.ValueOfMessage(x.InferenceForecastsBundle.ProtoReflect())
-		if !f(fd_BoundedWorkerDataBundle_inference_forecasts_bundle, value) {
+		if !f(fd_InputWorkerDataBundle_inference_forecasts_bundle, value) {
 			return
 		}
 	}
 	if len(x.InferencesForecastsBundleSignature) != 0 {
 		value := protoreflect.ValueOfBytes(x.InferencesForecastsBundleSignature)
-		if !f(fd_BoundedWorkerDataBundle_inferences_forecasts_bundle_signature, value) {
+		if !f(fd_InputWorkerDataBundle_inferences_forecasts_bundle_signature, value) {
 			return
 		}
 	}
 	if x.Pubkey != "" {
 		value := protoreflect.ValueOfString(x.Pubkey)
-		if !f(fd_BoundedWorkerDataBundle_pubkey, value) {
+		if !f(fd_InputWorkerDataBundle_pubkey, value) {
 			return
 		}
 	}
@@ -3565,25 +3565,25 @@ func (x *fastReflection_BoundedWorkerDataBundle) Range(f func(protoreflect.Field
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedWorkerDataBundle) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputWorkerDataBundle) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundle.worker":
+	case "emissions.v9.InputWorkerDataBundle.worker":
 		return x.Worker != ""
-	case "emissions.v9.BoundedWorkerDataBundle.nonce":
+	case "emissions.v9.InputWorkerDataBundle.nonce":
 		return x.Nonce != nil
-	case "emissions.v9.BoundedWorkerDataBundle.topic_id":
+	case "emissions.v9.InputWorkerDataBundle.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v9.BoundedWorkerDataBundle.inference_forecasts_bundle":
+	case "emissions.v9.InputWorkerDataBundle.inference_forecasts_bundle":
 		return x.InferenceForecastsBundle != nil
-	case "emissions.v9.BoundedWorkerDataBundle.inferences_forecasts_bundle_signature":
+	case "emissions.v9.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
 		return len(x.InferencesForecastsBundleSignature) != 0
-	case "emissions.v9.BoundedWorkerDataBundle.pubkey":
+	case "emissions.v9.InputWorkerDataBundle.pubkey":
 		return x.Pubkey != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundle does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3593,25 +3593,25 @@ func (x *fastReflection_BoundedWorkerDataBundle) Has(fd protoreflect.FieldDescri
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundle) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputWorkerDataBundle) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundle.worker":
+	case "emissions.v9.InputWorkerDataBundle.worker":
 		x.Worker = ""
-	case "emissions.v9.BoundedWorkerDataBundle.nonce":
+	case "emissions.v9.InputWorkerDataBundle.nonce":
 		x.Nonce = nil
-	case "emissions.v9.BoundedWorkerDataBundle.topic_id":
+	case "emissions.v9.InputWorkerDataBundle.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v9.BoundedWorkerDataBundle.inference_forecasts_bundle":
+	case "emissions.v9.InputWorkerDataBundle.inference_forecasts_bundle":
 		x.InferenceForecastsBundle = nil
-	case "emissions.v9.BoundedWorkerDataBundle.inferences_forecasts_bundle_signature":
+	case "emissions.v9.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
 		x.InferencesForecastsBundleSignature = nil
-	case "emissions.v9.BoundedWorkerDataBundle.pubkey":
+	case "emissions.v9.InputWorkerDataBundle.pubkey":
 		x.Pubkey = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundle does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3621,31 +3621,31 @@ func (x *fastReflection_BoundedWorkerDataBundle) Clear(fd protoreflect.FieldDesc
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedWorkerDataBundle) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputWorkerDataBundle) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundle.worker":
+	case "emissions.v9.InputWorkerDataBundle.worker":
 		value := x.Worker
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.BoundedWorkerDataBundle.nonce":
+	case "emissions.v9.InputWorkerDataBundle.nonce":
 		value := x.Nonce
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "emissions.v9.BoundedWorkerDataBundle.topic_id":
+	case "emissions.v9.InputWorkerDataBundle.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v9.BoundedWorkerDataBundle.inference_forecasts_bundle":
+	case "emissions.v9.InputWorkerDataBundle.inference_forecasts_bundle":
 		value := x.InferenceForecastsBundle
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "emissions.v9.BoundedWorkerDataBundle.inferences_forecasts_bundle_signature":
+	case "emissions.v9.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
 		value := x.InferencesForecastsBundleSignature
 		return protoreflect.ValueOfBytes(value)
-	case "emissions.v9.BoundedWorkerDataBundle.pubkey":
+	case "emissions.v9.InputWorkerDataBundle.pubkey":
 		value := x.Pubkey
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundle does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundle does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3659,25 +3659,25 @@ func (x *fastReflection_BoundedWorkerDataBundle) Get(descriptor protoreflect.Fie
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundle) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputWorkerDataBundle) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundle.worker":
+	case "emissions.v9.InputWorkerDataBundle.worker":
 		x.Worker = value.Interface().(string)
-	case "emissions.v9.BoundedWorkerDataBundle.nonce":
+	case "emissions.v9.InputWorkerDataBundle.nonce":
 		x.Nonce = value.Message().Interface().(*v3.Nonce)
-	case "emissions.v9.BoundedWorkerDataBundle.topic_id":
+	case "emissions.v9.InputWorkerDataBundle.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v9.BoundedWorkerDataBundle.inference_forecasts_bundle":
-		x.InferenceForecastsBundle = value.Message().Interface().(*BoundedInferenceForecastBundle)
-	case "emissions.v9.BoundedWorkerDataBundle.inferences_forecasts_bundle_signature":
+	case "emissions.v9.InputWorkerDataBundle.inference_forecasts_bundle":
+		x.InferenceForecastsBundle = value.Message().Interface().(*InputInferenceForecastBundle)
+	case "emissions.v9.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
 		x.InferencesForecastsBundleSignature = value.Bytes()
-	case "emissions.v9.BoundedWorkerDataBundle.pubkey":
+	case "emissions.v9.InputWorkerDataBundle.pubkey":
 		x.Pubkey = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundle does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3691,68 +3691,68 @@ func (x *fastReflection_BoundedWorkerDataBundle) Set(fd protoreflect.FieldDescri
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundle) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputWorkerDataBundle) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundle.nonce":
+	case "emissions.v9.InputWorkerDataBundle.nonce":
 		if x.Nonce == nil {
 			x.Nonce = new(v3.Nonce)
 		}
 		return protoreflect.ValueOfMessage(x.Nonce.ProtoReflect())
-	case "emissions.v9.BoundedWorkerDataBundle.inference_forecasts_bundle":
+	case "emissions.v9.InputWorkerDataBundle.inference_forecasts_bundle":
 		if x.InferenceForecastsBundle == nil {
-			x.InferenceForecastsBundle = new(BoundedInferenceForecastBundle)
+			x.InferenceForecastsBundle = new(InputInferenceForecastBundle)
 		}
 		return protoreflect.ValueOfMessage(x.InferenceForecastsBundle.ProtoReflect())
-	case "emissions.v9.BoundedWorkerDataBundle.worker":
-		panic(fmt.Errorf("field worker of message emissions.v9.BoundedWorkerDataBundle is not mutable"))
-	case "emissions.v9.BoundedWorkerDataBundle.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.BoundedWorkerDataBundle is not mutable"))
-	case "emissions.v9.BoundedWorkerDataBundle.inferences_forecasts_bundle_signature":
-		panic(fmt.Errorf("field inferences_forecasts_bundle_signature of message emissions.v9.BoundedWorkerDataBundle is not mutable"))
-	case "emissions.v9.BoundedWorkerDataBundle.pubkey":
-		panic(fmt.Errorf("field pubkey of message emissions.v9.BoundedWorkerDataBundle is not mutable"))
+	case "emissions.v9.InputWorkerDataBundle.worker":
+		panic(fmt.Errorf("field worker of message emissions.v9.InputWorkerDataBundle is not mutable"))
+	case "emissions.v9.InputWorkerDataBundle.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.InputWorkerDataBundle is not mutable"))
+	case "emissions.v9.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
+		panic(fmt.Errorf("field inferences_forecasts_bundle_signature of message emissions.v9.InputWorkerDataBundle is not mutable"))
+	case "emissions.v9.InputWorkerDataBundle.pubkey":
+		panic(fmt.Errorf("field pubkey of message emissions.v9.InputWorkerDataBundle is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundle does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedWorkerDataBundle) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputWorkerDataBundle) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundle.worker":
+	case "emissions.v9.InputWorkerDataBundle.worker":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.BoundedWorkerDataBundle.nonce":
+	case "emissions.v9.InputWorkerDataBundle.nonce":
 		m := new(v3.Nonce)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
-	case "emissions.v9.BoundedWorkerDataBundle.topic_id":
+	case "emissions.v9.InputWorkerDataBundle.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v9.BoundedWorkerDataBundle.inference_forecasts_bundle":
-		m := new(BoundedInferenceForecastBundle)
+	case "emissions.v9.InputWorkerDataBundle.inference_forecasts_bundle":
+		m := new(InputInferenceForecastBundle)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
-	case "emissions.v9.BoundedWorkerDataBundle.inferences_forecasts_bundle_signature":
+	case "emissions.v9.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
 		return protoreflect.ValueOfBytes(nil)
-	case "emissions.v9.BoundedWorkerDataBundle.pubkey":
+	case "emissions.v9.InputWorkerDataBundle.pubkey":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundle"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundle"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundle does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundle does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedWorkerDataBundle) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputWorkerDataBundle) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedWorkerDataBundle", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputWorkerDataBundle", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3760,7 +3760,7 @@ func (x *fastReflection_BoundedWorkerDataBundle) WhichOneof(d protoreflect.Oneof
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedWorkerDataBundle) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputWorkerDataBundle) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -3771,7 +3771,7 @@ func (x *fastReflection_BoundedWorkerDataBundle) GetUnknown() protoreflect.RawFi
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundle) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputWorkerDataBundle) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -3783,7 +3783,7 @@ func (x *fastReflection_BoundedWorkerDataBundle) SetUnknown(fields protoreflect.
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedWorkerDataBundle) IsValid() bool {
+func (x *fastReflection_InputWorkerDataBundle) IsValid() bool {
 	return x != nil
 }
 
@@ -3793,9 +3793,9 @@ func (x *fastReflection_BoundedWorkerDataBundle) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedWorkerDataBundle) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputWorkerDataBundle) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedWorkerDataBundle)
+		x := input.Message.Interface().(*InputWorkerDataBundle)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -3840,7 +3840,7 @@ func (x *fastReflection_BoundedWorkerDataBundle) ProtoMethods() *protoiface.Meth
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedWorkerDataBundle)
+		x := input.Message.Interface().(*InputWorkerDataBundle)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -3924,7 +3924,7 @@ func (x *fastReflection_BoundedWorkerDataBundle) ProtoMethods() *protoiface.Meth
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedWorkerDataBundle)
+		x := input.Message.Interface().(*InputWorkerDataBundle)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -3956,10 +3956,10 @@ func (x *fastReflection_BoundedWorkerDataBundle) ProtoMethods() *protoiface.Meth
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedWorkerDataBundle: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputWorkerDataBundle: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedWorkerDataBundle: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputWorkerDataBundle: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -4079,7 +4079,7 @@ func (x *fastReflection_BoundedWorkerDataBundle) ProtoMethods() *protoiface.Meth
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.InferenceForecastsBundle == nil {
-					x.InferenceForecastsBundle = &BoundedInferenceForecastBundle{}
+					x.InferenceForecastsBundle = &InputInferenceForecastBundle{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.InferenceForecastsBundle); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -4186,77 +4186,77 @@ func (x *fastReflection_BoundedWorkerDataBundle) ProtoMethods() *protoiface.Meth
 	}
 }
 
-var _ protoreflect.List = (*_BoundedWorkerDataBundles_1_list)(nil)
+var _ protoreflect.List = (*_InputWorkerDataBundles_1_list)(nil)
 
-type _BoundedWorkerDataBundles_1_list struct {
-	list *[]*BoundedWorkerDataBundle
+type _InputWorkerDataBundles_1_list struct {
+	list *[]*InputWorkerDataBundle
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) Len() int {
+func (x *_InputWorkerDataBundles_1_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) Get(i int) protoreflect.Value {
+func (x *_InputWorkerDataBundles_1_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) Set(i int, value protoreflect.Value) {
+func (x *_InputWorkerDataBundles_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedWorkerDataBundle)
+	concreteValue := valueUnwrapped.Interface().(*InputWorkerDataBundle)
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) Append(value protoreflect.Value) {
+func (x *_InputWorkerDataBundles_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*BoundedWorkerDataBundle)
+	concreteValue := valueUnwrapped.Interface().(*InputWorkerDataBundle)
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) AppendMutable() protoreflect.Value {
-	v := new(BoundedWorkerDataBundle)
+func (x *_InputWorkerDataBundles_1_list) AppendMutable() protoreflect.Value {
+	v := new(InputWorkerDataBundle)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) Truncate(n int) {
+func (x *_InputWorkerDataBundles_1_list) Truncate(n int) {
 	for i := n; i < len(*x.list); i++ {
 		(*x.list)[i] = nil
 	}
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) NewElement() protoreflect.Value {
-	v := new(BoundedWorkerDataBundle)
+func (x *_InputWorkerDataBundles_1_list) NewElement() protoreflect.Value {
+	v := new(InputWorkerDataBundle)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_BoundedWorkerDataBundles_1_list) IsValid() bool {
+func (x *_InputWorkerDataBundles_1_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_BoundedWorkerDataBundles                     protoreflect.MessageDescriptor
-	fd_BoundedWorkerDataBundles_worker_data_bundles protoreflect.FieldDescriptor
+	md_InputWorkerDataBundles                     protoreflect.MessageDescriptor
+	fd_InputWorkerDataBundles_worker_data_bundles protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_inputworker_proto_init()
-	md_BoundedWorkerDataBundles = File_emissions_v9_inputworker_proto.Messages().ByName("BoundedWorkerDataBundles")
-	fd_BoundedWorkerDataBundles_worker_data_bundles = md_BoundedWorkerDataBundles.Fields().ByName("worker_data_bundles")
+	md_InputWorkerDataBundles = File_emissions_v9_inputworker_proto.Messages().ByName("InputWorkerDataBundles")
+	fd_InputWorkerDataBundles_worker_data_bundles = md_InputWorkerDataBundles.Fields().ByName("worker_data_bundles")
 }
 
-var _ protoreflect.Message = (*fastReflection_BoundedWorkerDataBundles)(nil)
+var _ protoreflect.Message = (*fastReflection_InputWorkerDataBundles)(nil)
 
-type fastReflection_BoundedWorkerDataBundles BoundedWorkerDataBundles
+type fastReflection_InputWorkerDataBundles InputWorkerDataBundles
 
-func (x *BoundedWorkerDataBundles) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_BoundedWorkerDataBundles)(x)
+func (x *InputWorkerDataBundles) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InputWorkerDataBundles)(x)
 }
 
-func (x *BoundedWorkerDataBundles) slowProtoReflect() protoreflect.Message {
+func (x *InputWorkerDataBundles) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_inputworker_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4268,43 +4268,43 @@ func (x *BoundedWorkerDataBundles) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_BoundedWorkerDataBundles_messageType fastReflection_BoundedWorkerDataBundles_messageType
-var _ protoreflect.MessageType = fastReflection_BoundedWorkerDataBundles_messageType{}
+var _fastReflection_InputWorkerDataBundles_messageType fastReflection_InputWorkerDataBundles_messageType
+var _ protoreflect.MessageType = fastReflection_InputWorkerDataBundles_messageType{}
 
-type fastReflection_BoundedWorkerDataBundles_messageType struct{}
+type fastReflection_InputWorkerDataBundles_messageType struct{}
 
-func (x fastReflection_BoundedWorkerDataBundles_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_BoundedWorkerDataBundles)(nil)
+func (x fastReflection_InputWorkerDataBundles_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InputWorkerDataBundles)(nil)
 }
-func (x fastReflection_BoundedWorkerDataBundles_messageType) New() protoreflect.Message {
-	return new(fastReflection_BoundedWorkerDataBundles)
+func (x fastReflection_InputWorkerDataBundles_messageType) New() protoreflect.Message {
+	return new(fastReflection_InputWorkerDataBundles)
 }
-func (x fastReflection_BoundedWorkerDataBundles_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedWorkerDataBundles
+func (x fastReflection_InputWorkerDataBundles_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputWorkerDataBundles
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_BoundedWorkerDataBundles) Descriptor() protoreflect.MessageDescriptor {
-	return md_BoundedWorkerDataBundles
+func (x *fastReflection_InputWorkerDataBundles) Descriptor() protoreflect.MessageDescriptor {
+	return md_InputWorkerDataBundles
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_BoundedWorkerDataBundles) Type() protoreflect.MessageType {
-	return _fastReflection_BoundedWorkerDataBundles_messageType
+func (x *fastReflection_InputWorkerDataBundles) Type() protoreflect.MessageType {
+	return _fastReflection_InputWorkerDataBundles_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_BoundedWorkerDataBundles) New() protoreflect.Message {
-	return new(fastReflection_BoundedWorkerDataBundles)
+func (x *fastReflection_InputWorkerDataBundles) New() protoreflect.Message {
+	return new(fastReflection_InputWorkerDataBundles)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_BoundedWorkerDataBundles) Interface() protoreflect.ProtoMessage {
-	return (*BoundedWorkerDataBundles)(x)
+func (x *fastReflection_InputWorkerDataBundles) Interface() protoreflect.ProtoMessage {
+	return (*InputWorkerDataBundles)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -4312,10 +4312,10 @@ func (x *fastReflection_BoundedWorkerDataBundles) Interface() protoreflect.Proto
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_BoundedWorkerDataBundles) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_InputWorkerDataBundles) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if len(x.WorkerDataBundles) != 0 {
-		value := protoreflect.ValueOfList(&_BoundedWorkerDataBundles_1_list{list: &x.WorkerDataBundles})
-		if !f(fd_BoundedWorkerDataBundles_worker_data_bundles, value) {
+		value := protoreflect.ValueOfList(&_InputWorkerDataBundles_1_list{list: &x.WorkerDataBundles})
+		if !f(fd_InputWorkerDataBundles_worker_data_bundles, value) {
 			return
 		}
 	}
@@ -4332,15 +4332,15 @@ func (x *fastReflection_BoundedWorkerDataBundles) Range(f func(protoreflect.Fiel
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_BoundedWorkerDataBundles) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_InputWorkerDataBundles) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundles.worker_data_bundles":
+	case "emissions.v9.InputWorkerDataBundles.worker_data_bundles":
 		return len(x.WorkerDataBundles) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundles"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundles"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundles does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundles does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4350,15 +4350,15 @@ func (x *fastReflection_BoundedWorkerDataBundles) Has(fd protoreflect.FieldDescr
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundles) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_InputWorkerDataBundles) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundles.worker_data_bundles":
+	case "emissions.v9.InputWorkerDataBundles.worker_data_bundles":
 		x.WorkerDataBundles = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundles"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundles"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundles does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundles does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4368,19 +4368,19 @@ func (x *fastReflection_BoundedWorkerDataBundles) Clear(fd protoreflect.FieldDes
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_BoundedWorkerDataBundles) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputWorkerDataBundles) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundles.worker_data_bundles":
+	case "emissions.v9.InputWorkerDataBundles.worker_data_bundles":
 		if len(x.WorkerDataBundles) == 0 {
-			return protoreflect.ValueOfList(&_BoundedWorkerDataBundles_1_list{})
+			return protoreflect.ValueOfList(&_InputWorkerDataBundles_1_list{})
 		}
-		listValue := &_BoundedWorkerDataBundles_1_list{list: &x.WorkerDataBundles}
+		listValue := &_InputWorkerDataBundles_1_list{list: &x.WorkerDataBundles}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundles"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundles"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundles does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundles does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4394,17 +4394,17 @@ func (x *fastReflection_BoundedWorkerDataBundles) Get(descriptor protoreflect.Fi
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundles) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_InputWorkerDataBundles) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundles.worker_data_bundles":
+	case "emissions.v9.InputWorkerDataBundles.worker_data_bundles":
 		lv := value.List()
-		clv := lv.(*_BoundedWorkerDataBundles_1_list)
+		clv := lv.(*_InputWorkerDataBundles_1_list)
 		x.WorkerDataBundles = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundles"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundles"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundles does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundles does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4418,45 +4418,45 @@ func (x *fastReflection_BoundedWorkerDataBundles) Set(fd protoreflect.FieldDescr
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundles) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputWorkerDataBundles) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundles.worker_data_bundles":
+	case "emissions.v9.InputWorkerDataBundles.worker_data_bundles":
 		if x.WorkerDataBundles == nil {
-			x.WorkerDataBundles = []*BoundedWorkerDataBundle{}
+			x.WorkerDataBundles = []*InputWorkerDataBundle{}
 		}
-		value := &_BoundedWorkerDataBundles_1_list{list: &x.WorkerDataBundles}
+		value := &_InputWorkerDataBundles_1_list{list: &x.WorkerDataBundles}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundles"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundles"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundles does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundles does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_BoundedWorkerDataBundles) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_InputWorkerDataBundles) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.BoundedWorkerDataBundles.worker_data_bundles":
-		list := []*BoundedWorkerDataBundle{}
-		return protoreflect.ValueOfList(&_BoundedWorkerDataBundles_1_list{list: &list})
+	case "emissions.v9.InputWorkerDataBundles.worker_data_bundles":
+		list := []*InputWorkerDataBundle{}
+		return protoreflect.ValueOfList(&_InputWorkerDataBundles_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BoundedWorkerDataBundles"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.InputWorkerDataBundles"))
 		}
-		panic(fmt.Errorf("message emissions.v9.BoundedWorkerDataBundles does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.InputWorkerDataBundles does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_BoundedWorkerDataBundles) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_InputWorkerDataBundles) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.BoundedWorkerDataBundles", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.InputWorkerDataBundles", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4464,7 +4464,7 @@ func (x *fastReflection_BoundedWorkerDataBundles) WhichOneof(d protoreflect.Oneo
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_BoundedWorkerDataBundles) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_InputWorkerDataBundles) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -4475,7 +4475,7 @@ func (x *fastReflection_BoundedWorkerDataBundles) GetUnknown() protoreflect.RawF
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_BoundedWorkerDataBundles) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_InputWorkerDataBundles) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -4487,7 +4487,7 @@ func (x *fastReflection_BoundedWorkerDataBundles) SetUnknown(fields protoreflect
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_BoundedWorkerDataBundles) IsValid() bool {
+func (x *fastReflection_InputWorkerDataBundles) IsValid() bool {
 	return x != nil
 }
 
@@ -4497,9 +4497,9 @@ func (x *fastReflection_BoundedWorkerDataBundles) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_BoundedWorkerDataBundles) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_InputWorkerDataBundles) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*BoundedWorkerDataBundles)
+		x := input.Message.Interface().(*InputWorkerDataBundles)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4527,7 +4527,7 @@ func (x *fastReflection_BoundedWorkerDataBundles) ProtoMethods() *protoiface.Met
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedWorkerDataBundles)
+		x := input.Message.Interface().(*InputWorkerDataBundles)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4573,7 +4573,7 @@ func (x *fastReflection_BoundedWorkerDataBundles) ProtoMethods() *protoiface.Met
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*BoundedWorkerDataBundles)
+		x := input.Message.Interface().(*InputWorkerDataBundles)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4605,10 +4605,10 @@ func (x *fastReflection_BoundedWorkerDataBundles) ProtoMethods() *protoiface.Met
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedWorkerDataBundles: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputWorkerDataBundles: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: BoundedWorkerDataBundles: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InputWorkerDataBundles: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -4640,7 +4640,7 @@ func (x *fastReflection_BoundedWorkerDataBundles) ProtoMethods() *protoiface.Met
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.WorkerDataBundles = append(x.WorkerDataBundles, &BoundedWorkerDataBundle{})
+				x.WorkerDataBundles = append(x.WorkerDataBundles, &InputWorkerDataBundle{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.WorkerDataBundles[len(x.WorkerDataBundles)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -4693,7 +4693,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type BoundedInference struct {
+type InputInference struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -4706,8 +4706,8 @@ type BoundedInference struct {
 	Proof       string `protobuf:"bytes,6,opt,name=proof,proto3" json:"proof,omitempty"`
 }
 
-func (x *BoundedInference) Reset() {
-	*x = BoundedInference{}
+func (x *InputInference) Reset() {
+	*x = InputInference{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4715,69 +4715,69 @@ func (x *BoundedInference) Reset() {
 	}
 }
 
-func (x *BoundedInference) String() string {
+func (x *InputInference) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedInference) ProtoMessage() {}
+func (*InputInference) ProtoMessage() {}
 
-// Deprecated: Use BoundedInference.ProtoReflect.Descriptor instead.
-func (*BoundedInference) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputInference.ProtoReflect.Descriptor instead.
+func (*InputInference) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *BoundedInference) GetTopicId() uint64 {
+func (x *InputInference) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *BoundedInference) GetBlockHeight() int64 {
+func (x *InputInference) GetBlockHeight() int64 {
 	if x != nil {
 		return x.BlockHeight
 	}
 	return 0
 }
 
-func (x *BoundedInference) GetInferer() string {
+func (x *InputInference) GetInferer() string {
 	if x != nil {
 		return x.Inferer
 	}
 	return ""
 }
 
-func (x *BoundedInference) GetValue() string {
+func (x *InputInference) GetValue() string {
 	if x != nil {
 		return x.Value
 	}
 	return ""
 }
 
-func (x *BoundedInference) GetExtraData() []byte {
+func (x *InputInference) GetExtraData() []byte {
 	if x != nil {
 		return x.ExtraData
 	}
 	return nil
 }
 
-func (x *BoundedInference) GetProof() string {
+func (x *InputInference) GetProof() string {
 	if x != nil {
 		return x.Proof
 	}
 	return ""
 }
 
-type BoundedInferences struct {
+type InputInferences struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Inferences []*BoundedInference `protobuf:"bytes,1,rep,name=inferences,proto3" json:"inferences,omitempty"`
+	Inferences []*InputInference `protobuf:"bytes,1,rep,name=inferences,proto3" json:"inferences,omitempty"`
 }
 
-func (x *BoundedInferences) Reset() {
-	*x = BoundedInferences{}
+func (x *InputInferences) Reset() {
+	*x = InputInferences{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4785,25 +4785,25 @@ func (x *BoundedInferences) Reset() {
 	}
 }
 
-func (x *BoundedInferences) String() string {
+func (x *InputInferences) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedInferences) ProtoMessage() {}
+func (*InputInferences) ProtoMessage() {}
 
-// Deprecated: Use BoundedInferences.ProtoReflect.Descriptor instead.
-func (*BoundedInferences) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputInferences.ProtoReflect.Descriptor instead.
+func (*InputInferences) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *BoundedInferences) GetInferences() []*BoundedInference {
+func (x *InputInferences) GetInferences() []*InputInference {
 	if x != nil {
 		return x.Inferences
 	}
 	return nil
 }
 
-type BoundedForecastElement struct {
+type InputForecastElement struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -4812,8 +4812,8 @@ type BoundedForecastElement struct {
 	Value   string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 }
 
-func (x *BoundedForecastElement) Reset() {
-	*x = BoundedForecastElement{}
+func (x *InputForecastElement) Reset() {
+	*x = InputForecastElement{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4821,45 +4821,45 @@ func (x *BoundedForecastElement) Reset() {
 	}
 }
 
-func (x *BoundedForecastElement) String() string {
+func (x *InputForecastElement) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedForecastElement) ProtoMessage() {}
+func (*InputForecastElement) ProtoMessage() {}
 
-// Deprecated: Use BoundedForecastElement.ProtoReflect.Descriptor instead.
-func (*BoundedForecastElement) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputForecastElement.ProtoReflect.Descriptor instead.
+func (*InputForecastElement) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *BoundedForecastElement) GetInferer() string {
+func (x *InputForecastElement) GetInferer() string {
 	if x != nil {
 		return x.Inferer
 	}
 	return ""
 }
 
-func (x *BoundedForecastElement) GetValue() string {
+func (x *InputForecastElement) GetValue() string {
 	if x != nil {
 		return x.Value
 	}
 	return ""
 }
 
-type BoundedForecast struct {
+type InputForecast struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId          uint64                    `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight      int64                     `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	Forecaster       string                    `protobuf:"bytes,3,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
-	ForecastElements []*BoundedForecastElement `protobuf:"bytes,4,rep,name=forecast_elements,json=forecastElements,proto3" json:"forecast_elements,omitempty"`
-	ExtraData        []byte                    `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+	TopicId          uint64                  `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight      int64                   `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	Forecaster       string                  `protobuf:"bytes,3,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+	ForecastElements []*InputForecastElement `protobuf:"bytes,4,rep,name=forecast_elements,json=forecastElements,proto3" json:"forecast_elements,omitempty"`
+	ExtraData        []byte                  `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
 }
 
-func (x *BoundedForecast) Reset() {
-	*x = BoundedForecast{}
+func (x *InputForecast) Reset() {
+	*x = InputForecast{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4867,62 +4867,62 @@ func (x *BoundedForecast) Reset() {
 	}
 }
 
-func (x *BoundedForecast) String() string {
+func (x *InputForecast) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedForecast) ProtoMessage() {}
+func (*InputForecast) ProtoMessage() {}
 
-// Deprecated: Use BoundedForecast.ProtoReflect.Descriptor instead.
-func (*BoundedForecast) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputForecast.ProtoReflect.Descriptor instead.
+func (*InputForecast) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *BoundedForecast) GetTopicId() uint64 {
+func (x *InputForecast) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *BoundedForecast) GetBlockHeight() int64 {
+func (x *InputForecast) GetBlockHeight() int64 {
 	if x != nil {
 		return x.BlockHeight
 	}
 	return 0
 }
 
-func (x *BoundedForecast) GetForecaster() string {
+func (x *InputForecast) GetForecaster() string {
 	if x != nil {
 		return x.Forecaster
 	}
 	return ""
 }
 
-func (x *BoundedForecast) GetForecastElements() []*BoundedForecastElement {
+func (x *InputForecast) GetForecastElements() []*InputForecastElement {
 	if x != nil {
 		return x.ForecastElements
 	}
 	return nil
 }
 
-func (x *BoundedForecast) GetExtraData() []byte {
+func (x *InputForecast) GetExtraData() []byte {
 	if x != nil {
 		return x.ExtraData
 	}
 	return nil
 }
 
-type BoundedForecasts struct {
+type InputForecasts struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Forecasts []*BoundedForecast `protobuf:"bytes,1,rep,name=forecasts,proto3" json:"forecasts,omitempty"`
+	Forecasts []*InputForecast `protobuf:"bytes,1,rep,name=forecasts,proto3" json:"forecasts,omitempty"`
 }
 
-func (x *BoundedForecasts) Reset() {
-	*x = BoundedForecasts{}
+func (x *InputForecasts) Reset() {
+	*x = InputForecasts{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4930,35 +4930,35 @@ func (x *BoundedForecasts) Reset() {
 	}
 }
 
-func (x *BoundedForecasts) String() string {
+func (x *InputForecasts) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedForecasts) ProtoMessage() {}
+func (*InputForecasts) ProtoMessage() {}
 
-// Deprecated: Use BoundedForecasts.ProtoReflect.Descriptor instead.
-func (*BoundedForecasts) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputForecasts.ProtoReflect.Descriptor instead.
+func (*InputForecasts) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *BoundedForecasts) GetForecasts() []*BoundedForecast {
+func (x *InputForecasts) GetForecasts() []*InputForecast {
 	if x != nil {
 		return x.Forecasts
 	}
 	return nil
 }
 
-type BoundedInferenceForecastBundle struct {
+type InputInferenceForecastBundle struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Inference *BoundedInference `protobuf:"bytes,1,opt,name=inference,proto3" json:"inference,omitempty"`
-	Forecast  *BoundedForecast  `protobuf:"bytes,2,opt,name=forecast,proto3" json:"forecast,omitempty"`
+	Inference *InputInference `protobuf:"bytes,1,opt,name=inference,proto3" json:"inference,omitempty"`
+	Forecast  *InputForecast  `protobuf:"bytes,2,opt,name=forecast,proto3" json:"forecast,omitempty"`
 }
 
-func (x *BoundedInferenceForecastBundle) Reset() {
-	*x = BoundedInferenceForecastBundle{}
+func (x *InputInferenceForecastBundle) Reset() {
+	*x = InputInferenceForecastBundle{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4966,46 +4966,46 @@ func (x *BoundedInferenceForecastBundle) Reset() {
 	}
 }
 
-func (x *BoundedInferenceForecastBundle) String() string {
+func (x *InputInferenceForecastBundle) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedInferenceForecastBundle) ProtoMessage() {}
+func (*InputInferenceForecastBundle) ProtoMessage() {}
 
-// Deprecated: Use BoundedInferenceForecastBundle.ProtoReflect.Descriptor instead.
-func (*BoundedInferenceForecastBundle) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputInferenceForecastBundle.ProtoReflect.Descriptor instead.
+func (*InputInferenceForecastBundle) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *BoundedInferenceForecastBundle) GetInference() *BoundedInference {
+func (x *InputInferenceForecastBundle) GetInference() *InputInference {
 	if x != nil {
 		return x.Inference
 	}
 	return nil
 }
 
-func (x *BoundedInferenceForecastBundle) GetForecast() *BoundedForecast {
+func (x *InputInferenceForecastBundle) GetForecast() *InputForecast {
 	if x != nil {
 		return x.Forecast
 	}
 	return nil
 }
 
-type BoundedWorkerDataBundle struct {
+type InputWorkerDataBundle struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Worker                             string                          `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
-	Nonce                              *v3.Nonce                       `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	TopicId                            uint64                          `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	InferenceForecastsBundle           *BoundedInferenceForecastBundle `protobuf:"bytes,4,opt,name=inference_forecasts_bundle,json=inferenceForecastsBundle,proto3" json:"inference_forecasts_bundle,omitempty"`
-	InferencesForecastsBundleSignature []byte                          `protobuf:"bytes,5,opt,name=inferences_forecasts_bundle_signature,json=inferencesForecastsBundleSignature,proto3" json:"inferences_forecasts_bundle_signature,omitempty"`
-	Pubkey                             string                          `protobuf:"bytes,6,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+	Worker                             string                        `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
+	Nonce                              *v3.Nonce                     `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	TopicId                            uint64                        `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	InferenceForecastsBundle           *InputInferenceForecastBundle `protobuf:"bytes,4,opt,name=inference_forecasts_bundle,json=inferenceForecastsBundle,proto3" json:"inference_forecasts_bundle,omitempty"`
+	InferencesForecastsBundleSignature []byte                        `protobuf:"bytes,5,opt,name=inferences_forecasts_bundle_signature,json=inferencesForecastsBundleSignature,proto3" json:"inferences_forecasts_bundle_signature,omitempty"`
+	Pubkey                             string                        `protobuf:"bytes,6,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 }
 
-func (x *BoundedWorkerDataBundle) Reset() {
-	*x = BoundedWorkerDataBundle{}
+func (x *InputWorkerDataBundle) Reset() {
+	*x = InputWorkerDataBundle{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -5013,69 +5013,69 @@ func (x *BoundedWorkerDataBundle) Reset() {
 	}
 }
 
-func (x *BoundedWorkerDataBundle) String() string {
+func (x *InputWorkerDataBundle) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedWorkerDataBundle) ProtoMessage() {}
+func (*InputWorkerDataBundle) ProtoMessage() {}
 
-// Deprecated: Use BoundedWorkerDataBundle.ProtoReflect.Descriptor instead.
-func (*BoundedWorkerDataBundle) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputWorkerDataBundle.ProtoReflect.Descriptor instead.
+func (*InputWorkerDataBundle) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *BoundedWorkerDataBundle) GetWorker() string {
+func (x *InputWorkerDataBundle) GetWorker() string {
 	if x != nil {
 		return x.Worker
 	}
 	return ""
 }
 
-func (x *BoundedWorkerDataBundle) GetNonce() *v3.Nonce {
+func (x *InputWorkerDataBundle) GetNonce() *v3.Nonce {
 	if x != nil {
 		return x.Nonce
 	}
 	return nil
 }
 
-func (x *BoundedWorkerDataBundle) GetTopicId() uint64 {
+func (x *InputWorkerDataBundle) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *BoundedWorkerDataBundle) GetInferenceForecastsBundle() *BoundedInferenceForecastBundle {
+func (x *InputWorkerDataBundle) GetInferenceForecastsBundle() *InputInferenceForecastBundle {
 	if x != nil {
 		return x.InferenceForecastsBundle
 	}
 	return nil
 }
 
-func (x *BoundedWorkerDataBundle) GetInferencesForecastsBundleSignature() []byte {
+func (x *InputWorkerDataBundle) GetInferencesForecastsBundleSignature() []byte {
 	if x != nil {
 		return x.InferencesForecastsBundleSignature
 	}
 	return nil
 }
 
-func (x *BoundedWorkerDataBundle) GetPubkey() string {
+func (x *InputWorkerDataBundle) GetPubkey() string {
 	if x != nil {
 		return x.Pubkey
 	}
 	return ""
 }
 
-type BoundedWorkerDataBundles struct {
+type InputWorkerDataBundles struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	WorkerDataBundles []*BoundedWorkerDataBundle `protobuf:"bytes,1,rep,name=worker_data_bundles,json=workerDataBundles,proto3" json:"worker_data_bundles,omitempty"`
+	WorkerDataBundles []*InputWorkerDataBundle `protobuf:"bytes,1,rep,name=worker_data_bundles,json=workerDataBundles,proto3" json:"worker_data_bundles,omitempty"`
 }
 
-func (x *BoundedWorkerDataBundles) Reset() {
-	*x = BoundedWorkerDataBundles{}
+func (x *InputWorkerDataBundles) Reset() {
+	*x = InputWorkerDataBundles{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_inputworker_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -5083,18 +5083,18 @@ func (x *BoundedWorkerDataBundles) Reset() {
 	}
 }
 
-func (x *BoundedWorkerDataBundles) String() string {
+func (x *InputWorkerDataBundles) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoundedWorkerDataBundles) ProtoMessage() {}
+func (*InputWorkerDataBundles) ProtoMessage() {}
 
-// Deprecated: Use BoundedWorkerDataBundles.ProtoReflect.Descriptor instead.
-func (*BoundedWorkerDataBundles) Descriptor() ([]byte, []int) {
+// Deprecated: Use InputWorkerDataBundles.ProtoReflect.Descriptor instead.
+func (*InputWorkerDataBundles) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_inputworker_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *BoundedWorkerDataBundles) GetWorkerDataBundles() []*BoundedWorkerDataBundle {
+func (x *InputWorkerDataBundles) GetWorkerDataBundles() []*InputWorkerDataBundle {
 	if x != nil {
 		return x.WorkerDataBundles
 	}
@@ -5109,110 +5109,108 @@ var file_emissions_v9_inputworker_proto_rawDesc = []byte{
 	0x12, 0x0c, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x1a, 0x18,
 	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x6e, 0x6f, 0x6e,
 	0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x80,
-	0x02, 0x0a, 0x10, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21,
-	0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x12, 0x18, 0x0a, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x12, 0x59, 0x0a, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x43, 0xc8, 0xde, 0x1f, 0x00,
-	0xda, 0xde, 0x1f, 0x3b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
-	0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x45, 0x78, 0x70, 0x34, 0x30, 0x44, 0x65, 0x63, 0x52,
-	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f,
-	0x64, 0x61, 0x74, 0x61, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72,
-	0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x18, 0x06,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x3a, 0x04, 0xe8, 0xa0, 0x1f,
-	0x01, 0x22, 0x53, 0x0a, 0x11, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x49, 0x6e, 0x66, 0x65,
-	0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x3e, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65,
-	0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65,
-	0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x93, 0x01, 0x0a, 0x16, 0x42, 0x6f, 0x75, 0x6e, 0x64,
-	0x65, 0x64, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d, 0x65, 0x6e,
-	0x74, 0x12, 0x18, 0x0a, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x12, 0x59, 0x0a, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x43, 0xc8, 0xde, 0x1f, 0x00,
-	0xda, 0xde, 0x1f, 0x3b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
-	0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x45, 0x78, 0x70, 0x34, 0x30, 0x44, 0x65, 0x63, 0x52,
-	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0xe7, 0x01, 0x0a,
-	0x0f, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74,
-	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62,
-	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1e,
-	0x0a, 0x0a, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x0a, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x12, 0x51,
-	0x0a, 0x11, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x5f, 0x65, 0x6c, 0x65, 0x6d, 0x65,
-	0x6e, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64,
-	0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52,
-	0x10, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74,
-	0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18,
-	0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61,
-	0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x4f, 0x0a, 0x10, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65,
-	0x64, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x12, 0x3b, 0x0a, 0x09, 0x66, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x42, 0x6f, 0x75,
-	0x6e, 0x64, 0x65, 0x64, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x52, 0x09, 0x66, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x22, 0x9f, 0x01, 0x0a, 0x1e, 0x42, 0x6f, 0x75, 0x6e,
-	0x64, 0x65, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65,
-	0x63, 0x61, 0x73, 0x74, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x3c, 0x0a, 0x09, 0x69, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x42, 0x6f, 0x75,
-	0x6e, 0x64, 0x65, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x09, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x39, 0x0a, 0x08, 0x66, 0x6f, 0x72, 0x65,
-	0x63, 0x61, 0x73, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65,
-	0x64, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x52, 0x08, 0x66, 0x6f, 0x72, 0x65, 0x63,
-	0x61, 0x73, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0xd4, 0x02, 0x0a, 0x17, 0x42, 0x6f,
-	0x75, 0x6e, 0x64, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42,
-	0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x29, 0x0a,
-	0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x4e, 0x6f, 0x6e, 0x63,
-	0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x12, 0x6a, 0x0a, 0x1a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x5f, 0x62, 0x75, 0x6e, 0x64, 0x6c,
-	0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x49, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x42,
-	0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52, 0x18, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12,
-	0x51, 0x0a, 0x25, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x5f, 0x66, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x5f, 0x62, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x5f, 0x73,
-	0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x22,
-	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61,
-	0x73, 0x74, 0x73, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x53, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75,
-	0x72, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x75, 0x62, 0x6b, 0x65, 0x79, 0x18, 0x06, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x70, 0x75, 0x62, 0x6b, 0x65, 0x79, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01,
-	0x22, 0x71, 0x0a, 0x18, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65,
-	0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73, 0x12, 0x55, 0x0a, 0x13,
-	0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x62, 0x75, 0x6e, 0x64,
-	0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64,
-	0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65,
-	0x52, 0x11, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64,
-	0x6c, 0x65, 0x73, 0x42, 0xc6, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x42, 0x10, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x77,
-	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76,
-	0x39, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x39, 0xa2, 0x02, 0x03,
-	0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x56, 0x39, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56,
-	0x39, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x39,
-	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x39, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xfe,
+	0x01, 0x0a, 0x0e, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
+	0x18, 0x0a, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x12, 0x59, 0x0a, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x43, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x3b, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c,
+	0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x42, 0x6f,
+	0x75, 0x6e, 0x64, 0x65, 0x64, 0x45, 0x78, 0x70, 0x34, 0x30, 0x44, 0x65, 0x63, 0x52, 0x05, 0x76,
+	0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61,
+	0x74, 0x61, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44,
+	0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x18, 0x06, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22,
+	0x4f, 0x0a, 0x0f, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x73, 0x12, 0x3c, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x22, 0x91, 0x01, 0x0a, 0x14, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61,
+	0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x69, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x72, 0x12, 0x59, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x43, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x3b, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x42, 0x6f, 0x75, 0x6e, 0x64, 0x65, 0x64, 0x45,
+	0x78, 0x70, 0x34, 0x30, 0x44, 0x65, 0x63, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x04,
+	0xe8, 0xa0, 0x1f, 0x01, 0x22, 0xe3, 0x01, 0x0a, 0x0d, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x46, 0x6f,
+	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
+	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x12, 0x1e, 0x0a, 0x0a, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74,
+	0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61,
+	0x73, 0x74, 0x65, 0x72, 0x12, 0x4f, 0x0a, 0x11, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74,
+	0x5f, 0x65, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x49,
+	0x6e, 0x70, 0x75, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d,
+	0x65, 0x6e, 0x74, 0x52, 0x10, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65,
+	0x6d, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64,
+	0x61, 0x74, 0x61, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61,
+	0x44, 0x61, 0x74, 0x61, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x4b, 0x0a, 0x0e, 0x49, 0x6e,
+	0x70, 0x75, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x12, 0x39, 0x0a, 0x09,
+	0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x1b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x49,
+	0x6e, 0x70, 0x75, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x52, 0x09, 0x66, 0x6f,
+	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x22, 0x99, 0x01, 0x0a, 0x1c, 0x49, 0x6e, 0x70, 0x75,
+	0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61,
+	0x73, 0x74, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x3a, 0x0a, 0x09, 0x69, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x49, 0x6e, 0x70, 0x75, 0x74,
+	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x09, 0x69, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x12, 0x37, 0x0a, 0x08, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63,
+	0x61, 0x73, 0x74, 0x52, 0x08, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x3a, 0x04, 0xe8,
+	0xa0, 0x1f, 0x01, 0x22, 0xd0, 0x02, 0x0a, 0x15, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x57, 0x6f, 0x72,
+	0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x16, 0x0a,
+	0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77,
+	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x76, 0x33, 0x2e, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
+	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x68, 0x0a, 0x1a, 0x69,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
+	0x74, 0x73, 0x5f, 0x62, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x49,
+	0x6e, 0x70, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72,
+	0x65, 0x63, 0x61, 0x73, 0x74, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52, 0x18, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x42,
+	0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x51, 0x0a, 0x25, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x73, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x5f, 0x62, 0x75,
+	0x6e, 0x64, 0x6c, 0x65, 0x5f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x0c, 0x52, 0x22, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x53,
+	0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x75, 0x62, 0x6b,
+	0x65, 0x79, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x75, 0x62, 0x6b, 0x65, 0x79,
+	0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x6d, 0x0a, 0x16, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x57,
+	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73,
+	0x12, 0x53, 0x0a, 0x13, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f,
+	0x62, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x23, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x49, 0x6e, 0x70,
+	0x75, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64,
+	0x6c, 0x65, 0x52, 0x11, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75,
+	0x6e, 0x64, 0x6c, 0x65, 0x73, 0x42, 0xc6, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x42, 0x10, 0x49, 0x6e, 0x70, 0x75,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2f, 0x76, 0x39, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x39, 0xa2,
+	0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x56, 0x39, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x5c, 0x56, 0x39, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c,
+	0x56, 0x39, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02,
+	0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x39, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -5229,25 +5227,25 @@ func file_emissions_v9_inputworker_proto_rawDescGZIP() []byte {
 
 var file_emissions_v9_inputworker_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_emissions_v9_inputworker_proto_goTypes = []interface{}{
-	(*BoundedInference)(nil),               // 0: emissions.v9.BoundedInference
-	(*BoundedInferences)(nil),              // 1: emissions.v9.BoundedInferences
-	(*BoundedForecastElement)(nil),         // 2: emissions.v9.BoundedForecastElement
-	(*BoundedForecast)(nil),                // 3: emissions.v9.BoundedForecast
-	(*BoundedForecasts)(nil),               // 4: emissions.v9.BoundedForecasts
-	(*BoundedInferenceForecastBundle)(nil), // 5: emissions.v9.BoundedInferenceForecastBundle
-	(*BoundedWorkerDataBundle)(nil),        // 6: emissions.v9.BoundedWorkerDataBundle
-	(*BoundedWorkerDataBundles)(nil),       // 7: emissions.v9.BoundedWorkerDataBundles
-	(*v3.Nonce)(nil),                       // 8: emissions.v3.Nonce
+	(*InputInference)(nil),               // 0: emissions.v9.InputInference
+	(*InputInferences)(nil),              // 1: emissions.v9.InputInferences
+	(*InputForecastElement)(nil),         // 2: emissions.v9.InputForecastElement
+	(*InputForecast)(nil),                // 3: emissions.v9.InputForecast
+	(*InputForecasts)(nil),               // 4: emissions.v9.InputForecasts
+	(*InputInferenceForecastBundle)(nil), // 5: emissions.v9.InputInferenceForecastBundle
+	(*InputWorkerDataBundle)(nil),        // 6: emissions.v9.InputWorkerDataBundle
+	(*InputWorkerDataBundles)(nil),       // 7: emissions.v9.InputWorkerDataBundles
+	(*v3.Nonce)(nil),                     // 8: emissions.v3.Nonce
 }
 var file_emissions_v9_inputworker_proto_depIdxs = []int32{
-	0, // 0: emissions.v9.BoundedInferences.inferences:type_name -> emissions.v9.BoundedInference
-	2, // 1: emissions.v9.BoundedForecast.forecast_elements:type_name -> emissions.v9.BoundedForecastElement
-	3, // 2: emissions.v9.BoundedForecasts.forecasts:type_name -> emissions.v9.BoundedForecast
-	0, // 3: emissions.v9.BoundedInferenceForecastBundle.inference:type_name -> emissions.v9.BoundedInference
-	3, // 4: emissions.v9.BoundedInferenceForecastBundle.forecast:type_name -> emissions.v9.BoundedForecast
-	8, // 5: emissions.v9.BoundedWorkerDataBundle.nonce:type_name -> emissions.v3.Nonce
-	5, // 6: emissions.v9.BoundedWorkerDataBundle.inference_forecasts_bundle:type_name -> emissions.v9.BoundedInferenceForecastBundle
-	6, // 7: emissions.v9.BoundedWorkerDataBundles.worker_data_bundles:type_name -> emissions.v9.BoundedWorkerDataBundle
+	0, // 0: emissions.v9.InputInferences.inferences:type_name -> emissions.v9.InputInference
+	2, // 1: emissions.v9.InputForecast.forecast_elements:type_name -> emissions.v9.InputForecastElement
+	3, // 2: emissions.v9.InputForecasts.forecasts:type_name -> emissions.v9.InputForecast
+	0, // 3: emissions.v9.InputInferenceForecastBundle.inference:type_name -> emissions.v9.InputInference
+	3, // 4: emissions.v9.InputInferenceForecastBundle.forecast:type_name -> emissions.v9.InputForecast
+	8, // 5: emissions.v9.InputWorkerDataBundle.nonce:type_name -> emissions.v3.Nonce
+	5, // 6: emissions.v9.InputWorkerDataBundle.inference_forecasts_bundle:type_name -> emissions.v9.InputInferenceForecastBundle
+	6, // 7: emissions.v9.InputWorkerDataBundles.worker_data_bundles:type_name -> emissions.v9.InputWorkerDataBundle
 	8, // [8:8] is the sub-list for method output_type
 	8, // [8:8] is the sub-list for method input_type
 	8, // [8:8] is the sub-list for extension type_name
@@ -5262,7 +5260,7 @@ func file_emissions_v9_inputworker_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v9_inputworker_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedInference); i {
+			switch v := v.(*InputInference); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5274,7 +5272,7 @@ func file_emissions_v9_inputworker_proto_init() {
 			}
 		}
 		file_emissions_v9_inputworker_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedInferences); i {
+			switch v := v.(*InputInferences); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5286,7 +5284,7 @@ func file_emissions_v9_inputworker_proto_init() {
 			}
 		}
 		file_emissions_v9_inputworker_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedForecastElement); i {
+			switch v := v.(*InputForecastElement); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5298,7 +5296,7 @@ func file_emissions_v9_inputworker_proto_init() {
 			}
 		}
 		file_emissions_v9_inputworker_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedForecast); i {
+			switch v := v.(*InputForecast); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5310,7 +5308,7 @@ func file_emissions_v9_inputworker_proto_init() {
 			}
 		}
 		file_emissions_v9_inputworker_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedForecasts); i {
+			switch v := v.(*InputForecasts); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5322,7 +5320,7 @@ func file_emissions_v9_inputworker_proto_init() {
 			}
 		}
 		file_emissions_v9_inputworker_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedInferenceForecastBundle); i {
+			switch v := v.(*InputInferenceForecastBundle); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5334,7 +5332,7 @@ func file_emissions_v9_inputworker_proto_init() {
 			}
 		}
 		file_emissions_v9_inputworker_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedWorkerDataBundle); i {
+			switch v := v.(*InputWorkerDataBundle); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5346,7 +5344,7 @@ func file_emissions_v9_inputworker_proto_init() {
 			}
 		}
 		file_emissions_v9_inputworker_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BoundedWorkerDataBundles); i {
+			switch v := v.(*InputWorkerDataBundles); i {
 			case 0:
 				return &v.state
 			case 1:

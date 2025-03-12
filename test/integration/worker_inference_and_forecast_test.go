@@ -38,12 +38,12 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: InfererAddress1,
-		WorkerDataBundle: &types.BoundedWorkerDataBundle{
+		WorkerDataBundle: &types.InputWorkerDataBundle{
 			Worker:  InfererAddress1,
 			Nonce:   &nonce,
 			TopicId: topicId,
-			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
-				Inference: &types.BoundedInference{
+			InferenceForecastsBundle: &types.InputInferenceForecastBundle{
+				Inference: &types.InputInference{
 					TopicId:     topicId,
 					BlockHeight: blockHeight,
 					Inferer:     InfererAddress1,
@@ -51,11 +51,11 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.BoundedForecast{
+				Forecast: &types.InputForecast{
 					TopicId:     topicId,
 					BlockHeight: blockHeight,
 					Forecaster:  InfererAddress1,
-					ForecastElements: []*types.BoundedForecastElement{
+					ForecastElements: []*types.InputForecastElement{
 						{
 							Inferer: InfererAddress1,
 							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
@@ -135,7 +135,7 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 		BlockHeight: BlockHeightCurrent,
 	}
 
-	reputerValueBundle := &types.BoundedValueBundle{
+	reputerValueBundle := &types.InputValueBundle{
 		TopicId: topicId,
 		Reputer: reputerAddr,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -143,27 +143,27 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 		},
 		ExtraData:     nil,
 		CombinedValue: alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-		InfererValues: []*types.BoundedWorkerAttributedValue{
+		InfererValues: []*types.InputWorkerAttributedValue{
 			{
 				Worker: workerAddr,
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		ForecasterValues: []*types.BoundedWorkerAttributedValue{
+		ForecasterValues: []*types.InputWorkerAttributedValue{
 			{
 				Worker: workerAddr,
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
 		NaiveValue: alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-		OneOutInfererValues: []*types.BoundedWithheldWorkerAttributedValue{
+		OneOutInfererValues: []*types.InputWithheldWorkerAttributedValue{
 			// There cannot be a 1-out inferer value if there is just 1 inferer => this will be ignored by msgserver
 			{
 				Worker: workerAddr,
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		OneOutForecasterValues: []*types.BoundedWithheldWorkerAttributedValue{
+		OneOutForecasterValues: []*types.InputWithheldWorkerAttributedValue{
 			{
 				Worker: workerAddr,
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
@@ -172,7 +172,7 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 		// Just as valid:
 		// OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
 		// OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
-		OneInForecasterValues: []*types.BoundedWorkerAttributedValue{
+		OneInForecasterValues: []*types.InputWorkerAttributedValue{
 			{
 				Worker: workerAddr,
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
@@ -198,7 +198,7 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 
 	lossesMsg := &types.InsertReputerPayloadRequest{
 		Sender: reputerAddr,
-		ReputerValueBundle: &types.BoundedReputerValueBundle{
+		ReputerValueBundle: &types.InputReputerValueBundle{
 			ValueBundle: reputerValueBundle,
 			Signature:   valueBundleSignature,
 			Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),

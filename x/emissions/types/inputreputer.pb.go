@@ -25,23 +25,23 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type BoundedWorkerAttributedValue struct {
+type InputWorkerAttributedValue struct {
 	Worker string                                                      `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
 	Value  github_com_allora_network_allora_chain_math.BoundedExp40Dec `protobuf:"bytes,2,opt,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.BoundedExp40Dec" json:"value"`
 }
 
-func (m *BoundedWorkerAttributedValue) Reset()         { *m = BoundedWorkerAttributedValue{} }
-func (m *BoundedWorkerAttributedValue) String() string { return proto.CompactTextString(m) }
-func (*BoundedWorkerAttributedValue) ProtoMessage()    {}
-func (*BoundedWorkerAttributedValue) Descriptor() ([]byte, []int) {
+func (m *InputWorkerAttributedValue) Reset()         { *m = InputWorkerAttributedValue{} }
+func (m *InputWorkerAttributedValue) String() string { return proto.CompactTextString(m) }
+func (*InputWorkerAttributedValue) ProtoMessage()    {}
+func (*InputWorkerAttributedValue) Descriptor() ([]byte, []int) {
 	return fileDescriptor_327a00f966b45027, []int{0}
 }
-func (m *BoundedWorkerAttributedValue) XXX_Unmarshal(b []byte) error {
+func (m *InputWorkerAttributedValue) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedWorkerAttributedValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputWorkerAttributedValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedWorkerAttributedValue.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputWorkerAttributedValue.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -51,42 +51,42 @@ func (m *BoundedWorkerAttributedValue) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-func (m *BoundedWorkerAttributedValue) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedWorkerAttributedValue.Merge(m, src)
+func (m *InputWorkerAttributedValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputWorkerAttributedValue.Merge(m, src)
 }
-func (m *BoundedWorkerAttributedValue) XXX_Size() int {
+func (m *InputWorkerAttributedValue) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedWorkerAttributedValue) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedWorkerAttributedValue.DiscardUnknown(m)
+func (m *InputWorkerAttributedValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputWorkerAttributedValue.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedWorkerAttributedValue proto.InternalMessageInfo
+var xxx_messageInfo_InputWorkerAttributedValue proto.InternalMessageInfo
 
-func (m *BoundedWorkerAttributedValue) GetWorker() string {
+func (m *InputWorkerAttributedValue) GetWorker() string {
 	if m != nil {
 		return m.Worker
 	}
 	return ""
 }
 
-type BoundedWithheldWorkerAttributedValue struct {
+type InputWithheldWorkerAttributedValue struct {
 	Worker string                                                      `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
 	Value  github_com_allora_network_allora_chain_math.BoundedExp40Dec `protobuf:"bytes,2,opt,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.BoundedExp40Dec" json:"value"`
 }
 
-func (m *BoundedWithheldWorkerAttributedValue) Reset()         { *m = BoundedWithheldWorkerAttributedValue{} }
-func (m *BoundedWithheldWorkerAttributedValue) String() string { return proto.CompactTextString(m) }
-func (*BoundedWithheldWorkerAttributedValue) ProtoMessage()    {}
-func (*BoundedWithheldWorkerAttributedValue) Descriptor() ([]byte, []int) {
+func (m *InputWithheldWorkerAttributedValue) Reset()         { *m = InputWithheldWorkerAttributedValue{} }
+func (m *InputWithheldWorkerAttributedValue) String() string { return proto.CompactTextString(m) }
+func (*InputWithheldWorkerAttributedValue) ProtoMessage()    {}
+func (*InputWithheldWorkerAttributedValue) Descriptor() ([]byte, []int) {
 	return fileDescriptor_327a00f966b45027, []int{1}
 }
-func (m *BoundedWithheldWorkerAttributedValue) XXX_Unmarshal(b []byte) error {
+func (m *InputWithheldWorkerAttributedValue) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedWithheldWorkerAttributedValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputWithheldWorkerAttributedValue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedWithheldWorkerAttributedValue.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputWithheldWorkerAttributedValue.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -96,42 +96,42 @@ func (m *BoundedWithheldWorkerAttributedValue) XXX_Marshal(b []byte, determinist
 		return b[:n], nil
 	}
 }
-func (m *BoundedWithheldWorkerAttributedValue) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedWithheldWorkerAttributedValue.Merge(m, src)
+func (m *InputWithheldWorkerAttributedValue) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputWithheldWorkerAttributedValue.Merge(m, src)
 }
-func (m *BoundedWithheldWorkerAttributedValue) XXX_Size() int {
+func (m *InputWithheldWorkerAttributedValue) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedWithheldWorkerAttributedValue) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedWithheldWorkerAttributedValue.DiscardUnknown(m)
+func (m *InputWithheldWorkerAttributedValue) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputWithheldWorkerAttributedValue.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedWithheldWorkerAttributedValue proto.InternalMessageInfo
+var xxx_messageInfo_InputWithheldWorkerAttributedValue proto.InternalMessageInfo
 
-func (m *BoundedWithheldWorkerAttributedValue) GetWorker() string {
+func (m *InputWithheldWorkerAttributedValue) GetWorker() string {
 	if m != nil {
 		return m.Worker
 	}
 	return ""
 }
 
-type BoundedOneOutInfererForecasterValues struct {
-	Forecaster          string                                  `protobuf:"bytes,3,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
-	OneOutInfererValues []*BoundedWithheldWorkerAttributedValue `protobuf:"bytes,4,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3" json:"one_out_inferer_values,omitempty"`
+type InputOneOutInfererForecasterValues struct {
+	Forecaster          string                                `protobuf:"bytes,3,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+	OneOutInfererValues []*InputWithheldWorkerAttributedValue `protobuf:"bytes,4,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3" json:"one_out_inferer_values,omitempty"`
 }
 
-func (m *BoundedOneOutInfererForecasterValues) Reset()         { *m = BoundedOneOutInfererForecasterValues{} }
-func (m *BoundedOneOutInfererForecasterValues) String() string { return proto.CompactTextString(m) }
-func (*BoundedOneOutInfererForecasterValues) ProtoMessage()    {}
-func (*BoundedOneOutInfererForecasterValues) Descriptor() ([]byte, []int) {
+func (m *InputOneOutInfererForecasterValues) Reset()         { *m = InputOneOutInfererForecasterValues{} }
+func (m *InputOneOutInfererForecasterValues) String() string { return proto.CompactTextString(m) }
+func (*InputOneOutInfererForecasterValues) ProtoMessage()    {}
+func (*InputOneOutInfererForecasterValues) Descriptor() ([]byte, []int) {
 	return fileDescriptor_327a00f966b45027, []int{2}
 }
-func (m *BoundedOneOutInfererForecasterValues) XXX_Unmarshal(b []byte) error {
+func (m *InputOneOutInfererForecasterValues) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedOneOutInfererForecasterValues) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputOneOutInfererForecasterValues) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedOneOutInfererForecasterValues.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputOneOutInfererForecasterValues.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -141,26 +141,26 @@ func (m *BoundedOneOutInfererForecasterValues) XXX_Marshal(b []byte, determinist
 		return b[:n], nil
 	}
 }
-func (m *BoundedOneOutInfererForecasterValues) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedOneOutInfererForecasterValues.Merge(m, src)
+func (m *InputOneOutInfererForecasterValues) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputOneOutInfererForecasterValues.Merge(m, src)
 }
-func (m *BoundedOneOutInfererForecasterValues) XXX_Size() int {
+func (m *InputOneOutInfererForecasterValues) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedOneOutInfererForecasterValues) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedOneOutInfererForecasterValues.DiscardUnknown(m)
+func (m *InputOneOutInfererForecasterValues) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputOneOutInfererForecasterValues.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedOneOutInfererForecasterValues proto.InternalMessageInfo
+var xxx_messageInfo_InputOneOutInfererForecasterValues proto.InternalMessageInfo
 
-func (m *BoundedOneOutInfererForecasterValues) GetForecaster() string {
+func (m *InputOneOutInfererForecasterValues) GetForecaster() string {
 	if m != nil {
 		return m.Forecaster
 	}
 	return ""
 }
 
-func (m *BoundedOneOutInfererForecasterValues) GetOneOutInfererValues() []*BoundedWithheldWorkerAttributedValue {
+func (m *InputOneOutInfererForecasterValues) GetOneOutInfererValues() []*InputWithheldWorkerAttributedValue {
 	if m != nil {
 		return m.OneOutInfererValues
 	}
@@ -170,7 +170,7 @@ func (m *BoundedOneOutInfererForecasterValues) GetOneOutInfererValues() []*Bound
 // These losses and inferences are calculated per reputer or by the network
 // The `m`s in the comments below exist for when they're made by reputers,
 // but they may be absent implying that they were made by the network
-type BoundedValueBundle struct {
+type InputValueBundle struct {
 	TopicId             uint64               `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	ReputerRequestNonce *ReputerRequestNonce `protobuf:"bytes,2,opt,name=reputer_request_nonce,json=reputerRequestNonce,proto3" json:"reputer_request_nonce,omitempty"`
 	Reputer             string               `protobuf:"bytes,3,opt,name=reputer,proto3" json:"reputer,omitempty"`
@@ -178,37 +178,37 @@ type BoundedValueBundle struct {
 	// R_im || log10 L_im || I_i
 	CombinedValue github_com_allora_network_allora_chain_math.BoundedExp40Dec `protobuf:"bytes,5,opt,name=combined_value,json=combinedValue,proto3,customtype=github.com/allora-network/allora-chain/math.BoundedExp40Dec" json:"combined_value"`
 	// R_ijm || log10 L_ijm || I_ij
-	InfererValues []*BoundedWorkerAttributedValue `protobuf:"bytes,6,rep,name=inferer_values,json=infererValues,proto3" json:"inferer_values,omitempty"`
+	InfererValues []*InputWorkerAttributedValue `protobuf:"bytes,6,rep,name=inferer_values,json=infererValues,proto3" json:"inferer_values,omitempty"`
 	// R_ikm || log10 L_ikm || I_ik
-	ForecasterValues []*BoundedWorkerAttributedValue `protobuf:"bytes,7,rep,name=forecaster_values,json=forecasterValues,proto3" json:"forecaster_values,omitempty"`
+	ForecasterValues []*InputWorkerAttributedValue `protobuf:"bytes,7,rep,name=forecaster_values,json=forecasterValues,proto3" json:"forecaster_values,omitempty"`
 	// R^-_im  || log10 L^-_im || I^-_i
 	NaiveValue github_com_allora_network_allora_chain_math.BoundedExp40Dec `protobuf:"bytes,8,opt,name=naive_value,json=naiveValue,proto3,customtype=github.com/allora-network/allora-chain/math.BoundedExp40Dec" json:"naive_value"`
 	// Note: forecast-implied inferences are recomputed for each left-out
 	// inference
-	OneOutInfererValues []*BoundedWithheldWorkerAttributedValue `protobuf:"bytes,9,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3" json:"one_out_inferer_values,omitempty"`
+	OneOutInfererValues []*InputWithheldWorkerAttributedValue `protobuf:"bytes,9,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3" json:"one_out_inferer_values,omitempty"`
 	// R^-_ilm || log10 L^-_ilm || I^-_il where l = any k
-	OneOutForecasterValues []*BoundedWithheldWorkerAttributedValue `protobuf:"bytes,10,rep,name=one_out_forecaster_values,json=oneOutForecasterValues,proto3" json:"one_out_forecaster_values,omitempty"`
+	OneOutForecasterValues []*InputWithheldWorkerAttributedValue `protobuf:"bytes,10,rep,name=one_out_forecaster_values,json=oneOutForecasterValues,proto3" json:"one_out_forecaster_values,omitempty"`
 	// R^+_ikm || log10 L^+_ikm || I^+_ik
 	// aka one_in_forecaster_values because equivalent to using only one
 	// forecast-implied inference
-	OneInForecasterValues []*BoundedWorkerAttributedValue `protobuf:"bytes,11,rep,name=one_in_forecaster_values,json=oneInForecasterValues,proto3" json:"one_in_forecaster_values,omitempty"`
+	OneInForecasterValues []*InputWorkerAttributedValue `protobuf:"bytes,11,rep,name=one_in_forecaster_values,json=oneInForecasterValues,proto3" json:"one_in_forecaster_values,omitempty"`
 	// R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
 	// log10 L^-_j'ikm || I^-_j'ik
-	OneOutInfererForecasterValues []*BoundedOneOutInfererForecasterValues `protobuf:"bytes,12,rep,name=one_out_inferer_forecaster_values,json=oneOutInfererForecasterValues,proto3" json:"one_out_inferer_forecaster_values,omitempty"`
+	OneOutInfererForecasterValues []*InputOneOutInfererForecasterValues `protobuf:"bytes,12,rep,name=one_out_inferer_forecaster_values,json=oneOutInfererForecasterValues,proto3" json:"one_out_inferer_forecaster_values,omitempty"`
 }
 
-func (m *BoundedValueBundle) Reset()         { *m = BoundedValueBundle{} }
-func (m *BoundedValueBundle) String() string { return proto.CompactTextString(m) }
-func (*BoundedValueBundle) ProtoMessage()    {}
-func (*BoundedValueBundle) Descriptor() ([]byte, []int) {
+func (m *InputValueBundle) Reset()         { *m = InputValueBundle{} }
+func (m *InputValueBundle) String() string { return proto.CompactTextString(m) }
+func (*InputValueBundle) ProtoMessage()    {}
+func (*InputValueBundle) Descriptor() ([]byte, []int) {
 	return fileDescriptor_327a00f966b45027, []int{3}
 }
-func (m *BoundedValueBundle) XXX_Unmarshal(b []byte) error {
+func (m *InputValueBundle) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedValueBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputValueBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedValueBundle.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputValueBundle.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -218,82 +218,82 @@ func (m *BoundedValueBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *BoundedValueBundle) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedValueBundle.Merge(m, src)
+func (m *InputValueBundle) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputValueBundle.Merge(m, src)
 }
-func (m *BoundedValueBundle) XXX_Size() int {
+func (m *InputValueBundle) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedValueBundle) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedValueBundle.DiscardUnknown(m)
+func (m *InputValueBundle) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputValueBundle.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedValueBundle proto.InternalMessageInfo
+var xxx_messageInfo_InputValueBundle proto.InternalMessageInfo
 
-func (m *BoundedValueBundle) GetTopicId() uint64 {
+func (m *InputValueBundle) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *BoundedValueBundle) GetReputerRequestNonce() *ReputerRequestNonce {
+func (m *InputValueBundle) GetReputerRequestNonce() *ReputerRequestNonce {
 	if m != nil {
 		return m.ReputerRequestNonce
 	}
 	return nil
 }
 
-func (m *BoundedValueBundle) GetReputer() string {
+func (m *InputValueBundle) GetReputer() string {
 	if m != nil {
 		return m.Reputer
 	}
 	return ""
 }
 
-func (m *BoundedValueBundle) GetExtraData() []byte {
+func (m *InputValueBundle) GetExtraData() []byte {
 	if m != nil {
 		return m.ExtraData
 	}
 	return nil
 }
 
-func (m *BoundedValueBundle) GetInfererValues() []*BoundedWorkerAttributedValue {
+func (m *InputValueBundle) GetInfererValues() []*InputWorkerAttributedValue {
 	if m != nil {
 		return m.InfererValues
 	}
 	return nil
 }
 
-func (m *BoundedValueBundle) GetForecasterValues() []*BoundedWorkerAttributedValue {
+func (m *InputValueBundle) GetForecasterValues() []*InputWorkerAttributedValue {
 	if m != nil {
 		return m.ForecasterValues
 	}
 	return nil
 }
 
-func (m *BoundedValueBundle) GetOneOutInfererValues() []*BoundedWithheldWorkerAttributedValue {
+func (m *InputValueBundle) GetOneOutInfererValues() []*InputWithheldWorkerAttributedValue {
 	if m != nil {
 		return m.OneOutInfererValues
 	}
 	return nil
 }
 
-func (m *BoundedValueBundle) GetOneOutForecasterValues() []*BoundedWithheldWorkerAttributedValue {
+func (m *InputValueBundle) GetOneOutForecasterValues() []*InputWithheldWorkerAttributedValue {
 	if m != nil {
 		return m.OneOutForecasterValues
 	}
 	return nil
 }
 
-func (m *BoundedValueBundle) GetOneInForecasterValues() []*BoundedWorkerAttributedValue {
+func (m *InputValueBundle) GetOneInForecasterValues() []*InputWorkerAttributedValue {
 	if m != nil {
 		return m.OneInForecasterValues
 	}
 	return nil
 }
 
-func (m *BoundedValueBundle) GetOneOutInfererForecasterValues() []*BoundedOneOutInfererForecasterValues {
+func (m *InputValueBundle) GetOneOutInfererForecasterValues() []*InputOneOutInfererForecasterValues {
 	if m != nil {
 		return m.OneOutInfererForecasterValues
 	}
@@ -302,24 +302,24 @@ func (m *BoundedValueBundle) GetOneOutInfererForecasterValues() []*BoundedOneOut
 
 // For when the bundle is computed on a per-reputer basis (ie.. if there is an
 // index `m` in the above)
-type BoundedReputerValueBundle struct {
-	ValueBundle *BoundedValueBundle `protobuf:"bytes,1,opt,name=value_bundle,json=valueBundle,proto3" json:"value_bundle,omitempty"`
-	Signature   []byte              `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
-	Pubkey      string              `protobuf:"bytes,3,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+type InputReputerValueBundle struct {
+	ValueBundle *InputValueBundle `protobuf:"bytes,1,opt,name=value_bundle,json=valueBundle,proto3" json:"value_bundle,omitempty"`
+	Signature   []byte            `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
+	Pubkey      string            `protobuf:"bytes,3,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 }
 
-func (m *BoundedReputerValueBundle) Reset()         { *m = BoundedReputerValueBundle{} }
-func (m *BoundedReputerValueBundle) String() string { return proto.CompactTextString(m) }
-func (*BoundedReputerValueBundle) ProtoMessage()    {}
-func (*BoundedReputerValueBundle) Descriptor() ([]byte, []int) {
+func (m *InputReputerValueBundle) Reset()         { *m = InputReputerValueBundle{} }
+func (m *InputReputerValueBundle) String() string { return proto.CompactTextString(m) }
+func (*InputReputerValueBundle) ProtoMessage()    {}
+func (*InputReputerValueBundle) Descriptor() ([]byte, []int) {
 	return fileDescriptor_327a00f966b45027, []int{4}
 }
-func (m *BoundedReputerValueBundle) XXX_Unmarshal(b []byte) error {
+func (m *InputReputerValueBundle) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedReputerValueBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputReputerValueBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedReputerValueBundle.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputReputerValueBundle.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -329,55 +329,55 @@ func (m *BoundedReputerValueBundle) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *BoundedReputerValueBundle) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedReputerValueBundle.Merge(m, src)
+func (m *InputReputerValueBundle) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputReputerValueBundle.Merge(m, src)
 }
-func (m *BoundedReputerValueBundle) XXX_Size() int {
+func (m *InputReputerValueBundle) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedReputerValueBundle) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedReputerValueBundle.DiscardUnknown(m)
+func (m *InputReputerValueBundle) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputReputerValueBundle.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedReputerValueBundle proto.InternalMessageInfo
+var xxx_messageInfo_InputReputerValueBundle proto.InternalMessageInfo
 
-func (m *BoundedReputerValueBundle) GetValueBundle() *BoundedValueBundle {
+func (m *InputReputerValueBundle) GetValueBundle() *InputValueBundle {
 	if m != nil {
 		return m.ValueBundle
 	}
 	return nil
 }
 
-func (m *BoundedReputerValueBundle) GetSignature() []byte {
+func (m *InputReputerValueBundle) GetSignature() []byte {
 	if m != nil {
 		return m.Signature
 	}
 	return nil
 }
 
-func (m *BoundedReputerValueBundle) GetPubkey() string {
+func (m *InputReputerValueBundle) GetPubkey() string {
 	if m != nil {
 		return m.Pubkey
 	}
 	return ""
 }
 
-type BoundedReputerValueBundles struct {
-	ReputerValueBundles []*BoundedReputerValueBundle `protobuf:"bytes,1,rep,name=reputer_value_bundles,json=reputerValueBundles,proto3" json:"reputer_value_bundles,omitempty"`
+type InputReputerValueBundles struct {
+	ReputerValueBundles []*InputReputerValueBundle `protobuf:"bytes,1,rep,name=reputer_value_bundles,json=reputerValueBundles,proto3" json:"reputer_value_bundles,omitempty"`
 }
 
-func (m *BoundedReputerValueBundles) Reset()         { *m = BoundedReputerValueBundles{} }
-func (m *BoundedReputerValueBundles) String() string { return proto.CompactTextString(m) }
-func (*BoundedReputerValueBundles) ProtoMessage()    {}
-func (*BoundedReputerValueBundles) Descriptor() ([]byte, []int) {
+func (m *InputReputerValueBundles) Reset()         { *m = InputReputerValueBundles{} }
+func (m *InputReputerValueBundles) String() string { return proto.CompactTextString(m) }
+func (*InputReputerValueBundles) ProtoMessage()    {}
+func (*InputReputerValueBundles) Descriptor() ([]byte, []int) {
 	return fileDescriptor_327a00f966b45027, []int{5}
 }
-func (m *BoundedReputerValueBundles) XXX_Unmarshal(b []byte) error {
+func (m *InputReputerValueBundles) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedReputerValueBundles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputReputerValueBundles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedReputerValueBundles.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputReputerValueBundles.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -387,19 +387,19 @@ func (m *BoundedReputerValueBundles) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *BoundedReputerValueBundles) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedReputerValueBundles.Merge(m, src)
+func (m *InputReputerValueBundles) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputReputerValueBundles.Merge(m, src)
 }
-func (m *BoundedReputerValueBundles) XXX_Size() int {
+func (m *InputReputerValueBundles) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedReputerValueBundles) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedReputerValueBundles.DiscardUnknown(m)
+func (m *InputReputerValueBundles) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputReputerValueBundles.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedReputerValueBundles proto.InternalMessageInfo
+var xxx_messageInfo_InputReputerValueBundles proto.InternalMessageInfo
 
-func (m *BoundedReputerValueBundles) GetReputerValueBundles() []*BoundedReputerValueBundle {
+func (m *InputReputerValueBundles) GetReputerValueBundles() []*InputReputerValueBundle {
 	if m != nil {
 		return m.ReputerValueBundles
 	}
@@ -407,72 +407,71 @@ func (m *BoundedReputerValueBundles) GetReputerValueBundles() []*BoundedReputerV
 }
 
 func init() {
-	proto.RegisterType((*BoundedWorkerAttributedValue)(nil), "emissions.v9.BoundedWorkerAttributedValue")
-	proto.RegisterType((*BoundedWithheldWorkerAttributedValue)(nil), "emissions.v9.BoundedWithheldWorkerAttributedValue")
-	proto.RegisterType((*BoundedOneOutInfererForecasterValues)(nil), "emissions.v9.BoundedOneOutInfererForecasterValues")
-	proto.RegisterType((*BoundedValueBundle)(nil), "emissions.v9.BoundedValueBundle")
-	proto.RegisterType((*BoundedReputerValueBundle)(nil), "emissions.v9.BoundedReputerValueBundle")
-	proto.RegisterType((*BoundedReputerValueBundles)(nil), "emissions.v9.BoundedReputerValueBundles")
+	proto.RegisterType((*InputWorkerAttributedValue)(nil), "emissions.v9.InputWorkerAttributedValue")
+	proto.RegisterType((*InputWithheldWorkerAttributedValue)(nil), "emissions.v9.InputWithheldWorkerAttributedValue")
+	proto.RegisterType((*InputOneOutInfererForecasterValues)(nil), "emissions.v9.InputOneOutInfererForecasterValues")
+	proto.RegisterType((*InputValueBundle)(nil), "emissions.v9.InputValueBundle")
+	proto.RegisterType((*InputReputerValueBundle)(nil), "emissions.v9.InputReputerValueBundle")
+	proto.RegisterType((*InputReputerValueBundles)(nil), "emissions.v9.InputReputerValueBundles")
 }
 
 func init() { proto.RegisterFile("emissions/v9/inputreputer.proto", fileDescriptor_327a00f966b45027) }
 
 var fileDescriptor_327a00f966b45027 = []byte{
-	// 690 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0x41, 0x4f, 0x13, 0x4f,
-	0x14, 0xef, 0xfe, 0x29, 0x94, 0xbe, 0x16, 0xf2, 0x77, 0x10, 0xb2, 0x10, 0xd8, 0x16, 0x62, 0x22,
-	0x31, 0x71, 0xd7, 0x14, 0x0f, 0xa2, 0x27, 0x0b, 0x9a, 0x70, 0x91, 0xb8, 0x89, 0x12, 0xf5, 0xb0,
-	0x99, 0xee, 0x0e, 0xed, 0x48, 0x3b, 0xb3, 0xce, 0xce, 0x56, 0x48, 0xfc, 0x10, 0xde, 0xbc, 0x98,
-	0xe8, 0x97, 0xf0, 0x3b, 0x70, 0xe4, 0x68, 0x3c, 0x10, 0x03, 0x17, 0x3f, 0x85, 0x31, 0x3b, 0x3b,
-	0xa5, 0x1b, 0x5a, 0x08, 0x98, 0x1e, 0xbc, 0xed, 0x7b, 0xfb, 0xf6, 0xf7, 0x7e, 0xfb, 0xfb, 0xbd,
-	0x79, 0x03, 0x15, 0xd2, 0xa1, 0x51, 0x44, 0x39, 0x8b, 0x9c, 0xee, 0xba, 0x43, 0x59, 0x18, 0x4b,
-	0x41, 0xc2, 0x58, 0x12, 0x61, 0x87, 0x82, 0x4b, 0x8e, 0xca, 0x67, 0x05, 0x76, 0x77, 0x7d, 0xc1,
-	0xcc, 0x94, 0xaf, 0x39, 0x8c, 0x33, 0x9f, 0xa4, 0x75, 0x0b, 0x37, 0x9b, 0xbc, 0xc9, 0xd5, 0xa3,
-	0x93, 0x3c, 0xa5, 0xd9, 0x95, 0x4f, 0x06, 0x2c, 0xd6, 0x79, 0xcc, 0x02, 0x12, 0xec, 0x70, 0xb1,
-	0x47, 0xc4, 0x63, 0x29, 0x05, 0x6d, 0xc4, 0x92, 0x04, 0x2f, 0x71, 0x3b, 0x26, 0x68, 0x0e, 0x26,
-	0xde, 0xab, 0x17, 0xa6, 0x51, 0x35, 0x56, 0x8b, 0xae, 0x8e, 0xd0, 0x2b, 0x18, 0xef, 0x26, 0x05,
-	0xe6, 0x7f, 0x49, 0xba, 0xbe, 0x71, 0x78, 0x5c, 0xc9, 0xfd, 0x38, 0xae, 0x3c, 0x6a, 0x52, 0xd9,
-	0x8a, 0x1b, 0xb6, 0xcf, 0x3b, 0x0e, 0x6e, 0xb7, 0xb9, 0xc0, 0x77, 0x19, 0x91, 0xc9, 0x37, 0xbd,
-	0xd0, 0x6f, 0x61, 0xca, 0x9c, 0x0e, 0x96, 0x2d, 0x5b, 0x37, 0x7e, 0xb2, 0x1f, 0xde, 0xbf, 0xb7,
-	0x49, 0x7c, 0x37, 0x45, 0x7c, 0x98, 0xff, 0xf5, 0xb5, 0x62, 0xac, 0x7c, 0x31, 0xe0, 0x56, 0x8f,
-	0x19, 0x95, 0xad, 0x16, 0x69, 0xff, 0x6b, 0x0c, 0xbf, 0xf5, 0x19, 0x6e, 0x33, 0xb2, 0x1d, 0xcb,
-	0x2d, 0xb6, 0x4b, 0x04, 0x11, 0x4f, 0xb9, 0x20, 0x3e, 0x8e, 0x24, 0x11, 0x8a, 0x60, 0x84, 0x2c,
-	0x80, 0xdd, 0xb3, 0x9c, 0x39, 0xa6, 0x58, 0x66, 0x32, 0xa8, 0x09, 0x73, 0x9c, 0x11, 0x8f, 0xc7,
-	0xd2, 0xa3, 0x29, 0x84, 0xa7, 0xfa, 0x44, 0x66, 0xbe, 0x3a, 0xb6, 0x5a, 0xaa, 0xd5, 0xec, 0xac,
-	0xc7, 0xf6, 0x55, 0x54, 0x71, 0x67, 0x78, 0x96, 0x52, 0x4a, 0x44, 0xf3, 0xfe, 0x5d, 0x00, 0xa4,
-	0x31, 0x54, 0xbe, 0x1e, 0xb3, 0xa0, 0x4d, 0xd0, 0x3c, 0x4c, 0x4a, 0x1e, 0x52, 0xdf, 0xa3, 0x81,
-	0x52, 0x32, 0xef, 0x16, 0x54, 0xbc, 0x15, 0xa0, 0x17, 0x30, 0xab, 0x87, 0xce, 0x13, 0xe4, 0x5d,
-	0x4c, 0x22, 0xe9, 0xa9, 0xd1, 0x52, 0xd2, 0x96, 0x6a, 0xcb, 0x59, 0x7e, 0x6b, 0xb6, 0x9b, 0x96,
-	0xba, 0x69, 0xe5, 0xb3, 0xa4, 0xd0, 0x9d, 0x11, 0x83, 0x49, 0x64, 0x42, 0x41, 0xa7, 0xb5, 0x28,
-	0xbd, 0x10, 0x2d, 0x01, 0x90, 0x7d, 0x29, 0xb0, 0x17, 0x60, 0x89, 0xcd, 0x7c, 0xd5, 0x58, 0x2d,
-	0xbb, 0x45, 0x95, 0xd9, 0xc4, 0x12, 0xa3, 0xb7, 0x30, 0xed, 0xf3, 0x4e, 0x83, 0x32, 0x12, 0xa4,
-	0x4a, 0x99, 0xe3, 0xa3, 0xf3, 0x78, 0xaa, 0x07, 0x9d, 0x8e, 0xd7, 0x73, 0x98, 0x3e, 0x67, 0xca,
-	0x84, 0x32, 0xe5, 0xce, 0x70, 0x53, 0x86, 0x9a, 0x31, 0x45, 0xb3, 0x36, 0xa0, 0x1d, 0xb8, 0xd1,
-	0x77, 0xbf, 0x87, 0x5a, 0xb8, 0x36, 0xea, 0xff, 0xbb, 0xe7, 0x07, 0x2d, 0x80, 0x12, 0xc3, 0xb4,
-	0x4b, 0xb4, 0x28, 0x93, 0xa3, 0x13, 0x05, 0x14, 0x6e, 0xaa, 0xc8, 0xc5, 0xe3, 0x5a, 0x1c, 0xe9,
-	0xb8, 0xa2, 0x0e, 0xcc, 0xf7, 0x1a, 0x0d, 0xea, 0x05, 0x7f, 0xdd, 0x6b, 0x2e, 0xed, 0x35, 0x70,
-	0x4c, 0x7d, 0x30, 0x93, 0x76, 0x94, 0x0d, 0xe9, 0x56, 0xba, 0xb6, 0x3b, 0xb3, 0x9c, 0x91, 0x2d,
-	0x36, 0xd0, 0xe4, 0x03, 0x2c, 0x9f, 0x17, 0x6f, 0xb0, 0x5b, 0xf9, 0x92, 0x7f, 0xbb, 0x74, 0xd5,
-	0xb8, 0x4b, 0xfc, 0xb2, 0xd7, 0x7a, 0x01, 0x7c, 0x36, 0x60, 0x5e, 0xa3, 0xe9, 0xb3, 0x9a, 0xdd,
-	0x03, 0x1b, 0x50, 0x56, 0x34, 0xbc, 0x86, 0x8a, 0xd5, 0x2e, 0x28, 0xd5, 0xaa, 0x43, 0xc9, 0x64,
-	0xbe, 0x73, 0x4b, 0xdd, 0x0c, 0xc8, 0x22, 0x14, 0x23, 0xda, 0x64, 0x58, 0xc6, 0x22, 0xdd, 0x12,
-	0x65, 0xb7, 0x9f, 0x48, 0x56, 0x76, 0x18, 0x37, 0xf6, 0xc8, 0x81, 0x3e, 0xf7, 0x3a, 0xd2, 0xf4,
-	0x0e, 0x60, 0xe1, 0x42, 0x76, 0x11, 0x7a, 0xd3, 0xdf, 0x45, 0x59, 0x9a, 0x91, 0x69, 0x28, 0xd1,
-	0x6e, 0x0f, 0xe5, 0x39, 0x08, 0x74, 0xb6, 0x91, 0xb2, 0xe0, 0x75, 0xf7, 0xf0, 0xc4, 0x32, 0x8e,
-	0x4e, 0x2c, 0xe3, 0xe7, 0x89, 0x65, 0x7c, 0x3c, 0xb5, 0x72, 0x47, 0xa7, 0x56, 0xee, 0xfb, 0xa9,
-	0x95, 0x7b, 0xfd, 0xe0, 0x8a, 0xa7, 0x67, 0xdf, 0xe9, 0xdf, 0xc0, 0xf2, 0x20, 0x24, 0x51, 0x63,
-	0x42, 0xdd, 0xb4, 0x6b, 0x7f, 0x02, 0x00, 0x00, 0xff, 0xff, 0x44, 0x97, 0x0e, 0x7c, 0xca, 0x07,
-	0x00, 0x00,
+	// 687 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0x41, 0x4f, 0x13, 0x51,
+	0x10, 0xee, 0x4a, 0xa1, 0x74, 0x5a, 0x08, 0x2e, 0x82, 0x0b, 0x91, 0x2d, 0x90, 0x98, 0xf4, 0xe2,
+	0x2e, 0x01, 0x0f, 0xa2, 0x27, 0x2a, 0x9a, 0xf4, 0x22, 0xc9, 0x26, 0x68, 0xf0, 0xb2, 0x79, 0xdd,
+	0x1d, 0xda, 0x27, 0xed, 0x7b, 0xeb, 0xdb, 0xb7, 0x15, 0xfc, 0x15, 0x5e, 0x4c, 0xbc, 0x98, 0xf8,
+	0x17, 0xfc, 0x17, 0x1c, 0x39, 0x1a, 0x0f, 0xc4, 0xc0, 0xc5, 0xa3, 0x3f, 0xc1, 0xec, 0xdb, 0x2d,
+	0xdd, 0xd0, 0x82, 0x62, 0x7a, 0xf0, 0xd6, 0x99, 0x9d, 0xfd, 0xe6, 0xeb, 0xf7, 0xcd, 0xcc, 0x42,
+	0x05, 0x3b, 0x34, 0x0c, 0x29, 0x67, 0xa1, 0xdd, 0xdd, 0xb4, 0x29, 0x0b, 0x22, 0x29, 0x30, 0x88,
+	0x24, 0x0a, 0x2b, 0x10, 0x5c, 0x72, 0xbd, 0x7c, 0x51, 0x60, 0x75, 0x37, 0x17, 0x8d, 0x4c, 0xf9,
+	0x86, 0xcd, 0x38, 0xf3, 0x30, 0xa9, 0x5b, 0xbc, 0xd3, 0xe4, 0x4d, 0xae, 0x7e, 0xda, 0xf1, 0xaf,
+	0x24, 0xbb, 0xfa, 0x51, 0x83, 0xc5, 0x7a, 0x0c, 0xfa, 0x8a, 0x8b, 0x03, 0x14, 0x5b, 0x52, 0x0a,
+	0xda, 0x88, 0x24, 0xfa, 0x2f, 0x49, 0x3b, 0x42, 0x7d, 0x1e, 0x26, 0xde, 0xa9, 0x07, 0x86, 0xb6,
+	0xac, 0x55, 0x8b, 0x4e, 0x1a, 0xe9, 0x7b, 0x30, 0xde, 0x8d, 0x0b, 0x8c, 0x5b, 0x71, 0xba, 0xf6,
+	0xf4, 0xf8, 0xb4, 0x92, 0xfb, 0x7e, 0x5a, 0x79, 0xd2, 0xa4, 0xb2, 0x15, 0x35, 0x2c, 0x8f, 0x77,
+	0x6c, 0xd2, 0x6e, 0x73, 0x41, 0x1e, 0x30, 0x94, 0xf1, 0x3b, 0xbd, 0xd0, 0x6b, 0x11, 0xca, 0xec,
+	0x0e, 0x91, 0x2d, 0xab, 0xc6, 0x23, 0xe6, 0xa3, 0xff, 0xec, 0x30, 0x78, 0xb8, 0xb6, 0x8d, 0x9e,
+	0x93, 0x20, 0x3e, 0xce, 0xff, 0xfc, 0x52, 0xd1, 0x56, 0x3f, 0x6b, 0xb0, 0x9a, 0xf0, 0xa2, 0xb2,
+	0xd5, 0xc2, 0xb6, 0xff, 0x9f, 0xf1, 0xfb, 0xda, 0xe3, 0xb7, 0xc3, 0x70, 0x27, 0x92, 0x75, 0xb6,
+	0x8f, 0x02, 0xc5, 0x73, 0x2e, 0xd0, 0x23, 0xa1, 0x44, 0xa1, 0xe8, 0x85, 0xba, 0x09, 0xb0, 0x7f,
+	0x91, 0x33, 0xc6, 0x14, 0xc7, 0x4c, 0x46, 0x47, 0x98, 0xe7, 0x0c, 0x5d, 0x1e, 0x49, 0x97, 0x26,
+	0x10, 0xae, 0xea, 0x12, 0x1a, 0xf9, 0xe5, 0xb1, 0x6a, 0x69, 0x7d, 0xcd, 0xca, 0xba, 0x6b, 0xfd,
+	0x59, 0x11, 0x67, 0x96, 0x67, 0x09, 0x25, 0x34, 0x52, 0xce, 0xbf, 0x0a, 0x30, 0xa3, 0x10, 0x54,
+	0xb6, 0x16, 0x31, 0xbf, 0x8d, 0xfa, 0x02, 0x4c, 0x4a, 0x1e, 0x50, 0xcf, 0xa5, 0xbe, 0xd2, 0x30,
+	0xef, 0x14, 0x54, 0x5c, 0xf7, 0xf5, 0x5d, 0x98, 0x4b, 0x47, 0xcd, 0x15, 0xf8, 0x36, 0xc2, 0x50,
+	0xba, 0x6a, 0xa0, 0x94, 0xa8, 0xa5, 0xf5, 0x95, 0x2c, 0xb7, 0x0d, 0xcb, 0x49, 0x4a, 0x9d, 0xa4,
+	0xf2, 0x45, 0x5c, 0xe8, 0xcc, 0x8a, 0xc1, 0xa4, 0x6e, 0x40, 0x21, 0x4d, 0xa7, 0x82, 0xf4, 0x42,
+	0x7d, 0x09, 0x00, 0x0f, 0xa5, 0x20, 0xae, 0x4f, 0x24, 0x31, 0xf2, 0xcb, 0x5a, 0xb5, 0xec, 0x14,
+	0x55, 0x66, 0x9b, 0x48, 0xa2, 0xbf, 0x81, 0x69, 0x8f, 0x77, 0x1a, 0x94, 0xa1, 0x9f, 0xa8, 0x64,
+	0x8c, 0x8f, 0xce, 0xdd, 0xa9, 0x1e, 0x74, 0x32, 0x58, 0x3b, 0x30, 0x7d, 0xc9, 0x90, 0x09, 0x65,
+	0x48, 0x75, 0x98, 0x21, 0x43, 0x8d, 0x98, 0xa2, 0x59, 0x0b, 0xf4, 0x5d, 0xb8, 0xdd, 0xf7, 0xbd,
+	0x87, 0x59, 0xb8, 0x21, 0xe6, 0xcc, 0xfe, 0xe5, 0x01, 0xf3, 0xa1, 0xc4, 0x08, 0xed, 0x62, 0x2a,
+	0xc8, 0xe4, 0xe8, 0x04, 0x01, 0x85, 0x9b, 0xa8, 0x71, 0xf5, 0x98, 0x16, 0x47, 0x38, 0xa6, 0xfa,
+	0x01, 0x2c, 0xf4, 0xda, 0x0c, 0x6a, 0x05, 0xff, 0xd8, 0x69, 0x3e, 0xe9, 0x34, 0xb0, 0x9a, 0x04,
+	0x8c, 0xb8, 0x19, 0x65, 0x43, 0x7a, 0x95, 0x6e, 0xe8, 0xcb, 0x1c, 0x67, 0x58, 0x67, 0x03, 0x2d,
+	0xde, 0xc3, 0xca, 0x65, 0xd9, 0x06, 0x7b, 0x95, 0xaf, 0xfc, 0x5f, 0xd7, 0x9e, 0x16, 0x67, 0x89,
+	0x5f, 0xf7, 0x38, 0x5d, 0xf9, 0x4f, 0x1a, 0xdc, 0x55, 0x58, 0xe9, 0x76, 0x66, 0x37, 0x7f, 0x0b,
+	0xca, 0x8a, 0x82, 0xdb, 0x50, 0xb1, 0xda, 0xfe, 0xd2, 0xba, 0x39, 0x84, 0x48, 0xe6, 0x2d, 0xa7,
+	0xd4, 0xcd, 0x40, 0xdc, 0x83, 0x62, 0x48, 0x9b, 0x8c, 0xc8, 0x48, 0x24, 0x57, 0xa1, 0xec, 0xf4,
+	0x13, 0xf1, 0x71, 0x0e, 0xa2, 0xc6, 0x01, 0x1e, 0xa5, 0x7b, 0x9e, 0x46, 0x29, 0xb5, 0x08, 0x8c,
+	0x2b, 0x98, 0x85, 0xfa, 0x5e, 0xff, 0xf2, 0x64, 0x29, 0x86, 0x86, 0xa6, 0xc4, 0xba, 0x3f, 0x84,
+	0xe3, 0x20, 0xcc, 0xc5, 0xf5, 0xc9, 0x42, 0xd7, 0x9c, 0xe3, 0x33, 0x53, 0x3b, 0x39, 0x33, 0xb5,
+	0x1f, 0x67, 0xa6, 0xf6, 0xe1, 0xdc, 0xcc, 0x9d, 0x9c, 0x9b, 0xb9, 0x6f, 0xe7, 0x66, 0xee, 0xf5,
+	0xa3, 0xbf, 0xdc, 0x96, 0x43, 0xbb, 0xff, 0x8d, 0x95, 0x47, 0x01, 0x86, 0x8d, 0x09, 0xf5, 0x2d,
+	0xdd, 0xf8, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x92, 0xff, 0x90, 0x01, 0xac, 0x07, 0x00, 0x00,
 }
 
-func (this *BoundedWorkerAttributedValue) Equal(that interface{}) bool {
+func (this *InputWorkerAttributedValue) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedWorkerAttributedValue)
+	that1, ok := that.(*InputWorkerAttributedValue)
 	if !ok {
-		that2, ok := that.(BoundedWorkerAttributedValue)
+		that2, ok := that.(InputWorkerAttributedValue)
 		if ok {
 			that1 = &that2
 		} else {
@@ -492,14 +491,14 @@ func (this *BoundedWorkerAttributedValue) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedWithheldWorkerAttributedValue) Equal(that interface{}) bool {
+func (this *InputWithheldWorkerAttributedValue) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedWithheldWorkerAttributedValue)
+	that1, ok := that.(*InputWithheldWorkerAttributedValue)
 	if !ok {
-		that2, ok := that.(BoundedWithheldWorkerAttributedValue)
+		that2, ok := that.(InputWithheldWorkerAttributedValue)
 		if ok {
 			that1 = &that2
 		} else {
@@ -519,14 +518,14 @@ func (this *BoundedWithheldWorkerAttributedValue) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedOneOutInfererForecasterValues) Equal(that interface{}) bool {
+func (this *InputOneOutInfererForecasterValues) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedOneOutInfererForecasterValues)
+	that1, ok := that.(*InputOneOutInfererForecasterValues)
 	if !ok {
-		that2, ok := that.(BoundedOneOutInfererForecasterValues)
+		that2, ok := that.(InputOneOutInfererForecasterValues)
 		if ok {
 			that1 = &that2
 		} else {
@@ -551,14 +550,14 @@ func (this *BoundedOneOutInfererForecasterValues) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedValueBundle) Equal(that interface{}) bool {
+func (this *InputValueBundle) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedValueBundle)
+	that1, ok := that.(*InputValueBundle)
 	if !ok {
-		that2, ok := that.(BoundedValueBundle)
+		that2, ok := that.(InputValueBundle)
 		if ok {
 			that1 = &that2
 		} else {
@@ -638,14 +637,14 @@ func (this *BoundedValueBundle) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedReputerValueBundle) Equal(that interface{}) bool {
+func (this *InputReputerValueBundle) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedReputerValueBundle)
+	that1, ok := that.(*InputReputerValueBundle)
 	if !ok {
-		that2, ok := that.(BoundedReputerValueBundle)
+		that2, ok := that.(InputReputerValueBundle)
 		if ok {
 			that1 = &that2
 		} else {
@@ -668,7 +667,7 @@ func (this *BoundedReputerValueBundle) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (m *BoundedWorkerAttributedValue) Marshal() (dAtA []byte, err error) {
+func (m *InputWorkerAttributedValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -678,12 +677,12 @@ func (m *BoundedWorkerAttributedValue) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedWorkerAttributedValue) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputWorkerAttributedValue) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedWorkerAttributedValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputWorkerAttributedValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -708,7 +707,7 @@ func (m *BoundedWorkerAttributedValue) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedWithheldWorkerAttributedValue) Marshal() (dAtA []byte, err error) {
+func (m *InputWithheldWorkerAttributedValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -718,12 +717,12 @@ func (m *BoundedWithheldWorkerAttributedValue) Marshal() (dAtA []byte, err error
 	return dAtA[:n], nil
 }
 
-func (m *BoundedWithheldWorkerAttributedValue) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputWithheldWorkerAttributedValue) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedWithheldWorkerAttributedValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputWithheldWorkerAttributedValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -748,7 +747,7 @@ func (m *BoundedWithheldWorkerAttributedValue) MarshalToSizedBuffer(dAtA []byte)
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedOneOutInfererForecasterValues) Marshal() (dAtA []byte, err error) {
+func (m *InputOneOutInfererForecasterValues) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -758,12 +757,12 @@ func (m *BoundedOneOutInfererForecasterValues) Marshal() (dAtA []byte, err error
 	return dAtA[:n], nil
 }
 
-func (m *BoundedOneOutInfererForecasterValues) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputOneOutInfererForecasterValues) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedOneOutInfererForecasterValues) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputOneOutInfererForecasterValues) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -792,7 +791,7 @@ func (m *BoundedOneOutInfererForecasterValues) MarshalToSizedBuffer(dAtA []byte)
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedValueBundle) Marshal() (dAtA []byte, err error) {
+func (m *InputValueBundle) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -802,12 +801,12 @@ func (m *BoundedValueBundle) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedValueBundle) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputValueBundle) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedValueBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputValueBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -950,7 +949,7 @@ func (m *BoundedValueBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedReputerValueBundle) Marshal() (dAtA []byte, err error) {
+func (m *InputReputerValueBundle) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -960,12 +959,12 @@ func (m *BoundedReputerValueBundle) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedReputerValueBundle) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputReputerValueBundle) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedReputerValueBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputReputerValueBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -999,7 +998,7 @@ func (m *BoundedReputerValueBundle) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedReputerValueBundles) Marshal() (dAtA []byte, err error) {
+func (m *InputReputerValueBundles) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1009,12 +1008,12 @@ func (m *BoundedReputerValueBundles) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedReputerValueBundles) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputReputerValueBundles) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedReputerValueBundles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputReputerValueBundles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1047,7 +1046,7 @@ func encodeVarintInputreputer(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *BoundedWorkerAttributedValue) Size() (n int) {
+func (m *InputWorkerAttributedValue) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1062,7 +1061,7 @@ func (m *BoundedWorkerAttributedValue) Size() (n int) {
 	return n
 }
 
-func (m *BoundedWithheldWorkerAttributedValue) Size() (n int) {
+func (m *InputWithheldWorkerAttributedValue) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1077,7 +1076,7 @@ func (m *BoundedWithheldWorkerAttributedValue) Size() (n int) {
 	return n
 }
 
-func (m *BoundedOneOutInfererForecasterValues) Size() (n int) {
+func (m *InputOneOutInfererForecasterValues) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1096,7 +1095,7 @@ func (m *BoundedOneOutInfererForecasterValues) Size() (n int) {
 	return n
 }
 
-func (m *BoundedValueBundle) Size() (n int) {
+func (m *InputValueBundle) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1160,7 +1159,7 @@ func (m *BoundedValueBundle) Size() (n int) {
 	return n
 }
 
-func (m *BoundedReputerValueBundle) Size() (n int) {
+func (m *InputReputerValueBundle) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1181,7 +1180,7 @@ func (m *BoundedReputerValueBundle) Size() (n int) {
 	return n
 }
 
-func (m *BoundedReputerValueBundles) Size() (n int) {
+func (m *InputReputerValueBundles) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1202,7 +1201,7 @@ func sovInputreputer(x uint64) (n int) {
 func sozInputreputer(x uint64) (n int) {
 	return sovInputreputer(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *BoundedWorkerAttributedValue) Unmarshal(dAtA []byte) error {
+func (m *InputWorkerAttributedValue) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1225,10 +1224,10 @@ func (m *BoundedWorkerAttributedValue) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedWorkerAttributedValue: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputWorkerAttributedValue: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedWorkerAttributedValue: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputWorkerAttributedValue: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1318,7 +1317,7 @@ func (m *BoundedWorkerAttributedValue) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedWithheldWorkerAttributedValue) Unmarshal(dAtA []byte) error {
+func (m *InputWithheldWorkerAttributedValue) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1341,10 +1340,10 @@ func (m *BoundedWithheldWorkerAttributedValue) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedWithheldWorkerAttributedValue: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputWithheldWorkerAttributedValue: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedWithheldWorkerAttributedValue: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputWithheldWorkerAttributedValue: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1434,7 +1433,7 @@ func (m *BoundedWithheldWorkerAttributedValue) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedOneOutInfererForecasterValues) Unmarshal(dAtA []byte) error {
+func (m *InputOneOutInfererForecasterValues) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1457,10 +1456,10 @@ func (m *BoundedOneOutInfererForecasterValues) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedOneOutInfererForecasterValues: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputOneOutInfererForecasterValues: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedOneOutInfererForecasterValues: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputOneOutInfererForecasterValues: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 3:
@@ -1524,7 +1523,7 @@ func (m *BoundedOneOutInfererForecasterValues) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OneOutInfererValues = append(m.OneOutInfererValues, &BoundedWithheldWorkerAttributedValue{})
+			m.OneOutInfererValues = append(m.OneOutInfererValues, &InputWithheldWorkerAttributedValue{})
 			if err := m.OneOutInfererValues[len(m.OneOutInfererValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1550,7 +1549,7 @@ func (m *BoundedOneOutInfererForecasterValues) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
+func (m *InputValueBundle) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1573,10 +1572,10 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedValueBundle: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputValueBundle: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedValueBundle: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputValueBundle: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1763,7 +1762,7 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.InfererValues = append(m.InfererValues, &BoundedWorkerAttributedValue{})
+			m.InfererValues = append(m.InfererValues, &InputWorkerAttributedValue{})
 			if err := m.InfererValues[len(m.InfererValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1797,7 +1796,7 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ForecasterValues = append(m.ForecasterValues, &BoundedWorkerAttributedValue{})
+			m.ForecasterValues = append(m.ForecasterValues, &InputWorkerAttributedValue{})
 			if err := m.ForecasterValues[len(m.ForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1865,7 +1864,7 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OneOutInfererValues = append(m.OneOutInfererValues, &BoundedWithheldWorkerAttributedValue{})
+			m.OneOutInfererValues = append(m.OneOutInfererValues, &InputWithheldWorkerAttributedValue{})
 			if err := m.OneOutInfererValues[len(m.OneOutInfererValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1899,7 +1898,7 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OneOutForecasterValues = append(m.OneOutForecasterValues, &BoundedWithheldWorkerAttributedValue{})
+			m.OneOutForecasterValues = append(m.OneOutForecasterValues, &InputWithheldWorkerAttributedValue{})
 			if err := m.OneOutForecasterValues[len(m.OneOutForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1933,7 +1932,7 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OneInForecasterValues = append(m.OneInForecasterValues, &BoundedWorkerAttributedValue{})
+			m.OneInForecasterValues = append(m.OneInForecasterValues, &InputWorkerAttributedValue{})
 			if err := m.OneInForecasterValues[len(m.OneInForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1967,7 +1966,7 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.OneOutInfererForecasterValues = append(m.OneOutInfererForecasterValues, &BoundedOneOutInfererForecasterValues{})
+			m.OneOutInfererForecasterValues = append(m.OneOutInfererForecasterValues, &InputOneOutInfererForecasterValues{})
 			if err := m.OneOutInfererForecasterValues[len(m.OneOutInfererForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1993,7 +1992,7 @@ func (m *BoundedValueBundle) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedReputerValueBundle) Unmarshal(dAtA []byte) error {
+func (m *InputReputerValueBundle) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2016,10 +2015,10 @@ func (m *BoundedReputerValueBundle) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedReputerValueBundle: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputReputerValueBundle: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedReputerValueBundle: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputReputerValueBundle: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2052,7 +2051,7 @@ func (m *BoundedReputerValueBundle) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.ValueBundle == nil {
-				m.ValueBundle = &BoundedValueBundle{}
+				m.ValueBundle = &InputValueBundle{}
 			}
 			if err := m.ValueBundle.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -2145,7 +2144,7 @@ func (m *BoundedReputerValueBundle) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedReputerValueBundles) Unmarshal(dAtA []byte) error {
+func (m *InputReputerValueBundles) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2168,10 +2167,10 @@ func (m *BoundedReputerValueBundles) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedReputerValueBundles: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputReputerValueBundles: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedReputerValueBundles: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputReputerValueBundles: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2203,7 +2202,7 @@ func (m *BoundedReputerValueBundles) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ReputerValueBundles = append(m.ReputerValueBundles, &BoundedReputerValueBundle{})
+			m.ReputerValueBundles = append(m.ReputerValueBundles, &InputReputerValueBundle{})
 			if err := m.ReputerValueBundles[len(m.ReputerValueBundles)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}

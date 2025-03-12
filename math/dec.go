@@ -40,15 +40,14 @@ const mathCodespace = "math"
 const NaNStr = "NaN"
 
 var (
-	ErrInvalidDecString       = errorsmod.Register(mathCodespace, 1, "invalid decimal string")
-	ErrUnexpectedRounding     = errorsmod.Register(mathCodespace, 2, "unexpected rounding")
-	ErrNonIntegral            = errorsmod.Register(mathCodespace, 3, "value is non-integral")
-	ErrInfiniteString         = errorsmod.Register(mathCodespace, 4, "value is infinite")
-	ErrOverflow               = errorsmod.Register(mathCodespace, 5, "overflow")
-	ErrNaN                    = errorsmod.Register(mathCodespace, 6, "NaN not permitted in this context")
-	ErrNotMatchingLength      = errorsmod.Register(mathCodespace, 7, "slices are not of the same length")
-	ErrOutOfRange             = errorsmod.Register(mathCodespace, 8, "value is out of range")
-	ErrInvalidBoundedExp40Dec = errorsmod.Register(mathCodespace, 9, "invalid bounded exp40 dec")
+	ErrInvalidDecString   = errorsmod.Register(mathCodespace, 1, "invalid decimal string")
+	ErrUnexpectedRounding = errorsmod.Register(mathCodespace, 2, "unexpected rounding")
+	ErrNonIntegral        = errorsmod.Register(mathCodespace, 3, "value is non-integral")
+	ErrInfiniteString     = errorsmod.Register(mathCodespace, 4, "value is infinite")
+	ErrOverflow           = errorsmod.Register(mathCodespace, 5, "overflow")
+	ErrNaN                = errorsmod.Register(mathCodespace, 6, "NaN not permitted in this context")
+	ErrNotMatchingLength  = errorsmod.Register(mathCodespace, 7, "slices are not of the same length")
+	ErrOutOfRange         = errorsmod.Register(mathCodespace, 8, "value is out of range")
 )
 
 // The number 0 encoded as Dec

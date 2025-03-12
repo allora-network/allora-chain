@@ -25,7 +25,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type BoundedInference struct {
+type InputInference struct {
 	TopicId     uint64                                                      `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	BlockHeight int64                                                       `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	Inferer     string                                                      `protobuf:"bytes,3,opt,name=inferer,proto3" json:"inferer,omitempty"`
@@ -34,18 +34,18 @@ type BoundedInference struct {
 	Proof       string                                                      `protobuf:"bytes,6,opt,name=proof,proto3" json:"proof,omitempty"`
 }
 
-func (m *BoundedInference) Reset()         { *m = BoundedInference{} }
-func (m *BoundedInference) String() string { return proto.CompactTextString(m) }
-func (*BoundedInference) ProtoMessage()    {}
-func (*BoundedInference) Descriptor() ([]byte, []int) {
+func (m *InputInference) Reset()         { *m = InputInference{} }
+func (m *InputInference) String() string { return proto.CompactTextString(m) }
+func (*InputInference) ProtoMessage()    {}
+func (*InputInference) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{0}
 }
-func (m *BoundedInference) XXX_Unmarshal(b []byte) error {
+func (m *InputInference) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedInference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputInference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedInference.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputInference.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -55,69 +55,69 @@ func (m *BoundedInference) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-func (m *BoundedInference) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedInference.Merge(m, src)
+func (m *InputInference) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputInference.Merge(m, src)
 }
-func (m *BoundedInference) XXX_Size() int {
+func (m *InputInference) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedInference) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedInference.DiscardUnknown(m)
+func (m *InputInference) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputInference.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedInference proto.InternalMessageInfo
+var xxx_messageInfo_InputInference proto.InternalMessageInfo
 
-func (m *BoundedInference) GetTopicId() uint64 {
+func (m *InputInference) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *BoundedInference) GetBlockHeight() int64 {
+func (m *InputInference) GetBlockHeight() int64 {
 	if m != nil {
 		return m.BlockHeight
 	}
 	return 0
 }
 
-func (m *BoundedInference) GetInferer() string {
+func (m *InputInference) GetInferer() string {
 	if m != nil {
 		return m.Inferer
 	}
 	return ""
 }
 
-func (m *BoundedInference) GetExtraData() []byte {
+func (m *InputInference) GetExtraData() []byte {
 	if m != nil {
 		return m.ExtraData
 	}
 	return nil
 }
 
-func (m *BoundedInference) GetProof() string {
+func (m *InputInference) GetProof() string {
 	if m != nil {
 		return m.Proof
 	}
 	return ""
 }
 
-type BoundedInferences struct {
-	Inferences []*BoundedInference `protobuf:"bytes,1,rep,name=inferences,proto3" json:"inferences,omitempty"`
+type InputInferences struct {
+	Inferences []*InputInference `protobuf:"bytes,1,rep,name=inferences,proto3" json:"inferences,omitempty"`
 }
 
-func (m *BoundedInferences) Reset()         { *m = BoundedInferences{} }
-func (m *BoundedInferences) String() string { return proto.CompactTextString(m) }
-func (*BoundedInferences) ProtoMessage()    {}
-func (*BoundedInferences) Descriptor() ([]byte, []int) {
+func (m *InputInferences) Reset()         { *m = InputInferences{} }
+func (m *InputInferences) String() string { return proto.CompactTextString(m) }
+func (*InputInferences) ProtoMessage()    {}
+func (*InputInferences) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{1}
 }
-func (m *BoundedInferences) XXX_Unmarshal(b []byte) error {
+func (m *InputInferences) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedInferences) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputInferences) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedInferences.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputInferences.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -127,42 +127,42 @@ func (m *BoundedInferences) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *BoundedInferences) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedInferences.Merge(m, src)
+func (m *InputInferences) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputInferences.Merge(m, src)
 }
-func (m *BoundedInferences) XXX_Size() int {
+func (m *InputInferences) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedInferences) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedInferences.DiscardUnknown(m)
+func (m *InputInferences) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputInferences.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedInferences proto.InternalMessageInfo
+var xxx_messageInfo_InputInferences proto.InternalMessageInfo
 
-func (m *BoundedInferences) GetInferences() []*BoundedInference {
+func (m *InputInferences) GetInferences() []*InputInference {
 	if m != nil {
 		return m.Inferences
 	}
 	return nil
 }
 
-type BoundedForecastElement struct {
+type InputForecastElement struct {
 	Inferer string                                                      `protobuf:"bytes,1,opt,name=inferer,proto3" json:"inferer,omitempty"`
 	Value   github_com_allora_network_allora_chain_math.BoundedExp40Dec `protobuf:"bytes,2,opt,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.BoundedExp40Dec" json:"value"`
 }
 
-func (m *BoundedForecastElement) Reset()         { *m = BoundedForecastElement{} }
-func (m *BoundedForecastElement) String() string { return proto.CompactTextString(m) }
-func (*BoundedForecastElement) ProtoMessage()    {}
-func (*BoundedForecastElement) Descriptor() ([]byte, []int) {
+func (m *InputForecastElement) Reset()         { *m = InputForecastElement{} }
+func (m *InputForecastElement) String() string { return proto.CompactTextString(m) }
+func (*InputForecastElement) ProtoMessage()    {}
+func (*InputForecastElement) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{2}
 }
-func (m *BoundedForecastElement) XXX_Unmarshal(b []byte) error {
+func (m *InputForecastElement) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedForecastElement) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputForecastElement) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedForecastElement.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputForecastElement.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -172,45 +172,45 @@ func (m *BoundedForecastElement) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-func (m *BoundedForecastElement) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedForecastElement.Merge(m, src)
+func (m *InputForecastElement) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputForecastElement.Merge(m, src)
 }
-func (m *BoundedForecastElement) XXX_Size() int {
+func (m *InputForecastElement) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedForecastElement) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedForecastElement.DiscardUnknown(m)
+func (m *InputForecastElement) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputForecastElement.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedForecastElement proto.InternalMessageInfo
+var xxx_messageInfo_InputForecastElement proto.InternalMessageInfo
 
-func (m *BoundedForecastElement) GetInferer() string {
+func (m *InputForecastElement) GetInferer() string {
 	if m != nil {
 		return m.Inferer
 	}
 	return ""
 }
 
-type BoundedForecast struct {
-	TopicId          uint64                    `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight      int64                     `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	Forecaster       string                    `protobuf:"bytes,3,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
-	ForecastElements []*BoundedForecastElement `protobuf:"bytes,4,rep,name=forecast_elements,json=forecastElements,proto3" json:"forecast_elements,omitempty"`
-	ExtraData        []byte                    `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+type InputForecast struct {
+	TopicId          uint64                  `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight      int64                   `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	Forecaster       string                  `protobuf:"bytes,3,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+	ForecastElements []*InputForecastElement `protobuf:"bytes,4,rep,name=forecast_elements,json=forecastElements,proto3" json:"forecast_elements,omitempty"`
+	ExtraData        []byte                  `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
 }
 
-func (m *BoundedForecast) Reset()         { *m = BoundedForecast{} }
-func (m *BoundedForecast) String() string { return proto.CompactTextString(m) }
-func (*BoundedForecast) ProtoMessage()    {}
-func (*BoundedForecast) Descriptor() ([]byte, []int) {
+func (m *InputForecast) Reset()         { *m = InputForecast{} }
+func (m *InputForecast) String() string { return proto.CompactTextString(m) }
+func (*InputForecast) ProtoMessage()    {}
+func (*InputForecast) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{3}
 }
-func (m *BoundedForecast) XXX_Unmarshal(b []byte) error {
+func (m *InputForecast) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedForecast) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputForecast) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedForecast.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputForecast.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -220,69 +220,69 @@ func (m *BoundedForecast) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-func (m *BoundedForecast) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedForecast.Merge(m, src)
+func (m *InputForecast) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputForecast.Merge(m, src)
 }
-func (m *BoundedForecast) XXX_Size() int {
+func (m *InputForecast) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedForecast) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedForecast.DiscardUnknown(m)
+func (m *InputForecast) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputForecast.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedForecast proto.InternalMessageInfo
+var xxx_messageInfo_InputForecast proto.InternalMessageInfo
 
-func (m *BoundedForecast) GetTopicId() uint64 {
+func (m *InputForecast) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *BoundedForecast) GetBlockHeight() int64 {
+func (m *InputForecast) GetBlockHeight() int64 {
 	if m != nil {
 		return m.BlockHeight
 	}
 	return 0
 }
 
-func (m *BoundedForecast) GetForecaster() string {
+func (m *InputForecast) GetForecaster() string {
 	if m != nil {
 		return m.Forecaster
 	}
 	return ""
 }
 
-func (m *BoundedForecast) GetForecastElements() []*BoundedForecastElement {
+func (m *InputForecast) GetForecastElements() []*InputForecastElement {
 	if m != nil {
 		return m.ForecastElements
 	}
 	return nil
 }
 
-func (m *BoundedForecast) GetExtraData() []byte {
+func (m *InputForecast) GetExtraData() []byte {
 	if m != nil {
 		return m.ExtraData
 	}
 	return nil
 }
 
-type BoundedForecasts struct {
-	Forecasts []*BoundedForecast `protobuf:"bytes,1,rep,name=forecasts,proto3" json:"forecasts,omitempty"`
+type InputForecasts struct {
+	Forecasts []*InputForecast `protobuf:"bytes,1,rep,name=forecasts,proto3" json:"forecasts,omitempty"`
 }
 
-func (m *BoundedForecasts) Reset()         { *m = BoundedForecasts{} }
-func (m *BoundedForecasts) String() string { return proto.CompactTextString(m) }
-func (*BoundedForecasts) ProtoMessage()    {}
-func (*BoundedForecasts) Descriptor() ([]byte, []int) {
+func (m *InputForecasts) Reset()         { *m = InputForecasts{} }
+func (m *InputForecasts) String() string { return proto.CompactTextString(m) }
+func (*InputForecasts) ProtoMessage()    {}
+func (*InputForecasts) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{4}
 }
-func (m *BoundedForecasts) XXX_Unmarshal(b []byte) error {
+func (m *InputForecasts) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedForecasts) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputForecasts) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedForecasts.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputForecasts.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -292,42 +292,42 @@ func (m *BoundedForecasts) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-func (m *BoundedForecasts) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedForecasts.Merge(m, src)
+func (m *InputForecasts) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputForecasts.Merge(m, src)
 }
-func (m *BoundedForecasts) XXX_Size() int {
+func (m *InputForecasts) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedForecasts) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedForecasts.DiscardUnknown(m)
+func (m *InputForecasts) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputForecasts.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedForecasts proto.InternalMessageInfo
+var xxx_messageInfo_InputForecasts proto.InternalMessageInfo
 
-func (m *BoundedForecasts) GetForecasts() []*BoundedForecast {
+func (m *InputForecasts) GetForecasts() []*InputForecast {
 	if m != nil {
 		return m.Forecasts
 	}
 	return nil
 }
 
-type BoundedInferenceForecastBundle struct {
-	Inference *BoundedInference `protobuf:"bytes,1,opt,name=inference,proto3" json:"inference,omitempty"`
-	Forecast  *BoundedForecast  `protobuf:"bytes,2,opt,name=forecast,proto3" json:"forecast,omitempty"`
+type InputInferenceForecastBundle struct {
+	Inference *InputInference `protobuf:"bytes,1,opt,name=inference,proto3" json:"inference,omitempty"`
+	Forecast  *InputForecast  `protobuf:"bytes,2,opt,name=forecast,proto3" json:"forecast,omitempty"`
 }
 
-func (m *BoundedInferenceForecastBundle) Reset()         { *m = BoundedInferenceForecastBundle{} }
-func (m *BoundedInferenceForecastBundle) String() string { return proto.CompactTextString(m) }
-func (*BoundedInferenceForecastBundle) ProtoMessage()    {}
-func (*BoundedInferenceForecastBundle) Descriptor() ([]byte, []int) {
+func (m *InputInferenceForecastBundle) Reset()         { *m = InputInferenceForecastBundle{} }
+func (m *InputInferenceForecastBundle) String() string { return proto.CompactTextString(m) }
+func (*InputInferenceForecastBundle) ProtoMessage()    {}
+func (*InputInferenceForecastBundle) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{5}
 }
-func (m *BoundedInferenceForecastBundle) XXX_Unmarshal(b []byte) error {
+func (m *InputInferenceForecastBundle) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedInferenceForecastBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputInferenceForecastBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedInferenceForecastBundle.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputInferenceForecastBundle.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -337,53 +337,53 @@ func (m *BoundedInferenceForecastBundle) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-func (m *BoundedInferenceForecastBundle) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedInferenceForecastBundle.Merge(m, src)
+func (m *InputInferenceForecastBundle) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputInferenceForecastBundle.Merge(m, src)
 }
-func (m *BoundedInferenceForecastBundle) XXX_Size() int {
+func (m *InputInferenceForecastBundle) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedInferenceForecastBundle) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedInferenceForecastBundle.DiscardUnknown(m)
+func (m *InputInferenceForecastBundle) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputInferenceForecastBundle.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedInferenceForecastBundle proto.InternalMessageInfo
+var xxx_messageInfo_InputInferenceForecastBundle proto.InternalMessageInfo
 
-func (m *BoundedInferenceForecastBundle) GetInference() *BoundedInference {
+func (m *InputInferenceForecastBundle) GetInference() *InputInference {
 	if m != nil {
 		return m.Inference
 	}
 	return nil
 }
 
-func (m *BoundedInferenceForecastBundle) GetForecast() *BoundedForecast {
+func (m *InputInferenceForecastBundle) GetForecast() *InputForecast {
 	if m != nil {
 		return m.Forecast
 	}
 	return nil
 }
 
-type BoundedWorkerDataBundle struct {
-	Worker                             string                          `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
-	Nonce                              *Nonce                          `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	TopicId                            uint64                          `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	InferenceForecastsBundle           *BoundedInferenceForecastBundle `protobuf:"bytes,4,opt,name=inference_forecasts_bundle,json=inferenceForecastsBundle,proto3" json:"inference_forecasts_bundle,omitempty"`
-	InferencesForecastsBundleSignature []byte                          `protobuf:"bytes,5,opt,name=inferences_forecasts_bundle_signature,json=inferencesForecastsBundleSignature,proto3" json:"inferences_forecasts_bundle_signature,omitempty"`
-	Pubkey                             string                          `protobuf:"bytes,6,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+type InputWorkerDataBundle struct {
+	Worker                             string                        `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
+	Nonce                              *Nonce                        `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	TopicId                            uint64                        `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	InferenceForecastsBundle           *InputInferenceForecastBundle `protobuf:"bytes,4,opt,name=inference_forecasts_bundle,json=inferenceForecastsBundle,proto3" json:"inference_forecasts_bundle,omitempty"`
+	InferencesForecastsBundleSignature []byte                        `protobuf:"bytes,5,opt,name=inferences_forecasts_bundle_signature,json=inferencesForecastsBundleSignature,proto3" json:"inferences_forecasts_bundle_signature,omitempty"`
+	Pubkey                             string                        `protobuf:"bytes,6,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 }
 
-func (m *BoundedWorkerDataBundle) Reset()         { *m = BoundedWorkerDataBundle{} }
-func (m *BoundedWorkerDataBundle) String() string { return proto.CompactTextString(m) }
-func (*BoundedWorkerDataBundle) ProtoMessage()    {}
-func (*BoundedWorkerDataBundle) Descriptor() ([]byte, []int) {
+func (m *InputWorkerDataBundle) Reset()         { *m = InputWorkerDataBundle{} }
+func (m *InputWorkerDataBundle) String() string { return proto.CompactTextString(m) }
+func (*InputWorkerDataBundle) ProtoMessage()    {}
+func (*InputWorkerDataBundle) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{6}
 }
-func (m *BoundedWorkerDataBundle) XXX_Unmarshal(b []byte) error {
+func (m *InputWorkerDataBundle) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedWorkerDataBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputWorkerDataBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedWorkerDataBundle.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputWorkerDataBundle.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -393,76 +393,76 @@ func (m *BoundedWorkerDataBundle) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-func (m *BoundedWorkerDataBundle) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedWorkerDataBundle.Merge(m, src)
+func (m *InputWorkerDataBundle) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputWorkerDataBundle.Merge(m, src)
 }
-func (m *BoundedWorkerDataBundle) XXX_Size() int {
+func (m *InputWorkerDataBundle) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedWorkerDataBundle) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedWorkerDataBundle.DiscardUnknown(m)
+func (m *InputWorkerDataBundle) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputWorkerDataBundle.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedWorkerDataBundle proto.InternalMessageInfo
+var xxx_messageInfo_InputWorkerDataBundle proto.InternalMessageInfo
 
-func (m *BoundedWorkerDataBundle) GetWorker() string {
+func (m *InputWorkerDataBundle) GetWorker() string {
 	if m != nil {
 		return m.Worker
 	}
 	return ""
 }
 
-func (m *BoundedWorkerDataBundle) GetNonce() *Nonce {
+func (m *InputWorkerDataBundle) GetNonce() *Nonce {
 	if m != nil {
 		return m.Nonce
 	}
 	return nil
 }
 
-func (m *BoundedWorkerDataBundle) GetTopicId() uint64 {
+func (m *InputWorkerDataBundle) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *BoundedWorkerDataBundle) GetInferenceForecastsBundle() *BoundedInferenceForecastBundle {
+func (m *InputWorkerDataBundle) GetInferenceForecastsBundle() *InputInferenceForecastBundle {
 	if m != nil {
 		return m.InferenceForecastsBundle
 	}
 	return nil
 }
 
-func (m *BoundedWorkerDataBundle) GetInferencesForecastsBundleSignature() []byte {
+func (m *InputWorkerDataBundle) GetInferencesForecastsBundleSignature() []byte {
 	if m != nil {
 		return m.InferencesForecastsBundleSignature
 	}
 	return nil
 }
 
-func (m *BoundedWorkerDataBundle) GetPubkey() string {
+func (m *InputWorkerDataBundle) GetPubkey() string {
 	if m != nil {
 		return m.Pubkey
 	}
 	return ""
 }
 
-type BoundedWorkerDataBundles struct {
-	WorkerDataBundles []*BoundedWorkerDataBundle `protobuf:"bytes,1,rep,name=worker_data_bundles,json=workerDataBundles,proto3" json:"worker_data_bundles,omitempty"`
+type InputWorkerDataBundles struct {
+	WorkerDataBundles []*InputWorkerDataBundle `protobuf:"bytes,1,rep,name=worker_data_bundles,json=workerDataBundles,proto3" json:"worker_data_bundles,omitempty"`
 }
 
-func (m *BoundedWorkerDataBundles) Reset()         { *m = BoundedWorkerDataBundles{} }
-func (m *BoundedWorkerDataBundles) String() string { return proto.CompactTextString(m) }
-func (*BoundedWorkerDataBundles) ProtoMessage()    {}
-func (*BoundedWorkerDataBundles) Descriptor() ([]byte, []int) {
+func (m *InputWorkerDataBundles) Reset()         { *m = InputWorkerDataBundles{} }
+func (m *InputWorkerDataBundles) String() string { return proto.CompactTextString(m) }
+func (*InputWorkerDataBundles) ProtoMessage()    {}
+func (*InputWorkerDataBundles) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1d3130ed8d2442db, []int{7}
 }
-func (m *BoundedWorkerDataBundles) XXX_Unmarshal(b []byte) error {
+func (m *InputWorkerDataBundles) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BoundedWorkerDataBundles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *InputWorkerDataBundles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BoundedWorkerDataBundles.Marshal(b, m, deterministic)
+		return xxx_messageInfo_InputWorkerDataBundles.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -472,19 +472,19 @@ func (m *BoundedWorkerDataBundles) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *BoundedWorkerDataBundles) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BoundedWorkerDataBundles.Merge(m, src)
+func (m *InputWorkerDataBundles) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_InputWorkerDataBundles.Merge(m, src)
 }
-func (m *BoundedWorkerDataBundles) XXX_Size() int {
+func (m *InputWorkerDataBundles) XXX_Size() int {
 	return m.Size()
 }
-func (m *BoundedWorkerDataBundles) XXX_DiscardUnknown() {
-	xxx_messageInfo_BoundedWorkerDataBundles.DiscardUnknown(m)
+func (m *InputWorkerDataBundles) XXX_DiscardUnknown() {
+	xxx_messageInfo_InputWorkerDataBundles.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BoundedWorkerDataBundles proto.InternalMessageInfo
+var xxx_messageInfo_InputWorkerDataBundles proto.InternalMessageInfo
 
-func (m *BoundedWorkerDataBundles) GetWorkerDataBundles() []*BoundedWorkerDataBundle {
+func (m *InputWorkerDataBundles) GetWorkerDataBundles() []*InputWorkerDataBundle {
 	if m != nil {
 		return m.WorkerDataBundles
 	}
@@ -492,72 +492,71 @@ func (m *BoundedWorkerDataBundles) GetWorkerDataBundles() []*BoundedWorkerDataBu
 }
 
 func init() {
-	proto.RegisterType((*BoundedInference)(nil), "emissions.v9.BoundedInference")
-	proto.RegisterType((*BoundedInferences)(nil), "emissions.v9.BoundedInferences")
-	proto.RegisterType((*BoundedForecastElement)(nil), "emissions.v9.BoundedForecastElement")
-	proto.RegisterType((*BoundedForecast)(nil), "emissions.v9.BoundedForecast")
-	proto.RegisterType((*BoundedForecasts)(nil), "emissions.v9.BoundedForecasts")
-	proto.RegisterType((*BoundedInferenceForecastBundle)(nil), "emissions.v9.BoundedInferenceForecastBundle")
-	proto.RegisterType((*BoundedWorkerDataBundle)(nil), "emissions.v9.BoundedWorkerDataBundle")
-	proto.RegisterType((*BoundedWorkerDataBundles)(nil), "emissions.v9.BoundedWorkerDataBundles")
+	proto.RegisterType((*InputInference)(nil), "emissions.v9.InputInference")
+	proto.RegisterType((*InputInferences)(nil), "emissions.v9.InputInferences")
+	proto.RegisterType((*InputForecastElement)(nil), "emissions.v9.InputForecastElement")
+	proto.RegisterType((*InputForecast)(nil), "emissions.v9.InputForecast")
+	proto.RegisterType((*InputForecasts)(nil), "emissions.v9.InputForecasts")
+	proto.RegisterType((*InputInferenceForecastBundle)(nil), "emissions.v9.InputInferenceForecastBundle")
+	proto.RegisterType((*InputWorkerDataBundle)(nil), "emissions.v9.InputWorkerDataBundle")
+	proto.RegisterType((*InputWorkerDataBundles)(nil), "emissions.v9.InputWorkerDataBundles")
 }
 
 func init() { proto.RegisterFile("emissions/v9/inputworker.proto", fileDescriptor_1d3130ed8d2442db) }
 
 var fileDescriptor_1d3130ed8d2442db = []byte{
-	// 659 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x95, 0xcf, 0x6e, 0xd3, 0x4e,
-	0x10, 0xc7, 0xb3, 0xf9, 0xd3, 0x36, 0xd3, 0x4a, 0xbf, 0x76, 0x5b, 0xf5, 0x67, 0x2a, 0xd5, 0x0d,
-	0x11, 0x95, 0x82, 0x04, 0x36, 0x6a, 0x39, 0x50, 0x8a, 0x38, 0x84, 0x16, 0xd1, 0x0b, 0xa8, 0xae,
-	0x10, 0x82, 0x8b, 0xe5, 0x38, 0x9b, 0x64, 0x69, 0xb2, 0x6b, 0xbc, 0xeb, 0xfe, 0xb9, 0xf1, 0x08,
-	0x48, 0x3c, 0x00, 0x3c, 0x4e, 0x8f, 0x3d, 0x70, 0x40, 0x1c, 0x2a, 0xd4, 0x1e, 0xe0, 0x31, 0x50,
-	0xd6, 0x6b, 0x27, 0x31, 0x6d, 0x83, 0x04, 0xb7, 0xcc, 0xec, 0x77, 0x67, 0x67, 0x3e, 0x33, 0x9e,
-	0x80, 0x49, 0x7a, 0x54, 0x08, 0xca, 0x99, 0xb0, 0x0f, 0x36, 0x6c, 0xca, 0x82, 0x48, 0x1e, 0xf2,
-	0x70, 0x9f, 0x84, 0x56, 0x10, 0x72, 0xc9, 0xf1, 0x4c, 0x7a, 0x6e, 0x1d, 0x6c, 0x2c, 0x19, 0x43,
-	0xea, 0x75, 0x9b, 0x71, 0xe6, 0x93, 0x58, 0xb7, 0xb4, 0xd0, 0xe6, 0x6d, 0xae, 0x7e, 0xda, 0xfd,
-	0x5f, 0xb1, 0xb7, 0xfa, 0x3e, 0x0f, 0xb3, 0x75, 0x1e, 0xb1, 0x26, 0x69, 0xee, 0xb0, 0x16, 0x09,
-	0x09, 0xf3, 0x09, 0xbe, 0x01, 0x53, 0x92, 0x07, 0xd4, 0x77, 0x69, 0xd3, 0x40, 0x15, 0x54, 0x2b,
-	0x3a, 0x93, 0xca, 0xde, 0x69, 0xe2, 0x9b, 0x30, 0xd3, 0xe8, 0x72, 0x7f, 0xdf, 0xed, 0x10, 0xda,
-	0xee, 0x48, 0x23, 0x5f, 0x41, 0xb5, 0x82, 0x33, 0xad, 0x7c, 0xcf, 0x94, 0x0b, 0x1b, 0x30, 0x49,
-	0x55, 0xa8, 0xd0, 0x28, 0x54, 0x50, 0xad, 0xec, 0x24, 0x26, 0x7e, 0x0d, 0xa5, 0x03, 0xaf, 0x1b,
-	0x11, 0xa3, 0xd8, 0xf7, 0xd7, 0x9f, 0x9c, 0x9c, 0xad, 0xe4, 0xbe, 0x9d, 0xad, 0x6c, 0xb6, 0xa9,
-	0xec, 0x44, 0x0d, 0xcb, 0xe7, 0x3d, 0xdb, 0xeb, 0x76, 0x79, 0xe8, 0xdd, 0x65, 0x44, 0x15, 0x99,
-	0x98, 0x7e, 0xc7, 0xa3, 0xcc, 0xee, 0x79, 0xb2, 0x63, 0xe9, 0x64, 0xb7, 0x8f, 0x82, 0xfb, 0xf7,
-	0xb6, 0x88, 0xef, 0xc4, 0x11, 0xf1, 0x32, 0x00, 0x39, 0x92, 0xa1, 0xe7, 0x36, 0x3d, 0xe9, 0x19,
-	0xa5, 0x0a, 0xaa, 0xcd, 0x38, 0x65, 0xe5, 0xd9, 0xf2, 0xa4, 0x87, 0x17, 0xa0, 0x14, 0x84, 0x9c,
-	0xb7, 0x8c, 0x09, 0x95, 0x51, 0x6c, 0x3c, 0x2c, 0xfe, 0xfc, 0xbc, 0x82, 0xaa, 0x7b, 0x30, 0x97,
-	0x25, 0x20, 0xf0, 0x63, 0x00, 0x9a, 0x5a, 0x06, 0xaa, 0x14, 0x6a, 0xd3, 0x6b, 0xa6, 0x35, 0x8c,
-	0xda, 0xca, 0x5e, 0x72, 0x86, 0x6e, 0x54, 0x3f, 0x22, 0x58, 0xd4, 0x82, 0xa7, 0x3c, 0x24, 0xbe,
-	0x27, 0xe4, 0x76, 0x97, 0xf4, 0x08, 0x1b, 0xe1, 0x83, 0xae, 0xe0, 0x93, 0xff, 0xd7, 0x7c, 0x74,
-	0xa9, 0x3f, 0x10, 0xfc, 0x97, 0xc9, 0xea, 0x2f, 0x9b, 0x6d, 0x02, 0xb4, 0x74, 0xa4, 0xb4, 0xdf,
-	0x43, 0x1e, 0xbc, 0x0b, 0x73, 0x89, 0xe5, 0x92, 0x18, 0x80, 0x30, 0x8a, 0x0a, 0xe7, 0xad, 0x4b,
-	0x71, 0x66, 0x68, 0x39, 0xb3, 0xad, 0x51, 0x87, 0x18, 0xd3, 0x6a, 0x5d, 0xe9, 0x8b, 0x74, 0xac,
-	0x93, 0x80, 0x02, 0x6f, 0x42, 0x39, 0x09, 0x96, 0xb4, 0x74, 0xf9, 0xda, 0x1c, 0x9c, 0x81, 0xbe,
-	0xfa, 0x09, 0x81, 0x99, 0xed, 0x78, 0xa2, 0xab, 0x47, 0xac, 0xd9, 0x25, 0xf8, 0x11, 0x94, 0xd3,
-	0x09, 0x50, 0x28, 0xc7, 0x8f, 0xcc, 0xe0, 0x02, 0xde, 0x80, 0xa9, 0xe4, 0x35, 0x05, 0x7a, 0x6c,
-	0x72, 0xa9, 0x5c, 0x97, 0xfc, 0x25, 0x0f, 0xff, 0x6b, 0xcd, 0x2b, 0xb5, 0x20, 0xfa, 0x38, 0x74,
-	0x6a, 0x8b, 0x30, 0x11, 0x2f, 0x0d, 0x3d, 0x72, 0xda, 0xc2, 0xb7, 0xa1, 0xa4, 0x76, 0x84, 0x7e,
-	0x71, 0x7e, 0xf8, 0xc5, 0x75, 0xeb, 0x79, 0xff, 0xc8, 0x89, 0x15, 0x23, 0x73, 0x52, 0x18, 0x9d,
-	0x93, 0xb7, 0xb0, 0x94, 0xd6, 0xe1, 0xa6, 0xc8, 0xdc, 0x86, 0x7a, 0x5b, 0x7d, 0xec, 0xd3, 0x6b,
-	0x77, 0xae, 0x27, 0x31, 0x8a, 0xd2, 0x31, 0x68, 0xf6, 0x40, 0xe8, 0x4a, 0x76, 0x61, 0x75, 0xf0,
-	0x99, 0xfd, 0xf6, 0x98, 0x2b, 0x68, 0x9b, 0x79, 0x32, 0x0a, 0x89, 0x1e, 0x8c, 0xea, 0x40, 0x9c,
-	0x89, 0xb4, 0x97, 0x28, 0xfb, 0x70, 0x82, 0xa8, 0xb1, 0x4f, 0x8e, 0xf5, 0x76, 0xd0, 0x96, 0xc6,
-	0xfa, 0x0e, 0x8c, 0x2b, 0xa8, 0x0a, 0xfc, 0x12, 0xe6, 0x63, 0x90, 0x6a, 0x16, 0x75, 0x0e, 0xc9,
-	0x6c, 0xad, 0x5e, 0x5a, 0x71, 0x36, 0x88, 0x33, 0x77, 0x98, 0x0d, 0x5b, 0x77, 0x4e, 0xce, 0x4d,
-	0x74, 0x7a, 0x6e, 0xa2, 0xef, 0xe7, 0x26, 0xfa, 0x70, 0x61, 0xe6, 0x4e, 0x2f, 0xcc, 0xdc, 0xd7,
-	0x0b, 0x33, 0xf7, 0xe6, 0xc1, 0x1f, 0xae, 0x82, 0x23, 0x7b, 0xf0, 0x3f, 0x20, 0x8f, 0x03, 0x22,
-	0x1a, 0x13, 0x6a, 0xdf, 0xaf, 0xff, 0x0a, 0x00, 0x00, 0xff, 0xff, 0xdc, 0x5b, 0xb1, 0x1f, 0x4f,
-	0x06, 0x00, 0x00,
+	// 653 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0x4d, 0x6f, 0xd3, 0x40,
+	0x10, 0xcd, 0x36, 0x49, 0xdb, 0x4c, 0xcb, 0x47, 0xb7, 0xa5, 0x32, 0xa5, 0xb8, 0x21, 0x08, 0x29,
+	0x20, 0x61, 0xa3, 0x16, 0x09, 0x5a, 0x38, 0x85, 0x16, 0x51, 0x21, 0x51, 0xe1, 0x1e, 0x10, 0x5c,
+	0x2c, 0xc7, 0xd9, 0x24, 0xab, 0x26, 0xbb, 0x96, 0x77, 0xdd, 0x8f, 0x7f, 0x01, 0x47, 0x6e, 0xfc,
+	0x9c, 0x1e, 0x7b, 0x44, 0x1c, 0x2a, 0xd4, 0x5c, 0xf8, 0x15, 0x08, 0x79, 0xbd, 0x76, 0xe2, 0x50,
+	0x5a, 0x24, 0xb8, 0x79, 0x66, 0x9f, 0xdf, 0xec, 0x7b, 0x33, 0x3b, 0x60, 0x92, 0x3e, 0x15, 0x82,
+	0x72, 0x26, 0xec, 0xfd, 0x75, 0x9b, 0xb2, 0x20, 0x92, 0x07, 0x3c, 0xdc, 0x23, 0xa1, 0x15, 0x84,
+	0x5c, 0x72, 0x3c, 0x9b, 0x9d, 0x5b, 0xfb, 0xeb, 0x4b, 0xc6, 0x08, 0x7a, 0xcd, 0x66, 0x9c, 0xf9,
+	0x24, 0xc1, 0x2d, 0x2d, 0x74, 0x78, 0x87, 0xab, 0x4f, 0x3b, 0xfe, 0x4a, 0xb2, 0xb5, 0x9f, 0x08,
+	0xae, 0x6e, 0xc7, 0x9c, 0xdb, 0xac, 0x4d, 0x42, 0xc2, 0x7c, 0x82, 0x6f, 0xc2, 0xb4, 0xe4, 0x01,
+	0xf5, 0x5d, 0xda, 0x32, 0x50, 0x15, 0xd5, 0x4b, 0xce, 0x94, 0x8a, 0xb7, 0x5b, 0xf8, 0x0e, 0xcc,
+	0x36, 0x7b, 0xdc, 0xdf, 0x73, 0xbb, 0x84, 0x76, 0xba, 0xd2, 0x98, 0xa8, 0xa2, 0x7a, 0xd1, 0x99,
+	0x51, 0xb9, 0x57, 0x2a, 0x85, 0x0d, 0x98, 0xa2, 0x8a, 0x2a, 0x34, 0x8a, 0x55, 0x54, 0xaf, 0x38,
+	0x69, 0x88, 0xdf, 0x43, 0x79, 0xdf, 0xeb, 0x45, 0xc4, 0x28, 0xc5, 0xf9, 0xc6, 0x8b, 0xe3, 0xd3,
+	0x95, 0xc2, 0xb7, 0xd3, 0x95, 0x67, 0x1d, 0x2a, 0xbb, 0x51, 0xd3, 0xf2, 0x79, 0xdf, 0xf6, 0x7a,
+	0x3d, 0x1e, 0x7a, 0x0f, 0x19, 0x51, 0x12, 0xd3, 0xd0, 0xef, 0x7a, 0x94, 0xd9, 0x7d, 0x4f, 0x76,
+	0xad, 0x06, 0x8f, 0x58, 0x8b, 0xb4, 0xb6, 0x0e, 0x83, 0xc7, 0x8f, 0x36, 0x89, 0xef, 0x24, 0x8c,
+	0xf8, 0x36, 0x00, 0x39, 0x94, 0xa1, 0xe7, 0xb6, 0x3c, 0xe9, 0x19, 0xe5, 0x2a, 0xaa, 0xcf, 0x3a,
+	0x15, 0x95, 0xd9, 0xf4, 0xa4, 0x87, 0x17, 0xa0, 0x1c, 0x84, 0x9c, 0xb7, 0x8d, 0x49, 0x75, 0xa3,
+	0x24, 0xd8, 0x28, 0xfd, 0xf8, 0xb2, 0x82, 0x6a, 0x3b, 0x70, 0x2d, 0xaf, 0x5f, 0xe0, 0xe7, 0x00,
+	0x34, 0x8b, 0x0c, 0x54, 0x2d, 0xd6, 0x67, 0x56, 0x97, 0xad, 0x51, 0x9b, 0xad, 0xfc, 0x2f, 0xce,
+	0x08, 0xbe, 0xf6, 0x09, 0xc1, 0x82, 0x3a, 0x7e, 0xc9, 0x43, 0xe2, 0x7b, 0x42, 0x6e, 0xf5, 0x48,
+	0x9f, 0xb0, 0x9c, 0x33, 0xe8, 0x0f, 0xce, 0x4c, 0xfc, 0x6f, 0x67, 0xb4, 0xc8, 0x01, 0x82, 0x2b,
+	0xb9, 0x3b, 0xfd, 0x63, 0x93, 0x4d, 0x80, 0xb6, 0x66, 0xca, 0xfa, 0x3c, 0x92, 0xc1, 0x3b, 0x30,
+	0x97, 0x46, 0x2e, 0x49, 0xe4, 0x0b, 0xa3, 0xa4, 0x8c, 0xac, 0x9d, 0x63, 0xe4, 0x98, 0x53, 0xce,
+	0xf5, 0x76, 0x3e, 0x21, 0x2e, 0x69, 0xb0, 0x56, 0xf9, 0x5a, 0x8f, 0x72, 0x4a, 0x27, 0xf0, 0x3a,
+	0x54, 0x52, 0xaa, 0xb4, 0x91, 0xb7, 0x2e, 0xa8, 0xef, 0x0c, 0xd1, 0xb5, 0xcf, 0x08, 0x96, 0xf3,
+	0x5d, 0x4e, 0x51, 0x8d, 0x88, 0xb5, 0x7a, 0x04, 0x6f, 0x40, 0x25, 0xeb, 0xba, 0xb2, 0xf0, 0xb2,
+	0x21, 0x19, 0xc2, 0xf1, 0x13, 0x98, 0x4e, 0x2b, 0x29, 0x7b, 0x2f, 0xb9, 0x56, 0x06, 0xd6, 0x42,
+	0x4f, 0x26, 0xe0, 0x86, 0x42, 0xbc, 0x53, 0x8b, 0x20, 0xb6, 0x40, 0x5f, 0x6a, 0x11, 0x26, 0x93,
+	0xe5, 0xa0, 0x47, 0x4c, 0x47, 0xf8, 0x3e, 0x94, 0xd5, 0x2e, 0xd0, 0xd5, 0xe6, 0x47, 0xab, 0xad,
+	0x59, 0x6f, 0xe2, 0x23, 0x27, 0x41, 0xe4, 0x26, 0xa3, 0x98, 0x9f, 0x8c, 0x2e, 0x2c, 0x65, 0x1a,
+	0xdc, 0xcc, 0x2a, 0xb7, 0xa9, 0x6a, 0xab, 0x67, 0x3d, 0xb3, 0xfa, 0xe0, 0x22, 0x0f, 0xf2, 0x16,
+	0x3a, 0x06, 0x1d, 0x3f, 0x10, 0x5a, 0xc7, 0x5b, 0xb8, 0x37, 0x7c, 0x52, 0xbf, 0x95, 0x72, 0x05,
+	0xed, 0x30, 0x4f, 0x46, 0x21, 0xd1, 0xa3, 0x50, 0x1b, 0x82, 0xc7, 0x98, 0x76, 0x53, 0x64, 0x6c,
+	0x4d, 0x10, 0x35, 0xf7, 0xc8, 0x91, 0xde, 0x02, 0x3a, 0xd2, 0x96, 0xf6, 0x61, 0xf1, 0x5c, 0x47,
+	0x05, 0xde, 0x85, 0xf9, 0xc4, 0x44, 0x35, 0x7b, 0xfa, 0x06, 0xe9, 0x34, 0xdd, 0x3d, 0x47, 0xed,
+	0x38, 0x85, 0x33, 0x77, 0x30, 0x4e, 0xda, 0x70, 0x8e, 0xcf, 0x4c, 0x74, 0x72, 0x66, 0xa2, 0xef,
+	0x67, 0x26, 0xfa, 0x38, 0x30, 0x0b, 0x27, 0x03, 0xb3, 0xf0, 0x75, 0x60, 0x16, 0x3e, 0x3c, 0xfd,
+	0xcb, 0x47, 0x7f, 0x68, 0x0f, 0x37, 0xbd, 0x3c, 0x0a, 0x88, 0x68, 0x4e, 0xaa, 0x8d, 0xbe, 0xf6,
+	0x2b, 0x00, 0x00, 0xff, 0xff, 0xd5, 0x40, 0x94, 0x84, 0x31, 0x06, 0x00, 0x00,
 }
 
-func (this *BoundedInference) Equal(that interface{}) bool {
+func (this *InputInference) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedInference)
+	that1, ok := that.(*InputInference)
 	if !ok {
-		that2, ok := that.(BoundedInference)
+		that2, ok := that.(InputInference)
 		if ok {
 			that1 = &that2
 		} else {
@@ -589,14 +588,14 @@ func (this *BoundedInference) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedForecastElement) Equal(that interface{}) bool {
+func (this *InputForecastElement) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedForecastElement)
+	that1, ok := that.(*InputForecastElement)
 	if !ok {
-		that2, ok := that.(BoundedForecastElement)
+		that2, ok := that.(InputForecastElement)
 		if ok {
 			that1 = &that2
 		} else {
@@ -616,14 +615,14 @@ func (this *BoundedForecastElement) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedForecast) Equal(that interface{}) bool {
+func (this *InputForecast) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedForecast)
+	that1, ok := that.(*InputForecast)
 	if !ok {
-		that2, ok := that.(BoundedForecast)
+		that2, ok := that.(InputForecast)
 		if ok {
 			that1 = &that2
 		} else {
@@ -657,14 +656,14 @@ func (this *BoundedForecast) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedInferenceForecastBundle) Equal(that interface{}) bool {
+func (this *InputInferenceForecastBundle) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedInferenceForecastBundle)
+	that1, ok := that.(*InputInferenceForecastBundle)
 	if !ok {
-		that2, ok := that.(BoundedInferenceForecastBundle)
+		that2, ok := that.(InputInferenceForecastBundle)
 		if ok {
 			that1 = &that2
 		} else {
@@ -684,14 +683,14 @@ func (this *BoundedInferenceForecastBundle) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *BoundedWorkerDataBundle) Equal(that interface{}) bool {
+func (this *InputWorkerDataBundle) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*BoundedWorkerDataBundle)
+	that1, ok := that.(*InputWorkerDataBundle)
 	if !ok {
-		that2, ok := that.(BoundedWorkerDataBundle)
+		that2, ok := that.(InputWorkerDataBundle)
 		if ok {
 			that1 = &that2
 		} else {
@@ -723,7 +722,7 @@ func (this *BoundedWorkerDataBundle) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (m *BoundedInference) Marshal() (dAtA []byte, err error) {
+func (m *InputInference) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -733,12 +732,12 @@ func (m *BoundedInference) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedInference) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputInference) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedInference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputInference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -787,7 +786,7 @@ func (m *BoundedInference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedInferences) Marshal() (dAtA []byte, err error) {
+func (m *InputInferences) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -797,12 +796,12 @@ func (m *BoundedInferences) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedInferences) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputInferences) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedInferences) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputInferences) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -824,7 +823,7 @@ func (m *BoundedInferences) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedForecastElement) Marshal() (dAtA []byte, err error) {
+func (m *InputForecastElement) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -834,12 +833,12 @@ func (m *BoundedForecastElement) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedForecastElement) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputForecastElement) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedForecastElement) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputForecastElement) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -864,7 +863,7 @@ func (m *BoundedForecastElement) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedForecast) Marshal() (dAtA []byte, err error) {
+func (m *InputForecast) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -874,12 +873,12 @@ func (m *BoundedForecast) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedForecast) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputForecast) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedForecast) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputForecast) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -925,7 +924,7 @@ func (m *BoundedForecast) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedForecasts) Marshal() (dAtA []byte, err error) {
+func (m *InputForecasts) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -935,12 +934,12 @@ func (m *BoundedForecasts) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedForecasts) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputForecasts) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedForecasts) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputForecasts) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -962,7 +961,7 @@ func (m *BoundedForecasts) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedInferenceForecastBundle) Marshal() (dAtA []byte, err error) {
+func (m *InputInferenceForecastBundle) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -972,12 +971,12 @@ func (m *BoundedInferenceForecastBundle) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedInferenceForecastBundle) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputInferenceForecastBundle) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedInferenceForecastBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputInferenceForecastBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1009,7 +1008,7 @@ func (m *BoundedInferenceForecastBundle) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedWorkerDataBundle) Marshal() (dAtA []byte, err error) {
+func (m *InputWorkerDataBundle) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1019,12 +1018,12 @@ func (m *BoundedWorkerDataBundle) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedWorkerDataBundle) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputWorkerDataBundle) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedWorkerDataBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputWorkerDataBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1082,7 +1081,7 @@ func (m *BoundedWorkerDataBundle) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
-func (m *BoundedWorkerDataBundles) Marshal() (dAtA []byte, err error) {
+func (m *InputWorkerDataBundles) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1092,12 +1091,12 @@ func (m *BoundedWorkerDataBundles) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BoundedWorkerDataBundles) MarshalTo(dAtA []byte) (int, error) {
+func (m *InputWorkerDataBundles) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BoundedWorkerDataBundles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *InputWorkerDataBundles) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1130,7 +1129,7 @@ func encodeVarintInputworker(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *BoundedInference) Size() (n int) {
+func (m *InputInference) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1159,7 +1158,7 @@ func (m *BoundedInference) Size() (n int) {
 	return n
 }
 
-func (m *BoundedInferences) Size() (n int) {
+func (m *InputInferences) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1174,7 +1173,7 @@ func (m *BoundedInferences) Size() (n int) {
 	return n
 }
 
-func (m *BoundedForecastElement) Size() (n int) {
+func (m *InputForecastElement) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1189,7 +1188,7 @@ func (m *BoundedForecastElement) Size() (n int) {
 	return n
 }
 
-func (m *BoundedForecast) Size() (n int) {
+func (m *InputForecast) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1218,7 +1217,7 @@ func (m *BoundedForecast) Size() (n int) {
 	return n
 }
 
-func (m *BoundedForecasts) Size() (n int) {
+func (m *InputForecasts) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1233,7 +1232,7 @@ func (m *BoundedForecasts) Size() (n int) {
 	return n
 }
 
-func (m *BoundedInferenceForecastBundle) Size() (n int) {
+func (m *InputInferenceForecastBundle) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1250,7 +1249,7 @@ func (m *BoundedInferenceForecastBundle) Size() (n int) {
 	return n
 }
 
-func (m *BoundedWorkerDataBundle) Size() (n int) {
+func (m *InputWorkerDataBundle) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1282,7 +1281,7 @@ func (m *BoundedWorkerDataBundle) Size() (n int) {
 	return n
 }
 
-func (m *BoundedWorkerDataBundles) Size() (n int) {
+func (m *InputWorkerDataBundles) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1303,7 +1302,7 @@ func sovInputworker(x uint64) (n int) {
 func sozInputworker(x uint64) (n int) {
 	return sovInputworker(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *BoundedInference) Unmarshal(dAtA []byte) error {
+func (m *InputInference) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1326,10 +1325,10 @@ func (m *BoundedInference) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedInference: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputInference: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedInference: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputInference: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1523,7 +1522,7 @@ func (m *BoundedInference) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedInferences) Unmarshal(dAtA []byte) error {
+func (m *InputInferences) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1546,10 +1545,10 @@ func (m *BoundedInferences) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedInferences: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputInferences: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedInferences: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputInferences: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1581,7 +1580,7 @@ func (m *BoundedInferences) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Inferences = append(m.Inferences, &BoundedInference{})
+			m.Inferences = append(m.Inferences, &InputInference{})
 			if err := m.Inferences[len(m.Inferences)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1607,7 +1606,7 @@ func (m *BoundedInferences) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedForecastElement) Unmarshal(dAtA []byte) error {
+func (m *InputForecastElement) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1630,10 +1629,10 @@ func (m *BoundedForecastElement) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedForecastElement: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputForecastElement: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedForecastElement: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputForecastElement: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1723,7 +1722,7 @@ func (m *BoundedForecastElement) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedForecast) Unmarshal(dAtA []byte) error {
+func (m *InputForecast) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1746,10 +1745,10 @@ func (m *BoundedForecast) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedForecast: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputForecast: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedForecast: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputForecast: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1851,7 +1850,7 @@ func (m *BoundedForecast) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ForecastElements = append(m.ForecastElements, &BoundedForecastElement{})
+			m.ForecastElements = append(m.ForecastElements, &InputForecastElement{})
 			if err := m.ForecastElements[len(m.ForecastElements)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1911,7 +1910,7 @@ func (m *BoundedForecast) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedForecasts) Unmarshal(dAtA []byte) error {
+func (m *InputForecasts) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1934,10 +1933,10 @@ func (m *BoundedForecasts) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedForecasts: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputForecasts: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedForecasts: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputForecasts: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1969,7 +1968,7 @@ func (m *BoundedForecasts) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Forecasts = append(m.Forecasts, &BoundedForecast{})
+			m.Forecasts = append(m.Forecasts, &InputForecast{})
 			if err := m.Forecasts[len(m.Forecasts)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1995,7 +1994,7 @@ func (m *BoundedForecasts) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedInferenceForecastBundle) Unmarshal(dAtA []byte) error {
+func (m *InputInferenceForecastBundle) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2018,10 +2017,10 @@ func (m *BoundedInferenceForecastBundle) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedInferenceForecastBundle: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputInferenceForecastBundle: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedInferenceForecastBundle: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputInferenceForecastBundle: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2054,7 +2053,7 @@ func (m *BoundedInferenceForecastBundle) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Inference == nil {
-				m.Inference = &BoundedInference{}
+				m.Inference = &InputInference{}
 			}
 			if err := m.Inference.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -2090,7 +2089,7 @@ func (m *BoundedInferenceForecastBundle) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Forecast == nil {
-				m.Forecast = &BoundedForecast{}
+				m.Forecast = &InputForecast{}
 			}
 			if err := m.Forecast.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -2117,7 +2116,7 @@ func (m *BoundedInferenceForecastBundle) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedWorkerDataBundle) Unmarshal(dAtA []byte) error {
+func (m *InputWorkerDataBundle) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2140,10 +2139,10 @@ func (m *BoundedWorkerDataBundle) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedWorkerDataBundle: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputWorkerDataBundle: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedWorkerDataBundle: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputWorkerDataBundle: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2263,7 +2262,7 @@ func (m *BoundedWorkerDataBundle) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.InferenceForecastsBundle == nil {
-				m.InferenceForecastsBundle = &BoundedInferenceForecastBundle{}
+				m.InferenceForecastsBundle = &InputInferenceForecastBundle{}
 			}
 			if err := m.InferenceForecastsBundle.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -2356,7 +2355,7 @@ func (m *BoundedWorkerDataBundle) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *BoundedWorkerDataBundles) Unmarshal(dAtA []byte) error {
+func (m *InputWorkerDataBundles) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2379,10 +2378,10 @@ func (m *BoundedWorkerDataBundles) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BoundedWorkerDataBundles: wiretype end group for non-group")
+			return fmt.Errorf("proto: InputWorkerDataBundles: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BoundedWorkerDataBundles: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: InputWorkerDataBundles: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2414,7 +2413,7 @@ func (m *BoundedWorkerDataBundles) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.WorkerDataBundles = append(m.WorkerDataBundles, &BoundedWorkerDataBundle{})
+			m.WorkerDataBundles = append(m.WorkerDataBundles, &InputWorkerDataBundle{})
 			if err := m.WorkerDataBundles[len(m.WorkerDataBundles)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}

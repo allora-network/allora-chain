@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
-message BoundedInference {
+message InputInference {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
@@ -20,11 +20,11 @@ message BoundedInference {
   string proof = 6;
 }
 
-message BoundedInferences {
-  repeated BoundedInference inferences = 1;
+message InputInferences {
+  repeated InputInference inferences = 1;
 }
 
-message BoundedForecastElement {
+message InputForecastElement {
   option (gogoproto.equal) = true;
 
   string inferer = 1;
@@ -34,35 +34,35 @@ message BoundedForecastElement {
   ];
 }
 
-message BoundedForecast {
+message InputForecast {
   option (gogoproto.equal) = true;
   uint64 topic_id = 1;
   int64 block_height = 2;
   string forecaster = 3;
-  repeated BoundedForecastElement forecast_elements = 4;
+  repeated InputForecastElement forecast_elements = 4;
   bytes extra_data = 5;
 }
 
-message BoundedForecasts {
-  repeated BoundedForecast forecasts = 1;
+message InputForecasts {
+  repeated InputForecast forecasts = 1;
 }
 
-message BoundedInferenceForecastBundle {
+message InputInferenceForecastBundle {
   option (gogoproto.equal) = true;
-  BoundedInference inference = 1;
-  BoundedForecast forecast = 2;
+  InputInference inference = 1;
+  InputForecast forecast = 2;
 }
 
-message BoundedWorkerDataBundle {
+message InputWorkerDataBundle {
   option (gogoproto.equal) = true;
   string worker = 1;
   emissions.v3.Nonce nonce = 2;
   uint64 topic_id = 3;
-  BoundedInferenceForecastBundle inference_forecasts_bundle = 4;
+  InputInferenceForecastBundle inference_forecasts_bundle = 4;
   bytes inferences_forecasts_bundle_signature = 5;
   string pubkey = 6;
 }
 
-message BoundedWorkerDataBundles {
-  repeated BoundedWorkerDataBundle worker_data_bundles = 1;
+message InputWorkerDataBundles {
+  repeated InputWorkerDataBundle worker_data_bundles = 1;
 }

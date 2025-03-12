@@ -192,11 +192,11 @@ func createWorkerDataBundle(
 	blockHeight int64,
 	inferer Actor,
 	workers []Actor,
-) *emissionstypes.BoundedWorkerDataBundle {
+) *emissionstypes.InputWorkerDataBundle {
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
-	forecastElements := make([]*emissionstypes.BoundedForecastElement, 0)
+	forecastElements := make([]*emissionstypes.InputForecastElement, 0)
 	for key := range workers {
-		forecastElements = append(forecastElements, &emissionstypes.BoundedForecastElement{
+		forecastElements = append(forecastElements, &emissionstypes.InputForecastElement{
 			Inferer: workers[key].addr,
 			Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(51) + 50))),
 		})
@@ -204,14 +204,14 @@ func createWorkerDataBundle(
 	infererAddress := inferer.addr
 	infererValue := alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(300) + 3000)))
 
-	workerDataBundle := &emissionstypes.BoundedWorkerDataBundle{
+	workerDataBundle := &emissionstypes.InputWorkerDataBundle{
 		Worker: infererAddress,
 		Nonce: &emissionstypes.Nonce{
 			BlockHeight: blockHeight,
 		},
 		TopicId: topicId,
-		InferenceForecastsBundle: &emissionstypes.BoundedInferenceForecastBundle{
-			Inference: &emissionstypes.BoundedInference{
+		InferenceForecastsBundle: &emissionstypes.InputInferenceForecastBundle{
+			Inference: &emissionstypes.InputInference{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     infererAddress,
@@ -219,7 +219,7 @@ func createWorkerDataBundle(
 				ExtraData:   nil,
 				Proof:       "",
 			},
-			Forecast: &emissionstypes.BoundedForecast{
+			Forecast: &emissionstypes.InputForecast{
 				TopicId:          topicId,
 				BlockHeight:      blockHeight,
 				Forecaster:       infererAddress,
@@ -250,7 +250,7 @@ func sendWorkerPayload(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 	sender Actor,
-	WorkerDataBundles *emissionstypes.BoundedWorkerDataBundle,
+	WorkerDataBundles *emissionstypes.InputWorkerDataBundle,
 	iteration int,
 ) bool {
 	workerMsg := &emissionstypes.InsertWorkerPayloadRequest{
@@ -317,7 +317,7 @@ func createAndSendReputerPayloads(
 	ctx := context.Background()
 	for _, reputer := range reputers {
 		valueBundle := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
-		signedValueBundle := signBoundedReputerValueBundle(m, reputer, valueBundle)
+		signedValueBundle := signInputReputerValueBundle(m, reputer, valueBundle)
 		lossesMsg := &emissionstypes.InsertReputerPayloadRequest{
 			Sender:             reputer.addr,
 			ReputerValueBundle: signedValueBundle,
@@ -358,8 +358,8 @@ func createReputerValueBundle(
 	reputer Actor,
 	workers []Actor,
 	reputerNonce *emissionstypes.Nonce,
-) emissionstypes.BoundedValueBundle {
-	return emissionstypes.BoundedValueBundle{
+) emissionstypes.InputValueBundle {
+	return emissionstypes.InputValueBundle{
 		TopicId:                topicId,
 		Reputer:                reputer.addr,
 		ExtraData:              nil,
@@ -403,11 +403,11 @@ func signReputerValueBundle(
 	return reputerValueBundle
 }
 
-func signBoundedReputerValueBundle(
+func signInputReputerValueBundle(
 	m *testcommon.TestConfig,
 	reputer Actor,
-	valueBundle emissionstypes.BoundedValueBundle,
-) *emissionstypes.BoundedReputerValueBundle {
+	valueBundle emissionstypes.InputValueBundle,
+) *emissionstypes.InputReputerValueBundle {
 	// Sign
 	src := make([]byte, 0)
 	src, err := valueBundle.XXX_Marshal(src, true)
@@ -418,7 +418,7 @@ func signBoundedReputerValueBundle(
 	reputerPublicKeyBytes := pubKey.Bytes()
 
 	// Create a InsertReputerPayloadRequest message
-	reputerValueBundle := &emissionstypes.BoundedReputerValueBundle{
+	reputerValueBundle := &emissionstypes.InputReputerValueBundle{
 		ValueBundle: &valueBundle,
 		Signature:   valueBundleSignature,
 		Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
@@ -433,10 +433,10 @@ func generateWorkerAttributedValueLosses(
 	workers []Actor,
 	lowLimit,
 	sum int,
-) []*emissionstypes.BoundedWorkerAttributedValue {
-	values := make([]*emissionstypes.BoundedWorkerAttributedValue, 0)
+) []*emissionstypes.InputWorkerAttributedValue {
+	values := make([]*emissionstypes.InputWorkerAttributedValue, 0)
 	for _, worker := range workers {
-		values = append(values, &emissionstypes.BoundedWorkerAttributedValue{
+		values = append(values, &emissionstypes.InputWorkerAttributedValue{
 			Worker: worker.addr,
 			Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(lowLimit) + sum))),
 		})
@@ -449,10 +449,10 @@ func generateWithheldWorkerAttributedValueLosses(
 	workers []Actor,
 	lowLimit,
 	sum int,
-) []*emissionstypes.BoundedWithheldWorkerAttributedValue {
-	values := make([]*emissionstypes.BoundedWithheldWorkerAttributedValue, 0)
+) []*emissionstypes.InputWithheldWorkerAttributedValue {
+	values := make([]*emissionstypes.InputWithheldWorkerAttributedValue, 0)
 	for _, worker := range workers {
-		values = append(values, &emissionstypes.BoundedWithheldWorkerAttributedValue{
+		values = append(values, &emissionstypes.InputWithheldWorkerAttributedValue{
 			Worker: worker.addr,
 			Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(int64(rand.Intn(lowLimit) + sum))),
 		})

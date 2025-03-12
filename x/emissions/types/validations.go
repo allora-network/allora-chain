@@ -143,14 +143,46 @@ func (forecast *Forecast) Validate() error {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
 	}
 	for _, elem := range forecast.ForecastElements {
-		if err := ValidateBech32(elem.Inferer); err != nil {
-			return errors.Wrap(err, "forecast inferer address is invalid")
-		}
-		if err := ValidateDec(elem.Value); err != nil {
-			return errors.Wrap(err, "forecast value is invalid")
+		if err := elem.Validate(); err != nil {
+			return errors.Wrap(err, "forecast element is invalid")
 		}
 	}
 	// ExtraData not validated as it is not used by the chain
+	return nil
+}
+
+// validate that a forecast element follows the expected format
+func (forecastElement *ForecastElement) Validate() error {
+	if forecastElement == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast element cannot be nil")
+	}
+	if err := ValidateBech32(forecastElement.Inferer); err != nil {
+		return errors.Wrap(err, "forecast element inferer address is invalid")
+	}
+	if err := ValidateDec(forecastElement.Value); err != nil {
+		return errors.Wrap(err, "forecast element value is invalid")
+	}
+	return nil
+}
+
+// Validate only if each component is not nil
+func (inferenceForecastBundle *InferenceForecastBundle) Validate() error {
+
+	if inferenceForecastBundle.Inference != nil {
+		if err := inferenceForecastBundle.Inference.Validate(); err != nil {
+			return errors.Wrap(err, "inference is invalid")
+		}
+	}
+	if inferenceForecastBundle.Forecast != nil {
+		if err := inferenceForecastBundle.Forecast.Validate(); err != nil {
+			return errors.Wrap(err, "forecast is invalid")
+		}
+	}
+
+	if inferenceForecastBundle.Inference == nil && inferenceForecastBundle.Forecast == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
+	}
+
 	return nil
 }
 

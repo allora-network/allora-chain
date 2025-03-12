@@ -325,7 +325,7 @@ message InsertReputerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  BoundedReputerValueBundle reputer_value_bundle = 2;
+  InputReputerValueBundle reputer_value_bundle = 2;
 }
 
 message InsertReputerPayloadResponse {}
@@ -334,7 +334,7 @@ message InsertWorkerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  BoundedWorkerDataBundle worker_data_bundle = 2;
+  InputWorkerDataBundle worker_data_bundle = 2;
 }
 
 message InsertWorkerPayloadResponse {}

@@ -62,12 +62,12 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := types.InsertWorkerPayloadRequest{
 		Sender: worker,
-		WorkerDataBundle: &types.BoundedWorkerDataBundle{
+		WorkerDataBundle: &types.InputWorkerDataBundle{
 			Worker:  worker,
 			Nonce:   &nonce,
 			TopicId: topic.Id,
-			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
-				Inference: &types.BoundedInference{
+			InferenceForecastsBundle: &types.InputInferenceForecastBundle{
+				Inference: &types.InputInference{
 					TopicId:     topic.Id,
 					BlockHeight: nonce.BlockHeight,
 					Inferer:     worker,
@@ -75,11 +75,11 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.BoundedForecast{
+				Forecast: &types.InputForecast{
 					TopicId:     topic.Id,
 					BlockHeight: nonce.BlockHeight,
 					Forecaster:  worker,
-					ForecastElements: []*types.BoundedForecastElement{
+					ForecastElements: []*types.InputForecastElement{
 						{
 							Inferer: worker,
 							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
@@ -523,7 +523,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 	// BEGIN MODIFICATION
 	forecast := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast
 	originalElement := forecast.ForecastElements[0]
-	duplicateElement := &types.BoundedForecastElement{
+	duplicateElement := &types.InputForecastElement{
 		Inferer: originalElement.Inferer,
 		Value:   originalElement.Value,
 	}
@@ -588,9 +588,9 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	require.NoError(err)
 	s.CreateOneTopic()
 
-	forecastElements := []*types.BoundedForecastElement{}
+	forecastElements := []*types.InputForecastElement{}
 	for i := 0; i < 1000000; i++ {
-		forecastElements = append(forecastElements, &types.BoundedForecastElement{
+		forecastElements = append(forecastElements, &types.InputForecastElement{
 			Inferer: InfererAddr,
 			Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 		})
@@ -599,12 +599,12 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: worker,
-		WorkerDataBundle: &types.BoundedWorkerDataBundle{
+		WorkerDataBundle: &types.InputWorkerDataBundle{
 			TopicId: topicId,
 			Worker:  InfererAddr,
 			Nonce:   &nonce,
-			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
-				Inference: &types.BoundedInference{
+			InferenceForecastsBundle: &types.InputInferenceForecastBundle{
+				Inference: &types.InputInference{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
 					Inferer:     InfererAddr,
@@ -612,7 +612,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.BoundedForecast{
+				Forecast: &types.InputForecast{
 					TopicId:          topicId,
 					BlockHeight:      nonce.BlockHeight,
 					Forecaster:       ForecasterAddr,
@@ -675,12 +675,12 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: worker,
-		WorkerDataBundle: &types.BoundedWorkerDataBundle{
+		WorkerDataBundle: &types.InputWorkerDataBundle{
 			Worker:  Inferer,
 			TopicId: topicId,
 			Nonce:   &nonce,
-			InferenceForecastsBundle: &types.BoundedInferenceForecastBundle{
-				Inference: &types.BoundedInference{
+			InferenceForecastsBundle: &types.InputInferenceForecastBundle{
+				Inference: &types.InputInference{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
 					Inferer:     Inferer,
@@ -688,11 +688,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 					ExtraData:   nil,
 					Proof:       "",
 				},
-				Forecast: &types.BoundedForecast{
+				Forecast: &types.InputForecast{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
 					Forecaster:  Forecaster,
-					ForecastElements: []*types.BoundedForecastElement{
+					ForecastElements: []*types.InputForecastElement{
 						{
 							Inferer: Inferer,
 							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),

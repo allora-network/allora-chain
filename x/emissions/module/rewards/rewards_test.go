@@ -208,7 +208,7 @@ func (s *RewardsTestSuite) MintTokensToModule(moduleName string, amount cosmosMa
 	s.Require().NoError(err)
 }
 
-func (s *RewardsTestSuite) RegisterAllWorkersOfPayload(topicId types.TopicId, payload *types.BoundedWorkerDataBundle) {
+func (s *RewardsTestSuite) RegisterAllWorkersOfPayload(topicId types.TopicId, payload *types.InputWorkerDataBundle) {
 	worker := payload.InferenceForecastsBundle.Inference.Inferer
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
@@ -228,7 +228,7 @@ func (s *RewardsTestSuite) RegisterAllWorkersOfPayload(topicId types.TopicId, pa
 	}
 }
 
-func (s *RewardsTestSuite) RegisterAllReputersOfPayload(topicId types.TopicId, payload *types.BoundedReputerValueBundle) {
+func (s *RewardsTestSuite) RegisterAllReputersOfPayload(topicId types.TopicId, payload *types.InputReputerValueBundle) {
 	reputer := payload.ValueBundle.Reputer
 	// Define sample OffchainNode information for a worker
 	reputerInfo := types.OffchainNode{
@@ -328,8 +328,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	s.Require().NoError(err)
 
 	// Insert inference from workers
-	boundedInferenceBundles := generateWorkerDataBundles(s, block, topicId)
-	for _, payload := range boundedInferenceBundles {
+	InputInferenceBundles := generateWorkerDataBundles(s, block, topicId)
+	for _, payload := range InputInferenceBundles {
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
@@ -2217,8 +2217,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 
 	// Insert inference from worker
-	worker1InferenceForecastBundle := &types.BoundedInferenceForecastBundle{
-		Inference: &types.BoundedInference{
+	worker1InferenceForecastBundle := &types.InputInferenceForecastBundle{
+		Inference: &types.InputInference{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker],
@@ -2228,9 +2228,9 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		},
 		Forecast: nil,
 	}
-	worker1Sig, err := signBoundedInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker])
+	worker1Sig, err := signInputInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker])
 	s.Require().NoError(err)
-	worker1Bundle := &types.BoundedWorkerDataBundle{
+	worker1Bundle := &types.InputWorkerDataBundle{
 		Worker:                             s.addrsStr[worker],
 		TopicId:                            topicId,
 		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
@@ -2245,7 +2245,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 
 	// Insert loss bundle from reputer
-	valueBundle := &types.BoundedValueBundle{
+	valueBundle := &types.InputValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
@@ -2256,16 +2256,16 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		Reputer:                       s.addrsStr[reputer],
 		CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01127")),
 		NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0116")),
-		InfererValues:                 []*types.BoundedWorkerAttributedValue{{Worker: s.addrsStr[worker], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0112"))}},
-		ForecasterValues:              []*types.BoundedWorkerAttributedValue{},
-		OneOutInfererValues:           []*types.BoundedWithheldWorkerAttributedValue{},
-		OneOutForecasterValues:        []*types.BoundedWithheldWorkerAttributedValue{},
-		OneInForecasterValues:         []*types.BoundedWorkerAttributedValue{},
+		InfererValues:                 []*types.InputWorkerAttributedValue{{Worker: s.addrsStr[worker], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0112"))}},
+		ForecasterValues:              []*types.InputWorkerAttributedValue{},
+		OneOutInfererValues:           []*types.InputWithheldWorkerAttributedValue{},
+		OneOutForecasterValues:        []*types.InputWithheldWorkerAttributedValue{},
+		OneInForecasterValues:         []*types.InputWorkerAttributedValue{},
 		OneOutInfererForecasterValues: nil,
 	}
-	sig, err := signBoundedValueBundle(valueBundle, s.privKeys[reputer])
+	sig, err := signInputValueBundle(valueBundle, s.privKeys[reputer])
 	s.Require().NoError(err)
-	reputerBundle := &types.BoundedReputerValueBundle{
+	reputerBundle := &types.InputReputerValueBundle{
 		Pubkey:      s.pubKeyHexStr[reputer],
 		Signature:   sig,
 		ValueBundle: valueBundle,

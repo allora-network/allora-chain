@@ -21,7 +21,7 @@ type BoundedExp40Dec struct {
 // validateBounds checks if the decimal is within the allowed bounds
 func validateBounds(d Dec, exponent uint64) error {
 	if !d.IsFinite() {
-		return errorsmod.Wrap(ErrInvalidBoundedExp40Dec, "value must be finite")
+		return errorsmod.Wrap(ErrOutOfRange, "value must be finite")
 	}
 
 	if d.IsZero() {

@@ -6,7 +6,7 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
-message BoundedWorkerAttributedValue {
+message InputWorkerAttributedValue {
   option (gogoproto.equal) = true;
 
   string worker = 1; // worker who created the value
@@ -16,7 +16,7 @@ message BoundedWorkerAttributedValue {
   ];
 }
 
-message BoundedWithheldWorkerAttributedValue {
+message InputWithheldWorkerAttributedValue {
   option (gogoproto.equal) = true;
 
   string worker = 1;
@@ -26,16 +26,16 @@ message BoundedWithheldWorkerAttributedValue {
   ];
 }
 
-message BoundedOneOutInfererForecasterValues {
+message InputOneOutInfererForecasterValues {
   option (gogoproto.equal) = true;
   string forecaster = 3;
-  repeated BoundedWithheldWorkerAttributedValue one_out_inferer_values = 4;
+  repeated InputWithheldWorkerAttributedValue one_out_inferer_values = 4;
 }
 
 // These losses and inferences are calculated per reputer or by the network
 // The `m`s in the comments below exist for when they're made by reputers,
 // but they may be absent implying that they were made by the network
-message BoundedValueBundle {
+message InputValueBundle {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
@@ -48,9 +48,9 @@ message BoundedValueBundle {
     (gogoproto.nullable) = false
   ];
   // R_ijm || log10 L_ijm || I_ij
-  repeated BoundedWorkerAttributedValue inferer_values = 6;
+  repeated InputWorkerAttributedValue inferer_values = 6;
   // R_ikm || log10 L_ikm || I_ik
-  repeated BoundedWorkerAttributedValue forecaster_values = 7;
+  repeated InputWorkerAttributedValue forecaster_values = 7;
   // R^-_im  || log10 L^-_im || I^-_i
   string naive_value = 8 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.BoundedExp40Dec",
@@ -58,28 +58,28 @@ message BoundedValueBundle {
   ];
   // Note: forecast-implied inferences are recomputed for each left-out
   // inference
-  repeated BoundedWithheldWorkerAttributedValue one_out_inferer_values = 9;
+  repeated InputWithheldWorkerAttributedValue one_out_inferer_values = 9;
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any k
-  repeated BoundedWithheldWorkerAttributedValue one_out_forecaster_values = 10;
+  repeated InputWithheldWorkerAttributedValue one_out_forecaster_values = 10;
   // R^+_ikm || log10 L^+_ikm || I^+_ik
   // aka one_in_forecaster_values because equivalent to using only one
   // forecast-implied inference
-  repeated BoundedWorkerAttributedValue one_in_forecaster_values = 11;
+  repeated InputWorkerAttributedValue one_in_forecaster_values = 11;
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
   // log10 L^-_j'ikm || I^-_j'ik
-  repeated BoundedOneOutInfererForecasterValues one_out_inferer_forecaster_values = 12;
+  repeated InputOneOutInfererForecasterValues one_out_inferer_forecaster_values = 12;
 }
 
 // For when the bundle is computed on a per-reputer basis (ie.. if there is an
 // index `m` in the above)
-message BoundedReputerValueBundle {
+message InputReputerValueBundle {
   option (gogoproto.equal) = true;
 
-  BoundedValueBundle value_bundle = 1;
+  InputValueBundle value_bundle = 1;
   bytes signature = 2;
   string pubkey = 3;
 }
 
-message BoundedReputerValueBundles {
-  repeated BoundedReputerValueBundle reputer_value_bundles = 1;
+message InputReputerValueBundles {
+  repeated InputReputerValueBundle reputer_value_bundles = 1;
 }

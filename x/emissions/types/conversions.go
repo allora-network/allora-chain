@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/errors"
 )
 
-// Convert converts BoundedInference to Inference
-func (bi *BoundedInference) Convert() (*Inference, error) {
+// NewInferenceFromInput converts InputInference to Inference
+func (bi *InputInference) NewInferenceFromInput() (*Inference, error) {
 	if bi == nil {
 		return nil, nil
 	}
@@ -13,18 +13,23 @@ func (bi *BoundedInference) Convert() (*Inference, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert value")
 	}
-	return &Inference{
+	inference := &Inference{
 		TopicId:     bi.TopicId,
 		BlockHeight: bi.BlockHeight,
 		Inferer:     bi.Inferer,
 		Value:       dec,
 		ExtraData:   bi.ExtraData,
 		Proof:       bi.Proof,
-	}, nil
+	}
+	err = inference.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate inference")
+	}
+	return inference, nil
 }
 
-// Convert converts BoundedForecastElement to ForecastElement
-func (bfe *BoundedForecastElement) Convert() (*ForecastElement, error) {
+// NewForecastElementFromInput converts InputForecastElement to ForecastElement
+func (bfe *InputForecastElement) NewForecastElementFromInput() (*ForecastElement, error) {
 	if bfe == nil {
 		return nil, nil
 	}
@@ -32,74 +37,94 @@ func (bfe *BoundedForecastElement) Convert() (*ForecastElement, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert value")
 	}
-	return &ForecastElement{
+	forecastElement := &ForecastElement{
 		Inferer: bfe.Inferer,
 		Value:   dec,
-	}, nil
+	}
+	err = forecastElement.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate forecast element")
+	}
+	return forecastElement, nil
 }
 
-// Convert converts BoundedForecast to Forecast
-func (bf *BoundedForecast) Convert() (*Forecast, error) {
+// NewForecastFromInput converts InputForecast to Forecast
+func (bf *InputForecast) NewForecastFromInput() (*Forecast, error) {
 	if bf == nil {
 		return nil, nil
 	}
 	elements := make([]*ForecastElement, len(bf.ForecastElements))
 	for i, elem := range bf.ForecastElements {
-		converted, err := elem.Convert()
+		converted, err := elem.NewForecastElementFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert forecast element %d", i)
 		}
 		elements[i] = converted
 	}
-	return &Forecast{
+	forecast := &Forecast{
 		TopicId:          bf.TopicId,
 		BlockHeight:      bf.BlockHeight,
 		Forecaster:       bf.Forecaster,
 		ForecastElements: elements,
 		ExtraData:        bf.ExtraData,
-	}, nil
+	}
+	err := forecast.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate forecast")
+	}
+	return forecast, nil
 }
 
-// Convert converts BoundedInferenceForecastBundle to InferenceForecastBundle
-func (bifb *BoundedInferenceForecastBundle) Convert() (*InferenceForecastBundle, error) {
+// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
+func (bifb *InputInferenceForecastBundle) NewInferenceForecastBundleFromInput() (*InferenceForecastBundle, error) {
 	if bifb == nil {
 		return nil, nil
 	}
-	inference, err := bifb.Inference.Convert()
+	inference, err := bifb.Inference.NewInferenceFromInput()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert inference")
 	}
-	forecast, err := bifb.Forecast.Convert()
+	forecast, err := bifb.Forecast.NewForecastFromInput()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert forecast")
 	}
-	return &InferenceForecastBundle{
+	inferenceForecastBundle := &InferenceForecastBundle{
 		Inference: inference,
 		Forecast:  forecast,
-	}, nil
+	}
+	err = inferenceForecastBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate inference forecast bundle")
+	}
+	return inferenceForecastBundle, nil
 }
 
-// Convert converts BoundedWorkerDataBundle to WorkerDataBundle
-func (bwdb *BoundedWorkerDataBundle) Convert() (*WorkerDataBundle, error) {
+// NewWorkerDataBundleFromInput converts InputWorkerDataBundle to WorkerDataBundle
+func (bwdb *InputWorkerDataBundle) NewWorkerDataBundleFromInput() (*WorkerDataBundle, error) {
 	if bwdb == nil {
 		return nil, nil
 	}
-	bundle, err := bwdb.InferenceForecastsBundle.Convert()
+	bundle, err := bwdb.InferenceForecastsBundle.NewInferenceForecastBundleFromInput()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert inference forecasts bundle")
 	}
-	return &WorkerDataBundle{
+	workerDataBundle := &WorkerDataBundle{
 		Worker:                             bwdb.Worker,
 		Nonce:                              bwdb.Nonce,
 		TopicId:                            bwdb.TopicId,
 		InferenceForecastsBundle:           bundle,
 		InferencesForecastsBundleSignature: bwdb.InferencesForecastsBundleSignature,
 		Pubkey:                             bwdb.Pubkey,
-	}, nil
+	}
+	err = workerDataBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate worker data bundle")
+	}
+	return workerDataBundle, nil
 }
 
-// Convert converts BoundedWorkerAttributedValue to WorkerAttributedValue
-func (bwav *BoundedWorkerAttributedValue) Convert() (*WorkerAttributedValue, error) {
+// NewWorkerAttributedValueFromInput converts InputWorkerAttributedValue to WorkerAttributedValue
+func (bwav *InputWorkerAttributedValue) NewWorkerAttributedValueFromInput() (*WorkerAttributedValue, error) {
 	if bwav == nil {
 		return nil, nil
 	}
@@ -107,14 +132,19 @@ func (bwav *BoundedWorkerAttributedValue) Convert() (*WorkerAttributedValue, err
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert value")
 	}
-	return &WorkerAttributedValue{
+	workerAttributedValue := &WorkerAttributedValue{
 		Worker: bwav.Worker,
 		Value:  dec,
-	}, nil
+	}
+	err = workerAttributedValue.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate worker attributed value")
+	}
+	return workerAttributedValue, nil
 }
 
-// Convert converts BoundedWithheldWorkerAttributedValue to WithheldWorkerAttributedValue
-func (bwwav *BoundedWithheldWorkerAttributedValue) Convert() (*WithheldWorkerAttributedValue, error) {
+// NewWithheldWorkerAttributedValueFromInput converts InputWithheldWorkerAttributedValue to WithheldWorkerAttributedValue
+func (bwwav *InputWithheldWorkerAttributedValue) NewWithheldWorkerAttributedValueFromInput() (*WithheldWorkerAttributedValue, error) {
 	if bwwav == nil {
 		return nil, nil
 	}
@@ -122,33 +152,43 @@ func (bwwav *BoundedWithheldWorkerAttributedValue) Convert() (*WithheldWorkerAtt
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert value")
 	}
-	return &WithheldWorkerAttributedValue{
+	withheldWorkerAttributedValue := &WithheldWorkerAttributedValue{
 		Worker: bwwav.Worker,
 		Value:  dec,
-	}, nil
+	}
+	err = withheldWorkerAttributedValue.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate withheld worker attributed value")
+	}
+	return withheldWorkerAttributedValue, nil
 }
 
-// Convert converts BoundedOneOutInfererForecasterValues to OneOutInfererForecasterValues
-func (boifv *BoundedOneOutInfererForecasterValues) Convert() (*OneOutInfererForecasterValues, error) {
+// NewOneOutInfererForecasterValuesFromInput converts InputOneOutInfererForecasterValues to OneOutInfererForecasterValues
+func (boifv *InputOneOutInfererForecasterValues) NewOneOutInfererForecasterValuesFromInput() (*OneOutInfererForecasterValues, error) {
 	if boifv == nil {
 		return nil, nil
 	}
 	values := make([]*WithheldWorkerAttributedValue, len(boifv.OneOutInfererValues))
 	for i, val := range boifv.OneOutInfererValues {
-		converted, err := val.Convert()
+		converted, err := val.NewWithheldWorkerAttributedValueFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert one out inferer value %d", i)
 		}
 		values[i] = converted
 	}
-	return &OneOutInfererForecasterValues{
+	oneOutInfererForecasterValues := &OneOutInfererForecasterValues{
 		Forecaster:          boifv.Forecaster,
 		OneOutInfererValues: values,
-	}, nil
+	}
+	err := oneOutInfererForecasterValues.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate one out inferer forecaster values")
+	}
+	return oneOutInfererForecasterValues, nil
 }
 
-// Convert converts BoundedValueBundle to ValueBundle
-func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
+// NewValueBundleFromInput converts InputValueBundle to ValueBundle
+func (bvb *InputValueBundle) NewValueBundleFromInput() (*ValueBundle, error) {
 	if bvb == nil {
 		return nil, nil
 	}
@@ -165,7 +205,7 @@ func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
 
 	infererValues := make([]*WorkerAttributedValue, len(bvb.InfererValues))
 	for i, val := range bvb.InfererValues {
-		converted, err := val.Convert()
+		converted, err := val.NewWorkerAttributedValueFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert inferer value %d", i)
 		}
@@ -174,7 +214,7 @@ func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
 
 	forecasterValues := make([]*WorkerAttributedValue, len(bvb.ForecasterValues))
 	for i, val := range bvb.ForecasterValues {
-		converted, err := val.Convert()
+		converted, err := val.NewWorkerAttributedValueFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert forecaster value %d", i)
 		}
@@ -183,7 +223,7 @@ func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
 
 	oneOutInfererValues := make([]*WithheldWorkerAttributedValue, len(bvb.OneOutInfererValues))
 	for i, val := range bvb.OneOutInfererValues {
-		converted, err := val.Convert()
+		converted, err := val.NewWithheldWorkerAttributedValueFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert one out inferer value %d", i)
 		}
@@ -192,7 +232,7 @@ func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
 
 	oneOutForecasterValues := make([]*WithheldWorkerAttributedValue, len(bvb.OneOutForecasterValues))
 	for i, val := range bvb.OneOutForecasterValues {
-		converted, err := val.Convert()
+		converted, err := val.NewWithheldWorkerAttributedValueFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert one out forecaster value %d", i)
 		}
@@ -201,7 +241,7 @@ func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
 
 	oneInForecasterValues := make([]*WorkerAttributedValue, len(bvb.OneInForecasterValues))
 	for i, val := range bvb.OneInForecasterValues {
-		converted, err := val.Convert()
+		converted, err := val.NewWorkerAttributedValueFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert one in forecaster value %d", i)
 		}
@@ -210,14 +250,14 @@ func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
 
 	oneOutInfererForecasterValues := make([]*OneOutInfererForecasterValues, len(bvb.OneOutInfererForecasterValues))
 	for i, val := range bvb.OneOutInfererForecasterValues {
-		converted, err := val.Convert()
+		converted, err := val.NewOneOutInfererForecasterValuesFromInput()
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to convert one out inferer forecaster value %d", i)
 		}
 		oneOutInfererForecasterValues[i] = converted
 	}
 
-	return &ValueBundle{
+	valueBundle := &ValueBundle{
 		TopicId:                       bvb.TopicId,
 		ReputerRequestNonce:           bvb.ReputerRequestNonce,
 		Reputer:                       bvb.Reputer,
@@ -230,21 +270,31 @@ func (bvb *BoundedValueBundle) Convert() (*ValueBundle, error) {
 		OneOutForecasterValues:        oneOutForecasterValues,
 		OneInForecasterValues:         oneInForecasterValues,
 		OneOutInfererForecasterValues: oneOutInfererForecasterValues,
-	}, nil
+	}
+	err = valueBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate value bundle")
+	}
+	return valueBundle, nil
 }
 
-// Convert converts BoundedReputerValueBundle to ReputerValueBundle
-func (brvb *BoundedReputerValueBundle) Convert() (*ReputerValueBundle, error) {
+// NewInputReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
+func (brvb *InputReputerValueBundle) NewInputReputerValueBundleFromInput() (*ReputerValueBundle, error) {
 	if brvb == nil {
 		return nil, nil
 	}
-	valueBundle, err := brvb.ValueBundle.Convert()
+	valueBundle, err := brvb.ValueBundle.NewValueBundleFromInput()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert value bundle")
 	}
-	return &ReputerValueBundle{
+	reputerValueBundle := &ReputerValueBundle{
 		ValueBundle: valueBundle,
 		Signature:   brvb.Signature,
 		Pubkey:      brvb.Pubkey,
-	}, nil
+	}
+	err = reputerValueBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate reputer value bundle")
+	}
+	return reputerValueBundle, nil
 }

@@ -1,16 +1,27 @@
 package types
 
 import (
+	"os"
 	"testing"
 
 	"github.com/allora-network/allora-chain/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
-func TestBoundedInferenceConvert(t *testing.T) {
+func TestMain(m *testing.M) {
+	// Set custom address prefixes
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("allo", "allopub")
+	config.Seal()
+
+	os.Exit(m.Run())
+}
+
+func TestInputInferenceConvert(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   *BoundedInference
+		input   *InputInference
 		wantErr bool
 	}{
 		{
@@ -20,10 +31,10 @@ func TestBoundedInferenceConvert(t *testing.T) {
 		},
 		{
 			name: "valid input",
-			input: &BoundedInference{
+			input: &InputInference{
 				TopicId:     1,
 				BlockHeight: 100,
-				Inferer:     "inferer1",
+				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Value:       mustNewBoundedExp40Dec(t, "1.23"),
 				ExtraData:   []byte("extra"),
 				Proof:       "proof",
@@ -34,7 +45,7 @@ func TestBoundedInferenceConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.Convert()
+			got, err := tt.input.NewInferenceFromInput()
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -57,10 +68,10 @@ func TestBoundedInferenceConvert(t *testing.T) {
 	}
 }
 
-func TestBoundedForecastElementConvert(t *testing.T) {
+func TestInputForecastElementConvert(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   *BoundedForecastElement
+		input   *InputForecastElement
 		wantErr bool
 	}{
 		{
@@ -70,8 +81,8 @@ func TestBoundedForecastElementConvert(t *testing.T) {
 		},
 		{
 			name: "valid input",
-			input: &BoundedForecastElement{
-				Inferer: "inferer1",
+			input: &InputForecastElement{
+				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Value:   mustNewBoundedExp40Dec(t, "1.23"),
 			},
 			wantErr: false,
@@ -80,7 +91,7 @@ func TestBoundedForecastElementConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.Convert()
+			got, err := tt.input.NewForecastElementFromInput()
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -98,10 +109,10 @@ func TestBoundedForecastElementConvert(t *testing.T) {
 	}
 }
 
-func TestBoundedForecastConvert(t *testing.T) {
+func TestInputForecastConvert(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   *BoundedForecast
+		input   *InputForecast
 		wantErr bool
 	}{
 		{
@@ -111,17 +122,17 @@ func TestBoundedForecastConvert(t *testing.T) {
 		},
 		{
 			name: "valid input",
-			input: &BoundedForecast{
+			input: &InputForecast{
 				TopicId:     1,
 				BlockHeight: 100,
-				Forecaster:  "forecaster1",
-				ForecastElements: []*BoundedForecastElement{
+				Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
+				ForecastElements: []*InputForecastElement{
 					{
-						Inferer: "inferer1",
+						Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 						Value:   mustNewBoundedExp40Dec(t, "1.23"),
 					},
 					{
-						Inferer: "inferer2",
+						Inferer: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 						Value:   mustNewBoundedExp40Dec(t, "4.56"),
 					},
 				},
@@ -133,7 +144,7 @@ func TestBoundedForecastConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.Convert()
+			got, err := tt.input.NewForecastFromInput()
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -152,23 +163,23 @@ func TestBoundedForecastConvert(t *testing.T) {
 	}
 }
 
-func TestBoundedInferenceForecastBundleConvert(t *testing.T) {
-	validInference := &BoundedInference{
+func TestInputInferenceForecastBundleConvert(t *testing.T) {
+	validInference := &InputInference{
 		TopicId:     1,
 		BlockHeight: 100,
-		Inferer:     "inferer1",
+		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 		Value:       mustNewBoundedExp40Dec(t, "1.23"),
 		ExtraData:   []byte("extra"),
 		Proof:       "proof",
 	}
 
-	validForecast := &BoundedForecast{
+	validForecast := &InputForecast{
 		TopicId:     1,
 		BlockHeight: 100,
-		Forecaster:  "forecaster1",
-		ForecastElements: []*BoundedForecastElement{
+		Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
+		ForecastElements: []*InputForecastElement{
 			{
-				Inferer: "inferer1",
+				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Value:   mustNewBoundedExp40Dec(t, "1.23"),
 			},
 		},
@@ -177,7 +188,7 @@ func TestBoundedInferenceForecastBundleConvert(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		input   *BoundedInferenceForecastBundle
+		input   *InputInferenceForecastBundle
 		wantErr bool
 	}{
 		{
@@ -187,7 +198,7 @@ func TestBoundedInferenceForecastBundleConvert(t *testing.T) {
 		},
 		{
 			name: "valid input",
-			input: &BoundedInferenceForecastBundle{
+			input: &InputInferenceForecastBundle{
 				Inference: validInference,
 				Forecast:  validForecast,
 			},
@@ -197,7 +208,7 @@ func TestBoundedInferenceForecastBundleConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.Convert()
+			got, err := tt.input.NewInferenceForecastBundleFromInput()
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -221,18 +232,18 @@ func mustNewBoundedExp40Dec(t *testing.T, s string) math.BoundedExp40Dec {
 }
 
 // Add more test functions for other types...
-// TestBoundedWorkerDataBundleConvert
-// TestBoundedWorkerAttributedValueConvert
-// TestBoundedWithheldWorkerAttributedValueConvert
-// TestBoundedOneOutInfererForecasterValuesConvert
-// TestBoundedValueBundleConvert
-// TestBoundedReputerValueBundleConvert
+// TestInputWorkerDataBundleConvert
+// TestInputWorkerAttributedValueConvert
+// TestInputWithheldWorkerAttributedValueConvert
+// TestInputOneOutInfererForecasterValuesConvert
+// TestInputValueBundleConvert
+// TestInputReputerValueBundleConvert
 
 // Example of a complex test:
-func TestBoundedValueBundleConvert(t *testing.T) {
+func TestInputValueBundleConvert(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   *BoundedValueBundle
+		input   *InputValueBundle
 		wantErr bool
 	}{
 		{
@@ -242,31 +253,58 @@ func TestBoundedValueBundleConvert(t *testing.T) {
 		},
 		{
 			name: "valid input with all fields",
-			input: &BoundedValueBundle{
-				TopicId:       1,
-				Reputer:       "reputer1",
+			input: &InputValueBundle{
+				TopicId: 1,
+				ReputerRequestNonce: &ReputerRequestNonce{
+					ReputerNonce: &Nonce{
+						BlockHeight: 1,
+					},
+				},
+				Reputer:       "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec",
 				ExtraData:     []byte("extra"),
 				CombinedValue: mustNewBoundedExp40Dec(t, "1.23"),
 				NaiveValue:    mustNewBoundedExp40Dec(t, "4.56"),
-				InfererValues: []*BoundedWorkerAttributedValue{
+				InfererValues: []*InputWorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 						Value:  mustNewBoundedExp40Dec(t, "1.23"),
 					},
 				},
-				ForecasterValues: []*BoundedWorkerAttributedValue{
+				ForecasterValues: []*InputWorkerAttributedValue{
 					{
-						Worker: "worker2",
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 						Value:  mustNewBoundedExp40Dec(t, "4.56"),
 					},
 				},
-				OneOutInfererValues: []*BoundedWithheldWorkerAttributedValue{
+				OneOutInfererValues: []*InputWithheldWorkerAttributedValue{
 					{
-						Worker: "worker3",
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 						Value:  mustNewBoundedExp40Dec(t, "7.89"),
 					},
 				},
-				// Add more fields as needed
+				OneOutForecasterValues: []*InputWithheldWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "7.89"),
+					},
+				},
+				OneInForecasterValues: []*InputWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "7.89"),
+					},
+				},
+				OneOutInfererForecasterValues: []*InputOneOutInfererForecasterValues{
+					{
+						Forecaster: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						OneOutInfererValues: []*InputWithheldWorkerAttributedValue{
+							{
+								Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+								Value:  mustNewBoundedExp40Dec(t, "7.89"),
+							},
+						},
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -274,7 +312,7 @@ func TestBoundedValueBundleConvert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.Convert()
+			got, err := tt.input.NewValueBundleFromInput()
 			if tt.wantErr {
 				require.Error(t, err)
 				return
