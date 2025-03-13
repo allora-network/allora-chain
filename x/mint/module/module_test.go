@@ -462,6 +462,114 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	)
 }
 
+func (s *MintModuleTestSuite) TestNotEnoughTokensToMintToCoverInflation() {
+	topicId := uint64(1)
+	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
+	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
+	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
+	feeCollectorBalBefore := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
+	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
+	ecosystemBalBefore := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
+
+	// set almost all ecosystem tokens as minted to reach the limit
+	ecosystemTokensMintedBefore, _ := cosmosMath.NewIntFromString("359499999999999990000000000")
+	s.Require().NoError(s.mintKeeper.AddEcosystemTokensMinted(s.ctx, ecosystemTokensMintedBefore))
+	prevEmission := cosmosMath.NewInt(1000000000000)
+	s.Require().NoError(s.mintKeeper.PreviousBlockEmission.Set(s.ctx, prevEmission))
+
+	s.ctx = s.ctx.WithBlockHeight(2)
+	// stake enough tokens so that the networkStaked is non zero
+	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
+	s.Require().True(ok)
+	err := s.emissionsKeeper.AddReputerStake(
+		s.ctx,
+		topicId,
+		s.addrsStr[0],
+		stake,
+	)
+	s.Require().NoError(err)
+
+	// mint enough tokens so that the circulating supply is non zero
+	spareCoins, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
+	s.Require().True(ok)
+	err = s.bankKeeper.MintCoins(
+		s.ctx,
+		thirdParty,
+		sdk.NewCoins(
+			sdk.NewCoin(
+				sdk.DefaultBondDenom,
+				spareCoins,
+			),
+		),
+	)
+	s.Require().NoError(err)
+
+	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+
+	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
+	s.Require().NoError(err)
+
+	feeCollectorBalAfter := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
+	alloraRewardsBalAfter := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
+	ecosystemBalAfter := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
+	tokenSupplyAfter := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+	ecosystemTokensMintedAfter, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
+	s.Require().NoError(err)
+
+	// Check that:
+	// The token supply went up (new tokens were minted!)
+	// the ecosystem account balance stayed the same (should have been zero and the start and zero after!)
+	// ecosystem tokens minted went up (we minted tokens to pay for inference requests)
+	// the fee collector account balance went UP (fee collector received the fees)
+	// the allora rewards account balance went UP (allora rewards account received the rewards)
+	// the rewards should be less than the previous emission
+	s.Require().True(
+		tokenSupplyBefore.Amount.LT(tokenSupplyAfter.Amount),
+		"Token supply should go up when minting tokens as inflationary rewards: %s > %s",
+		tokenSupplyBefore.Amount.String(),
+		tokenSupplyAfter.Amount.String(),
+	)
+	s.Require().True(
+		ecosystemBalBefore.Amount.Equal(ecosystemBalAfter.Amount),
+		"Ecosystem bal zero before and after: before we never gave it money and after it paid out the rewards: %s > %s",
+		ecosystemBalBefore.Amount.String(),
+		ecosystemBalAfter.Amount.String(),
+	)
+	s.Require().True(
+		ecosystemBalAfter.Amount.Equal(cosmosMath.ZeroInt()),
+		"Ecosystem bal zero before and after: before we never gave it money and after it paid out the rewards: %s != 0",
+		ecosystemBalAfter.Amount.String(),
+	)
+	s.Require().True(
+		ecosystemTokensMintedBefore.LT(ecosystemTokensMintedAfter),
+		"Ecosystem tokens minted should go up when minting tokens to pay for inference requests: %s < %s",
+		ecosystemTokensMintedBefore.String(),
+		ecosystemTokensMintedAfter.String(),
+	)
+	s.Require().True(
+		feeCollectorBalBefore.Amount.LT(feeCollectorBalAfter.Amount),
+		"Fee collector balance should go up when minting tokens to pay for inference requests: %s < %s",
+		feeCollectorBalBefore.String(),
+		feeCollectorBalAfter.String(),
+	)
+	s.Require().True(
+		alloraRewardsBalBefore.Amount.LT(alloraRewardsBalAfter.Amount),
+		"Allora rewards balance should go up when minting tokens to pay for inference requests: %s < %s",
+		alloraRewardsBalBefore.String(),
+		alloraRewardsBalAfter.String(),
+	)
+	s.Require().NoError(err)
+	alloraRewards := alloraRewardsBalAfter.Amount.Sub(alloraRewardsBalBefore.Amount)
+	valRewards := feeCollectorBalAfter.Amount.Sub(feeCollectorBalBefore.Amount)
+	rewards := alloraRewards.Add(valRewards)
+	s.Require().True(
+		rewards.LT(prevEmission),
+		"Rewards should be less than the previous emission: %s < %s",
+		rewards.String(),
+		prevEmission.String(),
+	)
+}
+
 func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	s.ctx = s.ctx.WithBlockHeight(1)
 
