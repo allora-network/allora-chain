@@ -72,6 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* [#757](https://github.com/allora-network/allora-chain/pull/757) Incoming value limiting
+
 ### Security
 
 * [#756](https://github.com/allora-network/allora-chain/pull/756) Prevent ecosystem rewards after its supply hit
