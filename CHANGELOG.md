@@ -68,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#766](https://github.com/allora-network/allora-chain/pull/766) Fix sort by weight instead of topic id. Remove excess sort logic
 * [#776](https://github.com/allora-network/allora-chain/pull/776) Target weight: rm div by topic epochLength
 * [#764](https://github.com/allora-network/allora-chain/pull/764) TopicRewardAlpha using weekly cadence
+* [#769](https://github.com/allora-network/allora-chain/pull/769) Stored NetworkInferences instead of query-time. Removal of `GetLatestAvailableNetworkInferences`
 
 ### Deprecated
 
