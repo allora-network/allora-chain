@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -24,7 +25,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := ctx.BlockHeight()
-	if blockHeight < nonce.BlockHeight ||
+	if blockHeight <= nonce.BlockHeight ||
 		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
@@ -98,6 +99,39 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	// Once inferences are closed, update the network inferences outlier metrics
 	err = k.UpdateNetworkInferencesOutlierMetrics(ctx, topic.Id, nonce.BlockHeight)
+	if err != nil {
+		return err
+	}
+
+	// Calculate and store network inferences for this block.
+	networkInferencesResult, err := synth.GetNetworkInferences(
+		sdk.UnwrapSDKContext(ctx),
+		*k,
+		topic.Id,
+		&nonce.BlockHeight,
+		false,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = k.InsertNetworkInference(ctx, topic.Id, nonce.BlockHeight, *networkInferencesResult.NetworkInferences)
+	if err != nil {
+		return err
+	}
+
+	// Calculate and store outlier resistant network inferences for this block.
+	outlierResistantNetworkInferencesResult, err := synth.GetNetworkInferences(
+		sdk.UnwrapSDKContext(ctx),
+		*k,
+		topic.Id,
+		&nonce.BlockHeight,
+		true,
+	)
+	if err != nil {
+		return err
+	}
+	err = k.InsertOutlierResistantNetworkInference(ctx, topic.Id, nonce.BlockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences)
 	if err != nil {
 		return err
 	}
