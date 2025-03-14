@@ -70,7 +70,7 @@ func (s *MintKeeperTestSuite) TestNumberLockedTokensBeforeVest() {
 		bpm,
 		cosmosMath.NewIntFromUint64(bpm*2),
 		defaultParams,
-		monthsUnlocked.ToLegacyDec(),
+		monthsUnlocked,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
 	s.Require().Equal(monthsUnlocked, updatedMonthsUnlocked)
@@ -78,18 +78,18 @@ func (s *MintKeeperTestSuite) TestNumberLockedTokensBeforeVest() {
 
 func (s *MintKeeperTestSuite) TestNumberLockedTokensDuringVest() {
 	defaultParams := types.DefaultParams()
-	// after 13 months investors and team should get 1/3 + 1/36 = 13/36
-	fractionUnlocked := cosmosMath.LegacyNewDec(13).Quo(cosmosMath.LegacyNewDec(36))
-	fractionLocked := cosmosMath.LegacyNewDec(1).Sub(fractionUnlocked)
+	// after 13 months investors and team should get 1/3 + 1/36 = 13/36 so 23/36 locked
+	thirtySix := cosmosMath.NewInt(36)
+	monthLocked := cosmosMath.NewInt(23)
 	investorsPreseed := defaultParams.InvestorsPreseedPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).
-		Mul(fractionLocked).TruncateInt()
+		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt().
+		Mul(monthLocked).Quo(thirtySix)
 	investorsSeed := defaultParams.InvestorsPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).
-		Mul(fractionLocked).TruncateInt()
+		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt().
+		Mul(monthLocked).Quo(thirtySix)
 	team := defaultParams.TeamPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).
-		Mul(fractionLocked).TruncateInt()
+		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt().
+		Mul(monthLocked).Quo(thirtySix)
 	expectedLocked := investorsPreseed.Add(investorsSeed).Add(team)
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
@@ -99,7 +99,7 @@ func (s *MintKeeperTestSuite) TestNumberLockedTokensDuringVest() {
 		bpm,
 		cosmosMath.NewIntFromUint64(bpm*13+1),
 		defaultParams,
-		monthsUnlocked.ToLegacyDec(),
+		monthsUnlocked,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
 	s.Require().Equal(monthsUnlocked, updatedMonthsUnlocked)
@@ -115,7 +115,7 @@ func (s *MintKeeperTestSuite) TestNumberLockedTokensAfterVest() {
 		bpm,
 		cosmosMath.NewIntFromUint64(bpm*40),
 		defaultParams,
-		monthsUnlocked.ToLegacyDec(),
+		monthsUnlocked,
 	)
 	s.Require().True(result.Equal(cosmosMath.ZeroInt()))
 	thirtySixMonths := cosmosMath.NewIntFromUint64(uint64(36))
@@ -271,7 +271,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokens() {
 			blocksPerMonth,
 			cosmosMath.NewIntFromUint64(blocksPerMonth*uint64(i)),
 			types.DefaultParams(),
-			monthsUnlocked.ToLegacyDec(),
+			monthsUnlocked,
 		)
 		if i > 36 {
 			s.Require().True(updatedMonthsUnlocked.Equal(cosmosMath.NewIntFromUint64(uint64(36))))

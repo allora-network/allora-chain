@@ -110,7 +110,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryServiceEmis
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		moduleParams,
-		monthsAlreadyUnlocked.ToLegacyDec(),
+		monthsAlreadyUnlocked,
 	)
 	circulatingSupply,
 		totalSupply,
