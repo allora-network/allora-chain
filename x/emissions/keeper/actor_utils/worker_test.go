@@ -351,6 +351,8 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 		Value:       alloraMath.MustNewDecFromString("-0.035995138925040600"),
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
+		ExtraData:   nil,
+		Proof:       "",
 	}
 	err = s.emissionsKeeper.InsertInference(s.ctx, topicId, inference)
 	s.Require().NoError(err)

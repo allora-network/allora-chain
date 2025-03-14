@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -113,24 +112,6 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{NetworkInferences: outlierResistantNetworkInferences}, nil
 }
 
-// Input parameters type for both outlier resistant and non-outlier resistant functions
-type NetworkInferencesParams struct {
-	ctx              context.Context
-	topicId          uint64
-	outlierResistant bool
-}
-
-// Output result type for both outlier resistant and non-outlier resistant functions
-type NetworkInferencesResult struct {
-	networkInferences                *emissionstypes.ValueBundle
-	infererWeights                   []*emissionstypes.RegretInformedWeight
-	forecasterWeights                []*emissionstypes.RegretInformedWeight
-	inferenceBlockHeight             int64
-	lossBlockHeight                  int64
-	confidenceIntervalRawPercentiles []alloraMath.Dec
-	confidenceIntervalValues         []alloraMath.Dec
-}
-
 // Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
 func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emissionstypes.GetLatestNetworkInferencesRequest) (_ *emissionstypes.GetLatestNetworkInferencesResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestNetworkInferences", time.Now(), &err)
@@ -142,7 +123,8 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 
 	// Convert result to response
 	return &emissionstypes.GetLatestNetworkInferencesResponse{
-		NetworkInferences: result,
+		NetworkInferences:    result,
+		InferenceBlockHeight: result.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
 }
 
@@ -159,7 +141,8 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 
 	// Convert result to response
 	return &emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse{
-		NetworkInferences: result,
+		NetworkInferences:    result,
+		InferenceBlockHeight: result.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
 }
 

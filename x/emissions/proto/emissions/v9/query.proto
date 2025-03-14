@@ -1097,21 +1097,19 @@ message GetNetworkInferencesAtBlockOutlierResistantResponse {
 }
 
 message GetLatestNetworkInferencesResponse {
-  reserved 2, 3, 4, 7, 8;
-  reserved "forecast_implied_inferences", "inferer_weights", "forecaster_weights", "confidence_interval_raw_percentiles", "confidence_interval_values";
+  reserved 2, 3, 4, 6, 7, 8;
+  reserved "forecast_implied_inferences", "inferer_weights", "forecaster_weights", "confidence_interval_raw_percentiles", "confidence_interval_values", "loss_block_height";
 
   emissions.v3.ValueBundle network_inferences = 1;
   int64 inference_block_height = 5;
-  int64 loss_block_height = 6;
 }
 
 message GetLatestNetworkInferencesOutlierResistantResponse {
-  reserved 2, 3, 4, 7, 8;
-  reserved "forecast_implied_inferences", "inferer_weights", "forecaster_weights", "confidence_interval_raw_percentiles", "confidence_interval_values";
+  reserved 2, 3, 4, 6, 7, 8;
+  reserved "forecast_implied_inferences", "inferer_weights", "forecaster_weights", "confidence_interval_raw_percentiles", "confidence_interval_values", "loss_block_height";
 
   emissions.v3.ValueBundle network_inferences = 1;
   int64 inference_block_height = 5;
-  int64 loss_block_height = 6;
 }
 
 message IsWorkerRegisteredInTopicIdRequest {

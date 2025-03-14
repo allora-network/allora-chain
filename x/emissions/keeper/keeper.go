@@ -503,7 +503,24 @@ func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId
 		networkInferences, err = k.GetNetworkInference(ctx, topicId, blockHeight.BlockHeight)
 	}
 	if errors.Is(err, collections.ErrNotFound) {
-		return &types.ValueBundle{}, nil
+		return &types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: 0,
+				},
+			},
+			Reputer:                       "",
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.ZeroDec(),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.ZeroDec(),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
+		}, nil
 	} else if err != nil {
 		return &types.ValueBundle{}, errorsmod.Wrap(err, "error getting network inferences at block")
 	}
