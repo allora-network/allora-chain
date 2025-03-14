@@ -169,7 +169,7 @@ func UpgradeChecks(m testCommon.TestConfig) {
 	proposalId, proposalHeight := proposeUpgrade(m)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
-	m.T.Logf("--- Wating for Proposal %d to Pass ---", proposalId)
+	m.T.Logf("--- Waiting for Proposal %d to Pass ---", proposalId)
 	waitForProposalPass(m, proposalId)
 	m.T.Logf("--- Waiting for Upgrade to %s at height %d ---", versionName, proposalHeight)
 	waitForUpgrade(m, proposalHeight)
