@@ -1,20 +1,56 @@
 package module
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	chainParams "github.com/allora-network/allora-chain/app/params"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type EmissionsKeeper interface {
+	GetStakeRemovalsUpUntilBlock(
+		ctx context.Context,
+		blockHeight emissionskeeper.BlockHeight,
+		limit uint64,
+	) ([]emissionstypes.StakeRemovalInfo, bool, error)
+	GetDelegateStakeRemovalsUpUntilBlock(
+		ctx context.Context,
+		blockHeight emissionskeeper.BlockHeight,
+		limit uint64,
+	) ([]emissionstypes.DelegateStakeRemovalInfo, bool, error)
+	RemoveReputerStake(
+		ctx context.Context,
+		blockHeight emissionskeeper.BlockHeight,
+		topicId emissionskeeper.TopicId,
+		reputer emissionskeeper.ActorId,
+		stakeToRemove cosmosMath.Int,
+	) error
+	RemoveDelegateStake(
+		ctx context.Context,
+		stakeRemovalBlockHeight emissionskeeper.BlockHeight,
+		topicId emissionskeeper.TopicId,
+		delegator emissionskeeper.ActorId,
+		reputer emissionskeeper.ActorId,
+		stakeToRemove cosmosMath.Int,
+	) error
+	SendCoinsFromModuleToAccount(
+		ctx context.Context,
+		senderModule string,
+		recipientAddr emissionskeeper.ActorId,
+		amt sdk.Coins,
+	) error
+}
+
 // Remove all stakes this block that have been marked for removal
 func RemoveStakes(
 	sdkCtx sdk.Context,
 	currentBlock int64,
-	k emissionskeeper.Keeper,
+	k EmissionsKeeper,
 	limitToProcess uint64,
 ) error {
 	removals, limitHit, err := k.GetStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
@@ -22,11 +58,10 @@ func RemoveStakes(
 		return errors.Wrapf(err, "Unable to get stake removals for block %d", currentBlock)
 	}
 	if limitHit {
-		return errors.Wrapf(
-			err,
-			"Hit limit of number of stake removals we can process up until block %d, only removing %d",
-			currentBlock,
-			limitToProcess,
+		sdkCtx.Logger().Warn(
+			"Hit limit of number of stake removals we can process in this block",
+			"blockHeight", currentBlock,
+			"limitToProcess", limitToProcess,
 		)
 	}
 	for _, stakeRemoval := range removals {
@@ -36,7 +71,7 @@ func RemoveStakes(
 		// Update the stake data structures
 		err = k.RemoveReputerStake(
 			cacheSdkCtx,
-			currentBlock,
+			stakeRemoval.BlockRemovalCompleted,
 			stakeRemoval.TopicId,
 			stakeRemoval.Reputer,
 			stakeRemoval.Amount,
@@ -85,7 +120,7 @@ func RemoveStakes(
 func RemoveDelegateStakes(
 	sdkCtx sdk.Context,
 	currentBlock int64,
-	k emissionskeeper.Keeper,
+	k EmissionsKeeper,
 	limitToProcess uint64,
 ) error {
 	removals, limitHit, err := k.GetDelegateStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
@@ -93,11 +128,10 @@ func RemoveDelegateStakes(
 		return errors.Wrapf(err, "Unable to get stake removals for block %d", currentBlock)
 	}
 	if limitHit {
-		return errors.Wrapf(
-			err,
-			"Hit limit of number of stake removals we can process up until block %d, only removing %d",
-			currentBlock,
-			limitToProcess,
+		sdkCtx.Logger().Warn(
+			"Hit limit of number of stake removals we can process in this block",
+			"blockHeight", currentBlock,
+			"limitToProcess", limitToProcess,
 		)
 	}
 	for _, stakeRemoval := range removals {
