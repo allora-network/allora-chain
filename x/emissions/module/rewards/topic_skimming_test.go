@@ -6,40 +6,22 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 )
 
-func (s *RewardsTestSuite) TestSortTopicsByWeightDescWithRandomTiebreakerSimple() {
-	var unsortedTopicIds = []uint64{1, 2, 3, 4, 5}
-	var weightsPerTopic = []int64{100, 300, 700, 400, 200}
-	var weights = map[uint64]*alloraMath.Dec{}
-	for i, topicId := range unsortedTopicIds {
-		weight := alloraMath.NewDecFromInt64(weightsPerTopic[i])
-		weights[topicId] = &weight
-	}
-	sortedList, err := rewards.SortTopicsByWeightDescWithRandomTiebreaker(unsortedTopicIds, weights, 0)
-	s.Require().NoError(err)
-
-	s.Require().Equal(len(unsortedTopicIds), len(sortedList), "SortTopicsByWeightDescWithRandomTiebreaker should return the same length list")
-	s.Require().Equal(uint64(3), sortedList[0], "SortTopicsByWeightDescWithRandomTiebreaker should return the expected sorted list")
-	s.Require().Equal(uint64(4), sortedList[1], "SortTopicsByWeightDescWithRandomTiebreaker should return the expected sorted list")
-	s.Require().Equal(uint64(2), sortedList[2], "SortTopicsByWeightDescWithRandomTiebreaker should return the expected sorted list")
-	s.Require().Equal(uint64(5), sortedList[3], "SortTopicsByWeightDescWithRandomTiebreaker should return the expected sorted list")
-	s.Require().Equal(uint64(1), sortedList[4], "SortTopicsByWeightDescWithRandomTiebreaker should return the expected sorted list")
-}
-
 func (s *RewardsTestSuite) TestSkimTopTopicsByWeightDescSimple() {
 	var unsortedTopicIds = []uint64{1, 2, 3, 4, 5}
-	var weightsPerTopic = []int64{100, 300, 700, 400, 200}
+	var weightsPerTopic = []int64{100, 300, 400, 400, 200}
+	// Tiebreaker is topic id. Intended order of topics => 3 > 4 > 2 > 5 > 1
 	var weights = map[uint64]*alloraMath.Dec{}
 	for i, topicId := range unsortedTopicIds {
 		weight := alloraMath.NewDecFromInt64(weightsPerTopic[i])
 		weights[topicId] = &weight
 	}
 	N := uint64(3)
-	mapOfTopN, listOfTopN, err := rewards.SkimTopTopicsByWeightDesc(s.ctx, weights, N, 0)
+	mapOfTopN, listOfTopN, err := rewards.SkimTopTopicsByWeightDesc(s.ctx, weights, N)
 	s.Require().NoError(err)
 
 	// Check that mapOfTopN has the expected keys
 	s.Require().Equal(N, uint64(len(mapOfTopN)), "SkimTopTopicsByWeightDesc should return a map with N keys")
-	s.Require().Equal("700", mapOfTopN[3].String(), "SkimTopTopicsByWeightDesc should return the expected sorted list")
+	s.Require().Equal("400", mapOfTopN[3].String(), "SkimTopTopicsByWeightDesc should return the expected sorted list")
 	s.Require().Equal("400", mapOfTopN[4].String(), "SkimTopTopicsByWeightDesc should return the expected sorted list")
 	s.Require().Equal("300", mapOfTopN[2].String(), "SkimTopTopicsByWeightDesc should return the expected sorted list")
 	// Check that mapOfTopN does not have any other keys

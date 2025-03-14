@@ -20,7 +20,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/cosmos/cosmos-sdk/runtime"
+	runtime "github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -481,51 +481,37 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllRecordCommits() {
 }
 
 func (s *EmissionsV2MigrationsTestSuite) TestMigrateParams() {
+	storageService := s.emissionsKeeper.GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
 	// Create a Params with garbage in it
-	prevParams := types.Params{ //nolint: exhaustruct
-		Version:                             "v1",
-		MaxSerializedMsgLength:              1,
-		MinTopicWeight:                      alloraMath.OneDec(),
-		RequiredMinimumStake:                cosmosMath.OneInt(),
-		RemoveStakeDelayWindow:              1,
-		MinEpochLength:                      2341,
-		BetaEntropy:                         alloraMath.MustNewDecFromString("0.1337"),
-		LearningRate:                        alloraMath.MustNewDecFromString("0.1337"),
-		MaxGradientThreshold:                alloraMath.MustNewDecFromString("0.1337"),
-		MinStakeFraction:                    alloraMath.MustNewDecFromString("0.1337"),
-		MaxUnfulfilledWorkerRequests:        1,
-		MaxUnfulfilledReputerRequests:       1,
-		TopicRewardStakeImportance:          alloraMath.MustNewDecFromString("0.1337"),
-		TopicRewardFeeRevenueImportance:     alloraMath.MustNewDecFromString("0.1337"),
-		TopicRewardAlpha:                    alloraMath.MustNewDecFromString("0.1337"),
-		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1337"),
-		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0.1337"),
-		MaxSamplesToScaleScores:             123,
-		MaxTopInferersToReward:              123,
-		MaxTopForecastersToReward:           123,
-		MaxTopReputersToReward:              123,
-		CreateTopicFee:                      cosmosMath.OneInt(),
-		GradientDescentMaxIters:             123,
-		RegistrationFee:                     cosmosMath.OneInt(),
-		DefaultPageLimit:                    123,
-		MaxPageLimit:                        123,
-		MinEpochLengthRecordLimit:           123,
-		BlocksPerMonth:                      123,
-		PRewardInference:                    alloraMath.MustNewDecFromString("0.1337"),
-		PRewardForecast:                     alloraMath.MustNewDecFromString("0.1337"),
-		PRewardReputer:                      alloraMath.MustNewDecFromString("0.1337"),
-		CRewardInference:                    alloraMath.MustNewDecFromString("0.1337"),
-		CRewardForecast:                     alloraMath.MustNewDecFromString("0.1337"),
-		CNorm:                               alloraMath.MustNewDecFromString("0.1337"),
-		EpsilonReputer:                      alloraMath.MustNewDecFromString("0.1337"),
-		HalfMaxProcessStakeRemovalsEndBlock: 123,
-		EpsilonSafeDiv:                      alloraMath.MustNewDecFromString("0.1337"),
-		DataSendingFee:                      cosmosMath.OneInt(),
-		MaxElementsPerForecast:              123,
-		MaxActiveTopicsPerBlock:             123,
-		MaxStringLength:                     123,
+	defaultParams := types.DefaultParams()
+	prevParams := oldtypes.Params{ //nolint: exhaustruct
+		Version:                         "v1",
+		MinTopicWeight:                  alloraMath.OneDec(),
+		RequiredMinimumStake:            cosmosMath.OneUint(),
+		RemoveStakeDelayWindow:          1,
+		MinEpochLength:                  2341,
+		BetaEntropy:                     alloraMath.MustNewDecFromString("0.1337"),
+		LearningRate:                    alloraMath.MustNewDecFromString("0.1337"),
+		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.1337"),
+		MinStakeFraction:                alloraMath.MustNewDecFromString("0.1337"),
+		MaxUnfulfilledWorkerRequests:    1,
+		MaxUnfulfilledReputerRequests:   1,
+		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.1337"),
+		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.1337"),
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.1337"),
+		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1337"),
+		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.1337"),
+		MaxSamplesToScaleScores:         123,
+		MaxTopReputersToReward:          123,
+		CreateTopicFee:                  cosmosMath.OneInt(),
+		GradientDescentMaxIters:         123,
+		RegistrationFee:                 cosmosMath.OneInt(),
+		MinEpochLengthRecordLimit:       123,
 	}
-	err := s.emissionsKeeper.SetParams(s.ctx, prevParams)
+	var err error
+	store.Set(types.ParamsKey, cdc.MustMarshal(&prevParams))
 	s.Require().NoError(err)
 
 	// Run migration
@@ -534,7 +520,6 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateParams() {
 	newParams, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	defaultParams := types.DefaultParams()
 	// Check params after migration
 	s.Require().Equal(newParams, defaultParams)
 }

@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * [#762](https://github.com/allora-network/allora-chain/pull/762) Worker node owner should get compensated, not sender of inferences
+* [#766](https://github.com/allora-network/allora-chain/pull/766) Fix sort by weight instead of topic id. Remove excess sort logic
 
 ### Deprecated
 
@@ -71,10 +72,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* [#757](https://github.com/allora-network/allora-chain/pull/757) Incoming value limiting
+* [#761](https://github.com/allora-network/allora-chain/pull/761) Fix close worker nonce boundaries
+
 ### Security
 
 * [#756](https://github.com/allora-network/allora-chain/pull/756) Prevent ecosystem rewards after its supply hit
 * [#758](https://github.com/allora-network/allora-chain/pull/758): Ensure pending stake removals are processed
+* [#767](https://github.com/allora-network/allora-chain/pull/767) Fix [ISA-2025-001](https://github.com/cosmos/ibc-go/security/advisories/GHSA-4wf3-5qj9-368v)
 
 # [Released]
 
