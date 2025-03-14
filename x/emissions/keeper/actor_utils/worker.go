@@ -25,8 +25,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := ctx.BlockHeight()
-	if blockHeight <= topic.EpochLastEnded ||
-		blockHeight > topic.EpochLastEnded+topic.GroundTruthLag {
+	if blockHeight < nonce.BlockHeight ||
+		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
 
