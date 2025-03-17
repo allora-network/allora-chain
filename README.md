@@ -347,8 +347,16 @@ ssh -NL 2345:localhost:2345 user@remote.ip
 
 9- At Cursor, go to the debug pannel, pick "Remote Debug" configuration and start debugging.
 
+## Data Submission Windows
 
-### References
+Data is submitted by workers and reputers within the allowed submission windows.
+
+For workers, the submission window is defined at the topic level, as the blocks starting at `nonce.BlockHeight` and ending at `nonce.BlockHeight + topic.WorkerSubmissionWindow`. 
+
+For reputers, the submission window starts at `(nonce.BlockHeight + topic.GroundTruthLag)` and it lasts 1 `topic.EpochLength` + any remaining additional lag until end of epoch, only applying when `topic.GroundTruthLag` and `topic.EpochLength` are not multiples, and calculated as `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`.
+
+
+## References
 
 - https://github.com/go-delve/delve/blob/master/Documentation/faq.md#remote
 - https://www.jetbrains.com/help/go/attach-to-running-go-processes-with-debugger.html#attach-to-a-process-on-a-remote-machine
