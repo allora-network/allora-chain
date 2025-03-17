@@ -161,16 +161,6 @@ service QueryService {
     option (google.api.http).get = "/emissions/v9/latest_network_inferences_outlier_resistant/{topic_id}";
   }
 
-  // rpc GetLatestAvailableNetworkInferences(GetLatestAvailableNetworkInferencesRequest) returns (GetLatestAvailableNetworkInferencesResponse) {
-  //   option (cosmos.query.v1.module_query_safe) = true;
-  //   option (google.api.http).get = "/emissions/v9/latest_available_network_inferences/{topic_id}";
-  // }
-
-  // rpc GetLatestAvailableNetworkInferencesOutlierResistant(GetLatestAvailableNetworkInferencesOutlierResistantRequest) returns (GetLatestAvailableNetworkInferencesOutlierResistantResponse) {
-  //   option (cosmos.query.v1.module_query_safe) = true;
-  //   option (google.api.http).get = "/emissions/v9/latest_available_network_inferences_outlier_resistant/{topic_id}";
-  // }
-
   rpc IsWorkerNonceUnfulfilled(IsWorkerNonceUnfulfilledRequest) returns (IsWorkerNonceUnfulfilledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v9/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
