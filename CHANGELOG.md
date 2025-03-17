@@ -76,7 +76,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+
 * [#799](https://github.com/allora-network/allora-chain/pull/799) Correct Monthly PreviousPercentageRewardToStakedReputers Calculation
+* [#770](https://github.com/allora-network/allora-chain/pull/770) Allow delegate stake management after reputer unregister
 
 ### Security
 
@@ -106,7 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* [#803](https://github.com/allora-network/allora-chain/pull/803) Add reset/cleanup functions to defer in CloseReputerNonce 
+* [#803](https://github.com/allora-network/allora-chain/pull/803) Add reset/cleanup functions to defer in CloseReputerNonce
 * [#804](https://github.com/allora-network/allora-chain/pull/804) Additional validations + use inferenceBlockheight in NetworkInferences
 * [#805](https://github.com/allora-network/allora-chain/pull/805) An invalid bundle gets ignored on networkLoss calc
 
@@ -116,7 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Removed
 
-#### Added 
+#### Added
 
 #### Changed
 
