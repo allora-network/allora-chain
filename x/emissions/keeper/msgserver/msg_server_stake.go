@@ -217,13 +217,6 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
-	if err != nil {
-		return nil, err
-	} else if !isRegistered {
-		return nil, errorsmod.Wrap(types.ErrAddressIsNotRegisteredInThisTopic, "reputer address")
-	}
-
 	// Check the delegator has enough stake already placed on the topic to remove the stake
 	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
 	if err != nil {
@@ -299,13 +292,6 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
-	if err != nil {
-		return nil, err
-	} else if !isRegistered {
-		return nil, errorsmod.Wrap(types.ErrAddressIsNotRegisteredInThisTopic, "reputer address")
-	}
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
@@ -344,13 +330,6 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 		return nil, err
 	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
-	}
-
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
-	if err != nil {
-		return nil, err
-	} else if !isRegistered {
-		return nil, errorsmod.Wrap(types.ErrAddressIsNotRegisteredInThisTopic, "reputer address")
 	}
 
 	delegateInfo, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
