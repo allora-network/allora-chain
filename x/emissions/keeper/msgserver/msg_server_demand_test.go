@@ -130,3 +130,92 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 
 	s.Require().Equal(topic2Weight.Gt(topicWeight), true, "Topic1 weight should be greater than Topic2 weight")
 }
+
+func (s *MsgServerTestSuite) TestTopicWeightChangesWithDifferentEpochLengths() {
+	senderAddr := s.addrs[0]
+	sender := s.addrsStr[0]
+	reputer := s.addrsStr[1]
+
+	// Create two topics with different epoch lengths
+	topic1 := s.CreateCustomEpochTopic(125) // Longer epoch
+	topic2 := s.CreateCustomEpochTopic(50)  // Shorter epoch
+
+	// Put same stake in both topics
+	err := s.emissionsKeeper.AddReputerStake(s.ctx, topic1.Id, reputer, cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.InactivateTopic(s.ctx, topic1.Id)
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.AddReputerStake(s.ctx, topic2.Id, reputer, cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.InactivateTopic(s.ctx, topic2.Id)
+	s.Require().NoError(err)
+
+	// Set up funding amounts
+	var initialStake int64 = 10000
+	var initialStake2 int64 = 10000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)))
+	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	s.Require().NoError(err)
+
+	// Create funding requests
+	r := types.FundTopicRequest{
+		Sender:  sender,
+		TopicId: topic1.Id,
+		Amount:  cosmosMath.NewInt(initialStake),
+	}
+	r2 := types.FundTopicRequest{
+		Sender:  sender,
+		TopicId: topic2.Id,
+		Amount:  cosmosMath.NewInt(initialStake2),
+	}
+
+	// Get params for weight calculation
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err, "GetParams should not return an error")
+
+	// Fund both topics
+	response, err := s.msgServer.FundTopic(s.ctx, &r)
+	s.Require().NoError(err, "FundTopic should not return an error")
+	s.Require().NotNil(response, "Response should not be nil")
+
+	response2, err := s.msgServer.FundTopic(s.ctx, &r2)
+	s.Require().NoError(err, "FundTopic should not return an error")
+	s.Require().NotNil(response2, "Response should not be nil")
+
+	// Check if both topics are activated
+	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
+	s.Require().NoError(err)
+	s.Require().Equal(true, res, "Topic1 is not activated")
+
+	res2, err := s.emissionsKeeper.IsTopicActive(s.ctx, r2.TopicId)
+	s.Require().NoError(err)
+	s.Require().Equal(true, res2, "Topic2 is not activated")
+
+	// Get weights for both topics
+	topicWeight1, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r.TopicId,
+		125,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+	)
+	s.Require().NoError(err)
+
+	topicWeight2, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r2.TopicId,
+		50,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+	)
+	s.Require().NoError(err)
+
+	// Topic2 should have higher weight due to higher funding, despite shorter epoch
+	s.Require().Equal(topicWeight2.Gt(topicWeight1), true, "Topic2 weight should be greater than Topic1 weight because it has a shorter epoch length")
+
+}
