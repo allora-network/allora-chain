@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/binary"
+	"math"
 	"testing"
 	"time"
 
@@ -5699,416 +5700,429 @@ func (s *KeeperTestSuite) TestLatestRegretStdNormFunctions() {
 	s.Require().Error(err, "Setting zero regret stdNorm should fail")
 }
 
-// func (s *KeeperTestSuite) TestInsertInferenceDataValidation() {
+func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
+	tests := []struct {
+		name             string
+		topic            types.Topic
+		nonce            types.ReputerRequestNonce
+		blockHeight      int64
+		expectedInWindow bool
+		expectedErr      error
+		description      string
+	}{
+		{
+			name: "Simple case - Block within window",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 100,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1150,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within the submission window when GTLag equals EpochLength",
+		},
+		{
+			name: "Simple case - Block outside window (too early)",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 100,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1099,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is before ground truth is revealed",
+		},
+		{
+			name: "Simple case - Block outside window (too late)",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 100,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1201,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is after submission window ends",
+		},
+		{
+			name: "Simple case - Block exactly at window start",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 100,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1100, // Exactly when ground truth is revealed
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is exactly at the start of submission window",
+		},
+		{
+			name: "Simple case - Block exactly at window end",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 100,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1200, // Last valid block
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is exactly at the end of submission window",
+		},
+		{
+			name: "GTLag not divisible by EpochLength - Block within window",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 130,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1150,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag > EpochLength and not divisible, Block within window",
+		},
+		{
+			name: "GTLag not divisible by EpochLength - Lower boundary out",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 130,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1129,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag > EpochLength and not divisible, Lower boundary out",
+		},
+		{
+			name: "GTLag not divisible by EpochLength - Lower boundary in",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 130,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1130,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag > EpochLength and not divisible, Lower boundary in",
+		},
+		{
+			name: "GTLag not divisible by EpochLength - Upper boundary in",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 130,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1300,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag > EpochLength and not divisible, Upper boundary in",
+		},
+		{
+			name: "GTLag not divisible by EpochLength - Upper boundary out",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 130,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1301,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is outside window when GTLag > EpochLength and not divisible, Upper boundary out",
+		},
+		{
+			name: "GTLag less than EpochLength - Block within window",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 70,
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1200,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag < EpochLength",
+		},
+		{
+			name: "GTLag multiple of EpochLength",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 200, // Exactly 2 epochs
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1250,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag is multiple of EpochLength",
+		},
+		{
+			name: "GTLag multiple of EpochLength - Lower boundary out",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 200, // Exactly 2 epochs
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1199,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is outside window when GTLag is multiple of EpochLength, Lower boundary out",
+		},
+		{
+			name: "GTLag multiple of EpochLength - Lower boundary in",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 200, // Exactly 2 epochs
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1200,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag is multiple of EpochLength, Lower boundary in",
+		},
+		{
+			name: "GTLag multiple of EpochLength - Upper boundary in",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 200, // Exactly 2 epochs
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1300,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is within window when GTLag is multiple of EpochLength, Upper boundary in",
+		},
+		{
+			name: "GTLag multiple of EpochLength - Upper boundary out",
+			topic: types.Topic{
+				EpochLength:    100,
+				GroundTruthLag: 200, // Exactly 2 epochs
+			},
+			nonce: types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 1000},
+			},
+			blockHeight:      1301,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is outside window when GTLag is multiple of EpochLength, Upper boundary out",
+		},
+	}
 
-// 	testCases := []struct {
-// 		name        string
-// 		value       string
-// 		exponent    uint64
-// 		expectError bool
-// 	}{
-// 		// Zero value tests
-// 		{
-// 			name:        "zero value is valid",
-// 			value:       "0",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			result, err := s.emissionsKeeper.BlockWithinReputerSubmissionWindowOfNonce(
+				tt.topic,
+				tt.nonce,
+				tt.blockHeight,
+			)
+			if tt.expectedErr != nil {
+				s.Require().Error(err)
+				s.Require().ErrorIs(err, tt.expectedErr, tt.description)
+			} else {
+				s.Require().NoError(err)
+				s.Require().Equal(tt.expectedInWindow, result, tt.description)
+			}
+		})
+	}
+}
 
-// 		// Positive boundary tests
-// 		{
-// 			name:        "positive value at max boundary (1e+40)",
-// 			value:       "1e+40",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "positive value above max boundary (1e+41)",
-// 			value:       "1e+41",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 		{
-// 			name:        "positive value below max boundary (1e+39)",
-// 			value:       "1e+39",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
+func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
+	tests := []struct {
+		name             string
+		topic            types.Topic
+		nonce            types.Nonce
+		blockHeight      int64
+		expectedInWindow bool
+		expectedErr      error
+		description      string
+	}{
+		{
+			name: "Simple case - Block in the middle of the window",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 100,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 1000,
+			},
+			blockHeight:      1050,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is in the middle of submission window",
+		},
+		{
+			name: "Simple case - Block outside window (too early)",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 100,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 1000,
+			},
+			blockHeight:      999,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is before nonce block height",
+		},
+		{
+			name: "Simple case - Block outside window (too late)",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 100,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 1000,
+			},
+			blockHeight:      1101,
+			expectedInWindow: false,
+			expectedErr:      nil,
+			description:      "Block is after submission window ends",
+		},
+		{
+			name: "Edge case - Block exactly at window start",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 100,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 1000,
+			},
+			blockHeight:      1000,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is exactly at nonce block height (inclusive)",
+		},
+		{
+			name: "Edge case - Block exactly at window end",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 100,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 1000,
+			},
+			blockHeight:      1100,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block is at last valid block (exclusive of end)",
+		},
+		{
+			name: "Edge case - Zero submission window",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 0,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 1000,
+			},
+			blockHeight:      1000,
+			expectedInWindow: true,
+			expectedErr:      types.ErrInvalidValue,
+			description:      "Only the nonce block itself should be valid with zero window",
+		},
+		{
+			name: "Edge case - Large submission window",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 10000,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 1000,
+			},
+			blockHeight:      5000,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Block well within a large submission window",
+		},
+		{
+			name: "Edge case - Nonce at block zero",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 100,
+			},
+			nonce: types.Nonce{
+				BlockHeight: 0,
+			},
+			blockHeight:      50,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Nonce starting at genesis block",
+		},
+		{
+			name: "Edge case - Block at max int64",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 100,
+			},
+			nonce: types.Nonce{
+				BlockHeight: math.MaxInt64 - 50,
+			},
+			blockHeight:      math.MaxInt64 - 25,
+			expectedInWindow: true,
+			expectedErr:      types.ErrInvalidValue,
+			description:      "Testing near max int64 boundary",
+		},
+		{
+			name: "Edge case - Overflow",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 10,
+			},
+			nonce: types.Nonce{
+				BlockHeight: math.MaxInt64 - 5,
+			},
+			blockHeight:      math.MaxInt64 - 2,
+			expectedInWindow: false,
+			expectedErr:      types.ErrInvalidValue,
+			description:      "Testing overflow condition",
+		},
+		{
+			name: "Edge case - Near overflow but valid",
+			topic: types.Topic{
+				WorkerSubmissionWindow: 10,
+			},
+			nonce: types.Nonce{
+				BlockHeight: math.MaxInt64 - 15,
+			},
+			blockHeight:      math.MaxInt64 - 5,
+			expectedInWindow: true,
+			expectedErr:      nil,
+			description:      "Testing near overflow but valid case",
+		},
+	}
 
-// 		// Negative boundary tests
-// 		{
-// 			name:        "negative value at min boundary (-1e+40)",
-// 			value:       "-1e+40",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "negative value below min boundary (-1e+41)",
-// 			value:       "-1e+41",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-
-// 		// Precision boundary tests
-// 		{
-// 			name:        "positive value at min precision boundary (1e-40)",
-// 			value:       "1e-40",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "positive value below min precision boundary (1e-41)",
-// 			value:       "1e-41",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-
-// 		// Normal value tests
-// 		{
-// 			name:        "normal positive decimal",
-// 			value:       "123.456",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "normal negative decimal",
-// 			value:       "-123.456",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-
-// 		// Extreme value tests
-// 		{
-// 			name:        "extremely large positive value",
-// 			value:       "1e+100000",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 		{
-// 			name:        "extremely small positive value",
-// 			value:       "1e-100000",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 	}
-
-// 	topicId := s.CreateOneTopic(10800)
-// 	inferer := s.addrsStr[0]
-
-// 	for _, tc := range testCases {
-// 		s.Run(tc.name, func() {
-// 			// Create a keeper with test parameters
-// 			ctx := s.ctx
-// 			k := s.emissionsKeeper
-
-// 			// Set params with test exponent
-// 			params := types.DefaultParams()
-// 			err := k.SetParams(ctx, params)
-// 			s.Require().NoError(err)
-
-// 			// Create test inference
-// 			value, err := alloraMath.NewDecFromString(tc.value)
-// 			s.Require().NoError(err, "Error creating decimal from string")
-
-// 			inference := types.Inference{
-// 				TopicId:     topicId,
-// 				BlockHeight: 100,
-// 				Value:       value,
-// 				Inferer:     inferer,
-// 				ExtraData:   []byte("data"),
-// 				Proof:       "",
-// 			}
-
-// 			// Try to insert the inference
-// 			err = k.InsertInference(ctx, topicId, inference)
-
-// 			if tc.expectError {
-// 				s.Require().Error(err, "Expected insertion error for value %s", tc.value)
-// 			} else {
-// 				s.Require().NoError(err, "Expected no insertion error for value %s", tc.value)
-// 			}
-// 		})
-// 	}
-// }
-
-// func (s *KeeperTestSuite) TestInsertForecastDataValidation() {
-// 	testCases := []struct {
-// 		name        string
-// 		values      []string
-// 		exponent    uint64
-// 		expectError bool
-// 	}{
-// 		// Zero value tests
-// 		{
-// 			name:        "zero values are valid",
-// 			values:      []string{"0", "0", "0"},
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		// Positive boundary tests
-// 		{
-// 			name:        "positive values at max boundary (1e+40)",
-// 			values:      []string{"1e+40", "1e+40", "1e+40"},
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "one value above max boundary (1e+41)",
-// 			values:      []string{"1e+40", "1e+41", "1e+40"},
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 		{
-// 			name:        "positive values below max boundary (1e+39)",
-// 			values:      []string{"1e+39", "1e+39", "1e+39"},
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		// Negative boundary tests
-// 		{
-// 			name:        "negative values at min boundary (-1e+40)",
-// 			values:      []string{"-1e+40", "-1e+40", "-1e+40"},
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "one value below min boundary (-1e+41)",
-// 			values:      []string{"-1e+40", "-1e+41", "-1e+40"},
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-
-// 		// Precision boundary tests
-// 		{
-// 			name:        "values at min precision boundary (1e-40)",
-// 			values:      []string{"1e-40", "1e-40", "1e-40"},
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "one value below min precision boundary (1e-41)",
-// 			values:      []string{"1e-40", "1e-41", "1e-40"},
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-
-// 		// Mixed normal value tests
-// 		{
-// 			name:        "mixed normal decimals",
-// 			values:      []string{"123.456", "-789.012", "345.678"},
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-
-// 		// Extreme value tests
-// 		{
-// 			name:        "one extremely large value",
-// 			values:      []string{"123.456", "1e+100000", "345.678"},
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 		{
-// 			name:        "one extremely small value",
-// 			values:      []string{"123.456", "1e-100000", "345.678"},
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 	}
-
-// 	topicId := s.CreateOneTopic(10800)
-// 	forecaster := s.addrsStr[0]
-// 	// inferers from 1 to 3
-// 	for _, tc := range testCases {
-// 		s.Run(tc.name, func() {
-// 			// Set params with test exponent
-// 			params := types.DefaultParams()
-// 			err := s.emissionsKeeper.SetParams(s.ctx, params)
-// 			s.Require().NoError(err)
-
-// 			forecastElements := make([]*types.ForecastElement, len(tc.values))
-// 			for i, valueStr := range tc.values {
-// 				value, err := alloraMath.NewDecFromString(valueStr)
-// 				s.Require().NoError(err, "Error creating decimal from string")
-
-// 				forecastElements[i] = &types.ForecastElement{
-// 					Inferer: s.addrsStr[i+1],
-// 					Value:   value,
-// 				}
-// 			}
-
-// 			forecast := types.Forecast{
-// 				TopicId:          topicId,
-// 				BlockHeight:      1,
-// 				Forecaster:       forecaster,
-// 				ForecastElements: forecastElements,
-// 				ExtraData:        []byte("data"),
-// 			}
-
-// 			// Try to insert the forecast
-// 			err = s.emissionsKeeper.InsertForecast(s.ctx, topicId, forecast)
-
-// 			if tc.expectError {
-// 				s.Require().Error(err, "Expected insertion error for values %v", tc.values)
-// 			} else {
-// 				s.Require().NoError(err, "Expected no insertion error for values %v", tc.values)
-// 			}
-// 		})
-// 	}
-// }
-
-// func (s *KeeperTestSuite) TestInsertReputerLossDataValidation() {
-// 	testCases := []struct {
-// 		name        string
-// 		value       string
-// 		exponent    uint64
-// 		expectError bool
-// 	}{
-// 		// Zero value tests
-// 		{
-// 			name:        "zero value is valid",
-// 			value:       "0",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		// Positive boundary tests
-// 		{
-// 			name:        "positive value at max boundary (1e+40)",
-// 			value:       "1e+40",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "positive value above max boundary (1e+41)",
-// 			value:       "1e+41",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 		// Negative boundary tests
-// 		{
-// 			name:        "negative value at min boundary (-1e+40)",
-// 			value:       "-1e+40",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "negative value below min boundary (-1e+41)",
-// 			value:       "-1e+41",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 		// Precision boundary tests
-// 		{
-// 			name:        "value at min precision boundary (1e-40)",
-// 			value:       "1e-40",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:        "value below min precision boundary (1e-41)",
-// 			value:       "1e-41",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 		// Normal value tests
-// 		{
-// 			name:        "normal decimal",
-// 			value:       "123.456",
-// 			exponent:    40,
-// 			expectError: false,
-// 		},
-// 		// Extreme value tests
-// 		{
-// 			name:        "extremely large value",
-// 			value:       "1e+100000",
-// 			exponent:    40,
-// 			expectError: true,
-// 		},
-// 	}
-
-// 	topicId := s.CreateOneTopic(10800)
-
-// 	for _, tc := range testCases {
-// 		s.Run(tc.name, func() {
-// 			// Set params with test exponent
-// 			params := types.DefaultParams()
-// 			err := s.emissionsKeeper.SetParams(s.ctx, params)
-// 			s.Require().NoError(err)
-
-// 			value, err := alloraMath.NewDecFromString(tc.value)
-// 			s.Require().NoError(err, "Error creating decimal from string")
-
-// 			// Create value bundle with populated arrays
-// 			valueBundle := &types.ValueBundle{
-// 				Reputer: s.addrsStr[0],
-// 				ReputerRequestNonce: &types.ReputerRequestNonce{
-// 					ReputerNonce: &types.Nonce{BlockHeight: 100},
-// 				},
-// 				TopicId:       topicId,
-// 				CombinedValue: value,
-// 				ExtraData:     []byte("data"),
-// 				// Add single entries to each array with the same test value
-// 				InfererValues: []*types.WorkerAttributedValue{
-// 					{
-// 						Worker: s.addrsStr[1],
-// 						Value:  value,
-// 					},
-// 				},
-// 				ForecasterValues: []*types.WorkerAttributedValue{
-// 					{
-// 						Worker: s.addrsStr[2],
-// 						Value:  value,
-// 					},
-// 				},
-// 				NaiveValue: value,
-// 				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-// 					{
-// 						Worker: s.addrsStr[1],
-// 						Value:  value,
-// 					},
-// 				},
-// 				OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-// 					{
-// 						Worker: s.addrsStr[2],
-// 						Value:  value,
-// 					},
-// 				},
-// 				OneInForecasterValues: []*types.WorkerAttributedValue{
-// 					{
-// 						Worker: s.addrsStr[2],
-// 						Value:  value,
-// 					},
-// 				},
-// 				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
-// 					{
-// 						Forecaster: s.addrsStr[2],
-// 						OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-// 							{
-// 								Worker: s.addrsStr[1],
-// 								Value:  value,
-// 							},
-// 						},
-// 					},
-// 				},
-// 			}
-
-// 			// Sign the value bundle
-// 			signature := s.signValueBundle(valueBundle, s.privKeys[0])
-
-// 			// Create reputer value bundle
-// 			reputerValueBundle := types.ReputerValueBundle{
-// 				ValueBundle: valueBundle,
-// 				Signature:   signature,
-// 				Pubkey:      s.pubKeyHexStr[0],
-// 			}
-
-// 			// Try to insert the reputer loss
-// 			err = s.emissionsKeeper.InsertReputerLoss(s.ctx, topicId, reputerValueBundle)
-
-// 			if tc.expectError {
-// 				s.Require().Error(err, "Expected insertion error for value %s", tc.value)
-// 			} else {
-// 				s.Require().NoError(err, "Expected no insertion error for value %s", tc.value)
-// 			}
-// 		})
-// 	}
-// }
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			result, err := s.emissionsKeeper.BlockWithinWorkerSubmissionWindowOfNonce(
+				tt.topic,
+				tt.nonce,
+				tt.blockHeight,
+			)
+			if tt.expectedErr != nil {
+				s.Require().Error(err)
+				s.Require().ErrorIs(err, tt.expectedErr, tt.description)
+			} else {
+				s.Require().NoError(err)
+				s.Require().Equal(tt.expectedInWindow, result, tt.description)
+			}
+		})
+	}
+}

@@ -62,7 +62,10 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
-	if !ms.k.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
+	withinWindow, err := ms.k.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	if err != nil {
+		return nil, err
+	} else if !withinWindow {
 		return nil, errorsmod.Wrapf(
 			types.ErrReputerNonceWindowNotAvailable,
 			"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",

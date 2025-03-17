@@ -89,14 +89,9 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					continue
 				}
 				for _, nonce := range nonces.Nonces {
-					// Skip rest of logic if the worker submission window is still open (i.e. don't close the window yet)
-					// Note: worker window exclusive of the end block height so we ensure the window is closed at this point.
-					if am.keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
-						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Worker window still open for topic: %d, nonce: %v", blockHeight, topicId, nonce))
-						continue
-					}
+					// No need to validate blockHeight boundaries - we accept submissions until this block.
 					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
-					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
+					err = allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
 					if err != nil {
 						sdkCtx.Logger().Info(fmt.Sprintf("Error closing worker nonce, proactively fulfilling: %s", err.Error()))
 						// Proactively close the nonce
