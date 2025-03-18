@@ -355,6 +355,7 @@ For workers, the submission window is defined at the topic level, as the blocks 
 
 For reputers, the submission window starts at `(nonce.BlockHeight + topic.GroundTruthLag)` and it lasts 1 `topic.EpochLength` + any remaining additional lag until end of epoch, only applying when `topic.GroundTruthLag` and `topic.EpochLength` are not multiples, and calculated as `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`.
 
+Both windows are inclusive of start and end boundaries.
 
 ## References
 
