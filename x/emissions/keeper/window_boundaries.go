@@ -14,13 +14,13 @@ func BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, nonce types.Non
 		return false, errorsmod.Wrap(types.ErrInvalidValue, "worker submission window cannot be 0")
 	}
 	lowerBound := nonce.BlockHeight
-	upperBound := nonce.BlockHeight + topic.WorkerSubmissionWindow
-	if math.MaxInt64-lowerBound < topic.WorkerSubmissionWindow {
+	if lowerBound > math.MaxInt64-topic.WorkerSubmissionWindow {
 		return false, errorsmod.Wrapf(types.ErrInvalidValue,
 			"nonce block height %d is too high, adding window %d would overflow",
 			nonce.BlockHeight,
 			topic.WorkerSubmissionWindow)
 	}
+	upperBound := nonce.BlockHeight + topic.WorkerSubmissionWindow
 	return lowerBound <= blockHeight && blockHeight <= upperBound, nil
 }
 
@@ -36,14 +36,13 @@ func BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.Re
 	revealedGroundTruthBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
 
 	// Allow 1 EpochLength + any extra lag as defined above.
-	lowerBound := revealedGroundTruthBlock
-	upperBound := revealedGroundTruthBlock + extraLag + topic.EpochLength
-
-	if math.MaxInt64-lowerBound < topic.WorkerSubmissionWindow {
+	if revealedGroundTruthBlock > math.MaxInt64-(extraLag+topic.EpochLength) {
 		return false, errorsmod.Wrapf(types.ErrInvalidValue,
 			"nonce block height %d is too high, adding window %d would overflow",
 			nonce.ReputerNonce.BlockHeight,
 			topic.WorkerSubmissionWindow)
 	}
+	lowerBound := revealedGroundTruthBlock
+	upperBound := revealedGroundTruthBlock + extraLag + topic.EpochLength
 	return lowerBound <= blockHeight && blockHeight <= upperBound, nil
 }
