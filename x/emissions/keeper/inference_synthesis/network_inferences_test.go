@@ -203,6 +203,63 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		}
 	}
 
+	s.Require().Len(valueBundle.OneOutInfererForecasterValues, 3)
+	for _, oneOutInfererForecasterValue := range valueBundle.OneOutInfererForecasterValues {
+		switch oneOutInfererForecasterValue.Forecaster {
+		case forecaster0:
+			for _, oneOutInfererValue := range oneOutInfererForecasterValue.OneOutInfererValues {
+				switch oneOutInfererValue.Worker {
+				case inferer0:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_0_oneout_0").String())
+				case inferer1:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_0_oneout_1").String())
+				case inferer2:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_0_oneout_2").String())
+				case inferer3:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_0_oneout_3").String())
+				case inferer4:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_0_oneout_4").String())
+				default:
+					require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
+				}
+			}
+		case forecaster1:
+			for _, oneOutInfererValue := range oneOutInfererForecasterValue.OneOutInfererValues {
+				switch oneOutInfererValue.Worker {
+				case inferer0:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_1_oneout_0").String())
+				case inferer1:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_1_oneout_1").String())
+				case inferer2:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_1_oneout_2").String())
+				case inferer3:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_1_oneout_3").String())
+				case inferer4:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_1_oneout_4").String())
+				default:
+					require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
+				}
+			}
+		case forecaster2:
+			for _, oneOutInfererValue := range oneOutInfererForecasterValue.OneOutInfererValues {
+				switch oneOutInfererValue.Worker {
+				case inferer0:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_2_oneout_0").String())
+				case inferer1:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_2_oneout_1").String())
+				case inferer2:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_2_oneout_2").String())
+				case inferer3:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_2_oneout_3").String())
+				case inferer4:
+					testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("forecast_implied_inference_2_oneout_4").String())
+				default:
+					require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
+				}
+			}
+		}
+	}
+
 	s.Require().Len(valueBundle.OneOutInfererValues, 5)
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch oneOutInfererValue.Worker {
