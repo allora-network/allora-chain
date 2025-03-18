@@ -54,3 +54,5 @@ test/fuzz/.config.json
 
 allora.log
 
+**/__debug*
+
