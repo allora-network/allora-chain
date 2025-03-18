@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"math"
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
@@ -3994,47 +3993,6 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 	}
 
 	return nil
-}
-
-// Return true if the nonce is within the worker submission window for the topic
-// Inclusive of the start block height and of the end block height.
-func (k *Keeper) BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, nonce types.Nonce, blockHeight int64) (bool, error) {
-	if topic.WorkerSubmissionWindow == 0 {
-		return false, errorsmod.Wrap(types.ErrInvalidValue, "worker submission window cannot be 0")
-	}
-	lowerBound := nonce.BlockHeight
-	upperBound := nonce.BlockHeight + topic.WorkerSubmissionWindow
-	if math.MaxInt64-lowerBound < topic.WorkerSubmissionWindow {
-		return false, errorsmod.Wrapf(types.ErrInvalidValue,
-			"nonce block height %d is too high, adding window %d would overflow",
-			nonce.BlockHeight,
-			topic.WorkerSubmissionWindow)
-	}
-	return lowerBound <= blockHeight && blockHeight <= upperBound, nil
-}
-
-// Return true if the nonce is within the reputer submission window for the topic
-// Inclusive of the start block height and of the end block height
-func (k *Keeper) BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.ReputerRequestNonce, blockHeight int64) (bool, error) {
-	// extraLag is the difference between the point at which the gt_lag is revealed and the end of epoch.
-	extraLag := topic.GroundTruthLag % topic.EpochLength
-	if extraLag != 0 {
-		extraLag = topic.EpochLength - extraLag
-	}
-	// The block at which ground truth is revealed
-	revealedGroundTruthBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
-
-	// Allow 1 EpochLength + any extra lag as defined above.
-	lowerBound := revealedGroundTruthBlock
-	upperBound := revealedGroundTruthBlock + extraLag + topic.EpochLength
-
-	if math.MaxInt64-lowerBound < topic.WorkerSubmissionWindow {
-		return false, errorsmod.Wrapf(types.ErrInvalidValue,
-			"nonce block height %d is too high, adding window %d would overflow",
-			nonce.ReputerNonce.BlockHeight,
-			topic.WorkerSubmissionWindow)
-	}
-	return lowerBound <= blockHeight && blockHeight <= upperBound, nil
 }
 
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {

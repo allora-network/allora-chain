@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -62,7 +63,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
-	withinWindow, err := ms.k.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	withinWindow, err := keeper.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
 	if err != nil {
 		return nil, err
 	} else if !withinWindow {
