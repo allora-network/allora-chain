@@ -116,7 +116,7 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 		return errors.Wrap(err, "failed to check if topic exists")
 	}
 	if !topicExists {
-		return nil
+		return types.ErrTopicDoesNotExist
 	}
 
 	// Check if this topic is activated or not
@@ -191,22 +191,22 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	ctx context.Context,
 	topicId TopicId,
 	block BlockHeight,
-) (bool, error) {
+) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return false, err
+		return err
 	}
 	topicIdsActiveAtBlock, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
-		return false, err
+		return err
 	}
 	existingActiveTopics := topicIdsActiveAtBlock.TopicIds
 
 	// If the topic is already active at the block, no op
 	for _, id := range existingActiveTopics {
 		if id == topicId {
-			return false, nil
+			return types.ErrTopicAlreadyActive
 		}
 	}
 
@@ -215,21 +215,21 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 		// Remove the topic with the lowest weight
 		lowestWeight, _, err := k.GetLowestActiveTopicWeightAtBlock(ctx, block)
 		if err != nil {
-			return false, err
+			return err
 		}
 
 		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
 		if err != nil {
-			return false, err
+			return err
 		}
 
 		if weight.Lt(lowestWeight.Weight) {
 			sdkCtx.Logger().Warn(fmt.Sprintf("Topic %d cannot be activated due to less than lowest weight at block %d", topicId, block))
-			return false, nil
+			return types.ErrTopicCannotBeActivated
 		}
 		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId)
 		if err != nil {
-			return false, err
+			return err
 		}
 
 		// Remove the lowest weight topic from the active topics at the block
@@ -246,9 +246,9 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	newActiveTopicIds := types.TopicIds{TopicIds: existingActiveTopics}
 	err = k.SetBlockToActiveTopics(ctx, block, newActiveTopicIds)
 	if err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
 // Set a topic to active if the topic exists, else does nothing
@@ -279,6 +279,10 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 	epochEndBlock := currentBlock + topic.EpochLength
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
+	if errors.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
+		sdkCtx.Logger().Info(fmt.Sprintf("Failed to add topic at next epoch %d, %d, %v", topicId, epochEndBlock, err))
+		return nil
+	}
 	if err != nil {
 		return errors.Wrap(err, "failed to activate topic and reset lowest weight at block")
 	}
@@ -339,7 +343,10 @@ func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) 
 	}
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if err != nil {
+	if errors.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
+		sdkCtx.Logger().Info(fmt.Sprintf("Failed to add topic at next epoch %d, %d, %v", topicId, epochEndBlock, err))
+		return nil
+	} else if err != nil {
 		return errors.Wrap(err, "failed to activate topic and reset lowest weight at block")
 	}
 
@@ -375,14 +382,9 @@ func (k *Keeper) removeCurrentTopicFromBlock(ctx context.Context, topicId TopicI
 func (k *Keeper) activateTopicAndResetLowestWeightAtBlock(ctx context.Context, topicId TopicId, epochEndBlock BlockHeight) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Add to next epoch end block if greater than lowest weight
-	isAdded, err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
+	err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
 	if err != nil {
-		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to add topic at next epoch %d, %d", topicId, epochEndBlock))
 		return errors.Wrap(err, "failed to add topic to active set respecting limits without min weight reset")
-	}
-	if !isAdded {
-		sdkCtx.Logger().Info(fmt.Sprintf("Failed to add topic at next epoch %d, %d", topicId, epochEndBlock))
-		return nil
 	}
 
 	err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId, epochEndBlock)
