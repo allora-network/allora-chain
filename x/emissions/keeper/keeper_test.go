@@ -3605,6 +3605,331 @@ func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
 	s.Require().Empty(nonces.Nonces)
 }
 
+// TestActiveTopicStakeRemoval tests that when a stake is removed from an active topic,
+// it correctly updates the stake
+func (s *KeeperTestSuite) TestActiveTopicStakeRemoval() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := s.addrs[0].String()
+	stakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+
+	// Create a topic and activate it
+	topic := s.mockTopic()
+	topic.Id = topicId
+	topic.EpochLength = 100
+	topic.WorkerSubmissionWindow = 100 // Make sure WorkerSubmissionWindow matches EpochLength to pass validation
+	err = keeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+	err = keeper.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Verify the topic is active
+	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(isActive, "Topic should be active")
+
+	// Add some stake to the topic
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	// Verify the stake was added correctly
+	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(stakeAmount, topicStake, "Topic stake should match the added amount")
+
+	// Setup for stake removal
+	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+
+	// Remove stake
+	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	// Check that the stake was removed correctly
+	topicStake, err = keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
+}
+
+// TestDelegateStakeRemoval tests that when a delegate stake is removed,
+// it correctly updates the stake
+func (s *KeeperTestSuite) TestDelegateStakeRemoval() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := s.addrsStr[1]
+	delegatorAddr := s.addrsStr[0]
+	stakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+
+	// Create a topic and activate it
+	topic := s.mockTopic()
+	topic.Id = topicId
+	topic.EpochLength = 100
+	topic.WorkerSubmissionWindow = 100 // Make sure WorkerSubmissionWindow matches EpochLength to pass validation
+	err = keeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+	err = keeper.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Verify the topic is active
+	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(isActive, "Topic should be active")
+
+	// Add some delegate stake to the topic
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	// Verify the stake was added correctly
+	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(stakeAmount, topicStake, "Topic stake should match the added amount")
+
+	// Setup for delegate stake removal
+	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+		TopicId:               topicId,
+		Delegator:             delegatorAddr,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+
+	// Remove delegate stake
+	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	// Check that the stake was removed correctly
+	topicStake, err = keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
+}
+
+// TestInactiveTopicStakeRemoval tests that when a stake is removed from an inactive topic,
+// it still correctly updates the stake but does not affect the total weight calculations
+func (s *KeeperTestSuite) TestInactiveTopicStakeRemoval() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := s.addrs[0].String()
+	stakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+
+	// Create a topic but do NOT activate it
+	topic := s.mockTopic()
+	topic.Id = topicId
+	topic.EpochLength = 100
+	topic.WorkerSubmissionWindow = 100 // Make sure WorkerSubmissionWindow matches EpochLength to pass validation
+	err = keeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+
+	// Verify the topic is not active
+	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(isActive, "Topic should not be active")
+
+	// Add some stake to the topic
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	// Verify the stake was added correctly
+	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(stakeAmount, topicStake, "Topic stake should match the added amount")
+
+	// Setup for stake removal
+	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+
+	// Remove stake first (this should work even for inactive topics)
+	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	// Check that the stake was removed correctly
+	topicStake, err = keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
+}
+
+// TestTopicWeightRecalculationAfterStakeRemoval tests that when a stake is removed,
+// the topic weight is recalculated correctly based on the remaining stake
+func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := s.addrs[0].String()
+	stakeAmount := cosmosMath.NewInt(1000)
+	feeRevenue := cosmosMath.NewInt(100)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+
+	// Create and activate topic
+	topic := s.mockTopic()
+	topic.Id = topicId
+	topic.EpochLength = 100
+	topic.WorkerSubmissionWindow = 100
+	err = keeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+	err = keeper.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Add stake and fee revenue
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+	s.Require().NoError(err)
+
+	// Get initial weight and set it
+	initialWeight, _, err := keeper.GetCurrentTopicWeight(
+		ctx,
+		topicId,
+		topic.EpochLength,
+		moduleParams.TopicRewardAlpha,
+		moduleParams.TopicRewardStakeImportance,
+		moduleParams.TopicRewardFeeRevenueImportance,
+		moduleParams.BlocksPerMonth,
+	)
+	s.Require().NoError(err)
+	err = keeper.SetPreviousTopicWeight(ctx, topicId, initialWeight)
+	s.Require().NoError(err)
+
+	// Remove half the stake
+	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount.QuoRaw(2),
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount.QuoRaw(2))
+	s.Require().NoError(err)
+
+	// Verify weight and stake changes
+	newWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(noPrior, "Should still have a prior weight")
+	s.Require().True(newWeight.Lt(initialWeight), "New weight should be less than initial weight")
+
+	remainingStake, err := keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(stakeAmount.QuoRaw(2), remainingStake, "Remaining stake should be half of initial stake")
+}
+
+// TestTopicWeightRecalculationWithMultipleTopics tests that when stakes are removed,
+// the weights of multiple topics are recalculated correctly and the total sum is updated
+func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	reputerAddr := s.addrs[0].String()
+
+	// Set up test parameters
+	stakeAmount1 := cosmosMath.NewInt(1000)
+	stakeAmount2 := cosmosMath.NewInt(2000)
+	feeRevenue1 := cosmosMath.NewInt(100)
+	feeRevenue2 := cosmosMath.NewInt(200)
+	topicId1, topicId2 := uint64(1), uint64(2)
+
+	// Set up params
+	params := types.DefaultParams()
+	params.MaxActiveTopicsPerBlock = uint64(5)
+	params.MinTopicWeight = alloraMath.MustNewDecFromString("1")
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Create and activate both topics
+	for id, epochLength := range map[uint64]int64{topicId1: 100, topicId2: 100} {
+		topic := s.mockTopic()
+		topic.Id = id
+		topic.EpochLength = epochLength
+		topic.WorkerSubmissionWindow = epochLength
+		err = keeper.SetTopic(ctx, id, topic)
+		s.Require().NoError(err)
+		err = keeper.ActivateTopic(ctx, id)
+		s.Require().NoError(err)
+	}
+
+	// Add stake and fee revenue to both topics
+	err = keeper.AddReputerStake(ctx, topicId1, reputerAddr, stakeAmount1)
+	s.Require().NoError(err)
+	err = keeper.AddReputerStake(ctx, topicId2, reputerAddr, stakeAmount2)
+	s.Require().NoError(err)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId1, feeRevenue1)
+	s.Require().NoError(err)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId2, feeRevenue2)
+	s.Require().NoError(err)
+
+	// Calculate and set initial weights for both topics
+	for id := range map[uint64]struct{}{topicId1: {}, topicId2: {}} {
+		weight, _, err := keeper.GetCurrentTopicWeight(
+			ctx,
+			id,
+			100, // epochLength
+			params.TopicRewardAlpha,
+			params.TopicRewardStakeImportance,
+			params.TopicRewardFeeRevenueImportance,
+			params.BlocksPerMonth,
+		)
+		s.Require().NoError(err)
+		s.Require().True(weight.Gt(params.MinTopicWeight), "Initial weight should be greater than minimum weight")
+		err = keeper.SetPreviousTopicWeight(ctx, id, weight)
+		s.Require().NoError(err)
+	}
+
+	// Get total sum before stake removal
+	totalSumBefore, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+
+	// Remove stake from first topic
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + params.RemoveStakeDelayWindow
+	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId1,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount1,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+	err = keeper.RemoveReputerStake(ctx, endBlock, topicId1, reputerAddr, stakeAmount1)
+	s.Require().NoError(err)
+
+	// Verify total sum was updated correctly
+	totalSumAfter, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(totalSumAfter.Lt(totalSumBefore), "Total sum should decrease after stake removal")
+}
+
 func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicId() {
 	k := s.emissionsKeeper
 	ctx := s.ctx
@@ -5867,4 +6192,83 @@ func (s *KeeperTestSuite) TestMonthlyRewards() {
 	topicRewards, err = k.GetMonthlyTopicRewards(ctx)
 	s.Require().NoError(err)
 	s.Require().True(topicRewards.IsZero(), "Monthly topic rewards should be zero after reset")
+}
+
+// TestRemoveTopicFromPreviousTopicWeights tests that when a topic is removed from previous topic weights,
+// its weight is correctly subtracted from the total sum while preserving the weight itself
+func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := s.addrs[0].String()
+	stakeAmount := cosmosMath.NewInt(1000)
+	feeRevenue := cosmosMath.NewInt(100)
+
+	// Set up params
+	params := types.DefaultParams()
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Create and activate topic
+	topic := s.mockTopic()
+	topic.Id = topicId
+	topic.EpochLength = 100
+	topic.WorkerSubmissionWindow = 100
+	err = keeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+	err = keeper.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Add stake and fee revenue
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+	s.Require().NoError(err)
+
+	// Calculate and set initial weight
+	initialWeight, _, err := keeper.GetCurrentTopicWeight(
+		ctx,
+		topicId,
+		topic.EpochLength,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
+	)
+	s.Require().NoError(err)
+	err = keeper.SetPreviousTopicWeight(ctx, topicId, initialWeight)
+	s.Require().NoError(err)
+
+	// Get initial total sum
+	initialTotalSum, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(initialTotalSum.Equal(initialWeight), "Initial total sum should equal initial weight")
+
+	// Remove topic from previous weights
+	err = keeper.RemoveTopicFromPreviousTopicWeights(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Verify total sum is updated
+	newTotalSum, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(newTotalSum.IsZero(), "Total sum should be zero after removal")
+
+	// Verify the topic's weight is still preserved
+	topicWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(noPrior, "Topic weight should still exist")
+	s.Require().True(topicWeight.Equal(initialWeight), "Topic weight should remain unchanged")
+
+	// Test removing a topic that has no prior weight
+	nonExistentTopicId := uint64(999)
+	err = keeper.RemoveTopicFromPreviousTopicWeights(ctx, nonExistentTopicId)
+	s.Require().NoError(err, "Removing non-existent topic should not error")
+
+	// Verify total sum remains unchanged after removing non-existent topic
+	finalTotalSum, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }

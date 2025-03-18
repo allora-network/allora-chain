@@ -2342,6 +2342,11 @@ func (k *Keeper) RemoveReputerStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
 
+	// Calculate new weight and update totalSumPreviousTopicWeights
+	if err := k.updateTopicWeightAfterStakeChange(ctx, topicId); err != nil {
+		return err
+	}
+
 	// remove stake withdrawal information
 	err = k.DeleteStakeRemoval(ctx, blockHeight, topicId, reputer)
 	if err != nil {
@@ -2494,6 +2499,12 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.SetTotalStake(ctx, totalStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
+
+	// Calculate new weight and update totalSumPreviousTopicWeights
+	if err := k.updateTopicWeightAfterStakeChange(ctx, topicId); err != nil {
+		return err
+	}
+
 	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalBlockHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
@@ -3053,6 +3064,7 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (t
 }
 
 // Set the previous weight during rewards calculation for a topic
+// This function also updates the total sum of previous topic weights
 func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight alloraMath.Dec) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -4668,4 +4680,58 @@ func (k Keeper) ResetMonthlyRewards(ctx context.Context) error {
 		return err
 	}
 	return k.monthlyTopicRewards.Set(ctx, cosmosMath.ZeroInt())
+}
+
+// updateTopicWeightAfterStakeChange updates the topic weight and total sum of previous topic weights
+// after a stake change occurs, if there is no prior topic weight. This is used by both RemoveReputerStake and RemoveDelegateStake.
+func (k *Keeper) updateTopicWeightAfterStakeChange(
+	ctx context.Context,
+	topicId TopicId,
+) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Get the current topic weight before updating stake
+	_, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting previous topic weight")
+	}
+
+	// If there is no prior topic weight, do nothing
+	if noPrior {
+		return nil
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting topic")
+	}
+
+	// Get params for weight calculation
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+
+	// Calculate the new weight based on updated stake
+	newWeight, _, err := k.GetCurrentTopicWeight(
+		ctx,
+		topicId,
+		topic.EpochLength,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
+	)
+	if err != nil {
+		return errorsmod.Wrap(err, "error calculating new topic weight")
+	}
+
+	// Update previous topic weight and total sum
+	if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
+		return errorsmod.Wrapf(err, "Setting previous topic weight failed")
+	}
+
+	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
+
+	return nil
 }
