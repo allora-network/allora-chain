@@ -4013,7 +4013,7 @@ func (k *Keeper) BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, non
 	return lowerBound <= blockHeight && blockHeight <= upperBound, nil
 }
 
-// Return true if the nonce is within the worker submission window for the topic
+// Return true if the nonce is within the reputer submission window for the topic
 // Inclusive of the start block height and of the end block height
 func (k *Keeper) BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.ReputerRequestNonce, blockHeight int64) (bool, error) {
 	// extraLag is the difference between the point at which the gt_lag is revealed and the end of epoch.
