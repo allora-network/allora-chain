@@ -345,7 +345,6 @@ func getTopicWeight(
 	if !feeRevenueDec.Equal(alloraMath.ZeroDec()) {
 		targetWeight, err := emissionsKeeper.GetTargetWeight(
 			topicStakeDec,
-			topicEpochLength,
 			feeRevenueDec,
 			stakeImportance,
 			feeImportance,

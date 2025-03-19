@@ -31,6 +31,8 @@ func mockTopic(s *RewardsTestSuite) types.Topic {
 	}
 }
 
+// Forces dripping of two topics, which initially has two active topics, but next round
+// leads to one of them not reaching the MinTopicWeight thus being inactivated.
 func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	ctx := s.ctx
 	maxActiveTopicsNum := uint64(2)
@@ -38,9 +40,10 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	params.BlocksPerMonth = 864000
 	params.MaxActiveTopicsPerBlock = maxActiveTopicsNum
 	params.MaxPageLimit = uint64(100)
+	params.MinTopicWeight = alloraMath.MustNewDecFromString("100")
 	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
 	params.TopicRewardStakeImportance = alloraMath.OneDec()
-	params.TopicRewardFeeRevenueImportance = alloraMath.MustNewDecFromString("1")
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
 	err := s.emissionsKeeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -67,7 +70,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	totalSumPreviousTopicWeights, err := s.emissionsKeeper.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.ZeroDec(), "Total sum of previous topic weights at start should be zero")
-	setTopicWeight(topic1.Id, 150, 10)
+	setTopicWeight(topic1.Id, 10, 10)
 	err = s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
@@ -75,9 +78,9 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 
 	totalSumPreviousTopicWeights, err = s.emissionsKeeper.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.MustNewDecFromString("0"), "Total sum of previous topic weights should still be 0 bc previous topic weight is not set")
+	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.ZeroDec(), "Total sum of previous topic weights should still be 0 bc previous topic weight is not set")
 
-	setTopicWeight(topic2.Id, 300, 10)
+	setTopicWeight(topic2.Id, 30, 10)
 	err = s.emissionsKeeper.SetTopic(ctx, topic2.Id, topic2)
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.ActivateTopic(ctx, topic2.Id)
@@ -92,12 +95,12 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	totalSumPreviousTopicWeights, err = s.emissionsKeeper.GetTotalSumPreviousTopicWeights(ctx)
 	s.T().Logf("totalSumPreviousTopicWeights: %v", totalSumPreviousTopicWeights)
 	s.Require().NoError(err)
-	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.MustNewDecFromString("0"), "Total sum of previous topic weights should not be 0 after settings topic weights")
+	s.Require().Equal(totalSumPreviousTopicWeights, alloraMath.ZeroDec(), "Total sum of previous topic weights should not be 0 after settings topic weights")
 
 	previousTopicWeights, _, err := s.emissionsKeeper.GetPreviousTopicWeight(ctx, topic1.Id)
 	s.T().Logf("topic1 previousTopicWeights: %v", previousTopicWeights)
 	s.Require().NoError(err)
-	s.Require().Equal(previousTopicWeights, alloraMath.MustNewDecFromString("0"), "Previous topic weights should still be 0 after settings topic weights")
+	s.Require().Equal(previousTopicWeights, alloraMath.ZeroDec(), "Previous topic weights should still be 0 after settings topic weights")
 
 	block = 16
 	ctx = s.ctx.WithBlockHeight(int64(block))

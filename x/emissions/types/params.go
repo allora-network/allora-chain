@@ -13,7 +13,7 @@ import (
 func DefaultParams() Params {
 	return Params{
 		Version:                             "v7",                                         // version of the protocol should be in lockstep with github release tag version
-		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),       // total weight for a topic < this => don't run inference solicatation or loss update
+		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),       // total weight for a topic < this => don't run inference solicitation or loss update
 		RequiredMinimumStake:                cosmosMath.NewInt(10000),                     // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),            // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
 		MinEpochLength:                      12,                                           // shortest number of blocks per epoch topics are allowed to set as their cadence
