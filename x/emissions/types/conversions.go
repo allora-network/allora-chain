@@ -285,8 +285,8 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 	return valueBundle, nil
 }
 
-// NewInputReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
-func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+// NewReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
+func NewReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
 	}

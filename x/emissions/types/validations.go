@@ -580,12 +580,16 @@ func (bundle *ValueBundle) Validate() error {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle inferer values cannot be nil")
 	}
 
+	inferers := make(map[string]struct{}, len(bundle.InfererValues))
+	forecasters := make(map[string]struct{}, len(bundle.ForecasterValues))
+
 	// nil values for bundle.InfererValues are interpreted to mean that there
 	// are no inferer values for this bundle, and are allowed
 	for _, infererValue := range bundle.InfererValues {
 		if err := infererValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle inferer value is invalid")
 		}
+		inferers[infererValue.Worker] = struct{}{}
 	}
 
 	// nil values for bundle.ForecasterValues are interpreted to mean that there
@@ -594,10 +598,23 @@ func (bundle *ValueBundle) Validate() error {
 		if err := forecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle forecaster value is invalid")
 		}
+		forecasters[forecasterValue.Worker] = struct{}{}
 	}
 
 	if err := ValidateDec(bundle.NaiveValue); err != nil {
 		return errors.Wrap(err, "value bundle naive value is invalid")
+	}
+
+	infererCount := len(inferers)
+	forecasterCount := len(forecasters)
+	if len(bundle.InfererValues) != infererCount ||
+		len(bundle.OneOutInfererValues) != infererCount {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle must concern same inferer set")
+	}
+	if len(bundle.ForecasterValues) != forecasterCount ||
+		len(bundle.OneOutForecasterValues) != forecasterCount ||
+		len(bundle.OneInForecasterValues) != forecasterCount {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle must concern same forecaster set")
 	}
 
 	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
@@ -605,6 +622,9 @@ func (bundle *ValueBundle) Validate() error {
 	for _, oneOutInfererValue := range bundle.OneOutInfererValues {
 		if err := oneOutInfererValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer value is invalid")
+		}
+		if _, ok := inferers[oneOutInfererValue.Worker]; !ok {
+			return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle one out inferer value not in provided inferer set")
 		}
 	}
 
@@ -614,6 +634,9 @@ func (bundle *ValueBundle) Validate() error {
 		if err := oneOutForecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out forecaster value is invalid")
 		}
+		if _, ok := forecasters[oneOutForecasterValue.Worker]; !ok {
+			return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle one out forecaster value not in provided forecaster set")
+		}
 	}
 
 	// nil values for bundle.OneInForecasterValues are interpreted to mean that there
@@ -622,6 +645,9 @@ func (bundle *ValueBundle) Validate() error {
 		if err := oneInForecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one in forecaster value is invalid")
 		}
+		if _, ok := forecasters[oneInForecasterValue.Worker]; !ok {
+			return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle one in forecaster value not in provided forecaster set")
+		}
 	}
 
 	// nil values for bundle.OneOutInfererForecasterValues are interpreted to mean that there
@@ -629,6 +655,18 @@ func (bundle *ValueBundle) Validate() error {
 	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
 		if err := oneOutInfererForecaster.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
+		}
+
+		// Check the forecaster is part of the bundle
+		if _, ok := forecasters[oneOutInfererForecaster.Forecaster]; !ok {
+			return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle one out inferer forecaster value not in provided forecaster set")
+		}
+
+		// Check the inferers are part of the bundle
+		for _, oneOutInfererValue := range oneOutInfererForecaster.OneOutInfererValues {
+			if _, ok := inferers[oneOutInfererValue.Worker]; !ok {
+				return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle one out inferer forecaster value not in provided inferer set")
+			}
 		}
 	}
 	return nil
