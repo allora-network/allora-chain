@@ -100,8 +100,13 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		NaiveValue:          alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-		OneOutInfererValues: []*types.InputWithheldWorkerAttributedValue{},
+		NaiveValue: alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		OneOutInfererValues: []*types.InputWithheldWorkerAttributedValue{
+			{
+				Worker: workerAddr.String(),
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+			},
+		},
 		OneOutForecasterValues: []*types.InputWithheldWorkerAttributedValue{
 			{
 				Worker: workerAddr.String(),

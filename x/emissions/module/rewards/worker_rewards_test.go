@@ -594,6 +594,29 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 		},
 	}
 
+	forecasterValues := []*types.WorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString("10"),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("10"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("10"),
+		},
+		{
+			Worker: s.addrs[3].String(),
+			Value:  alloraMath.MustNewDecFromString("10"),
+		},
+		{
+			Worker: s.addrs[4].String(),
+			Value:  alloraMath.MustNewDecFromString("10"),
+		},
+	}
+
 	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
@@ -670,7 +693,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 		ExtraData:                     nil,
 		CombinedValue:                 alloraMath.MustNewDecFromString("0.013481256018186383"),
 		InfererValues:                 infererValues,
-		ForecasterValues:              nil,
+		ForecasterValues:              forecasterValues,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.01344474872292"),
 		OneOutInfererValues:           oneOutInfererLosses,
 		OneOutForecasterValues:        oneOutForecasterLosses,
@@ -708,6 +731,20 @@ func mockSimpleNetworkLosses(
 		},
 	}
 
+	forecasterValues := []*types.WorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString("0.2"),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("0.3"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
+	}
 	genericLossesWithheld := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
@@ -745,7 +782,7 @@ func mockSimpleNetworkLosses(
 		ExtraData:                     nil,
 		CombinedValue:                 alloraMath.MustNewDecFromString("0.05"),
 		InfererValues:                 infererValues,
-		ForecasterValues:              nil,
+		ForecasterValues:              forecasterValues,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.05"),
 		OneOutInfererValues:           genericLossesWithheld,
 		OneOutForecasterValues:        genericLossesWithheld,

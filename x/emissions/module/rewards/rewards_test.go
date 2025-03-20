@@ -2265,7 +2265,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0116")),
 		InfererValues:                 []*types.InputWorkerAttributedValue{{Worker: s.addrsStr[worker], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0112"))}},
 		ForecasterValues:              []*types.InputWorkerAttributedValue{},
-		OneOutInfererValues:           []*types.InputWithheldWorkerAttributedValue{},
+		OneOutInfererValues:           []*types.InputWithheldWorkerAttributedValue{{Worker: s.addrsStr[worker], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0112"))}},
 		OneOutForecasterValues:        []*types.InputWithheldWorkerAttributedValue{},
 		OneInForecasterValues:         []*types.InputWorkerAttributedValue{},
 		OneOutInfererForecasterValues: nil,
