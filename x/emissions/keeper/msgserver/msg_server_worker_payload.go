@@ -142,8 +142,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 				return nil, err
 			}
 			if !isInfererRegistered {
-				return nil, errorsmod.Wrapf(err,
-					"Error forecasted inferer address is not registered in this topic")
+				sdkCtx.Logger().Info("Skipping unregistered inferer", "inferer", el.Inferer)
+				continue
 			}
 
 			notAlreadySeen := !seenInferers[el.Inferer]

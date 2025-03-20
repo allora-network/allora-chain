@@ -963,3 +963,52 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecastIncludesSelf() {
 	require.Equal(workerAddr, forecastsAtBlock.ForecastElements[0].Inferer)
 	require.Equal(otherInferer, forecastsAtBlock.ForecastElements[1].Inferer)
 }
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredForecastedInferer() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	// Set up a worker payload message and get the topic ID
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+
+	// Count the number of forecast elements before we make any changes
+	originalElementCount := len(workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements)
+	require.Greater(originalElementCount, 1, "Test needs multiple forecast elements")
+
+	// Select one of the inferers from the forecast elements to unregister
+	infererToUnregister := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[1].Inferer
+
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+
+	// Whitelist the worker for the topic so they can submit forecasts
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	// Unregister the inferer
+	unregisterMsg := &types.RemoveRegistrationRequest{
+		Sender:    infererToUnregister,
+		TopicId:   topicId,
+		IsReputer: false,
+	}
+	_, err = msgServer.RemoveRegistration(ctx, unregisterMsg)
+	require.NoError(err)
+
+	// Verify that the inferer was successfully unregistered from the topic
+	isRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, infererToUnregister)
+	require.NoError(err)
+	require.False(isRegistered, "Inferer should be unregistered")
+
+	// IMPORTANT: Verify that there are no forecasts for this topic/block at the start of the test
+	// This establishes a clean baseline to verify our test's effects
+	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
+	require.Equal(forecastsCount0, 0, "No forecasts should exist before submitting the payload")
+
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	// Set the block height context so that we're within the worker submission window
+	ctx = ctx.WithBlockHeight(blockHeight)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should succeed by skipping the unregistered inferer")
+}
