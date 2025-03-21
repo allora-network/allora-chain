@@ -3497,54 +3497,60 @@ func (s *KeeperTestSuite) TestGetTargetWeight() {
 		s.T().Fatalf("Failed to get parameters: %v", err)
 	}
 
-	dec, err := alloraMath.NewDecFromString("22.36067977499789696409173668731276")
+	// Value for full calculation
+	dec, err := alloraMath.NewDecFromString("70.71067811865475244008443621048490")
 	s.Require().NoError(err)
 
 	testCases := []struct {
-		name             string
-		topicStake       alloraMath.Dec
-		topicEpochLength int64
-		topicFeeRevenue  alloraMath.Dec
-		stakeImportance  alloraMath.Dec
-		feeImportance    alloraMath.Dec
-		want             alloraMath.Dec
-		expectError      bool
+		name            string
+		topicStake      alloraMath.Dec
+		topicFeeRevenue alloraMath.Dec
+		stakeImportance alloraMath.Dec
+		feeImportance   alloraMath.Dec
+		want            alloraMath.Dec
+		expectError     bool
 	}{
 		{
-			name:             "Basic valid inputs",
-			topicStake:       alloraMath.NewDecFromInt64(100),
-			topicEpochLength: 10,
-			topicFeeRevenue:  alloraMath.NewDecFromInt64(50),
-			stakeImportance:  params.TopicRewardStakeImportance,
-			feeImportance:    params.TopicRewardFeeRevenueImportance,
-			want:             dec,
-			expectError:      false,
+			name:            "Basic valid inputs",
+			topicStake:      alloraMath.NewDecFromInt64(100),
+			topicFeeRevenue: alloraMath.NewDecFromInt64(50),
+			stakeImportance: params.TopicRewardStakeImportance,
+			feeImportance:   params.TopicRewardFeeRevenueImportance,
+			want:            dec,
+			expectError:     false,
 		},
 		{
-			name:             "Zero epoch length",
-			topicStake:       alloraMath.NewDecFromInt64(100),
-			topicEpochLength: 0,
-			topicFeeRevenue:  alloraMath.NewDecFromInt64(50),
-			stakeImportance:  params.TopicRewardStakeImportance,
-			feeImportance:    params.TopicRewardFeeRevenueImportance,
-			want:             alloraMath.Dec{},
-			expectError:      true,
+			name:            "Zero topic Fee revenue should return stake only",
+			topicStake:      alloraMath.NewDecFromInt64(100),
+			topicFeeRevenue: alloraMath.ZeroDec(),
+			stakeImportance: params.TopicRewardStakeImportance,
+			feeImportance:   params.TopicRewardFeeRevenueImportance,
+			want:            alloraMath.ZeroDec(),
+			expectError:     false,
 		},
 		{
-			name:             "Negative stake",
-			topicStake:       alloraMath.NewDecFromInt64(-100),
-			topicEpochLength: 10,
-			topicFeeRevenue:  alloraMath.NewDecFromInt64(50),
-			stakeImportance:  params.TopicRewardStakeImportance,
-			feeImportance:    params.TopicRewardFeeRevenueImportance,
-			want:             alloraMath.Dec{},
-			expectError:      true,
+			name:            "Zero topic stake should return fee only",
+			topicStake:      alloraMath.ZeroDec(),
+			topicFeeRevenue: alloraMath.NewDecFromInt64(50),
+			stakeImportance: params.TopicRewardStakeImportance,
+			feeImportance:   params.TopicRewardFeeRevenueImportance,
+			want:            alloraMath.ZeroDec(),
+			expectError:     false,
+		},
+		{
+			name:            "Negative stake",
+			topicStake:      alloraMath.NewDecFromInt64(-100),
+			topicFeeRevenue: alloraMath.NewDecFromInt64(50),
+			stakeImportance: params.TopicRewardStakeImportance,
+			feeImportance:   params.TopicRewardFeeRevenueImportance,
+			want:            alloraMath.Dec{},
+			expectError:     true,
 		},
 	}
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			got, err := s.emissionsKeeper.GetTargetWeight(tc.topicStake, tc.topicEpochLength, tc.topicFeeRevenue, tc.stakeImportance, tc.feeImportance)
+			got, err := s.emissionsKeeper.GetTargetWeight(tc.topicStake, tc.topicFeeRevenue, tc.stakeImportance, tc.feeImportance)
 			if tc.expectError {
 				s.Require().Error(err, "Expected an error for case: %s", tc.name)
 			} else {

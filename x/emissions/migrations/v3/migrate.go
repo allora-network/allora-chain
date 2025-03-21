@@ -185,7 +185,6 @@ func MigrateTopics(
 			params.TopicRewardAlpha,
 			params.TopicRewardStakeImportance,
 			params.TopicRewardFeeRevenueImportance,
-			emissionsKeeper,
 		)
 		if err != nil {
 			topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
@@ -325,6 +324,35 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 	return nil
 }
 
+// Return the target weight of a topic
+// ^w_{t,i} = S^{μ}_{t,i} * (P/C)^{ν}_{t,i}
+// where S_{t,i} is the stake of of topic t in the last reward epoch i
+// and (P/C)_{t,i} is the fee revenue collected for performing inference per topic epoch
+// requests for topic t in the last reward epoch i
+// μ, ν are global constants with fiduciary values of 0.5 and 0.5
+func getTargetWeight(
+	topicStake alloraMath.Dec,
+	topicEpochLength int64,
+	topicFeeRevenue alloraMath.Dec,
+	stakeImportance alloraMath.Dec,
+	feeImportance alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	s, err := alloraMath.Pow(topicStake, stakeImportance)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	c := alloraMath.NewDecFromInt64(topicEpochLength)
+	feePerEpoch, err := topicFeeRevenue.Quo(c)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	p, err := alloraMath.Pow(feePerEpoch, feeImportance)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return s.Mul(p)
+}
+
 func getTopicWeight(
 	feeRevenue, stake cosmosMath.Int,
 	previousWeight alloraMath.Dec,
@@ -332,7 +360,6 @@ func getTopicWeight(
 	topicRewardAlpha alloraMath.Dec,
 	stakeImportance alloraMath.Dec,
 	feeImportance alloraMath.Dec,
-	emissionsKeeper keeper.Keeper,
 ) (alloraMath.Dec, error) {
 	feeRevenueDec, err := alloraMath.NewDecFromSdkInt(feeRevenue)
 	if err != nil {
@@ -343,7 +370,7 @@ func getTopicWeight(
 		return alloraMath.ZeroDec(), err
 	}
 	if !feeRevenueDec.Equal(alloraMath.ZeroDec()) {
-		targetWeight, err := emissionsKeeper.GetTargetWeight(
+		targetWeight, err := getTargetWeight(
 			topicStakeDec,
 			topicEpochLength,
 			feeRevenueDec,

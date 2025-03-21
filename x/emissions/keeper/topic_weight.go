@@ -19,7 +19,6 @@ import (
 // μ, ν are global constants with fiduciary values of 0.5 and 0.5
 func (k *Keeper) GetTargetWeight(
 	topicStake alloraMath.Dec,
-	topicEpochLength int64,
 	topicFeeRevenue alloraMath.Dec,
 	stakeImportance alloraMath.Dec,
 	feeImportance alloraMath.Dec,
@@ -28,12 +27,7 @@ func (k *Keeper) GetTargetWeight(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	c := alloraMath.NewDecFromInt64(topicEpochLength)
-	feePerEpoch, err := topicFeeRevenue.Quo(c)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	p, err := alloraMath.Pow(feePerEpoch, feeImportance)
+	p, err := alloraMath.Pow(topicFeeRevenue, feeImportance)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -73,7 +67,6 @@ func (k *Keeper) GetCurrentTopicWeight(
 	if !topicFeeRevenueDec.Equal(alloraMath.ZeroDec()) {
 		targetWeight, err := k.GetTargetWeight(
 			topicStakeDec,
-			topicEpochLength,
 			topicFeeRevenueDec,
 			stakeImportance,
 			feeImportance,
