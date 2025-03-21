@@ -1010,5 +1010,5 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredF
 	ctx = ctx.WithBlockHeight(blockHeight)
 
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.NoError(err, "InsertWorkerPayload should succeed by skipping the unregistered inferer")
+	require.NoError(err, "InsertWorkerPayload should succeed with an unregistered inferer")
 }
