@@ -92,7 +92,7 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
-	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(15)
+	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(40)
 
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Codec,
