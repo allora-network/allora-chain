@@ -15,6 +15,7 @@ builds:
     tags:
       - netgo
       - ledger
+      - pebbledb
 
     ldflags:
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger
