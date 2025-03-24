@@ -65,7 +65,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Note: this is exclusive of the end block height
 	withinWindow, err := keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
 	if err != nil {
 		return nil, err
