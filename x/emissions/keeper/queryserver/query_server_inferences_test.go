@@ -470,6 +470,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		keeper,
 		topicId,
 		&inferenceNonce.BlockHeight,
+		&inferences,
 		false,
 	)
 	require.NoError(err)

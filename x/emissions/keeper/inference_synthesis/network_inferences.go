@@ -4,7 +4,6 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -26,8 +25,16 @@ func GetNetworkInferences(
 	k emissionskeeper.Keeper,
 	topicId TopicId,
 	inferencesNonce *BlockHeight,
+	inferences *emissions.Inferences,
 	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
+	if inferencesNonce == nil {
+		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences nonce provided")
+	}
+	if inferences == nil {
+		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
+	}
+
 	// Enable gradient cache for this function's scope
 	enableGradientCache()
 
@@ -40,10 +47,10 @@ func GetNetworkInferences(
 
 	// Retrieve the requested inferences (either latest or specified, depending on inferencesNonce)
 	// If outlierResistant is true, outliers will be filtered out before calculating the network inference
-	inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce, outlierResistant)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "while getting inferences")
-	}
+	// inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce, outlierResistant)
+	// if err != nil {
+	// 	return nil, errorsmod.Wrap(err, "while getting inferences")
+	// }
 
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:
@@ -51,45 +58,18 @@ func GetNetworkInferences(
 		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 		if errors.Is(err, emissions.ErrNotFound) {
 			// 2a. If we have no network losses, fallback to using the median of the inferences.
-			return calcNetworkInferencesMultipleByMedian(ctx, topicId, inferences, inferenceBlockHeight)
+			return calcNetworkInferencesMultipleByMedian(ctx, topicId, inferences, *inferencesNonce)
 		} else if err != nil {
 			return nil, errorsmod.Wrap(err, "while getting latest network loss bundle")
 		}
 
 		// 2b. Otherwise, calculate the normal way.
-		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, inferenceBlockHeight, networkLosses)
+		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, *inferencesNonce, networkLosses)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
-		return calcNetworkInferencesSingle(ctx, inferenceBlockHeight, topicId, inferences), nil
+		return calcNetworkInferencesSingle(ctx, *inferencesNonce, topicId, inferences), nil
 	} else {
 		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
-	}
-}
-
-// Decide whether to use the latest inferences or inferences at a specific block height
-func getRequestedInferences(
-	ctx sdk.Context,
-	k emissionskeeper.Keeper,
-	topicId TopicId,
-	inferencesNonce *BlockHeight,
-	outlierResistant bool,
-) (*emissions.Inferences, int64, error) {
-	if inferencesNonce == nil {
-		inferences, inferenceBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId, outlierResistant)
-		if err != nil {
-			return nil, 0, err
-		} else if len(inferences.Inferences) == 0 {
-			return nil, 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at latest block", topicId)
-		}
-		return inferences, inferenceBlockHeight, nil
-	} else {
-		inferences, err := k.GetInferencesAtBlock(ctx, topicId, *inferencesNonce, outlierResistant)
-		if err != nil {
-			return nil, 0, err
-		} else if len(inferences.Inferences) == 0 {
-			return nil, 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, *inferencesNonce)
-		}
-		return inferences, *inferencesNonce, nil
 	}
 }
 

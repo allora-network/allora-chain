@@ -112,7 +112,7 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{NetworkInferences: outlierResistantNetworkInferences}, nil
 }
 
-// Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
+// Return full set of inferences in I_i from the chain
 func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emissionstypes.GetLatestNetworkInferencesRequest) (_ *emissionstypes.GetLatestNetworkInferencesResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestNetworkInferences", time.Now(), &err)
 
