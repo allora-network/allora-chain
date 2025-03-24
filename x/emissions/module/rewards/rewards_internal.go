@@ -294,7 +294,7 @@ func GetStakeWeightedLossMatrix(
 
 			absoluteDifference := distance
 			if distance.IsNegative() {
-				absoluteDifference, err = distance.Mul(alloraMath.MustNewDecFromString("-1"))
+				absoluteDifference, err = distance.Abs()
 				if err != nil {
 					return nil, nil, err
 				}
