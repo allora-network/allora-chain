@@ -45,7 +45,7 @@ if [ ! -f $INIT_FLAG ]; then
 
     #* Import allora account, priv_validator_key.json and node_key.json from the vault here
     #* Here create a new allorad account
-    $BINARY --home $APP_HOME keys add ${MONIKER} --keyring-backend $KEYRING_BACKEND > $APP_HOME/${MONIKER}.account_info 2>&1
+    echo "y" | $BINARY --home $APP_HOME keys add ${MONIKER} --keyring-backend $KEYRING_BACKEND > $APP_HOME/${MONIKER}.account_info 2>&1
 
     #* Adjust configs
     #* Enable prometheus metrics
