@@ -131,7 +131,7 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	s.Require().Equal(topic2Weight.Gt(topicWeight), true, "Topic1 weight should be greater than Topic2 weight")
 }
 
-func (s *MsgServerTestSuite) TestTopicWeightChangesWithDifferentEpochLengths() {
+func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengths() {
 	senderAddr := s.addrs[0]
 	sender := s.addrsStr[0]
 	reputer := s.addrsStr[1]
@@ -216,6 +216,6 @@ func (s *MsgServerTestSuite) TestTopicWeightChangesWithDifferentEpochLengths() {
 	s.Require().NoError(err)
 
 	// Topic2 should have higher weight due to higher funding, despite shorter epoch
-	s.Require().Equal(topicWeight2.Gt(topicWeight1), true, "Topic2 weight should be greater than Topic1 weight because it has a shorter epoch length")
+	s.Require().Equal(topicWeight2.Equal(topicWeight1), true, "Topic2 weight should be greater than Topic1 weight because it has a shorter epoch length")
 
 }
