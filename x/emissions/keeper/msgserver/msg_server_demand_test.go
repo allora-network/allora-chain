@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -137,8 +138,10 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	reputer := s.addrsStr[1]
 
 	// Create two topics with different epoch lengths
-	topic1 := s.CreateCustomEpochTopic(125) // Longer epoch
-	topic2 := s.CreateCustomEpochTopic(50)  // Shorter epoch
+	epochLength1 := int64(125)
+	epochLength2 := int64(50)
+	topic1 := s.CreateCustomEpochTopic(epochLength1) // Longer epoch
+	topic2 := s.CreateCustomEpochTopic(epochLength2) // Shorter epoch
 
 	// Put same stake in both topics
 	err := s.emissionsKeeper.AddReputerStake(s.ctx, topic1.Id, reputer, cosmosMath.NewInt(500000))
@@ -198,7 +201,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	topicWeight1, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
 		s.ctx,
 		r.TopicId,
-		125,
+		epochLength1,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
@@ -208,14 +211,42 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	topicWeight2, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
 		s.ctx,
 		r2.TopicId,
-		50,
+		epochLength2,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+	)
+	s.Require().NoError(err)
+	// Topics should have equal weights at this point because their previous topic weight is still zero
+	s.Require().Equal(topicWeight2.Equal(topicWeight1), true, "Topic2 weight should be equal to Topic1 weight if no previous topic weight is set")
+
+	// Setting previous topic weights
+	err = s.emissionsKeeper.SetPreviousTopicWeight(s.ctx, r.TopicId, alloraMath.MustNewDecFromString("100"))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.SetPreviousTopicWeight(s.ctx, r2.TopicId, alloraMath.MustNewDecFromString("100"))
+	s.Require().NoError(err)
+
+	// Recalculate having set previous topic weights
+	topicWeight1, _, err = s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r.TopicId,
+		epochLength1,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
 	)
 	s.Require().NoError(err)
 
-	// Topic2 should have higher weight due to higher funding, despite shorter epoch
-	s.Require().Equal(topicWeight2.Equal(topicWeight1), true, "Topic2 weight should be greater than Topic1 weight because it has a shorter epoch length")
+	topicWeight2, _, err = s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r2.TopicId,
+		epochLength2,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+	)
+	s.Require().NoError(err)
+	// Topics should have equal weights because the target weight is not affected by the epoch length
+	s.Require().Equal(topicWeight1.Gt(topicWeight2), true, "Topic1 weight should > Topic2 weight because prev topic weights are smaller than current ones and Topic1 has a longer epoch length")
 
 }
