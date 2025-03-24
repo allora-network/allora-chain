@@ -2,7 +2,6 @@ package rewards_test
 
 import (
 	"fmt"
-	l "log"
 	"testing"
 	"time"
 
@@ -758,7 +757,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 
 	// Move to end of this epoch block
 	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId)
-	s.T().Logf("Next block: %v", nextBlock)
+	s.T().Logf("Moving nonce for TopicId: %d, Next block: %v", topicId, nextBlock)
 	s.Require().NoError(err)
 	blockHeight := nextBlock
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
@@ -2311,6 +2310,10 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		MinEpochLength:          []int64{1},
 		RegistrationFee:         []cosmosMath.Int{cosmosMath.NewInt(6)},
 		MaxActiveTopicsPerBlock: []uint64{2},
+		BlocksPerMonth:          []uint64{864000},
+		// Exaggerated TopicRewardAlpha to compensate the effect of latest topic reward alpha vs
+		// the dripping effect and separate epochs running multiple topics.
+		TopicRewardAlpha: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.999375")},
 		// the following fields are not set
 		Version:                             nil,
 		MaxSerializedMsgLength:              nil,
@@ -2325,7 +2328,6 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		MaxUnfulfilledReputerRequests:       nil,
 		TopicRewardStakeImportance:          nil,
 		TopicRewardFeeRevenueImportance:     nil,
-		TopicRewardAlpha:                    nil,
 		TaskRewardAlpha:                     nil,
 		ValidatorsVsAlloraPercentReward:     nil,
 		MaxSamplesToScaleScores:             nil,
@@ -2336,7 +2338,6 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		DefaultPageLimit:                    nil,
 		MaxPageLimit:                        nil,
 		MinEpochLengthRecordLimit:           nil,
-		BlocksPerMonth:                      nil,
 		PRewardInference:                    nil,
 		PRewardForecast:                     nil,
 		PRewardReputer:                      nil,
@@ -3129,7 +3130,8 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer5_Stake0, err := s.emissionsKeeper.GetStakeReputerAuthority(s.ctx, topicId1, s.addrsStr[reputerIndexes[2]])
 	require.NoError(err)
 
-	// do work on the topics to earn rewards
+	// do work on the topics to earn rewards. Beware: there are moving of blocks, so it's different epochs where
+	// topicId0 and topicId1 get their action done.
 	s.getRewardsDistribution(
 		topicId0,
 		workerValues,
@@ -3177,28 +3179,22 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	require.NoError(err)
 
 	worker1InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[0]])
-	l.Println("worker1InclusionNum", worker1InclusionNum)
 	require.NoError(err)
 	require.Equal(uint64(1), worker1InclusionNum)
 	worker2InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[1]])
-	l.Println("worker2InclusionNum", worker2InclusionNum)
 	require.NoError(err)
 	require.Equal(uint64(1), worker2InclusionNum)
 	worker3InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[2]])
-	l.Println("worker3InclusionNum", worker3InclusionNum)
 	require.Equal(uint64(1), worker3InclusionNum)
 	require.NoError(err)
 
 	worker1InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[0]])
-	l.Println("worker1InclusionNum", worker1InclusionNum)
 	require.NoError(err)
 	require.Equal(uint64(1), worker1InclusionNum)
 	worker2InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[1]])
-	l.Println("worker2InclusionNum", worker2InclusionNum)
 	require.NoError(err)
 	require.Equal(uint64(1), worker2InclusionNum)
 	worker3InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[2]])
-	l.Println("worker3InclusionNum", worker3InclusionNum)
 	require.Equal(uint64(1), worker3InclusionNum)
 	require.NoError(err)
 	const topicFundAmount int64 = 1000
@@ -3243,11 +3239,12 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	require.Equal(topic0RewardTotal0, topic1RewardTotal0)
 
-	// Now, in second trial, increase stake for first reputer in topic1
-	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], stake)
+	// Now, in second trial, significantly increase stake for first reputer in topic1
+	stakeIncrease := cosmosMath.NewInt(1000).Mul(stake)
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], stakeIncrease)
 	_, err = s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
 		Sender:  s.addrsStr[reputerIndexes[0]],
-		Amount:  stake,
+		Amount:  stakeIncrease,
 		TopicId: topicId1,
 	})
 	require.NoError(err)
@@ -3261,7 +3258,8 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	block++
 	s.ctx = s.ctx.WithBlockHeight(block)
 
-	// do work on the topics to earn rewards
+	// do work on the topics to earn rewards. Beware: there are moving of blocks, so it's different epochs where
+	// topicId0 and topicId1 get their action done.
 	s.getRewardsDistribution(
 		topicId0,
 		workerValues,
@@ -3270,8 +3268,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		"0.1",
 		"0.1",
 	)
-
-	s.getRewardsDistribution(
+	taskRewards1 := s.getRewardsDistribution(
 		topicId1,
 		workerValues,
 		reputerValues,
@@ -3279,6 +3276,27 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		"0.1",
 		"0.1",
 	)
+
+	// Get and check the rewards for the reputer after the stake increase
+	var taskRewardsReputer3AfterStakeIncrease,
+		taskRewardsReputer4AfterStakeIncrease,
+		taskRewardsReputer5AfterStakeIncrease types.TaskReward
+
+	for _, reward := range taskRewards1 {
+		if reward.Type == types.ReputerAndDelegatorRewardType {
+			if reward.Address == s.addrsStr[reputerIndexes[0]] {
+				taskRewardsReputer3AfterStakeIncrease = reward
+			}
+			if reward.Address == s.addrsStr[reputerIndexes[1]] {
+				taskRewardsReputer4AfterStakeIncrease = reward
+			}
+			if reward.Address == s.addrsStr[reputerIndexes[2]] {
+				taskRewardsReputer5AfterStakeIncrease = reward
+			}
+		}
+	}
+	require.True(taskRewardsReputer3AfterStakeIncrease.Reward.Gt(taskRewardsReputer4AfterStakeIncrease.Reward))
+	require.True(taskRewardsReputer3AfterStakeIncrease.Reward.Gt(taskRewardsReputer5AfterStakeIncrease.Reward))
 
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
@@ -3302,11 +3320,11 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer5_Stake2, err := s.emissionsKeeper.GetStakeReputerAuthority(s.ctx, topicId1, s.addrsStr[reputerIndexes[2]])
 	require.NoError(err)
 
-	// calculate rewards
+	// calculate rewards (topic 0)
 	reputer0_Reward1 := reputer0_Stake2.Sub(reputer0_Stake1)
 	reputer1_Reward1 := reputer1_Stake2.Sub(reputer1_Stake1)
 	reputer2_Reward1 := reputer2_Stake2.Sub(reputer2_Stake1)
-
+	// calculate rewards (topic 1)
 	reputer3_Reward1 := reputer3_Stake2.Sub(reputer3_Stake1)
 	reputer4_Reward1 := reputer4_Stake2.Sub(reputer4_Stake1)
 	reputer5_Reward1 := reputer5_Stake2.Sub(reputer5_Stake1)
@@ -3315,14 +3333,38 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	topic0RewardTotal1 := reputer0_Reward1.Add(reputer1_Reward1).Add(reputer2_Reward1)
 	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
 
+	topic0Total0Dec, err := alloraMath.NewDecFromSdkInt(topic0RewardTotal0)
+	require.NoError(err)
+	topic1Total0Dec, err := alloraMath.NewDecFromSdkInt(topic1RewardTotal0)
+	require.NoError(err)
+	topic0Total1Dec, err := alloraMath.NewDecFromSdkInt(topic0RewardTotal1)
+	require.NoError(err)
+	topic1Total1Dec, err := alloraMath.NewDecFromSdkInt(topic1RewardTotal1)
+	require.NoError(err)
+
+	// Normalize to the amount of rewards given in each cycle and check the ratios of the whole rewards,
+	// instead of absolute values (since rewards amount is different in each cycle).
+	totalRewardsEpoch0, err := topic0Total0Dec.Add(topic1Total0Dec)
+	require.NoError(err)
+	totalRewardsEpoch1, err := topic0Total1Dec.Add(topic1Total1Dec)
+	require.NoError(err)
+
+	topic0RewardTotal0Normalized, err := topic0Total0Dec.Quo(totalRewardsEpoch0)
+	require.NoError(err)
+	topic1RewardTotal0Normalized, err := topic1Total0Dec.Quo(totalRewardsEpoch0)
+	require.NoError(err)
+	topic0RewardTotal1Normalized, err := topic0Total1Dec.Quo(totalRewardsEpoch1)
+	require.NoError(err)
+	topic1RewardTotal1Normalized, err := topic1Total1Dec.Quo(totalRewardsEpoch1)
+
 	// in the first round, the rewards should be equal for each topic
-	require.True(topic0RewardTotal0.Equal(topic1RewardTotal0), "%s != %s", topic0RewardTotal0, topic1RewardTotal0)
+	require.True(topic0RewardTotal0Normalized.Equal(topic1RewardTotal0Normalized), "%s != %s", topic0RewardTotal0Normalized, topic1RewardTotal0Normalized)
 	// for topic 0, the rewards should be less in the second round
-	require.True(topic0RewardTotal0.GT(topic0RewardTotal1), "%s <= %s", topic0RewardTotal0, topic0RewardTotal1)
+	require.True(topic0RewardTotal0Normalized.Gte(topic1RewardTotal0Normalized), "%s <= %s", topic0RewardTotal0Normalized, topic1RewardTotal0Normalized)
 	// in the second round, the rewards should be greater for topic 1
-	require.True(topic0RewardTotal1.LT(topic1RewardTotal1), "%s >= %s", topic0RewardTotal1, topic1RewardTotal1)
+	require.True(topic0RewardTotal1Normalized.Lte(topic1RewardTotal1Normalized), "%s >= %s", topic0RewardTotal1Normalized, topic1RewardTotal1Normalized)
 	// the rewards for topic 1 should be greater in the second round
-	require.True(topic1RewardTotal0.LT(topic1RewardTotal1), "%s >= %s", topic1RewardTotal0, topic1RewardTotal1)
+	require.True(topic1RewardTotal0Normalized.Lt(topic1RewardTotal1Normalized), "%s >= %s", topic1RewardTotal0Normalized, topic1RewardTotal1Normalized)
 }
 
 func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
@@ -3789,6 +3831,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 	require.Equal(len(rewardsDistribution0_1), len(rewardsDistribution0_0))
 }
 
+// Generates slice of consecutive numbers
 func (s *RewardsTestSuite) returnIndexes(start, count int) []int {
 	res := make([]int, count)
 	for ind := start; ind < start+count; ind++ {

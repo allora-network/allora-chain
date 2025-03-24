@@ -930,3 +930,103 @@ func TestMedianAbsoluteDeviation(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSmoothedAlpha(t *testing.T) {
+	testCases := []struct {
+		name         string
+		epochLength  int64
+		baseInterval alloraMath.Dec
+		baseAlpha    alloraMath.Dec
+		expected     alloraMath.Dec
+		expectError  bool
+		epsilon      alloraMath.Dec
+	}{
+		{
+			name:         "Standard case - weekly updates",
+			epochLength:  1000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.013"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Short epoch, updates fast",
+			epochLength:  100,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.0013"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Long epoch, slow updates",
+			epochLength:  100000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.75"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.01"),
+		},
+		{
+			name:         "Monthly-like smoothing",
+			epochLength:  100000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.9375"),
+			expected:     alloraMath.MustNewDecFromString("0.996"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Edge case - very short epoch",
+			epochLength:  1,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.0000198"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Edge case - very long epoch",
+			epochLength:  500000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.999"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Invalid input - zero epoch length",
+			epochLength:  0,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.ZeroDec(),
+			expectError:  true,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Invalid input - zero base interval",
+			epochLength:  1000,
+			baseInterval: alloraMath.ZeroDec(),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.ZeroDec(),
+			expectError:  true,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := alloraMath.GetSmoothedAlpha(tc.epochLength, tc.baseInterval, tc.baseAlpha)
+			if tc.expectError {
+				require.Error(t, err, "Expected an error but got none")
+			} else {
+				require.NoError(t, err, "Unexpected error: %v", err)
+				inDelta, err := alloraMath.InDelta(tc.expected, result, tc.epsilon)
+				require.NoError(t, err)
+				require.True(t, inDelta,
+					"Unexpected result for %s: got %s, want %s", tc.name, result.String(), tc.expected.String())
+			}
+		})
+	}
+}
