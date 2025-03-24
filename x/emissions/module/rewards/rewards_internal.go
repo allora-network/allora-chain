@@ -292,12 +292,9 @@ func GetStakeWeightedLossMatrix(
 				return nil, nil, err
 			}
 
-			absoluteDifference := distance
-			if distance.IsNegative() {
-				absoluteDifference, err = distance.Abs()
-				if err != nil {
-					return nil, nil, err
-				}
+			absoluteDifference, err := distance.Abs()
+			if err != nil {
+				return nil, nil, err
 			}
 
 			// Update the most distant value if this is the first valid distance
