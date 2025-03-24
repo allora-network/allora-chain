@@ -299,7 +299,7 @@ func GetStakeWeightedLossMatrix(
 					return nil, nil, err
 				}
 			}
-	
+
 			// Update the most distant value if this is the first valid distance
 			// or if this distance is greater than the current maximum
 			if !hasFoundValidDistance || absoluteDifference.Gt(maxDistance) {
