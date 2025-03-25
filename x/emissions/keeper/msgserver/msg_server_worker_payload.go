@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -64,8 +65,10 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Note: this is exclusive of the end block height
-	if !ms.k.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
+	withinWindow, err := keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	if err != nil {
+		return nil, err
+	} else if !withinWindow {
 		return nil, errorsmod.Wrapf(
 			types.ErrWorkerNonceWindowNotAvailable,
 			"Worker window not open for topic: %d, current block %d, start window: %d, end window: %d",
