@@ -82,7 +82,7 @@ func UpdateNoncesOfActiveTopics(
 		// Update the last inference ran
 		err = k.UpdateTopicEpochLastEnded(ctx, topic.Id, block)
 		if err != nil {
-			ctx.Logger().Warn("Error updating last inference ran", "error", err.Error())
+			ctx.Logger().Warn("Error updating last inference ran", "error", err)
 			continue
 		}
 
@@ -90,14 +90,14 @@ func UpdateNoncesOfActiveTopics(
 		nextNonce := types.Nonce{BlockHeight: block}
 		err = k.AddWorkerNonce(ctx, topic.Id, &nextNonce)
 		if err != nil {
-			ctx.Logger().Warn("Error adding worker nonce", "error", err.Error())
+			ctx.Logger().Warn("Error adding worker nonce", "error", err)
 			continue
 		}
 		ctx.Logger().Debug("Added worker nonce for topic", "topicId", topic.Id, "nonce", nextNonce.BlockHeight)
 
 		err = k.AddWorkerWindowTopicId(ctx, block+topic.WorkerSubmissionWindow, topic.Id)
 		if err != nil {
-			ctx.Logger().Warn("Error adding worker window topic id", "error", err.Error())
+			ctx.Logger().Warn("Error adding worker window topic id", "error", err)
 			continue
 		}
 

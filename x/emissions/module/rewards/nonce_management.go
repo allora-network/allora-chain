@@ -11,7 +11,7 @@ import (
 func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, block BlockHeight) error {
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topic.Id)
 	if err != nil {
-		ctx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err.Error())
+		ctx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 		return err
 	}
 	for _, nonce := range nonces.Nonces {
@@ -22,11 +22,11 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 			ctx.Logger().Debug("ABCI EndBlocker: Closing reputer nonce", "topic", topic.Id, "nonce", nonce, "min", closingReputerNonceMinBlockHeight)
 			err = allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
 			if err != nil {
-				ctx.Logger().Warn("Error closing reputer nonce", "error", err.Error())
+				ctx.Logger().Warn("Error closing reputer nonce", "error", err)
 				// Proactively close the nonce to avoid
 				_, err = k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
 				if err != nil {
-					ctx.Logger().Warn("Error fulfilling reputer nonce", "error", err.Error())
+					ctx.Logger().Warn("Error fulfilling reputer nonce", "error", err)
 				}
 			}
 		}
@@ -39,7 +39,7 @@ func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.T
 	var maxUnfulfilledReputerRequests uint64
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		ctx.Logger().Warn("Error getting max retries to fulfil nonces for worker requests (using default)", "error", err.Error())
+		ctx.Logger().Warn("Error getting max retries to fulfil nonces for worker requests (using default)", "error", err)
 		return err
 	} else {
 		maxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
@@ -50,7 +50,7 @@ func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.T
 		ctx.Logger().Debug("Pruning reputer nonces before block", "reputerPruningBlock", reputerPruningBlock, "topicId", topic.Id, "block", block)
 		err = k.PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)
 		if err != nil {
-			ctx.Logger().Warn("Error pruning reputer nonces", "error", err.Error())
+			ctx.Logger().Warn("Error pruning reputer nonces", "error", err)
 		}
 
 		// Reputer nonces need to check worker nonces from one epoch before
@@ -60,7 +60,7 @@ func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.T
 			// Prune old worker nonces previous to current block to avoid inserting inferences after its time has passed
 			err = k.PruneWorkerNonces(ctx, topic.Id, workerPruningBlock)
 			if err != nil {
-				ctx.Logger().Warn("Error pruning worker nonces", "error", err.Error())
+				ctx.Logger().Warn("Error pruning worker nonces", "error", err)
 			}
 		}
 	}

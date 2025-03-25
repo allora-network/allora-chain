@@ -134,7 +134,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 		// Defer pruning records after rewards payout
 		defer func(topicId uint64, topicRewardNonce int64) {
 			if err := pruneRecordsAfterRewards(args.Ctx, args.K, args.ModuleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce); err != nil {
-				Logger(args.Ctx).Error("Failed to prune records after rewards", "topicId", topicId, "topicRewardNonce", topicRewardNonce, "error", err.Error())
+				Logger(args.Ctx).Error("Failed to prune records after rewards", "topicId", topicId, "topicRewardNonce", topicRewardNonce, "error", err)
 			}
 		}(topicId, topicRewardNonce)
 
@@ -148,7 +148,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 			ModuleParams:     args.ModuleParams,
 		})
 		if err != nil {
-			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err.Error())
+			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err)
 			continue
 		}
 

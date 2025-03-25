@@ -74,7 +74,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			// Check if there is an unfulfilled nonce
 			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId)
 			if err != nil {
-				sdkCtx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err.Error())
+				sdkCtx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 				continue
 			} else if len(nonces.Nonces) == 0 {
 				// No nonces to fulfill
@@ -82,7 +82,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			} else {
 				topic, err := am.keeper.GetTopic(sdkCtx, topicId)
 				if err != nil {
-					sdkCtx.Logger().Warn("Error getting topic", "error", err.Error())
+					sdkCtx.Logger().Warn("Error getting topic", "error", err)
 					continue
 				}
 				for _, nonce := range nonces.Nonces {
@@ -90,11 +90,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					sdkCtx.Logger().Debug("ABCI EndBlocker", "blockHeight", blockHeight, "closing worker window for topic", "topicId", topicId, "nonce", nonce)
 					err = allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
 					if err != nil {
-						sdkCtx.Logger().Info("Error closing worker nonce, proactively fulfilling", "error", err.Error())
+						sdkCtx.Logger().Info("Error closing worker nonce, proactively fulfilling", "error", err)
 						// Proactively close the nonce
 						fulfilledNonce, err := am.keeper.FulfillWorkerNonce(sdkCtx, topicId, nonce)
 						if err != nil {
-							sdkCtx.Logger().Warn("Error fulfilling worker nonce", "error", err.Error())
+							sdkCtx.Logger().Warn("Error fulfilling worker nonce", "error", err)
 						} else {
 							sdkCtx.Logger().Debug("Fulfilled", "fulfilledNonce", fulfilledNonce, "nonce", nonce)
 						}
@@ -104,7 +104,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		}
 		err = am.keeper.DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
 		if err != nil {
-			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err.Error())
+			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
 		}
 	}
 	return nil
