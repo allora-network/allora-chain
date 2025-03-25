@@ -339,7 +339,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	if args.TopicReward == nil {
 		return nil, alloraMath.Dec{}, types.ErrInvalidReward
 	}
-	args.Ctx.Logger().Debug("Generating rewards distribution for topic", "topicId", args.TopicId, "block", args.BlockHeight, "topicReward", args.TopicReward.String())
+	args.Ctx.Logger().Debug("Generating rewards distribution for topic", "topicId", args.TopicId, "block", args.BlockHeight, "topicReward", args.TopicReward)
 	bundles, err := args.K.GetReputerLossBundlesAtBlock(args.Ctx, args.TopicId, args.BlockHeight)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer loss bundle at block %d", args.BlockHeight)
