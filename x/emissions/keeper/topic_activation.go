@@ -394,7 +394,7 @@ func (k *Keeper) activateTopicAndResetLowestWeightAtBlock(ctx context.Context, t
 	// Reset lowest weight
 	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
 	if err != nil {
-		sdkCtx.Logger().Warn("Failed to reset lowest weight at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock)
+		sdkCtx.Logger().Warn("Failed to reset lowest weight at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
 		return errors.Wrap(err, "failed to reset lowest weight at block")
 	}
 
