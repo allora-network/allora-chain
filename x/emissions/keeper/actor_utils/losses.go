@@ -3,7 +3,6 @@ package actorutils
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sort"
 
 	"cosmossdk.io/collections"
@@ -119,7 +118,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	ctx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", &nonce.BlockHeight, networkLossBundle))
+	ctx.Logger().Debug("Reputer Nonce", "blockHeight", &nonce.BlockHeight, "networkLossBundle", networkLossBundle)
 
 	err = k.InsertNetworkLossBundleAtBlock(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
 	if err != nil {
@@ -244,7 +243,7 @@ func CloseReputerNonce(
 	}
 
 	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
-	ctx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topic.Id, nonce))
+	ctx.Logger().Info("Closed reputer nonce", "topicId", topic.Id, "nonce", nonce)
 	return nil
 }
 

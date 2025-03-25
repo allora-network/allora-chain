@@ -1200,7 +1200,7 @@ func (k *Keeper) UpdateNetworkInferencesOutlierMetrics(
 	topicId TopicId,
 	inferenceBlockHeight BlockHeight,
 ) error {
-	ctx.Logger().Debug(fmt.Sprintf("Updating network inferences outlier metrics for topic %d, block height %d", topicId, inferenceBlockHeight))
+	ctx.Logger().Debug("Updating network inferences outlier metrics", "topicId", topicId, "blockHeight", inferenceBlockHeight)
 	// Get all inferences at the block height
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferenceBlockHeight, false)
 	if err != nil {
@@ -1208,7 +1208,7 @@ func (k *Keeper) UpdateNetworkInferencesOutlierMetrics(
 	}
 	if len(inferences.Inferences) == 0 {
 		// If there are no inferences, do not update the metrics
-		ctx.Logger().Info(fmt.Sprintf("no inferences found, skipping update of outlier metrics, topicId: %d blockHeight: %d", topicId, inferenceBlockHeight))
+		ctx.Logger().Info("no inferences found, skipping update of outlier metrics", "topicId", topicId, "blockHeight", inferenceBlockHeight)
 		return nil
 	}
 
@@ -1252,7 +1252,7 @@ func (k *Keeper) UpdateNetworkInferencesOutlierMetrics(
 		}
 	}
 
-	ctx.Logger().Info(fmt.Sprintf("Setting new outlier-resistant mad %s, median %s for topic %d", newMad, median, topicId))
+	ctx.Logger().Info("Setting new outlier-resistant mad", "newMad", newMad, "median", median, "topicId", topicId)
 
 	// Set last mad inferences
 	err = k.SetMadInferences(ctx, topicId, newMad)
@@ -3240,7 +3240,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	}
 	blocksPerEpoch := alloraMath.NewDecFromInt64(topic.EpochLength)
 	if blocksPerEpoch.IsZero() {
-		ctx.Logger().Warn(fmt.Sprintf("Blocks per epoch is zero for topic %d. Skipping fee revenue drip.", topicId))
+		ctx.Logger().Warn("Blocks per epoch is zero for topic", "topicId", topicId)
 		return nil
 	}
 	blocksPerWeek, err := k.calculateBlocksPerWeek(ctx)
@@ -3253,7 +3253,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	}
 	if epochsPerWeek.IsZero() {
 		// Log a warning
-		ctx.Logger().Warn(fmt.Sprintf("Epochs per week is zero for topic %d. Skipping fee revenue drip.", topicId))
+		ctx.Logger().Warn("Epochs per week is zero for topic", "topicId", topicId)
 		return nil
 	}
 	// this delta is the drip per epoch

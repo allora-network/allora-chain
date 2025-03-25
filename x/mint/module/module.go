@@ -115,28 +115,28 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	// we don't have any data to migrate, so the migration itself is a no-op,
 	// but it's good to print that we're doing a migration
 	err := cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
-		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 1 TO VERSION 2", types.ModuleName))
+		ctx.Logger().Info("MIGRATING %s MODULE FROM VERSION 1 TO VERSION 2", "module", types.ModuleName)
 		return nil
 	})
 	if err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
 	}
 	err = cfg.RegisterMigration(types.ModuleName, 2, func(ctx sdk.Context) error {
-		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 2 TO VERSION 3", types.ModuleName))
+		ctx.Logger().Info("MIGRATING %s MODULE FROM VERSION 2 TO VERSION 3", "module", types.ModuleName)
 		return nil
 	})
 	if err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 2 to 3: %v", types.ModuleName, err))
 	}
 	err = cfg.RegisterMigration(types.ModuleName, 3, func(ctx sdk.Context) error {
-		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 3 TO VERSION 4", types.ModuleName))
+		ctx.Logger().Info("MIGRATING %s MODULE FROM VERSION 3 TO VERSION 4", "module", types.ModuleName)
 		return nil
 	})
 	if err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 3 to 4: %v", types.ModuleName, err))
 	}
 	err = cfg.RegisterMigration(types.ModuleName, 4, func(ctx sdk.Context) error {
-		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 4 TO VERSION 5", types.ModuleName))
+		ctx.Logger().Info("MIGRATING %s MODULE FROM VERSION 4 TO VERSION 5", "module", types.ModuleName)
 		return migrationsV5.MigrateStore(ctx, am.keeper)
 	})
 	if err != nil {

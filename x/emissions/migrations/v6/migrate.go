@@ -2,7 +2,6 @@ package v6
 
 import (
 	"encoding/binary"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
@@ -133,7 +132,7 @@ func FlipOnTopicWhitelists(
 	for id := uint64(1); id < nextTopicId; id++ {
 		idByte := make([]byte, 8)
 		binary.BigEndian.PutUint64(idByte, id)
-		ctx.Logger().Info(fmt.Sprintf("MIGRATION V6: Updating topic:%d", id))
+		ctx.Logger().Info("MIGRATION V6: Updating topic", "topicId", id)
 
 		err = emissionsKeeper.EnableTopicWorkerWhitelist(ctx, id)
 		if err != nil {

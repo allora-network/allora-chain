@@ -1,7 +1,6 @@
 package rewards
 
 import (
-	"fmt"
 	"sort"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -35,9 +34,7 @@ func SkimTopTopicsByWeightDesc(ctx sdk.Context, weights map[TopicId]*alloraMath.
 		listOfTopN[i] = topicIds[i]
 	}
 
-	Logger(ctx).Debug(
-		fmt.Sprintf("SkimTopTopicsByWeightDesc took top %d topics out of %d",
-			numberToAdd, len(topicIds)))
+	Logger(ctx).Debug("SkimTopTopicsByWeightDesc took top", "number", numberToAdd, "from topics", len(topicIds))
 
 	return weightsOfTopN, listOfTopN, nil
 }

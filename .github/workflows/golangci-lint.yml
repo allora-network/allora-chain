@@ -41,3 +41,6 @@ jobs:
       - name: check-fuzz-transitions
         run: go run ./linter/fuzz-transitions
         timeout-minutes: 10
+      - name: check-log-sprintf
+        run: go run ./linter/logging ./...
+        timeout-minutes: 10
