@@ -2,6 +2,7 @@ package inferencesynthesis_test
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"runtime/pprof"
 	"testing"
@@ -40,8 +41,8 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 		Inferences: make([]*emissionstypes.Inference, 0, maxInferers),
 	}
 
-	for i, inferer := range infererAddresses {
-		value := alloraMath.NewDecFromInt64(int64(100 + i))
+	for _, inferer := range infererAddresses {
+		value := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(1000)))
 		inferences.Inferences = append(inferences.Inferences, &emissionstypes.Inference{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
@@ -58,10 +59,10 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 		Forecasts: make([]*emissionstypes.Forecast, 0, maxForecasters),
 	}
 
-	for i, forecaster := range forecasterAddresses {
+	for _, forecaster := range forecasterAddresses {
 		forecastElements := make([]*emissionstypes.ForecastElement, 0, maxInferers)
-		for j, inferer := range infererAddresses {
-			value := alloraMath.NewDecFromInt64(int64(200 + i*10 + j))
+		for _, inferer := range infererAddresses {
+			value := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(2000)))
 			forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
 				Inferer: inferer,
 				Value:   value,
@@ -87,7 +88,7 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 
 	// Set up regrets for inferers and forecasters
 	for _, inferer := range infererAddresses {
-		regret := alloraMath.NewDecFromInt64(int64(10))
+		regret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(500)))
 		err = s.emissionsKeeper.SetInfererNetworkRegret(s.ctx, topicId, inferer,
 			emissionstypes.TimestampedValue{
 				BlockHeight: blockHeight - 100,
@@ -96,22 +97,24 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 		require.NoError(s.T(), err)
 
 		// Set naive inferer regrets
+		naiveRegret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(500)))
 		err = s.emissionsKeeper.SetNaiveInfererNetworkRegret(s.ctx, topicId, inferer,
 			emissionstypes.TimestampedValue{
 				BlockHeight: blockHeight - 100,
-				Value:       regret,
+				Value:       naiveRegret,
 			})
 		require.NoError(s.T(), err)
 
 		// Set inferer inclusion counts
-		for i := 0; i < 20; i++ {
+		inclusions := 10 + rand.Intn(21)
+		for i := 0; i < inclusions; i++ {
 			err = s.emissionsKeeper.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, inferer)
 			require.NoError(s.T(), err)
 		}
 	}
 
 	for _, forecaster := range forecasterAddresses {
-		regret := alloraMath.NewDecFromInt64(int64(20))
+		regret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(1000)))
 		err = s.emissionsKeeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster,
 			emissionstypes.TimestampedValue{
 				BlockHeight: blockHeight - 100,
@@ -120,16 +123,17 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 		require.NoError(s.T(), err)
 
 		// Set forecaster inclusion counts
-		for i := 0; i < 20; i++ {
+		inclusions := 15 + rand.Intn(21)
+		for i := 0; i < inclusions; i++ {
 			err = s.emissionsKeeper.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, forecaster)
 			require.NoError(s.T(), err)
 		}
 	}
 
-	// Set up one-out inferer regrets
+	// Set one-out inferer regrets
 	for _, inferer1 := range infererAddresses {
 		for _, inferer2 := range infererAddresses {
-			regret := alloraMath.NewDecFromInt64(int64(15))
+			regret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(750)))
 			err = s.emissionsKeeper.SetOneOutInfererInfererNetworkRegret(s.ctx, topicId, inferer1, inferer2,
 				emissionstypes.TimestampedValue{
 					BlockHeight: blockHeight - 100,
@@ -142,7 +146,7 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 	// Set up one-out forecaster regrets
 	for _, forecaster := range forecasterAddresses {
 		for _, inferer := range infererAddresses {
-			regret := alloraMath.NewDecFromInt64(int64(25))
+			regret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(750)))
 			err = s.emissionsKeeper.SetOneOutForecasterInfererNetworkRegret(s.ctx, topicId, forecaster, inferer,
 				emissionstypes.TimestampedValue{
 					BlockHeight: blockHeight - 100,
@@ -150,10 +154,11 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 				})
 			require.NoError(s.T(), err)
 
+			oneInRegret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(750)))
 			err = s.emissionsKeeper.SetOneInForecasterNetworkRegret(s.ctx, topicId, forecaster, inferer,
 				emissionstypes.TimestampedValue{
 					BlockHeight: blockHeight - 100,
-					Value:       regret,
+					Value:       oneInRegret,
 				})
 			require.NoError(s.T(), err)
 		}
@@ -162,7 +167,7 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 	// Set up one-out inferer forecaster regrets
 	for _, inferer := range infererAddresses {
 		for _, forecaster := range forecasterAddresses {
-			regret := alloraMath.NewDecFromInt64(int64(30))
+			regret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(750)))
 			err = s.emissionsKeeper.SetOneOutInfererForecasterNetworkRegret(s.ctx, topicId, inferer, forecaster,
 				emissionstypes.TimestampedValue{
 					BlockHeight: blockHeight - 100,
@@ -175,7 +180,7 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 	// Set up one-out forecaster forecaster regrets
 	for _, forecaster1 := range forecasterAddresses {
 		for _, forecaster2 := range forecasterAddresses {
-			regret := alloraMath.NewDecFromInt64(int64(35))
+			regret := alloraMath.NewDecFromInt64(int64(1 + rand.Intn(750)))
 			err = s.emissionsKeeper.SetOneOutForecasterForecasterNetworkRegret(s.ctx, topicId, forecaster1, forecaster2,
 				emissionstypes.TimestampedValue{
 					BlockHeight: blockHeight - 100,
@@ -242,8 +247,8 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 		"Should have one-out values for all forecasters")
 
 	// Check that OneOutInfererForecasterValues are included
-	// require.Len(s.T(), result.NetworkInferences.OneOutInfererForecasterValues, maxForecasters,
-	// 	"Should have one-out inferer forecaster values for all forecasters")
+	require.Len(s.T(), result.NetworkInferences.OneOutInfererForecasterValues, maxForecasters,
+		"Should have one-out inferer forecaster values for all forecasters")
 
 	// Each forecaster should have entries for all inferers
 	for _, oneOutInfererForecasterValue := range result.NetworkInferences.OneOutInfererForecasterValues {
@@ -255,8 +260,8 @@ func (s *InferenceSynthesisTestSuite) TestNetworkInferenceGenerationPerformance(
 
 	// Assert the execution time is acceptable for block processing
 	// This threshold may need to be adjusted based on testing environment and requirements
-	require.Less(s.T(), duration, 500*time.Millisecond,
-		"Execution time should be less than 500ms to avoid significant impact on block time")
+	require.Less(s.T(), duration, 100*time.Millisecond,
+		"Execution time should be less than 100ms to avoid significant impact on block time")
 }
 
 // BenchmarkNetworkInferenceGeneration provides a proper Go benchmark for the entire process
