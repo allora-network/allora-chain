@@ -337,7 +337,7 @@ func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) 
 	// Remove current active topic from block
 	err = k.removeCurrentTopicFromBlock(ctx, topicId, currentBlock)
 	if err != nil {
-		sdkCtx.Logger().Warn("Failed to remove current active topic", "topicId", topicId, "block", currentBlock)
+		sdkCtx.Logger().Warn("Failed to remove current active topic", "topicId", topicId, "block", currentBlock, "error", err)
 		return errors.Wrap(err, "failed to remove current active topic from block")
 	}
 
