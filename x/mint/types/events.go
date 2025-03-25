@@ -9,7 +9,7 @@ import (
 func EmitNewTokenomicsSetEvent(ctx sdk.Context, stakedTokenAmount, circulatingAmount, emissionsAmount math.Int) {
 	err := ctx.EventManager().EmitTypedEvent(NewTokenomicsSetEventBase(stakedTokenAmount, circulatingAmount, emissionsAmount))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting EmitNewTokenomicsSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting EmitNewTokenomicsSetEvent", "error", err)
 	}
 }
 
@@ -24,7 +24,7 @@ func NewTokenomicsSetEventBase(stakedTokenAmount, circulatingAmount, emissionsAm
 func EmitNewEcosystemTokenMintSetEvent(ctx sdk.Context, blockHeight uint64, amount math.Int) {
 	err := ctx.EventManager().EmitTypedEvent(EcosystemTokenMintSetEventBase(blockHeight, amount))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting EmitNewEcosystemTokenMintSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting EmitNewEcosystemTokenMintSetEvent", "error", err)
 	}
 }
 
@@ -38,7 +38,7 @@ func EcosystemTokenMintSetEventBase(blockHeight uint64, tokenAmount math.Int) pr
 func EmitNewRewardCurrentBlockEmissionEvent(ctx sdk.Context, blockHeight uint64, amount math.Int) {
 	err := ctx.EventManager().EmitTypedEvent(RewardCurrentBlockEmissionEventBase(blockHeight, amount))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting EmitNewRewardCurrentBlockEmissionEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting EmitNewRewardCurrentBlockEmissionEvent", "error", err)
 	}
 }
 

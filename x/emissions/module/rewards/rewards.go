@@ -205,7 +205,7 @@ func getDistributionAndPayoutRewardsToTopicActors(args GetDistributionAndPayoutR
 	payoutErrors := payoutRewards(args.Ctx, args.K, totalRewardsDistribution, args.TopicRewardNonce)
 	if len(payoutErrors) > 0 {
 		for _, payoutErr := range payoutErrors {
-			Logger(args.Ctx).Warn("Failed to pay out rewards", "topicId", args.TopicId, "error", payoutErr.Error())
+			Logger(args.Ctx).Warn("Failed to pay out rewards", "topicId", args.TopicId, "error", payoutErr)
 		}
 		return alloraMath.ZeroDec(), nil // continue to next topic
 	}
