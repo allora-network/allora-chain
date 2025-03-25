@@ -8,7 +8,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "log-sprintf",
+	Name: "log_sprintf",
 	Doc:  "checks for inefficient use of fmt.Sprintf inside logging functions",
 	Run:  run,
 }
