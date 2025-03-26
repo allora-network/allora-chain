@@ -28,6 +28,16 @@ func GetNetworkInferences(
 	inferencesNonce *BlockHeight,
 	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
+	// Enable math operations caching for this function's scope
+	alloraMath.EnableMathOperationsCache()
+
+	// Ensure caching is disabled and cache is cleared when function exits
+	defer func() {
+		alloraMath.DisableMathOperationsCache()
+		alloraMath.ClearMathOperationsCache()
+		ctx.Logger().Debug("Math operations cache cleared after network inference calculation")
+	}()
+
 	// Retrieve the requested inferences (either latest or specified, depending on inferencesNonce)
 	// If outlierResistant is true, outliers will be filtered out before calculating the network inference
 	inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce, outlierResistant)

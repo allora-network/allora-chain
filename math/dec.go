@@ -407,6 +407,18 @@ func Exp(x Dec) (Dec, error) {
 	if x.IsNaN() {
 		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Exp a NaN %s", x.String())
 	}
+
+	// Only use cache if operations cache is enabled (implementation from cache.go)
+	key := MathOperationsCacheKey{
+		Op:   "exp",
+		Base: x.String(),
+	}
+
+	if cached, ok := mathOperationsCache.Get(key); ok {
+		return cached, nil
+	}
+
+	// Calculate the result
 	var z Dec
 	_, err := dec128Context.Exp(&z.dec, &x.dec)
 	if z.IsNaN() {
@@ -415,6 +427,10 @@ func Exp(x Dec) (Dec, error) {
 	if err != nil {
 		return z, errorsmod.Wrapf(err, "decimal e to the x exponentiation error %s", x.String())
 	}
+
+	// Store in cache if operations cache is enabled
+	mathOperationsCache.Set(key, z)
+
 	return z, nil
 }
 
