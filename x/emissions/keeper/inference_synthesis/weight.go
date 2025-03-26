@@ -1,6 +1,8 @@
 package inferencesynthesis
 
 import (
+	"fmt"
+
 	"cosmossdk.io/log"
 
 	errorsmod "cosmossdk.io/errors"
