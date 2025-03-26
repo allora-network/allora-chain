@@ -60,7 +60,7 @@ func GetNetworkInferences(
 		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, inferenceBlockHeight, networkLosses)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
-		return calcNetworkInferencesSingle(ctx, inferenceBlockHeight, topicId, inferences)
+		return calcNetworkInferencesSingle(ctx, inferenceBlockHeight, topicId, inferences), nil
 	} else {
 		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
@@ -196,7 +196,7 @@ func calcNetworkInferencesSingle(
 	inferenceBlockHeight BlockHeight,
 	topicId TopicId,
 	inferences *emissions.Inferences,
-) (*GetNetworkInferencesResult, error) {
+) *GetNetworkInferencesResult {
 	singleInference := inferences.Inferences[0]
 
 	networkInferences := &emissions.ValueBundle{
@@ -228,7 +228,7 @@ func calcNetworkInferencesSingle(
 		ForecasterToWeight:   nil,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      0, // Loss data may actually be available but is not needed to calculate network inference in this case
-	}, nil
+	}
 }
 
 // helper function for getting the args needed for calcNetworkInferences
