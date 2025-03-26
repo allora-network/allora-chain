@@ -428,6 +428,13 @@ func accumulateWeights(
 	return runningUnnormalizedI_i, sumWeights, nil
 }
 
+// Normalized Regret Variables
+var (
+	upperBound = alloraMath.MustNewDecFromString("6.75")
+	lowerBound = alloraMath.MustNewDecFromString("8.25")
+	threshold  = alloraMath.MustNewDecFromString("17.25")
+)
+
 func CalcWeightFromNormalizedRegret(
 	normalizedRegret alloraMath.Dec,
 	maxNormalizedRegret alloraMath.Dec,
@@ -435,7 +442,7 @@ func CalcWeightFromNormalizedRegret(
 	cNorm alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	// upper bound: c + 6.75 / p
-	v6Point75OverP, err := alloraMath.MustNewDecFromString("6.75").Quo(pNorm)
+	v6Point75OverP, err := upperBound.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
 	}
@@ -445,7 +452,7 @@ func CalcWeightFromNormalizedRegret(
 	}
 
 	// lower bound: c - 8.25 / p
-	v8Point25OverP, err := alloraMath.MustNewDecFromString("8.25").Quo(pNorm)
+	v8Point25OverP, err := lowerBound.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
 	}
@@ -455,7 +462,7 @@ func CalcWeightFromNormalizedRegret(
 	}
 
 	// threshold for zero weight: c - 17.25 / p
-	v17Point25OverP, err := alloraMath.MustNewDecFromString("17.25").Quo(pNorm)
+	v17Point25OverP, err := threshold.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
 	}
