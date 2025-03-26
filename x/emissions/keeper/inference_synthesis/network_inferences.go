@@ -28,14 +28,14 @@ func GetNetworkInferences(
 	inferencesNonce *BlockHeight,
 	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
-	// Enable math operations caching for this function's scope
-	alloraMath.EnableMathOperationsCache()
+	// Enable gradient cache for this function's scope
+	enableGradientCache()
 
-	// Ensure caching is disabled and cache is cleared when function exits
+	// Disable gradient cache and clear cache when function exits
 	defer func() {
-		alloraMath.DisableMathOperationsCache()
-		alloraMath.ClearMathOperationsCache()
-		ctx.Logger().Debug("Math operations cache cleared after network inference calculation")
+		disableGradientCache()
+		clearGradientCache()
+		ctx.Logger().Debug("Gradient cache cleared after network inference calculation")
 	}()
 
 	// Retrieve the requested inferences (either latest or specified, depending on inferencesNonce)

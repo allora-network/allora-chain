@@ -37,6 +37,45 @@ type CalcRegretStdDevFilteredByWeightsArgs struct {
 	EpsilonTopic        alloraMath.Dec
 }
 
+// Gradient cache implementation
+var (
+	gradientCache = make(map[string]alloraMath.Dec)
+	cacheEnabled  = false
+)
+
+func enableGradientCache() {
+	cacheEnabled = true
+}
+
+func disableGradientCache() {
+	cacheEnabled = false
+}
+
+func clearGradientCache() {
+	gradientCache = make(map[string]alloraMath.Dec)
+}
+
+// Cached version of Gradient function
+func cachedGradient(p, c, x alloraMath.Dec) (alloraMath.Dec, error) {
+	if !cacheEnabled {
+		return alloraMath.Gradient(p, c, x)
+	}
+
+	key := fmt.Sprintf("gradient:%s:%s:%s", p.String(), c.String(), x.String())
+
+	if cachedValue, exists := gradientCache[key]; exists {
+		return cachedValue, nil
+	}
+
+	result, err := alloraMath.Gradient(p, c, x)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "error calculating gradient")
+	}
+
+	gradientCache[key] = result
+	return result, nil
+}
+
 // Calculates the standard deviation of the regrets provided plus epsilon
 // It uses previous epoch's weights to filter the regrets of workers that had a negligible weight
 // If there are less than 2 non-negligible weights, it uses all regrets.
@@ -495,7 +534,7 @@ func CalcWeightFromNormalizedRegret(
 		return alloraMath.ZeroDec(), nil
 	}
 
-	weight, err := alloraMath.Gradient(pNorm, cNorm, normalizedRegret) // w_ijk = φ'_p(\hatR_ijk)
+	weight, err := cachedGradient(pNorm, cNorm, normalizedRegret) // w_ijk = φ'_p(\hatR_ijk)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "error calculating gradient")
 	}
