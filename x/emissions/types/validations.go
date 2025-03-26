@@ -32,6 +32,18 @@ func ValidateDec(value alloraMath.Dec) error {
 	return nil
 }
 
+func ValidateBoundedExp40Dec(value alloraMath.BoundedExp40Dec) error {
+	if value.IsNaN() {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value cannot be NaN")
+	}
+
+	if !value.IsFinite() {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value must be finite")
+	}
+
+	return nil
+}
+
 // ValidateSdkInt checks if the given value is a valid cosmosMath.Int
 // according to our needs / standards
 func ValidateSdkInt(value cosmosMath.Int) error {
@@ -103,19 +115,29 @@ func (gs *GenesisState) Validate() error {
 	return nil
 }
 
+// INFERENCES AND FORECASTS
+
+// validate that the contents of an inference follow the expected format
+func validateInferenceContents(topicId uint64, inferer string, blockHeight BlockHeight) error {
+	if err := ValidateTopicId(topicId); err != nil {
+		return errors.Wrap(err, "topic id is invalid")
+	}
+	if err := ValidateBech32(inferer); err != nil {
+		return errors.Wrap(err, "inferer address is invalid")
+	}
+	if err := ValidateBlockHeight(blockHeight); err != nil {
+		return errors.Wrap(err, "block height is invalid")
+	}
+	return nil
+}
+
 // validate that an inference follows the expected format
 func (inference *Inference) Validate() error {
 	if inference == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference cannot be nil")
 	}
-	if err := ValidateTopicId(inference.TopicId); err != nil {
-		return errors.Wrap(err, "inference topic id is invalid")
-	}
-	if err := ValidateBech32(inference.Inferer); err != nil {
-		return errors.Wrap(err, "inference inferer address is invalid")
-	}
-	if err := ValidateBlockHeight(inference.BlockHeight); err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid inferer address (%s)", err)
+	if err := validateInferenceContents(inference.TopicId, inference.Inferer, inference.BlockHeight); err != nil {
+		return errors.Wrap(err, "inference contents are invalid")
 	}
 	if err := ValidateDec(inference.Value); err != nil {
 		return errors.Wrap(err, "inference value is invalid")
@@ -125,19 +147,42 @@ func (inference *Inference) Validate() error {
 	return nil
 }
 
+// validate that an inference follows the expected format
+func (inputInference *InputInference) Validate() error {
+	if inputInference == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference cannot be nil")
+	}
+	if err := validateInferenceContents(inputInference.TopicId, inputInference.Inferer, inputInference.BlockHeight); err != nil {
+		return errors.Wrap(err, "inference contents are invalid")
+	}
+	if err := ValidateBoundedExp40Dec(inputInference.Value); err != nil {
+		return errors.Wrap(err, "inference value is invalid")
+	}
+	// ExtraData not validated as it is not used by the chain
+	// Proof not validated as it is not used by the chain
+	return nil
+}
+
+func ValidateForecastContents(topicId uint64, forecaster string, blockHeight BlockHeight) error {
+	if err := ValidateTopicId(topicId); err != nil {
+		return errors.Wrap(err, "forecast topic id is invalid")
+	}
+	if err := ValidateBech32(forecaster); err != nil {
+		return errors.Wrap(err, "forecast forecaster address is invalid")
+	}
+	if err := ValidateBlockHeight(blockHeight); err != nil {
+		return errors.Wrap(err, "forecast block height is invalid")
+	}
+	return nil
+}
+
 // validate that a forecast follows the expected format
 func (forecast *Forecast) Validate() error {
 	if forecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
 	}
-	if err := ValidateTopicId(forecast.TopicId); err != nil {
-		return errors.Wrap(err, "forecast topic id is invalid")
-	}
-	if err := ValidateBlockHeight(forecast.BlockHeight); err != nil {
-		return errors.Wrap(err, "forecast block height is invalid")
-	}
-	if err := ValidateBech32(forecast.Forecaster); err != nil {
-		return errors.Wrap(err, "forecast forecaster address is invalid")
+	if err := ValidateForecastContents(forecast.TopicId, forecast.Forecaster, forecast.BlockHeight); err != nil {
+		return errors.Wrap(err, "forecast contents are invalid")
 	}
 	if len(forecast.ForecastElements) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
@@ -151,17 +196,79 @@ func (forecast *Forecast) Validate() error {
 	return nil
 }
 
+func (inputForecast *InputForecast) Validate() error {
+	if inputForecast == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
+	}
+	if err := ValidateForecastContents(inputForecast.TopicId, inputForecast.Forecaster, inputForecast.BlockHeight); err != nil {
+		return errors.Wrap(err, "forecast contents are invalid")
+	}
+	if len(inputForecast.ForecastElements) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
+	}
+	for _, elem := range inputForecast.ForecastElements {
+		if err := elem.Validate(); err != nil {
+			return errors.Wrap(err, "forecast element is invalid")
+		}
+	}
+	// ExtraData not validated as it is not used by the chain
+	return nil
+}
+
+func ValidateForecastElementContents(inferer string) error {
+	if err := ValidateBech32(inferer); err != nil {
+		return errors.Wrap(err, "forecast element inferer address is invalid")
+	}
+	return nil
+}
+
+func (inputForecastElement *InputForecastElement) Validate() error {
+	if inputForecastElement == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast element cannot be nil")
+	}
+	if err := ValidateForecastElementContents(inputForecastElement.Inferer); err != nil {
+		return errors.Wrap(err, "forecast element contents are invalid")
+	}
+	if err := ValidateBoundedExp40Dec(inputForecastElement.Value); err != nil {
+		return errors.Wrap(err, "forecast element value is invalid")
+	}
+	return nil
+}
+
 // validate that a forecast element follows the expected format
 func (forecastElement *ForecastElement) Validate() error {
 	if forecastElement == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast element cannot be nil")
 	}
-	if err := ValidateBech32(forecastElement.Inferer); err != nil {
-		return errors.Wrap(err, "forecast element inferer address is invalid")
+	if err := ValidateForecastElementContents(forecastElement.Inferer); err != nil {
+		return errors.Wrap(err, "forecast element contents are invalid")
 	}
 	if err := ValidateDec(forecastElement.Value); err != nil {
 		return errors.Wrap(err, "forecast element value is invalid")
 	}
+	return nil
+}
+
+func (inputInferenceForecastBundle *InputInferenceForecastBundle) Validate() error {
+	if inputInferenceForecastBundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference forecast bundle cannot be nil")
+	}
+
+	if inputInferenceForecastBundle.Inference == nil && inputInferenceForecastBundle.Forecast == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
+	}
+
+	if inputInferenceForecastBundle.Inference != nil {
+		if err := inputInferenceForecastBundle.Inference.Validate(); err != nil {
+			return errors.Wrap(err, "inference is invalid")
+		}
+	}
+	if inputInferenceForecastBundle.Forecast != nil {
+		if err := inputInferenceForecastBundle.Forecast.Validate(); err != nil {
+			return errors.Wrap(err, "forecast is invalid")
+		}
+	}
+
 	return nil
 }
 
@@ -181,6 +288,86 @@ func (inferenceForecastBundle *InferenceForecastBundle) Validate() error {
 
 	if inferenceForecastBundle.Inference == nil && inferenceForecastBundle.Forecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
+	}
+
+	return nil
+}
+
+func (bundle *InputWorkerDataBundle) Validate() error {
+	if bundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
+	}
+	if bundle.Nonce == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle nonce cannot be nil")
+	}
+	if len(bundle.Worker) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker cannot be empty")
+	}
+	if len(bundle.Pubkey) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "public key cannot be empty")
+	}
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pubkey")
+	}
+	pubkey := secp256k1.PubKey(pk)
+	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
+
+	if len(bundle.InferencesForecastsBundleSignature) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature cannot be empty")
+	}
+	if bundle.InferenceForecastsBundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference forecasts bundle cannot be nil")
+	}
+
+	// Validate the inference and forecast of the bundle
+	if bundle.InferenceForecastsBundle.Inference == nil && bundle.InferenceForecastsBundle.Forecast == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
+	}
+	if bundle.InferenceForecastsBundle.Inference != nil {
+		if err := bundle.InferenceForecastsBundle.Inference.Validate(); err != nil {
+			return err
+		}
+		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
+			return errors.Wrapf(sdkerrors.ErrUnauthorized,
+				"Inference.Inferer %s does not match pubkey %s",
+				bundle.InferenceForecastsBundle.Inference.Inferer, pubKeyConvertedToAddress)
+		}
+		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
+			return errors.Wrapf(sdkerrors.ErrUnauthorized,
+				"Inference.Inferer %s does not match worker address %s",
+				bundle.InferenceForecastsBundle.Inference.Inferer, bundle.Worker)
+		}
+	}
+	if bundle.InferenceForecastsBundle.Forecast != nil {
+		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
+			return err
+		}
+		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
+			return errors.Wrapf(sdkerrors.ErrUnauthorized,
+				"Forecast.Forecaster %s does not match pubkey %s",
+				bundle.InferenceForecastsBundle.Forecast.Forecaster, pubKeyConvertedToAddress)
+		}
+		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
+			return errors.Wrapf(sdkerrors.ErrUnauthorized,
+				"Forecast.Forecaster %s does not match worker address %s",
+				bundle.InferenceForecastsBundle.Forecast.Forecaster, bundle.Worker)
+		}
+	}
+
+	// Check signature from the bundle, throw if invalid!
+	buf := inferenceForecastsBundleBufferPool.Get()
+	defer inferenceForecastsBundleBufferPool.Put(buf)
+	marshaled, err := bundle.InferenceForecastsBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal inference forecasts bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.InferencesForecastsBundleSignature) {
+		return errors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
+	}
+	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
+	if pubKeyConvertedToAddress != bundle.Worker {
+		return errors.Wrap(sdkerrors.ErrUnauthorized, "worker address does not match signature")
 	}
 
 	return nil
@@ -267,6 +454,81 @@ func (bundle *WorkerDataBundle) Validate() error {
 	return nil
 }
 
+// REPUTER VALIDATIONS
+
+func (bundle *InputValueBundle) Validate() error {
+	if bundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
+	}
+	if err := ValidateTopicId(bundle.TopicId); err != nil {
+		return errors.Wrap(err, "value bundle topic id is invalid")
+	}
+	if bundle.ReputerRequestNonce == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle reputer request nonce cannot be nil")
+	}
+	if err := ValidateBech32(bundle.Reputer); err != nil {
+		return errors.Wrap(err, "value bundle reputer address is invalid")
+	}
+	// extraData is not checked as it is not used by the chain
+
+	if err := ValidateBoundedExp40Dec(bundle.CombinedValue); err != nil {
+		return errors.Wrap(err, "value bundle combined value is invalid")
+	}
+
+	// nil values for bundle.InfererValues are interpreted to mean that there
+	// are no inferer values for this bundle, and are allowed
+	for _, infererValue := range bundle.InfererValues {
+		if err := infererValue.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle inferer value is invalid")
+		}
+	}
+
+	// nil values for bundle.ForecasterValues are interpreted to mean that there
+	// are no forecaster values for this bundle, and are allowed
+	for _, forecasterValue := range bundle.ForecasterValues {
+		if err := forecasterValue.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle forecaster value is invalid")
+		}
+	}
+
+	if err := ValidateBoundedExp40Dec(bundle.NaiveValue); err != nil {
+		return errors.Wrap(err, "value bundle naive value is invalid")
+	}
+
+	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
+	// are no one out inferer values for this bundle, and are allowed
+	for _, oneOutInfererValue := range bundle.OneOutInfererValues {
+		if err := oneOutInfererValue.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneOutForecasterValues are interpreted to mean that there
+	// are no one out forecaster values for this bundle, and are allowed
+	for _, oneOutForecasterValue := range bundle.OneOutForecasterValues {
+		if err := oneOutForecasterValue.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle one out forecaster value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneInForecasterValues are interpreted to mean that there
+	// are no one in forecaster values for this bundle, and are allowed
+	for _, oneInForecasterValue := range bundle.OneInForecasterValues {
+		if err := oneInForecasterValue.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle one in forecaster value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneOutInfererForecasterValues are interpreted to mean that there
+	// are no one out inferer forecaster values for this bundle, and are allowed
+	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
+		if err := oneOutInfererForecaster.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
+		}
+	}
+	return nil
+}
+
 // validate that a value bundle follows the expected format
 func (bundle *ValueBundle) Validate() error {
 	if bundle == nil {
@@ -342,7 +604,10 @@ func (bundle *ValueBundle) Validate() error {
 }
 
 // validate that a reputer value bundle follows the expected format
-func (bundle *ReputerValueBundle) Validate() error {
+func (bundle *InputReputerValueBundle) Validate() error {
+	if bundle == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer value bundle cannot be nil")
+	}
 	if bundle.ValueBundle == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
@@ -372,6 +637,173 @@ func (bundle *ReputerValueBundle) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
 	}
 
+	return nil
+}
+
+// validate that a reputer value bundle follows the expected format
+func (bundle *ReputerValueBundle) Validate() error {
+	if bundle == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer value bundle cannot be nil")
+	}
+	if bundle.ValueBundle == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
+	}
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid pubkey %d", len(pk))
+	}
+	pubkey := secp256k1.PubKey(pk)
+	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
+
+	if bundle.ValueBundle.Reputer != pubKeyConvertedToAddress {
+		return errors.Wrapf(sdkerrors.ErrUnauthorized, "Reputer does not match pubkey")
+	}
+
+	// validate the value bundle
+	if err := bundle.ValueBundle.Validate(); err != nil {
+		return errors.Wrap(err, "value bundle is invalid")
+	}
+
+	buf := reputerValueBundleBufferPool.Get()
+	defer reputerValueBundleBufferPool.Put(buf)
+	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.Signature) {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
+	}
+
+	return nil
+}
+
+// validate that a worker attributed value follows the expected format
+func (inputWorkerValue *InputWorkerAttributedValue) Validate() error {
+	if inputWorkerValue == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "input worker attributed value cannot be nil")
+	}
+	_, err := sdk.AccAddressFromBech32(inputWorkerValue.Worker)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
+	}
+
+	if err := ValidateBoundedExp40Dec(inputWorkerValue.Value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validate that a worker attributed value follows the expected format
+func (workerValue *WorkerAttributedValue) Validate() error {
+	if workerValue == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker attributed value cannot be nil")
+	}
+	_, err := sdk.AccAddressFromBech32(workerValue.Worker)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
+	}
+
+	if err := ValidateDec(workerValue.Value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (inputWithheldWorkerValue *InputWithheldWorkerAttributedValue) Validate() error {
+	if inputWithheldWorkerValue == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "input withheld worker attributed value cannot be nil")
+	}
+	_, err := sdk.AccAddressFromBech32(inputWithheldWorkerValue.Worker)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
+	}
+
+	if err := ValidateBoundedExp40Dec(inputWithheldWorkerValue.Value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validate that a withheld worker attributed value follows the expected format
+func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
+	if withheldWorkerValue == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "withheld worker attributed value cannot be nil")
+	}
+	_, err := sdk.AccAddressFromBech32(withheldWorkerValue.Worker)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
+	}
+
+	if err := ValidateDec(withheldWorkerValue.Value); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (inputOneOutInfererForecasterValues *InputOneOutInfererForecasterValues) Validate() error {
+	if inputOneOutInfererForecasterValues == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "input one out inferer forecaster values cannot be nil")
+	}
+	if err := ValidateBech32(inputOneOutInfererForecasterValues.Forecaster); err != nil {
+		return errors.Wrap(err, "one out inferer forecaster values forecaster is invalid")
+	}
+	if inputOneOutInfererForecasterValues.OneOutInfererValues == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
+	}
+	for _, oneOutInfererValue := range inputOneOutInfererForecasterValues.OneOutInfererValues {
+		if err := oneOutInfererValue.Validate(); err != nil {
+			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
+		}
+	}
+	return nil
+}
+
+// validate that a types.OneOutInfererForecasterValues follows the expected format
+func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate() error {
+	if oneOutInfererForecasterValues == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "one out inferer forecaster values cannot be nil")
+	}
+	if err := ValidateBech32(oneOutInfererForecasterValues.Forecaster); err != nil {
+		return errors.Wrap(err, "one out inferer forecaster values forecaster is invalid")
+	}
+	if oneOutInfererForecasterValues.OneOutInfererValues == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
+	}
+	for _, oneOutInfererValue := range oneOutInfererForecasterValues.OneOutInfererValues {
+		if err := oneOutInfererValue.Validate(); err != nil {
+			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
+		}
+	}
+	return nil
+}
+
+// validate that a types.InputReputerValueBundles follows the expected format
+func (inputReputerValueBundles *InputReputerValueBundles) Validate() error {
+	if inputReputerValueBundles == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidType, "reputer value bundles cannot be nil")
+	}
+	for i, reputerValueBundle := range inputReputerValueBundles.ReputerValueBundles {
+		if err := reputerValueBundle.Validate(); err != nil {
+			return errors.Wrapf(err, "reputer value bundle at index %d is invalid", i)
+		}
+	}
+	return nil
+}
+
+// validate that a types.ReputerValueBundles follows the expected format
+func (bundle *ReputerValueBundles) Validate() error {
+	if bundle.ReputerValueBundles == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidType, "reputer value bundles cannot be nil")
+	}
+	for i, reputerValueBundle := range bundle.ReputerValueBundles {
+		if err := reputerValueBundle.Validate(); err != nil {
+			return errors.Wrapf(err, "reputer value bundle at index %d is invalid", i)
+		}
+	}
 	return nil
 }
 
@@ -462,63 +894,6 @@ func (topic Topic) Validate(params Params) error {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active reputer quantile must be between 0 and 1 inclusive")
 	}
 
-	return nil
-}
-
-// validate that a worker attributed value follows the expected format
-func (workerValue *WorkerAttributedValue) Validate() error {
-	_, err := sdk.AccAddressFromBech32(workerValue.Worker)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
-	}
-
-	if err := ValidateDec(workerValue.Value); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validate that a withheld worker attributed value follows the expected format
-func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
-	_, err := sdk.AccAddressFromBech32(withheldWorkerValue.Worker)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
-	}
-
-	if err := ValidateDec(withheldWorkerValue.Value); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validate that a types.OneOutInfererForecasterValues follows the expected format
-func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate() error {
-	if err := ValidateBech32(oneOutInfererForecasterValues.Forecaster); err != nil {
-		return errors.Wrap(err, "one out inferer forecaster values forecaster is invalid")
-	}
-	if oneOutInfererForecasterValues.OneOutInfererValues == nil {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
-	}
-	for _, oneOutInfererValue := range oneOutInfererForecasterValues.OneOutInfererValues {
-		if err := oneOutInfererValue.Validate(); err != nil {
-			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
-		}
-	}
-	return nil
-}
-
-// validate that a types.ReputerValueBundles follows the expected format
-func (bundle *ReputerValueBundles) Validate() error {
-	if bundle.ReputerValueBundles == nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidType, "reputer value bundles cannot be nil")
-	}
-	for i, reputerValueBundle := range bundle.ReputerValueBundles {
-		if err := reputerValueBundle.Validate(); err != nil {
-			return errors.Wrapf(err, "reputer value bundle at index %d is invalid", i)
-		}
-	}
 	return nil
 }
 

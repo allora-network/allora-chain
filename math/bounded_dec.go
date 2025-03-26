@@ -146,3 +146,11 @@ func (bd BoundedExp40Dec) Equal(y BoundedExp40Dec) bool {
 func (bd BoundedExp40Dec) String() string {
 	return bd.dec.String()
 }
+
+func (bd BoundedExp40Dec) IsNaN() bool {
+	return bd.dec.IsNaN()
+}
+
+func (bd BoundedExp40Dec) IsFinite() bool {
+	return bd.dec.IsFinite()
+}
