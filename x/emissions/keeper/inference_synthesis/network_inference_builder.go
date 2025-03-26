@@ -144,6 +144,12 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 		// if each inferer was removed one at a time
 		oneOutInfererValues := make([]*emissions.WithheldWorkerAttributedValue, 0)
 
+		// Get this forecaster's forecast and filter out the withheld inferer
+		forecast, ok := args.ForecasterToForecast[forecaster]
+		if !ok {
+			continue
+		}
+
 		for _, withheldInferer := range args.Inferers {
 			// Filter out the inferer we want to withhold
 			filteredInferers := make([]Inferer, 0, len(args.Inferers)-1)
@@ -160,12 +166,6 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 						filteredInfererToRegret[inferer] = regret
 					}
 				}
-			}
-
-			// Get this forecaster's forecast and filter out the withheld inferer
-			forecast, ok := args.ForecasterToForecast[forecaster]
-			if !ok {
-				continue
 			}
 
 			filteredForecastElements := make([]*emissions.ForecastElement, 0)
