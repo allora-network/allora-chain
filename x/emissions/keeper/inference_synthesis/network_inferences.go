@@ -1,8 +1,6 @@
 package inferencesynthesis
 
 import (
-	"fmt"
-
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -253,7 +251,7 @@ func GetCalcNetworkInferenceArgs(
 			return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting inferer regret")
 		}
 
-		logger.Debug(fmt.Sprintf("Inferer %v has regret %v", inferer, regret.Value))
+		logger.Debug("Inferer has regret", "inferer", inferer, "regret", regret.Value)
 		infererToRegret[inferer] = &regret.Value
 	}
 
@@ -264,7 +262,7 @@ func GetCalcNetworkInferenceArgs(
 			return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting forecaster regret")
 		}
 
-		logger.Debug(fmt.Sprintf("Forecaster %v has regret %v", forecaster, regret.Value))
+		logger.Debug("Forecaster has regret", "forecaster", forecaster, "regret", regret.Value)
 		forecasterToRegret[forecaster] = &regret.Value
 	}
 
@@ -273,7 +271,7 @@ func GetCalcNetworkInferenceArgs(
 	if err != nil {
 		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret stdnorm")
 	}
-	logger.Info(fmt.Sprintf("GetCalcNetworkInferenceArgs: StdDevPlusEpsilon: %v", stdDevPlusEpsilon))
+	logger.Info("GetCalcNetworkInferenceArgs: StdDevPlusEpsilon", "stdDevPlusEpsilon", stdDevPlusEpsilon)
 
 	forecastImpliedInferencesByWorker, _, _, err := CalcForecastImpliedInferences(
 		CalcForecastImpliedInferencesArgs{

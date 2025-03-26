@@ -47,8 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* [#764](https://github.com/allora-network/allora-chain/pull/764) TopicRewardAlpha using weekly cadence
-
 ### Deprecated
 
 ### Removed
@@ -69,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#762](https://github.com/allora-network/allora-chain/pull/762) Worker node owner should get compensated, not sender of inferences
 * [#766](https://github.com/allora-network/allora-chain/pull/766) Fix sort by weight instead of topic id. Remove excess sort logic
 * [#776](https://github.com/allora-network/allora-chain/pull/776) Target weight: rm div by topic epochLength
+* [#764](https://github.com/allora-network/allora-chain/pull/764) TopicRewardAlpha using weekly cadence
 
 ### Deprecated
 
@@ -81,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#761](https://github.com/allora-network/allora-chain/pull/761) Fix close worker nonce boundaries
 * [#760](https://github.com/allora-network/allora-chain/pull/760) Fix topic low-weight inactive topic weight vulnerability
 * [#771](https://github.com/allora-network/allora-chain/pull/771) Fix reputer/worker window boundaries
+* [#782](https://github.com/allora-network/allora-chain/pull/782) More efficient logging, added check-log-sprintf linter
 
 ### Security
 

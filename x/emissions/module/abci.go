@@ -2,7 +2,6 @@ package module
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"cosmossdk.io/errors"
@@ -18,9 +17,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	sdkCtx.Logger().Debug(
-		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
-			blockHeight))
+	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
 	moduleParams, err := am.keeper.GetParams(sdkCtx)
 	if err != nil {
 		sdkCtx.Logger().Error("Error Getting module params", err)
@@ -42,7 +39,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Weights error")
 	}
 
-	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
+	sdkCtx.Logger().Debug("ABCI EndBlocker", "blockHeight", blockHeight, "totalRevenue", totalRevenue, "sumWeight", sumWeight)
 
 	err = rewards.UpdateNoncesOfActiveTopics(
 		sdkCtx,
@@ -73,11 +70,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {
 		for _, topicId := range workerWindowsToClose.TopicIds {
-			sdkCtx.Logger().Info(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %d", topicId))
+			sdkCtx.Logger().Info("ABCI EndBlocker: Worker close cadence met for topic", "topicId", topicId)
 			// Check if there is an unfulfilled nonce
 			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId)
 			if err != nil {
-				sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+				sdkCtx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 				continue
 			} else if len(nonces.Nonces) == 0 {
 				// No nonces to fulfill
@@ -85,21 +82,21 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			} else {
 				topic, err := am.keeper.GetTopic(sdkCtx, topicId)
 				if err != nil {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+					sdkCtx.Logger().Warn("Error getting topic", "error", err)
 					continue
 				}
 				for _, nonce := range nonces.Nonces {
 					// No need to validate blockHeight boundaries - we accept submissions until this block.
-					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
+					sdkCtx.Logger().Debug("ABCI EndBlocker", "blockHeight", blockHeight, "closing worker window for topic", "topicId", topicId, "nonce", nonce)
 					err = allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
 					if err != nil {
-						sdkCtx.Logger().Info(fmt.Sprintf("Error closing worker nonce, proactively fulfilling: %s", err.Error()))
+						sdkCtx.Logger().Info("Error closing worker nonce, proactively fulfilling", "error", err)
 						// Proactively close the nonce
 						fulfilledNonce, err := am.keeper.FulfillWorkerNonce(sdkCtx, topicId, nonce)
 						if err != nil {
-							sdkCtx.Logger().Warn(fmt.Sprintf("Error fulfilling worker nonce: %s", err.Error()))
+							sdkCtx.Logger().Warn("Error fulfilling worker nonce", "error", err)
 						} else {
-							sdkCtx.Logger().Debug(fmt.Sprintf("Fulfilled: %t, worker nonce: %v", fulfilledNonce, nonce))
+							sdkCtx.Logger().Debug("Fulfilled", "fulfilledNonce", fulfilledNonce, "nonce", nonce)
 						}
 					}
 				}
@@ -107,7 +104,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		}
 		err = am.keeper.DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
 		if err != nil {
-			sdkCtx.Logger().Warn(fmt.Sprintf("Error deleting worker window blockheight: %s", err.Error()))
+			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
 		}
 	}
 	return nil

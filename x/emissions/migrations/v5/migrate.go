@@ -2,7 +2,6 @@ package v5
 
 import (
 	"encoding/binary"
-	"fmt"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
@@ -147,7 +146,7 @@ func MigrateTopics(
 	for id := uint64(1); id < nextTopicId; id++ {
 		idByte := make([]byte, 8)
 		binary.BigEndian.PutUint64(idByte, id)
-		ctx.Logger().Info(fmt.Sprintf("MIGRATION V5: Updating topic:%d", id))
+		ctx.Logger().Info("MIGRATION V5: Updating topic", "topicId", id)
 		topic, err := emissionsKeeper.GetTopic(ctx, id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get topic")
@@ -174,7 +173,7 @@ func MigrateTopics(
 				return errorsmod.Wrapf(err, "failed to add topic weight")
 			}
 		} else {
-			ctx.Logger().Debug("MIGRATION V5: Topic is not active, skipping weight - topic", topic.Id)
+			ctx.Logger().Debug("MIGRATION V5: Topic is not active, skipping weight - topicId", "topicId", topic.Id)
 		}
 	}
 	ctx.Logger().Debug("MIGRATION V5: Setting modified topics")
@@ -221,7 +220,7 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 	}
 
 	for _, prefix := range prefixes {
-		ctx.Logger().Info(fmt.Sprintf("MIGRATION V5: RESETTING %v MAP", prefix.name))
+		ctx.Logger().Info("MIGRATION V5: RESETTING MAP", "name", prefix.name)
 		err := migutils.SafelyClearWholeMap(ctx, store, prefix.prefix, maxPageSize)
 		if err != nil {
 			return err

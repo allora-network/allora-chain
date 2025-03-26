@@ -12,6 +12,18 @@ const (
 	DataLimitExponent = 40
 )
 
+var (
+	// Pre-computed boundary values
+	minBoundValue Dec
+	maxBoundValue Dec
+)
+
+// Initialize the boundary values for performance
+func init() {
+	minBoundValue = MustNewDecFromString(fmt.Sprintf("1e-%d", DataLimitExponent))
+	maxBoundValue = MustNewDecFromString(fmt.Sprintf("1e%d", DataLimitExponent))
+}
+
 // BoundedExp40Dec represents a decimal with enforced value boundaries.
 // It wraps the base Dec type and enforces limits during marshaling/unmarshaling.
 type BoundedExp40Dec struct {
@@ -34,16 +46,11 @@ func validateBounds(d Dec) error {
 		return errorsmod.Wrap(err, "failed to get absolute value")
 	}
 
-	// Create boundary values for the magnitude
-	baseString := "1e"
-	minValue, _ := NewDecFromString(baseString + fmt.Sprintf("-%d", DataLimitExponent))
-	maxValue, _ := NewDecFromString(baseString + fmt.Sprintf("%d", DataLimitExponent))
-
 	// Check magnitude boundaries
-	if absValue.Lt(minValue) {
+	if absValue.Lt(minBoundValue) {
 		return errorsmod.Wrapf(ErrOutOfRange, "value %s cannot have higher precision than %d", d, DataLimitExponent)
 	}
-	if absValue.Gt(maxValue) {
+	if absValue.Gt(maxBoundValue) {
 		return errorsmod.Wrapf(ErrOutOfRange, "value %s cannot be greater than ±1e%d", d, DataLimitExponent)
 	}
 

@@ -1,7 +1,6 @@
 package actorutils
 
 import (
-	"fmt"
 	"sort"
 
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -104,7 +103,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
-	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topic.Id, nonce))
+	ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
 	// Return an empty response as the operation was successful
 	return nil
 }

@@ -1,8 +1,6 @@
 package inferencesynthesis
 
 import (
-	"fmt"
-
 	"cosmossdk.io/log"
 
 	errorsmod "cosmossdk.io/errors"
@@ -167,7 +165,7 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 	for _, worker := range args.Inferers {
 		regret, ok := args.InfererToRegret[worker]
 		if !ok {
-			args.Logger.Debug(fmt.Sprintf("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers %v", worker))
+			args.Logger.Debug("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers", "worker", worker)
 			continue
 		}
 		regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
@@ -188,7 +186,7 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 		for _, worker := range args.Forecasters {
 			regret, ok := args.ForecasterToRegret[worker]
 			if !ok {
-				args.Logger.Debug(fmt.Sprintf("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers %v", worker))
+				args.Logger.Debug("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers", "worker", worker)
 				continue
 			}
 			regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
@@ -274,17 +272,17 @@ func calcWeightedInference(args calcWeightedInferenceArgs) (InferenceValue, erro
 		for _, inferer := range args.inferers {
 			inferenceByWorker, exists := args.workerToInference[inferer]
 			if !exists {
-				args.logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in CalcWeightedInference %v", inferer))
+				args.logger.Debug("Cannot find inferer in InferenceByWorker in CalcWeightedInference", "inferer", inferer)
 				continue
 			}
 			infererWeight, exists := args.weights.Inferers[inferer]
 			if !exists {
-				args.logger.Debug(fmt.Sprintf("Cannot find inferer in weights.inferers in CalcWeightedInference %v", inferer))
+				args.logger.Debug("Cannot find inferer in weights.inferers in CalcWeightedInference", "inferer", inferer)
 				continue
 			}
 			_, exists = args.infererToRegret[inferer]
 			if !exists {
-				args.logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in CalcWeightedInference %v", inferer))
+				args.logger.Debug("Cannot find inferer in InfererRegrets in CalcWeightedInference", "inferer", inferer)
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
@@ -301,17 +299,17 @@ func calcWeightedInference(args calcWeightedInferenceArgs) (InferenceValue, erro
 		for _, forecaster := range args.forecasters {
 			workerForecastImpliedInference, exists := args.forecasterToForecastImpliedInference[forecaster]
 			if !exists {
-				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference %v", forecaster))
+				args.logger.Debug("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference", "forecaster", forecaster)
 				continue
 			}
 			forecasterWeight, exists := args.weights.Forecasters[forecaster]
 			if !exists {
-				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in weights.forecasters in CalcWeightedInference %v", forecaster))
+				args.logger.Debug("Cannot find forecaster in weights.forecasters in CalcWeightedInference", "forecaster", forecaster)
 				continue
 			}
 			_, exists = args.forecasterToRegret[forecaster]
 			if !exists {
-				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference %v", forecaster))
+				args.logger.Debug("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference", "forecaster", forecaster)
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
@@ -353,7 +351,7 @@ func getInfererRegretsSlice(
 	for _, inferer := range inferers {
 		regret, ok := infererToRegret[inferer]
 		if !ok {
-			logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in GetInfererRegretsSlice %v", inferer))
+			logger.Debug("Cannot find inferer in InfererRegrets in GetInfererRegretsSlice", "inferer", inferer)
 			continue
 		}
 		regrets = append(regrets, *regret)
@@ -376,7 +374,7 @@ func getForecasterRegretsSlice(
 	for _, forecaster := range forecasters {
 		regret, ok := forecasterToRegret[forecaster]
 		if !ok {
-			logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in GetForecasterRegretsSlice %v", forecaster))
+			logger.Debug("Cannot find forecaster in ForecasterRegrets in GetForecasterRegretsSlice", "forecaster", forecaster)
 			continue
 		}
 		regrets = append(regrets, *regret)

@@ -2,7 +2,6 @@ package v3
 
 import (
 	"encoding/binary"
-	"fmt"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
@@ -192,7 +191,7 @@ func MigrateTopics(
 		}
 		topicWeightData[oldMsg.Id] = weight
 		blockHeight := oldMsg.EpochLastEnded + oldMsg.EpochLength
-		ctx.Logger().Warn(fmt.Sprintf("update blockHeight %d", blockHeight))
+		ctx.Logger().Warn("update blockHeight", "blockHeight", blockHeight)
 		// If the weight is less than minimum weight then skip this topic
 		if weight.Lt(params.MinTopicWeight) {
 			topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)

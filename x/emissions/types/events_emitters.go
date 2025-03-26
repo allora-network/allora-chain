@@ -15,7 +15,7 @@ func EmitNewInfererScoresSetEvent(ctx sdk.Context, scores []Score) {
 	metrics.IncrProducerEventCount(metrics.INFERER_SCORE_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewInfererScoresSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewInfererScoresSetEvent", "error", err)
 	}
 }
 
@@ -26,7 +26,7 @@ func EmitNewForecasterScoresSetEvent(ctx sdk.Context, scores []Score) {
 	metrics.IncrProducerEventCount(metrics.FORECASTER_SCORE_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, scores))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewForecasterScoresSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewForecasterScoresSetEvent", "error", err)
 	}
 }
 
@@ -37,7 +37,7 @@ func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score) {
 	metrics.IncrProducerEventCount(metrics.REPUTER_SOCRE_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_REPUTER, scores))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewReputerScoresSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewReputerScoresSetEvent", "error", err)
 	}
 }
 
@@ -45,7 +45,7 @@ func EmitNewNetworkLossSetEvent(ctx sdk.Context, topicId TopicId, blockHeight Bl
 	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(topicId, blockHeight, lossBundle))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
 	}
 }
 
@@ -53,7 +53,7 @@ func EmitNewForecastTaskUtilityScoreSetEvent(ctx sdk.Context, topicId TopicId, s
 	metrics.IncrProducerEventCount(metrics.FORECAST_TASK_SCORE_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting EmitNewReputerLastCommitSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewForecastTaskUtilityScoreSetEvent", "error", err)
 	}
 }
 
@@ -64,7 +64,7 @@ func EmitNewActorEMAScoresSetEvent(ctx sdk.Context, actorType ActorType, scores 
 	metrics.IncrProducerEventCount(metrics.WORKER_EMA_SCORE_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewEMAScoresSetEventBase(actorType, scores, activations))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting EmitNewActorEMAScoresSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewActorEMAScoresSetEvent", "error", err)
 	}
 }
 
@@ -77,7 +77,7 @@ func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight, blockHeight
 	metrics.IncrProducerEventCount(metrics.INFERER_REWARD_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, blockHeight, blockHeightTx, rewards))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewInfererRewardsSettledEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewInfererRewardsSettledEvent", "error", err)
 	}
 }
 
@@ -88,7 +88,7 @@ func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight, blockHei
 	metrics.IncrProducerEventCount(metrics.FORECASTER_REWARD_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, blockHeight, blockHeightTx, rewards))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewForecasterRewardsSettledEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewForecasterRewardsSettledEvent", "error", err)
 	}
 }
 
@@ -99,7 +99,7 @@ func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight,
 	metrics.IncrProducerEventCount(metrics.REPUTER_REWARD_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_REPUTER, blockHeight, blockHeightTx, rewards))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewReputerAndDelegatorRewardsSettledEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewReputerAndDelegatorRewardsSettledEvent", "error", err)
 	}
 }
 
@@ -107,7 +107,7 @@ func EmitNewTopicRewardSetEvent(ctx sdk.Context, topicRewards map[uint64]*allora
 	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewTopicRewardSetEventBase(topicRewards))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting EmitNewTopicRewardSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewTopicRewardSetEvent", "error", err)
 	}
 }
 
@@ -117,7 +117,7 @@ func EmitNewWorkerLastCommitSetEvent(ctx sdk.Context, topicId TopicId, height Bl
 	metrics.IncrProducerEventCount(metrics.WORKER_LAST_COMMIT_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewWorkerLastCommitSetEventBase(topicId, height, nonce))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewWorkerLastCommitSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewWorkerLastCommitSetEvent", "error", err)
 	}
 }
 
@@ -125,7 +125,7 @@ func EmitNewReputerLastCommitSetEvent(ctx sdk.Context, topicId TopicId, height B
 	metrics.IncrProducerEventCount(metrics.REPUTER_LAST_COMMIT_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewReputerLastCommitSetEventBase(topicId, height, nonce))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting EmitNewReputerLastCommitSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewReputerLastCommitSetEvent", "error", err)
 	}
 }
 
@@ -138,7 +138,7 @@ func EmitNewListeningCoefficientsSetEvent(ctx sdk.Context, actorType ActorType, 
 	metrics.IncrProducerEventCount(metrics.LISTENING_COEFFICIENTS_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewListeningCoefficientsSetEventBase(topicId, blockHeight, addresses, actorType, coefficients))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewListeningCoefficientsSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewListeningCoefficientsSetEvent", "error", err)
 	}
 }
 
@@ -151,7 +151,7 @@ func EmitNewInfererNetworkRegretSetEvent(ctx sdk.Context, topicId uint64, blockH
 	metrics.IncrProducerEventCount(metrics.INFERER_NETWORK_REGRET_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewInfererNetworkRegretSetEventBase(topicId, blockHeight, addresses, regrets))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewInfererNetworkRegretSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewInfererNetworkRegretSetEvent", "error", err)
 	}
 }
 
@@ -162,7 +162,7 @@ func EmitNewForecasterNetworkRegretSetEvent(ctx sdk.Context, topicId uint64, blo
 	metrics.IncrProducerEventCount(metrics.FORECASTER_NETWORK_REGRET_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewForecasterNetworkRegretSetEventBase(topicId, blockHeight, addresses, regrets))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewForecasterNetworkRegretSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewForecasterNetworkRegretSetEvent", "error", err)
 	}
 }
 
@@ -173,7 +173,7 @@ func EmitNewNaiveInfererNetworkRegretSetEvent(ctx sdk.Context, topicId uint64, b
 	metrics.IncrProducerEventCount(metrics.NAIVE_INFERER_NETWORK_REGRET_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewNaiveInfererNetworkRegretSetEventBase(topicId, blockHeight, addresses, regrets))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewNaiveInfererNetworkRegretSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewNaiveInfererNetworkRegretSetEvent", "error", err)
 	}
 }
 
@@ -181,7 +181,7 @@ func EmitNewTopicInitialRegretSetEvent(ctx sdk.Context, topicId uint64, blockHei
 	metrics.IncrProducerEventCount(metrics.TOPIC_INITIAL_REGRET_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewTopicInitialRegretSetEventBase(topicId, blockHeight, regret))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewTopicInitialRegretSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewTopicInitialRegretSetEvent", "error", err)
 	}
 }
 
@@ -189,7 +189,7 @@ func EmitNewTopicInitialEmaScoreSetEvent(ctx sdk.Context, actorType ActorType, t
 	metrics.IncrProducerEventCount(metrics.TOPIC_INITIAL_EMA_SCORE_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewTopicInitialEmaScoreSetEventBase(actorType, topicId, blockHeight, score))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewTopicInitialEmaScoreSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewTopicInitialEmaScoreSetEvent", "error", err)
 	}
 }
 
@@ -198,7 +198,7 @@ func EmitNewRegretStdNormSetEvent(ctx sdk.Context, topicId uint64, blockHeight i
 	metrics.IncrProducerEventCount(metrics.REGRET_STDNORM_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, blockHeight, stdNorm))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewRegretStdNormSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewRegretStdNormSetEvent", "error", err)
 	}
 }
 
@@ -206,7 +206,7 @@ func EmitNewInfererWeightSetEvent(ctx sdk.Context, topicId uint64, blockHeight i
 	metrics.IncrProducerEventCount(metrics.INFERER_WEIGHTS_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewInfererWeightSetEventBase(topicId, blockHeight, address, weight))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewInfererWeightSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewInfererWeightSetEvent", "error", err)
 	}
 }
 
@@ -214,6 +214,6 @@ func EmitNewForecasterWeightSetEvent(ctx sdk.Context, topicId uint64, blockHeigh
 	metrics.IncrProducerEventCount(metrics.FORECASTER_WEIGHTS_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewForecasterWeightSetEventBase(topicId, blockHeight, address, weight))
 	if err != nil {
-		ctx.Logger().Warn("Error emitting NewForecasterWeightSetEvent: ", err.Error())
+		ctx.Logger().Warn("Error emitting NewForecasterWeightSetEvent", "error", err)
 	}
 }

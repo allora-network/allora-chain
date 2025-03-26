@@ -1,8 +1,6 @@
 package inferencesynthesis
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -39,7 +37,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 	forecasterToRegretOut map[Forecaster]*Regret,
 	err error,
 ) {
-	args.Logger.Debug(fmt.Sprintf("Calculating forecast-implied inferences for topic %v", args.TopicId))
+	args.Logger.Debug("Calculating forecast-implied inferences", "topicId", args.TopicId)
 	// "k" here is the forecaster's address
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
 	forecasterToForecastImpliedInference = make(map[Forecaster]*emissionstypes.Inference, len(args.Forecasters))
@@ -199,6 +197,5 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 		}
 	}
 
-	args.Logger.Debug(fmt.Sprintf("Forecast-implied inferences: %v", forecasterToForecastImpliedInference))
 	return forecasterToForecastImpliedInference, infererToRegretOut, forecasterToRegretOut, nil
 }

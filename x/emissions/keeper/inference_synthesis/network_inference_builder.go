@@ -2,7 +2,6 @@ package inferencesynthesis
 
 import (
 	"context"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -33,7 +32,7 @@ type GetCombinedInferenceArgs struct {
 // Calculates the network combined inference I_i, Equation 9
 func GetCombinedInference(args GetCombinedInferenceArgs) (
 	weights RegretInformedWeights, combinedInference InferenceValue, err error) {
-	args.Logger.Debug(fmt.Sprintf("Calculating combined inference for topic %v", args.TopicId))
+	args.Logger.Debug("Calculating combined inference", "topicId", args.TopicId)
 
 	weights, err = CalcWeightsGivenWorkers(
 		CalcWeightsGivenWorkersArgs{
@@ -68,7 +67,7 @@ func GetCombinedInference(args GetCombinedInferenceArgs) (
 		return RegretInformedWeights{}, InferenceValue{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating combined inference")
 	}
 
-	args.Logger.Debug(fmt.Sprintf("Combined inference calculated for topic %v is %v", args.TopicId, combinedInference))
+	args.Logger.Debug("Combined inference calculated", "topicId", args.TopicId)
 	return weights, combinedInference, nil
 }
 
@@ -96,7 +95,7 @@ func getForecastImpliedInferences(
 	forecastImpliedInferences = make([]*emissions.WorkerAttributedValue, 0)
 	for _, forecaster := range forecasters {
 		if forecasterToForecastImpliedInference[forecaster] == nil {
-			logger.Warn(fmt.Sprintf("getForecastImpliedInferences() no forecast-implied inference for forecaster %s", forecaster))
+			logger.Warn("getForecastImpliedInferences() no forecast-implied inference", "forecaster", forecaster)
 			continue
 		}
 		forecastImpliedInferences = append(forecastImpliedInferences, &emissions.WorkerAttributedValue{
@@ -128,7 +127,7 @@ type GetNaiveInferenceArgs struct {
 
 // Calculates the network naive inference I^-_i
 func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.Dec, err error) {
-	args.Logger.Debug(fmt.Sprintf("Calculating naive inference for topic %v", args.TopicId))
+	args.Logger.Debug("Calculating naive inference", "topicId", args.TopicId)
 
 	// Get inferer naive regrets
 	infererToRegret := make(map[string]*alloraMath.Dec)
@@ -173,7 +172,7 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.De
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "GetNaiveInference() error calculating naive inference")
 	}
 
-	args.Logger.Debug(fmt.Sprintf("Naive inference calculated for topic %v is %v", args.TopicId, naiveInference))
+	args.Logger.Debug("Naive inference calculated", "topicId", args.TopicId)
 	return naiveInference, nil
 }
 
@@ -204,8 +203,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 	oneOutNetworkInferenceWithoutInferer alloraMath.Dec,
 	err error,
 ) {
-	args.Logger.Debug(fmt.Sprintf(
-		"calcOneOutInfererInference() calculating one-out inference for topic %v withheld inferer %s", args.TopicId, args.WithheldInferer))
+	args.Logger.Debug("calcOneOutInfererInference() calculating one-out inference", "topicId", args.TopicId, "withheldInferer", args.WithheldInferer)
 
 	// To calculate one out, remove the inferer from the list of inferers
 	remainingInferers := make([]Worker, 0)
@@ -217,7 +215,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 			remainingInferers = append(remainingInferers, inferer)
 			inference, ok := args.InfererToInference[inferer]
 			if !ok {
-				args.Logger.Debug(fmt.Sprintf("calcOneOutInfererInference() cannot find inferer in InferenceByWorker in args.InfererToInference %v", inferer))
+				args.Logger.Debug("calcOneOutInfererInference() cannot find inferer in InferenceByWorker in args.InfererToInference", "inferer", inferer)
 				continue
 			}
 			remainingInfererToInference[inferer] = inference
@@ -298,7 +296,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error calculating one-out inference for inferer")
 	}
 
-	args.Logger.Debug(fmt.Sprintf("One-out inference calculated for topic %v withheld inferer %s is %v", args.TopicId, args.WithheldInferer, oneOutNetworkInferenceWithoutInferer))
+	args.Logger.Debug("One-out inference calculated", "topicId", args.TopicId, "withheldInferer", args.WithheldInferer, "oneOutNetworkInferenceWithoutInferer", oneOutNetworkInferenceWithoutInferer)
 	return oneOutNetworkInferenceWithoutInferer, nil
 }
 
@@ -331,11 +329,7 @@ func GetOneOutInfererInferences(args GetOneOutInfererInferencesArgs) (
 	oneOutInfererInferences []*emissions.WithheldWorkerAttributedValue,
 	err error,
 ) {
-	args.Logger.Debug(fmt.Sprintf(
-		"Calculating one-out inferer inferences for topic %v with %v inferers",
-		args.TopicId,
-		len(args.Inferers),
-	))
+	args.Logger.Debug("Calculating one-out inferer inferences", "topicId", args.TopicId, "numInferers", len(args.Inferers))
 	// Calculate the one-out inferences per inferer
 	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
 	for _, worker := range args.Inferers {
@@ -370,7 +364,7 @@ func GetOneOutInfererInferences(args GetOneOutInfererInferencesArgs) (
 		})
 	}
 
-	args.Logger.Debug(fmt.Sprintf("One-out inferer inferences calculated for topic %v", args.TopicId))
+	args.Logger.Debug("One-out inferer inferences calculated", "topicId", args.TopicId)
 	return oneOutInferences, nil
 }
 
@@ -400,7 +394,7 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 	oneOutNetworkInferenceWithoutInferer alloraMath.Dec,
 	err error,
 ) {
-	args.Logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld forecaster %s", args.TopicId, args.WithheldForecaster))
+	args.Logger.Debug("Calculating one-out inference", "topicId", args.TopicId, "withheldForecaster", args.WithheldForecaster)
 
 	// To calculate one out, remove the withheldForecaster from the list of forecasters
 	remainingForecasters := make([]Forecaster, 0)
@@ -467,7 +461,7 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutForecasterInference() error calculating one-out inference for inferer")
 	}
 
-	args.Logger.Debug(fmt.Sprintf("One-out inference calculated for topic %v withheld forecaster %s is %v", args.TopicId, args.WithheldForecaster, oneOutNetworkInferenceWithoutInferer))
+	args.Logger.Debug("One-out inference calculated", "topicId", args.TopicId, "withheldForecaster", args.WithheldForecaster, "oneOutNetworkInferenceWithoutInferer", oneOutNetworkInferenceWithoutInferer)
 	return oneOutNetworkInferenceWithoutInferer, nil
 }
 
@@ -499,7 +493,7 @@ func GetOneOutForecasterInferences(args GetOneOutForecasterInferencesArgs) (
 	oneOutForecasterInferences []*emissions.WithheldWorkerAttributedValue,
 	err error,
 ) {
-	args.Logger.Debug(fmt.Sprintf("Calculating one-out forecaster inferences for topic %v with %v forecasters", args.TopicId, len(args.Forecasters)))
+	args.Logger.Debug("Calculating one-out forecaster inferences", "topicId", args.TopicId, "numForecasters", len(args.Forecasters))
 	// Calculate the one-out forecast-implied inferences per forecaster
 	oneOutForecasterInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 	// If there is only one forecaster, there's no need to calculate one-out inferences
@@ -533,7 +527,7 @@ func GetOneOutForecasterInferences(args GetOneOutForecasterInferencesArgs) (
 				Value:  oneOutInference,
 			})
 		}
-		args.Logger.Debug(fmt.Sprintf("One-out forecaster inferences calculated for topic %v", args.TopicId))
+		args.Logger.Debug("One-out forecaster inferences calculated", "topicId", args.TopicId)
 	}
 	return oneOutForecasterInferences, nil
 }
@@ -562,7 +556,7 @@ func calcOneInValue(args calcOneInValueArgs) (
 	oneInInference alloraMath.Dec,
 	err error,
 ) {
-	args.Logger.Debug(fmt.Sprintf("Calculating one-in inference for forecaster: %s", args.OneInForecaster))
+	args.Logger.Debug("Calculating one-in inference", "forecaster", args.OneInForecaster)
 
 	// In each loop, remove all forecast-implied inferences except one
 	singleForecastImpliedInference := make(map[Worker]*emissions.Inference, 1)
@@ -595,7 +589,7 @@ func calcOneInValue(args calcOneInValueArgs) (
 
 		inference, ok := args.InfererToInference[inferer]
 		if !ok {
-			args.Logger.Debug(fmt.Sprintf("CalcOneInValue() cannot find inferer in InferenceByWorker %v", inferer))
+			args.Logger.Debug("CalcOneInValue() cannot find inferer in InferenceByWorker", "inferer", inferer)
 			continue
 		}
 		infererToInferenceForSingleForecaster[inferer] = inference

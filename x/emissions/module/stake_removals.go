@@ -2,7 +2,6 @@ package module
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -77,11 +76,7 @@ func RemoveStakes(
 			stakeRemoval.Amount,
 		)
 		if err != nil {
-			sdkCtx.Logger().Error(fmt.Sprintf(
-				"Error removing stake data structures: %v | %v",
-				stakeRemoval,
-				err,
-			))
+			sdkCtx.Logger().Error("Error removing stake data structures", "stakeRemoval", stakeRemoval, "error", err)
 			continue
 		}
 
@@ -100,11 +95,7 @@ func RemoveStakes(
 			coins,
 		)
 		if err != nil {
-			sdkCtx.Logger().Error(fmt.Sprintf(
-				"Error removing stake funds: %v | %v",
-				stakeRemoval,
-				err,
-			))
+			sdkCtx.Logger().Error("Error removing stake funds", "stakeRemoval", stakeRemoval, "error", err)
 			continue
 		}
 
@@ -148,11 +139,7 @@ func RemoveDelegateStakes(
 			stakeRemoval.Amount,
 		)
 		if err != nil {
-			sdkCtx.Logger().Error(fmt.Sprintf(
-				"Error removing delegate stake state: %v | %v",
-				stakeRemoval,
-				err,
-			))
+			sdkCtx.Logger().Error("Error removing delegate stake state", "stakeRemoval", stakeRemoval, "error", err)
 			continue
 		}
 
@@ -169,11 +156,7 @@ func RemoveDelegateStakes(
 			emissionstypes.AlloraStakingAccountName,
 			stakeRemoval.Delegator, coins)
 		if err != nil {
-			sdkCtx.Logger().Error(fmt.Sprintf(
-				"Error removing delegate stake send funds: %v | %v",
-				stakeRemoval,
-				err,
-			))
+			sdkCtx.Logger().Error("Error removing delegate stake send funds", "stakeRemoval", stakeRemoval, "error", err)
 			continue
 		}
 

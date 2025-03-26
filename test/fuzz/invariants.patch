@@ -1,8 +1,12 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index 8ff85b13..88779b6e 100644
+index aab2b38..ff19d79 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -6,6 +6,7 @@ import (
+@@ -2,9 +2,11 @@ package module
+ 
+ import (
+ 	"context"
++	"fmt"
  	"time"
  
  	"cosmossdk.io/errors"
@@ -10,7 +14,7 @@ index 8ff85b13..88779b6e 100644
  	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
  	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
  	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-@@ -17,6 +18,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
+@@ -16,6 +18,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
  	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
  
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -19,13 +23,13 @@ index 8ff85b13..88779b6e 100644
 +		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
 +	}
  	blockHeight := sdkCtx.BlockHeight()
- 	sdkCtx.Logger().Debug(
- 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
+ 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
+ 	moduleParams, err := am.keeper.GetParams(sdkCtx)
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index f8ddae02..0a8cc692 100644
+index 0550bed..1121734 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
-@@ -22,6 +22,15 @@ import (
+@@ -33,6 +33,15 @@ import (
  	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
  )
  
@@ -41,7 +45,7 @@ index f8ddae02..0a8cc692 100644
  var (
  	_ module.AppModuleBasic   = AppModule{} // nolint: exhaustruct
  	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
-@@ -135,14 +144,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
+@@ -178,14 +187,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
  
  // EndBlock returns the end blocker for the emissions module.
  func (am AppModule) EndBlock(ctx context.Context) error {

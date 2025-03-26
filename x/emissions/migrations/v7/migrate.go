@@ -1,8 +1,6 @@
 package v7
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -117,7 +115,7 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 		MaxWhitelistInputArrayLength:       defaultParams.MaxWhitelistInputArrayLength,
 	}
 
-	ctx.Logger().Info(fmt.Sprintf("MIGRATED PARAMS: %+v", newParams))
+	ctx.Logger().Info("MIGRATED PARAMS", "params", newParams)
 	store.Delete(emissionstypes.ParamsKey)
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&newParams))
 	return nil
