@@ -119,7 +119,17 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		OneOutInfererForecasterValues: nil,
+		OneOutInfererForecasterValues: []*types.InputOneOutInfererForecasterValues{
+			{
+				Forecaster: workerAddr.String(),
+				OneOutInfererValues: []*types.InputWithheldWorkerAttributedValue{
+					{
+						Worker: workerAddr.String(),
+						Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+					},
+				},
+			},
+		},
 	}
 
 	return reputerValueBundle, expectedInferences, expectedForecasts, topicId

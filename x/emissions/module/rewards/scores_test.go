@@ -1058,7 +1058,12 @@ func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 			OneOutInfererValues:           make([]*types.InputWithheldWorkerAttributedValue, len(workers)),
 			OneOutForecasterValues:        make([]*types.InputWithheldWorkerAttributedValue, len(workers)),
 			OneInForecasterValues:         make([]*types.InputWorkerAttributedValue, len(workers)),
-			OneOutInfererForecasterValues: nil,
+			OneOutInfererForecasterValues: make([]*types.InputOneOutInfererForecasterValues, len(workers)),
+		}
+
+		oneOutInferers := make([]*types.InputWithheldWorkerAttributedValue, 0, len(workers))
+		for j, worker := range workers {
+			oneOutInferers = append(oneOutInferers, &types.InputWithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersInfererOneOutLosses[i][j]})
 		}
 
 		for j, worker := range workers {
@@ -1067,6 +1072,7 @@ func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 			valueBundle.OneOutInfererValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersInfererOneOutLosses[i][j]}
 			valueBundle.OneOutForecasterValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersForecasterOneOutLosses[i][j]}
 			valueBundle.OneInForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: worker.String(), Value: reputersOneInNaiveLosses[i][j]}
+			valueBundle.OneOutInfererForecasterValues[j] = &types.InputOneOutInfererForecasterValues{Forecaster: worker.String(), OneOutInfererValues: oneOutInferers}
 		}
 
 		sig, err := signInputValueBundle(valueBundle, s.privKeys[reputerIndex])
@@ -1118,7 +1124,12 @@ func generateHugeLossBundles(
 			OneOutInfererValues:           make([]*types.InputWithheldWorkerAttributedValue, len(workerIndexes)),
 			OneOutForecasterValues:        make([]*types.InputWithheldWorkerAttributedValue, len(workerIndexes)),
 			OneInForecasterValues:         make([]*types.InputWorkerAttributedValue, len(workerIndexes)),
-			OneOutInfererForecasterValues: nil,
+			OneOutInfererForecasterValues: make([]*types.InputOneOutInfererForecasterValues, len(workerIndexes)),
+		}
+
+		oneOutInferers := make([]*types.InputWithheldWorkerAttributedValue, 0, len(workerIndexes))
+		for j, workerIndex := range workerIndexes {
+			oneOutInferers = append(oneOutInferers, &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersInfererOneOutLosses[i][j])})
 		}
 
 		for j, workerIndex := range workerIndexes {
@@ -1127,6 +1138,7 @@ func generateHugeLossBundles(
 			valueBundle.OneOutInfererValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersInfererOneOutLosses[i][j])}
 			valueBundle.OneOutForecasterValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersForecasterOneOutLosses[i][j])}
 			valueBundle.OneInForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersOneInNaiveLosses[i][j])}
+			valueBundle.OneOutInfererForecasterValues[j] = &types.InputOneOutInfererForecasterValues{Forecaster: s.addrsStr[workerIndex], OneOutInfererValues: oneOutInferers}
 		}
 
 		sig, err := signInputValueBundle(valueBundle, s.privKeys[reputerIndex])
@@ -1730,7 +1742,18 @@ func generateSimpleLossBundles(
 			OneOutInfererValues:           make([]*types.InputWithheldWorkerAttributedValue, countValues),
 			OneOutForecasterValues:        make([]*types.InputWithheldWorkerAttributedValue, countValues),
 			OneInForecasterValues:         make([]*types.InputWorkerAttributedValue, countValues),
-			OneOutInfererForecasterValues: nil,
+			OneOutInfererForecasterValues: make([]*types.InputOneOutInfererForecasterValues, countValues),
+		}
+
+		oneOutInferers := make([]*types.InputWithheldWorkerAttributedValue, 0, len(workerValues))
+		for i, inferer := range workerValues {
+			if i >= len(reputerValues) {
+				break
+			}
+			oneOutInferers = append(oneOutInferers, &types.InputWithheldWorkerAttributedValue{
+				Worker: s.addrsStr[inferer.Index],
+				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[i].Value)),
+			})
 		}
 
 		for j, worker := range workerValues {
@@ -1748,6 +1771,10 @@ func generateSimpleLossBundles(
 				}
 				valueBundle.OneOutForecasterValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[j].Value))}
 				valueBundle.OneInForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[j].Value))}
+				valueBundle.OneOutInfererForecasterValues[j] = &types.InputOneOutInfererForecasterValues{
+					Forecaster:          s.addrsStr[worker.Index],
+					OneOutInfererValues: oneOutInferers,
+				}
 			}
 		}
 

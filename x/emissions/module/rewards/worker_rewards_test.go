@@ -686,6 +686,29 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 		},
 	}
 
+	oneOutInfererForecasterLosses := []*types.OneOutInfererForecasterValues{
+		{
+			Forecaster:          s.addrs[0].String(),
+			OneOutInfererValues: oneOutInfererLosses,
+		},
+		{
+			Forecaster:          s.addrs[1].String(),
+			OneOutInfererValues: oneOutInfererLosses,
+		},
+		{
+			Forecaster:          s.addrs[2].String(),
+			OneOutInfererValues: oneOutInfererLosses,
+		},
+		{
+			Forecaster:          s.addrs[3].String(),
+			OneOutInfererValues: oneOutInfererLosses,
+		},
+		{
+			Forecaster:          s.addrs[4].String(),
+			OneOutInfererValues: oneOutInfererLosses,
+		},
+	}
+
 	networkLosses := types.ValueBundle{
 		TopicId:                       topicId,
 		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
@@ -698,7 +721,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 		OneOutInfererValues:           oneOutInfererLosses,
 		OneOutForecasterValues:        oneOutForecasterLosses,
 		OneInForecasterValues:         oneInNaiveLosses,
-		OneOutInfererForecasterValues: nil,
+		OneOutInfererForecasterValues: oneOutInfererForecasterLosses,
 	}
 
 	// Persist network losses
@@ -775,6 +798,21 @@ func mockSimpleNetworkLosses(
 		},
 	}
 
+	oneOutInfererForecasterLosses := []*types.OneOutInfererForecasterValues{
+		{
+			Forecaster:          s.addrs[0].String(),
+			OneOutInfererValues: genericLossesWithheld,
+		},
+		{
+			Forecaster:          s.addrs[1].String(),
+			OneOutInfererValues: genericLossesWithheld,
+		},
+		{
+			Forecaster:          s.addrs[2].String(),
+			OneOutInfererValues: genericLossesWithheld,
+		},
+	}
+
 	networkLosses := types.ValueBundle{
 		TopicId:                       topicId,
 		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
@@ -787,7 +825,7 @@ func mockSimpleNetworkLosses(
 		OneOutInfererValues:           genericLossesWithheld,
 		OneOutForecasterValues:        genericLossesWithheld,
 		OneInForecasterValues:         genericLosses,
-		OneOutInfererForecasterValues: nil,
+		OneOutInfererForecasterValues: oneOutInfererForecasterLosses,
 	}
 
 	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
