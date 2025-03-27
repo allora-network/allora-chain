@@ -498,6 +498,105 @@ func TestInputValueBundleConvert(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "invalid forecasters len in OneOutInfererForecasterValues",
+			input: &InputValueBundle{
+				TopicId: 1,
+				ReputerRequestNonce: &ReputerRequestNonce{
+					ReputerNonce: &Nonce{
+						BlockHeight: 1,
+					},
+				},
+				Reputer:       "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec",
+				ExtraData:     []byte("extra"),
+				CombinedValue: mustNewBoundedExp40Dec(t, "1.23"),
+				NaiveValue:    mustNewBoundedExp40Dec(t, "4.56"),
+				InfererValues: []*InputWorkerAttributedValue{
+					{
+						Worker: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				ForecasterValues: []*InputWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "1.23"),
+					},
+				},
+				OneOutInfererValues: []*InputWithheldWorkerAttributedValue{
+					{
+						Worker: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				OneOutForecasterValues: []*InputWithheldWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				OneInForecasterValues: []*InputWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				OneOutInfererForecasterValues: []*InputOneOutInfererForecasterValues{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid inferers len in OneOutInfererForecasterValues",
+			input: &InputValueBundle{
+				TopicId: 1,
+				ReputerRequestNonce: &ReputerRequestNonce{
+					ReputerNonce: &Nonce{
+						BlockHeight: 1,
+					},
+				},
+				Reputer:       "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec",
+				ExtraData:     []byte("extra"),
+				CombinedValue: mustNewBoundedExp40Dec(t, "1.23"),
+				NaiveValue:    mustNewBoundedExp40Dec(t, "4.56"),
+				InfererValues: []*InputWorkerAttributedValue{
+					{
+						Worker: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				ForecasterValues: []*InputWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "1.23"),
+					},
+				},
+				OneOutInfererValues: []*InputWithheldWorkerAttributedValue{
+					{
+						Worker: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				OneOutForecasterValues: []*InputWithheldWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				OneInForecasterValues: []*InputWorkerAttributedValue{
+					{
+						Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						Value:  mustNewBoundedExp40Dec(t, "1.25"),
+					},
+				},
+				OneOutInfererForecasterValues: []*InputOneOutInfererForecasterValues{
+					{
+						Forecaster:          "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+						OneOutInfererValues: []*InputWithheldWorkerAttributedValue{},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name: "invalid inferers in OneOutInfererValues",
 			input: &InputValueBundle{
 				TopicId: 1,

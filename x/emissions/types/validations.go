@@ -613,7 +613,8 @@ func (bundle *ValueBundle) Validate() error {
 	}
 	if len(bundle.ForecasterValues) != forecasterCount ||
 		len(bundle.OneOutForecasterValues) != forecasterCount ||
-		len(bundle.OneInForecasterValues) != forecasterCount {
+		len(bundle.OneInForecasterValues) != forecasterCount ||
+		len(bundle.OneOutInfererForecasterValues) != forecasterCount {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle must concern same forecaster set")
 	}
 
@@ -663,6 +664,9 @@ func (bundle *ValueBundle) Validate() error {
 		}
 
 		// Check the inferers are part of the bundle
+		if len(oneOutInfererForecaster.OneOutInfererValues) != infererCount {
+			return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle one out inferer forecaster must concern same inferer set")
+		}
 		for _, oneOutInfererValue := range oneOutInfererForecaster.OneOutInfererValues {
 			if _, ok := inferers[oneOutInfererValue.Worker]; !ok {
 				return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle one out inferer forecaster value not in provided inferer set")
