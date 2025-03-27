@@ -1,6 +1,8 @@
 package inferencesynthesis
 
 import (
+	"fmt"
+
 	"cosmossdk.io/log"
 
 	errorsmod "cosmossdk.io/errors"
@@ -35,6 +37,45 @@ type CalcRegretStdDevFilteredByWeightsArgs struct {
 	ForecasterToRegret  map[Worker]*alloraMath.Dec
 	NegligibleThreshold alloraMath.Dec
 	EpsilonTopic        alloraMath.Dec
+}
+
+// Gradient cache implementation
+var (
+	gradientCache = make(map[string]alloraMath.Dec)
+	cacheEnabled  = false
+)
+
+func enableGradientCache() {
+	cacheEnabled = true
+}
+
+func disableGradientCache() {
+	cacheEnabled = false
+}
+
+func clearGradientCache() {
+	gradientCache = make(map[string]alloraMath.Dec)
+}
+
+// Cached version of Gradient function
+func cachedGradient(p, c, x alloraMath.Dec) (alloraMath.Dec, error) {
+	if !cacheEnabled {
+		return alloraMath.Gradient(p, c, x)
+	}
+
+	key := fmt.Sprintf("gradient:%s:%s:%s", p.String(), c.String(), x.String())
+
+	if cachedValue, exists := gradientCache[key]; exists {
+		return cachedValue, nil
+	}
+
+	result, err := alloraMath.Gradient(p, c, x)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "error calculating gradient")
+	}
+
+	gradientCache[key] = result
+	return result, nil
 }
 
 // Calculates the standard deviation of the regrets provided plus epsilon
@@ -428,6 +469,13 @@ func accumulateWeights(
 	return runningUnnormalizedI_i, sumWeights, nil
 }
 
+// Normalized Regret Variables
+var (
+	upperBound = alloraMath.MustNewDecFromString("6.75")
+	lowerBound = alloraMath.MustNewDecFromString("8.25")
+	threshold  = alloraMath.MustNewDecFromString("17.25")
+)
+
 func CalcWeightFromNormalizedRegret(
 	normalizedRegret alloraMath.Dec,
 	maxNormalizedRegret alloraMath.Dec,
@@ -435,7 +483,7 @@ func CalcWeightFromNormalizedRegret(
 	cNorm alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	// upper bound: c + 6.75 / p
-	v6Point75OverP, err := alloraMath.MustNewDecFromString("6.75").Quo(pNorm)
+	v6Point75OverP, err := upperBound.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
 	}
@@ -445,7 +493,7 @@ func CalcWeightFromNormalizedRegret(
 	}
 
 	// lower bound: c - 8.25 / p
-	v8Point25OverP, err := alloraMath.MustNewDecFromString("8.25").Quo(pNorm)
+	v8Point25OverP, err := lowerBound.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
 	}
@@ -455,7 +503,7 @@ func CalcWeightFromNormalizedRegret(
 	}
 
 	// threshold for zero weight: c - 17.25 / p
-	v17Point25OverP, err := alloraMath.MustNewDecFromString("17.25").Quo(pNorm)
+	v17Point25OverP, err := threshold.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
 	}
@@ -488,7 +536,7 @@ func CalcWeightFromNormalizedRegret(
 		return alloraMath.ZeroDec(), nil
 	}
 
-	weight, err := alloraMath.Gradient(pNorm, cNorm, normalizedRegret) // w_ijk = φ'_p(\hatR_ijk)
+	weight, err := cachedGradient(pNorm, cNorm, normalizedRegret) // w_ijk = φ'_p(\hatR_ijk)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "error calculating gradient")
 	}

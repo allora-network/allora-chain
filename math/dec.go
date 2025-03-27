@@ -223,7 +223,10 @@ func (x Dec) Add(y Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Add result is NaN %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal addition error %s %s", x.String(), y.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal addition error %s %s", x.String(), y.String())
+	}
+	return z, nil
 }
 
 // Sub returns a new Dec with value `x-y` without mutating any argument and error if
@@ -237,7 +240,10 @@ func (x Dec) Sub(y Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Sub result is NaN %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal subtraction error %s %s", x.String(), y.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal subtraction error %s %s", x.String(), y.String())
+	}
+	return z, nil
 }
 
 // Quo returns a new Dec with value `x/y` (formatted as decimal128, 34 digit precision) without mutating any
@@ -251,7 +257,10 @@ func (x Dec) Quo(y Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Quo result is NaN %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal quotient error %s %s", x.String(), y.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal quotient error %s %s", x.String(), y.String())
+	}
+	return z, nil
 }
 
 // MulExact returns a new dec with value x * y. The product must not be rounded or
@@ -282,7 +291,7 @@ func (x Dec) QuoExact(y Dec) (Dec, error) {
 	var z Dec
 	condition, err := dec128Context.Quo(&z.dec, &x.dec, &y.dec)
 	if err != nil {
-		return z, err
+		return z, errorsmod.Wrapf(err, "decimal quotient error %s %s", x.String(), y.String())
 	}
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "QuoExact result is NaN %s %s", x.String(), y.String())
@@ -290,7 +299,7 @@ func (x Dec) QuoExact(y Dec) (Dec, error) {
 	if condition.Rounded() {
 		return z, errorsmod.Wrapf(ErrUnexpectedRounding, "QuoExact has unexpected rounding %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal quotient error %s %s", x.String(), y.String())
+	return z, nil
 }
 
 // QuoInteger returns a new integral Dec with value `x/y` (formatted as decimal128, with 34 digit precision)
@@ -304,7 +313,10 @@ func (x Dec) QuoInteger(y Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "QuoInteger result is NaN %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal quotient error %s %s", x.String(), y.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal quotient error %s %s", x.String(), y.String())
+	}
+	return z, nil
 }
 
 // Rem returns the integral remainder from `x/y` (formatted as decimal128, with 34 digit precision) without
@@ -318,7 +330,10 @@ func (x Dec) Rem(y Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Rem result is NaN %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal remainder error %s %s", x.String(), y.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal remainder error %s %s", x.String(), y.String())
+	}
+	return z, nil
 }
 
 // Mul returns a new Dec with value `x*y` (formatted as decimal128, with 34 digit precision) without
@@ -332,7 +347,10 @@ func (x Dec) Mul(y Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Mul result is NaN %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal multiplication error %s %s", x.String(), y.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal multiplication error %s %s", x.String(), y.String())
+	}
+	return z, nil
 }
 
 // Neg negates the decimal and returns a new Dec with value `-x` without
@@ -346,7 +364,10 @@ func (x Dec) Neg() (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Neg result is NaN %s", x.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal negation error %s", x.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal negation error %s", x.String())
+	}
+	return z, nil
 }
 
 // Log10 returns a new Dec with the value of the base 10 logarithm of x, without mutating x.
@@ -359,7 +380,10 @@ func Log10(x Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Log10 result is NaN %s", x.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal base 10 logarithm error %s", x.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal base 10 logarithm error %s", x.String())
+	}
+	return z, nil
 }
 
 // Ln returns a new Dec with the value of the natural logarithm of x, without mutating x.
@@ -372,7 +396,10 @@ func Ln(x Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Ln result is NaN %s", x.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal natural logarithm error %s", x.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal natural logarithm error %s", x.String())
+	}
+	return z, nil
 }
 
 // Exp returns a new Dec with the value of e^x, without mutating x.
@@ -380,12 +407,18 @@ func Exp(x Dec) (Dec, error) {
 	if x.IsNaN() {
 		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Exp a NaN %s", x.String())
 	}
+
+	// Calculate the result
 	var z Dec
 	_, err := dec128Context.Exp(&z.dec, &x.dec)
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Exp result is NaN %s", x.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal e to the x exponentiation error %s", x.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal e to the x exponentiation error %s", x.String())
+	}
+
+	return z, nil
 }
 
 // Exp10 returns a new Dec with the value of 10^x, without mutating x.
@@ -399,7 +432,10 @@ func Exp10(x Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Exp10 result is NaN %s", x.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal 10 to the x exponentiation error %s", x.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal 10 to the x exponentiation error %s", x.String())
+	}
+	return z, nil
 }
 
 // Pow returns a new Dec with the value of x**y, without mutating x or y.
@@ -412,7 +448,10 @@ func Pow(x Dec, y Dec) (Dec, error) {
 	if z.IsNaN() {
 		return z, errorsmod.Wrapf(ErrNaN, "Pow result is NaN %s %s", x.String(), y.String())
 	}
-	return z, errorsmod.Wrapf(err, "decimal exponentiation error %s %s", x.String(), y.String())
+	if err != nil {
+		return z, errorsmod.Wrapf(err, "decimal exponentiation error %s %s", x.String(), y.String())
+	}
+	return z, nil
 }
 
 // returns the max of x and y without mutating x or y.
@@ -450,7 +489,10 @@ func (x Dec) Sqrt() (Dec, error) {
 	}
 	var z Dec
 	_, err := dec128Context.Sqrt(&z.dec, &x.dec)
-	return z, errorsmod.Wrap(err, "decimal square root error")
+	if err != nil {
+		return z, errorsmod.Wrap(err, "decimal square root error")
+	}
+	return z, nil
 }
 
 // Abs returns a new Dec with the absolute value of x, without mutating x.

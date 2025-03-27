@@ -28,6 +28,16 @@ func GetNetworkInferences(
 	inferencesNonce *BlockHeight,
 	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
+	// Enable gradient cache for this function's scope
+	enableGradientCache()
+
+	// Disable gradient cache and clear cache when function exits
+	defer func() {
+		disableGradientCache()
+		clearGradientCache()
+		ctx.Logger().Debug("Gradient cache cleared after network inference calculation")
+	}()
+
 	// Retrieve the requested inferences (either latest or specified, depending on inferencesNonce)
 	// If outlierResistant is true, outliers will be filtered out before calculating the network inference
 	inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce, outlierResistant)
@@ -50,7 +60,7 @@ func GetNetworkInferences(
 		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, inferenceBlockHeight, networkLosses)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
-		return calcNetworkInferencesSingle(ctx, inferenceBlockHeight, topicId, inferences)
+		return calcNetworkInferencesSingle(ctx, inferenceBlockHeight, topicId, inferences), nil
 	} else {
 		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
@@ -186,7 +196,7 @@ func calcNetworkInferencesSingle(
 	inferenceBlockHeight BlockHeight,
 	topicId TopicId,
 	inferences *emissions.Inferences,
-) (*GetNetworkInferencesResult, error) {
+) *GetNetworkInferencesResult {
 	singleInference := inferences.Inferences[0]
 
 	networkInferences := &emissions.ValueBundle{
@@ -218,7 +228,7 @@ func calcNetworkInferencesSingle(
 		ForecasterToWeight:   nil,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      0, // Loss data may actually be available but is not needed to calculate network inference in this case
-	}, nil
+	}
 }
 
 // helper function for getting the args needed for calcNetworkInferences

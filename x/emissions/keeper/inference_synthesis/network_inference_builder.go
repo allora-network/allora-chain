@@ -106,6 +106,149 @@ func getForecastImpliedInferences(
 	return forecastImpliedInferences
 }
 
+type GetOneOutInfererForecastImpliedInferencesArgs struct {
+	Ctx                  sdk.Context
+	K                    emissionskeeper.Keeper
+	Logger               log.Logger
+	TopicId              uint64
+	Inferers             []Inferer
+	InfererToInference   map[Inferer]*emissions.Inference
+	InfererToRegret      map[Inferer]*Regret
+	AllInferersAreNew    bool
+	Forecasters          []Forecaster
+	ForecasterToForecast map[Forecaster]*emissions.Forecast
+	ForecasterToRegret   map[Forecaster]*Regret
+	NetworkCombinedLoss  alloraMath.Dec
+	EpsilonTopic         alloraMath.Dec
+	PNorm                alloraMath.Dec
+	CNorm                alloraMath.Dec
+	StdDevPlusEpsilon    alloraMath.Dec
+}
+
+// GetOneOutInfererForecastImpliedInferences calculates what each forecaster's implied inference
+// would be when each inferer is removed from the calculation
+func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpliedInferencesArgs) (
+	oneOutInfererForecastImpliedValues []*emissions.OneOutInfererForecasterValues,
+	err error,
+) {
+	oneOutInfererForecastImpliedValues = make([]*emissions.OneOutInfererForecasterValues, 0)
+
+	// Only process if we have both inferers and forecasters
+	if len(args.Inferers) <= 1 || len(args.Forecasters) == 0 {
+		return oneOutInfererForecastImpliedValues, nil
+	}
+
+	// Organize by forecaster first, then by withheld inferer
+	for _, forecaster := range args.Forecasters {
+		// For each forecaster, we'll calculate what their forecast-implied inference would be
+		// if each inferer was removed one at a time
+		oneOutInfererValues := make([]*emissions.WithheldWorkerAttributedValue, 0)
+
+		// Get this forecaster's forecast and filter out the withheld inferer
+		forecast, ok := args.ForecasterToForecast[forecaster]
+		if !ok {
+			continue
+		}
+
+		for _, withheldInferer := range args.Inferers {
+			// Filter out the inferer we want to withhold
+			filteredInferers := make([]Inferer, 0, len(args.Inferers)-1)
+			filteredInfererToInference := make(map[Inferer]*emissions.Inference, len(args.InfererToInference)-1)
+			filteredInfererToRegret := make(map[Inferer]*Regret, len(args.InfererToRegret)-1)
+
+			for _, inferer := range args.Inferers {
+				if inferer != withheldInferer {
+					filteredInferers = append(filteredInferers, inferer)
+					if inference, ok := args.InfererToInference[inferer]; ok {
+						filteredInfererToInference[inferer] = inference
+					}
+					if regret, ok := args.InfererToRegret[inferer]; ok {
+						filteredInfererToRegret[inferer] = regret
+					}
+				}
+			}
+
+			filteredForecastElements := make([]*emissions.ForecastElement, 0)
+			for _, element := range forecast.ForecastElements {
+				if element.Inferer != withheldInferer {
+					filteredForecastElements = append(filteredForecastElements, element)
+				}
+			}
+
+			if len(filteredForecastElements) == 0 {
+				continue
+			}
+
+			filteredForecast := &emissions.Forecast{
+				TopicId:          forecast.TopicId,
+				BlockHeight:      forecast.BlockHeight,
+				Forecaster:       forecaster,
+				ForecastElements: filteredForecastElements,
+				ExtraData:        forecast.ExtraData,
+			}
+
+			// Create filtered maps with just this forecaster
+			filteredForecasters := []Forecaster{forecaster}
+			filteredForecasterToForecast := map[Forecaster]*emissions.Forecast{
+				forecaster: filteredForecast,
+			}
+			filteredForecasterToRegret := map[Forecaster]*Regret{}
+			if regret, ok := args.ForecasterToRegret[forecaster]; ok {
+				filteredForecasterToRegret[forecaster] = regret
+			}
+
+			// Calculate forecast-implied inference with the filtered data
+			forecastImpliedInferences, _, _, calcErr := CalcForecastImpliedInferences(
+				CalcForecastImpliedInferencesArgs{
+					Logger:               args.Logger,
+					TopicId:              args.TopicId,
+					AllInferersAreNew:    args.AllInferersAreNew,
+					Inferers:             filteredInferers,
+					InfererToInference:   filteredInfererToInference,
+					InfererToRegret:      filteredInfererToRegret,
+					Forecasters:          filteredForecasters,
+					ForecasterToForecast: filteredForecasterToForecast,
+					ForecasterToRegret:   filteredForecasterToRegret,
+					NetworkCombinedLoss:  args.NetworkCombinedLoss,
+					EpsilonTopic:         args.EpsilonTopic,
+					PNorm:                args.PNorm,
+					CNorm:                args.CNorm,
+					StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+				},
+			)
+			if calcErr != nil {
+				args.Logger.Debug("Error calculating forecast implied inference for forecaster", forecaster, "withheldInferer", withheldInferer, "error", calcErr)
+				continue
+			}
+
+			// Extract the implied inference for this forecaster
+			forecastImpliedInference, ok := forecastImpliedInferences[forecaster]
+			if !ok {
+				continue
+			}
+
+			// Add to our results
+			oneOutInfererValues = append(oneOutInfererValues, &emissions.WithheldWorkerAttributedValue{
+				Worker: withheldInferer,
+				Value:  forecastImpliedInference.Value,
+			})
+		}
+
+		// Only add this forecaster's results if we calculated values for at least one withheld inferer
+		if len(oneOutInfererValues) > 0 {
+			oneOutInfererForecastImpliedValues = append(
+				oneOutInfererForecastImpliedValues,
+				&emissions.OneOutInfererForecasterValues{
+					Forecaster:          forecaster,
+					OneOutInfererValues: oneOutInfererValues,
+				},
+			)
+		}
+	}
+
+	return oneOutInfererForecastImpliedValues, nil
+}
+
 // Arguments for GetNaiveInference
 type GetNaiveInferenceArgs struct {
 	Ctx                                  context.Context
@@ -693,7 +836,7 @@ func GetOneInForecasterInferences(args GetOneInForecasterInferencesArgs) (
 	return oneInInferences, err
 }
 
-// Arguments to CalcNetworkInferences
+// Arguments for CalcNetworkInferences
 type CalcNetworkInferencesArgs struct {
 	Ctx                                  sdk.Context
 	K                                    emissionskeeper.Keeper
@@ -783,6 +926,7 @@ func CalcNetworkInferences(
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating naive inference")
 	}
+
 	// Get the one-out inferer inferences I^-_li over I_ij
 	// The one-out network inferer inferences represent an approximation of
 	// Shapley (1953) values and are used to quantify the individual
@@ -814,6 +958,7 @@ func CalcNetworkInferences(
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out inferer inferences")
 	}
+
 	// get the one-out forecaster inferences I^-_li over I_ik
 	// The one-out network forecaster inferences represent an approximation of
 	// Shapley (1953) values and are used to quantify the individual
@@ -844,6 +989,7 @@ func CalcNetworkInferences(
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out forecaster inferences")
 	}
+
 	// get the one-in forecaster inferences I^+_ki
 	// which adds only a single forecast-implied inference I_ik to the inferences
 	// from the inference task I_ij . As such, it is used to quantify how the naive
@@ -872,6 +1018,31 @@ func CalcNetworkInferences(
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-in inferences")
 	}
 
+	// Calculate one-out inferer forecast implied values
+	oneOutInfererForecastImpliedValues, err := GetOneOutInfererForecastImpliedInferences(
+		GetOneOutInfererForecastImpliedInferencesArgs{
+			Ctx:                  args.Ctx,
+			K:                    args.K,
+			Logger:               args.Logger,
+			TopicId:              args.TopicId,
+			Inferers:             args.Inferers,
+			InfererToInference:   args.InfererToInference,
+			InfererToRegret:      args.InfererToRegret,
+			AllInferersAreNew:    args.AllInferersAreNew,
+			Forecasters:          args.Forecasters,
+			ForecasterToForecast: args.ForecasterToForecast,
+			ForecasterToRegret:   args.ForecasterToRegret,
+			NetworkCombinedLoss:  args.NetworkCombinedLoss,
+			EpsilonTopic:         args.EpsilonTopic,
+			PNorm:                args.PNorm,
+			CNorm:                args.CNorm,
+			StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+		},
+	)
+	if err != nil {
+		return nil, RegretInformedWeights{}, errorsmod.Wrap(err, "while calculating one-out inferer forecast implied inferences")
+	}
+
 	// Build value bundle to return all the calculated inferences
 	// ATTN: PROTO-2464
 	return &emissions.ValueBundle{
@@ -888,6 +1059,6 @@ func CalcNetworkInferences(
 		OneOutInfererValues:           oneOutInfererInferences,
 		OneOutForecasterValues:        oneOutForecasterInferences,
 		OneInForecasterValues:         oneInForecasterInferences,
-		OneOutInfererForecasterValues: nil,
+		OneOutInfererForecasterValues: oneOutInfererForecastImpliedValues,
 	}, weights, err
 }
