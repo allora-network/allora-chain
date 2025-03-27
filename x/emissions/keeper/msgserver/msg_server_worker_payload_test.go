@@ -903,7 +903,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecastIncludesSelf() {
 	_ = keeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
 
 	// Set up params similar to other tests
-	newParams := &types.OptionalParams{
+	newParams := &types.OptionalParams{ //nolint: exhaustruct
 		MaxElementsPerForecast: []uint64{3},
 		// not updated params remain nil
 	}
