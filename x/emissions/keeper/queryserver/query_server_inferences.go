@@ -8,10 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
-	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
@@ -85,18 +82,12 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	result, err := synth.GetNetworkInferences(
-		sdk.UnwrapSDKContext(ctx),
-		qs.k,
-		req.TopicId,
-		&req.BlockHeightLastInference,
-		false,
-	)
+	networkInferences, err := qs.k.GetNetworkInference(ctx, req.TopicId, req.BlockHeightLastInference)
 	if err != nil {
 		return nil, err
 	}
 
-	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: result.NetworkInferences}, nil
+	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences}, nil
 }
 
 // An outlier resistant version of GetNetworkInferencesAtBlock
@@ -113,120 +104,27 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	result, err := synth.GetNetworkInferences(
-		sdk.UnwrapSDKContext(ctx),
-		qs.k,
-		req.TopicId,
-		&req.BlockHeightLastInference,
-		true,
-	)
+	outlierResistantNetworkInferences, err := qs.k.GetOutlierResistantNetworkInference(ctx, req.TopicId, req.BlockHeightLastInference)
 	if err != nil {
 		return nil, err
 	}
 
-	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{NetworkInferences: result.NetworkInferences}, nil
+	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{NetworkInferences: outlierResistantNetworkInferences}, nil
 }
 
-// Input parameters type for both outlier resistant and non-outlier resistant functions
-type NetworkInferencesParams struct {
-	ctx              context.Context
-	topicId          uint64
-	outlierResistant bool
-}
-
-// Output result type for both outlier resistant and non-outlier resistant functions
-type NetworkInferencesResult struct {
-	networkInferences                *emissionstypes.ValueBundle
-	infererWeights                   []*emissionstypes.RegretInformedWeight
-	forecasterWeights                []*emissionstypes.RegretInformedWeight
-	inferenceBlockHeight             int64
-	lossBlockHeight                  int64
-	confidenceIntervalRawPercentiles []alloraMath.Dec
-	confidenceIntervalValues         []alloraMath.Dec
-}
-
-// Base function to get latest network inferences for both outlier resistant and non-outlier resistant functions
-func (qs queryServer) getLatestNetworkInferencesBase(
-	params NetworkInferencesParams,
-) (out *NetworkInferencesResult, err error) {
-	defer metrics.RecordMetrics("GetLatestNetworkInferences", time.Now(), &err)
-
-	result, err := synth.GetNetworkInferences(
-		sdk.UnwrapSDKContext(params.ctx),
-		qs.k,
-		params.topicId,
-		nil,
-		params.outlierResistant,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	ciRawPercentiles, ciValues, err :=
-		qs.GetConfidenceIntervalsForInferenceData(
-			result.NetworkInferences,
-			result.InfererToWeight,
-			result.ForecasterToWeight,
-		)
-	if err != nil {
-		return nil, err
-	}
-
-	if ciRawPercentiles == nil {
-		ciRawPercentiles = []alloraMath.Dec{}
-	}
-
-	if ciValues == nil {
-		ciValues = []alloraMath.Dec{}
-	}
-
-	inferers := alloraMath.GetSortedKeys(result.InfererToWeight)
-	forecasters := alloraMath.GetSortedKeys(result.ForecasterToWeight)
-
-	return &NetworkInferencesResult{
-		networkInferences:                result.NetworkInferences,
-		infererWeights:                   synth.ConvertWeightsToArrays(inferers, result.InfererToWeight),
-		forecasterWeights:                synth.ConvertWeightsToArrays(forecasters, result.ForecasterToWeight),
-		inferenceBlockHeight:             result.InferenceBlockHeight,
-		lossBlockHeight:                  result.LossBlockHeight,
-		confidenceIntervalRawPercentiles: ciRawPercentiles,
-		confidenceIntervalValues:         ciValues,
-	}, nil
-}
-
-// Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
+// Return full set of inferences in I_i from the chain
 func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emissionstypes.GetLatestNetworkInferencesRequest) (_ *emissionstypes.GetLatestNetworkInferencesResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestNetworkInferences", time.Now(), &err)
 
-	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
-		return nil, err
-	}
-
-	// Create params for base function
-	params := NetworkInferencesParams{
-		ctx:              ctx,
-		topicId:          req.TopicId,
-		outlierResistant: false,
-	}
-
-	// Call base function
-	result, err := qs.getLatestNetworkInferencesBase(params)
+	result, err := qs.k.GetLatestNetworkInferences(ctx, req.TopicId, false)
 	if err != nil {
 		return nil, err
 	}
 
 	// Convert result to response
 	return &emissionstypes.GetLatestNetworkInferencesResponse{
-		NetworkInferences:                result.networkInferences,
-		InfererWeights:                   result.infererWeights,
-		ForecasterWeights:                result.forecasterWeights,
-		InferenceBlockHeight:             result.inferenceBlockHeight,
-		LossBlockHeight:                  result.lossBlockHeight,
-		ConfidenceIntervalRawPercentiles: result.confidenceIntervalRawPercentiles,
-		ConfidenceIntervalValues:         result.confidenceIntervalValues,
+		NetworkInferences:    result,
+		InferenceBlockHeight: result.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
 }
 
@@ -236,209 +134,16 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 	_ *emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestNetworkInferencesOutlierResistant", time.Now(), &err)
 
-	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
-		return nil, err
-	}
-
-	// Create params for base function
-	params := NetworkInferencesParams{
-		ctx:              ctx,
-		topicId:          req.TopicId,
-		outlierResistant: true,
-	}
-
-	// Call base function
-	result, err := qs.getLatestNetworkInferencesBase(params)
+	result, err := qs.k.GetLatestNetworkInferences(ctx, req.TopicId, true)
 	if err != nil {
 		return nil, err
 	}
 
 	// Convert result to response
 	return &emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse{
-		NetworkInferences:                result.networkInferences,
-		InfererWeights:                   result.infererWeights,
-		ForecasterWeights:                result.forecasterWeights,
-		InferenceBlockHeight:             result.inferenceBlockHeight,
-		LossBlockHeight:                  result.lossBlockHeight,
-		ConfidenceIntervalRawPercentiles: result.confidenceIntervalRawPercentiles,
-		ConfidenceIntervalValues:         result.confidenceIntervalValues,
+		NetworkInferences:    result,
+		InferenceBlockHeight: result.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
-}
-
-// Base function to get latest available network inferences for both outlier resistant and non-outlier resistant functions
-func (qs queryServer) getLatestAvailableNetworkInferencesBase(
-	params NetworkInferencesParams,
-) (out *NetworkInferencesResult, err error) {
-	defer metrics.RecordMetrics("GetLatestAvailableNetworkInferences", time.Now(), &err)
-
-	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(params.ctx, params.topicId)
-	if err != nil {
-		return nil, err
-	}
-
-	lastReputerCommit, err := qs.k.GetReputerTopicLastCommit(params.ctx, params.topicId)
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := synth.GetNetworkInferences(
-		sdk.UnwrapSDKContext(params.ctx),
-		qs.k,
-		params.topicId,
-		&lastWorkerCommit.Nonce.BlockHeight,
-		params.outlierResistant,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	ciRawPercentiles, ciValues, err :=
-		qs.GetConfidenceIntervalsForInferenceData(
-			result.NetworkInferences,
-			result.InfererToWeight,
-			result.ForecasterToWeight,
-		)
-	if err != nil {
-		return nil, err
-	}
-
-	if ciRawPercentiles == nil {
-		ciRawPercentiles = []alloraMath.Dec{}
-	}
-
-	if ciValues == nil {
-		ciValues = []alloraMath.Dec{}
-	}
-
-	inferers := alloraMath.GetSortedKeys(result.InfererToWeight)
-	forecasters := alloraMath.GetSortedKeys(result.ForecasterToWeight)
-
-	return &NetworkInferencesResult{
-		networkInferences:                result.NetworkInferences,
-		infererWeights:                   synth.ConvertWeightsToArrays(inferers, result.InfererToWeight),
-		forecasterWeights:                synth.ConvertWeightsToArrays(forecasters, result.ForecasterToWeight),
-		inferenceBlockHeight:             lastWorkerCommit.Nonce.BlockHeight,
-		lossBlockHeight:                  lastReputerCommit.Nonce.BlockHeight,
-		confidenceIntervalRawPercentiles: ciRawPercentiles,
-		confidenceIntervalValues:         ciValues,
-	}, nil
-}
-
-// Original function converts result to response
-func (qs queryServer) GetLatestAvailableNetworkInferences(
-	ctx context.Context,
-	req *emissionstypes.GetLatestAvailableNetworkInferencesRequest,
-) (*emissionstypes.GetLatestAvailableNetworkInferencesResponse, error) {
-	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
-		return nil, err
-	}
-
-	params := NetworkInferencesParams{
-		ctx:              ctx,
-		topicId:          req.TopicId,
-		outlierResistant: false,
-	}
-
-	result, err := qs.getLatestAvailableNetworkInferencesBase(params)
-	if err != nil {
-		return nil, err
-	}
-
-	return &emissionstypes.GetLatestAvailableNetworkInferencesResponse{
-		NetworkInferences:                result.networkInferences,
-		InfererWeights:                   result.infererWeights,
-		ForecasterWeights:                result.forecasterWeights,
-		InferenceBlockHeight:             result.inferenceBlockHeight,
-		LossBlockHeight:                  result.lossBlockHeight,
-		ConfidenceIntervalRawPercentiles: result.confidenceIntervalRawPercentiles,
-		ConfidenceIntervalValues:         result.confidenceIntervalValues,
-	}, nil
-}
-
-func (qs queryServer) GetLatestAvailableNetworkInferencesOutlierResistant(
-	ctx context.Context,
-	req *emissionstypes.GetLatestAvailableNetworkInferencesOutlierResistantRequest,
-) (*emissionstypes.GetLatestAvailableNetworkInferencesOutlierResistantResponse, error) {
-	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
-		return nil, err
-	}
-
-	params := NetworkInferencesParams{
-		ctx:              ctx,
-		topicId:          req.TopicId,
-		outlierResistant: true,
-	}
-
-	result, err := qs.getLatestAvailableNetworkInferencesBase(params)
-	if err != nil {
-		return nil, err
-	}
-
-	return &emissionstypes.GetLatestAvailableNetworkInferencesOutlierResistantResponse{
-		NetworkInferences:                result.networkInferences,
-		InfererWeights:                   result.infererWeights,
-		ForecasterWeights:                result.forecasterWeights,
-		InferenceBlockHeight:             result.inferenceBlockHeight,
-		LossBlockHeight:                  result.lossBlockHeight,
-		ConfidenceIntervalRawPercentiles: result.confidenceIntervalRawPercentiles,
-		ConfidenceIntervalValues:         result.confidenceIntervalValues,
-	}, nil
-}
-
-func (qs queryServer) GetConfidenceIntervalsForInferenceData(
-	networkInferences *emissionstypes.ValueBundle,
-	infererWeights map[string]alloraMath.Dec,
-	forecasterWeights map[string]alloraMath.Dec,
-) (_ []alloraMath.Dec, _ []alloraMath.Dec, err error) {
-	defer metrics.RecordMetrics("GetConfidenceIntervalsForInferenceData", time.Now(), &err)
-	var inferences []alloraMath.Dec // from inferers + forecast-implied inferences
-	var weights []alloraMath.Dec    // weights of all workers
-
-	for _, inference := range networkInferences.InfererValues {
-		weight, exists := infererWeights[inference.Worker]
-		if exists {
-			inferences = append(inferences, inference.Value)
-			weights = append(weights, weight)
-		}
-	}
-
-	for _, forecast := range networkInferences.ForecasterValues {
-		weight, exists := forecasterWeights[forecast.Worker]
-		if exists {
-			inferences = append(inferences, forecast.Value)
-			weights = append(weights, weight)
-		}
-	}
-
-	ciRawPercentiles := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("2.28"),
-		alloraMath.MustNewDecFromString("15.87"),
-		alloraMath.MustNewDecFromString("50"),
-		alloraMath.MustNewDecFromString("84.13"),
-		alloraMath.MustNewDecFromString("97.72"),
-	}
-
-	var ciValues []alloraMath.Dec
-	if len(inferences) == 0 {
-		ciRawPercentiles = []alloraMath.Dec{}
-		ciValues = []alloraMath.Dec{}
-	} else {
-		ciValues, err = alloraMath.WeightedPercentile(inferences, weights, ciRawPercentiles)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	return ciRawPercentiles, ciValues, nil
 }
 
 func (qs queryServer) GetLatestTopicInferences(ctx context.Context, req *emissionstypes.GetLatestTopicInferencesRequest) (_ *emissionstypes.GetLatestTopicInferencesResponse, err error) {

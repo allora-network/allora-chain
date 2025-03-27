@@ -99,6 +99,8 @@ func NewGenesisState() *GenesisState {
 		LatestRegretStdNorm:                            []*TopicIdAndDec{},
 		LatestInfererWeights:                           []*TopicIdActorIdDec{},
 		LatestForecasterWeights:                        []*TopicIdActorIdDec{},
+		NetworkInferences:                              []*TopicIdBlockHeightValueBundles{},
+		OutlierResistantNetworkInferences:              []*TopicIdBlockHeightValueBundles{},
 	}
 }
 

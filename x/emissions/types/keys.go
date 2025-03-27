@@ -114,4 +114,6 @@ var (
 	LatestRegretStdNormKey                            = collections.NewPrefix(99)
 	LatestInfererWeightsKey                           = collections.NewPrefix(100)
 	LatestForecasterWeightsKey                        = collections.NewPrefix(101)
+	NetworkInferencesKey                              = collections.NewPrefix(102)
+	OutlierResistantNetworkInferencesKey              = collections.NewPrefix(103)
 )

@@ -1373,6 +1373,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
+	// Move to end of worker submission window
+	s.ctx = s.ctx.WithBlockHeight(block + topic.WorkerSubmissionWindow)
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
@@ -1540,6 +1542,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
+	// Move to end of worker submission window
+	s.ctx = s.ctx.WithBlockHeight(block + topic.WorkerSubmissionWindow)
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
@@ -1846,6 +1850,8 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
+	// Move to end of worker submission window
+	s.ctx = s.ctx.WithBlockHeight(block + topic.WorkerSubmissionWindow)
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
@@ -2487,6 +2493,8 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
+	// Move to end of worker submission window
+	s.ctx = s.ctx.WithBlockHeight(block + topic.WorkerSubmissionWindow)
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 

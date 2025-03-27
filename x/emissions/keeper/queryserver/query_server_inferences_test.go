@@ -3,6 +3,7 @@ package queryserver_test
 import (
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -334,6 +335,10 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	})
 	require.NoError(err)
 
+	// Set Latest Worker commit
+	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
+	require.NoError(err)
+
 	// Set Inferences
 	s.ctx = s.ctx.WithBlockHeight(inferenceBlockHeight)
 
@@ -459,6 +464,20 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight)
 	require.NoError(err)
 
+	// Now calculate and set the network inferences
+	networkInferences, err := synth.GetNetworkInferences(
+		sdk.UnwrapSDKContext(s.ctx),
+		keeper,
+		topicId,
+		&inferenceNonce.BlockHeight,
+		&inferences,
+		&forecasts,
+		false,
+	)
+	require.NoError(err)
+	err = keeper.InsertNetworkInference(s.ctx, topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
+	require.NoError(err)
+
 	// Test querying the server
 	req := &types.GetLatestNetworkInferencesRequest{
 		TopicId: topicId,
@@ -466,10 +485,8 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	response, err := queryServer.GetLatestNetworkInferences(s.ctx, req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
-
-	require.Equal(len(response.InfererWeights), 5)
-	require.Equal(len(response.ForecasterWeights), 3)
 	require.Equal(len(response.NetworkInferences.ForecasterValues), 3)
+	require.Equal(len(response.NetworkInferences.InfererValues), 5)
 }
 
 func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
@@ -681,213 +698,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
-func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInference() {
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
-
-	require := s.Require()
-	topicId := s.CreateOneTopic()
-	topic, err := keeper.GetTopic(s.ctx, topicId)
-	require.NoError(err)
-
-	epochLength := topic.EpochLength
-	epochLastEnded := topic.EpochLastEnded
-
-	lossBlockHeight := epochLastEnded + epochLength
-	inferenceBlockHeight := lossBlockHeight + epochLength
-	inferenceBlockHeight2 := inferenceBlockHeight + epochLength
-
-	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
-	inferenceNonce := types.Nonce{BlockHeight: inferenceBlockHeight}
-	inferenceNonce2 := types.Nonce{BlockHeight: inferenceBlockHeight2}
-
-	reputerLossRequestNonce := &types.ReputerRequestNonce{ReputerNonce: &lossNonce}
-
-	s.ctx = s.ctx.WithBlockHeight(lossBlockHeight)
-
-	lossBundle := types.ValueBundle{
-		CombinedValue:                 alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
-		ReputerRequestNonce:           reputerLossRequestNonce,
-		TopicId:                       topicId,
-		Reputer:                       s.addrsStr[0],
-		ExtraData:                     nil,
-		NaiveValue:                    alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
-		InfererValues:                 nil,
-		ForecasterValues:              nil,
-		OneOutInfererValues:           nil,
-		OneOutForecasterValues:        nil,
-		OneInForecasterValues:         nil,
-		OneOutInfererForecasterValues: nil,
-	}
-	// Set Loss bundles
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, lossBlockHeight, lossBundle)
-	require.NoError(err)
-
-	err = keeper.SetReputerTopicLastCommit(s.ctx, topicId, lossBlockHeight, &lossNonce)
-	s.Require().NoError(err)
-
-	// Set Inferences
-	s.ctx = s.ctx.WithBlockHeight(inferenceBlockHeight)
-
-	getWorkerRegretValue := func(value string) types.TimestampedValue {
-		return types.TimestampedValue{
-			BlockHeight: inferenceBlockHeight,
-			Value:       alloraMath.MustNewDecFromString(value),
-		}
-	}
-
-	worker0 := s.addrsStr[1]
-	worker1 := s.addrsStr[2]
-	worker2 := s.addrsStr[3]
-	worker3 := s.addrsStr[4]
-	worker4 := s.addrsStr[5]
-
-	forecaster0 := s.addrsStr[6]
-	forecaster1 := s.addrsStr[7]
-	forecaster2 := s.addrsStr[8]
-
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
-	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
-	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
-	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
-	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
-	require.NoError(err)
-
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
-	require.NoError(err)
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
-	require.NoError(err)
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
-	require.NoError(err)
-
-	getInferencesForBlockHeight := func(blockHeight int64) types.Inferences {
-		return types.Inferences{
-			Inferences: []*types.Inference{
-				{
-					Inferer:     worker0,
-					Value:       alloraMath.MustNewDecFromString("-0.035995138925040600"),
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-				{
-					Inferer:     worker1,
-					Value:       alloraMath.MustNewDecFromString("-0.07333303938740420"),
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-				{
-					Inferer:     worker2,
-					Value:       alloraMath.MustNewDecFromString("-0.1495482917094790"),
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-				{
-					Inferer:     worker3,
-					Value:       alloraMath.MustNewDecFromString("-0.12952123274063800"),
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-				{
-					Inferer:     worker4,
-					Value:       alloraMath.MustNewDecFromString("-0.0703055329498285"),
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-			},
-		}
-	}
-
-	getForecastsForBlockHeight := func(blockHeight int64) types.Forecasts {
-		return types.Forecasts{
-			Forecasts: []*types.Forecast{
-				{
-					Forecaster: forecaster0,
-					ForecastElements: []*types.ForecastElement{
-						{Inferer: worker0, Value: alloraMath.MustNewDecFromString("0.1")},
-						{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.2")},
-						{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.3")},
-						{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.4")},
-						{Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.5")},
-					},
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-				{
-					Forecaster: forecaster1,
-					ForecastElements: []*types.ForecastElement{
-						{Inferer: worker0, Value: alloraMath.MustNewDecFromString("0.5")},
-						{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.4")},
-						{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.3")},
-						{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.2")},
-						{Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.1")},
-					},
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-				{
-					Forecaster: forecaster2,
-					ForecastElements: []*types.ForecastElement{
-						{Inferer: worker0, Value: alloraMath.MustNewDecFromString("0.2")},
-						{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
-						{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
-						{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.3")},
-						{Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.2")},
-					},
-					TopicId:     topicId,
-					BlockHeight: blockHeight,
-				},
-			},
-		}
-	}
-
-	// insert inferences and forecasts 1
-	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight))
-	s.Require().NoError(err)
-
-	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight))
-	require.NoError(err)
-
-	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
-	s.Require().NoError(err)
-
-	// insert inferences and forecasts 2
-	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce2.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight2))
-	s.Require().NoError(err)
-
-	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce2.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight2))
-	require.NoError(err)
-
-	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2)
-	s.Require().NoError(err)
-
-	// Update epoch topic epoch last ended
-	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight2)
-	require.NoError(err)
-
-	// Test querying the server
-	req := &types.GetLatestAvailableNetworkInferencesRequest{
-		TopicId: topicId,
-	}
-	response, err := queryServer.GetLatestAvailableNetworkInferences(s.ctx, req)
-	require.NoError(err)
-	require.NotNil(response, "Response should not be nil")
-
-	// should be 4 since we would be looking at inferences from a previous block
-	require.Equal(len(response.InfererWeights), 5)
-	require.Equal(len(response.ForecasterWeights), 3)
-	require.Equal(len(response.NetworkInferences.ForecasterValues), 3)
-	require.Equal(len(response.ConfidenceIntervalRawPercentiles), 5)
-	require.Equal(len(response.ConfidenceIntervalValues), 5)
-
-	require.Equal(response.InferenceBlockHeight, inferenceBlockHeight2)
-	require.Equal(response.LossBlockHeight, lossBlockHeight)
-}
-
-func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingInferences() {
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -1060,11 +871,16 @@ func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMis
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.GetLatestAvailableNetworkInferencesRequest{
+	req := &types.GetLatestNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	_, err = queryServer.GetLatestAvailableNetworkInferences(s.ctx, req)
-	require.Error(err)
+	response, err := queryServer.GetLatestNetworkInferences(s.ctx, req)
+
+	require.NoError(err)
+	require.NotNil(response)
+	require.Equal(response.NetworkInferences.Reputer, "")
+	require.Equal(response.NetworkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight, int64(0))
+
 }
 
 func (s *QueryServerTestSuite) TestGetActiveInferersForTopic() {

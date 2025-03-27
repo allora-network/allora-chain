@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -24,7 +25,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := ctx.BlockHeight()
-	if blockHeight < nonce.BlockHeight ||
+	if blockHeight <= nonce.BlockHeight ||
 		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
@@ -38,9 +39,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return types.ErrNoQualifiedInferers
 	}
 
-	// Insert set of active inferences for this topic/block and return a map
+	// Insert set of active activeInferences for this topic/block and return a map
 	// of the inferers with active inferers to be used in the forecasts processing
-	activeInfererAddressesMap, err := closeActiveInferencesSet(
+	activeInfererAddressesMap, activeInferences, err := closeActiveInferencesSet(
 		ctx,
 		k,
 		topic.Id,
@@ -59,7 +60,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	// Insert set of active forecasts for this topic/block and return a map
 	// of the forecasters with active forecasts to be used in the forecasts processing
-	err = closeActiveForecastsSet(
+	activeForecasts, err := closeActiveForecastsSet(
 		ctx,
 		k,
 		topic.Id,
@@ -102,25 +103,64 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
+	// Calculate and store network inferences for this block.
+	networkInferencesResult, err := synth.GetNetworkInferences(
+		sdk.UnwrapSDKContext(ctx),
+		*k,
+		topic.Id,
+		&nonce.BlockHeight,
+		activeInferences,
+		activeForecasts,
+		false,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = k.InsertNetworkInference(ctx, topic.Id, nonce.BlockHeight, *networkInferencesResult.NetworkInferences)
+	if err != nil {
+		return err
+	}
+
+	// Calculate and store outlier resistant network inferences for this block.
+	outlierResistantNetworkInferencesResult, err := synth.GetNetworkInferences(
+		sdk.UnwrapSDKContext(ctx),
+		*k,
+		topic.Id,
+		&nonce.BlockHeight,
+		activeInferences,
+		activeForecasts,
+		true,
+	)
+	if err != nil {
+		return err
+	}
+	err = k.InsertOutlierResistantNetworkInference(ctx, topic.Id, nonce.BlockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences)
+	if err != nil {
+		return err
+	}
+
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
 	// Return an empty response as the operation was successful
 	return nil
 }
 
+// Returns a map of active inferer addresses to their latest inference and the inferences themselves
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
 	activeInfererAddresses []string,
-) (map[string]bool, error) {
+) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
 	activeInferences := make([]*types.Inference, 0)
-	activeInfererAddressesMap := make(map[string]bool, 0)
+	activeInfererAddressesMap = make(map[string]bool, 0)
+
 	for _, address := range activeInfererAddresses {
 		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		activeInferences = append(activeInferences, &inference)
 		activeInfererAddressesMap[inference.Inferer] = true
@@ -131,14 +171,16 @@ func closeActiveInferencesSet(
 		return activeInferences[i].Inferer < activeInferences[j].Inferer
 	})
 
-	err := k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, types.Inferences{
+	inferences = &types.Inferences{
 		Inferences: activeInferences,
-	})
-	if err != nil {
-		return nil, err
 	}
 
-	return activeInfererAddressesMap, nil
+	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return activeInfererAddressesMap, inferences, nil
 }
 
 // insert forecasts from top forecasters
@@ -151,13 +193,24 @@ func closeActiveForecastsSet(
 	nonce types.Nonce,
 	activeForecastAddresses []string,
 	acceptedInferersOfBatch map[string]bool,
-) error {
+) (forecasts *types.Forecasts, err error) {
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	activeForecasts := make([]*types.Forecast, 0)
+
 	for _, address := range activeForecastAddresses {
 		forecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, address)
 		if err != nil {
-			return err
+			return nil, err
+		}
+
+		// Forecast validations
+		if forecast.TopicId != topicId {
+			ctx.Logger().Warn("Forecast does not match topic: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
+			continue
+		}
+		if forecast.BlockHeight != nonce.BlockHeight {
+			ctx.Logger().Warn("Forecast does not match blockHeight: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
+			continue
 		}
 
 		// Examine forecast elements to verify that they're for inferers in the current set.
@@ -171,7 +224,7 @@ func closeActiveForecastsSet(
 			}
 		}
 
-		// Discard if empty
+		// Discard if no accepted forecasts elements found
 		if len(acceptedForecastElements) == 0 {
 			continue
 		}
@@ -179,20 +232,6 @@ func closeActiveForecastsSet(
 		// Update the forecast with the filtered elements
 		if forecast.ForecastElements != nil {
 			forecast.ForecastElements = acceptedForecastElements
-		}
-
-		if forecast.Forecaster == "" {
-			ctx.Logger().Warn("Forecast was added that has no forecaster, ignoring")
-			continue
-		}
-		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
-		if forecast.TopicId != topicId {
-			ctx.Logger().Warn("Forecast does not match topic: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-			continue
-		}
-		if forecast.BlockHeight != nonce.BlockHeight {
-			ctx.Logger().Warn("Forecast does not match blockHeight: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-			continue
 		}
 
 		/// Now do filters on each forecaster
@@ -208,7 +247,13 @@ func closeActiveForecastsSet(
 		return activeForecasts[i].Forecaster < activeForecasts[j].Forecaster
 	})
 
-	return k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, types.Forecasts{
+	forecasts = &types.Forecasts{
 		Forecasts: activeForecasts,
-	})
+	}
+
+	err = k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
+	if err != nil {
+		return nil, err
+	}
+	return forecasts, nil
 }

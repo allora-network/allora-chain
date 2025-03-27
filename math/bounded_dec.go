@@ -75,6 +75,16 @@ func NewBoundedExp40Dec(d Dec) (BoundedExp40Dec, error) {
 	return BoundedExp40Dec{dec: d}, nil
 }
 
+// MustNewBoundedExp40DecFromString creates a new BoundedExp40Dec from a string.
+// It panics if the string cannot be parsed or if the resulting decimal is out of bounds.
+func MustNewBoundedExp40DecFromString(s string) BoundedExp40Dec {
+	dec, err := NewBoundedExp40DecFromString(s)
+	if err != nil {
+		panic(err)
+	}
+	return dec
+}
+
 // NewBoundedExp40DecFromString creates a new BoundedExp40Dec from a string
 func NewBoundedExp40DecFromString(s string) (BoundedExp40Dec, error) {
 	d, err := NewDecFromString(s)
@@ -145,4 +155,12 @@ func (bd BoundedExp40Dec) Equal(y BoundedExp40Dec) bool {
 
 func (bd BoundedExp40Dec) String() string {
 	return bd.dec.String()
+}
+
+func (bd BoundedExp40Dec) IsNaN() bool {
+	return bd.dec.IsNaN()
+}
+
+func (bd BoundedExp40Dec) IsFinite() bool {
+	return bd.dec.IsFinite()
 }

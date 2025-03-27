@@ -1375,7 +1375,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 	s.Require().Len(weights.Forecasters, 2)
 }
 
-func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTwoInferersNewOneOldOneNew() {
+func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTwoInferersNewOneOldOneNew() {
 	k := s.emissionsKeeper
 	ctx := s.ctx
 	topicId := uint64(1)
@@ -1476,4 +1476,245 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 			s.Require().True(oneInForecasterValue.Value.Gt(alloraMath.ZeroDec()))
 		}
 	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	topicId := uint64(1)
+	blockHeight := int64(300)
+
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
+	worker3 := s.addrsStr[3]
+	forecaster1 := s.addrsStr[4]
+	forecaster2 := s.addrsStr[5]
+
+	// Set up input data with 3 inferers and 2 forecasters
+	inferences := &emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker1, Value: alloraMath.MustNewDecFromString("100")},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker2, Value: alloraMath.MustNewDecFromString("200")},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker3, Value: alloraMath.MustNewDecFromString("300")},
+		},
+	}
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster1,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("150")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("250")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("350")},
+				},
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster2,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("120")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("220")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("320")},
+				},
+			},
+		},
+	}
+
+	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
+	epsilonTopic := alloraMath.MustNewDecFromString("0.0001")
+	epsilonSafeDiv := alloraMath.MustNewDecFromString("0.0000001")
+	pNorm := alloraMath.MustNewDecFromString("2")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	inferers, inferenceByWorker, infererRegrets,
+		allInferersAreNew, forecasters, forecastByWorker,
+		forecasterRegrets, _ := s.getNetworkCalcArgs(
+		blockHeight, inferences, forecasts,
+		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm)
+
+	oneOutInfererForecastImpliedValues, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
+		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
+			Ctx:                  ctx,
+			K:                    k,
+			Logger:               ctx.Logger(),
+			TopicId:              topicId,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			AllInferersAreNew:    allInferersAreNew,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilonTopic,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+		})
+	s.Require().NoError(err)
+
+	// Test specific assertions for one-out inferer implied inferences
+	s.Require().NotNil(oneOutInfererForecastImpliedValues)
+	s.Require().Len(oneOutInfererForecastImpliedValues, 2) // One entry per forecaster
+
+	// For each forecaster, verify their implied inferences when each inferer is removed
+	for _, forecasterValues := range oneOutInfererForecastImpliedValues {
+		s.Require().Contains([]string{forecaster1, forecaster2}, forecasterValues.Forecaster)
+		s.Require().Len(forecasterValues.OneOutInfererValues, 3) // One value per withheld inferer
+
+		// Verify each one-out value exists and is within expected bounds
+		for _, oneOutValue := range forecasterValues.OneOutInfererValues {
+			s.Require().Contains([]string{worker1, worker2, worker3}, oneOutValue.Worker)
+			s.Require().True(oneOutValue.Value.IsPositive())
+			// The implied inference should be between the min and max of original inferences
+			s.Require().True(oneOutValue.Value.Lt(alloraMath.MustNewDecFromString("400")))
+			s.Require().True(oneOutValue.Value.Gt(alloraMath.MustNewDecFromString("50")))
+		}
+	}
+
+	// Test edge case: no forecasters
+	emptyResult, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
+		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
+			Ctx:                  ctx,
+			K:                    k,
+			Logger:               ctx.Logger(),
+			TopicId:              topicId,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			AllInferersAreNew:    allInferersAreNew,
+			Forecasters:          []string{}, // Empty forecasters
+			ForecasterToForecast: make(map[string]*emissionstypes.Forecast),
+			ForecasterToRegret:   make(map[string]*alloraMath.Dec),
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilonTopic,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+		})
+	s.Require().NoError(err)
+	s.Require().Empty(emptyResult)
+
+	// Test edge case: single inferer (should return empty result as one-out requires at least 2 inferers)
+	singleInfererResult, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
+		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
+			Ctx:                  ctx,
+			K:                    k,
+			Logger:               ctx.Logger(),
+			TopicId:              topicId,
+			Inferers:             []string{worker1},
+			InfererToInference:   map[string]*emissionstypes.Inference{worker1: inferences.Inferences[0]},
+			InfererToRegret:      map[string]*alloraMath.Dec{},
+			AllInferersAreNew:    true,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilonTopic,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+		})
+	s.Require().NoError(err)
+	s.Require().Empty(singleInfererResult)
+}
+
+func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2inferers2forecasters() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	topicId := uint64(1)
+	blockHeight := int64(300)
+
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
+	forecaster1 := s.addrsStr[3]
+	forecaster2 := s.addrsStr[4]
+
+	// Set up input data with 2 inferers and 2 forecasters
+	inferences := &emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker1, Value: alloraMath.MustNewDecFromString("100")},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker2, Value: alloraMath.MustNewDecFromString("200")},
+		},
+	}
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster1,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("150")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("250")},
+				},
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster2,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("120")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("220")},
+				},
+			},
+		},
+	}
+
+	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
+	epsilonTopic := alloraMath.MustNewDecFromString("0.0001")
+	epsilonSafeDiv := alloraMath.MustNewDecFromString("0.0000001")
+	pNorm := alloraMath.MustNewDecFromString("2")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	inferers, inferenceByWorker, infererRegrets,
+		allInferersAreNew, forecasters, forecastByWorker,
+		forecasterRegrets, _ := s.getNetworkCalcArgs(
+		blockHeight, inferences, forecasts,
+		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm)
+
+	oneOutInfererForecastImpliedValues, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
+		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
+			Ctx:                  ctx,
+			K:                    k,
+			Logger:               ctx.Logger(),
+			TopicId:              topicId,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			AllInferersAreNew:    allInferersAreNew,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilonTopic,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+		})
+	s.Require().NoError(err)
+
+	// Test specific assertions for one-out inferer implied inferences
+	s.Require().NotNil(oneOutInfererForecastImpliedValues)
+	s.Require().Len(oneOutInfererForecastImpliedValues, 2) // One entry per forecaster
+
+	// For each forecaster, verify their implied inferences when each inferer is removed
+	for _, forecasterValues := range oneOutInfererForecastImpliedValues {
+		s.Require().Contains([]string{forecaster1, forecaster2}, forecasterValues.Forecaster)
+		s.Require().Len(forecasterValues.OneOutInfererValues, 2) // One value per withheld inferer
+
+		// Verify each one-out value exists and is within expected bounds
+		for _, oneOutValue := range forecasterValues.OneOutInfererValues {
+			s.Require().Contains([]string{worker1, worker2}, oneOutValue.Worker)
+			s.Require().True(oneOutValue.Value.IsPositive())
+			// The implied inference should be between the min and max of original inferences
+			s.Require().True(oneOutValue.Value.Lt(alloraMath.MustNewDecFromString("300")))
+			s.Require().True(oneOutValue.Value.Gt(alloraMath.MustNewDecFromString("50")))
+		}
+	}
+
 }

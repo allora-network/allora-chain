@@ -268,6 +268,11 @@ type Keeper struct {
 	initialInfererEmaScore    collections.Map[TopicId, alloraMath.Dec]
 	initialForecasterEmaScore collections.Map[TopicId, alloraMath.Dec]
 	initialReputerEmaScore    collections.Map[TopicId, alloraMath.Dec]
+
+	// map of (topic, block_height) -> ValueBundle
+	networkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	// map of (topic, block_height) -> ValueBundle
+	outlierResistantNetworkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 }
 
 func NewKeeper(
@@ -377,6 +382,8 @@ func NewKeeper(
 		latestRegretStdNorm:                       collections.NewMap(sb, types.LatestRegretStdNormKey, "latest_regret_stdnorm", collections.Uint64Key, alloraMath.DecValue),
 		latestInfererWeights:                      collections.NewMap(sb, types.LatestInfererWeightsKey, "latest_inferer_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		latestForecasterWeights:                   collections.NewMap(sb, types.LatestForecasterWeightsKey, "latest_forecaster_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -395,6 +402,141 @@ func (k *Keeper) GetStorageService() coreStore.KVStoreService {
 
 func (k *Keeper) GetBinaryCodec() codec.BinaryCodec {
 	return k.cdc
+}
+
+// Insert a network inference for a topic at a block
+func (k *Keeper) InsertNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	if err := bundle.Validate(); err != nil {
+		return errorsmod.Wrap(err, "loss bundle validation failed")
+	}
+	return k.networkInferences.Set(ctx, collections.Join(topicId, blockHeight), bundle)
+}
+
+// Get Network Inferences
+func (k *Keeper) GetNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
+	key := collections.Join(topicId, blockHeight)
+	networkInferences, err := k.networkInferences.Get(ctx, key)
+	if errors.Is(err, collections.ErrNotFound) {
+		return &types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: 0,
+				},
+			},
+			Reputer:                       "",
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.ZeroDec(),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.ZeroDec(),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
+		}, nil
+	} else if err != nil {
+		return nil, errorsmod.Wrap(err, "error getting network inferences at block")
+	}
+	return &networkInferences, nil
+}
+
+func (k *Keeper) InsertOutlierResistantNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	if err := bundle.Validate(); err != nil {
+		return errorsmod.Wrap(err, "loss bundle validation failed")
+	}
+	return k.outlierResistantNetworkInferences.Set(ctx, collections.Join(topicId, blockHeight), bundle)
+}
+
+// Get Outlier Resistant Network Inferences
+func (k *Keeper) GetOutlierResistantNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
+	key := collections.Join(topicId, blockHeight)
+	networkInferences, err := k.outlierResistantNetworkInferences.Get(ctx, key)
+	if errors.Is(err, collections.ErrNotFound) {
+		return &types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: 0,
+				},
+			},
+			Reputer:                       "",
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.ZeroDec(),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.ZeroDec(),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
+		}, nil
+	} else if err != nil {
+		return nil, errorsmod.Wrap(err, "error getting network inferences at block")
+	}
+	return &networkInferences, nil
+}
+
+// Gets Latest Network Inferences, outlier resistant or not
+func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId, outlierResistant bool) (*types.ValueBundle, error) {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return nil, errorsmod.Wrap(err, "invalid topic id")
+	}
+
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
+	var err error
+	var iter collections.Iterator[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	if outlierResistant {
+		iter, err = k.outlierResistantNetworkInferences.Iterate(ctx, rng)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error iterating outlier resistant network inferences")
+		}
+	} else {
+		iter, err = k.networkInferences.Iterate(ctx, rng)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error iterating network inferences")
+		}
+	}
+	defer iter.Close()
+
+	// Get the first (latest) entry
+	if iter.Valid() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error getting key value")
+		}
+		return &keyValue.Value, nil
+	}
+	return &types.ValueBundle{
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: 0,
+			},
+		},
+		Reputer:                       "",
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.ZeroDec(),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.ZeroDec(),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}, nil
 }
 
 /// NONCES
@@ -3911,7 +4053,14 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, 
 	if err != nil {
 		return errorsmod.Wrap(err, "error pruning network losses")
 	}
-
+	err = k.pruneNetworkInferences(ctx, blockRange)
+	if err != nil {
+		return errorsmod.Wrap(err, "error pruning network inferences")
+	}
+	err = k.pruneOutlierResistantNetworkInferences(ctx, blockRange)
+	if err != nil {
+		return errorsmod.Wrap(err, "error pruning outlier resistant network inferences")
+	}
 	return nil
 }
 
@@ -3929,6 +4078,14 @@ func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.P
 
 func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
 	return k.networkLossBundles.Clear(ctx, blockRange)
+}
+
+func (k *Keeper) pruneNetworkInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	return k.networkInferences.Clear(ctx, blockRange)
+}
+
+func (k *Keeper) pruneOutlierResistantNetworkInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	return k.outlierResistantNetworkInferences.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {

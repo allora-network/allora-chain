@@ -891,3 +891,75 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWorkerNotMatchSignature()
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecastIncludesSelf() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	_ = keeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
+
+	// Set up params similar to other tests
+	newParams := &types.OptionalParams{ //nolint: exhaustruct
+		MaxElementsPerForecast: []uint64{3},
+		// not updated params remain nil
+	}
+
+	updateMsg := &types.UpdateParamsRequest{
+		Sender: adminAddr.String(),
+		Params: newParams,
+	}
+
+	_, err := s.msgServer.UpdateParams(s.ctx, updateMsg)
+	require.NoError(err, "UpdateParams should not return an error")
+
+	blockHeight := int64(1)
+	inferenceBlockHeight := blockHeight + 10800
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayloadWithBlockHeight(workerPrivateKey, inferenceBlockHeight)
+
+	// Modify the forecast to include the worker itself as an inferer
+	workerAddr := workerMsg.WorkerDataBundle.Worker
+	otherInferer := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[1].Inferer
+
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements = []*types.InputForecastElement{
+		{
+			Inferer: workerAddr, // Worker forecasting for self
+			Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		},
+		{
+			Inferer: otherInferer,
+			Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(150)),
+		},
+	}
+
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	ctx = ctx.WithBlockHeight(blockHeight)
+
+	// Set up scores for both inferers
+	score1 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: workerAddr, Score: alloraMath.NewDecFromInt64(95)}
+	score2 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: otherInferer, Score: alloraMath.NewDecFromInt64(90)}
+
+	_ = keeper.SetInfererScoreEma(ctx, topicId, workerAddr, score1)
+	_ = keeper.SetInfererScoreEma(ctx, topicId, otherInferer, score2)
+
+	blockHeight = blockHeight + workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	ctx = ctx.WithBlockHeight(blockHeight)
+
+	// Add worker to topic whitelist
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	// Submit and verify the payload
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should succeed when forecaster includes self in forecast")
+
+	// Verify the stored forecast
+	forecastsAtBlock, err := keeper.GetWorkerLatestForecastByTopicId(ctx, topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	require.Equal(2, len(forecastsAtBlock.ForecastElements))
+	require.Equal(workerAddr, forecastsAtBlock.ForecastElements[0].Inferer)
+	require.Equal(otherInferer, forecastsAtBlock.ForecastElements[1].Inferer)
+}

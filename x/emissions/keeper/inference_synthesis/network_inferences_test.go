@@ -75,6 +75,9 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWhenNoInferences()
 	require := s.Require()
 	topicId := uint64(1)
 	blockHeight := int64(300)
+	inferences := &emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{},
+	}
 
 	_, err :=
 		inferencesynthesis.GetNetworkInferences(
@@ -82,10 +85,12 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWhenNoInferences()
 			s.emissionsKeeper,
 			topicId,
 			&blockHeight,
+			inferences,
+			nil,
 			false,
 		)
 	require.Error(err)
-	require.Equal("while getting inferences: no inferences found for topic 1 at block 300: invalid request", err.Error())
+	require.Contains(err.Error(), "no inferences found")
 
 	_, err =
 		inferencesynthesis.GetNetworkInferences(
@@ -93,10 +98,12 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWhenNoInferences()
 			s.emissionsKeeper,
 			topicId,
 			nil,
+			inferences,
+			nil,
 			false,
 		)
 	require.Error(err)
-	require.Equal("while getting inferences: no inferences found for topic 1 at latest block: invalid request", err.Error())
+	require.Contains(err.Error(), "no inferences nonce provided")
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
@@ -168,6 +175,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			s.emissionsKeeper,
 			topicId,
 			&blockHeight,
+			&inferences,
+			&forecasts,
 			false,
 		)
 	require.NoError(err)
@@ -338,6 +347,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 			s.emissionsKeeper,
 			topicId,
 			&blockHeight,
+			&inferences,
+			nil,
 			false,
 		)
 	s.Require().NoError(err)
@@ -388,6 +399,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 			s.emissionsKeeper,
 			topicId,
 			&blockHeight,
+			&inferences,
+			nil,
 			false,
 		)
 	s.Require().NoError(err)
@@ -478,6 +491,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 			s.emissionsKeeper,
 			topicId,
 			&blockHeight,
+			&inferences,
+			&forecasts,
 			false,
 		)
 	s.Require().NoError(err)
@@ -617,6 +632,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 			s.emissionsKeeper,
 			topicId,
 			&blockHeight,
+			&inferences,
+			&forecasts,
 			false,
 		)
 	s.Require().NoError(err)
@@ -757,7 +774,9 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 			s.ctx,
 			s.emissionsKeeper,
 			topicId,
-			nil,
+			&blockHeightInferences,
+			&inferences,
+			&forecasts,
 			false,
 		)
 	require.NoError(err)
@@ -876,7 +895,15 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 	err := keeper.InsertActiveInferences(s.ctx, topicId, nonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	result, err := inferencesynthesis.GetNetworkInferences(s.ctx, keeper, topicId, &blockHeight, false)
+	result, err := inferencesynthesis.GetNetworkInferences(
+		s.ctx,
+		keeper,
+		topicId,
+		&blockHeight,
+		&inferences,
+		nil,
+		false,
+	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
 
