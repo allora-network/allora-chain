@@ -333,49 +333,33 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 
 	// Filter out values submitted by unaccepted workers
 	acceptedInfererValues := make([]*types.WorkerAttributedValue, 0)
-	infererAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.InfererValues {
 		if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
-			if _, ok := infererAlreadySeen[workerVal.Worker]; !ok {
-				acceptedInfererValues = append(acceptedInfererValues, workerVal)
-				infererAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
-			}
+			acceptedInfererValues = append(acceptedInfererValues, workerVal)
 		}
 	}
 
 	acceptedForecasterValues := make([]*types.WorkerAttributedValue, 0)
-	forecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.ForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
-			if _, ok := forecasterAlreadySeen[workerVal.Worker]; !ok {
-				acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
-				forecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
-			}
+			acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
 		}
 	}
 
 	acceptedOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
 	// If 1 or fewer inferers, there's no one-out inferer data to receive
 	if len(acceptedInfererValues) > 1 {
-		oneOutInfererAlreadySeen := make(map[string]bool)
 		for _, workerVal := range reputerValueBundle.ValueBundle.OneOutInfererValues {
 			if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
-				if _, ok := oneOutInfererAlreadySeen[workerVal.Worker]; !ok {
-					acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
-					oneOutInfererAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
-				}
+				acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
 			}
 		}
 	}
 
 	acceptedOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
-	oneOutForecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneOutForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
-			if _, ok := oneOutForecasterAlreadySeen[workerVal.Worker]; !ok {
-				acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
-				oneOutForecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
-			}
+			acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
 		}
 	}
 
@@ -384,13 +368,9 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 		if _, ok := acceptedForecastersOfBatch[forecasterVal.Forecaster]; ok {
 			// Filter out unaccepted workers for this forecaster
 			acceptedWorkers := make([]*types.WithheldWorkerAttributedValue, 0)
-			workerAlreadySeen := make(map[string]bool)
 			for _, workerVal := range forecasterVal.OneOutInfererValues {
 				if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
-					if _, ok := workerAlreadySeen[workerVal.Worker]; !ok {
-						acceptedWorkers = append(acceptedWorkers, workerVal)
-						workerAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
-					}
+					acceptedWorkers = append(acceptedWorkers, workerVal)
 				}
 			}
 			// Only add forecaster if it has at least one accepted worker
@@ -404,13 +384,9 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	acceptedOneInForecasterValues := make([]*types.WorkerAttributedValue, 0)
-	oneInForecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneInForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
-			if _, ok := oneInForecasterAlreadySeen[workerVal.Worker]; !ok {
-				acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
-				oneInForecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
-			}
+			acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
 		}
 	}
 

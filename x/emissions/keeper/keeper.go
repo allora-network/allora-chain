@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/pkg/errors"
@@ -2019,15 +2018,6 @@ func (k *Keeper) InsertActiveReputerLosses(
 	if err := types.ValidateBlockHeight(block); err != nil {
 		return errorsmod.Wrap(err, "block height validation failed")
 	}
-	if err := reputerLossBundles.Validate(); err != nil {
-		// in the singular case of a bundle that has been filtered, we allow
-		// the signature validation to fail. This is secure because we already do
-		// bundle validation in CloseReputerNonce before calling this function
-		// however this should be well and truly fixed by PROTO-2369
-		if !strings.Contains(err.Error(), "signature verification failed") {
-			return errorsmod.Wrap(err, "reputer loss bundles validation failed")
-		}
-	}
 	key := collections.Join(topicId, block)
 	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 }
@@ -2057,9 +2047,6 @@ func (k *Keeper) InsertNetworkLossBundleAtBlock(
 	}
 	if err := types.ValidateBlockHeight(block); err != nil {
 		return errorsmod.Wrap(err, "block height validation failed")
-	}
-	if err := lossBundle.Validate(); err != nil {
-		return errorsmod.Wrap(err, "loss bundle validation failed")
 	}
 	key := collections.Join(topicId, block)
 	return k.networkLossBundles.Set(ctx, key, lossBundle)
