@@ -60,7 +60,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	// Insert set of active forecasts for this topic/block and return a map
 	// of the forecasters with active forecasts to be used in the forecasts processing
-	err = closeActiveForecastsSet(
+	activeForecasts, err := closeActiveForecastsSet(
 		ctx,
 		k,
 		topic.Id,
@@ -110,6 +110,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		topic.Id,
 		&nonce.BlockHeight,
 		activeInferences,
+		activeForecasts,
 		false,
 	)
 	if err != nil {
@@ -128,6 +129,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		topic.Id,
 		&nonce.BlockHeight,
 		activeInferences,
+		activeForecasts,
 		true,
 	)
 	if err != nil {
@@ -191,13 +193,24 @@ func closeActiveForecastsSet(
 	nonce types.Nonce,
 	activeForecastAddresses []string,
 	acceptedInferersOfBatch map[string]bool,
-) error {
+) (forecasts *types.Forecasts, err error) {
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	activeForecasts := make([]*types.Forecast, 0)
+
 	for _, address := range activeForecastAddresses {
 		forecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, address)
 		if err != nil {
-			return err
+			return nil, err
+		}
+
+		// Forecast validations
+		if forecast.TopicId != topicId {
+			ctx.Logger().Warn("Forecast does not match topic: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
+			continue
+		}
+		if forecast.BlockHeight != nonce.BlockHeight {
+			ctx.Logger().Warn("Forecast does not match blockHeight: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
+			continue
 		}
 
 		// Examine forecast elements to verify that they're for inferers in the current set.
@@ -211,7 +224,7 @@ func closeActiveForecastsSet(
 			}
 		}
 
-		// Discard if empty
+		// Discard if no accepted forecasts elements found
 		if len(acceptedForecastElements) == 0 {
 			continue
 		}
@@ -219,20 +232,6 @@ func closeActiveForecastsSet(
 		// Update the forecast with the filtered elements
 		if forecast.ForecastElements != nil {
 			forecast.ForecastElements = acceptedForecastElements
-		}
-
-		if forecast.Forecaster == "" {
-			ctx.Logger().Warn("Forecast was added that has no forecaster, ignoring")
-			continue
-		}
-		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
-		if forecast.TopicId != topicId {
-			ctx.Logger().Warn("Forecast does not match topic: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-			continue
-		}
-		if forecast.BlockHeight != nonce.BlockHeight {
-			ctx.Logger().Warn("Forecast does not match blockHeight: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-			continue
 		}
 
 		/// Now do filters on each forecaster
@@ -248,7 +247,13 @@ func closeActiveForecastsSet(
 		return activeForecasts[i].Forecaster < activeForecasts[j].Forecaster
 	})
 
-	return k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, types.Forecasts{
+	forecasts = &types.Forecasts{
 		Forecasts: activeForecasts,
-	})
+	}
+
+	err = k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
+	if err != nil {
+		return nil, err
+	}
+	return forecasts, nil
 }

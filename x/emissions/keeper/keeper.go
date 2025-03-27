@@ -491,41 +491,52 @@ func (k *Keeper) GetOutlierResistantNetworkInference(ctx context.Context, topicI
 
 // Gets Latest Network Inferences, outlier resistant or not
 func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId, outlierResistant bool) (*types.ValueBundle, error) {
-	blockHeight, err := k.GetWorkerTopicLastCommit(ctx, topicId)
-	if err != nil {
-		return &types.ValueBundle{}, errorsmod.Wrap(err, "error getting worker topic last commit")
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return nil, errorsmod.Wrap(err, "invalid topic id")
 	}
 
-	var networkInferences *types.ValueBundle
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
+	var err error
+	var iter collections.Iterator[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 	if outlierResistant {
-		networkInferences, err = k.GetOutlierResistantNetworkInference(ctx, topicId, blockHeight.BlockHeight)
+		iter, err = k.outlierResistantNetworkInferences.Iterate(ctx, rng)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error iterating outlier resistant network inferences")
+		}
 	} else {
-		networkInferences, err = k.GetNetworkInference(ctx, topicId, blockHeight.BlockHeight)
+		iter, err = k.networkInferences.Iterate(ctx, rng)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error iterating network inferences")
+		}
 	}
-	if errors.Is(err, collections.ErrNotFound) {
-		return &types.ValueBundle{
-			TopicId: topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{
-				ReputerNonce: &types.Nonce{
-					BlockHeight: 0,
-				},
-			},
-			Reputer:                       "",
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.ZeroDec(),
-			InfererValues:                 nil,
-			ForecasterValues:              nil,
-			NaiveValue:                    alloraMath.ZeroDec(),
-			OneOutInfererValues:           nil,
-			OneOutForecasterValues:        nil,
-			OneInForecasterValues:         nil,
-			OneOutInfererForecasterValues: nil,
-		}, nil
-	} else if err != nil {
-		return &types.ValueBundle{}, errorsmod.Wrap(err, "error getting network inferences at block")
-	}
+	defer iter.Close()
 
-	return networkInferences, nil
+	// Get the first (latest) entry
+	if iter.Valid() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error getting key value")
+		}
+		return &keyValue.Value, nil
+	}
+	return &types.ValueBundle{
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: 0,
+			},
+		},
+		Reputer:                       "",
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.ZeroDec(),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.ZeroDec(),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}, nil
 }
 
 /// NONCES

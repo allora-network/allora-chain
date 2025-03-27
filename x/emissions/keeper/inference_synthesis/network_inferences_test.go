@@ -86,6 +86,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWhenNoInferences()
 			topicId,
 			&blockHeight,
 			inferences,
+			nil,
 			false,
 		)
 	require.Error(err)
@@ -98,6 +99,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWhenNoInferences()
 			topicId,
 			nil,
 			inferences,
+			nil,
 			false,
 		)
 	require.Error(err)
@@ -174,6 +176,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			topicId,
 			&blockHeight,
 			&inferences,
+			&forecasts,
 			false,
 		)
 	require.NoError(err)
@@ -345,6 +348,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 			topicId,
 			&blockHeight,
 			&inferences,
+			nil,
 			false,
 		)
 	s.Require().NoError(err)
@@ -396,6 +400,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 			topicId,
 			&blockHeight,
 			&inferences,
+			nil,
 			false,
 		)
 	s.Require().NoError(err)
@@ -487,6 +492,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 			topicId,
 			&blockHeight,
 			&inferences,
+			&forecasts,
 			false,
 		)
 	s.Require().NoError(err)
@@ -627,6 +633,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 			topicId,
 			&blockHeight,
 			&inferences,
+			&forecasts,
 			false,
 		)
 	s.Require().NoError(err)
@@ -769,6 +776,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 			topicId,
 			&blockHeightInferences,
 			&inferences,
+			&forecasts,
 			false,
 		)
 	require.NoError(err)
@@ -893,6 +901,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 		topicId,
 		&blockHeight,
 		&inferences,
+		nil,
 		false,
 	)
 	s.Require().NoError(err)

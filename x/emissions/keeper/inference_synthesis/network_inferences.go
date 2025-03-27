@@ -1,7 +1,6 @@
 package inferencesynthesis
 
 import (
-	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -26,6 +25,7 @@ func GetNetworkInferences(
 	topicId TopicId,
 	inferencesNonce *BlockHeight,
 	inferences *emissions.Inferences,
+	forecasts *emissions.Forecasts,
 	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
 	if inferencesNonce == nil {
@@ -64,7 +64,7 @@ func GetNetworkInferences(
 		}
 
 		// 2b. Otherwise, calculate the normal way.
-		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, *inferencesNonce, networkLosses)
+		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce, networkLosses)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
 		return calcNetworkInferencesSingle(ctx, *inferencesNonce, topicId, inferences), nil
@@ -118,15 +118,15 @@ func calcNetworkInferencesMultiple(
 	k emissionskeeper.Keeper,
 	topicId TopicId,
 	inferences *emissions.Inferences,
+	forecasts *emissions.Forecasts,
 	inferenceBlockHeight BlockHeight,
 	networkLosses *emissions.ValueBundle,
 ) (*GetNetworkInferencesResult, error) {
-	// Retrieve forecasts
-	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
-	if errors.Is(err, collections.ErrNotFound) {
-		forecasts = nil
-	} else if err != nil {
-		return nil, errorsmod.Wrap(err, "while getting forecasts")
+	// Set forecasts to nil if there are no forecasts
+	if forecasts == nil {
+		forecasts = &emissions.Forecasts{
+			Forecasts: make([]*emissions.Forecast, 0),
+		}
 	}
 
 	// Retrieve module params
@@ -184,7 +184,7 @@ func calcNetworkInferencesSingle(
 		Reputer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
 			ReputerNonce: &emissions.Nonce{
-				BlockHeight: ctx.BlockHeight(),
+				BlockHeight: inferenceBlockHeight,
 			},
 		},
 		ExtraData:     nil,

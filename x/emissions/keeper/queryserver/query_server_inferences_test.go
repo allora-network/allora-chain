@@ -471,6 +471,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		topicId,
 		&inferenceNonce.BlockHeight,
 		&inferences,
+		&forecasts,
 		false,
 	)
 	require.NoError(err)
@@ -484,8 +485,8 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	response, err := queryServer.GetLatestNetworkInferences(s.ctx, req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
-
 	require.Equal(len(response.NetworkInferences.ForecasterValues), 3)
+	require.Equal(len(response.NetworkInferences.InfererValues), 5)
 }
 
 func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
@@ -697,7 +698,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
-func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInferenceWithMissingInferences() {
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -873,8 +874,13 @@ func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInferenceWithMissing
 	req := &types.GetLatestNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	_, err = queryServer.GetLatestNetworkInferences(s.ctx, req)
-	require.Error(err)
+	response, err := queryServer.GetLatestNetworkInferences(s.ctx, req)
+
+	require.NoError(err)
+	require.NotNil(response)
+	require.Equal(response.NetworkInferences.Reputer, "")
+	require.Equal(response.NetworkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight, int64(0))
+
 }
 
 func (s *QueryServerTestSuite) TestGetActiveInferersForTopic() {

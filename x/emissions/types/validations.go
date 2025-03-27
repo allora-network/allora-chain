@@ -33,12 +33,8 @@ func ValidateDec(value alloraMath.Dec) error {
 }
 
 func ValidateBoundedExp40Dec(value alloraMath.BoundedExp40Dec) error {
-	if value.IsNaN() {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "value cannot be NaN")
-	}
-
 	if !value.IsFinite() {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "value must be finite")
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value must not be infinite or NaN")
 	}
 
 	return nil
