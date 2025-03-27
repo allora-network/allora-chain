@@ -67,7 +67,7 @@ func GetNetworkInferences(
 		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce, networkLosses)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
-		return calcNetworkInferencesSingle(ctx, *inferencesNonce, topicId, inferences), nil
+		return calcNetworkInferencesSingle(*inferencesNonce, topicId, inferences), nil
 	} else {
 		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
@@ -172,7 +172,6 @@ func calcNetworkInferencesMultiple(
 
 // Single valid inference case
 func calcNetworkInferencesSingle(
-	ctx sdk.Context,
 	inferenceBlockHeight BlockHeight,
 	topicId TopicId,
 	inferences *emissions.Inferences,
