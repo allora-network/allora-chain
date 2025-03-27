@@ -32,14 +32,6 @@ func ValidateDec(value alloraMath.Dec) error {
 	return nil
 }
 
-func ValidateBoundedExp40Dec(value alloraMath.BoundedExp40Dec) error {
-	if !value.IsFinite() {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "value must not be infinite or NaN")
-	}
-
-	return nil
-}
-
 // ValidateSdkInt checks if the given value is a valid cosmosMath.Int
 // according to our needs / standards
 func ValidateSdkInt(value cosmosMath.Int) error {
@@ -151,9 +143,6 @@ func (inputInference *InputInference) Validate() error {
 	if err := validateInferenceContents(inputInference.TopicId, inputInference.Inferer, inputInference.BlockHeight); err != nil {
 		return errors.Wrap(err, "inference contents are invalid")
 	}
-	if err := ValidateBoundedExp40Dec(inputInference.Value); err != nil {
-		return errors.Wrap(err, "inference value is invalid")
-	}
 	// ExtraData not validated as it is not used by the chain
 	// Proof not validated as it is not used by the chain
 	return nil
@@ -224,9 +213,6 @@ func (inputForecastElement *InputForecastElement) Validate() error {
 	}
 	if err := ValidateForecastElementContents(inputForecastElement.Inferer); err != nil {
 		return errors.Wrap(err, "forecast element contents are invalid")
-	}
-	if err := ValidateBoundedExp40Dec(inputForecastElement.Value); err != nil {
-		return errors.Wrap(err, "forecast element value is invalid")
 	}
 	return nil
 }
@@ -467,10 +453,6 @@ func (bundle *InputValueBundle) Validate() error {
 	}
 	// extraData is not checked as it is not used by the chain
 
-	if err := ValidateBoundedExp40Dec(bundle.CombinedValue); err != nil {
-		return errors.Wrap(err, "value bundle combined value is invalid")
-	}
-
 	// nil values for bundle.InfererValues are interpreted to mean that there
 	// are no inferer values for this bundle, and are allowed
 	for _, infererValue := range bundle.InfererValues {
@@ -485,10 +467,6 @@ func (bundle *InputValueBundle) Validate() error {
 		if err := forecasterValue.Validate(); err != nil {
 			return errors.Wrap(err, "value bundle forecaster value is invalid")
 		}
-	}
-
-	if err := ValidateBoundedExp40Dec(bundle.NaiveValue); err != nil {
-		return errors.Wrap(err, "value bundle naive value is invalid")
 	}
 
 	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
@@ -683,10 +661,6 @@ func (inputWorkerValue *InputWorkerAttributedValue) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
 	}
 
-	if err := ValidateBoundedExp40Dec(inputWorkerValue.Value); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -714,10 +688,6 @@ func (inputWithheldWorkerValue *InputWithheldWorkerAttributedValue) Validate() e
 	_, err := sdk.AccAddressFromBech32(inputWithheldWorkerValue.Worker)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
-	}
-
-	if err := ValidateBoundedExp40Dec(inputWithheldWorkerValue.Value); err != nil {
-		return err
 	}
 
 	return nil
