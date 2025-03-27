@@ -279,10 +279,8 @@ func GetStakeWeightedLossMatrix(
 		stakeWeightedLoss[j] = sum
 
 		// Find most distant value from consensus value
-		maxDistance, err := alloraMath.OneDec().Mul(alloraMath.MustNewDecFromString("-1")) // Initialize with an impossible value
-		if err != nil {
-			return nil, nil, err
-		}
+		maxDistance := alloraMath.ZeroDec()
+		hasFoundValidDistance := false
 		for _, losses := range reputersReportedLosses {
 			// Skip if loss is NaN
 			if losses[j].IsNaN() {
@@ -293,9 +291,18 @@ func GetStakeWeightedLossMatrix(
 			if err != nil {
 				return nil, nil, err
 			}
-			if distance.Gt(maxDistance) {
-				maxDistance = distance
+
+			absoluteDifference, err := distance.Abs()
+			if err != nil {
+				return nil, nil, err
+			}
+
+			// Update the most distant value if this is the first valid distance
+			// or if this distance is greater than the current maximum
+			if !hasFoundValidDistance || absoluteDifference.Gt(maxDistance) {
+				maxDistance = absoluteDifference
 				mostDistantValues[j] = losses[j]
+				hasFoundValidDistance = true
 			}
 		}
 	}

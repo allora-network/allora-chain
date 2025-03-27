@@ -630,6 +630,100 @@ func TestGetStakeWeightedLoss(t *testing.T) {
 	}
 }
 
+func TestGetStakeWeightedLossMatrixAbsoluteDifference(t *testing.T) {
+	tests := []struct {
+		name                string
+		stakes              []alloraMath.Dec
+		losses              [][]alloraMath.Dec
+		expectedConsensus   []alloraMath.Dec
+		expectedMostDistant []alloraMath.Dec
+	}{
+		{
+			name: "Most distant value below consensus",
+			stakes: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+			},
+			losses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(5)},
+				{alloraMath.NewDecFromInt64(5)},
+				{alloraMath.NewDecFromInt64(2)},
+			},
+			expectedConsensus:   []alloraMath.Dec{alloraMath.NewDecFromInt64(4)},
+			expectedMostDistant: []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
+		},
+		{
+			name: "Most distant value above consensus",
+			stakes: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+			},
+			losses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(2)},
+				{alloraMath.NewDecFromInt64(2)},
+				{alloraMath.NewDecFromInt64(8)},
+			},
+			expectedConsensus:   []alloraMath.Dec{alloraMath.NewDecFromInt64(4)},
+			expectedMostDistant: []alloraMath.Dec{alloraMath.NewDecFromInt64(8)},
+		},
+		{
+			name: "Equal absolute distances",
+			stakes: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+			},
+			losses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(0)},
+				{alloraMath.NewDecFromInt64(5)},
+				{alloraMath.NewDecFromInt64(10)},
+			},
+			expectedConsensus:   []alloraMath.Dec{alloraMath.NewDecFromInt64(5)},
+			expectedMostDistant: []alloraMath.Dec{alloraMath.NewDecFromInt64(10)},
+		},
+		{
+			name: "With NaN values",
+			stakes: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(1),
+			},
+			losses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(1)},
+				{alloraMath.NewNaN()},
+				{alloraMath.NewDecFromInt64(7)},
+			},
+			expectedConsensus:   []alloraMath.Dec{alloraMath.NewDecFromInt64(4)},
+			expectedMostDistant: []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			consensus, mostDistant, err := rewards.GetStakeWeightedLossMatrix(tc.stakes, tc.losses)
+			require.NoError(t, err)
+
+			// Check consensus values
+			for i, v := range consensus {
+				inDelta, err := alloraMath.InDelta(tc.expectedConsensus[i], v, alloraMath.MustNewDecFromString("0.00001"))
+				require.NoError(t, err)
+				if !inDelta {
+					t.Errorf("GetStakeWeightedLoss() got = %v, want %v", consensus, tc.expectedConsensus)
+				}
+			}
+
+			// Check most distant values
+			require.Equal(t, len(tc.expectedMostDistant), len(mostDistant))
+			for i, v := range mostDistant {
+				require.True(t, tc.expectedMostDistant[i].Equal(v),
+					"mostDistant[%d]: expected %s, got %s", i, tc.expectedMostDistant[i], v)
+			}
+		})
+	}
+}
+
 func TestGetFinalWorkerPerformanceScore(t *testing.T) {
 	tests := []struct {
 		name        string
