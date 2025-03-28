@@ -993,7 +993,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// NetworkInferences
 	for _, networkInference := range data.NetworkInferences {
 		if networkInference != nil {
-			if err := k.InsertNetworkInference(ctx, networkInference.TopicId, networkInference.BlockHeight, *networkInference.ValueBundle); err != nil {
+			if err := k.InsertNetworkInferences(ctx, networkInference.TopicId, networkInference.BlockHeight, *networkInference.ValueBundle); err != nil {
 				return errors.Wrap(err, "error setting network inference")
 			}
 		}
@@ -1002,7 +1002,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// OutlierResistantNetworkInferences
 	for _, outlierResistantNetworkInference := range data.OutlierResistantNetworkInferences {
 		if outlierResistantNetworkInference != nil {
-			if err := k.InsertOutlierResistantNetworkInference(ctx, outlierResistantNetworkInference.TopicId, outlierResistantNetworkInference.BlockHeight, *outlierResistantNetworkInference.ValueBundle); err != nil {
+			if err := k.InsertOutlierResistantNetworkInferences(ctx, outlierResistantNetworkInference.TopicId, outlierResistantNetworkInference.BlockHeight, *outlierResistantNetworkInference.ValueBundle); err != nil {
 				return errors.Wrap(err, "error setting outlier resistant network inference")
 			}
 		}

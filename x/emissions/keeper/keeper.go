@@ -405,7 +405,7 @@ func (k *Keeper) GetBinaryCodec() codec.BinaryCodec {
 }
 
 // Insert a network inference for a topic at a block
-func (k *Keeper) InsertNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
+func (k *Keeper) InsertNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
@@ -419,7 +419,7 @@ func (k *Keeper) InsertNetworkInference(ctx context.Context, topicId TopicId, bl
 }
 
 // Get Network Inferences
-func (k *Keeper) GetNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
+func (k *Keeper) GetNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
 	key := collections.Join(topicId, blockHeight)
 	networkInferences, err := k.networkInferences.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -447,7 +447,7 @@ func (k *Keeper) GetNetworkInference(ctx context.Context, topicId TopicId, block
 	return &networkInferences, nil
 }
 
-func (k *Keeper) InsertOutlierResistantNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
+func (k *Keeper) InsertOutlierResistantNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
@@ -461,7 +461,7 @@ func (k *Keeper) InsertOutlierResistantNetworkInference(ctx context.Context, top
 }
 
 // Get Outlier Resistant Network Inferences
-func (k *Keeper) GetOutlierResistantNetworkInference(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
+func (k *Keeper) GetOutlierResistantNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
 	key := collections.Join(topicId, blockHeight)
 	networkInferences, err := k.outlierResistantNetworkInferences.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {

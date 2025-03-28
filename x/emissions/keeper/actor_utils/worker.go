@@ -3,6 +3,7 @@ package actorutils
 import (
 	"sort"
 
+	errorsmod "cosmossdk.io/errors"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -103,39 +104,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	// Calculate and store network inferences for this block.
-	networkInferencesResult, err := synth.GetNetworkInferences(
-		sdk.UnwrapSDKContext(ctx),
-		*k,
-		topic.Id,
-		&nonce.BlockHeight,
-		activeInferences,
-		activeForecasts,
-		false,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = k.InsertNetworkInference(ctx, topic.Id, nonce.BlockHeight, *networkInferencesResult.NetworkInferences)
-	if err != nil {
-		return err
-	}
-
-	// Calculate and store outlier resistant network inferences for this block.
-	outlierResistantNetworkInferencesResult, err := synth.GetNetworkInferences(
-		sdk.UnwrapSDKContext(ctx),
-		*k,
-		topic.Id,
-		&nonce.BlockHeight,
-		activeInferences,
-		activeForecasts,
-		true,
-	)
-	if err != nil {
-		return err
-	}
-	err = k.InsertOutlierResistantNetworkInference(ctx, topic.Id, nonce.BlockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences)
+	// Computes and stores both regular and outlier-resistant network inferences
+	err = ProcessAndStoreNetworkInferences(k, ctx, topic.Id, nonce.BlockHeight, activeInferences, activeForecasts)
 	if err != nil {
 		return err
 	}
@@ -143,6 +113,68 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
 	// Return an empty response as the operation was successful
+	return nil
+}
+
+// ProcessAndStoreNetworkInferences calculates and stores both regular and outlier-resistant network inferences
+// for a given topic and block height.
+func ProcessAndStoreNetworkInferences(
+	k *keeper.Keeper,
+	ctx sdk.Context,
+	topicId uint64,
+	blockHeight int64,
+	activeInferences *types.Inferences,
+	activeForecasts *types.Forecasts,
+) error {
+	// Calculate regular network inferences
+	networkInferencesResult, err := synth.GetNetworkInferences(
+		sdk.UnwrapSDKContext(ctx),
+		*k,
+		topicId,
+		&blockHeight,
+		activeInferences,
+		activeForecasts,
+		false,
+	)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to calculate network inferences")
+	}
+
+	// Store regular network inferences
+	if err := k.InsertNetworkInferences(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences); err != nil {
+		return errorsmod.Wrap(err, "failed to insert network inference")
+	}
+
+	// Get outlier resistant inferences
+	outlierResistantFilteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to filter outlier resistant inferences")
+	}
+
+	// Initialize outlier resistant result with regular result
+	outlierResistantNetworkInferencesResult := networkInferencesResult
+
+	// Recalculate only if outlier filtering changed the inference set
+	if len(outlierResistantFilteredInferences.Inferences) != len(activeInferences.Inferences) {
+		outlierResistantNetworkInferencesResult, err = synth.GetNetworkInferences(
+			sdk.UnwrapSDKContext(ctx),
+			*k,
+			topicId,
+			&blockHeight,
+			&outlierResistantFilteredInferences,
+			activeForecasts,
+			true,
+		)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to calculate outlier resistant network inferences")
+		}
+	}
+
+	// Store outlier resistant network inferences
+	if err := k.InsertOutlierResistantNetworkInferences(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
+		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
+	}
+
 	return nil
 }
 

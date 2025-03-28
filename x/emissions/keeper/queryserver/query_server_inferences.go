@@ -82,7 +82,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	networkInferences, err := qs.k.GetNetworkInference(ctx, req.TopicId, req.BlockHeightLastInference)
+	networkInferences, err := qs.k.GetNetworkInferences(ctx, req.TopicId, req.BlockHeightLastInference)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	outlierResistantNetworkInferences, err := qs.k.GetOutlierResistantNetworkInference(ctx, req.TopicId, req.BlockHeightLastInference)
+	outlierResistantNetworkInferences, err := qs.k.GetOutlierResistantNetworkInferences(ctx, req.TopicId, req.BlockHeightLastInference)
 	if err != nil {
 		return nil, err
 	}
