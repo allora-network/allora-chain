@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#753](https://github.com/allora-network/allora-chain/pull/753) Add GRPC support to the testing localnet
 * [#775](https://github.com/allora-network/allora-chain/pull/775) Pipe a "y" to key add command in l1_node.sh script
+* [#783](https://github.com/allora-network/allora-chain/pull/783) Add API Breaking Changes section to CHANGELOG.md
 
 ### Changed
 
@@ -97,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#758](https://github.com/allora-network/allora-chain/pull/758): Ensure pending stake removals are processed
 * [#767](https://github.com/allora-network/allora-chain/pull/767) Fix [ISA-2025-001](https://github.com/cosmos/ibc-go/security/advisories/GHSA-4wf3-5qj9-368v)
 
-### API Breaking Changes
+### API Breaking Changes
 
 #### Removed
 
