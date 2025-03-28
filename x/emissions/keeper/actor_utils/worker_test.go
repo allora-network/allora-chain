@@ -488,10 +488,10 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	require.NoError(err)
 
 	// Regular network inferences should include all values
-	require.Equal(4, len(regularInferences.InfererValues))
+	require.Len(regularInferences.InfererValues, 4)
 
 	// Outlier resistant network inferences should exclude worker3
-	require.Equal(3, len(outlierResistantInferences.InfererValues))
+	require.Len(outlierResistantInferences.InfererValues, 3)
 
 	// Verify worker3 is not in outlier resistant results
 	for _, infValue := range outlierResistantInferences.InfererValues {
@@ -643,8 +643,8 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	require.NoError(err)
 
 	// Both should include all values
-	require.Equal(4, len(regularInferences.InfererValues))
-	require.Equal(4, len(outlierResistantInferences.InfererValues))
+	require.Len(regularInferences.InfererValues, 4)
+	require.Len(outlierResistantInferences.InfererValues, 4)
 
 	// Verify all workers are present in both results
 	regularWorkers := make(map[string]bool)
