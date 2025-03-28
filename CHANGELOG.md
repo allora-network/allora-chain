@@ -102,8 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Removed
 
-* GetLatestAvailableNetworkInferences()
-* GetLatestAvailableNetworkInferencesOutlierResistant()
+* [#769](https://github.com/allora-network/allora-chain/pull/769): `x/emissions` gRPC query `GetLatestAvailableNetworkInferences()`, use `GetLatestNetworkInferences()` instead
+* [#769](https://github.com/allora-network/allora-chain/pull/769): `x/emissions` gRPC query `GetLatestAvailableNetworkInferencesOutlierResistant()` , use `GetLatestNetworkInferencesOutlierResistant()` instead
 
 #### Added 
 
