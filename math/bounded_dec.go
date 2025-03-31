@@ -149,6 +149,28 @@ func NewCappedBoundedExp40DecFromString(s string) (BoundedExp40Dec, error) {
 	return NewCappedBoundedExp40Dec(d)
 }
 
+// MustNewCappedBoundedExp40Dec creates a BoundedExp40Dec from a Dec,
+// capping the value to the allowed bounds if it's out of range.
+// It panics on error.
+func MustNewCappedBoundedExp40Dec(d Dec) BoundedExp40Dec {
+	dec, err := NewCappedBoundedExp40Dec(d)
+	if err != nil {
+		panic(err)
+	}
+	return dec
+}
+
+// MustNewCappedBoundedExp40DecFromString creates a BoundedExp40Dec from a string,
+// capping the value to the allowed bounds if it's out of range.
+// It panics on parse or boundary errors.
+func MustNewCappedBoundedExp40DecFromString(s string) BoundedExp40Dec {
+	dec, err := NewCappedBoundedExp40DecFromString(s)
+	if err != nil {
+		panic(err)
+	}
+	return dec
+}
+
 // Marshal implements the gogo proto custom type interface
 func (bd BoundedExp40Dec) Marshal() ([]byte, error) {
 	if err := validateBounds(bd.dec); err != nil {

@@ -286,3 +286,158 @@ func TestNewCappedBoundedExp40DecFromString(t *testing.T) {
 		})
 	}
 }
+
+func TestMustNewCappedBoundedExp40Dec(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     Dec
+		wantPanic bool
+	}{
+		{
+			name:      "within bounds: positive",
+			input:     MustNewDecFromString("1.23"),
+			wantPanic: false,
+		},
+		{
+			name:      "within bounds: zero",
+			input:     ZeroDec(),
+			wantPanic: false,
+		},
+		{
+			name:      "within bounds: negative",
+			input:     MustNewDecFromString("-1.23"),
+			wantPanic: false,
+		},
+		{
+			name:      "at upper bound",
+			input:     MustNewDecFromString("1e40"),
+			wantPanic: false,
+		},
+		{
+			name:      "at lower bound",
+			input:     MustNewDecFromString("1e-40"),
+			wantPanic: false,
+		},
+		{
+			name:      "caps to upper bound",
+			input:     MustNewDecFromString("1e41"),
+			wantPanic: false,
+		},
+		{
+			name:      "caps to lower bound",
+			input:     MustNewDecFromString("1e-41"),
+			wantPanic: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantPanic {
+				require.Panics(t, func() {
+					MustNewCappedBoundedExp40Dec(tt.input)
+				}, "MustNewCappedBoundedExp40Dec should panic")
+				return
+			}
+
+			require.NotPanics(t, func() {
+				bounded := MustNewCappedBoundedExp40Dec(tt.input)
+				actual, err := bounded.ToDec()
+				require.NoError(t, err)
+
+				// For values that get capped, verify they're within bounds
+				absValue, err := actual.Abs()
+				require.NoError(t, err)
+
+				if !absValue.IsZero() {
+					require.True(t, absValue.Gte(minBoundValue), "value should be >= minimum bound")
+					require.True(t, absValue.Lte(maxBoundValue), "value should be <= maximum bound")
+				}
+			}, "MustNewCappedBoundedExp40Dec should not panic")
+		})
+	}
+}
+
+func TestMustNewCappedBoundedExp40DecFromString(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     string
+		wantPanic bool
+	}{
+		{
+			name:      "within bounds: positive",
+			input:     "1.23",
+			wantPanic: false,
+		},
+		{
+			name:      "within bounds: zero",
+			input:     "0",
+			wantPanic: false,
+		},
+		{
+			name:      "within bounds: negative",
+			input:     "-1.23",
+			wantPanic: false,
+		},
+		{
+			name:      "at upper bound",
+			input:     "1e40",
+			wantPanic: false,
+		},
+		{
+			name:      "at lower bound",
+			input:     "1e-40",
+			wantPanic: false,
+		},
+		{
+			name:      "caps to upper bound",
+			input:     "1e41",
+			wantPanic: false,
+		},
+		{
+			name:      "caps to lower bound",
+			input:     "1e-41",
+			wantPanic: false,
+		},
+		{
+			name:      "invalid decimal string",
+			input:     "not.a.number",
+			wantPanic: true,
+		},
+		{
+			name:      "non-finite: infinity",
+			input:     "Inf",
+			wantPanic: true,
+		},
+		{
+			name:      "empty string",
+			input:     "",
+			wantPanic: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantPanic {
+				require.Panics(t, func() {
+					MustNewCappedBoundedExp40DecFromString(tt.input)
+				}, "MustNewCappedBoundedExp40DecFromString should panic")
+				return
+			}
+
+			require.NotPanics(t, func() {
+				bounded := MustNewCappedBoundedExp40DecFromString(tt.input)
+				actual, err := bounded.ToDec()
+				require.NoError(t, err)
+
+				// For values that get capped, verify they're within bounds
+				absValue, err := actual.Abs()
+				require.NoError(t, err)
+
+				if !absValue.IsZero() {
+					require.True(t, absValue.Gte(minBoundValue), "value should be >= minimum bound")
+					require.True(t, absValue.Lte(maxBoundValue), "value should be <= maximum bound")
+				}
+			}, "MustNewCappedBoundedExp40DecFromString should not panic")
+		})
+	}
+}
