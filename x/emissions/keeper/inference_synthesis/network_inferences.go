@@ -45,13 +45,6 @@ func GetNetworkInferences(
 		ctx.Logger().Debug("Gradient cache cleared after network inference calculation")
 	}()
 
-	// Retrieve the requested inferences (either latest or specified, depending on inferencesNonce)
-	// If outlierResistant is true, outliers will be filtered out before calculating the network inference
-	// inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce, outlierResistant)
-	// if err != nil {
-	// 	return nil, errorsmod.Wrap(err, "while getting inferences")
-	// }
-
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:
 		// 1. Try to get latest network loss

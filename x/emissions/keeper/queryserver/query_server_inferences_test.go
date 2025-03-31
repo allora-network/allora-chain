@@ -475,7 +475,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		false,
 	)
 	require.NoError(err)
-	err = keeper.InsertNetworkInference(s.ctx, topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
+	err = keeper.InsertNetworkInferences(s.ctx, topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
 	require.NoError(err)
 
 	// Test querying the server

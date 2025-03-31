@@ -91,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#760](https://github.com/allora-network/allora-chain/pull/760) Fix topic low-weight inactive topic weight vulnerability
 * [#771](https://github.com/allora-network/allora-chain/pull/771) Fix reputer/worker window boundaries
 * [#782](https://github.com/allora-network/allora-chain/pull/782) More efficient logging, added check-log-sprintf linter
+* [#784](https://github.com/allora-network/allora-chain/pull/784) Optimize: do not recalc outlier-resistant network inferences if no outliers
 
 ### Security
 
