@@ -171,6 +171,16 @@ func MustNewCappedBoundedExp40DecFromString(s string) BoundedExp40Dec {
 	return dec
 }
 
+// Returns the maximum value that can be represented by a BoundedExp40Dec
+func GetMaxPositiveBoundaryExp40Dec() BoundedExp40Dec {
+	return BoundedExp40Dec{dec: maxBoundValue}
+}
+
+// Returns the minimum value that can be represented by a BoundedExp40Dec
+func GetMinPositiveBoundaryExp40Dec() BoundedExp40Dec {
+	return BoundedExp40Dec{dec: minBoundValue}
+}
+
 // Marshal implements the gogo proto custom type interface
 func (bd BoundedExp40Dec) Marshal() ([]byte, error) {
 	if err := validateBounds(bd.dec); err != nil {
