@@ -94,6 +94,61 @@ func NewBoundedExp40DecFromString(s string) (BoundedExp40Dec, error) {
 	return NewBoundedExp40Dec(d)
 }
 
+// NewCappedBoundedExp40Dec creates a BoundedExp40Dec from a Dec,
+// capping the value to the allowed bounds if it's out of range.
+func NewCappedBoundedExp40Dec(d Dec) (BoundedExp40Dec, error) {
+	if !d.IsFinite() {
+		return BoundedExp40Dec{}, errorsmod.Wrap(ErrOutOfRange, "cannot cap non-finite decimal")
+	}
+
+	if d.IsZero() {
+		return BoundedExp40Dec{dec: d}, nil
+	}
+
+	absValue, err := d.Abs()
+	if err != nil {
+		return BoundedExp40Dec{}, errorsmod.Wrap(err, "failed to compute absolute value")
+	}
+
+	var capped Dec
+	switch {
+	case absValue.Lt(minBoundValue):
+		// Too small → cap to min bound with correct sign
+		if d.IsNegative() {
+			capped, err = minBoundValue.Neg()
+			if err != nil {
+				return BoundedExp40Dec{}, errorsmod.Wrap(err, "failed to negate min bound value")
+			}
+		} else {
+			capped = minBoundValue
+		}
+	case absValue.Gt(maxBoundValue):
+		// Too large → cap to max bound with correct sign
+		if d.IsNegative() {
+			capped, err = maxBoundValue.Neg()
+			if err != nil {
+				return BoundedExp40Dec{}, errorsmod.Wrap(err, "failed to negate max bound value")
+			}
+		} else {
+			capped = maxBoundValue
+		}
+	default:
+		capped = d
+	}
+
+	return BoundedExp40Dec{dec: capped}, nil
+}
+
+// NewCappedBoundedExp40DecFromString creates a BoundedExp40Dec from a string,
+// capping the value to the allowed bounds if it's out of range.
+func NewCappedBoundedExp40DecFromString(s string) (BoundedExp40Dec, error) {
+	d, err := NewDecFromString(s)
+	if err != nil {
+		return BoundedExp40Dec{}, errorsmod.Wrap(err, "failed to parse decimal")
+	}
+	return NewCappedBoundedExp40Dec(d)
+}
+
 // Marshal implements the gogo proto custom type interface
 func (bd BoundedExp40Dec) Marshal() ([]byte, error) {
 	if err := validateBounds(bd.dec); err != nil {
