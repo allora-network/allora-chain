@@ -273,7 +273,7 @@ func normalizeWeightedLoss(
 	runningWeightedLossData *RunningWeightedLoss,
 ) (alloraMath.Dec, error) {
 	if runningWeightedLossData.SumWeight.IsZero() {
-		return alloraMath.Dec{}, errorsmod.Wrapf(emissions.ErrFractionDivideByZero, "Sum weight for combined naive loss is 0")
+		return alloraMath.Dec{}, errorsmod.Wrapf(emissions.ErrFractionDivideByZero, "Sum weight for loss is 0")
 	}
 
 	normalizedWeightedLoss, err := runningWeightedLossData.UnnormalizedWeightedLoss.Quo(runningWeightedLossData.SumWeight)
