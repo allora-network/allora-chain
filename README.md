@@ -139,7 +139,7 @@ You can refer to the Allora documentation for detailed instructions on [running 
 
 2. Wait until the node is fully synced
 
-Verify that your node has finished synching and it is caught up with the network:
+Verify that your node has finished syncing and it is caught up with the network:
 
 `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up`
 Wait until you see the output: "false"
@@ -345,7 +345,7 @@ ssh -NL 2345:localhost:2345 user@remote.ip
 }
 ```
 
-9- At Cursor, go to the debug pannel, pick "Remote Debug" configuration and start debugging.
+9- At Cursor, go to the debug panel, pick "Remote Debug" configuration and start debugging.
 
 ## Data Submission Windows
 
