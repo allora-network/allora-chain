@@ -177,6 +177,10 @@ func TestDec(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, zero.Equal(logEOne))
 
+	logDeterminism, err := alloraMath.Ln(alloraMath.MustNewDecFromString("1.6285091944505809264504560045920167"))
+	require.NoError(t, err)
+	require.True(t, alloraMath.MustNewDecFromString("0.4876649916811116824516548471782886").Equal(logDeterminism))
+
 	eight := alloraMath.NewDecFromInt64(8)
 	twoCubed, err := alloraMath.Pow(two, three)
 	require.NoError(t, err)
