@@ -65,8 +65,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	b.Coeff.Mul(&b.Coeff, apd.NewBigInt(10).Exp(apd.NewBigInt(10), apd.NewBigInt(int64(dec128Context.Precision+1)), nil))
-	b.Exponent -= int32(dec128Context.Precision + 1) //nolint:gosec // we must panic if this overflows anyway
+	enforceDecimalPrecision(b, dec128Context.Precision+1)
 	log2B = *b
 }
 
@@ -437,16 +436,12 @@ func Log2(x Dec) (Dec, error) {
 	var xCopy apd.Decimal
 	xCopy.Set(&x.dec)
 
-	// As we'll make divisions by 2 through bit right shift, we need to make sure we have enough digit precision in the coeff.
+	// As we'll make divisions by 2 through bit right shift, we need to make sure we have enough decimal digit precision
+	// in the coeff.
 	// For example:
 	// Taking a 2.12 dec represented by {coeff: 212, exp: -2}
 	// It is here transformed to {coeff: 212000000000000000000000000000000000, exp: -35}
-	precDelta := int64(decCtx.Precision) + min(int64(xCopy.Exponent), 0)
-	if precDelta > 0 && int64(xCopy.Exponent)-precDelta >= goMath.MinInt32 {
-		ten := apd.NewBigInt(10)
-		xCopy.Coeff.Mul(&xCopy.Coeff, ten.Exp(ten, apd.NewBigInt(precDelta), nil))
-		xCopy.Exponent -= int32(precDelta) //nolint:gosec // potential overflow already checked above
-	}
+	enforceDecimalPrecision(&xCopy, decCtx.Precision)
 
 	yBig := apd.NewBigInt(0)
 
@@ -912,11 +907,7 @@ func (x Dec) IsFinite() bool {
 
 // NumDecimalPlaces returns the number of decimal places in x.
 func (x Dec) NumDecimalPlaces() uint32 {
-	exp := x.dec.Exponent
-	if exp >= 0 {
-		return 0
-	}
-	return uint32(-exp)
+	return decimalPlaces(&x.dec)
 }
 
 // Reduce returns a copy of x with all trailing zeros removed and the number
@@ -925,4 +916,18 @@ func (x Dec) Reduce() (Dec, int) {
 	y := ZeroDec()
 	_, n := y.dec.Reduce(&x.dec)
 	return y, n
+}
+
+// enforceDecimalPrecision mutably enforce a decimal digit precision.
+func enforceDecimalPrecision(d *apd.Decimal, precision uint32) {
+	precDelta := int64(precision - decimalPlaces(d))
+	if precDelta > 0 && int64(d.Exponent)-precDelta >= goMath.MinInt32 {
+		ten := apd.NewBigInt(10)
+		d.Coeff.Mul(&d.Coeff, ten.Exp(ten, apd.NewBigInt(precDelta), nil))
+		d.Exponent -= int32(precDelta) //nolint:gosec // potential overflow already checked above
+	}
+}
+
+func decimalPlaces(d *apd.Decimal) uint32 {
+	return uint32(-min(d.Exponent, 0))
 }
