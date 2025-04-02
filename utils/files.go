@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -24,7 +23,7 @@ func EnsureDirAndMaxPerms(path string, perms os.FileMode) error {
 		return os.MkdirAll(path, perms)
 	} else if !stat.IsDir() {
 		// Path exists, but it's a file, so don't clobber
-		return errors.New(fmt.Sprintf("%v already exists and is not a directory", path)) //nolint:gosimple
+		return fmt.Errorf("%v already exists and is not a directory", path)
 	} else if stat.Mode() != perms {
 		// Dir exists, but wrong perms, so chmod
 		return os.Chmod(path, (stat.Mode() & perms))
@@ -47,25 +46,33 @@ func (b *ByteSize) UnmarshalText(text []byte) error {
 	str := strings.TrimSpace(strings.ToLower(string(text)))
 
 	var multiplier ByteSize = 1
+	var suffix string
 
-	switch {
-	case strings.HasSuffix(str, "kb"):
+	// More efficient suffix extraction
+	if len(str) > 0 {
+		lastChar := str[len(str)-1]
+		if lastChar == 'b' {
+			if len(str) > 2 && str[len(str)-2] != 'p' {
+				suffix = str[len(str)-2:]
+				str = str[:len(str)-2]
+			} else {
+				suffix = str[len(str)-1:]
+				str = str[:len(str)-1]
+			}
+		}
+	}
+
+	switch suffix {
+	case "kb":
 		multiplier = KB
-		str = str[:len(str)-2]
-	case strings.HasSuffix(str, "mb"):
+	case "mb":
 		multiplier = MB
-		str = str[:len(str)-2]
-	case strings.HasSuffix(str, "gb"):
+	case "gb":
 		multiplier = GB
-		str = str[:len(str)-2]
-	case strings.HasSuffix(str, "tb"):
+	case "tb":
 		multiplier = TB
-		str = str[:len(str)-2]
-	case strings.HasSuffix(str, "pb"):
+	case "pb":
 		multiplier = PB
-		str = str[:len(str)-2]
-	case strings.HasSuffix(str, "b"):
-		str = str[:len(str)-1]
 	}
 
 	value, err := strconv.ParseFloat(str, 64)
