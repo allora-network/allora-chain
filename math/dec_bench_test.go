@@ -20,7 +20,10 @@ func BenchmarkLn(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StartTimer()
 		for _, test := range tests {
-			alloramath.Ln(test)
+			_, err := alloramath.Ln(test)
+			if err != nil {
+				b.Fatal(err)
+			}
 		}
 		b.StopTimer()
 	}

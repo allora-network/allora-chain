@@ -66,7 +66,7 @@ func init() {
 		panic(err)
 	}
 	b.Coeff.Mul(&b.Coeff, apd.NewBigInt(10).Exp(apd.NewBigInt(10), apd.NewBigInt(int64(dec128Context.Precision+1)), nil))
-	b.Exponent -= int32(dec128Context.Precision + 1)
+	b.Exponent -= int32(dec128Context.Precision + 1) //nolint:gosec // we must panic if this overflows anyway
 	log2B = *b
 }
 
@@ -445,7 +445,7 @@ func Log2(x Dec) (Dec, error) {
 	if precDelta > 0 && int64(xCopy.Exponent)-precDelta >= goMath.MinInt32 {
 		ten := apd.NewBigInt(10)
 		xCopy.Coeff.Mul(&xCopy.Coeff, ten.Exp(ten, apd.NewBigInt(precDelta), nil))
-		xCopy.Exponent -= int32(precDelta)
+		xCopy.Exponent -= int32(precDelta) //nolint:gosec // potential overflow already checked above
 	}
 
 	yBig := apd.NewBigInt(0)
@@ -455,11 +455,9 @@ func Log2(x Dec) (Dec, error) {
 		yBig.Sub(yBig, oneBigInt)
 	}
 
-	if xCopy.Cmp(twoDec) >= 0 {
-		for xCopy.Cmp(twoDec) >= 0 {
-			xCopy.Coeff.Rsh(&xCopy.Coeff, 1)
-			yBig.Add(yBig, oneBigInt)
-		}
+	for xCopy.Cmp(twoDec) >= 0 {
+		xCopy.Coeff.Rsh(&xCopy.Coeff, 1)
+		yBig.Add(yBig, oneBigInt)
 	}
 
 	var b apd.Decimal
@@ -483,7 +481,7 @@ func Log2(x Dec) (Dec, error) {
 		b.Coeff.Rsh(&b.Coeff, 1)
 	}
 
-	return Dec{dec: *y}, nil
+	return Dec{dec: *y, isNaN: false}, nil
 }
 
 // Exp returns a new Dec with the value of e^x, without mutating x.
