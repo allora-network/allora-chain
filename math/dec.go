@@ -66,7 +66,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	enforceDecimalPrecision(b, dec128Context.Precision+1)
+	enforceDecimalPrecision(b, dec128Context.Precision+2)
 	log2B = *b
 }
 
@@ -427,12 +427,12 @@ func Log2(x Dec) (Dec, error) {
 	if x.IsNaN() {
 		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Log2 a NaN %s", x.String())
 	}
-	if x.dec.Sign() < 0 {
-		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Log2 a negative value")
+	if x.dec.Sign() <= 0 {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Log2 a non positive value")
 	}
 
 	// Increase precision for result accuracy.
-	decCtx := dec128Context.WithPrecision(dec128Context.Precision + 1)
+	decCtx := dec128Context.WithPrecision(dec128Context.Precision + 2)
 
 	var xCopy apd.Decimal
 	xCopy.Set(&x.dec)

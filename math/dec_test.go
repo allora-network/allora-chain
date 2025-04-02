@@ -177,9 +177,15 @@ func TestDec(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, zero.Equal(logEOne))
 
+	// See https://github.com/allora-network/allora-chain/pull/789
 	logDeterminism, err := alloraMath.Ln(alloraMath.MustNewDecFromString("1.6285091944505809264504560045920167"))
 	require.NoError(t, err)
 	require.True(t, alloraMath.MustNewDecFromString("0.4876649916811116824516548471782886").Equal(logDeterminism))
+
+	_, err = alloraMath.Ln(alloraMath.MustNewDecFromString("-1"))
+	require.Error(t, err)
+	_, err = alloraMath.Ln(alloraMath.MustNewDecFromString("0"))
+	require.Error(t, err)
 
 	eight := alloraMath.NewDecFromInt64(8)
 	twoCubed, err := alloraMath.Pow(two, three)
