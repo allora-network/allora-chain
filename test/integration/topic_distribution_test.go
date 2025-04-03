@@ -2,9 +2,6 @@ package integration_test
 
 import (
 	"context"
-	// "time"
-
-	// "fmt" // Removed unused import
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -106,8 +103,6 @@ func TopicWeightDistributionChecks(m testCommon.TestConfig) {
 		topic2Weights.Weight.String(),
 	)
 	m.T.Log("Topic previous weights are equal as expected.")
-
-	_ = ctx // Use ctx to avoid unused variable error for now
 }
 
 // Helper function to register an actor (worker or reputer) in a topic
@@ -118,7 +113,7 @@ func registerActor(m testCommon.TestConfig, account cosmosaccount.Account, topic
 
 	registerRequest := &types.RegisterRequest{
 		Sender:    addr,
-		Owner:     addr, // Assuming owner is the same as sender for simplicity
+		Owner:     addr,
 		TopicId:   topicId,
 		IsReputer: isReputer,
 	}
@@ -126,7 +121,7 @@ func registerActor(m testCommon.TestConfig, account cosmosaccount.Account, topic
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerResponse := &types.RegisterResponse{}
+	registerResponse := &types.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerResponse)
 	require.NoError(m.T, err)
 	require.True(m.T, registerResponse.Success)
@@ -137,10 +132,6 @@ func addStake(m testCommon.TestConfig, account cosmosaccount.Account, topicId ui
 	ctx := context.Background()
 	addr, err := account.Address(params.HumanCoinUnit)
 	require.NoError(m.T, err)
-
-	// Ensure the reputer is whitelisted for the topic first
-	// Need to check if EnableReputerWhitelist is true for the topic first, but simplifying for now
-	// addTopicReputerWhitelist(m, addr, topicId)
 
 	addStakeRequest := &types.AddStakeRequest{
 		Sender:  addr,
@@ -196,7 +187,7 @@ func createTestTopic(m testCommon.TestConfig, creator string, metadata string, e
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	createTopicResponse := &types.CreateNewTopicResponse{}
+	createTopicResponse := &types.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 	return createTopicResponse.TopicId
@@ -205,15 +196,14 @@ func createTestTopic(m testCommon.TestConfig, creator string, metadata string, e
 // Helper function to fund a topic
 func fundTestTopic(m testCommon.TestConfig, funderAcc cosmosaccount.Account, topicId uint64, amount int64) {
 	ctx := context.Background()
-	// Get the sender address string from the account
 	funderAddr, err := funderAcc.Address(params.HumanCoinUnit)
 	require.NoError(m.T, err)
 
 	txResp, err := m.Client.BroadcastTx(
 		ctx,
-		funderAcc, // Use the provided account info
+		funderAcc,
 		&types.FundTopicRequest{
-			Sender:  funderAddr, // Use the derived address string
+			Sender:  funderAddr,
 			TopicId: topicId,
 			Amount:  cosmosMath.NewInt(amount),
 		},
