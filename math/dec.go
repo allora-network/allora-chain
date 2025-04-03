@@ -50,14 +50,38 @@ var (
 	ErrOutOfRange         = errorsmod.Register(mathCodespace, 8, "value is out of range")
 )
 
+var (
+	logOfEbase2 = MustNewDecFromString("1.442695040888963407359924681001892137")
+	// 0.5 with sufficient precision digit to allow right shifting keeping dec128 precision
+	log2B     apd.Decimal
+	oneBigInt = apd.NewBigInt(1)
+	tenBigInt = apd.NewBigInt(10)
+	zeroDec   = apd.New(0, 0)
+	oneDec    = apd.New(1, 0)
+	twoDec    = apd.New(2, 0)
+)
+
+func init() {
+	b, _, err := apd.NewFromString("0.5")
+	if err != nil {
+		panic(err)
+	}
+	enforceDecimalPrecision(b, dec128Context.Precision+2)
+	log2B = *b
+}
+
 // The number 0 encoded as Dec
 func ZeroDec() Dec {
-	return NewDecFromInt64(0)
+	var d apd.Decimal
+	d.Set(zeroDec)
+	return Dec{dec: d, isNaN: false}
 }
 
 // The number 1 encoded as Dec
 func OneDec() Dec {
-	return NewDecFromInt64(1)
+	var d apd.Decimal
+	d.Set(oneDec)
+	return Dec{dec: d, isNaN: false}
 }
 
 // In cosmos-sdk#7773, decimal128 (with 34 digits of precision) was suggested for performing
@@ -388,18 +412,72 @@ func Log10(x Dec) (Dec, error) {
 
 // Ln returns a new Dec with the value of the natural logarithm of x, without mutating x.
 func Ln(x Dec) (Dec, error) {
-	if x.IsNaN() {
-		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Ln a NaN %s", x.String())
-	}
-	var z Dec
-	_, err := dec128Context.Ln(&z.dec, &x.dec)
-	if z.IsNaN() {
-		return z, errorsmod.Wrapf(ErrNaN, "Ln result is NaN %s", x.String())
-	}
+	log2x, err := Log2(x)
 	if err != nil {
-		return z, errorsmod.Wrapf(err, "decimal natural logarithm error %s", x.String())
+		return Dec{}, errorsmod.Wrap(ErrNaN, "decimal natural logarithm error")
 	}
-	return z, nil
+
+	return log2x.Quo(logOfEbase2)
+}
+
+// Log2 returns a new Dec with the value of the base 2 logarithm of x, without mutating x.
+// It implements the algorithm described in http://www.claysturner.com/dsp/binarylogarithm.pdf
+// And inspired from Osmosis implementation: https://github.com/osmosis-labs/osmosis/blob/927d940cf569e25e5a21911a77d5c81a0c5a0dc6/osmomath/decimal.go#L1070
+func Log2(x Dec) (Dec, error) {
+	if x.IsNaN() {
+		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Log2 a NaN %s", x.String())
+	}
+	if x.dec.Sign() <= 0 {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Log2 a non positive value")
+	}
+
+	// Increase precision for result accuracy.
+	decCtx := dec128Context.WithPrecision(dec128Context.Precision + 2)
+
+	var xCopy apd.Decimal
+	xCopy.Set(&x.dec)
+
+	// As we'll make divisions by 2 through bit right shift, we need to make sure we have enough decimal digit precision
+	// in the coeff.
+	// For example:
+	// Taking a 2.12 dec represented by {coeff: 212, exp: -2}
+	// It is here transformed to {coeff: 212000000000000000000000000000000000, exp: -35}
+	enforceDecimalPrecision(&xCopy, decCtx.Precision)
+
+	yBig := apd.NewBigInt(0)
+
+	for xCopy.Cmp(oneDec) == -1 {
+		xCopy.Coeff.Lsh(&xCopy.Coeff, 1)
+		yBig.Sub(yBig, oneBigInt)
+	}
+
+	for xCopy.Cmp(twoDec) >= 0 {
+		xCopy.Coeff.Rsh(&xCopy.Coeff, 1)
+		yBig.Add(yBig, oneBigInt)
+	}
+
+	var b apd.Decimal
+	b.Set(&log2B)
+	y := apd.NewWithBigInt(yBig, 0)
+
+	// The more iterations, the more accurate the result.
+	// 200 iterations seems enough for 34 precision when not too close from log limits.
+	for i := 0; i < 200; i++ {
+		_, err := decCtx.Mul(&xCopy, &xCopy, &xCopy)
+		if err != nil {
+			return Dec{}, errorsmod.Wrap(ErrNaN, "decimal binary logarithm error")
+		}
+		if xCopy.Cmp(twoDec) >= 0 {
+			xCopy.Coeff.Rsh(&xCopy.Coeff, 1)
+			_, err = apd.BaseContext.Add(y, y, &b)
+			if err != nil {
+				return Dec{}, errorsmod.Wrap(ErrNaN, "decimal binary logarithm error")
+			}
+		}
+		b.Coeff.Rsh(&b.Coeff, 1)
+	}
+
+	return Dec{dec: *y, isNaN: false}, nil
 }
 
 // Exp returns a new Dec with the value of e^x, without mutating x.
@@ -830,11 +908,7 @@ func (x Dec) IsFinite() bool {
 
 // NumDecimalPlaces returns the number of decimal places in x.
 func (x Dec) NumDecimalPlaces() uint32 {
-	exp := x.dec.Exponent
-	if exp >= 0 {
-		return 0
-	}
-	return uint32(-exp)
+	return decimalPlaces(&x.dec)
 }
 
 // Reduce returns a copy of x with all trailing zeros removed and the number
@@ -843,4 +917,18 @@ func (x Dec) Reduce() (Dec, int) {
 	y := ZeroDec()
 	_, n := y.dec.Reduce(&x.dec)
 	return y, n
+}
+
+// enforceDecimalPrecision mutably enforce a decimal digit precision.
+func enforceDecimalPrecision(d *apd.Decimal, precision uint32) {
+	precDelta := int64(precision - decimalPlaces(d))
+	if precDelta > 0 && int64(d.Exponent)-precDelta >= goMath.MinInt32 {
+		var exp apd.BigInt
+		d.Coeff.Mul(&d.Coeff, exp.Exp(tenBigInt, apd.NewBigInt(precDelta), nil))
+		d.Exponent -= int32(precDelta) //nolint:gosec // potential overflow already checked above
+	}
+}
+
+func decimalPlaces(d *apd.Decimal) uint32 {
+	return uint32(-min(d.Exponent, 0))
 }
