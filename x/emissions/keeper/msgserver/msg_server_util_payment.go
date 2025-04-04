@@ -40,6 +40,7 @@ func activateTopicIfWeightAtLeastGlobalMin(
 			params.TopicRewardAlpha,
 			params.TopicRewardStakeImportance,
 			params.TopicRewardFeeRevenueImportance,
+			params.BlocksPerMonth,
 		)
 		if err != nil {
 			return errors.Wrapf(err, "error getting current topic weight")

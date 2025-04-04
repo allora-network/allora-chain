@@ -132,6 +132,10 @@ func GetAndUpdateActiveTopicWeights(
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get alpha")
 	}
+	blocksPerWeek, err := k.CalculateBlocksPerWeek(ctx, moduleParams.BlocksPerMonth)
+	if err != nil {
+		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "error calculating blocks per week")
+	}
 
 	// Retrieve and sort all active topics with epoch ending at this block
 	// default page limit for the max because default is 100 and max is 1000
@@ -158,6 +162,7 @@ func GetAndUpdateActiveTopicWeights(
 			moduleParams.TopicRewardAlpha,
 			moduleParams.TopicRewardStakeImportance,
 			moduleParams.TopicRewardFeeRevenueImportance,
+			moduleParams.BlocksPerMonth,
 		)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get current topic weight")
@@ -171,7 +176,7 @@ func GetAndUpdateActiveTopicWeights(
 		// This revenue will be paid to top active topics of this block (the churnable topics).
 		// This happens regardless of this topic's fate (inactivation or not)
 		// => the influence of this topic's revenue needs to be appropriately diminished.
-		err = k.DripTopicFeeRevenue(ctx, topic.Id, block)
+		err = k.DripTopicFeeRevenue(ctx, topic, blocksPerWeek, block)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to reset topic fee revenue")
 		}

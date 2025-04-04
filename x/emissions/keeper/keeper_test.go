@@ -2605,7 +2605,13 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	}
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
-	err = keeper.DripTopicFeeRevenue(ctx, topicId, block)
+
+	params := types.DefaultParams()
+
+	blocksPerWeek, err := keeper.CalculateBlocksPerWeek(ctx, params.BlocksPerMonth)
+	s.Require().NoError(err, "error calculating blocks per week")
+
+	err = keeper.DripTopicFeeRevenue(ctx, newTopic, blocksPerWeek, block)
 	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
 	// Add initial revenue
@@ -4672,8 +4678,12 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	err = k.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
+	// Calculate the blocks per week
+	blocksPerWeek, err := k.CalculateBlocksPerWeek(ctx, params.BlocksPerMonth)
+	require.NoError(err, "error calculating blocks per week")
+
 	// Call the function under test
-	err = k.DripTopicFeeRevenue(ctx, topicId, block)
+	err = k.DripTopicFeeRevenue(ctx, topic, blocksPerWeek, block)
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
 	// Retrieve the updated topic fee revenue
