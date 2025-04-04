@@ -4653,7 +4653,6 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	require := s.Require()
 
 	// Define test data
-	topicId := uint64(1)
 	block := int64(100)
 	// Calculated expected drip with these values: 26
 	expectedDrip := cosmosMath.NewInt(26)
@@ -4668,14 +4667,14 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	topic := s.mockTopic()
 	topic.EpochLength = 5
 	topic.WorkerSubmissionWindow = 5
-	err = k.SetTopic(ctx, topicId, topic)
+	err = k.SetTopic(ctx, topic.Id, topic)
 	require.NoError(err, "Setting a new topic should not fail")
 
-	err = k.ActivateTopic(ctx, topicId)
+	err = k.ActivateTopic(ctx, topic.Id)
 	require.NoError(err, "Activating the topic should not fail")
 
 	// Set up initial topic fee revenue
-	err = k.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
 	// Calculate the blocks per week
@@ -4687,7 +4686,7 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
 	// Retrieve the updated topic fee revenue
-	updatedTopicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	updatedTopicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
 	require.NoError(err, "Getting topic fee revenue should not fail")
 
 	// Assert the expected results
