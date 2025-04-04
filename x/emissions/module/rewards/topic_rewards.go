@@ -132,7 +132,7 @@ func GetAndUpdateActiveTopicWeights(
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get alpha")
 	}
-	blocksPerWeek, err := k.CalculateBlocksPerWeek(ctx, moduleParams.BlocksPerMonth)
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(moduleParams.BlocksPerMonth)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "error calculating blocks per week")
 	}

@@ -8,6 +8,8 @@ import (
 	errorsmod "cosmossdk.io/errors"
 )
 
+var weeksPerMonth = MustNewDecFromString("4.345") //nolint:gochecknoglobals // constant
+
 // all exponential moving average functions take the form
 // x_average=α*x_current + (1-α)*x_previous
 //
@@ -708,4 +710,18 @@ func GetSmoothedAlpha(epochLength int64, baseIntervalDec Dec, baseAlpha Dec) (De
 	}
 
 	return smoothedAlpha, nil
+}
+
+// return the blocks per week
+// defined as the blocks per month divided by 4.345 (weeks per month)
+func CalculateBlocksPerWeek(blocksPerMonth uint64) (Dec, error) {
+	blocksPerMonthDec, err := NewDecFromUint64(blocksPerMonth)
+	if err != nil {
+		return Dec{}, errorsmod.Wrap(err, "error creating blocks per month")
+	}
+	blocksPerWeek, err := blocksPerMonthDec.Quo(weeksPerMonth)
+	if err != nil {
+		return Dec{}, errorsmod.Wrap(err, "error calculating blocks per week")
+	}
+	return blocksPerWeek, nil
 }

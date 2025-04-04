@@ -3310,21 +3310,6 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 	return k.topicFeeRevenue.Set(ctx, topicId, topicFeeRevenue)
 }
 
-// return the blocks per week
-// defined as the blocks per month divided by 4.345
-var weeksPerMonth = alloraMath.MustNewDecFromString("4.345") //nolint:gochecknoglobals // constant
-func (k *Keeper) CalculateBlocksPerWeek(ctx context.Context, blocksPerMonth uint64) (alloraMath.Dec, error) {
-	blocksPerMonthDec, err := alloraMath.NewDecFromUint64(blocksPerMonth)
-	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrap(err, "error creating blocks per month")
-	}
-	blocksPerWeek, err := blocksPerMonthDec.Quo(weeksPerMonth)
-	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrap(err, "error calculating blocks per week")
-	}
-	return blocksPerWeek, nil
-}
-
 // return the last time we dripped the fee revenue for a topic
 func (k *Keeper) GetLastDripBlock(ctx context.Context, topicId TopicId) (BlockHeight, error) {
 	bh, err := k.lastDripBlock.Get(ctx, topicId)

@@ -82,7 +82,7 @@ func (k *Keeper) GetCurrentTopicWeight(
 			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
 		}
 
-		blocksPerWeek, err := k.CalculateBlocksPerWeek(ctx, blocksPerMonth)
+		blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(blocksPerMonth)
 		if err != nil {
 			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate blocks per week")
 		}

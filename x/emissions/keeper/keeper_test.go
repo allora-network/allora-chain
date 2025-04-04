@@ -2608,7 +2608,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 
 	params := types.DefaultParams()
 
-	blocksPerWeek, err := keeper.CalculateBlocksPerWeek(ctx, params.BlocksPerMonth)
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
 	s.Require().NoError(err, "error calculating blocks per week")
 
 	err = keeper.DripTopicFeeRevenue(ctx, newTopic, blocksPerWeek, block)
@@ -4678,7 +4678,7 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
 	// Calculate the blocks per week
-	blocksPerWeek, err := k.CalculateBlocksPerWeek(ctx, params.BlocksPerMonth)
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
 	require.NoError(err, "error calculating blocks per week")
 
 	// Call the function under test
