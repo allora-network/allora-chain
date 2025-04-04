@@ -3312,7 +3312,7 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 
 // return the blocks per week
 // defined as the blocks per month divided by 4.345
-var weeksPerMonth = alloraMath.MustNewDecFromString("4.345")
+var weeksPerMonth = alloraMath.MustNewDecFromString("4.345") //nolint:gochecknoglobals // constant
 func (k *Keeper) CalculateBlocksPerWeek(ctx context.Context, blocksPerMonth uint64) (alloraMath.Dec, error) {
 	blocksPerMonthDec, err := alloraMath.NewDecFromUint64(blocksPerMonth)
 	if err != nil {
