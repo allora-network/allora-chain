@@ -39,6 +39,8 @@ func TestExternalTestSuite(t *testing.T) {
 	StakingChecks(testConfig)
 	t.Log(">>> Test Topic Funding and Activation <<<")
 	TopicFundingChecks(testConfig)
+	t.Log(">>> Test Topic Weight Distribution <<<")
+	TopicWeightDistributionChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(testConfig)
 	t.Log(">>> Test Reputer Un-Staking <<<")
