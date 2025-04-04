@@ -6,7 +6,7 @@ cd test
 bash local_testnet_l1.sh
 ```
 
-To run stress tests, set the INTEGRATION variable to true
+To run integration tests, set the INTEGRATION variable to true
 
 ```
 INTEGRATION=true go test -v -run TestExternalTestSuite ./test/integration

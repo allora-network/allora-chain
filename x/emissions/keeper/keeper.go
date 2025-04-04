@@ -3398,8 +3398,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		ctx.Logger().Warn("Epochs per week is zero for topic", "topicId", topicId)
 		return nil
 	}
-	fmt.Println("epochsPerWeek", epochsPerWeek)
-	fmt.Println("topicFeeRevenueDec", topicFeeRevenueDec)
 	// this delta is the drip per epoch
 	dripPerEpoch, err := topicFeeRevenueDec.Quo(epochsPerWeek)
 	if err != nil {
@@ -3412,9 +3410,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	// if we have not yet decayed this epoch, decay and set to decayed
 	// if we have decayed this epoch already, do nothing and continue
 	if lastDripBlock <= topic.EpochLastEnded {
-		fmt.Println("dripping topic fee revenue", topicId)
-		fmt.Println("topicFeeRevenueDec", topicFeeRevenueDec)
-		fmt.Println("dripPerEpoch", dripPerEpoch)
 		newTopicFeeRevenueDec, err := topicFeeRevenueDec.Sub(dripPerEpoch)
 		if err != nil {
 			return errorsmod.Wrap(err, "error subtracting drip per epoch")
@@ -3423,12 +3418,10 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 			newTopicFeeRevenueDec = alloraMath.ZeroDec()
 		}
 
-		fmt.Println("newTopicFeeRevenueDec", newTopicFeeRevenueDec)
 		newTopicFeeRevenue, err := newTopicFeeRevenueDec.SdkIntTrim()
 		if err != nil {
 			return errorsmod.Wrap(err, "error converting decimal to sdk int")
 		}
-		fmt.Println("newTopicFeeRevenue", newTopicFeeRevenue)
 
 		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
 			return errorsmod.Wrap(err, "error setting last drip block")
