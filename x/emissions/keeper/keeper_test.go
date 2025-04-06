@@ -4743,11 +4743,15 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 	err = k.AddTopicFeeRevenue(ctx, topicId2, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
+	// Calculate the blocks per week
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
+	require.NoError(err, "error calculating blocks per week")
+
 	// Call the function under test
-	err = k.DripTopicFeeRevenue(ctx, topicId1, block)
+	err = k.DripTopicFeeRevenue(ctx, topic1, blocksPerWeek, block)
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
-	err = k.DripTopicFeeRevenue(ctx, topicId2, block)
+	err = k.DripTopicFeeRevenue(ctx, topic2, blocksPerWeek, block)
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
 	// Retrieve the updated topic fee revenue
