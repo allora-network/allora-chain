@@ -90,6 +90,10 @@ func ApplyLivenessPenaltyToActor(
 		return types.Score{}, err
 	}
 
+	if emaScore.Score.Equal(penalty) {
+		return emaScore, nil
+	}
+
 	beforePenalty := emaScore
 	emaScore.Score, err = applyPenalty(topic, penalty, emaScore.Score, missedEpochs)
 	if err != nil {
