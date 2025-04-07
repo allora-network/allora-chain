@@ -79,10 +79,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#776](https://github.com/allora-network/allora-chain/pull/776) Target weight: rm div by topic epochLength
 * [#764](https://github.com/allora-network/allora-chain/pull/764) TopicRewardAlpha using weekly cadence
 * [#769](https://github.com/allora-network/allora-chain/pull/769) Stored NetworkInferences instead of query-time. Removal of `GetLatestAvailableNetworkInferences`
+* [#794](https://github.com/allora-network/allora-chain/pull/794) Optimize topic weights fetch and update flow
 
 ### Deprecated
 
 ### Removed
+* [#793](https://github.com/allora-network/allora-chain/pull/793) Remove stress tests
 
 ### Fixed
 
