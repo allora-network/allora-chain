@@ -4718,29 +4718,31 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 
 	// Create and activate topics
 	topic1 := s.mockTopic()
+	topic1.Id = topicId1
 	topic1.EpochLength = 5
 	topic1.WorkerSubmissionWindow = 5
 	err = k.SetTopic(ctx, topicId1, topic1)
 	require.NoError(err, "Setting a new topic should not fail")
 
 	topic2 := s.mockTopic()
+	topic2.Id = topicId2
 	topic2.EpochLength = 10
 	topic2.WorkerSubmissionWindow = 10
 	err = k.SetTopic(ctx, topicId2, topic2)
 	require.NoError(err, "Setting a new topic should not fail")
 
 	// Activate the topics
-	err = k.ActivateTopic(ctx, topicId1)
+	err = k.ActivateTopic(ctx, topic1.Id)
 	require.NoError(err, "Activating the topic should not fail")
 
-	err = k.ActivateTopic(ctx, topicId2)
+	err = k.ActivateTopic(ctx, topic2.Id)
 	require.NoError(err, "Activating the topic should not fail")
 
 	// Set up initial topic fee revenue
-	err = k.AddTopicFeeRevenue(ctx, topicId1, initialRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topic1.Id, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
-	err = k.AddTopicFeeRevenue(ctx, topicId2, initialRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topic2.Id, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
 	// Calculate the blocks per week
@@ -4755,10 +4757,10 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
 	// Retrieve the updated topic fee revenue
-	updatedTopicFeeRevenue1, err := k.GetTopicFeeRevenue(ctx, topicId1)
+	updatedTopicFeeRevenue1, err := k.GetTopicFeeRevenue(ctx, topic1.Id)
 	require.NoError(err, "Getting topic fee revenue should not fail")
 
-	updatedTopicFeeRevenue2, err := k.GetTopicFeeRevenue(ctx, topicId2)
+	updatedTopicFeeRevenue2, err := k.GetTopicFeeRevenue(ctx, topic2.Id)
 	require.NoError(err, "Getting topic fee revenue should not fail")
 
 	// Assert the expected results
