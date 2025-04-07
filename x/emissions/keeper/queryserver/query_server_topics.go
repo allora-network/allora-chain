@@ -42,6 +42,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) 
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting current topic weight")

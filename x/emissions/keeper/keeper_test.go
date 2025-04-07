@@ -2605,7 +2605,13 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	}
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
-	err = keeper.DripTopicFeeRevenue(ctx, topicId, block)
+
+	params := types.DefaultParams()
+
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
+	s.Require().NoError(err, "error calculating blocks per week")
+
+	err = keeper.DripTopicFeeRevenue(ctx, newTopic, blocksPerWeek, block)
 	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
 	// Add initial revenue
@@ -4647,7 +4653,6 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	require := s.Require()
 
 	// Define test data
-	topicId := uint64(1)
 	block := int64(100)
 	// Calculated expected drip with these values: 26
 	expectedDrip := cosmosMath.NewInt(26)
@@ -4662,22 +4667,26 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	topic := s.mockTopic()
 	topic.EpochLength = 5
 	topic.WorkerSubmissionWindow = 5
-	err = k.SetTopic(ctx, topicId, topic)
+	err = k.SetTopic(ctx, topic.Id, topic)
 	require.NoError(err, "Setting a new topic should not fail")
 
-	err = k.ActivateTopic(ctx, topicId)
+	err = k.ActivateTopic(ctx, topic.Id)
 	require.NoError(err, "Activating the topic should not fail")
 
 	// Set up initial topic fee revenue
-	err = k.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topic.Id, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
+	// Calculate the blocks per week
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
+	require.NoError(err, "error calculating blocks per week")
+
 	// Call the function under test
-	err = k.DripTopicFeeRevenue(ctx, topicId, block)
+	err = k.DripTopicFeeRevenue(ctx, topic, blocksPerWeek, block)
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
 	// Retrieve the updated topic fee revenue
-	updatedTopicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	updatedTopicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
 	require.NoError(err, "Getting topic fee revenue should not fail")
 
 	// Assert the expected results
@@ -4709,43 +4718,49 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 
 	// Create and activate topics
 	topic1 := s.mockTopic()
+	topic1.Id = topicId1
 	topic1.EpochLength = 5
 	topic1.WorkerSubmissionWindow = 5
 	err = k.SetTopic(ctx, topicId1, topic1)
 	require.NoError(err, "Setting a new topic should not fail")
 
 	topic2 := s.mockTopic()
+	topic2.Id = topicId2
 	topic2.EpochLength = 10
 	topic2.WorkerSubmissionWindow = 10
 	err = k.SetTopic(ctx, topicId2, topic2)
 	require.NoError(err, "Setting a new topic should not fail")
 
 	// Activate the topics
-	err = k.ActivateTopic(ctx, topicId1)
+	err = k.ActivateTopic(ctx, topic1.Id)
 	require.NoError(err, "Activating the topic should not fail")
 
-	err = k.ActivateTopic(ctx, topicId2)
+	err = k.ActivateTopic(ctx, topic2.Id)
 	require.NoError(err, "Activating the topic should not fail")
 
 	// Set up initial topic fee revenue
-	err = k.AddTopicFeeRevenue(ctx, topicId1, initialRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topic1.Id, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
 
-	err = k.AddTopicFeeRevenue(ctx, topicId2, initialRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topic2.Id, initialRevenue)
 	require.NoError(err, "Setting initial topic fee revenue should not fail")
+
+	// Calculate the blocks per week
+	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
+	require.NoError(err, "error calculating blocks per week")
 
 	// Call the function under test
-	err = k.DripTopicFeeRevenue(ctx, topicId1, block)
+	err = k.DripTopicFeeRevenue(ctx, topic1, blocksPerWeek, block)
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
-	err = k.DripTopicFeeRevenue(ctx, topicId2, block)
+	err = k.DripTopicFeeRevenue(ctx, topic2, blocksPerWeek, block)
 	require.NoError(err, "DripTopicFeeRevenue should not return an error")
 
 	// Retrieve the updated topic fee revenue
-	updatedTopicFeeRevenue1, err := k.GetTopicFeeRevenue(ctx, topicId1)
+	updatedTopicFeeRevenue1, err := k.GetTopicFeeRevenue(ctx, topic1.Id)
 	require.NoError(err, "Getting topic fee revenue should not fail")
 
-	updatedTopicFeeRevenue2, err := k.GetTopicFeeRevenue(ctx, topicId2)
+	updatedTopicFeeRevenue2, err := k.GetTopicFeeRevenue(ctx, topic2.Id)
 	require.NoError(err, "Getting topic fee revenue should not fail")
 
 	// Assert the expected results

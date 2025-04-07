@@ -41,12 +41,8 @@ func (k *Keeper) GetCurrentTopicWeight(
 	topicRewardAlpha alloraMath.Dec,
 	stakeImportance alloraMath.Dec,
 	feeImportance alloraMath.Dec,
+	blocksPerMonth uint64,
 ) (weight alloraMath.Dec, topicRevenue cosmosMath.Int, err error) {
-	blocksPerWeek, err := k.calculateBlocksPerWeek(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate blocks per week")
-	}
-
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic stake")
@@ -86,6 +82,11 @@ func (k *Keeper) GetCurrentTopicWeight(
 			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
 		}
 
+		blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(blocksPerMonth)
+		if err != nil {
+			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate blocks per week")
+		}
+
 		// Calculate alpha
 		topicSmoothedAlpha, err := alloraMath.GetSmoothedAlpha(topicEpochLength, blocksPerWeek, topicRewardAlpha)
 		if err != nil {
@@ -118,6 +119,7 @@ func (k *Keeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.To
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 
 	if err != nil {

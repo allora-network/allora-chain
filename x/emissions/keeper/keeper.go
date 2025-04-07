@@ -3310,29 +3310,6 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 	return k.topicFeeRevenue.Set(ctx, topicId, topicFeeRevenue)
 }
 
-// return the blocks per week
-// defined as the blocks per month divided by 4.345
-func (k *Keeper) calculateBlocksPerWeek(ctx context.Context) (alloraMath.Dec, error) {
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting params")
-	}
-	blocksPerMonth, err := alloraMath.NewDecFromUint64(moduleParams.BlocksPerMonth)
-	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrap(err, "error creating blocks per month")
-	}
-	// 4.345 weeks per month on average
-	weeksPerMonth, err := alloraMath.NewDecFromString("4.345")
-	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrap(err, "error creating weeks per month")
-	}
-	blocksPerWeek, err := blocksPerMonth.Quo(weeksPerMonth)
-	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrap(err, "error calculating blocks per week")
-	}
-	return blocksPerWeek, nil
-}
-
 // return the last time we dripped the fee revenue for a topic
 func (k *Keeper) GetLastDripBlock(ctx context.Context, topicId TopicId) (BlockHeight, error) {
 	bh, err := k.lastDripBlock.Get(ctx, topicId)
@@ -3361,14 +3338,14 @@ func (k *Keeper) SetLastDripBlock(ctx context.Context, topicId TopicId, block Bl
 // where C_{t,i} is the topic fee revenue
 // and N_{epochs,w} is the number of epochs per week
 // and this decay or drip happens each epoch
-func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block BlockHeight) error {
-	if err := types.ValidateTopicId(topicId); err != nil {
+func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topic types.Topic, blocksPerWeek alloraMath.Dec, block BlockHeight) error {
+	if err := types.ValidateTopicId(topic.Id); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
 	if err := types.ValidateBlockHeight(block); err != nil {
 		return errorsmod.Wrap(err, "block height validation failed")
 	}
-	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting topic fee revenue")
 	}
@@ -3376,18 +3353,10 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	if err != nil {
 		return errorsmod.Wrap(err, "error creating decimal from sdk int")
 	}
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting topic")
-	}
 	blocksPerEpoch := alloraMath.NewDecFromInt64(topic.EpochLength)
 	if blocksPerEpoch.IsZero() {
-		ctx.Logger().Warn("Blocks per epoch is zero for topic", "topicId", topicId)
+		ctx.Logger().Warn("Blocks per epoch is zero for topic", "topicId", topic.Id)
 		return nil
-	}
-	blocksPerWeek, err := k.calculateBlocksPerWeek(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "error calculating blocks per week")
 	}
 	epochsPerWeek, err := blocksPerWeek.Quo(blocksPerEpoch)
 	if err != nil {
@@ -3395,7 +3364,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	}
 	if epochsPerWeek.IsZero() {
 		// Log a warning
-		ctx.Logger().Warn("Epochs per week is zero for topic", "topicId", topicId)
+		ctx.Logger().Warn("Epochs per week is zero for topic", "topicId", topic.Id)
 		return nil
 	}
 	// this delta is the drip per epoch
@@ -3403,7 +3372,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	if err != nil {
 		return errorsmod.Wrap(err, "error calculating drip per epoch")
 	}
-	lastDripBlock, err := k.GetLastDripBlock(ctx, topicId)
+	lastDripBlock, err := k.GetLastDripBlock(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting last drip block")
 	}
@@ -3423,18 +3392,18 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 			return errorsmod.Wrap(err, "error converting decimal to sdk int")
 		}
 
-		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
+		if err = k.SetLastDripBlock(ctx, topic.Id, topic.EpochLastEnded); err != nil {
 			return errorsmod.Wrap(err, "error setting last drip block")
 		}
 		ctx.Logger().Debug("Dripping topic fee revenue",
 			"block", ctx.BlockHeight(),
-			"topicId", topicId,
+			"topicId", topic.Id,
 			"oldRevenue", topicFeeRevenue,
 			"newRevenue", newTopicFeeRevenue)
 		if err = types.ValidateSdkIntRepresentingMonetaryValue(newTopicFeeRevenue); err != nil {
 			return errorsmod.Wrap(err, "error validating new topic fee revenue")
 		}
-		return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+		return k.topicFeeRevenue.Set(ctx, topic.Id, newTopicFeeRevenue)
 	}
 	return nil
 }

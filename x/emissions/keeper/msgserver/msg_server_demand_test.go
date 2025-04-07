@@ -37,6 +37,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 	response, err := s.msgServer.FundTopic(s.ctx, &r)
@@ -55,6 +56,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 	s.Require().True(feeRevAfter.GT(feeRevBefore), "Topic fee revenue should be greater after funding the topic")
@@ -116,6 +118,7 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 
@@ -126,6 +129,7 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 
@@ -205,6 +209,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 
@@ -215,6 +220,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 	// Topics should have equal weights at this point because their previous topic weight is still zero
@@ -234,6 +240,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 
@@ -244,6 +251,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
 	// Topics should have equal weights because the target weight is not affected by the epoch length
