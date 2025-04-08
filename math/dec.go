@@ -382,25 +382,6 @@ func (x Dec) Neg() (Dec, error) {
 	return z, nil
 }
 
-// Exp returns a new Dec with the value of e^x, without mutating x.
-func Exp(x Dec) (Dec, error) {
-	if x.IsNaN() {
-		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Exp a NaN %s", x.String())
-	}
-
-	// Calculate the result
-	var z Dec
-	_, err := dec128Context.Exp(&z.dec, &x.dec)
-	if z.IsNaN() {
-		return z, errorsmod.Wrapf(ErrNaN, "Exp result is NaN %s", x.String())
-	}
-	if err != nil {
-		return z, errorsmod.Wrapf(err, "decimal e to the x exponentiation error %s", x.String())
-	}
-
-	return z, nil
-}
-
 // Exp10 returns a new Dec with the value of 10^x, without mutating x.
 func Exp10(x Dec) (Dec, error) {
 	if x.IsNaN() {
