@@ -134,7 +134,7 @@ func Log2(x Dec) (Dec, error) {
 // logSpecials checks for special cases of logarithm functions, returning an error in impossible cases, updating the value otherwise.
 func logSpecials(x *Dec) error {
 	if x.IsNaN() || shouldBeNaN(&x.dec) {
-		return errorsmod.Wrapf(ErrNaN, "cannot log a NaN %s", x.String())
+		return errorsmod.Wrapf(ErrNaN, "cannot log a NaN")
 	}
 	if x.dec.Sign() < 0 || x.dec.Cmp(zeroDec) == 0 {
 		return fmt.Errorf("cannot log a non positive value")
