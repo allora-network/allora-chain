@@ -834,3 +834,7 @@ func enforceDecimalPrecision(d *apd.Decimal, precision uint32) {
 func decimalPlaces(d *apd.Decimal) uint32 {
 	return uint32(-min(d.Exponent, 0))
 }
+
+func shouldBeNaN(d *apd.Decimal) bool {
+	return d.Form == apd.NaN || d.Form == apd.NaNSignaling
+}
