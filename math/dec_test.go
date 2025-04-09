@@ -192,14 +192,6 @@ func TestDec(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, eight.Equal(twoCubed))
 
-	oneThousand := alloraMath.NewDecFromInt64(1000)
-	tenSquared, err := alloraMath.Exp10(two)
-	require.NoError(t, err)
-	require.True(t, oneHundred.Equal(tenSquared))
-	tenCubed, err := alloraMath.Exp10(three)
-	require.NoError(t, err)
-	require.True(t, oneThousand.Equal(tenCubed))
-
 	cielOnePointFourNine, err := onePointFourNine.Ceil()
 	require.NoError(t, err)
 	require.True(t, two.Equal(cielOnePointFourNine))
@@ -1132,13 +1124,6 @@ func TestLnFailNaN(t *testing.T) {
 func TestExpFailNaN(t *testing.T) {
 	nan := alloraMath.NewNaN()
 	_, err := alloraMath.Exp(nan)
-	require.Error(t, err)
-	require.ErrorIs(t, err, alloraMath.ErrNaN)
-}
-
-func TestExp10FailNaN(t *testing.T) {
-	nan := alloraMath.NewNaN()
-	_, err := alloraMath.Exp10(nan)
 	require.Error(t, err)
 	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
