@@ -382,23 +382,6 @@ func (x Dec) Neg() (Dec, error) {
 	return z, nil
 }
 
-// Exp10 returns a new Dec with the value of 10^x, without mutating x.
-func Exp10(x Dec) (Dec, error) {
-	if x.IsNaN() {
-		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Exp10 a NaN %s", x.String())
-	}
-	var ten = NewDecFromInt64(10)
-	var z Dec
-	_, err := dec128Context.Pow(&z.dec, &ten.dec, &x.dec)
-	if z.IsNaN() {
-		return z, errorsmod.Wrapf(ErrNaN, "Exp10 result is NaN %s", x.String())
-	}
-	if err != nil {
-		return z, errorsmod.Wrapf(err, "decimal 10 to the x exponentiation error %s", x.String())
-	}
-	return z, nil
-}
-
 // returns the max of x and y without mutating x or y.
 func Max(x Dec, y Dec) (Dec, error) {
 	if x.IsNaN() || y.IsNaN() {
