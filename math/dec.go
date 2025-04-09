@@ -399,22 +399,6 @@ func Exp10(x Dec) (Dec, error) {
 	return z, nil
 }
 
-// Pow returns a new Dec with the value of x**y, without mutating x or y.
-func Pow(x Dec, y Dec) (Dec, error) {
-	if x.IsNaN() || y.IsNaN() {
-		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot Pow with a NaN argument %s %s", x.String(), y.String())
-	}
-	var z Dec
-	_, err := dec128Context.Pow(&z.dec, &x.dec, &y.dec)
-	if z.IsNaN() {
-		return z, errorsmod.Wrapf(ErrNaN, "Pow result is NaN %s %s", x.String(), y.String())
-	}
-	if err != nil {
-		return z, errorsmod.Wrapf(err, "decimal exponentiation error %s %s", x.String(), y.String())
-	}
-	return z, nil
-}
-
 // returns the max of x and y without mutating x or y.
 func Max(x Dec, y Dec) (Dec, error) {
 	if x.IsNaN() || y.IsNaN() {
