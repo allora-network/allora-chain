@@ -10,14 +10,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
-//nolint: exhaustruct
+// nolint: exhaustruct
 func NewTestLogger(t zerolog.TestingLog) log.Logger {
 	lvl := zerolog.DebugLevel
 	cw := zerolog.ConsoleWriter{
-		Out:     os.Stderr,
-		TimeFormat: time.RFC3339Nano,
-		NoColor: true,
-		FieldsExclude: []string{"module"},	
+		Out:           os.Stderr,
+		TimeFormat:    time.RFC3339Nano,
+		NoColor:       true,
+		FieldsExclude: []string{"module"},
 	}
 
 	// Clean up formatter: raw message only

@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#775](https://github.com/allora-network/allora-chain/pull/775) Pipe a "y" to key add command in l1_node.sh script
 * [#783](https://github.com/allora-network/allora-chain/pull/783) Add API Breaking Changes section to CHANGELOG.md
 * [#787](https://github.com/allora-network/allora-chain/pull/785) Bounded Dec: Utility functions to cap value to bounds
+* [#797](https://github.com/allora-network/allora-chain/pull/797) Improve unit test logs
 
 ### Changed
 
