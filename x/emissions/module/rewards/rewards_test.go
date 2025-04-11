@@ -716,15 +716,27 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		require.NoError(err)
 	}
 
-	var initialStake int64 = 1000
-	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], cosmosMath.NewInt(initialStake))
+	// Use a significant initial stake that matches the reputer stakes
+	initialStake := stake
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
 	fundTopicMessage := types.FundTopicRequest{
 		Sender:  s.addrsStr[reputerIndexes[0]],
 		TopicId: topicId,
-		Amount:  cosmosMath.NewInt(initialStake),
+		Amount:  initialStake,
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	require.NoError(err)
+
+	// Ensure all reputers have a valid stake after topic setup
+	for _, idx := range reputerIndexes {
+		s.MintTokensToAddress(s.addrs[idx], stake)
+		_, err = s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+			Sender:  s.addrsStr[idx],
+			Amount:  stake,
+			TopicId: topicId,
+		})
+		require.NoError(err)
+	}
 
 	return topicId
 }
@@ -905,24 +917,57 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 	workerIndexes := s.returnIndexes(0, 3)
 	reputerIndexes := s.returnIndexes(3, 3)
 
-	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18())
+	// Ensure stake is significantly above epsilon
+	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18()).MulRaw(1000)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	topicId := s.setUpTopic(blockHeight0, workerIndexes, reputerIndexes, stake, alphaRegret)
 
+	// Add additional stake to each reputer and set listening coefficients
+	for _, index := range reputerIndexes {
+		s.MintTokensToAddress(s.addrs[index], stake)
+		_, err := s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+			Sender:  s.addrsStr[index],
+			Amount:  stake,
+			TopicId: topicId,
+		})
+		require.NoError(err)
+
+		err = s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId,
+			s.addrsStr[index],
+			types.ListeningCoefficient{Coefficient: alloraMath.OneDec()},
+		)
+		require.NoError(err)
+	}
+
+	// Fund topic with significant initial stake
+	initialStake := stake.MulRaw(10) // Make initial stake 10x the reputer stakes
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
+	fundTopicMessage := types.FundTopicRequest{
+		Sender:  s.addrsStr[reputerIndexes[0]],
+		TopicId: topicId,
+		Amount:  initialStake,
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
+
+	// Ensure all workers and reputers have non-zero values
 	workerValues := []TestWorkerValue{
-		{Index: 0, Value: "0.1"},
-		{Index: 1, Value: "0.2"},
-		{Index: 2, Value: "0.3"},
+		{Index: workerIndexes[0], Value: "0.1"},
+		{Index: workerIndexes[1], Value: "0.2"},
+		{Index: workerIndexes[2], Value: "0.3"},
 	}
 
 	reputerValues := []TestWorkerValue{
-		{Index: 3, Value: "0.1"},
-		{Index: 4, Value: "0.2"},
-		{Index: 5, Value: "0.3"},
+		{Index: reputerIndexes[0], Value: "0.1"},
+		{Index: reputerIndexes[1], Value: "0.2"},
+		{Index: reputerIndexes[2], Value: "0.3"},
 	}
 
-	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString(("0.1"))
+	// Set task reward alpha to a small but non-zero value
+	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString("0.1")
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
 
@@ -956,7 +1001,46 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 	blockHeight2 := blockHeight1 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
 
-	topicId1 := s.setUpTopic(blockHeight0, workerIndexes, reputerIndexes, stake, alphaRegret)
+	topicId1 := s.setUpTopic(blockHeight2, workerIndexes, reputerIndexes, stake, alphaRegret)
+
+	// Add additional stake to each reputer for second topic
+	for _, index := range reputerIndexes {
+		s.MintTokensToAddress(s.addrs[index], stake)
+		_, err := s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+			Sender:  s.addrsStr[index],
+			Amount:  stake,
+			TopicId: topicId1,
+		})
+		require.NoError(err)
+	}
+
+	// Fund the second topic with the same significant initial stake
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
+	fundTopicMessage = types.FundTopicRequest{
+		Sender:  s.addrsStr[reputerIndexes[0]],
+		TopicId: topicId1,
+		Amount:  initialStake,
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
+
+	// Set all listening coefficients to 1 for all reputers in both topics
+	for _, idx := range reputerIndexes {
+		err := s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId,
+			s.addrsStr[idx],
+			types.ListeningCoefficient{Coefficient: alloraMath.OneDec()},
+		)
+		require.NoError(err)
+		err = s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId1,
+			s.addrsStr[idx],
+			types.ListeningCoefficient{Coefficient: alloraMath.OneDec()},
+		)
+		require.NoError(err)
+	}
 
 	rewardsDistribution1_0 := s.getRewardsDistribution(
 		topicId1,
@@ -1003,10 +1087,41 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	workerIndexes := s.returnIndexes(0, 3)
 	reputerIndexes := s.returnIndexes(3, 3)
 
-	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18())
+	// Ensure stake is significantly above epsilon
+	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18()).MulRaw(1000)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	topicId := s.setUpTopic(blockHeight0, workerIndexes, reputerIndexes, stake, alphaRegret)
+
+	// Add additional stake to each reputer and set listening coefficients
+	for _, index := range reputerIndexes {
+		s.MintTokensToAddress(s.addrs[index], stake)
+		_, err := s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+			Sender:  s.addrsStr[index],
+			Amount:  stake,
+			TopicId: topicId,
+		})
+		require.NoError(err)
+
+		err = s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId,
+			s.addrsStr[index],
+			types.ListeningCoefficient{Coefficient: alloraMath.OneDec()},
+		)
+		require.NoError(err)
+	}
+
+	// Fund topic with significant initial stake
+	initialStake := stake.MulRaw(10) // Make initial stake 10x the reputer stakes
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
+	fundTopicMessage := types.FundTopicRequest{
+		Sender:  s.addrsStr[reputerIndexes[0]],
+		TopicId: topicId,
+		Amount:  initialStake,
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
 
 	workerValues := []TestWorkerValue{
 		{Index: workerIndexes[0], Value: "0.1"},
@@ -1061,6 +1176,38 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
 
 	topicId1 := s.setUpTopic(blockHeight2, workerIndexes, reputerIndexes, stake, alphaRegret)
+
+	// Add additional stake to each reputer for second topic
+	for _, index := range reputerIndexes {
+		s.MintTokensToAddress(s.addrs[index], stake)
+		_, err := s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+			Sender:  s.addrsStr[index],
+			Amount:  stake,
+			TopicId: topicId1,
+		})
+		require.NoError(err)
+	}
+
+	// Fund the second topic with the same significant initial stake
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
+	fundTopicMessage = types.FundTopicRequest{
+		Sender:  s.addrsStr[reputerIndexes[0]],
+		TopicId: topicId1,
+		Amount:  initialStake,
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
+
+	// Set all listening coefficients to 1 for all reputers in both topics
+	for _, idx := range reputerIndexes {
+		err := s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId1,
+			s.addrsStr[idx],
+			types.ListeningCoefficient{Coefficient: alloraMath.OneDec()},
+		)
+		require.NoError(err)
+	}
 
 	rewardsDistribution1_0 := s.getRewardsDistribution(
 		topicId1,
@@ -1137,10 +1284,44 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	workerIndexes := s.returnIndexes(0, 3)
 	reputerIndexes := s.returnIndexes(3, 3)
 
-	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18())
+	// Ensure stake is significantly above epsilon
+	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18()).MulRaw(1000)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	topicId0 := s.setUpTopic(blockHeight0, workerIndexes, reputerIndexes, stake, alphaRegret)
+
+	// Set all listening coefficients to 1 for all reputers
+	for _, idx := range reputerIndexes {
+		err := s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId0,
+			s.addrsStr[idx],
+			types.ListeningCoefficient{Coefficient: alloraMath.OneDec()},
+		)
+		require.NoError(err)
+	}
+
+	// Add additional stake to each reputer
+	for _, index := range reputerIndexes {
+		s.MintTokensToAddress(s.addrs[index], stake)
+		_, err := s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+			Sender:  s.addrsStr[index],
+			Amount:  stake,
+			TopicId: topicId0,
+		})
+		require.NoError(err)
+	}
+
+	// Fund topic with significant initial stake
+	initialStake := stake.MulRaw(10) // Make initial stake 10x the reputer stakes
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
+	fundTopicMessage := types.FundTopicRequest{
+		Sender:  s.addrsStr[reputerIndexes[0]],
+		TopicId: topicId0,
+		Amount:  initialStake,
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
 
 	workerValues := []TestWorkerValue{
 		{Index: workerIndexes[0], Value: "0.1"},
@@ -1218,6 +1399,48 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
 
 	topicId1 := s.setUpTopic(blockHeight2, workerIndexes, reputerIndexes, stake, alphaRegret)
+
+	// Set all listening coefficients to 1 for all reputers
+	for _, idx := range reputerIndexes {
+		err := s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId1,
+			s.addrsStr[idx],
+			types.ListeningCoefficient{Coefficient: alloraMath.OneDec()},
+		)
+		require.NoError(err)
+	}
+
+	// Add additional stake to each reputer for second topic
+	for _, index := range reputerIndexes {
+		s.MintTokensToAddress(s.addrs[index], stake)
+		_, err := s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+			Sender:  s.addrsStr[index],
+			Amount:  stake,
+			TopicId: topicId1,
+		})
+		require.NoError(err)
+	}
+
+	// Fund the second topic with the same significant initial stake
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
+	fundTopicMessage = types.FundTopicRequest{
+		Sender:  s.addrsStr[reputerIndexes[0]],
+		TopicId: topicId1,
+		Amount:  initialStake,
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
+
+	// DEBUG PRINT: Stakes and coefficients before reward distribution
+	fmt.Println("[TEST DEBUG] Stakes and coefficients before getRewardsDistribution:")
+	for _, idx := range reputerIndexes {
+		stake, err := s.emissionsKeeper.GetStakeReputerAuthority(s.ctx, topicId1, s.addrsStr[idx])
+		s.Require().NoError(err)
+		coeff, err := s.emissionsKeeper.GetListeningCoefficient(s.ctx, topicId1, s.addrsStr[idx])
+		s.Require().NoError(err)
+		fmt.Printf("[TEST DEBUG] Reputer %s: stake=%v, coeff=%v\n", s.addrsStr[idx], stake, coeff.Coefficient)
+	}
 
 	s.getRewardsDistribution(
 		topicId1,
@@ -1653,6 +1876,10 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 	_, err := s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	require.NoError(err)
 
+	// Initialize the stdNorm to a small non-zero value to avoid validation errors
+	err = s.emissionsKeeper.SetLatestRegretStdNorm(s.ctx, topicId, alloraMath.EpsilonDec())
+	require.NoError(err)
+
 	// Track weights and stdnorm over epochs
 	var workerWeights = make(map[string][]alloraMath.Dec)
 	var stdNorms []alloraMath.Dec
@@ -1723,7 +1950,6 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		)
 		s.T().Logf("StdNorm: %v", stdNorms[i].String())
 	}
-
 }
 
 func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
@@ -3854,7 +4080,6 @@ func decPtr(s string) *alloraMath.Dec {
 	d := alloraMath.MustNewDecFromString(s)
 	return &d
 }
-
 func (s *RewardsTestSuite) TestCalcTopicRewards() {
 	testCases := []struct {
 		name                string

@@ -1392,3 +1392,16 @@ func TestUnmarshalJSONNaN(t *testing.T) {
 	require.NoError(t, unmarshaled.UnmarshalJSON(json))
 	require.Equal(t, nan, unmarshaled)
 }
+
+func TestEpsilonDec(t *testing.T) {
+	epsilon := alloraMath.EpsilonDec()
+	expected, err := alloraMath.NewDecFromString("0.000000000000000001")
+	require.NoError(t, err)
+
+	// Check if EpsilonDec is equal to the expected small value
+	require.True(t, epsilon.Equal(expected), "EpsilonDec should be equal to 1e-18")
+
+	// Check if EpsilonDec is positive and not zero
+	require.True(t, epsilon.IsPositive(), "EpsilonDec should be positive")
+	require.False(t, epsilon.IsZero(), "EpsilonDec should not be zero")
+}
