@@ -65,6 +65,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+# v0.12.0
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+* [#799](https://github.com/allora-network/allora-chain/pull/799) Correct Monthly PreviousPercentageRewardToStakedReputers Calculation
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+# [Unreleased]
+
 # v0.11.0
 
 ### Added

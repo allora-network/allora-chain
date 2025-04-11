@@ -121,9 +121,6 @@ func EmitRewards(args EmitRewardsArgs) error {
 	}
 	Logger(args.Ctx).Debug("Topic rewards", "topicRewards", topicRewards)
 
-	// Initialize totalRewardToStakedReputers
-	totalRewardToStakedReputers := alloraMath.ZeroDec()
-
 	// Process rewards for each topic, pruning at the end of epoch
 	for _, topicId := range sortedRewardableTopics {
 		topicRewardNonce, err := args.K.GetTopicRewardNonce(args.Ctx, topicId)
@@ -152,29 +149,23 @@ func EmitRewards(args EmitRewardsArgs) error {
 			continue
 		}
 
-		// Add rewardInTopicToReputers to totalRewardToStakedReputers
-		totalRewardToStakedReputers, err = totalRewardToStakedReputers.Add(rewardInTopicToReputers)
+		// Add to monthly reputer rewards
+		rewardInTopicToReputersInt, err := rewardInTopicToReputers.SdkIntTrim()
 		if err != nil {
-			return errors.Wrapf(
-				err,
-				"Error finding sum of rewards to Reputers: totalReward: %s , rewardInTopic: %s",
-				totalRewardToStakedReputers.String(),
-				rewardInTopicToReputers.String(),
-			)
+			return errors.Wrapf(err, "failed to convert reward in topic to reputers to int")
 		}
-	}
-
-	// Log and handle the final totalRewardToStakedReputers
-	Logger(args.Ctx).Debug("Paid out to staked reputers", "totalRewardToStakedReputers", totalRewardToStakedReputers.String(), "topics", len(topicRewards))
-
-	if !totalRewardTreasury.IsZero() && uint64(args.BlockHeight)%args.ModuleParams.BlocksPerMonth == 0 {
-		percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalRewardTreasury)
+		err = args.K.AddMonthlyReputerRewards(args.Ctx, rewardInTopicToReputersInt)
 		if err != nil {
-			return errors.Wrapf(err, "failed to calculate percentage to staked reputers")
+			return errors.Wrapf(err, "failed to add monthly reputer rewards")
 		}
-		err = args.K.SetPreviousPercentageRewardToStakedReputers(args.Ctx, percentageToStakedReputers)
+		// Add to monthly topic rewards
+		topicRewardInt, err := topicReward.SdkIntTrim()
 		if err != nil {
-			return errors.Wrapf(err, "failed to set previous percentage reward to staked reputers")
+			return errors.Wrapf(err, "failed to convert topic reward to int")
+		}
+		err = args.K.AddMonthlyTopicRewards(args.Ctx, topicRewardInt)
+		if err != nil {
+			return errors.Wrapf(err, "failed to add monthly topic rewards")
 		}
 	}
 

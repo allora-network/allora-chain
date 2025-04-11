@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -66,6 +67,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
 		return errors.Wrapf(err, "Rewards error")
 	}
+
 	// Close any open windows due this blockHeight
 	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {
@@ -100,5 +102,61 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
 		}
 	}
+
+	// If the current block is a multiple of the number of blocks per month,
+	// update the percentage of rewards going to staked reputers and reset monthly counters.
+	if uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
+		// Get total rewards paid to staked reputers in the last month
+		totalRewardToStakedReputers, err := am.keeper.GetMonthlyReputerRewards(sdkCtx)
+		if err != nil {
+			return errors.Wrapf(err, "failed to get monthly reputer rewards")
+		}
+
+		// Get total rewards emitted during the preceding month to topic participants
+		totalRewardToTopicParticipants, err := am.keeper.GetMonthlyTopicRewards(sdkCtx)
+		if err != nil {
+			return errors.Wrapf(err, "failed to get monthly topic rewards")
+		}
+
+		sdkCtx.Logger().Info("Monthly rewards", "totalRewardToStakedReputers", totalRewardToStakedReputers, "totalRewardToTopicParticipants", totalRewardToTopicParticipants)
+
+		// Avoid division by zero if no topic rewards were emitted
+		percentageToStakedReputersDec := alloraMath.ZeroDec()
+		if !totalRewardToTopicParticipants.IsZero() {
+			totalReputersDec, err := alloraMath.NewDecFromSdkInt(totalRewardToStakedReputers)
+			if err != nil {
+				return errors.Wrapf(err, "failed to convert total reputer rewards to alloraMath.Dec")
+			}
+			totalTopicDec, err := alloraMath.NewDecFromSdkInt(totalRewardToTopicParticipants)
+			if err != nil {
+				return errors.Wrapf(err, "failed to convert total topic rewards to alloraMath.Dec")
+			}
+
+			percentageToStakedReputersDec, err = totalReputersDec.Quo(totalTopicDec)
+			if err != nil {
+				return errors.Wrapf(err, "failed to calculate percentage to staked reputers")
+			}
+		}
+
+		err = am.keeper.SetPreviousPercentageRewardToStakedReputers(sdkCtx, percentageToStakedReputersDec)
+		if err != nil {
+			return errors.Wrapf(err, "failed to set previous percentage reward to staked reputers")
+		}
+
+		// Reset monthly reputer rewards
+		err = am.keeper.ResetMonthlyReputerRewards(sdkCtx)
+		if err != nil {
+			return errors.Wrapf(err, "failed to reset monthly reputer rewards")
+		}
+
+		// Reset monthly topic rewards
+		err = am.keeper.ResetMonthlyTopicRewards(sdkCtx)
+		if err != nil {
+			return errors.Wrapf(err, "failed to reset monthly topic rewards")
+		}
+
+		sdkCtx.Logger().Debug("Monthly rewards reset triggered!")
+	}
+
 	return nil
 }
