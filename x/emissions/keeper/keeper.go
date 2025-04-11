@@ -273,6 +273,10 @@ type Keeper struct {
 	networkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 	// map of (topic, block_height) -> ValueBundle
 	outlierResistantNetworkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	// total reward for the month going to reputers
+	monthlyReputerRewards collections.Item[cosmosMath.Int]
+	// total reward for the month going to all topic participants (reputers, inferers, forecasters)
+	monthlyTopicRewards collections.Item[cosmosMath.Int]
 }
 
 func NewKeeper(
@@ -384,6 +388,8 @@ func NewKeeper(
 		latestForecasterWeights:                   collections.NewMap(sb, types.LatestForecasterWeightsKey, "latest_forecaster_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		monthlyReputerRewards:                     collections.NewItem(sb, types.MonthlyReputerRewardsKey, "monthly_reputer_rewards", sdk.IntValue),
+		monthlyTopicRewards:                       collections.NewItem(sb, types.MonthlyTopicRewardsKey, "monthly_topic_rewards", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -4596,4 +4602,78 @@ func (k Keeper) SetLatestForecasterWeight(ctx context.Context, topicId TopicId, 
 		return errorsmod.Wrap(err, "worker address validation failed")
 	}
 	return k.latestForecasterWeights.Set(ctx, collections.Join(topicId, worker), weight)
+}
+
+// GetMonthlyReputerRewards retrieves the total reward for the month going to reputers.
+func (k *Keeper) GetMonthlyReputerRewards(ctx context.Context) (cosmosMath.Int, error) {
+	rewards, err := k.monthlyReputerRewards.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil // Return zero if not found
+	} else if err != nil {
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting monthly reputer rewards")
+	}
+	return rewards, nil
+}
+
+// SetMonthlyReputerRewards sets the total reward for the month going to reputers.
+func (k Keeper) SetMonthlyReputerRewards(ctx context.Context, rewards cosmosMath.Int) error {
+	if rewards.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "monthly reputer rewards cannot be negative")
+	}
+	return k.monthlyReputerRewards.Set(ctx, rewards)
+}
+
+// AddMonthlyReputerRewards adds the specified amount to the total monthly reputer rewards.
+func (k Keeper) AddMonthlyReputerRewards(ctx context.Context, amount cosmosMath.Int) error {
+	if amount.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "amount to add cannot be negative")
+	}
+	currentRewards, err := k.GetMonthlyReputerRewards(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting current monthly reputer rewards")
+	}
+	newRewards := currentRewards.Add(amount)
+	return k.SetMonthlyReputerRewards(ctx, newRewards)
+}
+
+// ResetMonthlyReputerRewards resets the total monthly reputer rewards to zero.
+func (k Keeper) ResetMonthlyReputerRewards(ctx context.Context) error {
+	return k.SetMonthlyReputerRewards(ctx, cosmosMath.ZeroInt())
+}
+
+// GetMonthlyTopicRewards retrieves the total reward for the month going to all topic participants.
+func (k *Keeper) GetMonthlyTopicRewards(ctx context.Context) (cosmosMath.Int, error) {
+	rewards, err := k.monthlyTopicRewards.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil // Return zero if not found
+	} else if err != nil {
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting monthly topic rewards")
+	}
+	return rewards, nil
+}
+
+// SetMonthlyTopicRewards sets the total reward for the month going to all topic participants.
+func (k Keeper) SetMonthlyTopicRewards(ctx context.Context, rewards cosmosMath.Int) error {
+	if rewards.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "monthly topic rewards cannot be negative")
+	}
+	return k.monthlyTopicRewards.Set(ctx, rewards)
+}
+
+// AddMonthlyTopicRewards adds the specified amount to the total monthly topic rewards.
+func (k Keeper) AddMonthlyTopicRewards(ctx context.Context, amount cosmosMath.Int) error {
+	if amount.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "amount to add cannot be negative")
+	}
+	currentRewards, err := k.GetMonthlyTopicRewards(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting current monthly topic rewards")
+	}
+	newRewards := currentRewards.Add(amount)
+	return k.SetMonthlyTopicRewards(ctx, newRewards)
+}
+
+// ResetMonthlyTopicRewards resets the total monthly topic rewards to zero.
+func (k Keeper) ResetMonthlyTopicRewards(ctx context.Context) error {
+	return k.SetMonthlyTopicRewards(ctx, cosmosMath.ZeroInt())
 }
