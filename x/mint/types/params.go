@@ -185,7 +185,7 @@ func validateTokenSupplyAddsTo100Percent(
 	foundation math.LegacyDec,
 	participants math.LegacyDec,
 	investors math.LegacyDec,
-	investorsPreesed math.LegacyDec,
+	investorsPreseed math.LegacyDec,
 	team math.LegacyDec,
 ) error {
 	one := math.OneInt().ToLegacyDec()
@@ -194,7 +194,7 @@ func validateTokenSupplyAddsTo100Percent(
 			Add(foundation).
 			Add(participants).
 			Add(investors).
-			Add(investorsPreesed).
+			Add(investorsPreseed).
 			Add(team),
 	)
 	if !equal100Percent {
@@ -204,7 +204,7 @@ func validateTokenSupplyAddsTo100Percent(
 			foundation,
 			participants,
 			investors,
-			investorsPreesed,
+			investorsPreseed,
 			team,
 		)
 	}
