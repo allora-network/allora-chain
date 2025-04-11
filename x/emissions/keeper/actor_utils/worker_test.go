@@ -58,7 +58,7 @@ func (s *WorkerTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	// Set logger to show logs from the rewards module too
-	logger := alloralog.NewTestLogger(s.T())
+	logger := alloralog.NewTestLogger(s.T()).With("module", "rewards")
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}).WithLogger(logger) // nolint: exhaustruct
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 

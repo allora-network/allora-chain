@@ -57,7 +57,7 @@ func (s *WeightsTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	// Set logger to show logs from the rewards module too
-	logger := alloralog.NewTestLogger(s.T())
+	logger := alloralog.NewTestLogger(s.T()).With("module", "inference_synthesis")
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
 		Height:  1,
 		Hash:    []byte("1"),
