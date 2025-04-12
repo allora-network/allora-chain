@@ -94,10 +94,6 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			if err := client.SetCmdClientContextHandler(clientCtx, cmd); err != nil {
-				return err
-			}
-
 			// overwrite the minimum gas price from the app configuration
 			srvCfg := serverconfig.DefaultConfig()
 			srvCfg.MinGasPrices = "0uallo"
