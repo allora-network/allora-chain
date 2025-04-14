@@ -52,7 +52,7 @@ RUN apt update && \
         tzdata \
         bc \
         ca-certificates && \
-    echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
+    echo "deb http://ftp.debian.org/debian/ testing main" >> /etc/apt/sources.list && \
     apt update && \
     apt install -y --no-install-recommends -t testing \
       zlib1g \
