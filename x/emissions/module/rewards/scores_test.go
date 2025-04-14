@@ -784,13 +784,17 @@ func prepareMockLosses(reputersCount int, workersCount int) (
 		reputersForecasterOneOutLosses,
 		reputersOneInNaiveLosses
 }
-func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputerIndexes []int) types.InputReputerValueBundles {
+
+func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputerIndexes []int, workerIndexes []int) types.InputReputerValueBundles {
+	if len(workerIndexes) != 5 {
+		panic("workerIndexes length must be 5")
+	}
 	workers := []sdk.AccAddress{
-		s.addrs[5],
-		s.addrs[6],
-		s.addrs[7],
-		s.addrs[8],
-		s.addrs[9],
+		s.addrs[workerIndexes[0]],
+		s.addrs[workerIndexes[1]],
+		s.addrs[workerIndexes[2]],
+		s.addrs[workerIndexes[3]],
+		s.addrs[workerIndexes[4]],
 	}
 	reputersLosses := []alloraMath.BoundedExp40Dec{
 		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01127")),
