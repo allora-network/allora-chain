@@ -856,6 +856,7 @@ type CalcNetworkInferencesArgs struct {
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
 	StdDevPlusEpsilon                    alloraMath.Dec
+	InferenceBlockHeight                 BlockHeight
 }
 
 // Calculates all network inferences in the set I_i given historical state (e.g. regrets)
@@ -1048,7 +1049,7 @@ func CalcNetworkInferences(
 	return &emissions.ValueBundle{
 		TopicId: args.TopicId,
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
-			ReputerNonce: &emissions.Nonce{BlockHeight: args.Ctx.BlockHeight()},
+			ReputerNonce: &emissions.Nonce{BlockHeight: args.InferenceBlockHeight},
 		},
 		Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		ExtraData:                     nil,

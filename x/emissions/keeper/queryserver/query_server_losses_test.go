@@ -23,8 +23,14 @@ func (s *QueryServerTestSuite) TestGetNetworkLossBundleAtBlock() {
 				BlockHeight: blockHeight,
 			},
 		},
-		ExtraData:                     []byte("sample_extra_data"),
-		InfererValues:                 nil,
+		ExtraData: []byte("sample_extra_data"),
+		// Initialize InfererValues with at least one element to meet the new validation requirement
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		CombinedValue:                 alloraMath.ZeroDec(),
 		NaiveValue:                    alloraMath.ZeroDec(),
 		ForecasterValues:              nil,
@@ -113,13 +119,19 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 	valueBundle := types.ValueBundle{
-		TopicId:                       topicId,
-		Reputer:                       s.addrsStr[0],
-		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-		ExtraData:                     []byte("sample_extra_data"),
-		CombinedValue:                 alloraMath.NewDecFromInt64(100),
-		NaiveValue:                    alloraMath.NewDecFromInt64(100),
-		InfererValues:                 nil,
+		TopicId:             topicId,
+		Reputer:             s.addrsStr[0],
+		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+		ExtraData:           []byte("sample_extra_data"),
+		CombinedValue:       alloraMath.NewDecFromInt64(100),
+		NaiveValue:          alloraMath.NewDecFromInt64(100),
+		// Initialize InfererValues with at least one element to meet the new validation requirement
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		OneOutInfererValues:           nil,
 		OneOutForecasterValues:        nil,

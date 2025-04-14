@@ -199,6 +199,60 @@ func TestInputValueBundle_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "zero block height in reputer request nonce",
+			input: &InputValueBundle{
+				TopicId:                       1,
+				ReputerRequestNonce:           &ReputerRequestNonce{ReputerNonce: &Nonce{BlockHeight: 0}},
+				Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				InfererValues:                 []*InputWorkerAttributedValue{validInfererValue},
+				ForecasterValues:              nil,
+				OneOutInfererValues:           nil,
+				OneOutForecasterValues:        nil,
+				OneInForecasterValues:         nil,
+				OneOutInfererForecasterValues: nil,
+				ExtraData:                     nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "nil inferer values",
+			input: &InputValueBundle{
+				TopicId:                       1,
+				ReputerRequestNonce:           &ReputerRequestNonce{ReputerNonce: &Nonce{BlockHeight: 100}},
+				Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				InfererValues:                 nil,
+				ForecasterValues:              nil,
+				OneOutInfererValues:           nil,
+				OneOutForecasterValues:        nil,
+				OneInForecasterValues:         nil,
+				OneOutInfererForecasterValues: nil,
+				ExtraData:                     nil,
+			},
+			wantErr: true,
+		},
+		{
+			name: "empty inferer values",
+			input: &InputValueBundle{
+				TopicId:                       1,
+				ReputerRequestNonce:           &ReputerRequestNonce{ReputerNonce: &Nonce{BlockHeight: 100}},
+				Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				InfererValues:                 []*InputWorkerAttributedValue{},
+				ForecasterValues:              nil,
+				OneOutInfererValues:           nil,
+				OneOutForecasterValues:        nil,
+				OneInForecasterValues:         nil,
+				OneOutInfererForecasterValues: nil,
+				ExtraData:                     nil,
+			},
+			wantErr: true,
+		},
+		{
 			name: "negative combined value valid",
 			input: &InputValueBundle{
 				TopicId:                       1,
@@ -206,7 +260,7 @@ func TestInputValueBundle_Validate(t *testing.T) {
 				Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("-1")),
 				NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
-				InfererValues:                 nil,
+				InfererValues:                 []*InputWorkerAttributedValue{validInfererValue},
 				ForecasterValues:              nil,
 				OneOutInfererValues:           nil,
 				OneOutForecasterValues:        nil,
@@ -224,7 +278,7 @@ func TestInputValueBundle_Validate(t *testing.T) {
 				Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("")),
 				NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
-				InfererValues:                 nil,
+				InfererValues:                 []*InputWorkerAttributedValue{validInfererValue},
 				ForecasterValues:              nil,
 				OneOutInfererValues:           nil,
 				OneOutForecasterValues:        nil,
@@ -242,7 +296,7 @@ func TestInputValueBundle_Validate(t *testing.T) {
 				Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
 				NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("-1")),
-				InfererValues:                 nil,
+				InfererValues:                 []*InputWorkerAttributedValue{validInfererValue},
 				ForecasterValues:              nil,
 				OneOutInfererValues:           nil,
 				OneOutForecasterValues:        nil,
@@ -260,7 +314,7 @@ func TestInputValueBundle_Validate(t *testing.T) {
 				Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
 				NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("")),
-				InfererValues:                 nil,
+				InfererValues:                 []*InputWorkerAttributedValue{validInfererValue},
 				ForecasterValues:              nil,
 				OneOutInfererValues:           nil,
 				OneOutForecasterValues:        nil,
@@ -282,7 +336,6 @@ func TestInputValueBundle_Validate(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestInputWorkerAttributedValue_Validate(t *testing.T) {

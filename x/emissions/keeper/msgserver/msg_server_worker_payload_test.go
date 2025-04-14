@@ -271,7 +271,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedTopicI
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.ErrorIs(err, types.ErrInvalidTopicId)
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInferer() {
@@ -462,7 +462,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForeca
 
 	ctx = ctx.WithBlockHeight(blockHeight)
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.ErrorIs(err, types.ErrInvalidTopicId)
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 
 	forecastsCount1 := s.getCountForecastsAtBlock(originalTopicId, blockHeight)
 	require.Equal(forecastsCount1, 0)

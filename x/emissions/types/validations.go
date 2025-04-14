@@ -282,6 +282,13 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 	if bundle.Nonce == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle nonce cannot be nil")
 	}
+	if err := bundle.Nonce.Validate(); err != nil {
+		return errors.Wrap(err, "worker data bundle nonce is invalid")
+	}
+	// Additional validation on zero height for bundles
+	if bundle.Nonce.BlockHeight <= 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "worker data bundle nonce block height must be greater than 0")
+	}
 	if len(bundle.Worker) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker cannot be empty")
 	}
@@ -310,6 +317,7 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 		if err := bundle.InferenceForecastsBundle.Inference.Validate(); err != nil {
 			return err
 		}
+		// Validate against the current bundle
 		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Inference.Inferer %s does not match pubkey %s",
@@ -320,11 +328,18 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 				"Inference.Inferer %s does not match worker address %s",
 				bundle.InferenceForecastsBundle.Inference.Inferer, bundle.Worker)
 		}
+		if bundle.TopicId != bundle.InferenceForecastsBundle.Inference.TopicId {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "inference topic id %d does not match bundle topic id %d", bundle.InferenceForecastsBundle.Inference.TopicId, bundle.TopicId)
+		}
+		if bundle.Nonce.BlockHeight != bundle.InferenceForecastsBundle.Inference.BlockHeight {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "inference block height %d does not match bundle block height %d", bundle.InferenceForecastsBundle.Inference.BlockHeight, bundle.Nonce.BlockHeight)
+		}
 	}
 	if bundle.InferenceForecastsBundle.Forecast != nil {
 		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
 			return err
 		}
+		// Validate against the current bundle
 		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match pubkey %s",
@@ -334,6 +349,12 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match worker address %s",
 				bundle.InferenceForecastsBundle.Forecast.Forecaster, bundle.Worker)
+		}
+		if bundle.TopicId != bundle.InferenceForecastsBundle.Forecast.TopicId {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "forecast topic id %d does not match bundle topic id %d", bundle.InferenceForecastsBundle.Forecast.TopicId, bundle.TopicId)
+		}
+		if bundle.Nonce.BlockHeight != bundle.InferenceForecastsBundle.Forecast.BlockHeight {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "forecast block height %d does not match bundle block height %d", bundle.InferenceForecastsBundle.Forecast.BlockHeight, bundle.Nonce.BlockHeight)
 		}
 	}
 
@@ -391,6 +412,7 @@ func (bundle *WorkerDataBundle) Validate() error {
 		if err := bundle.InferenceForecastsBundle.Inference.Validate(); err != nil {
 			return err
 		}
+		// Validate against the current bundle
 		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Inference.Inferer %s does not match pubkey %s",
@@ -401,11 +423,18 @@ func (bundle *WorkerDataBundle) Validate() error {
 				"Inference.Inferer %s does not match worker address %s",
 				bundle.InferenceForecastsBundle.Inference.Inferer, bundle.Worker)
 		}
+		if bundle.TopicId != bundle.InferenceForecastsBundle.Inference.TopicId {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "inference topic id %d does not match bundle topic id %d", bundle.InferenceForecastsBundle.Inference.TopicId, bundle.TopicId)
+		}
+		if bundle.Nonce.BlockHeight != bundle.InferenceForecastsBundle.Inference.BlockHeight {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "inference block height %d does not match bundle block height %d", bundle.InferenceForecastsBundle.Inference.BlockHeight, bundle.Nonce.BlockHeight)
+		}
 	}
 	if bundle.InferenceForecastsBundle.Forecast != nil {
 		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
 			return err
 		}
+		// Validate against the current bundle
 		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match pubkey %s",
@@ -415,6 +444,12 @@ func (bundle *WorkerDataBundle) Validate() error {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match worker address %s",
 				bundle.InferenceForecastsBundle.Forecast.Forecaster, bundle.Worker)
+		}
+		if bundle.TopicId != bundle.InferenceForecastsBundle.Forecast.TopicId {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "forecast topic id %d does not match bundle topic id %d", bundle.InferenceForecastsBundle.Forecast.TopicId, bundle.TopicId)
+		}
+		if bundle.Nonce.BlockHeight != bundle.InferenceForecastsBundle.Forecast.BlockHeight {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "forecast block height %d does not match bundle block height %d", bundle.InferenceForecastsBundle.Forecast.BlockHeight, bundle.Nonce.BlockHeight)
 		}
 	}
 
@@ -448,10 +483,21 @@ func (bundle *InputValueBundle) Validate() error {
 	if bundle.ReputerRequestNonce == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle reputer request nonce cannot be nil")
 	}
+	if err := bundle.ReputerRequestNonce.Validate(); err != nil {
+		return errors.Wrap(err, "value bundle reputer request nonce is invalid")
+	}
+	// Additional validation on zero height for bundles
+	if bundle.ReputerRequestNonce.ReputerNonce.BlockHeight <= 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than 0")
+	}
 	if err := ValidateBech32(bundle.Reputer); err != nil {
 		return errors.Wrap(err, "value bundle reputer address is invalid")
 	}
 	// extraData is not checked as it is not used by the chain
+
+	if len(bundle.InfererValues) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle inferer values cannot be nil")
+	}
 
 	// nil values for bundle.InfererValues are interpreted to mean that there
 	// are no inferer values for this bundle, and are allowed
@@ -514,6 +560,13 @@ func (bundle *ValueBundle) Validate() error {
 	if bundle.ReputerRequestNonce == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle reputer request nonce cannot be nil")
 	}
+	if err := bundle.ReputerRequestNonce.Validate(); err != nil {
+		return errors.Wrap(err, "value bundle reputer request nonce is invalid")
+	}
+	// Additional validation on zero height for bundles
+	if bundle.ReputerRequestNonce.ReputerNonce.BlockHeight <= 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than or equal to 0")
+	}
 	if err := ValidateBech32(bundle.Reputer); err != nil {
 		return errors.Wrap(err, "value bundle reputer address is invalid")
 	}
@@ -521,6 +574,10 @@ func (bundle *ValueBundle) Validate() error {
 
 	if err := ValidateDec(bundle.CombinedValue); err != nil {
 		return errors.Wrap(err, "value bundle combined value is invalid")
+	}
+
+	if len(bundle.InfererValues) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle inferer values cannot be nil")
 	}
 
 	// nil values for bundle.InfererValues are interpreted to mean that there
