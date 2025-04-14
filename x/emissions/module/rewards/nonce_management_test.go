@@ -81,12 +81,14 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExec() {
 	}
 
 	// Insert unfullfiled nonces
-	s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: currentBlockHeight,
 	})
-	s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: currentBlockHeight,
 	})
+	s.Require().NoError(err)
 
 	workerValues := make([]TestWorkerValue, len(workerIndexes))
 	for i, index := range workerIndexes {
