@@ -23,8 +23,11 @@ func CloseReputerNonce(
 	k *keeper.Keeper,
 	ctx sdk.Context,
 	topic types.Topic,
-	nonce types.Nonce) error {
-	/// All filters should be done in order of increasing computational complexity
+	nonce types.Nonce,
+) (err error) {
+	blockHeight := ctx.BlockHeight()
+
+	// All filters should be done in order of increasing computational complexity
 	// Check if the worker nonce is unfulfilled
 	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
@@ -53,10 +56,50 @@ func CloseReputerNonce(
 		)
 	}
 	// Check if the window time has passed
-	blockHeight := ctx.BlockHeight()
 	if blockHeight < nonce.BlockHeight+topic.GroundTruthLag {
 		return types.ErrReputerNonceWindowNotAvailable
 	}
+
+	defer func() {
+		if err != nil {
+			ctx.Logger().Error(
+				"Error occurred before finalization in CloseReputerNonce, attempting cleanup anyway",
+				"topicId", topic.Id,
+				"nonce", nonce,
+				"error", err,
+			)
+		}
+
+		_, fulfillErr := k.FulfillReputerNonce(ctx, topic.Id, &nonce)
+		if fulfillErr != nil {
+			ctx.Logger().Error(
+				"Error fulfilling reputer nonce during deferred cleanup",
+				"topicId", topic.Id,
+				"nonce", nonce,
+				"error", fulfillErr,
+			)
+		}
+
+		resetActiveErr := k.ResetActiveReputersForTopic(ctx, topic.Id)
+		if resetActiveErr != nil {
+			ctx.Logger().Error(
+				"Error resetting active reputers during deferred cleanup",
+				"topicId", topic.Id,
+				"error", resetActiveErr,
+			)
+		}
+
+		resetSubmissionsErr := k.ResetReputersIndividualSubmissionsForTopic(ctx, topic.Id)
+		if resetSubmissionsErr != nil {
+			ctx.Logger().Error(
+				"Error resetting reputer individual submissions during deferred cleanup",
+				"topicId", topic.Id,
+				"error", resetSubmissionsErr,
+			)
+		}
+
+		ctx.Logger().Info("Closed reputer nonce", "topicId", topic.Id, "nonce", nonce)
+	}()
 
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -74,16 +117,19 @@ func CloseReputerNonce(
 	for _, address := range activeReputerAddresses {
 		bundle, err := k.GetReputerLatestLossByTopicId(ctx, topic.Id, address)
 		if err != nil {
-			return types.ErrNoValidBundles
+			ctx.Logger().Warn("Could not get latest loss bundle for reputer, skipping", "reputer", address, "topicId", topic.Id, "error", err)
+			continue // Skip this reputer
 		}
 
 		// Check that the reputer enough stake in the topic
 		stake, err := k.GetStakeReputerAuthority(ctx, topic.Id, bundle.ValueBundle.Reputer)
 		if err != nil {
-			continue
+			ctx.Logger().Warn("Could not get stake for reputer, skipping", "reputer", bundle.ValueBundle.Reputer, "topicId", topic.Id, "error", err)
+			continue // Skip this reputer
 		}
 		if stake.LT(params.RequiredMinimumStake) {
-			continue
+			ctx.Logger().Debug("Reputer stake below minimum, skipping", "reputer", bundle.ValueBundle.Reputer, "topicId", topic.Id, "stake", stake)
+			continue // Skip this reputer
 		}
 
 		// Examine forecast elements to verify that they're for registered inferers in the current set.
@@ -92,7 +138,8 @@ func CloseReputerNonce(
 		// if they're left with no valid losses.
 		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topic.Id, *bundle.ValueBundle.ReputerRequestNonce, &bundle)
 		if err != nil {
-			continue
+			ctx.Logger().Warn("Could not filter bundle for reputer, skipping", "reputer", bundle.ValueBundle.Reputer, "topicId", topic.Id, "error", err)
+			continue // Skip this reputer
 		}
 
 		/// Filtering done now, now write what we must for inclusion
@@ -220,34 +267,31 @@ func CloseReputerNonce(
 	}
 	// -- end of regrets_stdnorm and weights multistep process
 
-	_, err = k.FulfillReputerNonce(ctx, topic.Id, &nonce)
-	if err != nil {
-		return err
-	}
-
 	err = k.SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)
 	if err != nil {
+		ctx.Logger().Error(
+			"Error setting topic reward nonce during deferred cleanup",
+			"topicId", topic.Id,
+			"nonceBlockHeight", nonce.BlockHeight,
+			"error", err,
+		)
 		return err
 	}
 
 	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
+		ctx.Logger().Error(
+			"Error setting reputer topic last commit during deferred cleanup",
+			"topicId", topic.Id,
+			"blockHeight", blockHeight,
+			"nonce", nonce,
+			"error", err,
+		)
 		return err
 	}
-
-	err = k.ResetActiveReputersForTopic(ctx, topic.Id)
-	if err != nil {
-		return err
-	}
-
-	err = k.ResetReputersIndividualSubmissionsForTopic(ctx, topic.Id)
-	if err != nil {
-		return err
-	}
-
 	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
-	ctx.Logger().Info("Closed reputer nonce", "topicId", topic.Id, "nonce", nonce)
-	return nil
+
+	return err
 }
 
 // Filter out values of unaccepted workers.
@@ -262,9 +306,8 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 ) (*types.ReputerValueBundle, error) {
 	// Get the accepted inferers of the associated worker response payload
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight, false)
-
 	if errors.Is(err, collections.ErrNotFound) {
-		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no inferences found at block height")
+		return nil, errorsmod.Wrapf(sdkerrors.ErrNotFound, "no inferences found at block height %d for topic %d", reputerRequestNonce.ReputerNonce.BlockHeight, topicId)
 	} else if err != nil {
 		return nil, err
 	}
@@ -277,6 +320,9 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	// Get the accepted forecasters of the associated worker response payload
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrNotFound, "no forecasts found at block height %d for topic %d", reputerRequestNonce.ReputerNonce.BlockHeight, topicId)
+		}
 		return nil, err
 	}
 	acceptedForecastersOfBatch := make(map[string]bool)
@@ -367,23 +413,33 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 		}
 	}
 
+	// Construct the filtered bundle
+	filteredValueBundle := &types.ValueBundle{
+		TopicId:                       reputerValueBundle.ValueBundle.TopicId,
+		ReputerRequestNonce:           reputerValueBundle.ValueBundle.ReputerRequestNonce,
+		Reputer:                       reputerValueBundle.ValueBundle.Reputer,
+		ExtraData:                     reputerValueBundle.ValueBundle.ExtraData,
+		InfererValues:                 acceptedInfererValues,
+		ForecasterValues:              acceptedForecasterValues,
+		OneOutInfererValues:           acceptedOneOutInfererValues,
+		OneOutForecasterValues:        acceptedOneOutForecasterValues,
+		OneInForecasterValues:         acceptedOneInForecasterValues,
+		OneOutInfererForecasterValues: acceptedOneOutInfererForecasterValues,
+		NaiveValue:                    reputerValueBundle.ValueBundle.NaiveValue,
+		CombinedValue:                 reputerValueBundle.ValueBundle.CombinedValue,
+	}
+
+	// Check if the filtering resulted in an effectively empty bundle that might be invalid downstream
+	// e.g., if CalcNetworkLosses requires at least one value. Add checks if necessary.
+
+	if len(acceptedInfererValues) == 0 {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrNotFound, "no valid values found after filtering")
+	}
+
 	acceptedReputerValueBundle := &types.ReputerValueBundle{
-		Pubkey: reputerValueBundle.Pubkey,
-		ValueBundle: &types.ValueBundle{
-			TopicId:                       reputerValueBundle.ValueBundle.TopicId,
-			ReputerRequestNonce:           reputerValueBundle.ValueBundle.ReputerRequestNonce,
-			Reputer:                       reputerValueBundle.ValueBundle.Reputer,
-			ExtraData:                     reputerValueBundle.ValueBundle.ExtraData,
-			InfererValues:                 acceptedInfererValues,
-			ForecasterValues:              acceptedForecasterValues,
-			OneOutInfererValues:           acceptedOneOutInfererValues,
-			OneOutForecasterValues:        acceptedOneOutForecasterValues,
-			OneInForecasterValues:         acceptedOneInForecasterValues,
-			OneOutInfererForecasterValues: acceptedOneOutInfererForecasterValues,
-			NaiveValue:                    reputerValueBundle.ValueBundle.NaiveValue,
-			CombinedValue:                 reputerValueBundle.ValueBundle.CombinedValue,
-		},
-		Signature: reputerValueBundle.Signature,
+		Pubkey:      reputerValueBundle.Pubkey,
+		ValueBundle: filteredValueBundle,
+		Signature:   reputerValueBundle.Signature,
 	}
 
 	return acceptedReputerValueBundle, nil
