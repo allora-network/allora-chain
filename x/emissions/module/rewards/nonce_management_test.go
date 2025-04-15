@@ -11,7 +11,7 @@ import (
 )
 
 // Test defer execution of CloseReputerNonce
-func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExec() {
+func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	currentBlockHeight := int64(10)
 	s.ctx = s.ctx.WithBlockHeight(currentBlockHeight)
 
@@ -185,6 +185,127 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExec() {
 	// Check if the submissions for the topic have been reset
 	for _, bundle := range lossBundles.ReputerValueBundles {
 		_, err := s.emissionsKeeper.GetReputerLatestLossByTopicId(s.ctx, topicId, bundle.ValueBundle.Reputer)
+		s.Require().ErrorIs(err, collections.ErrNotFound)
+	}
+}
+
+// Test defer execution of CloseWorkerNonce
+func (s *RewardsTestSuite) TestCloseWorkerNonce_DeferExecWhenError() {
+	currentBlockHeight := int64(20)
+	s.ctx = s.ctx.WithBlockHeight(currentBlockHeight)
+
+	// Create topic
+	createTopicReq := &types.CreateNewTopicRequest{
+		Creator:                  s.addrsStr[0],
+		Metadata:                 "test-topic-close-worker-nonce",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		AllowNegative:            false,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, createTopicReq)
+	s.Require().NoError(err)
+	topicId := res.TopicId
+
+	workerIndexes := s.returnIndexes(0, 5)
+
+	// Register workers
+	for _, index := range workerIndexes {
+		registerReq := &types.RegisterRequest{
+			Sender:    s.addrsStr[index],
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     s.addrsStr[index],
+		}
+		_, err = s.msgServer.Register(s.ctx, registerReq)
+		s.Require().NoError(err)
+	}
+
+	// Insert unfulfilled worker nonce
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: currentBlockHeight,
+	})
+	s.Require().NoError(err)
+
+	workerValues := make([]TestWorkerValue, len(workerIndexes))
+	for i, index := range workerIndexes {
+		workerValues[i] = TestWorkerValue{
+			Index: index,
+			Value: "100",
+		}
+	}
+
+	getIndexesFromValues := func(values []TestWorkerValue) []int {
+		indexes := make([]int, 0)
+		for _, value := range values {
+			indexes = append(indexes, value.Index)
+		}
+		return indexes
+	}
+
+	workerIndexesFromValues := getIndexesFromValues(workerValues)
+
+	// Insert inference from workers
+	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId, currentBlockHeight, currentBlockHeight, workerValues, workerIndexesFromValues)
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	// Move to end of worker submission window
+	s.ctx = s.ctx.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
+
+	// Before closing, check nonce is unfulfilled, active workers exist, and submissions exist
+	unfulfilled, err := s.emissionsKeeper.IsWorkerNonceUnfulfilled(s.ctx, topicId, inferenceBundles[0].Nonce)
+	s.Require().NoError(err)
+	s.Require().True(unfulfilled)
+
+	activeInferers, err := s.emissionsKeeper.GetActiveInferersForTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(len(workerIndexes), len(activeInferers))
+
+	for _, bundle := range inferenceBundles {
+		submissions, err := s.emissionsKeeper.GetWorkerLatestInferenceByTopicId(s.ctx, topicId, bundle.Worker)
+		s.Require().NoError(err)
+		s.Require().NotNil(submissions)
+	}
+
+	// Enforcing that the active inferer to create an error
+	enforcedInferer := s.addrsStr[10]
+	err = s.emissionsKeeper.AddActiveInferer(s.ctx, topicId, enforcedInferer)
+	s.Require().NoError(err)
+
+	// Call CloseWorkerNonce, expecting an error
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
+	s.Require().Error(err)
+
+	// After closing, check nonce is fulfilled, active workers are reset, and submissions are cleared
+	unfulfilled, err = s.emissionsKeeper.IsWorkerNonceUnfulfilled(s.ctx, topicId, inferenceBundles[0].Nonce)
+	s.Require().NoError(err)
+	s.Require().False(unfulfilled)
+
+	activeInferers, err = s.emissionsKeeper.GetActiveInferersForTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(0, len(activeInferers))
+
+	for _, bundle := range inferenceBundles {
+		_, err := s.emissionsKeeper.GetWorkerLatestInferenceByTopicId(s.ctx, topicId, bundle.Worker)
 		s.Require().ErrorIs(err, collections.ErrNotFound)
 	}
 }

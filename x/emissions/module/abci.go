@@ -90,14 +90,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					sdkCtx.Logger().Debug("ABCI EndBlocker", "blockHeight", blockHeight, "closing worker window for topic", "topicId", topicId, "nonce", nonce)
 					err = allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
 					if err != nil {
-						sdkCtx.Logger().Info("Error closing worker nonce, proactively fulfilling", "error", err)
-						// Proactively close the nonce
-						fulfilledNonce, err := am.keeper.FulfillWorkerNonce(sdkCtx, topicId, nonce)
-						if err != nil {
-							sdkCtx.Logger().Warn("Error fulfilling worker nonce", "error", err)
-						} else {
-							sdkCtx.Logger().Debug("Fulfilled", "fulfilledNonce", fulfilledNonce, "nonce", nonce)
-						}
+						sdkCtx.Logger().Info("Error closing worker nonce", "error", err)
 					}
 				}
 			}
