@@ -13,7 +13,9 @@ import (
 // WORKER NONCES CLOSING
 
 // Closes an open worker nonce.
-func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonce types.Nonce) error {
+func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonce types.Nonce) (err error) {
+	blockHeight := ctx.BlockHeight()
+
 	// Check if the nonce is unfulfilled
 	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
@@ -25,11 +27,51 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
-	blockHeight := ctx.BlockHeight()
 	if blockHeight <= nonce.BlockHeight ||
 		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
+
+	defer func() {
+		if err != nil {
+			ctx.Logger().Error(
+				"Error occurred before finalization in CloseWorkerNonce, attempting cleanup anyway",
+				"topicId", topic.Id,
+				"nonce", nonce,
+				"error", err,
+			)
+		}
+
+		_, fulfillErr := k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
+		if fulfillErr != nil {
+			ctx.Logger().Error(
+				"Error fulfilling worker nonce during deferred cleanup",
+				"topicId", topic.Id,
+				"nonce", nonce,
+				"error", fulfillErr,
+			)
+		}
+
+		resetActiveErr := k.ResetActiveWorkersForTopic(ctx, topic.Id)
+		if resetActiveErr != nil {
+			ctx.Logger().Error(
+				"Error resetting active workers during deferred cleanup",
+				"topicId", topic.Id,
+				"error", resetActiveErr,
+			)
+		}
+
+		resetSubmissionsErr := k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
+		if resetSubmissionsErr != nil {
+			ctx.Logger().Error(
+				"Error resetting worker individual submissions during deferred cleanup",
+				"topicId", topic.Id,
+				"error", resetSubmissionsErr,
+			)
+		}
+
+		ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
+	}()
 
 	// Get all active inferers for this topic
 	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
@@ -72,11 +114,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	if err != nil {
 		return err
 	}
-	// Update the unfulfilled worker nonce
-	_, err = k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
-	if err != nil {
-		return err
-	}
 
 	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
@@ -84,16 +121,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
-	if err != nil {
-		return err
-	}
-
-	err = k.ResetActiveWorkersForTopic(ctx, topic.Id)
-	if err != nil {
-		return err
-	}
-
-	err = k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -111,8 +138,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
-	ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
-	// Return an empty response as the operation was successful
 	return nil
 }
 

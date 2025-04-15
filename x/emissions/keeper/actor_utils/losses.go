@@ -320,9 +320,6 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	// Get the accepted forecasters of the associated worker response payload
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil, errorsmod.Wrapf(sdkerrors.ErrNotFound, "no forecasts found at block height %d for topic %d", reputerRequestNonce.ReputerNonce.BlockHeight, topicId)
-		}
 		return nil, err
 	}
 	acceptedForecastersOfBatch := make(map[string]bool)
