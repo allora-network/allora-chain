@@ -4,6 +4,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type RunningWeightedLoss struct {
@@ -60,6 +61,7 @@ func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.Worker
 
 // Assumes stakes are all positive
 func CalcNetworkLosses(
+	ctx sdk.Context,
 	topicId uint64,
 	blockHeight int64,
 	stakesByReputer map[Worker]Stake,
@@ -78,24 +80,29 @@ func CalcNetworkLosses(
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
 			if report.ValueBundle.TopicId != topicId {
-				return emissions.ValueBundle{}, errorsmod.Wrapf(
-					emissions.ErrInvalidTopicId,
-					"all reputer bundles must be for same topic to calculate network losses %d!=%d",
-					topicId,
-					report.ValueBundle.TopicId,
-				)
+				// Log error and continue instead of returning
+				ctx.Logger().Warn("Reputer bundle has incorrect topic ID",
+					"expected", topicId,
+					"actual", report.ValueBundle.TopicId,
+					"reputer", report.ValueBundle.Reputer)
+				continue
 			}
 			if report.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != blockHeight {
-				return emissions.ValueBundle{}, errorsmod.Wrapf(
-					emissions.ErrInvalidValue,
-					"all reputer bundles must be for same nonce to calculate network losses %d!=%d",
-					blockHeight,
-					report.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-				)
+				// Log error and continue instead of returning
+				ctx.Logger().Warn("Reputer bundle has incorrect block height",
+					"expected", blockHeight,
+					"actual", report.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+					"reputer", report.ValueBundle.Reputer)
+				continue
 			}
+
 			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
-				return emissions.ValueBundle{}, err
+				// Log error and continue
+				ctx.Logger().Warn("Error converting stake to Dec",
+					"error", err,
+					"reputer", report.ValueBundle.Reputer)
+				continue
 			}
 
 			// Update combined loss with reputer reported loss and stake
