@@ -147,6 +147,10 @@ func CloseReputerNonce(
 		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
 
+	if len(lossBundlesByReputer) == 0 {
+		return errorsmod.Wrapf(sdkerrors.ErrNotFound, "no valid losses found for reputers")
+	}
+
 	// sort by reputer score descending
 	sort.Slice(lossBundlesByReputer, func(i, j int) bool {
 		return lossBundlesByReputer[i].ValueBundle.Reputer < lossBundlesByReputer[j].ValueBundle.Reputer
