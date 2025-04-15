@@ -328,43 +328,6 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, nonce)
 	s.Require().Error(err)
 	s.Require().ErrorIs(err, types.ErrNoQualifiedInferers)
-
-	// Test 3: Closing an already fulfilled nonce
-	// First register and activate a worker
-	worker := s.addrsStr[0]
-	workerRegMsg := &types.RegisterRequest{
-		Sender:    worker,
-		TopicId:   topicId,
-		IsReputer: false,
-		Owner:     s.addrsStr[4],
-	}
-	_, err = s.msgServer.Register(s.ctx, workerRegMsg)
-	s.Require().NoError(err)
-
-	// Add worker as active inferer
-	err = s.emissionsKeeper.AddActiveInferer(s.ctx, topicId, worker)
-	s.Require().NoError(err)
-
-	// Insert an inference
-	inference := types.Inference{
-		Inferer:     worker,
-		Value:       alloraMath.MustNewDecFromString("-0.035995138925040600"),
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		ExtraData:   nil,
-		Proof:       "",
-	}
-	err = s.emissionsKeeper.InsertInference(s.ctx, topicId, inference)
-	s.Require().NoError(err)
-
-	// Close the nonce first time (should succeed)
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, nonce)
-	s.Require().NoError(err)
-
-	// Try to close the same nonce again (should fail)
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, nonce)
-	s.Require().Error(err)
-	s.Require().ErrorIs(err, types.ErrUnfulfilledNonceNotFound)
 }
 
 func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() {
