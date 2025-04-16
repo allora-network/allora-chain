@@ -236,6 +236,50 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	}
 }
 
+func (s *RewardsTestSuite) TestGenerateInferenceScores_AllNilOneOutAndOneIn() {
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
+	block := int64(2001)
+
+	// Generate normal network losses, then set all one-out/one-in fields to nil
+	reportedLosses, err := mockNetworkLosses(s, topicId, block)
+	s.Require().NoError(err)
+
+	reportedLosses.OneOutInfererValues = nil
+	reportedLosses.OneOutForecasterValues = nil
+	reportedLosses.OneInForecasterValues = nil
+
+	scores, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reportedLosses,
+	)
+	// Should not panic, should return empty slice and no error
+	s.Require().NoError(err)
+	s.Require().Len(scores, 0, "Expected no scores when all one-out/one-in values are nil")
+}
+
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
@@ -784,13 +828,17 @@ func prepareMockLosses(reputersCount int, workersCount int) (
 		reputersForecasterOneOutLosses,
 		reputersOneInNaiveLosses
 }
-func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputerIndexes []int) types.InputReputerValueBundles {
+
+func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputerIndexes []int, workerIndexes []int) types.InputReputerValueBundles {
+	if len(workerIndexes) != 5 {
+		panic("workerIndexes length must be 5")
+	}
 	workers := []sdk.AccAddress{
-		s.addrs[5],
-		s.addrs[6],
-		s.addrs[7],
-		s.addrs[8],
-		s.addrs[9],
+		s.addrs[workerIndexes[0]],
+		s.addrs[workerIndexes[1]],
+		s.addrs[workerIndexes[2]],
+		s.addrs[workerIndexes[3]],
+		s.addrs[workerIndexes[4]],
 	}
 	reputersLosses := []alloraMath.BoundedExp40Dec{
 		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01127")),

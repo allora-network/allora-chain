@@ -22,12 +22,7 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 			ctx.Logger().Debug("ABCI EndBlocker: Closing reputer nonce", "topic", topic.Id, "nonce", nonce, "min", closingReputerNonceMinBlockHeight)
 			err = allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
 			if err != nil {
-				ctx.Logger().Warn("Error closing reputer nonce", "error", err)
-				// Proactively close the nonce to avoid
-				_, err = k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
-				if err != nil {
-					ctx.Logger().Warn("Error fulfilling reputer nonce", "error", err)
-				}
+				ctx.Logger().Error("Error closing reputer nonce", "error", err)
 			}
 		}
 	}
