@@ -292,7 +292,7 @@ func CloseReputerNonce(
 	}
 	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 
-	return err
+	return nil
 }
 
 // Filter out values of unaccepted workers.
