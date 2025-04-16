@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-## v0.10.1
+# v0.11.0
 
 ### Added
 
@@ -74,7 +74,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
-* [805](https://github.com/allora-network/allora-chain/pull/805) An invalid bundle gets ignored on networkLoss calc
+
+* [#803](https://github.com/allora-network/allora-chain/pull/803) Add reset/cleanup functions to defer in CloseReputerNonce 
+* [#804](https://github.com/allora-network/allora-chain/pull/804) Additional validations + use inferenceBlockheight in NetworkInferences
+* [#805](https://github.com/allora-network/allora-chain/pull/805) An invalid bundle gets ignored on networkLoss calc
 
 ### Security
 
@@ -86,7 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-# [v0.10.0]
+# v0.10.0
 
 ### Added
 
