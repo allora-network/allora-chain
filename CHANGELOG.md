@@ -63,7 +63,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-# [Unreleased]
+## v0.10.1
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+* [805](https://github.com/allora-network/allora-chain/pull/805) An invalid bundle gets ignored on networkLoss calc
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+# [v0.10.0]
 
 ### Added
 
