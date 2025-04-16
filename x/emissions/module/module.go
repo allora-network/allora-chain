@@ -13,9 +13,10 @@ import (
 	v6 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v6"
 	v7 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v7"
 	v8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
-	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
+	migrationV10 "github.com/allora-network/allora-chain/x/emissions/migrations/v10"
 	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
 	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
@@ -136,6 +137,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV9.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 8 to 9: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 9, func(ctx sdk.Context) error {
+		return migrationV10.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 9 to 10: %v", types.ModuleName, err))
 	}
 }
 
