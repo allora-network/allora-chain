@@ -63,9 +63,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
+# [Unreleased]
+
 # v0.11.0
 
 ### Added
+
+* [807](https://github.com/allora-network/allora-chain/pull/807) Add `v0.11.0` upgrade handler
 
 ### Changed
 
@@ -88,6 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added 
 
 #### Changed
+
+# [Released]
 
 # v0.10.0
 
@@ -122,7 +128,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#771](https://github.com/allora-network/allora-chain/pull/771) Fix reputer/worker window boundaries
 * [#782](https://github.com/allora-network/allora-chain/pull/782) More efficient logging, added check-log-sprintf linter
 * [#784](https://github.com/allora-network/allora-chain/pull/784) Optimize: do not recalc outlier-resistant network inferences if no outliers
-* [#789](https://github.com/allora-network/allora-chain/pull/789) Fix natural logarithm undeterministic calculation 
+* [#789](https://github.com/allora-network/allora-chain/pull/789) Fix natural logarithm undeterministic calculation
 
 ### Security
 
@@ -137,11 +143,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#769](https://github.com/allora-network/allora-chain/pull/769): `x/emissions` gRPC query `GetLatestAvailableNetworkInferences()`, use `GetLatestNetworkInferences()` instead
 * [#769](https://github.com/allora-network/allora-chain/pull/769): `x/emissions` gRPC query `GetLatestAvailableNetworkInferencesOutlierResistant()` , use `GetLatestNetworkInferencesOutlierResistant()` instead
 
-#### Added 
+#### Added
 
 #### Changed
-
-# [Released]
 
 # v0.9.0
 
