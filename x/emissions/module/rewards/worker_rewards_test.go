@@ -571,6 +571,29 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 }
 
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
+	infererValues := []*types.WorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString("0.01327"),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("0.01302"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.0136"),
+		},
+		{
+			Worker: s.addrs[3].String(),
+			Value:  alloraMath.MustNewDecFromString("0.01491"),
+		},
+		{
+			Worker: s.addrs[4].String(),
+			Value:  alloraMath.MustNewDecFromString("0.01686"),
+		},
+	}
+
 	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
@@ -646,7 +669,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 		Reputer:                       s.addrsStr[9],
 		ExtraData:                     nil,
 		CombinedValue:                 alloraMath.MustNewDecFromString("0.013481256018186383"),
-		InfererValues:                 nil,
+		InfererValues:                 infererValues,
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.01344474872292"),
 		OneOutInfererValues:           oneOutInfererLosses,
@@ -670,6 +693,21 @@ func mockSimpleNetworkLosses(
 	block int64,
 	worker0Value string,
 ) (types.ValueBundle, error) {
+	infererValues := []*types.WorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString(worker0Value),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("0.3"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
+	}
+
 	genericLossesWithheld := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
@@ -706,7 +744,7 @@ func mockSimpleNetworkLosses(
 		Reputer:                       s.addrsStr[9],
 		ExtraData:                     nil,
 		CombinedValue:                 alloraMath.MustNewDecFromString("0.05"),
-		InfererValues:                 nil,
+		InfererValues:                 infererValues,
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.05"),
 		OneOutInfererValues:           genericLossesWithheld,

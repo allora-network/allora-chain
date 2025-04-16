@@ -621,10 +621,13 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerI
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
 				ReputerNonce: &types.Nonce{BlockHeight: block}},
-			Reputer:                       s.addrsStr[reputerIndex],
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
-			InfererValues:                 nil,
+			Reputer:       s.addrsStr[reputerIndex],
+			ExtraData:     nil,
+			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
+			InfererValues: []*types.WorkerAttributedValue{{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			}},
 			ForecasterValues:              nil,
 			NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
 			OneOutInfererValues:           nil,

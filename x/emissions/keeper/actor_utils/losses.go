@@ -164,7 +164,10 @@ func CloseReputerNonce(
 		return err
 	}
 
-	networkLossBundle, err := synth.CalcNetworkLosses(topic.Id, nonce.BlockHeight, stakesByReputer, bundles)
+	// Check that all network bundles correspond to the nonce requested before calling CalcNetworkLosses.
+	// In case of a mismatch, we should remove that
+
+	networkLossBundle, err := synth.CalcNetworkLosses(ctx, topic.Id, nonce.BlockHeight, stakesByReputer, bundles)
 	if err != nil {
 		return err
 	}

@@ -410,6 +410,462 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 	}
 }
 
+func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadTopicId() []struct {
+	name            string
+	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
+	reportedLosses  emissions.ReputerValueBundles
+	epsilon         alloraMath.Dec
+	expectedOutput  emissions.ValueBundle
+	expectedError   error
+} {
+	valueBundle1 := emissions.ValueBundle{
+		TopicId: uint64(1234), // wrong topic id - this bundle should be ignored
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+		},
+		Reputer:       s.addrsStr[1],
+		ExtraData:     nil,
+		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		ForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneInForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererForecasterValues: nil,
+	}
+	signature1 := s.signValueBundle(&valueBundle1, s.privKeys[1])
+
+	valueBundle2 := emissions.ValueBundle{
+		ExtraData: nil,
+		TopicId:   uint64(1),
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+		},
+		Reputer:       s.addrsStr[2],
+		CombinedValue: alloraMath.MustNewDecFromString("0.2"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.2"),
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		ForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneInForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutInfererForecasterValues: nil,
+	}
+	signature2 := s.signValueBundle(&valueBundle2, s.privKeys[2])
+	return []struct {
+		name            string
+		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
+		reportedLosses  emissions.ReputerValueBundles
+		epsilon         alloraMath.Dec
+		expectedOutput  emissions.ValueBundle
+		expectedError   error
+	}{
+		{
+			name: "simple two reputer combined loss",
+			stakesByReputer: map[inferencesynthesis.Worker]cosmosMath.Int{
+				s.addrsStr[1]: inferencesynthesis.CosmosIntOneE18(),           // 1 token
+				s.addrsStr[2]: inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
+			},
+			reportedLosses: emissions.ReputerValueBundles{
+				ReputerValueBundles: []*emissions.ReputerValueBundle{
+					{
+						ValueBundle: &valueBundle1,
+						Signature:   signature1,
+						Pubkey:      s.pubKeyHexStr[1],
+					},
+					{
+						ValueBundle: &valueBundle2,
+						Signature:   signature2,
+						Pubkey:      s.pubKeyHexStr[2],
+					},
+				},
+			},
+			epsilon: alloraMath.MustNewDecFromString("1e-4"),
+			expectedOutput: emissions.ValueBundle{
+				TopicId: uint64(1),
+				Reputer: s.addrsStr[1],
+				ReputerRequestNonce: &emissions.ReputerRequestNonce{
+					ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+				},
+				ExtraData:     nil,
+				CombinedValue: alloraMath.MustNewDecFromString("0.2"),
+				NaiveValue:    alloraMath.MustNewDecFromString("0.2"),
+				InfererValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				ForecasterValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneInForecasterValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneOutInfererForecasterValues: nil,
+			},
+			expectedError: nil,
+		},
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkersBadBlockHeight() []struct {
+	name            string
+	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
+	reportedLosses  emissions.ReputerValueBundles
+	epsilon         alloraMath.Dec
+	expectedOutput  emissions.ValueBundle
+	expectedError   error
+} {
+	valueBundle1 := emissions.ValueBundle{
+		TopicId: uint64(1),
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: 1234}, // bad block height - this bundle should be ignored
+		},
+		Reputer:       s.addrsStr[1],
+		ExtraData:     nil,
+		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		ForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneInForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererForecasterValues: nil,
+	}
+	signature1 := s.signValueBundle(&valueBundle1, s.privKeys[1])
+
+	valueBundle2 := emissions.ValueBundle{
+		ExtraData: nil,
+		TopicId:   uint64(1),
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+		},
+		Reputer:       s.addrsStr[2],
+		CombinedValue: alloraMath.MustNewDecFromString("0.2"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.2"),
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		ForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneInForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutInfererForecasterValues: nil,
+	}
+	signature2 := s.signValueBundle(&valueBundle2, s.privKeys[2])
+	return []struct {
+		name            string
+		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
+		reportedLosses  emissions.ReputerValueBundles
+		epsilon         alloraMath.Dec
+		expectedOutput  emissions.ValueBundle
+		expectedError   error
+	}{
+		{
+			name: "simple two reputer combined loss",
+			stakesByReputer: map[inferencesynthesis.Worker]cosmosMath.Int{
+				s.addrsStr[1]: inferencesynthesis.CosmosIntOneE18(),           // 1 token
+				s.addrsStr[2]: inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
+			},
+			reportedLosses: emissions.ReputerValueBundles{
+				ReputerValueBundles: []*emissions.ReputerValueBundle{
+					{
+						ValueBundle: &valueBundle1,
+						Signature:   signature1,
+						Pubkey:      s.pubKeyHexStr[1],
+					},
+					{
+						ValueBundle: &valueBundle2,
+						Signature:   signature2,
+						Pubkey:      s.pubKeyHexStr[2],
+					},
+				},
+			},
+			epsilon: alloraMath.MustNewDecFromString("1e-4"),
+			expectedOutput: emissions.ValueBundle{
+				TopicId: uint64(1),
+				Reputer: s.addrsStr[1],
+				ReputerRequestNonce: &emissions.ReputerRequestNonce{
+					ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+				},
+				ExtraData:     nil,
+				CombinedValue: alloraMath.MustNewDecFromString("0.2"),
+				NaiveValue:    alloraMath.MustNewDecFromString("0.2"),
+				InfererValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				ForecasterValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneInForecasterValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: s.addrsStr[1],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+					{
+						Worker: s.addrsStr[2],
+						Value:  alloraMath.MustNewDecFromString("0.2"),
+					},
+				},
+				OneOutInfererForecasterValues: nil,
+			},
+			expectedError: nil,
+		},
+	}
+}
+
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 	tests := s.getTestCasesTwoWorkers()
 
@@ -419,45 +875,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inferencesynthesis.CalcNetworkLosses(topicId, block, tc.stakesByReputer, tc.reportedLosses)
+			output, err := inferencesynthesis.CalcNetworkLosses(s.ctx, topicId, block, tc.stakesByReputer, tc.reportedLosses)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())
 			} else {
 				require.NoError(err)
-				require.True(alloraMath.InDelta(tc.expectedOutput.CombinedValue, output.CombinedValue, alloraMath.MustNewDecFromString("0.00001")))
-				require.True(alloraMath.InDelta(tc.expectedOutput.NaiveValue, output.NaiveValue, alloraMath.MustNewDecFromString("0.00001")))
-
-				if tc.expectedOutput.InfererValues != nil {
-					require.Len(output.InfererValues, len(tc.expectedOutput.InfererValues))
-					for i, expectedValue := range tc.expectedOutput.InfererValues {
-						require.True(alloraMath.InDelta(expectedValue.Value, output.InfererValues[i].Value, alloraMath.MustNewDecFromString("0.00001")))
-					}
-				}
-				if tc.expectedOutput.ForecasterValues != nil {
-					require.Len(output.ForecasterValues, len(tc.expectedOutput.ForecasterValues))
-					for i, expectedValue := range tc.expectedOutput.ForecasterValues {
-						require.True(alloraMath.InDelta(expectedValue.Value, output.ForecasterValues[i].Value, alloraMath.MustNewDecFromString("0.00001")))
-					}
-				}
-				if tc.expectedOutput.OneOutInfererValues != nil {
-					require.Len(output.OneOutInfererValues, len(tc.expectedOutput.OneOutInfererValues))
-					for i, expectedValue := range tc.expectedOutput.OneOutInfererValues {
-						require.True(alloraMath.InDelta(expectedValue.Value, output.OneOutInfererValues[i].Value, alloraMath.MustNewDecFromString("0.00001")))
-					}
-				}
-				if tc.expectedOutput.OneOutForecasterValues != nil {
-					require.Len(output.OneOutForecasterValues, len(tc.expectedOutput.OneOutForecasterValues))
-					for i, expectedValue := range tc.expectedOutput.OneOutForecasterValues {
-						require.True(alloraMath.InDelta(expectedValue.Value, output.OneOutForecasterValues[i].Value, alloraMath.MustNewDecFromString("0.00001")))
-					}
-				}
-				if tc.expectedOutput.OneInForecasterValues != nil {
-					require.Len(output.OneInForecasterValues, len(tc.expectedOutput.OneInForecasterValues))
-					for i, expectedValue := range tc.expectedOutput.OneInForecasterValues {
-						require.True(alloraMath.InDelta(expectedValue.Value, output.OneInForecasterValues[i].Value, alloraMath.MustNewDecFromString("0.00001")))
-					}
-				}
+				s.expectedEqualNetworkLosses(&tc.expectedOutput, &output)
 			}
 		})
 	}
@@ -557,7 +981,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	)
 	s.Require().NoError(err)
 
-	networkLosses, err := inferencesynthesis.CalcNetworkLosses(topicId, blockHeight, stakesByReputer, reportedLosses)
+	networkLosses, err := inferencesynthesis.CalcNetworkLosses(s.ctx, topicId, blockHeight, stakesByReputer, reportedLosses)
 	s.Require().NoError(err)
 
 	expectedNetworkLosses, err := testutil.GetNetworkLossFromCsv(
@@ -570,12 +994,108 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	)
 	s.Require().NoError(err)
 
-	testutil.InEpsilon5(s.T(), expectedNetworkLosses.CombinedValue, networkLosses.CombinedValue.String())
-	testutil.InEpsilon5(s.T(), expectedNetworkLosses.NaiveValue, networkLosses.NaiveValue.String())
-	s.Require().Len(networkLosses.InfererValues, len(expectedNetworkLosses.InfererValues))
-	for _, expectedValue := range expectedNetworkLosses.InfererValues {
+	s.expectedEqualNetworkLosses(&expectedNetworkLosses, &networkLosses)
+
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombined() {
+	tests := append(s.getTestCasesOneWorker(), s.getTestCasesTwoWorkers()...)
+
+	topicId := uint64(1)
+	block := int64(100)
+	require := s.Require()
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			output, err := inferencesynthesis.CalcNetworkLosses(s.ctx, topicId, block, tc.stakesByReputer, tc.reportedLosses)
+			if tc.expectedError != nil {
+				require.Error(err)
+				require.EqualError(err, tc.expectedError.Error())
+			} else {
+				require.NoError(err)
+
+				// Verify the length of each attribute in the ValueBundle
+				require.Len(output.InfererValues, len(tc.expectedOutput.InfererValues), "Mismatch in number of InfererValues")
+				require.Len(output.ForecasterValues, len(tc.expectedOutput.ForecasterValues), "Mismatch in number of ForecasterValues")
+				require.Len(output.OneInForecasterValues, len(tc.expectedOutput.OneInForecasterValues), "Mismatch in number of OneInForecasterValues")
+				require.Len(output.OneOutInfererValues, len(tc.expectedOutput.OneOutInfererValues), "Mismatch in number of OneOutInfererValues")
+				require.Len(output.OneOutForecasterValues, len(tc.expectedOutput.OneOutForecasterValues), "Mismatch in number of OneOutForecasterValues")
+			}
+		})
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombinedBadCasesWrongTopicId() {
+	// Setting wrong topicId to the first loss bundle
+	badCase := s.getTestCasesTwoWorkersBadTopicId()
+	tests := badCase
+	topicId := uint64(1)
+
+	block := int64(100)
+	require := s.Require()
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			output, err := inferencesynthesis.CalcNetworkLosses(s.ctx, topicId, block, tc.stakesByReputer, tc.reportedLosses)
+			if tc.expectedError != nil {
+				require.Error(err)
+				require.EqualError(err, tc.expectedError.Error())
+			} else {
+				require.NoError(err)
+				// Verify the length of each attribute in the ValueBundle
+				require.Len(output.InfererValues, len(tc.expectedOutput.InfererValues), "Mismatch in number of InfererValues")
+				require.Len(output.ForecasterValues, len(tc.expectedOutput.ForecasterValues), "Mismatch in number of ForecasterValues")
+				require.Len(output.OneInForecasterValues, len(tc.expectedOutput.OneInForecasterValues), "Mismatch in number of OneInForecasterValues")
+				require.Len(output.OneOutInfererValues, len(tc.expectedOutput.OneOutInfererValues), "Mismatch in number of OneOutInfererValues")
+				require.Len(output.OneOutForecasterValues, len(tc.expectedOutput.OneOutForecasterValues), "Mismatch in number of OneOutForecasterValues")
+				require.Len(output.OneOutInfererForecasterValues, len(tc.expectedOutput.OneOutInfererForecasterValues), "Mismatch in number of OneOutInfererForecasterValues")
+				s.expectedEqualNetworkLosses(&tc.expectedOutput, &output)
+			}
+		})
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombinedBadCasesWrongBlockHeight() {
+	// Setting wrong block height to the first loss bundle
+	badCase := s.getTestCasesTwoWorkersBadBlockHeight()
+	tests := badCase
+	topicId := uint64(1)
+
+	block := int64(100)
+	require := s.Require()
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			output, err := inferencesynthesis.CalcNetworkLosses(s.ctx, topicId, block, tc.stakesByReputer, tc.reportedLosses)
+			if tc.expectedError != nil {
+				require.Error(err)
+				require.EqualError(err, tc.expectedError.Error())
+			} else {
+				require.NoError(err)
+				// Verify the length of each attribute in the ValueBundle
+				require.Len(output.InfererValues, len(tc.expectedOutput.InfererValues), "Mismatch in number of InfererValues")
+				require.Len(output.ForecasterValues, len(tc.expectedOutput.ForecasterValues), "Mismatch in number of ForecasterValues")
+				require.Len(output.OneInForecasterValues, len(tc.expectedOutput.OneInForecasterValues), "Mismatch in number of OneInForecasterValues")
+				require.Len(output.OneOutInfererValues, len(tc.expectedOutput.OneOutInfererValues), "Mismatch in number of OneOutInfererValues")
+				require.Len(output.OneOutForecasterValues, len(tc.expectedOutput.OneOutForecasterValues), "Mismatch in number of OneOutForecasterValues")
+				require.Len(output.OneOutInfererForecasterValues, len(tc.expectedOutput.OneOutInfererForecasterValues), "Mismatch in number of OneOutInfererForecasterValues")
+				s.expectedEqualNetworkLosses(&tc.expectedOutput, &output)
+			}
+		})
+	}
+}
+
+// expectedEqualNetworkLosses compares two network ValueBundle objects and verifies that all values match within epsilon
+func (s *InferenceSynthesisTestSuite) expectedEqualNetworkLosses(expected, actual *emissions.ValueBundle) {
+	// Compare combined and naive values
+	testutil.InEpsilon5(s.T(), expected.CombinedValue, actual.CombinedValue.String())
+	testutil.InEpsilon5(s.T(), expected.NaiveValue, actual.NaiveValue.String())
+
+	// Compare InfererValues
+	s.Require().Len(actual.InfererValues, len(expected.InfererValues))
+	for _, expectedValue := range expected.InfererValues {
 		found := false
-		for _, workerAttributedValue := range networkLosses.InfererValues {
+		for _, workerAttributedValue := range actual.InfererValues {
 			if workerAttributedValue.Worker == expectedValue.Worker {
 				found = true
 				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
@@ -583,10 +1103,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 		}
 		s.Require().True(found)
 	}
-	s.Require().Len(networkLosses.ForecasterValues, len(expectedNetworkLosses.ForecasterValues))
-	for _, expectedValue := range expectedNetworkLosses.ForecasterValues {
+
+	// Compare ForecasterValues
+	s.Require().Len(actual.ForecasterValues, len(expected.ForecasterValues))
+	for _, expectedValue := range expected.ForecasterValues {
 		found := false
-		for _, workerAttributedValue := range networkLosses.ForecasterValues {
+		for _, workerAttributedValue := range actual.ForecasterValues {
 			if workerAttributedValue.Worker == expectedValue.Worker {
 				found = true
 				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
@@ -594,10 +1116,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 		}
 		s.Require().True(found)
 	}
-	s.Require().Len(networkLosses.OneOutInfererForecasterValues, len(expectedNetworkLosses.OneOutInfererForecasterValues))
-	for _, expectedValue := range expectedNetworkLosses.OneOutInfererForecasterValues {
+
+	// Compare OneOutInfererForecasterValues
+	s.Require().Len(actual.OneOutInfererForecasterValues, len(expected.OneOutInfererForecasterValues))
+	for _, expectedValue := range expected.OneOutInfererForecasterValues {
 		found := false
-		for _, workerAttributedValue := range networkLosses.OneOutInfererForecasterValues {
+		for _, workerAttributedValue := range actual.OneOutInfererForecasterValues {
 			if workerAttributedValue.Forecaster == expectedValue.Forecaster {
 				found = true
 				s.Require().Len(workerAttributedValue.OneOutInfererValues, len(expectedValue.OneOutInfererValues))
@@ -615,10 +1139,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 		}
 		s.Require().True(found)
 	}
-	s.Require().Len(networkLosses.OneOutInfererValues, len(expectedNetworkLosses.OneOutInfererValues))
-	for _, expectedValue := range expectedNetworkLosses.OneOutInfererValues {
+
+	// Compare OneOutInfererValues
+	s.Require().Len(actual.OneOutInfererValues, len(expected.OneOutInfererValues))
+	for _, expectedValue := range expected.OneOutInfererValues {
 		found := false
-		for _, workerAttributedValue := range networkLosses.OneOutInfererValues {
+		for _, workerAttributedValue := range actual.OneOutInfererValues {
 			if workerAttributedValue.Worker == expectedValue.Worker {
 				found = true
 				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
@@ -626,10 +1152,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 		}
 		s.Require().True(found)
 	}
-	s.Require().Len(networkLosses.OneOutForecasterValues, len(expectedNetworkLosses.OneOutForecasterValues))
-	for _, expectedValue := range expectedNetworkLosses.OneOutForecasterValues {
+
+	// Compare OneOutForecasterValues
+	s.Require().Len(actual.OneOutForecasterValues, len(expected.OneOutForecasterValues))
+	for _, expectedValue := range expected.OneOutForecasterValues {
 		found := false
-		for _, workerAttributedValue := range networkLosses.OneOutForecasterValues {
+		for _, workerAttributedValue := range actual.OneOutForecasterValues {
 			if workerAttributedValue.Worker == expectedValue.Worker {
 				found = true
 				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
@@ -637,42 +1165,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 		}
 		s.Require().True(found)
 	}
-	s.Require().Len(networkLosses.OneInForecasterValues, len(expectedNetworkLosses.OneInForecasterValues))
-	for _, expectedValue := range expectedNetworkLosses.OneInForecasterValues {
+
+	// Compare OneInForecasterValues
+	s.Require().Len(actual.OneInForecasterValues, len(expected.OneInForecasterValues))
+	for _, expectedValue := range expected.OneInForecasterValues {
 		found := false
-		for _, workerAttributedValue := range networkLosses.OneInForecasterValues {
+		for _, workerAttributedValue := range actual.OneInForecasterValues {
 			if workerAttributedValue.Worker == expectedValue.Worker {
 				found = true
 				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
 			}
 		}
 		s.Require().True(found)
-	}
-}
-
-func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombined() {
-	tests := append(s.getTestCasesOneWorker(), s.getTestCasesTwoWorkers()...)
-
-	topicId := uint64(1)
-	block := int64(100)
-	require := s.Require()
-
-	for _, tc := range tests {
-		s.Run(tc.name, func() {
-			output, err := inferencesynthesis.CalcNetworkLosses(topicId, block, tc.stakesByReputer, tc.reportedLosses)
-			if tc.expectedError != nil {
-				require.Error(err)
-				require.EqualError(err, tc.expectedError.Error())
-			} else {
-				require.NoError(err)
-
-				// Verify the length of each attribute in the ValueBundle
-				require.Len(output.InfererValues, len(tc.expectedOutput.InfererValues), "Mismatch in number of InfererValues")
-				require.Len(output.ForecasterValues, len(tc.expectedOutput.ForecasterValues), "Mismatch in number of ForecasterValues")
-				require.Len(output.OneInForecasterValues, len(tc.expectedOutput.OneInForecasterValues), "Mismatch in number of OneInForecasterValues")
-				require.Len(output.OneOutInfererValues, len(tc.expectedOutput.OneOutInfererValues), "Mismatch in number of OneOutInfererValues")
-				require.Len(output.OneOutForecasterValues, len(tc.expectedOutput.OneOutForecasterValues), "Mismatch in number of OneOutForecasterValues")
-			}
-		})
 	}
 }
