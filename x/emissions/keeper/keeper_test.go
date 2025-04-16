@@ -1337,7 +1337,7 @@ func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 		Reputer:                       s.addrsStr[0],
 		ExtraData:                     []byte("data"),
 		CombinedValue:                 alloraMath.MustNewDecFromString("123"),
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("123"),
 		OneOutInfererValues:           nil,
@@ -1392,7 +1392,7 @@ func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
 		Reputer:                       "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 		ExtraData:                     []byte("data"),
 		CombinedValue:                 alloraMath.MustNewDecFromString("123"),
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("123"),
 		OneOutInfererValues:           nil,
@@ -1445,7 +1445,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 		Reputer:                       "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 		ExtraData:                     []byte("data"),
 		CombinedValue:                 alloraMath.MustNewDecFromString("123"),
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("123"),
 		OneOutInfererValues:           nil,
@@ -1466,7 +1466,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 		Reputer:                       "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 		ExtraData:                     []byte("data"),
 		CombinedValue:                 alloraMath.MustNewDecFromString("456"),
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("123"),
 		OneOutInfererValues:           nil,
@@ -3285,7 +3285,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4345,7 +4345,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4365,7 +4365,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4385,7 +4385,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4421,7 +4421,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4448,7 +4448,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4512,7 +4512,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4532,7 +4532,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4552,7 +4552,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4572,7 +4572,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4592,7 +4592,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -4960,7 +4960,7 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 		Reputer:                       reputer,
 		ExtraData:                     []byte("data"),
 		CombinedValue:                 alloraMath.MustNewDecFromString("123"),
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("123"),
 		OneOutInfererValues:           nil,
@@ -5442,7 +5442,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 		Reputer:                       reputer,
 		ExtraData:                     nil,
 		CombinedValue:                 alloraMath.MustNewDecFromString("0.52"),
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.52"),
 		OneOutInfererValues:           nil,
@@ -5672,7 +5672,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topic.Id,
 		ExtraData:                     nil,
-		InfererValues:                 nil,
+		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
 		OneOutInfererValues:           nil,
@@ -5791,4 +5791,21 @@ func (s *KeeperTestSuite) TestLatestRegretStdNormFunctions() {
 	// Test setting zero value (should fail)
 	err = k.SetLatestRegretStdNorm(ctx, topicId, alloraMath.ZeroDec())
 	s.Require().Error(err, "Setting zero regret stdNorm should fail")
+}
+
+// createDefaultInfererValues generates a set of inferer values including all test addresses
+// This can be used to ensure ValueBundle validation passes when InfererValues cannot be nil
+func (s *KeeperTestSuite) createDefaultInfererValues() []*types.WorkerAttributedValue {
+	// Create an array to hold all worker attributed values
+	infererValues := make([]*types.WorkerAttributedValue, len(s.addrsStr))
+
+	// Add a WorkerAttributedValue for each address in the test suite
+	for i, addr := range s.addrsStr {
+		infererValues[i] = &types.WorkerAttributedValue{
+			Worker: addr,
+			Value:  alloraMath.NewDecFromInt64(int64(i + 1)), // Using different values based on index
+		}
+	}
+
+	return infererValues
 }

@@ -1504,12 +1504,17 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	reputerValueBundle := &types.ReputerValueBundle{
 		Pubkey: s.pubKeyHexStr[1],
 		ValueBundle: &types.ValueBundle{
-			TopicId:                       topicId,
-			ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-			Reputer:                       reputer,
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
-			InfererValues:                 nil,
+			TopicId:             topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+			Reputer:             reputer,
+			ExtraData:           nil,
+			CombinedValue:       alloraMath.MustNewDecFromString("1500.0"),
+			InfererValues: []*types.WorkerAttributedValue{
+				{
+					Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+					Value:  alloraMath.MustNewDecFromString("1"),
+				},
+			},
 			ForecasterValues:              nil,
 			NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
 			OneOutInfererValues:           nil,
@@ -1570,12 +1575,17 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 
 	newReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
-			TopicId:                       topicId,
-			ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: newBlock}},
-			Reputer:                       reputer,
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
-			InfererValues:                 nil,
+			TopicId:             topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: newBlock}},
+			Reputer:             reputer,
+			ExtraData:           nil,
+			CombinedValue:       alloraMath.MustNewDecFromString("1500.0"),
+			InfererValues: []*types.WorkerAttributedValue{
+				{
+					Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+					Value:  alloraMath.MustNewDecFromString("1"),
+				},
+			},
 			ForecasterValues:              nil,
 			NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
 			OneOutInfererValues:           nil,
@@ -1656,12 +1666,17 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 	err := keeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
 	s.Require().NoError(err)
 	valueBundle := &types.ValueBundle{
-		TopicId:                       topicId,
-		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-		Reputer:                       reputer,
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
-		InfererValues:                 nil,
+		TopicId:             topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+		Reputer:             reputer,
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.MustNewDecFromString("1500.0"),
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
 		OneOutInfererValues:           nil,

@@ -541,7 +541,7 @@ func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId
 
 /// NONCES
 
-// GetTopicIds returns the TopicIds for a given BlockHeight.
+// GetWorkerWindowTopicIds returns the TopicIds for a given BlockHeight.
 // If no TopicIds are found for the BlockHeight, it returns an empty slice.
 func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.TopicIds {
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
@@ -551,7 +551,7 @@ func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) ty
 	return topicIds
 }
 
-// SetTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
+// AddWorkerWindowTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
 // If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
 func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicId TopicId) error {
 	if err := types.ValidateTopicId(topicId); err != nil {

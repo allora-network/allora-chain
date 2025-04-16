@@ -136,13 +136,14 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	// Set Previous Loss
-	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"))
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
-	require.NoError(err)
-
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch3Get)
 	s.Require().NoError(err)
+	infererValues := s.ConvertInferencesToWorkerAttributedValues(inferences)
+
+	// Set Previous Loss
+	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"), infererValues)
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
+	require.NoError(err)
 
 	err = keeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
@@ -376,13 +377,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
+	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
+	s.Require().NoError(err)
+	infererValues := s.ConvertInferencesToWorkerAttributedValues(inferences)
 	// Set Previous Loss
-	valueBundlePrevious := s.mockEmptyValueBundle(epoch1Get("network_loss"))
+	valueBundlePrevious := s.mockEmptyValueBundle(epoch1Get("network_loss"), infererValues)
 	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(
 		s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
-	s.Require().NoError(err)
-
-	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
 	s.Require().NoError(err)
 
 	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
@@ -455,12 +456,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	// Set Previous Loss
-	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"))
-	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emptyValueBundle)
-	s.Require().NoError(err)
-
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
+	s.Require().NoError(err)
+	infererValues := s.ConvertInferencesToWorkerAttributedValues(inferences)
+
+	// Set Previous Loss
+	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"), infererValues)
+	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emptyValueBundle)
 	s.Require().NoError(err)
 
 	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
@@ -601,15 +603,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
+	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
+	s.Require().NoError(err)
+	infererValues := s.ConvertInferencesToWorkerAttributedValues(inferences)
+
 	// Set Previous Loss
-	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"))
+	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"), infererValues)
 	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(
 		s.ctx, topicId, blockHeightPreviousLosses,
 		emptyValueBundle,
 	)
-	s.Require().NoError(err)
-
-	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
 	s.Require().NoError(err)
 
 	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
@@ -693,7 +696,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 		case forecaster1:
 			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.13368285139309616")
 		case forecaster2:
-
 			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1339967078008638")
 		default:
 			s.Require().Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
@@ -745,12 +747,12 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	// Set Previous Loss
-	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"))
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
-	require.NoError(err)
-
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeightInferences, infererAddresses, epoch3Get)
+	require.NoError(err)
+	infererValues := s.ConvertInferencesToWorkerAttributedValues(inferences)
+	// Set Previous Loss
+	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"), infererValues)
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
 	require.NoError(err)
 
 	err = keeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)

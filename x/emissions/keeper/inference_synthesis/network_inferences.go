@@ -51,7 +51,7 @@ func GetNetworkInferences(
 		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 		if errors.Is(err, emissions.ErrNotFound) {
 			// 2a. If we have no network losses, fallback to using the median of the inferences.
-			return calcNetworkInferencesMultipleByMedian(ctx, topicId, inferences, *inferencesNonce)
+			return calcNetworkInferencesMultipleByMedian(topicId, inferences, *inferencesNonce)
 		} else if err != nil {
 			return nil, errorsmod.Wrap(err, "while getting latest network loss bundle")
 		}
@@ -67,7 +67,6 @@ func GetNetworkInferences(
 }
 
 func calcNetworkInferencesMultipleByMedian(
-	ctx sdk.Context,
 	topicId TopicId,
 	inferences *emissions.Inferences,
 	inferenceBlockHeight BlockHeight,
@@ -83,7 +82,7 @@ func calcNetworkInferencesMultipleByMedian(
 		TopicId:   topicId,
 		ExtraData: nil,
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
-			ReputerNonce: &emissions.Nonce{BlockHeight: ctx.BlockHeight()},
+			ReputerNonce: &emissions.Nonce{BlockHeight: inferenceBlockHeight},
 		},
 		Reputer:       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		CombinedValue: medianValue,
@@ -144,6 +143,7 @@ func calcNetworkInferencesMultiple(
 		topic,
 		*networkLosses,
 		moduleParams,
+		inferenceBlockHeight,
 	)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting network inference args")
@@ -215,6 +215,7 @@ func GetCalcNetworkInferenceArgs(
 	topic emissions.Topic,
 	networkLosses emissions.ValueBundle,
 	moduleParams emissions.Params,
+	inferenceBlockHeight BlockHeight,
 ) (
 	calcArgs CalcNetworkInferencesArgs,
 	err error,
@@ -296,6 +297,7 @@ func GetCalcNetworkInferenceArgs(
 		PNorm:                                topic.PNorm,
 		CNorm:                                moduleParams.CNorm,
 		StdDevPlusEpsilon:                    stdDevPlusEpsilon,
+		InferenceBlockHeight:                 inferenceBlockHeight,
 	}
 
 	// If there are forecast-implied inferences, add forecasters info

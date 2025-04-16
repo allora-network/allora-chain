@@ -188,8 +188,23 @@ func (s *InferenceSynthesisTestSuite) mockTopic() emissionstypes.Topic {
 	}
 }
 
+// ConvertInferencesToWorkerAttributedValues converts an Inferences type to a slice of WorkerAttributedValue
+func (s *InferenceSynthesisTestSuite) ConvertInferencesToWorkerAttributedValues(inferences emissionstypes.Inferences) []*emissionstypes.WorkerAttributedValue {
+	result := make([]*emissionstypes.WorkerAttributedValue, 0, len(inferences.Inferences))
+
+	for _, inference := range inferences.Inferences {
+		result = append(result, &emissionstypes.WorkerAttributedValue{
+			Worker: inference.Inferer,
+			Value:  inference.Value,
+		})
+	}
+
+	return result
+}
+
 func (s *InferenceSynthesisTestSuite) mockEmptyValueBundle(
 	combinedAndNaiveValue alloraMath.Dec,
+	infererValues []*emissionstypes.WorkerAttributedValue,
 ) emissionstypes.ValueBundle {
 	return emissionstypes.ValueBundle{
 		TopicId: uint64(1),
@@ -199,7 +214,7 @@ func (s *InferenceSynthesisTestSuite) mockEmptyValueBundle(
 		Reputer:                       s.addrsStr[9],
 		ExtraData:                     nil,
 		CombinedValue:                 combinedAndNaiveValue,
-		InfererValues:                 nil,
+		InfererValues:                 infererValues,
 		ForecasterValues:              nil,
 		NaiveValue:                    combinedAndNaiveValue,
 		OneOutInfererValues:           nil,
@@ -548,6 +563,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		topic,
 		valueBundle,
 		moduleParams,
+		blockHeight,
 	)
 	s.Require().NoError(err)
 	return ctx, k, ctx.Logger(), topicId, calcArgs.AllInferersAreNew,
@@ -599,6 +615,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 		topic,
 		networkLosses,
 		moduleParams,
+		blockHeight,
 	)
 	s.Require().NoError(err)
 	return calcArgs.Inferers, calcArgs.InfererToInference, calcArgs.InfererToRegret, calcArgs.AllInferersAreNew,
@@ -949,6 +966,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		InferenceBlockHeight:                 blockHeightInferences,
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
@@ -1062,6 +1080,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		InferenceBlockHeight:                 blockHeight,
 	}
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
 	s.Require().NoError(err)
@@ -1205,6 +1224,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		InferenceBlockHeight:                 blockHeight,
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(
@@ -1352,6 +1372,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		InferenceBlockHeight:                 blockHeight,
 	}
 
 	valueBundle, weights, err := inferencesynthesis.CalcNetworkInferences(
@@ -1460,6 +1481,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTw
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		InferenceBlockHeight:                 blockHeight,
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)

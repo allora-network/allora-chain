@@ -129,12 +129,17 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	// Set Loss bundles
 
 	valueBundle1 := types.ValueBundle{
-		TopicId:                       topicId,
-		Reputer:                       reputer0,
-		ExtraData:                     nil,
-		ReputerRequestNonce:           reputerRequestNonce,
-		CombinedValue:                 alloraMath.MustNewDecFromString(".0000117005278862668"),
-		InfererValues:                 nil,
+		TopicId:             topicId,
+		Reputer:             reputer0,
+		ExtraData:           nil,
+		ReputerRequestNonce: reputerRequestNonce,
+		CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString(".0000117005278862668"),
 		OneOutInfererValues:           nil,
@@ -145,12 +150,17 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	signature1 := s.signValueBundle(&valueBundle1, s.privKeys[5])
 
 	valueBundle2 := types.ValueBundle{
-		TopicId:                       topicId,
-		Reputer:                       reputer1,
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.MustNewDecFromString(".00000962701954026944"),
-		ReputerRequestNonce:           reputerRequestNonce,
-		InfererValues:                 nil,
+		TopicId:             topicId,
+		Reputer:             reputer1,
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.MustNewDecFromString(".00000962701954026944"),
+		ReputerRequestNonce: reputerRequestNonce,
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString(".00000962701954026944"),
 		OneOutInfererValues:           nil,
@@ -160,12 +170,17 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	}
 	signature2 := s.signValueBundle(&valueBundle2, s.privKeys[6])
 	valueBundle3 := types.ValueBundle{
-		Reputer:                       reputer2,
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
-		ReputerRequestNonce:           reputerRequestNonce,
-		TopicId:                       topicId,
-		InfererValues:                 nil,
+		Reputer:             reputer2,
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
+		ReputerRequestNonce: reputerRequestNonce,
+		TopicId:             topicId,
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString(".0000256948644008351"),
 		OneOutInfererValues:           nil,
@@ -175,12 +190,17 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	}
 	signature3 := s.signValueBundle(&valueBundle3, s.privKeys[7])
 	valueBundle4 := types.ValueBundle{
-		Reputer:                       reputer3,
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.MustNewDecFromString(".0000123986052417188"),
-		ReputerRequestNonce:           reputerRequestNonce,
-		TopicId:                       topicId,
-		InfererValues:                 nil,
+		Reputer:             reputer3,
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.MustNewDecFromString(".0000123986052417188"),
+		ReputerRequestNonce: reputerRequestNonce,
+		TopicId:             topicId,
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString(".0000123986052417188"),
 		OneOutInfererValues:           nil,
@@ -190,12 +210,17 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	}
 	signature4 := s.signValueBundle(&valueBundle4, s.privKeys[8])
 	valueBundle5 := types.ValueBundle{
-		Reputer:                       reputer4,
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.MustNewDecFromString(".0000115363240547692"),
-		ReputerRequestNonce:           reputerRequestNonce,
-		TopicId:                       topicId,
-		InfererValues:                 nil,
+		Reputer:             reputer4,
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.MustNewDecFromString(".0000115363240547692"),
+		ReputerRequestNonce: reputerRequestNonce,
+		TopicId:             topicId,
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString(".0000115363240547692"),
 		OneOutInfererValues:           nil,
@@ -306,7 +331,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	require.NoError(err)
 
 	epochLength := topic.EpochLength
-	epochLastEnded := topic.EpochLastEnded
+	epochLastEnded := int64(1) // topic.EpochLastEnded , but 0 is not a valid nonce
 
 	lossBlockHeight := epochLastEnded
 	inferenceBlockHeight := epochLastEnded + epochLength
@@ -320,12 +345,17 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 
 	// Set Loss bundles
 	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, lossBlockHeight, types.ValueBundle{
-		TopicId:                       topicId,
-		ReputerRequestNonce:           reputerLossRequestNonce,
-		ExtraData:                     nil,
-		Reputer:                       s.addrsStr[8],
-		CombinedValue:                 alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
-		InfererValues:                 nil,
+		TopicId:             topicId,
+		ReputerRequestNonce: reputerLossRequestNonce,
+		ExtraData:           nil,
+		Reputer:             s.addrsStr[8],
+		CombinedValue:       alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
 		OneOutInfererValues:           nil,
@@ -708,7 +738,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 	require.NoError(err)
 
 	epochLength := topic.EpochLength
-	epochLastEnded := topic.EpochLastEnded
+	epochLastEnded := int64(1) // topic.EpochLastEnded , but 0 is not a valid nonce
 
 	lossBlockHeight := epochLastEnded
 	inferenceBlockHeight := epochLastEnded + epochLength
@@ -724,13 +754,18 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 
 	// Set Loss bundles
 	lossBundle := types.ValueBundle{
-		CombinedValue:                 alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
-		ReputerRequestNonce:           reputerLossRequestNonce,
-		TopicId:                       topicId,
-		Reputer:                       s.addrsStr[0],
-		ExtraData:                     nil,
-		NaiveValue:                    alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
-		InfererValues:                 nil,
+		CombinedValue:       alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
+		ReputerRequestNonce: reputerLossRequestNonce,
+		TopicId:             topicId,
+		Reputer:             s.addrsStr[0],
+		ExtraData:           nil,
+		NaiveValue:          alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Value:  alloraMath.MustNewDecFromString("1"),
+			},
+		},
 		ForecasterValues:              nil,
 		OneOutInfererValues:           nil,
 		OneOutForecasterValues:        nil,
