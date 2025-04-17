@@ -56,6 +56,7 @@ var (
 	zeroDec   = apd.New(0, 0)
 	oneDec    = apd.New(1, 0)
 	twoDec    = apd.New(2, 0)
+	tenDec    = apd.New(1, 1)
 )
 
 // The number 0 encoded as Dec

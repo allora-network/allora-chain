@@ -6,9 +6,18 @@ import (
 	"sort"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/cockroachdb/apd/v3"
 )
 
 var weeksPerMonth = MustNewDecFromString("4.345") //nolint:gochecknoglobals // constant
+
+func mustNewApdDecFromString(s string) *apd.Decimal {
+	d, _, err := apd.NewFromString(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
 
 // all exponential moving average functions take the form
 // x_average=α*x_current + (1-α)*x_previous

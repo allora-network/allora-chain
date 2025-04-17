@@ -2,29 +2,60 @@ package math
 
 import (
 	"fmt"
+	"math"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cockroachdb/apd/v3"
 )
 
-const powerTenTableSize = 128
+const expPowersTableSize = 300
 
 var (
-	twentyThreeDec          = apd.New(23, 0)
-	thousandDec             = apd.New(1000, 0)
-	expConvergenceSlopeDec  = apd.New(1435, -3)
-	expConvergenceOffsetDec = apd.New(1182, -3)
-	pow10LookupTable        [powerTenTableSize + 1]apd.BigInt
+	// expPowers contains 10**(i/n) precomputed values, this is used to compute exponential.
+	expPowers             = [expPowersTableSize]apd.Decimal{}
+	expPowersTableSizeDec = apd.New(expPowersTableSize, 0)
+	ln10                  = mustNewApdDecFromString("2.3025850929940456840179914546843642")
+	ln10n                 apd.Decimal
+	nln10                 apd.Decimal
+
+	// Terms to compute exponential.
+	expP2 apd.Decimal // 1/6
+	expP4 apd.Decimal // -1/360
+	expP6 apd.Decimal // 1/15120
+	expP8 apd.Decimal // -1/604800
 )
 
 func init() {
-	for i := int64(0); i <= powerTenTableSize; i++ {
-		setBigWithPow(&pow10LookupTable[i], i)
+	ctx := apd.BaseContext.WithPrecision(dec128Context.Precision + 2)
+	ctx.Rounding = apd.RoundHalfEven
+	ed := apd.MakeErrDecimal(ctx)
+
+	ed.Quo(&ln10n, ln10, expPowersTableSizeDec)
+	ed.Quo(&nln10, expPowersTableSizeDec, ln10)
+
+	var pq apd.Decimal
+	pq.SetInt64(6)
+	ed.Quo(&expP2, oneDec, &pq)
+	pq.SetInt64(-360)
+	ed.Quo(&expP4, oneDec, &pq)
+	pq.SetInt64(15120)
+	ed.Quo(&expP6, oneDec, &pq)
+	pq.SetInt64(-604800)
+	ed.Quo(&expP8, oneDec, &pq)
+
+	for i := int64(0); i < expPowersTableSize; i++ {
+		var pow, iDec apd.Decimal
+		iDec.SetInt64(i)
+		ed.Quo(&pow, &iDec, expPowersTableSizeDec)
+		ed.Pow(&pow, tenDec, &pow)
+		expPowers[i] = pow
+	}
+
+	if err := ed.Err(); err != nil {
+		panic(err)
 	}
 }
 
-// Exp computes the exponential of x, returning a new Dec.
-// It is based on apd's implementation but in a deterministic way.
 func Exp(x Dec) (Dec, error) {
 	if x.IsNaN() || shouldBeNaN(&x.dec) {
 		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot exp a NaN")
@@ -33,194 +64,73 @@ func Exp(x Dec) (Dec, error) {
 		return Dec{}, fmt.Errorf("cannot exp an infinite value")
 	}
 
-	if x.IsZero() {
-		return OneDec(), nil
+	var d apd.Decimal
+	if err := exp(&d, &x.dec); err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing exp")
 	}
 
-	// Stage 1
-	cp := dec128Context.Precision
-	var absX apd.Decimal
-	absX.Abs(&x.dec)
-	if _, err := absX.Float64(); err == nil {
-		// This algorithm doesn't work if currentprecision*23 < |x|. Attempt to
-		// increase the working precision if needed as long as it isn't too large. If
-		// it is too large, don't bump the precision, causing an early overflow return.
-		var ncp apd.Decimal
-		if _, err := dec128Context.Quo(&ncp, &absX, twentyThreeDec); err != nil {
-			return Dec{}, errorsmod.Wrapf(err, "quo error computing exp")
-		}
-		if ncp.Cmp(apd.New(int64(cp), 0)) > 0 && ncp.Cmp(thousandDec) < 0 {
-			if _, err := dec128Context.Ceil(&ncp, &ncp); err != nil {
-				return Dec{}, errorsmod.Wrapf(err, "ceil error computing exp")
-			}
-			ncpi64, err := ncp.Int64()
-			if err != nil {
-				return Dec{}, errorsmod.Wrapf(err, "cast to int64 error computing exp")
-			}
-			cp = uint32(ncpi64) // we are sure it's > 0 and < 1000
-		}
-	}
-	var cpTimes23 apd.Decimal
-	cpTimes23.SetInt64(int64(cp) * 23)
-	// if abs(x) > 23*currentprecision; overflow
-	if absX.Cmp(&cpTimes23) > 0 {
-		return Dec{}, errorsmod.Wrapf(ErrOverflow, "exp overflow: %s", x.String())
-	}
-	// if abs(x) <= setexp(.9, -currentprecision); then result 1 as x -> 0
-	var minValPrec apd.Decimal
-	minValPrec.SetFinite(9, int32(-cp)-1)
-	if absX.Cmp(&minValPrec) <= 0 {
-		return OneDec(), nil
+	return Dec{dec: d, isNaN: false}, nil
+}
+
+func exp(d, x *apd.Decimal) error {
+	if x.Cmp(zeroDec) == 0 {
+		d.SetInt64(1)
+		return nil
 	}
 
-	// Stage 2
-	// Add x.NumDigits because the paper assumes that x.Coeff [0.1, 1).
-	t := x.dec.Exponent + int32(x.dec.NumDigits())
-	if t < 0 {
-		t = 0
-	}
-	var k, r apd.Decimal
-	k.SetFinite(1, t)
-	nc := dec128Context.WithPrecision(cp)
-	nc.Rounding = apd.RoundHalfEven
-	if _, err := nc.Quo(&r, &x.dec, &k); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "quo error computing exp")
-	}
-	var ra apd.Decimal
-	ra.Abs(&r)
-	p := int64(cp) + int64(t) + 2
-	var pDec apd.Decimal
-	pDec.SetFinite(p, 0)
+	ctx := apd.BaseContext.WithPrecision(dec128Context.Precision + 2)
+	ctx.Rounding = apd.RoundHalfEven
+	ed := apd.MakeErrDecimal(ctx)
 
-	// Stage 3
-	if _, err := ra.Float64(); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "cast to float error computing exp")
-	}
-	var pfDivRf apd.Decimal
-	if _, err := nc.Quo(&pfDivRf, &pDec, &ra); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "quo error computing exp")
-	}
-	logRatio, err := Log10(Dec{dec: pfDivRf, isNaN: false})
+	var tmp, a, b, c apd.Decimal
+	ed.Mul(&tmp, x, &nln10)
+	ed.RoundToIntegralValue(&tmp, &tmp)
+	ed.QuoInteger(&a, &tmp, expPowersTableSizeDec)
+	a64, err := a.Int64()
 	if err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "log10 error computing exp")
-	}
-	var numerator apd.Decimal
-	if _, err := nc.Mul(&numerator, expConvergenceSlopeDec, &pDec); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "mul error computing exp")
-	}
-	if _, err := nc.Quo(&numerator, &numerator, expConvergenceOffsetDec); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "quo error computing exp")
-	}
-	var termCountEstimate apd.Decimal
-	if _, err := nc.Quo(&termCountEstimate, &numerator, &logRatio.dec); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "quo error computing exp")
+		return errorsmod.Wrap(err, "error computing exp")
 	}
 
-	if _, err := dec128Context.Ceil(&termCountEstimate, &termCountEstimate); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "ceil error computing exp")
-	}
-	if termCountEstimate.Cmp(thousandDec) > 0 {
-		return Dec{}, fmt.Errorf("cannot exp, too many iterations: %s", x.String())
-	}
-	n, err := termCountEstimate.Int64()
+	ed.Rem(&b, &tmp, expPowersTableSizeDec)
+	ed.Mul(&c, &tmp, &ln10n)
+	ed.Sub(&c, x, &c)
+
+	var c2, r, pbc, expbc apd.Decimal
+	ed.Mul(&c2, &c, &c)
+	ed.Mul(&r, &c2, &expP8)
+	ed.Add(&r, &expP6, &r)
+	ed.Mul(&r, &c2, &r)
+	ed.Add(&r, &expP4, &r)
+	ed.Mul(&r, &c2, &r)
+	ed.Add(&r, &expP2, &r)
+	ed.Mul(&r, &c2, &r)
+	ed.Sub(&r, &c, &r)
+	b64, err := b.Int64()
 	if err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "cast to int64 error computing exp")
+		return errorsmod.Wrap(err, "error computing exp")
 	}
+	pb := expPowers[b64]
+	ed.Mul(&pbc, &pb, &c)
+	ed.Sub(&tmp, twoDec, &r)
+	ed.Mul(&expbc, &pbc, &r)
+	ed.Quo(&expbc, &expbc, &tmp)
+	ed.Add(&expbc, &expbc, &pbc)
+	ed.Add(&expbc, &expbc, &pb)
 
-	// Stage 4
-	nc.Precision = uint32(p)
-	ed := apd.MakeErrDecimal(nc)
-	var sum, it, rDivI apd.Decimal
-	sum.SetInt64(1)
-	it.SetFinite(0, 0)
-	for i := n - 1; i > 0; i-- {
-		it.Coeff.SetInt64(i)
-		// tmp1 = r / i
-		ed.Quo(&rDivI, &r, &it)
-		// sum = sum * r / i
-		ed.Mul(&sum, &rDivI, &sum)
-		// sum = sum + 1
-		ed.Add(&sum, &sum, oneDec)
-	}
 	if err := ed.Err(); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "stage 4 error computing exp")
+		return errorsmod.Wrap(err, "error computing exp")
 	}
 
-	// sum ** k
-	var tmpE apd.BigInt
-	ki, err := exp10(int64(t), &tmpE)
-	if err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "exp10 error computing exp")
+	exp := int64(expbc.Exponent) + a64
+	if exp > math.MaxInt32 || exp < math.MinInt32 {
+		return errorsmod.Wrap(err, "error computing exp")
 	}
-	var z apd.Decimal
-	if err := integerPower(nc, &z, &sum, ki); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "integral power error computing exp")
-	}
+	expbc.Exponent = int32(exp)
 
-	nc.Precision = dec128Context.Precision
-	_, err = nc.Round(&z, &z)
-	if err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "round error computing exp")
+	if _, err := ctx.WithPrecision(dec128Context.Precision).Round(&expbc, &expbc); err != nil {
+		return errorsmod.Wrap(err, "error computing exp")
 	}
 
-	return Dec{dec: z, isNaN: false}, nil
-}
-
-func exp10(x int64, tmp *apd.BigInt) (exp *apd.BigInt, err error) {
-	if x > apd.MaxExponent || x < apd.MinExponent {
-		return nil, errorsmod.Wrapf(ErrOutOfRange, "exp10 exponent out of range: %d", x)
-	}
-	return tableExp10(x, tmp), nil
-}
-
-// integerPower sets d = x**y. d and x must not point to the same Decimal.
-func integerPower(c *apd.Context, d, x *apd.Decimal, y *apd.BigInt) error {
-	// See: https://en.wikipedia.org/wiki/Exponentiation_by_squaring.
-
-	var b apd.BigInt
-	b.Set(y)
-	neg := b.Sign() < 0
-	if neg {
-		b.Abs(&b)
-	}
-
-	var n apd.Decimal
-	n.Set(x)
-	z := d
-	z.Set(oneDec)
-	ed := apd.MakeErrDecimal(c)
-	for b.Sign() > 0 {
-		if b.Bit(0) == 1 {
-			ed.Mul(z, z, &n)
-		}
-		b.Rsh(&b, 1)
-
-		// Only compute the next n if we are going to use it. Otherwise n can overflow
-		// on the last iteration causing this to error.
-		if b.Sign() > 0 {
-			ed.Mul(&n, &n, &n)
-		}
-		if err := ed.Err(); err != nil {
-			return err
-		}
-	}
-
-	if neg {
-		ed.Quo(z, oneDec, z)
-	}
-	return ed.Err()
-}
-
-func tableExp10(x int64, tmp *apd.BigInt) *apd.BigInt {
-	if x <= powerTenTableSize {
-		return &pow10LookupTable[x]
-	}
-	setBigWithPow(tmp, x)
-	return tmp
-}
-
-func setBigWithPow(res *apd.BigInt, pow int64) {
-	var tmp apd.BigInt
-	tmp.SetInt64(pow)
-	res.Exp(tenBigInt, &tmp, nil)
+	d.Set(&expbc)
+	return nil
 }
