@@ -79,3 +79,41 @@ func Pow(x, y Dec) (Dec, error) {
 
 	return Dec{dec: z, isNaN: false}, nil
 }
+
+// integerPower sets d = x**y. d and x must not point to the same Decimal.
+func integerPower(c *apd.Context, d, x *apd.Decimal, y *apd.BigInt) error {
+	// See: https://en.wikipedia.org/wiki/Exponentiation_by_squaring.
+
+	var b apd.BigInt
+	b.Set(y)
+	neg := b.Sign() < 0
+	if neg {
+		b.Abs(&b)
+	}
+
+	var n apd.Decimal
+	n.Set(x)
+	z := d
+	z.Set(oneDec)
+	ed := apd.MakeErrDecimal(c)
+	for b.Sign() > 0 {
+		if b.Bit(0) == 1 {
+			ed.Mul(z, z, &n)
+		}
+		b.Rsh(&b, 1)
+
+		// Only compute the next n if we are going to use it. Otherwise n can overflow
+		// on the last iteration causing this to error.
+		if b.Sign() > 0 {
+			ed.Mul(&n, &n, &n)
+		}
+		if err := ed.Err(); err != nil {
+			return err
+		}
+	}
+
+	if neg {
+		ed.Quo(z, oneDec, z)
+	}
+	return ed.Err()
+}
