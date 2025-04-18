@@ -57,20 +57,18 @@ func Pow(x, y Dec) (Dec, error) {
 	ed := apd.MakeErrDecimal(nc)
 
 	// Compute x**frac(y)
-	var zf apd.Decimal
+	var zf, lnAbsX, zfd apd.Decimal
 	ed.Abs(&zf, &x.dec)
-	lnAbsX, err := Ln(Dec{dec: zf, isNaN: false})
-	if err != nil {
+	if err := ln(&lnAbsX, &zf); err != nil {
 		return Dec{}, errorsmod.Wrap(err, "ln error computing pow")
 	}
-	ed.Mul(&zf, &lnAbsX.dec, &frac)
-	zfd, err := Exp(Dec{dec: zf, isNaN: false})
-	if err != nil {
+	ed.Mul(&zf, &lnAbsX, &frac)
+	if err := exp(&zfd, &zf); err != nil {
 		return Dec{}, errorsmod.Wrap(err, "ln error computing pow")
 	}
 
 	// Join integer and frac parts back.
-	ed.Mul(&z, &z, &zfd.dec)
+	ed.Mul(&z, &z, &zfd)
 	if err := ed.Err(); err != nil {
 		return Dec{}, errorsmod.Wrap(err, "error computing pow")
 	}

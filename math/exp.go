@@ -79,6 +79,10 @@ func Exp(x Dec) (Dec, error) {
 		return Dec{}, errorsmod.Wrap(err, "error computing exponential")
 	}
 
+	if _, err := fnRoundCtx.Round(&d, &d); err != nil {
+		return Dec{}, errorsmod.Wrap(err, "error computing exponential")
+	}
+
 	return Dec{dec: d, isNaN: false}, nil
 }
 
@@ -139,10 +143,6 @@ func exp(d, x *apd.Decimal) error {
 		return ErrOverflow
 	}
 	expbc.Exponent = int32(exponent)
-
-	if _, err := fnRoundCtx.Round(&expbc, &expbc); err != nil {
-		return err
-	}
 
 	d.Set(&expbc)
 	return nil
