@@ -100,6 +100,11 @@ func exp(d, x *apd.Decimal) error {
 	}
 
 	ed.Rem(&b, &tmp, expPowersTableSizeDec)
+	if b.Cmp(zeroDec) < 0 {
+		ed.Add(&b, &b, expPowersTableSizeDec)
+		a64 -= 1
+	}
+
 	ed.Mul(&c, &tmp, &ln10n)
 	ed.Sub(&c, x, &c)
 
