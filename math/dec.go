@@ -51,12 +51,10 @@ var (
 )
 
 var (
-	oneBigInt = apd.NewBigInt(1)
-	tenBigInt = apd.NewBigInt(10)
-	zeroDec   = apd.New(0, 0)
-	oneDec    = apd.New(1, 0)
-	twoDec    = apd.New(2, 0)
-	tenDec    = apd.New(1, 1)
+	zeroDec = apd.New(0, 0)
+	oneDec  = apd.New(1, 0)
+	twoDec  = apd.New(2, 0)
+	tenDec  = apd.New(1, 1)
 )
 
 // The number 0 encoded as Dec
@@ -768,16 +766,6 @@ func (x Dec) Reduce() (Dec, int) {
 	y := ZeroDec()
 	_, n := y.dec.Reduce(&x.dec)
 	return y, n
-}
-
-// enforceDecimalPrecision mutably enforce a decimal digit precision.
-func enforceDecimalPrecision(d *apd.Decimal, precision uint32) {
-	precDelta := int64(precision - decimalPlaces(d))
-	if precDelta > 0 && int64(d.Exponent)-precDelta >= goMath.MinInt32 {
-		var exp apd.BigInt
-		d.Coeff.Mul(&d.Coeff, exp.Exp(tenBigInt, apd.NewBigInt(precDelta), nil))
-		d.Exponent -= int32(precDelta) //nolint:gosec // potential overflow already checked above
-	}
 }
 
 func decimalPlaces(d *apd.Decimal) uint32 {
