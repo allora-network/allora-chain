@@ -18,7 +18,7 @@ var (
 )
 
 func init() {
-	iLn10, _, err := apd.NewFromString("0.4342944819032518276511289189166051")
+	iLn10, _, err := apd.NewFromString("0.434294481903251827651128918916605082")
 	if err != nil {
 		panic(err)
 	}
@@ -28,17 +28,17 @@ func init() {
 // Log10 returns a new Dec with the value of the base 10 logarithm of x, without mutating x.
 func Log10(x Dec) (Dec, error) {
 	if x.IsNaN() || shouldBeNaN(&x.dec) {
-		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot log base 10 a NaN")
+		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot ln base 10 a NaN")
 	}
 	if x.dec.Sign() < 0 || x.dec.Cmp(zeroDec) == 0 {
-		return Dec{}, fmt.Errorf("cannot log base 10 a non positive value")
+		return Dec{}, fmt.Errorf("cannot ln base 10 a non positive value")
 	}
 	if x.dec.Form == apd.Infinite {
-		return Dec{}, fmt.Errorf("cannot log base 10 an infinite value")
+		return Dec{}, fmt.Errorf("cannot ln base 10 an infinite value")
 	}
 
 	var d apd.Decimal
-	if err := log(&d, &x.dec); err != nil {
+	if err := ln(&d, &x.dec); err != nil {
 		return Dec{}, errorsmod.Wrap(err, "error computing base 10 logarithm")
 	}
 
@@ -56,24 +56,28 @@ func Log10(x Dec) (Dec, error) {
 // Ln returns a new Dec with the value of the natural logarithm of x, without mutating x.
 func Ln(x Dec) (Dec, error) {
 	if x.IsNaN() || shouldBeNaN(&x.dec) {
-		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot log a NaN")
+		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot ln a NaN")
 	}
 	if x.dec.Sign() < 0 || x.dec.Cmp(zeroDec) == 0 {
-		return Dec{}, fmt.Errorf("cannot log a non positive value")
+		return Dec{}, fmt.Errorf("cannot ln a non positive value")
 	}
 	if x.dec.Form == apd.Infinite {
-		return Dec{}, fmt.Errorf("cannot log an infinite value")
+		return Dec{}, fmt.Errorf("cannot ln an infinite value")
 	}
 
 	var d apd.Decimal
-	if err := log(&d, &x.dec); err != nil {
+	if err := ln(&d, &x.dec); err != nil {
+		return Dec{}, errorsmod.Wrap(err, "error computing natural logarithm")
+	}
+
+	if _, err := fnRoundCtx.Round(&d, &d); err != nil {
 		return Dec{}, errorsmod.Wrap(err, "error computing natural logarithm")
 	}
 
 	return Dec{dec: d, isNaN: false}, nil
 }
 
-func log(d, x *apd.Decimal) error {
+func ln(d, x *apd.Decimal) error {
 	if x.Cmp(oneDec) == 0 {
 		d.Set(zeroDec)
 		return nil
@@ -119,10 +123,6 @@ func log(d, x *apd.Decimal) error {
 	ed.Add(d, &lna, &bln10)
 
 	if err := ed.Err(); err != nil {
-		return err
-	}
-
-	if _, err := fnRoundCtx.Round(d, d); err != nil {
 		return err
 	}
 
