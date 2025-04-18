@@ -14,7 +14,6 @@ var (
 	// expPowers contains 10**(i/n) precomputed values, this is used to compute exponential.
 	expPowers             = [expPowersTableSize]apd.Decimal{}
 	expPowersTableSizeDec = apd.New(expPowersTableSize, 0)
-	ln10                  = mustNewApdDecFromString("2.3025850929940456840179914546843642")
 	ln10n                 apd.Decimal
 	nln10                 apd.Decimal
 
@@ -25,10 +24,20 @@ var (
 	expP8 apd.Decimal // -1/604800
 )
 
+// fnCalcCtx is the context used to compute functions like exponential, logarithm, etc.
+var fnCalcCtx = apd.Context{
+	Precision:   dec128Context.Precision + 2,
+	MaxExponent: apd.MaxExponent,
+	MinExponent: apd.MinExponent,
+	Traps:       apd.DefaultTraps,
+	Rounding:    apd.RoundHalfEven,
+}
+
+// fnRoundCtx is the context used to round final results of functions like exponential, logarithm, etc.
+var fnRoundCtx = fnCalcCtx.WithPrecision(dec128Context.Precision)
+
 func init() {
-	ctx := apd.BaseContext.WithPrecision(dec128Context.Precision + 2)
-	ctx.Rounding = apd.RoundHalfEven
-	ed := apd.MakeErrDecimal(ctx)
+	ed := apd.MakeErrDecimal(&fnCalcCtx)
 
 	ed.Quo(&ln10n, ln10, expPowersTableSizeDec)
 	ed.Quo(&nln10, expPowersTableSizeDec, ln10)
@@ -56,6 +65,7 @@ func init() {
 	}
 }
 
+// Exp returns a new Dec with the value of the exponential of x, without mutating x.
 func Exp(x Dec) (Dec, error) {
 	if x.IsNaN() || shouldBeNaN(&x.dec) {
 		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot exp a NaN")
@@ -66,7 +76,7 @@ func Exp(x Dec) (Dec, error) {
 
 	var d apd.Decimal
 	if err := exp(&d, &x.dec); err != nil {
-		return Dec{}, errorsmod.Wrapf(err, "error computing exp")
+		return Dec{}, errorsmod.Wrap(err, "error computing exponential")
 	}
 
 	return Dec{dec: d, isNaN: false}, nil
@@ -74,13 +84,11 @@ func Exp(x Dec) (Dec, error) {
 
 func exp(d, x *apd.Decimal) error {
 	if x.Cmp(zeroDec) == 0 {
-		d.SetInt64(1)
+		d.Set(oneDec)
 		return nil
 	}
 
-	ctx := apd.BaseContext.WithPrecision(dec128Context.Precision + 2)
-	ctx.Rounding = apd.RoundHalfEven
-	ed := apd.MakeErrDecimal(ctx)
+	ed := apd.MakeErrDecimal(&fnCalcCtx)
 
 	var tmp, a, b, c apd.Decimal
 	ed.Mul(&tmp, x, &nln10)
@@ -88,7 +96,7 @@ func exp(d, x *apd.Decimal) error {
 	ed.QuoInteger(&a, &tmp, expPowersTableSizeDec)
 	a64, err := a.Int64()
 	if err != nil {
-		return errorsmod.Wrap(err, "error computing exp")
+		return err
 	}
 
 	ed.Rem(&b, &tmp, expPowersTableSizeDec)
@@ -107,7 +115,7 @@ func exp(d, x *apd.Decimal) error {
 	ed.Sub(&r, &c, &r)
 	b64, err := b.Int64()
 	if err != nil {
-		return errorsmod.Wrap(err, "error computing exp")
+		return err
 	}
 	pb := expPowers[b64]
 	ed.Mul(&pbc, &pb, &c)
@@ -118,17 +126,17 @@ func exp(d, x *apd.Decimal) error {
 	ed.Add(&expbc, &expbc, &pb)
 
 	if err := ed.Err(); err != nil {
-		return errorsmod.Wrap(err, "error computing exp")
+		return err
 	}
 
-	exp := int64(expbc.Exponent) + a64
-	if exp > math.MaxInt32 || exp < math.MinInt32 {
-		return errorsmod.Wrap(err, "error computing exp")
+	exponent := int64(expbc.Exponent) + a64
+	if exponent > math.MaxInt32 || exponent < math.MinInt32 {
+		return ErrOverflow
 	}
-	expbc.Exponent = int32(exp)
+	expbc.Exponent = int32(exponent)
 
-	if _, err := ctx.WithPrecision(dec128Context.Precision).Round(&expbc, &expbc); err != nil {
-		return errorsmod.Wrap(err, "error computing exp")
+	if _, err := fnRoundCtx.Round(&expbc, &expbc); err != nil {
+		return err
 	}
 
 	d.Set(&expbc)
