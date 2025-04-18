@@ -7,6 +7,7 @@ import (
 	"github.com/cockroachdb/apd/v3"
 )
 
+// Pow returns a new Dec with the value x power y, without mutating x and y.
 func Pow(x, y Dec) (Dec, error) {
 	if x.IsNaN() || shouldBeNaN(&x.dec) || y.IsNaN() || shouldBeNaN(&y.dec) {
 		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot pow with NaN values")
