@@ -79,9 +79,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
-
 * [#799](https://github.com/allora-network/allora-chain/pull/799) Correct Monthly PreviousPercentageRewardToStakedReputers Calculation
 * [#770](https://github.com/allora-network/allora-chain/pull/770) Allow delegate stake management after reputer unregister
+* [#796](https://github.com/allora-network/allora-chain/pull/796) Make all math calculations deterministic
 
 ### Security
 
