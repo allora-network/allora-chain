@@ -38,15 +38,15 @@ ADD https://github.com/cosmos/cosmos-sdk/releases/download/cosmovisor/${COSMOVIS
 RUN tar -xvf /tmp/cosmovisor.tar.gz -C /usr/local/bin/ && \
     chmod +x /usr/local/bin/cosmovisor
 
-ARG ALLORAD_CURRENT_VERSION="v0.5.0"
-ARG ALLORAD_UPGRADE_VERSION="v0.6.0"
+ARG ALLORAD_CURRENT_VERSION="0.10.0"
+ARG ALLORAD_UPGRADE_VERSION="0.11.0"
 
 RUN mkdir -p ${INITIAL_COSMOVISOR_DIR}/genesis/bin && \
-    curl -Lo ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_CURRENT_VERSION}/allorad_linux_amd64 && \
+    curl -Lo ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad https://github.com/allora-network/allora-chain/releases/download/v${ALLORAD_CURRENT_VERSION}/allora-chain_${ALLORAD_CURRENT_VERSION}_linux_amd64 && \
     chmod +x ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad
 
-RUN mkdir -p ${INITIAL_COSMOVISOR_DIR}/upgrades/${ALLORAD_UPGRADE_VERSION}/bin && \
-    curl -Lo ${INITIAL_COSMOVISOR_DIR}/upgrades/${ALLORAD_UPGRADE_VERSION}/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_UPGRADE_VERSION}/allorad_linux_amd64
+RUN mkdir -p ${INITIAL_COSMOVISOR_DIR}/upgrades/v${ALLORAD_UPGRADE_VERSION}/bin && \
+    curl -Lo ${INITIAL_COSMOVISOR_DIR}/upgrades/v${ALLORAD_UPGRADE_VERSION}/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_UPGRADE_VERSION}/allora-chain_${ALLORAD_UPGRADE_VERSION}_linux_amd64
 
 VOLUME ${APP_PATH}
 WORKDIR ${APP_PATH}
