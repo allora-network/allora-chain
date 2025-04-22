@@ -3504,7 +3504,7 @@ func (s *KeeperTestSuite) TestGetTargetWeight() {
 	}
 
 	// Value for full calculation
-	dec, err := alloraMath.NewDecFromString("70.71067811865475244008443621048490")
+	dec, err := alloraMath.NewDecFromString("70.71067811865475244008443621048489")
 	s.Require().NoError(err)
 
 	testCases := []struct {

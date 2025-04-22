@@ -15,8 +15,11 @@ func Pow(x, y Dec) (Dec, error) {
 	if x.dec.Form == apd.Infinite || y.dec.Form == apd.Infinite {
 		return Dec{}, fmt.Errorf("cannot pow with infinite values")
 	}
-	if x.dec.Cmp(zeroDec) <= 0 {
-		return Dec{}, fmt.Errorf("cannot pow a 0 or negative base")
+	switch x.dec.Cmp(zeroDec) {
+	case -1:
+		return Dec{}, fmt.Errorf("cannot pow a negative base")
+	case 0:
+		return ZeroDec(), nil
 	}
 
 	if y.IsZero() {
