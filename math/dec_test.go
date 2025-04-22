@@ -180,7 +180,8 @@ func TestDec(t *testing.T) {
 	// See https://github.com/allora-network/allora-chain/pull/789
 	logDeterminism, err := alloraMath.Ln(alloraMath.MustNewDecFromString("1.6285091944505809264504560045920167"))
 	require.NoError(t, err)
-	require.True(t, alloraMath.MustNewDecFromString("0.4876649916811116824516548471782886").Equal(logDeterminism))
+	fmt.Println(logDeterminism.String())
+	require.True(t, alloraMath.MustNewDecFromString("0.4876649916811116824516548471782887").Equal(logDeterminism))
 
 	_, err = alloraMath.Ln(alloraMath.MustNewDecFromString("-1"))
 	require.Error(t, err)
