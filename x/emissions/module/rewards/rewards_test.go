@@ -5,17 +5,17 @@ import (
 	"testing"
 	"time"
 
-	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
-	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
+	alloralog "github.com/allora-network/allora-chain/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -23,6 +23,7 @@ import (
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -67,7 +68,8 @@ func (s *RewardsTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	// Set logger to show logs from the rewards module too
-	logger := log.NewTestLogger(s.T()).With("module", "rewards")
+
+	logger := alloralog.NewTestLogger(s.T()).With("module", "rewards")
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}).WithLogger(logger) // nolint: exhaustruct
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 
@@ -1118,7 +1120,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 // We increase alpha between the trials to prove that their worsening performance decreases regret.
 // This is somewhat counterintuitive, but can be explained by the following passage from the litepaper:
 // "A positive regret implies that the inference of worker j is expected by worker k to outperform
-// the network’s previously reported accuracy, whereas a negative regret indicates that the network
+// the network's previously reported accuracy, whereas a negative regret indicates that the network
 // is expected to be more accurate."
 func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegret() {
 	/// SETUP

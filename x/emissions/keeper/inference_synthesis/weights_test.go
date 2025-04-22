@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
+	alloralog "github.com/allora-network/allora-chain/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -56,7 +57,7 @@ func (s *WeightsTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	// Set logger to show logs from the rewards module too
-	logger := log.NewTestLogger(s.T()).With("module", "inference_synthesis")
+	logger := alloralog.NewTestLogger(s.T()).With("module", "inference_synthesis")
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
 		Height:  1,
 		Hash:    []byte("1"),
