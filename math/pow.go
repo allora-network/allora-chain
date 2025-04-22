@@ -2,6 +2,7 @@ package math
 
 import (
 	"fmt"
+	"math"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cockroachdb/apd/v3"
@@ -33,7 +34,11 @@ func Pow(x, y Dec) (Dec, error) {
 	y.dec.Modf(&integ, &frac)
 
 	p := dec128Context.Precision
-	if nd := uint32(x.dec.NumDigits()); p < nd {
+	xNumDigits := x.dec.NumDigits()
+	if xNumDigits > math.MaxUint32 {
+		return Dec{}, errorsmod.Wrapf(ErrOverflow, "x has too many digits")
+	}
+	if nd := uint32(x.dec.NumDigits()); p < nd { //nolint:gosec // ensured just above (and cannot be negative)
 		p = nd
 	}
 	p += 4 + 6
