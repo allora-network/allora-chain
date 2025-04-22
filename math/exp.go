@@ -150,7 +150,7 @@ func exp(d, x *apd.Decimal) error {
 	if exponent > math.MaxInt32 || exponent < math.MinInt32 {
 		return ErrOverflow
 	}
-	expbc.Exponent = int32(exponent)
+	expbc.Exponent = int32(exponent) //nolint:gosec // ensured just above
 
 	d.Set(&expbc)
 	return nil
