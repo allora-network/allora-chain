@@ -17,6 +17,10 @@ var (
 	ln10n                 apd.Decimal
 	nln10                 apd.Decimal
 
+	// Boundaries of the input for the exponential function.
+	maxExpInput apd.Decimal
+	minExpInput apd.Decimal
+
 	// Terms to compute exponential.
 	expP2 apd.Decimal // 1/6
 	expP4 apd.Decimal // -1/360
@@ -38,6 +42,9 @@ var fnRoundCtx = fnCalcCtx.WithPrecision(dec128Context.Precision)
 
 func init() {
 	ed := apd.MakeErrDecimal(&fnCalcCtx)
+
+	ed.Mul(&maxExpInput, apd.New(int64(dec128Context.MaxExponent), 0), ln10)
+	ed.Mul(&minExpInput, apd.New(int64(dec128Context.MinExponent), 0), ln10)
 
 	ed.Quo(&ln10n, ln10, expPowersTableSizeDec)
 	ed.Quo(&nln10, expPowersTableSizeDec, ln10)
@@ -91,22 +98,27 @@ func exp(d, x *apd.Decimal) error {
 		d.Set(oneDec)
 		return nil
 	}
+	if x.Cmp(&minExpInput) < 0 {
+		d.Set(zeroDec)
+		return nil
+	}
+	if x.Cmp(&maxExpInput) > 0 {
+		d.Form = apd.Infinite
+		return nil
+	}
 
 	ed := apd.MakeErrDecimal(&fnCalcCtx)
 
-	var tmp, a, b, c apd.Decimal
+	var tmp, c apd.Decimal
 	ed.Mul(&tmp, x, &nln10)
 	ed.RoundToIntegralValue(&tmp, &tmp)
-	ed.QuoInteger(&a, &tmp, expPowersTableSizeDec)
-	a64, err := a.Int64()
-	if err != nil {
-		return err
-	}
+	tmp64 := ed.Int64(&tmp) // true because of the boundaries
+	a := tmp64 / expPowersTableSize
 
-	ed.Rem(&b, &tmp, expPowersTableSizeDec)
-	if b.Cmp(zeroDec) < 0 {
-		ed.Add(&b, &b, expPowersTableSizeDec)
-		a64 -= 1
+	b := tmp64 % expPowersTableSize
+	if b < 0 {
+		b += expPowersTableSize
+		a -= 1
 	}
 
 	ed.Mul(&c, &tmp, &ln10n)
@@ -122,11 +134,7 @@ func exp(d, x *apd.Decimal) error {
 	ed.Add(&r, &expP2, &r)
 	ed.Mul(&r, &c2, &r)
 	ed.Sub(&r, &c, &r)
-	b64, err := b.Int64()
-	if err != nil {
-		return err
-	}
-	pb := expPowers[b64]
+	pb := expPowers[b]
 	ed.Mul(&pbc, &pb, &c)
 	ed.Sub(&tmp, twoDec, &r)
 	ed.Mul(&expbc, &pbc, &r)
@@ -138,7 +146,7 @@ func exp(d, x *apd.Decimal) error {
 		return err
 	}
 
-	exponent := int64(expbc.Exponent) + a64
+	exponent := int64(expbc.Exponent) + a
 	if exponent > math.MaxInt32 || exponent < math.MinInt32 {
 		return ErrOverflow
 	}
