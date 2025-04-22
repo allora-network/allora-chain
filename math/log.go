@@ -89,10 +89,11 @@ func ln(d, x *apd.Decimal) error {
 	var a apd.Decimal
 	a.Set(x)
 	b := x.NumDigits() + int64(x.Exponent) - 1
-	if b > math.MaxInt32 || b < math.MinInt32 {
+	exponent := int64(a.Exponent) - b
+	if exponent > math.MaxInt32 || exponent < math.MinInt32 {
 		return ErrOverflow
 	}
-	a.Exponent -= int32(b)
+	a.Exponent = int32(exponent) //nolint:gosec // ensured just above
 
 	// d = ln(a) + b * ln(10)
 	var lna, bDec, bln10 apd.Decimal
