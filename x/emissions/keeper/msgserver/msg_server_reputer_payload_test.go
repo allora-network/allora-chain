@@ -268,3 +268,114 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 	_, err = s.msgServer.InsertReputerPayload(ctx, lossesMsg)
 	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }
+
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadWorkerAddressValidation() {
+	testCases := []struct {
+		name            string
+		setupBundle     func(bundle types.InputValueBundle) types.InputValueBundle
+		setupInferences func(inferences types.Inferences) types.Inferences
+		expectedError   string
+	}{
+		{
+			name: "Different worker sets - missing worker",
+			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+				bundle.InfererValues = bundle.InfererValues[1:]
+				return bundle
+			},
+			setupInferences: func(inferences types.Inferences) types.Inferences {
+				return inferences
+			},
+			expectedError: "worker sets don't match",
+		},
+		{
+			name: "Different worker sets - different unique worker",
+			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+				modifiedBundle := bundle
+				for i, infVal := range bundle.InfererValues {
+					modifiedBundle.InfererValues[i] = &types.InputWorkerAttributedValue{
+						Worker: infVal.Worker,
+						Value:  infVal.Value,
+					}
+				}
+				modifiedBundle.InfererValues[0].Worker = s.addrsStr[4]
+				return modifiedBundle
+			},
+			setupInferences: func(inferences types.Inferences) types.Inferences {
+				return inferences
+			},
+			expectedError: "worker frequency mismatch",
+		},
+		{
+			name: "Same workers but different frequencies",
+			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+				return bundle
+			},
+			setupInferences: func(inferences types.Inferences) types.Inferences {
+				duplicateInferences := inferences
+				duplicateInferences.Inferences[1] = duplicateInferences.Inferences[0]
+				return duplicateInferences
+			},
+			expectedError: "worker frequency mismatch",
+		},
+		{
+			name: "Valid worker sets match",
+			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+				return bundle
+			},
+			setupInferences: func(inferences types.Inferences) types.Inferences {
+				return inferences
+			},
+			expectedError: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			require := s.Require()
+			keeper := s.emissionsKeeper
+
+			reputerPrivateKey := s.privKeys[0]
+			reputerAddr := s.addrs[0]
+			reputerPublicKeyHex := s.pubKeyHexStr[0]
+			workerAddr1 := s.addrs[1]
+			workerAddr2 := s.addrs[2]
+			workerAddr3 := s.addrs[3]
+
+			reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr1, workerAddr2, workerAddr3)
+
+			err := keeper.InsertActiveForecasts(s.ctx, topicId, block, expectedForecasts)
+			require.NoError(err)
+
+			modifiedInferences := tc.setupInferences(expectedInferences)
+			err = keeper.InsertActiveInferences(s.ctx, topicId, block, modifiedInferences)
+			require.NoError(err)
+
+			topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+			require.NoError(err)
+
+			newBlockheight := block + topic.GroundTruthLag
+			s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
+			modifiedBundle := tc.setupBundle(reputerValueBundle)
+			valueBundleSignature := s.signInputValueBundle(&modifiedBundle, reputerPrivateKey)
+
+			lossesMsg := &types.InsertReputerPayloadRequest{
+				Sender: reputerAddr.String(),
+				ReputerValueBundle: &types.InputReputerValueBundle{
+					ValueBundle: &modifiedBundle,
+					Signature:   valueBundleSignature,
+					Pubkey:      reputerPublicKeyHex,
+				},
+			}
+
+			_, err = s.msgServer.InsertReputerPayload(s.ctx, lossesMsg)
+
+			if tc.expectedError != "" {
+				require.Error(err)
+				require.Contains(err.Error(), tc.expectedError)
+			} else {
+				require.NoError(err)
+			}
+		})
+	}
+}
