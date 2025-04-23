@@ -15,9 +15,12 @@ index 2611cc0c..22b47a5b 100644
  	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
  	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
  	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-@@ -17,6 +19,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
- 	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+@@ -13,8 +15,13 @@ import (
+ 	sdk "github.com/cosmos/cosmos-sdk/types"
+ )
  
++// Adjusting context for the EndBlocker function start
+ func EndBlocker(ctx context.Context, am AppModule) error {
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
 +	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
 +	if invariantFailed {
@@ -25,7 +28,7 @@ index 2611cc0c..22b47a5b 100644
 +	}
  	blockHeight := sdkCtx.BlockHeight()
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
- 	moduleParams, err := am.keeper.GetParams(sdkCtx)
+ 
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
 index 2be77ea0..516cde87 100644
 --- a/x/emissions/module/module.go
