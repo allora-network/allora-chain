@@ -13,17 +13,83 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EndBlocker(ctx context.Context, am AppModule) error {
-	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+// handleMonthlyRewardsReset calculates the percentage of rewards that went to staked reputers
+// in the previous month, stores it, and resets the monthly counters.
+func handleMonthlyRewardsReset(sdkCtx sdk.Context, am AppModule) (err error) {
+	totalRewardToStakedReputers, err := am.keeper.GetMonthlyReputerRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to get monthly reputer rewards")
+	}
 
+	totalRewardToTopicParticipants, err := am.keeper.GetMonthlyTopicRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to get monthly topic rewards")
+	}
+
+	sdkCtx.Logger().Info("Monthly rewards", "totalRewardToStakedReputers", totalRewardToStakedReputers, "totalRewardToTopicParticipants", totalRewardToTopicParticipants)
+
+	percentageToStakedReputersDec := alloraMath.ZeroDec()
+	if !totalRewardToTopicParticipants.IsZero() {
+		totalReputersDec, err := alloraMath.NewDecFromSdkInt(totalRewardToStakedReputers)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to convert total reputer rewards to alloraMath.Dec")
+		}
+		totalTopicDec, err := alloraMath.NewDecFromSdkInt(totalRewardToTopicParticipants)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to convert total topic rewards to alloraMath.Dec")
+		}
+
+		percentageToStakedReputersDec, err = totalReputersDec.Quo(totalTopicDec)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to calculate percentage to staked reputers")
+		}
+	}
+
+	err = am.keeper.SetPreviousPercentageRewardToStakedReputers(sdkCtx, percentageToStakedReputersDec)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to set previous percentage reward to staked reputers")
+	}
+
+	// Reset monthly reputer rewards
+	err = am.keeper.ResetMonthlyReputerRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to reset monthly reputer rewards")
+	}
+
+	// Reset monthly topic rewards
+	err = am.keeper.ResetMonthlyTopicRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to reset monthly topic rewards")
+	}
+
+	sdkCtx.Logger().Debug("Monthly rewards reset triggered for block height", "blockHeight", sdkCtx.BlockHeight(),
+		"previousPercentageRewardToStakedReputers", percentageToStakedReputersDec.String())
+	return nil
+}
+
+func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
+
 	moduleParams, err := am.keeper.GetParams(sdkCtx)
 	if err != nil {
 		sdkCtx.Logger().Error("Error Getting module params", err)
 		return err
 	}
+
+	defer func() {
+		telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+
+		if err == nil && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
+			resetErr := handleMonthlyRewardsReset(sdkCtx, am)
+			if resetErr != nil {
+				sdkCtx.Logger().Error("Error handling monthly rewards reset", "error", resetErr)
+				err = resetErr
+			}
+		}
+	}()
+
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
 	err = RemoveStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 	if err != nil {
@@ -101,61 +167,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		if err != nil {
 			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
 		}
-	}
-
-	// If the current block is a multiple of the number of blocks per month,
-	// update the percentage of rewards going to staked reputers and reset monthly counters.
-	if uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
-		// Get total rewards paid to staked reputers in the last month
-		totalRewardToStakedReputers, err := am.keeper.GetMonthlyReputerRewards(sdkCtx)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get monthly reputer rewards")
-		}
-
-		// Get total rewards emitted during the preceding month to topic participants
-		totalRewardToTopicParticipants, err := am.keeper.GetMonthlyTopicRewards(sdkCtx)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get monthly topic rewards")
-		}
-
-		sdkCtx.Logger().Info("Monthly rewards", "totalRewardToStakedReputers", totalRewardToStakedReputers, "totalRewardToTopicParticipants", totalRewardToTopicParticipants)
-
-		// Avoid division by zero if no topic rewards were emitted
-		percentageToStakedReputersDec := alloraMath.ZeroDec()
-		if !totalRewardToTopicParticipants.IsZero() {
-			totalReputersDec, err := alloraMath.NewDecFromSdkInt(totalRewardToStakedReputers)
-			if err != nil {
-				return errors.Wrapf(err, "failed to convert total reputer rewards to alloraMath.Dec")
-			}
-			totalTopicDec, err := alloraMath.NewDecFromSdkInt(totalRewardToTopicParticipants)
-			if err != nil {
-				return errors.Wrapf(err, "failed to convert total topic rewards to alloraMath.Dec")
-			}
-
-			percentageToStakedReputersDec, err = totalReputersDec.Quo(totalTopicDec)
-			if err != nil {
-				return errors.Wrapf(err, "failed to calculate percentage to staked reputers")
-			}
-		}
-
-		err = am.keeper.SetPreviousPercentageRewardToStakedReputers(sdkCtx, percentageToStakedReputersDec)
-		if err != nil {
-			return errors.Wrapf(err, "failed to set previous percentage reward to staked reputers")
-		}
-
-		// Reset monthly reputer rewards
-		err = am.keeper.ResetMonthlyReputerRewards(sdkCtx)
-		if err != nil {
-			return errors.Wrapf(err, "failed to reset monthly reputer rewards")
-		}
-
-		// Reset monthly topic rewards
-		err = am.keeper.ResetMonthlyTopicRewards(sdkCtx)
-		if err != nil {
-			return errors.Wrapf(err, "failed to reset monthly topic rewards")
-		}
-
-		sdkCtx.Logger().Debug("Monthly rewards reset triggered!")
 	}
 
 	return nil
