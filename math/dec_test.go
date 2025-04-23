@@ -1129,6 +1129,19 @@ func TestExpFailNaN(t *testing.T) {
 	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
 
+func TestExpBoundaries(t *testing.T) {
+	belowExpBoundary := alloraMath.MustNewDecFromString("-230258.509299404568401799145468436422")
+	afterExpBoundary := alloraMath.MustNewDecFromString("230258.509299404568401799145468436422")
+
+	r, err := alloraMath.Exp(belowExpBoundary)
+	require.NoError(t, err)
+	require.True(t, r.IsZero())
+
+	r, err = alloraMath.Exp(afterExpBoundary)
+	require.NoError(t, err)
+	require.False(t, r.IsFinite())
+}
+
 func TestPowFailNaN(t *testing.T) {
 	dec := alloraMath.OneDec()
 	nan := alloraMath.NewNaN()
