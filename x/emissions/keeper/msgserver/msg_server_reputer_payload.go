@@ -2,14 +2,17 @@ package msgserver
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // A tx function that accepts a individual loss and possibly returns an error
@@ -81,6 +84,10 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
 	}
 
+	if err := ms.validateInfererAddresses(ctx, msg.ReputerValueBundle.ValueBundle.InfererValues, topicId, nonce.ReputerNonce.BlockHeight); err != nil {
+		return nil, err
+	}
+
 	// Check that the reputer enough stake in the topic
 	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, rvb.ValueBundle.Reputer)
 	if err != nil {
@@ -102,4 +109,39 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	return &types.InsertReputerPayloadResponse{}, err
+}
+
+func (ms msgServer) validateInfererAddresses(ctx context.Context, infererValues []*types.InputWorkerAttributedValue, topicId uint64, blockHeight int64) error {
+	networkInferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, blockHeight, false)
+	if err != nil {
+		return errorsmod.Wrapf(err, "error getting inferences")
+	}
+
+	if len(networkInferences.Inferences) != len(infererValues) {
+		return fmt.Errorf("worker sets don't match - different unique workers")
+	}
+
+	networkWorkerCount := make(map[string]int)
+	infererValueWorkerCount := make(map[string]int)
+
+	for _, inference := range networkInferences.Inferences {
+		networkWorkerCount[inference.Inferer]++
+	}
+
+	for _, infererVal := range infererValues {
+		infererValueWorkerCount[infererVal.Worker]++
+	}
+
+	for worker, count := range networkWorkerCount {
+		if infererValueWorkerCount[worker] != count {
+			return fmt.Errorf("worker frequency mismatch for worker %s", worker)
+		}
+	}
+
+	for worker, count := range infererValueWorkerCount {
+		if networkWorkerCount[worker] != count {
+			return fmt.Errorf("inferer frequency mismatch for worker %s", worker)
+		}
+	}
+	return nil
 }
