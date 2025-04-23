@@ -3,11 +3,12 @@ package msgserver_test
 import (
 	"encoding/hex"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func getNewAddress() (sdk.AccAddress, string) {
@@ -30,7 +31,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	topic := s.CreateOneTopic()
 
 	// Mock setup for addresses
-	reputerAddr, reputer := getNewAddress()
+	reputerAddr, _ := getNewAddress()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 	worker := workerAddr.String()
 	_, Inferer2 := getNewAddress()
@@ -47,7 +48,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	s.Require().NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, moduleParams.RegistrationFee)
+	s.commonStakingSetup(ctx, reputerAddr, moduleParams.RegistrationFee, workerAddr)
 	err = keeper.AddWorkerNonce(ctx, topic.Id, &nonce)
 	s.Require().NoError(err)
 	err = keeper.InsertWorker(ctx, topic.Id, worker, workerInfo)
@@ -560,7 +561,6 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	nonce := types.Nonce{BlockHeight: 1}
 
 	// Mock setup for addresses
-	reputer := s.addrsStr[0]
 	reputerAddr := s.addrs[0]
 	worker := s.addrsStr[1]
 	workerPrivateKey := s.privKeys[1]
@@ -579,7 +579,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	require.NoError(err)
 
 	// Create topic 0 and register reputer in it
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, moduleParams.RegistrationFee)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, moduleParams.RegistrationFee, workerAddr)
 	err = keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	require.NoError(err)
 	err = keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
@@ -645,7 +645,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	nonce := types.Nonce{BlockHeight: 1}
 
 	// Mock setup for addresses
-	reputer := s.addrsStr[0]
 	reputerAddr := s.addrs[0]
 	worker := s.addrsStr[1]
 	workerAddr := s.addrs[1]
@@ -663,7 +662,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	require.NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, moduleParams.RegistrationFee)
+	s.commonStakingSetup(ctx, reputerAddr, moduleParams.RegistrationFee, workerAddr)
 	err = keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	require.NoError(err)
 	err = keeper.InsertWorker(ctx, topicId, Inferer, workerInfo)
@@ -903,7 +902,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecastIncludesSelf() {
 	_ = keeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
 
 	// Set up params similar to other tests
-	newParams := &types.OptionalParams{ //nolint: exhaustruct
+	newParams := &types.OptionalParams{ // nolint: exhaustruct
 		MaxElementsPerForecast: []uint64{3},
 		// not updated params remain nil
 	}

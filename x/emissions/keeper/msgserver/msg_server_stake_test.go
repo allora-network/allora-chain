@@ -8,28 +8,31 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *MsgServerTestSuite) commonStakingSetup(
 	ctx sdk.Context,
-	reputer string,
 	reputerAddr sdk.AccAddress,
-	worker string,
-	workerAddr sdk.AccAddress,
 	reputerInitialBalanceUint cosmosMath.Int,
+	workerAddr ...sdk.AccAddress,
 ) uint64 {
+	if len(workerAddr) == 0 {
+		panic("worker address must not be empty")
+	}
+
 	msgServer := s.msgServer
 	require := s.Require()
 
 	// Create Topic
 	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  reputer,
+		Creator:                  reputerAddr.String(),
 		Metadata:                 "Some metadata for the new topic",
 		LossMethod:               "mse",
 		EpochLength:              10800,
@@ -51,7 +54,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	reputerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerInitialBalance))
 
-	err := s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, reputer)
+	err := s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, reputerAddr.String())
 	require.NoError(err)
 
 	err = s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, reputerInitialBalanceCoins)
@@ -65,8 +68,8 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Register Reputer
 	reputerRegMsg := &types.RegisterRequest{
-		Sender:    reputer,
-		Owner:     reputer,
+		Sender:    reputerAddr.String(),
+		Owner:     reputerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: true,
 	}
@@ -75,23 +78,25 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(11000)))
 
-	err = s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, workerInitialBalanceCoins)
+	err = s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, workerInitialBalanceCoins.MulInt(cosmosMath.NewInt(int64(len(workerAddr)))))
 	require.NoError(err, "Minting coins should not return an error")
-	err = s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins)
+	err = s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins.MulInt(cosmosMath.NewInt(int64(len(workerAddr)))))
 	require.NoError(err, "Minting coins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, workerAddr, workerInitialBalanceCoins)
-	require.NoError(err, "Sending coins should not return an error")
 
-	// Register Worker
-	workerRegMsg := &types.RegisterRequest{
-		Sender:    worker,
-		Owner:     worker,
-		TopicId:   topicId,
-		IsReputer: false,
+	for _, worker := range workerAddr {
+		err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, worker, workerInitialBalanceCoins)
+		require.NoError(err, "Sending coins should not return an error")
+		// Register Worker
+		workerRegMsg := &types.RegisterRequest{
+			Sender:    worker.String(),
+			Owner:     worker.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+		}
+		_, err = msgServer.Register(ctx, workerRegMsg)
+		require.NoError(err, "Registering worker should not return an error")
+
 	}
-	_, err = msgServer.Register(ctx, workerRegMsg)
-	require.NoError(err, "Registering worker should not return an error")
-
 	return topicId
 }
 
@@ -101,14 +106,13 @@ func (s *MsgServerTestSuite) TestMsgAddStakeWithWhitelistCheck() {
 
 	reputer := s.addrsStr[0]
 	reputerAddr := s.addrs[0]
-	worker := s.addrsStr[1]
 	workerAddr := s.addrs[1]
 	stakeAmount := cosmosMath.NewInt(10)
 	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
 	require.NoError(err)
 	registrationInitialBalance := moduleParams.RegistrationFee.Add(stakeAmount)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 
 	addStakeMsg := &types.AddStakeRequest{
 		Sender:  reputer,
@@ -159,14 +163,13 @@ func (s *MsgServerTestSuite) TestMsgAddStakeNil() {
 
 	reputer := s.addrsStr[0]
 	reputerAddr := s.addrs[0]
-	worker := s.addrsStr[1]
 	workerAddr := s.addrs[1]
 	stakeAmount := cosmosMath.NewInt(10)
 	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
 	require.NoError(err)
 	registrationInitialBalance := moduleParams.RegistrationFee.Add(stakeAmount)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 
 	addStakeMsg := &types.AddStakeRequest{
 		Sender:  reputer,
@@ -1435,7 +1438,6 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	delegatorAddr := s.addrs[0]
 	reputer := s.addrsStr[1]
 	reputerAddr := s.addrs[1]
-	worker := s.addrsStr[2]
 	workerAddr := s.addrs[2]
 	delegator2 := s.addrsStr[3]
 	delegator2Addr := s.addrs[3]
@@ -1445,7 +1447,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	delegatorStakeAmount2 := cosmosMath.NewInt(500)
 	delegator2StakeAmount := cosmosMath.NewInt(5000)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegator2Addr, cosmosMath.NewInt(1000000))
@@ -1778,13 +1780,12 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	reputerAddr := s.addrs[1]
 	reputerPubKeyHex := s.pubKeyHexStr[1]
 	reputerPrivKey := s.privKeys[1]
-	worker := s.addrsStr[2]
 	workerAddr := s.addrs[2]
 
 	registrationInitialBalance := cosmosMath.NewInt(1000)
 	stakeAmount := cosmosMath.NewInt(500000)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
 
@@ -1873,14 +1874,13 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	reputerPrivKey := s.privKeys[1]
 	reputer := s.addrsStr[1]
 	workerAddr := s.addrs[2]
-	worker := s.addrsStr[2]
 
 	registrationInitialBalance := cosmosMath.NewInt(10000)
 	reputerStakeAmount := cosmosMath.NewInt(1e2)
 	delegatorRatio := cosmosMath.NewInt(1e3)
 	delegatorStakeAmount := reputerStakeAmount.Mul(delegatorRatio)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
 	err := s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName,
@@ -1948,14 +1948,13 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	largeDelegatorAddr := s.addrs[2]
 	largeDelegator := s.addrsStr[2]
 	workerAddr := s.addrs[3]
-	worker := s.addrsStr[3]
 
 	registrationInitialBalance := cosmosMath.NewInt(10000)
 	reputerStakeAmount := cosmosMath.NewInt(1e2)
 	largeDelegatorRatio := cosmosMath.NewInt(1e3)
 	largeDelegatorStakeAmount := reputerStakeAmount.Mul(largeDelegatorRatio)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(largeDelegatorAddr, cosmosMath.NewInt(1000000))
@@ -2142,12 +2141,11 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
 	delegator := s.addrsStr[0]
 	reputer := s.addrsStr[1]
 	reputerAddr := s.addrs[1]
-	worker := s.addrsStr[2]
 	workerAddr := s.addrs[2]
 	registrationInitialBalance := cosmosMath.NewInt(10000)
 	amount := cosmosMath.NewInt(50)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 
 	// Add a delegate stake removal
 	stakeToRemove := types.DelegateStakeRemovalInfo{
@@ -2185,11 +2183,10 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStakeNotExist() {
 	delegator := s.addrsStr[0]
 	reputer := s.addrsStr[1]
 	reputerAddr := s.addrs[1]
-	worker := s.addrsStr[2]
 	workerAddr := s.addrs[2]
 	registrationInitialBalance := cosmosMath.NewInt(10000)
 
-	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, registrationInitialBalance, workerAddr)
 
 	// Call CancelRemoveDelegateStake
 	msg := &types.CancelRemoveDelegateStakeRequest{

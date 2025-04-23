@@ -1,21 +1,20 @@
 package msgserver_test
 
 import (
-	alloraMath "github.com/allora-network/allora-chain/math"
-	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 const block = types.BlockHeight(1)
 
 func (s *MsgServerTestSuite) setUpMsgReputerPayload(
-	reputer string,
 	reputerAddr sdk.AccAddress,
-	worker string,
-	workerAddr sdk.AccAddress,
+	workerAddr ...sdk.AccAddress,
 ) (
 	reputerValueBundle types.InputValueBundle,
 	expectedInferences types.Inferences,
@@ -31,7 +30,7 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 
 	minStakeScaled := params.RequiredMinimumStake.Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId = s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, minStakeScaled)
+	topicId = s.commonStakingSetup(ctx, reputerAddr, minStakeScaled, workerAddr...)
 	s.MintTokensToAddress(reputerAddr, params.RequiredMinimumStake)
 
 	addStakeMsg := &types.AddStakeRequest{
@@ -54,66 +53,77 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	err = keeper.AddReputerNonce(ctx, topicId, &workerNonce)
 	require.NoError(err)
 
-	// add in inference and forecast data
+	inferences := make([]*types.Inference, 0, len(workerAddr))
+	forecasts := make([]*types.Forecast, 0, len(workerAddr))
+	infererValues := make([]*types.InputWorkerAttributedValue, 0, len(workerAddr))
+	forecasterValues := make([]*types.InputWorkerAttributedValue, 0, len(workerAddr))
+	oneOutForecasterValues := make([]*types.InputWithheldWorkerAttributedValue, 0, len(workerAddr))
+	oneInForecasterValues := make([]*types.InputWorkerAttributedValue, 0, len(workerAddr))
+
+	for _, worker := range workerAddr {
+		inferences = append(inferences, &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: block,
+			Value:       alloraMath.NewDecFromInt64(1),
+			Inferer:     worker.String(),
+		})
+
+		forecastElements := make([]*types.ForecastElement, 0, len(workerAddr))
+		for _, inferWorker := range workerAddr {
+			forecastElements = append(forecastElements, &types.ForecastElement{
+				Inferer: inferWorker.String(),
+				Value:   alloraMath.NewDecFromInt64(1),
+			})
+		}
+
+		forecasts = append(forecasts, &types.Forecast{
+			TopicId:          topicId,
+			BlockHeight:      block,
+			Forecaster:       worker.String(),
+			ForecastElements: forecastElements,
+		})
+
+		infererValues = append(infererValues, &types.InputWorkerAttributedValue{
+			Worker: worker.String(),
+			Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		})
+
+		forecasterValues = append(forecasterValues, &types.InputWorkerAttributedValue{
+			Worker: worker.String(),
+			Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		})
+
+		oneOutForecasterValues = append(oneOutForecasterValues, &types.InputWithheldWorkerAttributedValue{
+			Worker: worker.String(),
+			Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		})
+
+		oneInForecasterValues = append(oneInForecasterValues, &types.InputWorkerAttributedValue{
+			Worker: worker.String(),
+			Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		})
+	}
+
 	expectedInferences = types.Inferences{
-		Inferences: []*types.Inference{
-			{
-				TopicId:     topicId,
-				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
-				Inferer:     workerAddr.String(),
-			},
-		},
+		Inferences: inferences,
 	}
 
 	expectedForecasts = types.Forecasts{
-		Forecasts: []*types.Forecast{
-			{
-				TopicId:     topicId,
-				BlockHeight: block,
-				Forecaster:  workerAddr.String(),
-				ForecastElements: []*types.ForecastElement{
-					{
-						Inferer: workerAddr.String(),
-						Value:   alloraMath.NewDecFromInt64(1),
-					},
-				},
-			},
-		},
+		Forecasts: forecasts,
 	}
 
 	reputerValueBundle = types.InputValueBundle{
-		TopicId:             topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &workerNonce},
-		Reputer:             reputerAddr.String(),
-		ExtraData:           nil,
-		CombinedValue:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-		InfererValues: []*types.InputWorkerAttributedValue{
-			{
-				Worker: workerAddr.String(),
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
-		ForecasterValues: []*types.InputWorkerAttributedValue{
-			{
-				Worker: workerAddr.String(),
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
-		NaiveValue:          alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-		OneOutInfererValues: []*types.InputWithheldWorkerAttributedValue{},
-		OneOutForecasterValues: []*types.InputWithheldWorkerAttributedValue{
-			{
-				Worker: workerAddr.String(),
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
-		OneInForecasterValues: []*types.InputWorkerAttributedValue{
-			{
-				Worker: workerAddr.String(),
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
+		TopicId:                       topicId,
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &workerNonce},
+		Reputer:                       reputerAddr.String(),
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		InfererValues:                 infererValues,
+		ForecasterValues:              forecasterValues,
+		NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		OneOutInfererValues:           []*types.InputWithheldWorkerAttributedValue{},
+		OneOutForecasterValues:        oneOutForecasterValues,
+		OneInForecasterValues:         oneInForecasterValues,
 		OneOutInfererForecasterValues: nil,
 	}
 
@@ -170,12 +180,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhite
 	reputerPrivateKey := s.privKeys[0]
 	reputerPublicKeyHex := s.pubKeyHexStr[0]
 	reputerAddr := s.addrs[0]
-	reputer := s.addrsStr[0]
 
 	workerAddr := s.addrs[1]
-	worker := s.addrsStr[1]
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputer, reputerAddr, worker, workerAddr)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
 	err := keeper.InsertActiveForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
@@ -226,12 +234,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 
 	reputerPrivateKey := s.privKeys[0]
 	reputerAddr := s.addrs[0]
-	reputer := s.addrsStr[0]
 	reputerPublicKeyHex := s.pubKeyHexStr[0]
 	workerAddr := s.addrs[1]
-	worker := s.addrsStr[1]
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputer, reputerAddr, worker, workerAddr)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
 	err := keeper.InsertActiveForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
