@@ -73,6 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* [809](https://github.com/allora-network/allora-chain/pull/808) Update goreleaser.yml to new Ubuntu image
+
 ### Deprecated
 
 ### Removed
