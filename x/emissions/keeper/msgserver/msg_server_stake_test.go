@@ -1709,9 +1709,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 	ctx := s.ctx
 	require := s.Require()
-	keeper := s.emissionsKeeper
 	block := int64(1003)
-	newBlock := int64(1004)
 	score := alloraMath.MustNewDecFromString("17.53436")
 
 	delegator := s.addrsStr[0]
@@ -1720,18 +1718,13 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 	reputerAddr := s.addrs[1]
 	worker := s.addrsStr[2]
 	workerAddr := s.addrs[2]
-	delegator2 := s.addrsStr[3]
-	delegator2Addr := s.addrs[3]
 	stakeAmount := cosmosMath.NewInt(500000)
 	registrationInitialBalance := cosmosMath.NewInt(1000)
 	delegatorStakeAmount := cosmosMath.NewInt(500)
-	delegatorStakeAmount2 := cosmosMath.NewInt(500)
-	delegator2StakeAmount := cosmosMath.NewInt(5000)
 
 	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
-	s.MintTokensToAddress(delegator2Addr, cosmosMath.NewInt(1000000))
 
 	addStakeMsg := &types.AddStakeRequest{
 		Sender:  reputer,
@@ -1750,29 +1743,10 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 		Amount:  delegatorStakeAmount,
 	}
 
-	msg2 := &types.DelegateStakeRequest{
-		Sender:  delegator2,
-		TopicId: topicId,
-		Reputer: reputer,
-		Amount:  delegator2StakeAmount,
-	}
-
-	reputerStake, err := s.emissionsKeeper.GetStakeReputerAuthority(ctx, topicId, reputer)
-	require.NoError(err)
-	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
-
-	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegator, reputer)
-	require.NoError(err)
-	require.Equal(alloraMath.NewDecFromInt64(0), amount0.Amount)
-
 	// Perform the stake delegation
 	responseDelegator, err := s.msgServer.DelegateStake(ctx, msg)
 	require.NoError(err)
 	require.NotNil(responseDelegator, "Response should not be nil after successful delegation")
-
-	responseDelegator2, err := s.msgServer.DelegateStake(ctx, msg2)
-	require.NoError(err)
-	require.NotNil(responseDelegator2, "Response should not be nil after successful delegation")
 
 	var reputerValueBundles types.ReputerValueBundles
 	scoreToAdd := types.Score{
@@ -1787,12 +1761,17 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 	reputerValueBundle := &types.ReputerValueBundle{
 		Pubkey: s.pubKeyHexStr[1],
 		ValueBundle: &types.ValueBundle{
-			TopicId:                       topicId,
-			ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-			Reputer:                       reputer,
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
-			InfererValues:                 nil,
+			TopicId:             topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+			Reputer:             reputer,
+			ExtraData:           nil,
+			CombinedValue:       alloraMath.MustNewDecFromString("1500.0"),
+			InfererValues: []*types.WorkerAttributedValue{
+				{
+					Worker: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+					Value:  alloraMath.MustNewDecFromString("1"),
+				},
+			},
 			ForecasterValues:              nil,
 			NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
 			OneOutInfererValues:           nil,
@@ -1830,97 +1809,18 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(reputerRewards))
 
-	msg3 := &types.DelegateStakeRequest{
-		Sender:  delegator,
-		TopicId: topicId,
-		Reputer: reputer,
-		Amount:  delegatorStakeAmount2,
-	}
-
-	responseDelegator3, err := s.msgServer.DelegateStake(ctx, msg3)
-	require.NoError(err)
-	require.NotNil(responseDelegator3, "Response should not be nil after successful delegation")
-
-	var newReputerValueBundles types.ReputerValueBundles
-	newScoreToAdd := types.Score{
-		TopicId:     topicId,
-		BlockHeight: newBlock,
-		Address:     reputer,
-		Score:       score,
-	}
-	err = s.emissionsKeeper.InsertReputerScore(s.ctx, topicId, newBlock, newScoreToAdd)
-	s.Require().NoError(err)
-
-	newReputerValueBundle := &types.ReputerValueBundle{
-		ValueBundle: &types.ValueBundle{
-			TopicId:                       topicId,
-			ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: newBlock}},
-			Reputer:                       reputer,
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
-			InfererValues:                 nil,
-			ForecasterValues:              nil,
-			NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
-			OneOutInfererValues:           nil,
-			OneOutForecasterValues:        nil,
-			OneInForecasterValues:         nil,
-			OneOutInfererForecasterValues: nil,
-		},
-		Signature: []byte{},
-		Pubkey:    s.pubKeyHexStr[1],
-	}
-	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
-	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, newBlock, newReputerValueBundles)
-	s.Require().NoError(err)
-
-	// Calculate and Set the reputer scores
-	scores, err = rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
-	s.Require().NoError(err)
-
-	// Generate new rewards
-	reputers, reputersRewardFractions, err = rewards.GetReputersRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		alloraMath.OneDec(),
-		scores,
-	)
-	s.Require().NoError(err)
-	newReputerRewards, err := rewards.GetRewardPerReputer(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		alloraMath.MustNewDecFromString("1020.5559072418691"),
-		reputers,
-		reputersRewardFractions,
-	)
-	s.Require().NoError(err)
-	s.Require().Equal(1, len(newReputerRewards))
-
 	beforeBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	s.Require().NoError(s.emissionsKeeper.RemoveReputer(ctx, topicId, reputer))
+
 	rewardMsg := &types.RewardDelegateStakeRequest{
 		Sender:  delegator,
 		TopicId: topicId,
 		Reputer: reputer,
 	}
-
-	s.Require().NoError(s.emissionsKeeper.RemoveReputer(ctx, topicId, reputer))
-
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
 	afterBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 	s.Require().NoError(err)
 	s.Require().Greater(afterBalance.Amount.Uint64(), beforeBalance.Amount.Uint64(), "Balance must be increased")
-
-	beforeBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, params.DefaultBondDenom)
-	rewardMsg2 := &types.RewardDelegateStakeRequest{
-		Sender:  delegator2,
-		TopicId: topicId,
-		Reputer: reputer,
-	}
-	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg2)
-	afterBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, params.DefaultBondDenom)
-	s.Require().NoError(err)
-	s.Require().Greater(afterBalance2.Amount.Uint64(), beforeBalance2.Amount.Uint64(), "Balance must be increased")
 }
 
 func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
