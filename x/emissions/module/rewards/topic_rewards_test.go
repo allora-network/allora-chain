@@ -2,11 +2,12 @@ package rewards_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func mockTopic(s *RewardsTestSuite) types.Topic {
@@ -138,8 +139,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	epochLength := int64(100)
 	topicId0 := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, epochLength)
-	//topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
-	//
+
 	// setup values to be identical for both topics
 	reputerValues := []TestWorkerValue{
 		{Index: reputerIndexes[0], Value: "0.2"},
@@ -168,7 +168,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	s.Require().NoError(err)
 
 	// Insert inference
-	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId0, topic0.EpochLastEnded, block, workerValues, workerIndexes)
+	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId0, topic0.EpochLastEnded, block, workerIndexes)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId0, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
@@ -177,14 +177,6 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 		})
 		s.Require().NoError(err)
 	}
-
-	// Advance to close the window
-	block = block + topic0.WorkerSubmissionWindow
-	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
-
-	// EndBlock closes the  worker nonce
-	err = s.emissionsAppModule.EndBlock(s.ctx)
-	s.Require().NoError(err)
 
 	// Generate loss data
 	lossBundles := generateSimpleLossBundles(
@@ -197,6 +189,16 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 		"0.1",
 		"0.1",
 	)
+
+	s.addNetworkLosses(lossBundles, block)
+
+	// Advance to close the window
+	block = block + topic0.WorkerSubmissionWindow
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
+	// EndBlock closes the  worker nonce
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 
 	// Run endBlock at 201, epoch end block - important bc of the topic in/activation
 	block = block + (topic0.GroundTruthLag - topic0.WorkerSubmissionWindow)
@@ -293,7 +295,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.Require().NoError(err)
 
 	// Insert inference
-	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId, topic.EpochLastEnded, block, workerValues, workerIndexes)
+	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId, topic.EpochLastEnded, block, workerIndexes)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
@@ -302,6 +304,20 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 		})
 		s.Require().NoError(err)
 	}
+
+	// Generate and insert loss data
+	lossBundles := generateSimpleLossBundles(
+		s,
+		topicId,
+		topic.EpochLastEnded,
+		workerValues,
+		reputerValues,
+		s.addrs[workerIndexes[0]],
+		"0.1",
+		"0.1",
+	)
+
+	s.addNetworkLosses(lossBundles, block)
 
 	// Advance to close the worker window
 	block = block + topic.WorkerSubmissionWindow
@@ -322,17 +338,6 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
 	s.T().Logf("****  Moved to next block %d", block)
 
-	// Generate and insert loss data
-	lossBundles := generateSimpleLossBundles(
-		s,
-		topicId,
-		topic.EpochLastEnded,
-		workerValues,
-		reputerValues,
-		s.addrs[workerIndexes[0]],
-		"0.1",
-		"0.1",
-	)
 	for _, payload := range lossBundles.ReputerValueBundles {
 		s.RegisterAllReputersOfPayload(topicId, payload)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.InsertReputerPayloadRequest{
