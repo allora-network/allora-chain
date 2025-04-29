@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -84,7 +85,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
 	}
 
-	if err := ms.validateInfererAddresses(ctx, msg.ReputerValueBundle.ValueBundle.InfererValues, topicId, nonce.ReputerNonce.BlockHeight); err != nil {
+	if err := ms.validateValueBundle(ctx, msg.ReputerValueBundle.ValueBundle, topicId, nonce.ReputerNonce.BlockHeight); err != nil {
 		return nil, err
 	}
 
@@ -111,37 +112,87 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	return &types.InsertReputerPayloadResponse{}, err
 }
 
-func (ms msgServer) validateInfererAddresses(ctx context.Context, infererValues []*types.InputWorkerAttributedValue, topicId uint64, blockHeight int64) error {
-	networkInferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, blockHeight, false)
+func (ms msgServer) validateValueBundle(ctx context.Context, valueBundle *types.InputValueBundle, topicId uint64, blockHeight int64) error {
+	networkInferences, err := ms.k.GetNetworkInferences(ctx, topicId, blockHeight)
 	if err != nil {
 		return errorsmod.Wrapf(err, "error getting inferences")
 	}
 
-	if len(networkInferences.Inferences) != len(infererValues) {
+	if err := validateWorkerValues(
+		types.ConvertToWorkerValues(networkInferences.InfererValues),
+		types.ConvertToWorkerValues(valueBundle.InfererValues),
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		types.ConvertToWorkerValues(networkInferences.ForecasterValues),
+		types.ConvertToWorkerValues(valueBundle.ForecasterValues),
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		types.ConvertToWorkerValues(networkInferences.OneOutInfererValues),
+		types.ConvertToWorkerValues(valueBundle.OneOutInfererValues),
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		types.ConvertToWorkerValues(networkInferences.OneInForecasterValues),
+		types.ConvertToWorkerValues(valueBundle.OneInForecasterValues),
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		types.ConvertToWorkerValues(networkInferences.OneOutForecasterValues),
+		types.ConvertToWorkerValues(valueBundle.OneOutForecasterValues)); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		types.ConvertToWorkerValues(networkInferences.OneOutInfererForecasterValues),
+		types.ConvertToWorkerValues(valueBundle.OneOutInfererForecasterValues)); err != nil {
+		return err
+	}
+
+	return nil
+}
+func validateWorkerValues(workerValues, inputWorkerValues []*types.WorkerValue) error {
+	if len(workerValues) != len(inputWorkerValues) {
 		return fmt.Errorf("worker sets don't match - different unique workers")
 	}
 
-	networkWorkerCount := make(map[string]int)
-	infererValueWorkerCount := make(map[string]int)
+	sort.Slice(workerValues, func(i, j int) bool {
+		return workerValues[i].Worker < workerValues[j].Worker
+	})
 
-	for _, inference := range networkInferences.Inferences {
-		networkWorkerCount[inference.Inferer]++
-	}
+	sort.Slice(inputWorkerValues, func(i, j int) bool {
+		return inputWorkerValues[i].Worker < inputWorkerValues[j].Worker
+	})
 
-	for _, infererVal := range infererValues {
-		infererValueWorkerCount[infererVal.Worker]++
-	}
+	for i := range workerValues {
+		if workerValues[i].Worker != inputWorkerValues[i].Worker {
+			return fmt.Errorf("worker mismatch: expected %s, got %s",
+				workerValues[i].Worker, inputWorkerValues[i].Worker)
+		}
 
-	for worker, count := range networkWorkerCount {
-		if infererValueWorkerCount[worker] != count {
-			return fmt.Errorf("worker frequency mismatch for worker %s", worker)
+		valList, ok := workerValues[i].Value.([]*types.WorkerValue)
+		if !ok {
+			continue
+		}
+
+		inValList, ok := inputWorkerValues[i].Value.([]*types.WorkerValue)
+		if !ok {
+			continue
+		}
+
+		if err := validateWorkerValues(valList, inValList); err != nil {
+			return err
 		}
 	}
 
-	for worker, count := range infererValueWorkerCount {
-		if networkWorkerCount[worker] != count {
-			return fmt.Errorf("inferer frequency mismatch for worker %s", worker)
-		}
-	}
 	return nil
 }

@@ -3,11 +3,13 @@ package rewards_test
 import (
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils/fn"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Test defer execution of CloseReputerNonce
@@ -90,26 +92,8 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	})
 	s.Require().NoError(err)
 
-	workerValues := make([]TestWorkerValue, len(workerIndexes))
-	for i, index := range workerIndexes {
-		workerValues[i] = TestWorkerValue{
-			Index: index,
-			Value: "100",
-		}
-	}
-
-	getIndexesFromValues := func(values []TestWorkerValue) []int {
-		indexes := make([]int, 0)
-		for _, value := range values {
-			indexes = append(indexes, value.Index)
-		}
-		return indexes
-	}
-
-	workerIndexesFromValues := getIndexesFromValues(workerValues)
-
 	// Insert inference from workers
-	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId, currentBlockHeight, currentBlockHeight, workerValues, workerIndexesFromValues)
+	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId, currentBlockHeight, currentBlockHeight, workerIndexes)
 	for _, payload := range inferenceBundles {
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
@@ -120,6 +104,10 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
+
+	lossBundles := generateLossBundles(s, currentBlockHeight, topicId, reputerIndexes, workerIndexes)
+
+	s.addNetworkLosses(lossBundles, currentBlockHeight)
 
 	// Move to end of worker submission window
 	s.ctx = s.ctx.WithBlockHeight(currentBlockHeight + topic.WorkerSubmissionWindow)
@@ -134,11 +122,6 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
-	// Insert loss bundle from reputer
-	// Use different indexes to enforce different workers are used
-	// This will trigger an error and test if the defer execution of CloseReputerNonce works properly
-	workerIndexes = s.returnIndexes(10, 5)
-	lossBundles := generateLossBundles(s, currentBlockHeight, topicId, reputerIndexes, workerIndexes)
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
@@ -170,7 +153,7 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 		&s.emissionsKeeper, s.ctx, topic,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce,
 	)
-	s.Require().Error(err)
+	s.Require().NoError(err)
 
 	// Check if reputer nonce is fulfilled
 	unfulfilled, err = s.emissionsKeeper.IsReputerNonceUnfulfilled(s.ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
@@ -186,6 +169,30 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	for _, bundle := range lossBundles.ReputerValueBundles {
 		_, err := s.emissionsKeeper.GetReputerLatestLossByTopicId(s.ctx, topicId, bundle.ValueBundle.Reputer)
 		s.Require().ErrorIs(err, collections.ErrNotFound)
+	}
+}
+
+func (s *RewardsTestSuite) addNetworkLosses(
+	lossBundles types.InputReputerValueBundles,
+	currentBlockHeight int64,
+) {
+	for _, payload := range lossBundles.ReputerValueBundles {
+		networkLossBundle := types.ValueBundle{
+			TopicId:             payload.ValueBundle.TopicId,
+			ReputerRequestNonce: payload.ValueBundle.ReputerRequestNonce,
+			Reputer:             payload.ValueBundle.Reputer,
+			InfererValues: fn.Map(payload.ValueBundle.InfererValues, func(inf *types.InputWorkerAttributedValue) *types.WorkerAttributedValue {
+				dec, _ := inf.Value.ToDec()
+				return &types.WorkerAttributedValue{Worker: inf.Worker, Value: dec}
+			}),
+			ForecasterValues: fn.Map(payload.ValueBundle.ForecasterValues, func(inf *types.InputWorkerAttributedValue) *types.WorkerAttributedValue {
+				dec, _ := inf.Value.ToDec()
+				return &types.WorkerAttributedValue{Worker: inf.Worker, Value: dec}
+			}),
+		}
+
+		err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, payload.ValueBundle.TopicId, currentBlockHeight, networkLossBundle)
+		s.Require().NoError(err)
 	}
 }
 
@@ -256,7 +263,7 @@ func (s *RewardsTestSuite) TestCloseWorkerNonce_DeferExecWhenError() {
 	workerIndexesFromValues := getIndexesFromValues(workerValues)
 
 	// Insert inference from workers
-	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId, currentBlockHeight, currentBlockHeight, workerValues, workerIndexesFromValues)
+	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId, currentBlockHeight, currentBlockHeight, workerIndexesFromValues)
 	for _, payload := range inferenceBundles {
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
