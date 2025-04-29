@@ -1009,31 +1009,19 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 
 	// MonthlyReputerRewards
-	if data.MonthlyReputerRewards.GT(cosmosMath.ZeroInt()) {
-		if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyReputerRewards); err != nil {
-			return errors.Wrap(err, "monthly reputer rewards validation failed")
-		}
-		if err := k.SetMonthlyReputerRewards(ctx, data.MonthlyReputerRewards); err != nil {
-			return errors.Wrap(err, "error setting monthlyReputerRewards")
-		}
-	} else {
-		if err := k.SetMonthlyReputerRewards(ctx, cosmosMath.ZeroInt()); err != nil {
-			return errors.Wrap(err, "error setting monthlyReputerRewards to zero int")
-		}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyReputerRewards); err != nil {
+		return errors.Wrap(err, "monthly reputer rewards validation failed")
+	}
+	if err := k.SetMonthlyReputerRewards(ctx, data.MonthlyReputerRewards); err != nil {
+		return errors.Wrap(err, "error setting monthlyReputerRewards")
 	}
 
 	// MonthlyTopicRewards
-	if data.MonthlyTopicRewards.GT(cosmosMath.ZeroInt()) {
-		if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyTopicRewards); err != nil {
-			return errors.Wrap(err, "monthly topic rewards validation failed")
-		}
-		if err := k.SetMonthlyTopicRewards(ctx, data.MonthlyTopicRewards); err != nil {
-			return errors.Wrap(err, "error setting monthlyTopicRewards")
-		}
-	} else {
-		if err := k.SetMonthlyTopicRewards(ctx, cosmosMath.ZeroInt()); err != nil {
-			return errors.Wrap(err, "error setting monthlyTopicRewards to zero int")
-		}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyTopicRewards); err != nil {
+		return errors.Wrap(err, "monthly topic rewards validation failed")
+	}
+	if err := k.SetMonthlyTopicRewards(ctx, data.MonthlyTopicRewards); err != nil {
+		return errors.Wrap(err, "error setting monthlyTopicRewards")
 	}
 
 	return nil

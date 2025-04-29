@@ -2,7 +2,6 @@ package module
 
 import (
 	"context"
-	"time"
 
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -14,6 +13,8 @@ import (
 )
 
 func EndBlocker(ctx context.Context, am AppModule) error {
+	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
@@ -25,8 +26,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	defer func() {
-		telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
-
 		if err == nil && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
 			resetErr := handleMonthlyRewardsReset(sdkCtx, am)
 			if resetErr != nil {

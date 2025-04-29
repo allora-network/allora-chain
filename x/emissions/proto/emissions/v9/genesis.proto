@@ -271,6 +271,20 @@ message GenesisState {
   // NETWORK INFERENCES
   repeated TopicIdBlockHeightValueBundles network_inferences = 95;
   repeated TopicIdBlockHeightValueBundles outlier_resistant_network_inferences = 96;
+
+  // MONTHLY REWARDS
+  string monthly_reputer_rewards = 97 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string monthly_topic_rewards = 98 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message TopicIdAndTopic {

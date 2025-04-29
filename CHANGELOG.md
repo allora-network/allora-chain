@@ -88,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-# [Unreleased]
+# [Released]
 
 # v0.11.0
 
@@ -117,8 +117,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added 
 
 #### Changed
-
-# [Released]
 
 # v0.10.0
 
@@ -190,7 +188,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#748](https://github.com/allora-network/allora-chain/pull/748) Add nonce to rewards events
 
 ### Security
-
 
 # v0.8.3
 
