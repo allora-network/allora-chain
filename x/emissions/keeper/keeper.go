@@ -4628,20 +4628,18 @@ func (k *Keeper) GetMonthlyTopicRewards(ctx context.Context) (cosmosMath.Int, er
 
 // AddMonthlyRewards adds the specified amounts to the monthly reputer and topic reward counters.
 func (k Keeper) AddMonthlyRewards(ctx context.Context, reputerReward cosmosMath.Int, topicReward cosmosMath.Int) error {
-	currentReputerRewards, err := k.monthlyReputerRewards.Get(ctx)
+	currentReputerRewards, err := k.GetMonthlyReputerRewards(ctx)
 	if err != nil {
-		// Assuming 0 if not set
-		currentReputerRewards = cosmosMath.ZeroInt()
+		return err
 	}
 	newReputerRewards := currentReputerRewards.Add(reputerReward)
 	if err := k.monthlyReputerRewards.Set(ctx, newReputerRewards); err != nil {
 		return err
 	}
 
-	currentTopicRewards, err := k.monthlyTopicRewards.Get(ctx)
+	currentTopicRewards, err := k.GetMonthlyTopicRewards(ctx)
 	if err != nil {
-		// Assuming 0 if not set
-		currentTopicRewards = cosmosMath.ZeroInt()
+		return err
 	}
 	newTopicRewards := currentTopicRewards.Add(topicReward)
 	return k.monthlyTopicRewards.Set(ctx, newTopicRewards)
