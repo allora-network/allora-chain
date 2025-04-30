@@ -5810,99 +5810,67 @@ func (s *KeeperTestSuite) createDefaultInfererValues() []*types.WorkerAttributed
 	return infererValues
 }
 
-func (s *KeeperTestSuite) TestMonthlyReputerRewards() {
+func (s *KeeperTestSuite) TestMonthlyRewards() {
 	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	k := s.emissionsKeeper
 
-	// Initial Get should be zero
-	initialReputerRewards, err := keeper.GetMonthlyReputerRewards(ctx)
+	// Initial state should be zero
+	reputerRewards, err := k.GetMonthlyReputerRewards(ctx)
 	s.Require().NoError(err)
-	s.Require().True(initialReputerRewards.IsZero(), "Initial reputer rewards should be zero")
+	s.Require().True(reputerRewards.IsZero(), "Initial monthly reputer rewards should be zero")
 
-	// Set rewards
-	setReputerAmount := cosmosMath.NewInt(1000)
-	err = keeper.SetMonthlyReputerRewards(ctx, setReputerAmount)
+	topicRewards, err := k.GetMonthlyTopicRewards(ctx)
 	s.Require().NoError(err)
+	s.Require().True(topicRewards.IsZero(), "Initial monthly topic rewards should be zero")
 
-	// Get after Set
-	getReputerRewards, err := keeper.GetMonthlyReputerRewards(ctx)
-	s.Require().NoError(err)
-	s.Require().True(setReputerAmount.Equal(getReputerRewards), "Get after set mismatch for reputer rewards")
-
-	// Set Negative should fail
-	err = keeper.SetMonthlyReputerRewards(ctx, cosmosMath.NewInt(-100))
-	s.Require().ErrorIs(err, types.ErrInvalidValue, "Setting negative reputer rewards should fail")
-
-	// Add rewards
-	addReputerAmount := cosmosMath.NewInt(500)
-	err = keeper.AddMonthlyReputerRewards(ctx, addReputerAmount)
+	// Add some rewards
+	addReputerAmount := cosmosMath.NewInt(1000)
+	addTopicAmount := cosmosMath.NewInt(5000)
+	err = k.AddMonthlyRewards(ctx, addReputerAmount, addTopicAmount)
 	s.Require().NoError(err)
 
-	// Get after Add
-	getReputerRewardsAfterAdd, err := keeper.GetMonthlyReputerRewards(ctx)
+	// Check if rewards were added
+	reputerRewards, err = k.GetMonthlyReputerRewards(ctx)
 	s.Require().NoError(err)
-	expectedReputerAfterAdd := setReputerAmount.Add(addReputerAmount) // 1000 + 500 = 1500
-	s.Require().True(expectedReputerAfterAdd.Equal(getReputerRewardsAfterAdd), "Get after add mismatch for reputer rewards")
+	s.Require().True(reputerRewards.Equal(addReputerAmount), "Monthly reputer rewards should be updated after adding")
 
-	// Add Negative should fail
-	err = keeper.AddMonthlyReputerRewards(ctx, cosmosMath.NewInt(-50))
-	s.Require().ErrorIs(err, types.ErrInvalidValue, "Adding negative reputer rewards should fail")
+	topicRewards, err = k.GetMonthlyTopicRewards(ctx)
+	s.Require().NoError(err)
+	s.Require().True(topicRewards.Equal(addTopicAmount), "Monthly topic rewards should be updated after adding")
+
+	// Add more rewards
+	addMoreReputerAmount := cosmosMath.NewInt(500)
+	addMoreTopicAmount := cosmosMath.NewInt(2500)
+	err = k.AddMonthlyRewards(ctx, addMoreReputerAmount, addMoreTopicAmount)
+	s.Require().NoError(err)
+
+	// Check total rewards
+	totalExpectedReputer := addReputerAmount.Add(addMoreReputerAmount)
+	reputerRewards, err = k.GetMonthlyReputerRewards(ctx)
+	s.Require().NoError(err)
+	s.Require().True(reputerRewards.Equal(totalExpectedReputer), "Monthly reputer rewards should accumulate")
+
+	totalExpectedTopic := addTopicAmount.Add(addMoreTopicAmount)
+	topicRewards, err = k.GetMonthlyTopicRewards(ctx)
+	s.Require().NoError(err)
+	s.Require().True(topicRewards.Equal(totalExpectedTopic), "Monthly topic rewards should accumulate")
+
+	// Try adding negative amount (should fail)
+	negReputerAmount := cosmosMath.NewInt(-100)
+	negTopicAmount := cosmosMath.NewInt(-1000)
+	err = k.AddMonthlyRewards(ctx, negReputerAmount, negTopicAmount)
+	s.Require().Error(err, "Adding negative rewards should error")
 
 	// Reset rewards
-	err = keeper.ResetMonthlyReputerRewards(ctx)
+	err = k.ResetMonthlyRewards(ctx)
 	s.Require().NoError(err)
 
-	// Get after Reset
-	getReputerRewardsAfterReset, err := keeper.GetMonthlyReputerRewards(ctx)
+	// Check if rewards are reset to zero
+	reputerRewards, err = k.GetMonthlyReputerRewards(ctx)
 	s.Require().NoError(err)
-	s.Require().True(getReputerRewardsAfterReset.IsZero(), "Reputer rewards should be zero after reset")
+	s.Require().True(reputerRewards.IsZero(), "Monthly reputer rewards should be zero after reset")
 
-}
-
-func (s *KeeperTestSuite) TestMonthlyTopicRewards() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Initial Get should be zero
-	initialTopicRewards, err := keeper.GetMonthlyTopicRewards(ctx)
+	topicRewards, err = k.GetMonthlyTopicRewards(ctx)
 	s.Require().NoError(err)
-	s.Require().True(initialTopicRewards.IsZero(), "Initial topic rewards should be zero")
-
-	// Set rewards
-	setTopicAmount := cosmosMath.NewInt(2000)
-	err = keeper.SetMonthlyTopicRewards(ctx, setTopicAmount)
-	s.Require().NoError(err)
-
-	// Get after Set
-	getTopicRewards, err := keeper.GetMonthlyTopicRewards(ctx)
-	s.Require().NoError(err)
-	s.Require().True(setTopicAmount.Equal(getTopicRewards), "Get after set mismatch for topic rewards")
-
-	// Set Negative should fail
-	err = keeper.SetMonthlyTopicRewards(ctx, cosmosMath.NewInt(-200))
-	s.Require().ErrorIs(err, types.ErrInvalidValue, "Setting negative topic rewards should fail")
-
-	// Add rewards
-	addTopicAmount := cosmosMath.NewInt(750)
-	err = keeper.AddMonthlyTopicRewards(ctx, addTopicAmount)
-	s.Require().NoError(err)
-
-	// Get after Add
-	getTopicRewardsAfterAdd, err := keeper.GetMonthlyTopicRewards(ctx)
-	s.Require().NoError(err)
-	expectedTopicAfterAdd := setTopicAmount.Add(addTopicAmount) // 2000 + 750 = 2750
-	s.Require().True(expectedTopicAfterAdd.Equal(getTopicRewardsAfterAdd), "Get after add mismatch for topic rewards")
-
-	// Add Negative should fail
-	err = keeper.AddMonthlyTopicRewards(ctx, cosmosMath.NewInt(-75))
-	s.Require().ErrorIs(err, types.ErrInvalidValue, "Adding negative topic rewards should fail")
-
-	// Reset rewards
-	err = keeper.ResetMonthlyTopicRewards(ctx)
-	s.Require().NoError(err)
-
-	// Get after Reset
-	getTopicRewardsAfterReset, err := keeper.GetMonthlyTopicRewards(ctx)
-	s.Require().NoError(err)
-	s.Require().True(getTopicRewardsAfterReset.IsZero(), "Topic rewards should be zero after reset")
+	s.Require().True(topicRewards.IsZero(), "Monthly topic rewards should be zero after reset")
 }

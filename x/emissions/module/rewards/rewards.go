@@ -167,15 +167,9 @@ func EmitRewards(args EmitRewardsArgs) error {
 	}
 
 	// Add accumulated monthly reputer rewards
-	err = args.K.AddMonthlyReputerRewards(args.Ctx, totalMonthlyReputerRewards)
+	err = args.K.AddMonthlyRewards(args.Ctx, totalMonthlyReputerRewards, totalMonthlyTopicRewards)
 	if err != nil {
-		return errors.Wrapf(err, "failed to add monthly reputer rewards")
-	}
-
-	// Add accumulated monthly topic rewards
-	err = args.K.AddMonthlyTopicRewards(args.Ctx, totalMonthlyTopicRewards)
-	if err != nil {
-		return errors.Wrapf(err, "failed to add monthly topic rewards")
+		return errors.Wrapf(err, "failed to add monthly rewards")
 	}
 
 	// Emit reward of each topic

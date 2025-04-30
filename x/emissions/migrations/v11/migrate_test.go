@@ -66,9 +66,7 @@ func (s *EmissionsV10MigrationTestSuite) SetupTest() {
 // Test that the migration correctly initializes the monthly rewards values.
 func (s *EmissionsV10MigrationTestSuite) TestMigrateStore() {
 	// Manually set some non-zero initial values to ensure the migration overwrites them
-	err := s.emissionsKeeper.SetMonthlyReputerRewards(s.ctx, cosmosMath.NewInt(100))
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetMonthlyTopicRewards(s.ctx, cosmosMath.NewInt(200))
+	err := s.emissionsKeeper.AddMonthlyRewards(s.ctx, cosmosMath.NewInt(100), cosmosMath.NewInt(200))
 	s.Require().NoError(err)
 
 	// Run migration

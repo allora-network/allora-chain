@@ -1012,15 +1012,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyReputerRewards); err != nil {
 		return errors.Wrap(err, "monthly reputer rewards validation failed")
 	}
-	if err := k.SetMonthlyReputerRewards(ctx, data.MonthlyReputerRewards); err != nil {
-		return errors.Wrap(err, "error setting monthlyReputerRewards")
-	}
-
-	// MonthlyTopicRewards
 	if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyTopicRewards); err != nil {
 		return errors.Wrap(err, "monthly topic rewards validation failed")
 	}
-	if err := k.SetMonthlyTopicRewards(ctx, data.MonthlyTopicRewards); err != nil {
+	// Will set to zero both monthlyReputerRewards and monthlyTopicRewards
+	if err := k.ResetMonthlyRewards(ctx); err != nil {
 		return errors.Wrap(err, "error setting monthlyTopicRewards")
 	}
 

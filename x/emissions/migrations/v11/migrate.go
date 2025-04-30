@@ -1,7 +1,6 @@
 package v11
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -13,14 +12,11 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 10 TO VERSION 11")
 
 	ctx.Logger().Info("Initializing monthly rewards values")
-	err := emissionsKeeper.SetMonthlyReputerRewards(ctx, cosmosMath.ZeroInt())
+
+	// Will set to zero both monthlyReputerRewards and monthlyTopicRewards
+	err := emissionsKeeper.ResetMonthlyRewards(ctx)
 	if err != nil {
 		ctx.Logger().Error("Error setting monthly reputer rewards during migration", "error", err)
-		return err
-	}
-	err = emissionsKeeper.SetMonthlyTopicRewards(ctx, cosmosMath.ZeroInt())
-	if err != nil {
-		ctx.Logger().Error("Error setting monthly topic rewards during migration", "error", err)
 		return err
 	}
 

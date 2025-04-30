@@ -4121,10 +4121,8 @@ func (s *RewardsTestSuite) TestMonthlyPercentageRewardCalculation() {
 		s.Require().NoError(err, "EndBlocker failed during block %d", i)
 
 		// Manually add rewards to simulate accumulation during the month
-		err = s.emissionsKeeper.AddMonthlyReputerRewards(loopCtx, reputerIncrement)
-		s.Require().NoError(err, "Failed to add reputer rewards at block %d", i)
-		err = s.emissionsKeeper.AddMonthlyTopicRewards(loopCtx, topicIncrement)
-		s.Require().NoError(err, "Failed to add topic rewards at block %d", i)
+		err = s.emissionsKeeper.AddMonthlyRewards(loopCtx, reputerIncrement, topicIncrement)
+		s.Require().NoError(err, "Failed to add rewards at block %d", i)
 	}
 
 	// 5. Calculate Expected Totals and Percentage *before* the reset block

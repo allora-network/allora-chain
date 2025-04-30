@@ -25,7 +25,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	defer func() {
-		if err == nil && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
+		if uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
 			resetErr := rewards.HandleMonthlyRewardsReset(sdkCtx, am.keeper)
 			if resetErr != nil {
 				sdkCtx.Logger().Error("Error handling monthly rewards reset", "error", resetErr)

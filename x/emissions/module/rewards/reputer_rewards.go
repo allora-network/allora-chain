@@ -315,15 +315,9 @@ func HandleMonthlyRewardsReset(sdkCtx sdk.Context, keeper keeper.Keeper) (err er
 	types.EmitPreviousPercentageRewardToStakedReputersSetEvent(sdkCtx, sdkCtx.BlockHeight(), percentageToStakedReputersDec)
 
 	// Reset monthly reputer rewards
-	err = keeper.ResetMonthlyReputerRewards(sdkCtx)
+	err = keeper.ResetMonthlyRewards(sdkCtx)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to reset monthly reputer rewards")
-	}
-
-	// Reset monthly topic rewards
-	err = keeper.ResetMonthlyTopicRewards(sdkCtx)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to reset monthly topic rewards")
 	}
 
 	sdkCtx.Logger().Debug("Monthly rewards reset triggered for block height", "blockHeight", sdkCtx.BlockHeight(),
