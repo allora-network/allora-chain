@@ -833,3 +833,25 @@ func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "100")
 }
+
+func TestEmitPreviousPercentageRewardToStakedReputersSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	blockHeight := int64(10)
+	percentage := alloraMath.MustNewDecFromString("0.75")
+
+	types.EmitPreviousPercentageRewardToStakedReputersSetEvent(ctx, blockHeight, percentage)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v8.EventPreviousPercentageRewardToStakedReputersSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), strconv.FormatInt(blockHeight, 10))
+
+	val, exists = event.GetAttribute("percentage")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), percentage.String())
+}

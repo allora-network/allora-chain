@@ -273,3 +273,60 @@ func GetRewardPerReputer(
 	)
 	return reputerRewards, err
 }
+
+// HandleMonthlyRewardsReset calculates the percentage of rewards that went to staked reputers
+// in the previous month, stores it, and resets the monthly counters.
+func HandleMonthlyRewardsReset(sdkCtx sdk.Context, keeper keeper.Keeper) (err error) {
+	totalRewardToStakedReputers, err := keeper.GetMonthlyReputerRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to get monthly reputer rewards")
+	}
+
+	totalRewardToTopicParticipants, err := keeper.GetMonthlyTopicRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to get monthly topic rewards")
+	}
+
+	sdkCtx.Logger().Info("Monthly rewards", "totalRewardToStakedReputers", totalRewardToStakedReputers, "totalRewardToTopicParticipants", totalRewardToTopicParticipants)
+
+	percentageToStakedReputersDec := alloraMath.ZeroDec()
+	if !totalRewardToTopicParticipants.IsZero() {
+		totalReputersDec, err := alloraMath.NewDecFromSdkInt(totalRewardToStakedReputers)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to convert total reputer rewards to alloraMath.Dec")
+		}
+		totalTopicDec, err := alloraMath.NewDecFromSdkInt(totalRewardToTopicParticipants)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to convert total topic rewards to alloraMath.Dec")
+		}
+
+		percentageToStakedReputersDec, err = totalReputersDec.Quo(totalTopicDec)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to calculate percentage to staked reputers")
+		}
+	}
+
+	err = keeper.SetPreviousPercentageRewardToStakedReputers(sdkCtx, percentageToStakedReputersDec)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to set previous percentage reward to staked reputers")
+	}
+
+	// Emit the event
+	types.EmitPreviousPercentageRewardToStakedReputersSetEvent(sdkCtx, sdkCtx.BlockHeight(), percentageToStakedReputersDec)
+
+	// Reset monthly reputer rewards
+	err = keeper.ResetMonthlyReputerRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to reset monthly reputer rewards")
+	}
+
+	// Reset monthly topic rewards
+	err = keeper.ResetMonthlyTopicRewards(sdkCtx)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to reset monthly topic rewards")
+	}
+
+	sdkCtx.Logger().Debug("Monthly rewards reset triggered for block height", "blockHeight", sdkCtx.BlockHeight(),
+		"previousPercentageRewardToStakedReputers", percentageToStakedReputersDec.String())
+	return nil
+}

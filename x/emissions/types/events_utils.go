@@ -197,3 +197,12 @@ func NewForecasterWeightSetEventBase(topicId uint64, blockHeight int64, address 
 		Weight:      weight,
 	}
 }
+
+/// Previous Percentage Reward
+
+func NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight int64, percentage alloraMath.Dec) proto.Message {
+	return &EventPreviousPercentageRewardToStakedReputersSet{
+		BlockHeight: blockHeight,
+		Percentage:  percentage,
+	}
+}
