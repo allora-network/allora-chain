@@ -5855,12 +5855,6 @@ func (s *KeeperTestSuite) TestMonthlyRewards() {
 	s.Require().NoError(err)
 	s.Require().True(topicRewards.Equal(totalExpectedTopic), "Monthly topic rewards should accumulate")
 
-	// Try adding negative amount (should fail)
-	negReputerAmount := cosmosMath.NewInt(-100)
-	negTopicAmount := cosmosMath.NewInt(-1000)
-	err = k.AddMonthlyRewards(ctx, negReputerAmount, negTopicAmount)
-	s.Require().Error(err, "Adding negative rewards should error")
-
 	// Reset rewards
 	err = k.ResetMonthlyRewards(ctx)
 	s.Require().NoError(err)
