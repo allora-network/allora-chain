@@ -217,3 +217,13 @@ func EmitNewForecasterWeightSetEvent(ctx sdk.Context, topicId uint64, blockHeigh
 		ctx.Logger().Warn("Error emitting NewForecasterWeightSetEvent", "error", err)
 	}
 }
+
+/// Previous Percentage Reward
+
+func EmitPreviousPercentageRewardToStakedReputersSetEvent(ctx sdk.Context, blockHeight int64, percentage alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.PREVIOUS_PERCENTAGE_REWARD_TO_STAKED_REPUTERS_SET_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight, percentage))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting PreviousPercentageRewardToStakedReputersSetEvent", "error", err)
+	}
+}

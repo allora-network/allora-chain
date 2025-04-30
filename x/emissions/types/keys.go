@@ -116,4 +116,6 @@ var (
 	LatestForecasterWeightsKey                        = collections.NewPrefix(101)
 	NetworkInferencesKey                              = collections.NewPrefix(102)
 	OutlierResistantNetworkInferencesKey              = collections.NewPrefix(103)
+	MonthlyReputerRewardsKey                          = collections.NewPrefix(104)
+	MonthlyTopicRewardsKey                            = collections.NewPrefix(105)
 )

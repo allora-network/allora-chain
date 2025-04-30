@@ -273,6 +273,10 @@ type Keeper struct {
 	networkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 	// map of (topic, block_height) -> ValueBundle
 	outlierResistantNetworkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	// total reward for the month going to reputers
+	monthlyReputerRewards collections.Item[cosmosMath.Int]
+	// total reward for the month going to all topic participants (reputers, inferers, forecasters)
+	monthlyTopicRewards collections.Item[cosmosMath.Int]
 }
 
 func NewKeeper(
@@ -384,6 +388,8 @@ func NewKeeper(
 		latestForecasterWeights:                   collections.NewMap(sb, types.LatestForecasterWeightsKey, "latest_forecaster_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		monthlyReputerRewards:                     collections.NewItem(sb, types.MonthlyReputerRewardsKey, "monthly_reputer_rewards", sdk.IntValue),
+		monthlyTopicRewards:                       collections.NewItem(sb, types.MonthlyTopicRewardsKey, "monthly_topic_rewards", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -4596,4 +4602,53 @@ func (k Keeper) SetLatestForecasterWeight(ctx context.Context, topicId TopicId, 
 		return errorsmod.Wrap(err, "worker address validation failed")
 	}
 	return k.latestForecasterWeights.Set(ctx, collections.Join(topicId, worker), weight)
+}
+
+// GetMonthlyReputerRewards retrieves the total reward for the month going to reputers.
+func (k *Keeper) GetMonthlyReputerRewards(ctx context.Context) (cosmosMath.Int, error) {
+	rewards, err := k.monthlyReputerRewards.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil // Return zero if not found
+	} else if err != nil {
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting monthly reputer rewards")
+	}
+	return rewards, nil
+}
+
+// GetMonthlyTopicRewards retrieves the total reward for the month going to all topic participants.
+func (k *Keeper) GetMonthlyTopicRewards(ctx context.Context) (cosmosMath.Int, error) {
+	rewards, err := k.monthlyTopicRewards.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil // Return zero if not found
+	} else if err != nil {
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting monthly topic rewards")
+	}
+	return rewards, nil
+}
+
+// AddMonthlyRewards adds the specified amounts to the monthly reputer and topic reward counters.
+func (k Keeper) AddMonthlyRewards(ctx context.Context, reputerReward cosmosMath.Int, topicReward cosmosMath.Int) error {
+	currentReputerRewards, err := k.GetMonthlyReputerRewards(ctx)
+	if err != nil {
+		return err
+	}
+	newReputerRewards := currentReputerRewards.Add(reputerReward)
+	if err := k.monthlyReputerRewards.Set(ctx, newReputerRewards); err != nil {
+		return err
+	}
+
+	currentTopicRewards, err := k.GetMonthlyTopicRewards(ctx)
+	if err != nil {
+		return err
+	}
+	newTopicRewards := currentTopicRewards.Add(topicReward)
+	return k.monthlyTopicRewards.Set(ctx, newTopicRewards)
+}
+
+// ResetMonthlyRewards resets the monthly reputer and topic reward counters to zero.
+func (k Keeper) ResetMonthlyRewards(ctx context.Context) error {
+	if err := k.monthlyReputerRewards.Set(ctx, cosmosMath.ZeroInt()); err != nil {
+		return err
+	}
+	return k.monthlyTopicRewards.Set(ctx, cosmosMath.ZeroInt())
 }
