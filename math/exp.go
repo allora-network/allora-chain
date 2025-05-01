@@ -16,6 +16,8 @@ var (
 	expPowersTableSizeDec = apd.New(expPowersTableSize, 0)
 	ln10n                 apd.Decimal
 	nln10                 apd.Decimal
+	ln10nhi               = mustNewApdDecFromString("0.007675283643313485613393")
+	ln10nlo               = mustNewApdDecFromString("3.048489478806920036716287625765868e-25")
 
 	// Boundaries of the input for the exponential function.
 	maxExpInput apd.Decimal
@@ -109,7 +111,7 @@ func exp(d, x *apd.Decimal) error {
 
 	ed := apd.MakeErrDecimal(&fnCalcCtx)
 
-	var tmp, c apd.Decimal
+	var tmp, chi, clo, c apd.Decimal
 	ed.Mul(&tmp, x, &nln10)
 	ed.RoundToIntegralValue(&tmp, &tmp)
 	tmp64 := ed.Int64(&tmp) // true because of the boundaries
@@ -121,8 +123,10 @@ func exp(d, x *apd.Decimal) error {
 		a -= 1
 	}
 
-	ed.Mul(&c, &tmp, &ln10n)
-	ed.Sub(&c, x, &c)
+	ed.Mul(&chi, &tmp, ln10nhi)
+	ed.Sub(&chi, x, &chi)
+	ed.Mul(&clo, &tmp, ln10nlo)
+	ed.Sub(&c, &chi, &clo)
 
 	var c2, r, pbc, expbc apd.Decimal
 	ed.Mul(&c2, &c, &c)
