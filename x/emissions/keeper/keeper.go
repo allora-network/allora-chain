@@ -16,9 +16,9 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
-
 	coreStore "cosmossdk.io/core/store"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -3958,6 +3958,23 @@ func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, 
 // wrapper around bank keeper GetBalance
 func (k *Keeper) GetBankBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
 	return k.bankKeeper.GetBalance(ctx, addr, denom)
+}
+
+// MoveCoinsFromAlloraRewardsToEcosystem moves funds from the allora rewards account to the ecosystem account
+func (k *Keeper) MoveCoinsFromAlloraRewardsToEcosystem(ctx context.Context, amount alloraMath.Dec) error {
+	if amount.IsZero() {
+		return nil
+	}
+	amountInt, err := amount.SdkIntTrim()
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to sdk int trim amount")
+	}
+	return k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.AlloraRewardsAccountName,
+		minttypes.EcosystemModuleName,
+		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt)),
+	)
 }
 
 // Gets the total rewards available to be distributed from the Allora Rewards Module Account
