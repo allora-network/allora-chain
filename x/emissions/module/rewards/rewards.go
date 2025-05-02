@@ -127,6 +127,14 @@ func EmitRewards(args EmitRewardsArgs) error {
 	for _, topicId := range sortedRewardableTopics {
 		topicRewardNonce, err := args.K.GetTopicRewardNonce(args.Ctx, topicId)
 		if err != nil || topicRewardNonce == 0 {
+			// return reward to ecosystem account
+			err = args.K.MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
+			if err != nil {
+				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
+				panic(err)
+			}
+			*topicRewards[topicId] = alloraMath.ZeroDec()
+
 			Logger(args.Ctx).Info("Topic has no valid reward nonce, skipping", "topicId", topicId)
 			continue
 		}
@@ -147,6 +155,14 @@ func EmitRewards(args EmitRewardsArgs) error {
 			ModuleParams:     args.ModuleParams,
 		})
 		if err != nil {
+			// return reward to ecosystem account
+			err = args.K.MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
+			if err != nil {
+				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
+				panic(err)
+			}
+			*topicRewards[topicId] = alloraMath.ZeroDec()
+			
 			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err)
 			continue
 		}
