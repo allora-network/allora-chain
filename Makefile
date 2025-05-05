@@ -36,6 +36,7 @@ ifeq ($(LEDGER_ENABLED),true)
 	endif
 endif
 
+build_tags += pebbledb
 build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
