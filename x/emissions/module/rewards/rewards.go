@@ -162,7 +162,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 				panic(err)
 			}
 			*topicRewards[topicId] = alloraMath.ZeroDec()
-			
+
 			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err)
 			continue
 		}
