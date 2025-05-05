@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+* [#777](https://github.com/allora-network/allora-chain/pull/777) Allow forecasts with unregistered inferers to proceed
 
 ### Deprecated
 
