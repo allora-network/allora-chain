@@ -87,7 +87,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		thirdParty:                              {"minter"},
 		"ecosystem":                             {"burner", "minter", "staking"},
 		"mint":                                  {"minter"},
-		emissionstypes.AlloraRewardsAccountName: nil,
+		emissionstypes.AlloraRewardsAccountName: {"minter"},
 		emissionstypes.AlloraPendingRewardForDelegatorAccountName: nil,
 		emissionstypes.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
 		"bonded_tokens_pool":                                      {"burner", "staking"},
@@ -673,6 +673,105 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 		ecosystemTokensMintedDelta2.String(),
 		ecosystemTokensMintedDelta1.String(),
 	)
+}
+
+func (s *MintModuleTestSuite) TestEcosystemRefundReducesMintingInSubsequentBlock() {
+	s.ctx = s.ctx.WithBlockHeight(1)
+	topicId := uint64(1)
+	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
+	refundSenderAddr := s.addrs[2] // Use one of the pre-generated addresses
+
+	// 1. Initial setup: stake, initial supply (mint to a regular account)
+	stake, ok := cosmosMath.NewIntFromString("40000000000000000000") // Sufficient stake
+	s.Require().True(ok)
+	err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, s.addrsStr[0], stake)
+	s.Require().NoError(err)
+
+	initialSupply, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
+	s.Require().True(ok)
+	err = s.bankKeeper.MintCoins(s.ctx, "mint", sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initialSupply)))
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, "mint", refundSenderAddr, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initialSupply)))
+	s.Require().NoError(err)
+
+	// Ensure ecosystem starts empty
+	ecosystemBalStart := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
+	s.Require().True(ecosystemBalStart.Amount.IsZero(), "Ecosystem account should start empty")
+	ecosystemTokensMintedStart, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(ecosystemTokensMintedStart.IsZero(), "Ecosystem tokens minted should start at zero")
+	tokenSupplyStart := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+
+	// 2. Run BeginBlocker at block 1 - should mint tokens
+	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
+	s.Require().NoError(err)
+
+	tokenSupplyAfterBlock1 := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+	ecosystemTokensMintedAfterBlock1, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
+	s.Require().NoError(err)
+	emissionBlock1, err := s.mintKeeper.PreviousBlockEmission.Get(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(emissionBlock1.GT(cosmosMath.ZeroInt()), "Emission for block 1 should be positive")
+
+	mintedInBlock1 := tokenSupplyAfterBlock1.Amount.Sub(tokenSupplyStart.Amount)
+	s.Require().True(mintedInBlock1.GT(cosmosMath.ZeroInt()), "Tokens should have been minted in block 1")
+	s.Require().True(mintedInBlock1.Equal(ecosystemTokensMintedAfterBlock1.Sub(ecosystemTokensMintedStart)), "Minted tokens should match increase in EcosystemTokensMinted")
+	s.Require().True(mintedInBlock1.Equal(emissionBlock1), "Minted tokens in block 1 should equal the calculated emission when ecosystem is empty")
+
+	// 3. Simulate refund to ecosystem account (less than the emission amount)
+	// This simulates funds arriving in the ecosystem account before BeginBlocker runs.
+	// In a real scenario, this represents collected fees or undistributed rewards
+	// being returned from another module (like emissions returning funds from AlloraRewardsAccountName).
+	// The latter is the case in this test.
+	// For this test's purpose, sending from a regular account isolates the mint module's
+	// reaction to a pre-existing balance.
+	refundAmount := emissionBlock1.QuoRaw(2) // Refund half the emission amount
+	s.Require().True(refundAmount.GT(cosmosMath.ZeroInt()), "Refund amount must be positive")
+	refundCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, refundAmount))
+	// Send coins from the user account to the ecosystem module account using bankKeeper
+	err = s.bankKeeper.SendCoinsFromAccountToModule(s.ctx, refundSenderAddr, types.EcosystemModuleName, refundCoins)
+	s.Require().NoError(err)
+	ecosystemBalAfterRefund := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
+	s.Require().True(ecosystemBalAfterRefund.Amount.Equal(refundAmount), "Ecosystem balance should equal refund amount")
+
+	// 4. Run BeginBlocker at block 2
+	s.ctx = s.ctx.WithBlockHeight(2) // Advance block height, avoid recalculation
+	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
+	s.Require().NoError(err)
+
+	// 5. Check results after block 2
+	tokenSupplyAfterBlock2 := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+	ecosystemTokensMintedAfterBlock2, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
+	s.Require().NoError(err)
+	emissionBlock2, err := s.mintKeeper.PreviousBlockEmission.Get(s.ctx) // Should be same as block 1
+	s.Require().NoError(err)
+	s.Require().True(emissionBlock2.Equal(emissionBlock1), "Emission should not change between block 1 and 2")
+
+	// Calculate changes in block 2
+	mintedInBlock2 := tokenSupplyAfterBlock2.Amount.Sub(tokenSupplyAfterBlock1.Amount)
+	ecosystemMintedInBlock2 := ecosystemTokensMintedAfterBlock2.Sub(ecosystemTokensMintedAfterBlock1)
+
+	// 6. Verify less minting occurred due to refund (Now these should be equal!)
+	s.Require().True(mintedInBlock2.Equal(ecosystemMintedInBlock2), "Minted supply change should equal EcosystemTokensMinted change in block 2")
+	expectedMintAmountBlock2 := emissionBlock2.Sub(refundAmount)
+	s.Require().True(expectedMintAmountBlock2.GT(cosmosMath.ZeroInt()), "Expected mint amount should still be positive")
+	s.Require().True(
+		mintedInBlock2.Equal(expectedMintAmountBlock2),
+		"Actual minted tokens in block 2 (%s) should equal emission (%s) minus refund (%s)",
+		mintedInBlock2.String(),
+		emissionBlock2.String(),
+		refundAmount.String(),
+	)
+	s.Require().True(
+		mintedInBlock2.LT(emissionBlock2),
+		"Minted tokens in block 2 (%s) should be less than the total emission (%s) because of the refund",
+		mintedInBlock2.String(),
+		emissionBlock2.String(),
+	)
+
+	// Check final ecosystem balance is zero (refund + minted tokens were paid out)
+	ecosystemBalFinal := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
+	s.Require().True(ecosystemBalFinal.Amount.IsZero(), "Ecosystem account should be empty after paying emissions")
 }
 
 func (s *MintModuleTestSuite) TestEmissionDisabled() {
