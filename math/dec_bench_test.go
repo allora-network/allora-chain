@@ -25,6 +25,9 @@ var benchExpData = []alloramath.Dec{
 	alloramath.MustNewDecFromString("0.0000000000000024912482190471290471"),
 }
 
+// Carries testing dec for pow benchmarks
+var benchPowData = benchExpData
+
 func BenchmarkLn(b *testing.B) {
 	for _, test := range benchLogData {
 		b.Run(fmt.Sprintf("input_%v", test), func(b *testing.B) {
@@ -71,8 +74,8 @@ func BenchmarkExp(b *testing.B) {
 }
 
 func BenchmarkPow(b *testing.B) {
-	for _, d := range benchExpData {
-		for _, e := range benchExpData {
+	for _, d := range benchPowData {
+		for _, e := range benchPowData {
 			b.Run(fmt.Sprintf("input_%v_%v", d, e), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StartTimer()
