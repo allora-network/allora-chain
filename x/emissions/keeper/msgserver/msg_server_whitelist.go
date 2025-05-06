@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
@@ -9,7 +10,10 @@ import (
 )
 
 func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhitelistAdminRequest) (_ *types.AddToWhitelistAdminResponse, err error) {
-	defer metrics.RecordMetrics("AddToWhitelistAdmin", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("AddToWhitelistAdmin", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -36,7 +40,10 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhi
 }
 
 func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest) (_ *types.RemoveFromWhitelistAdminResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -63,7 +70,10 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Rem
 }
 
 func (ms msgServer) AddToGlobalWhitelist(ctx context.Context, msg *types.AddToGlobalWhitelistRequest) (_ *types.AddToGlobalWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("AddToGlobalWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("AddToGlobalWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -90,7 +100,10 @@ func (ms msgServer) AddToGlobalWhitelist(ctx context.Context, msg *types.AddToGl
 }
 
 func (ms msgServer) RemoveFromGlobalWhitelist(ctx context.Context, msg *types.RemoveFromGlobalWhitelistRequest) (_ *types.RemoveFromGlobalWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromGlobalWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("RemoveFromGlobalWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -117,7 +130,10 @@ func (ms msgServer) RemoveFromGlobalWhitelist(ctx context.Context, msg *types.Re
 }
 
 func (ms msgServer) AddToGlobalWorkerWhitelist(ctx context.Context, msg *types.AddToGlobalWorkerWhitelistRequest) (_ *types.AddToGlobalWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("AddToGlobalWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("AddToGlobalWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -144,7 +160,10 @@ func (ms msgServer) AddToGlobalWorkerWhitelist(ctx context.Context, msg *types.A
 }
 
 func (ms msgServer) RemoveFromGlobalWorkerWhitelist(ctx context.Context, msg *types.RemoveFromGlobalWorkerWhitelistRequest) (_ *types.RemoveFromGlobalWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromGlobalWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("RemoveFromGlobalWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -171,7 +190,10 @@ func (ms msgServer) RemoveFromGlobalWorkerWhitelist(ctx context.Context, msg *ty
 }
 
 func (ms msgServer) AddToGlobalReputerWhitelist(ctx context.Context, msg *types.AddToGlobalReputerWhitelistRequest) (_ *types.AddToGlobalReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("AddToGlobalReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("AddToGlobalReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -198,7 +220,10 @@ func (ms msgServer) AddToGlobalReputerWhitelist(ctx context.Context, msg *types.
 }
 
 func (ms msgServer) RemoveFromGlobalReputerWhitelist(ctx context.Context, msg *types.RemoveFromGlobalReputerWhitelistRequest) (_ *types.RemoveFromGlobalReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromGlobalReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("RemoveFromGlobalReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -225,7 +250,10 @@ func (ms msgServer) RemoveFromGlobalReputerWhitelist(ctx context.Context, msg *t
 }
 
 func (ms msgServer) AddToGlobalAdminWhitelist(ctx context.Context, msg *types.AddToGlobalAdminWhitelistRequest) (_ *types.AddToGlobalAdminWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("AddToGlobalAdminWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("AddToGlobalAdminWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -252,7 +280,10 @@ func (ms msgServer) AddToGlobalAdminWhitelist(ctx context.Context, msg *types.Ad
 }
 
 func (ms msgServer) RemoveFromGlobalAdminWhitelist(ctx context.Context, msg *types.RemoveFromGlobalAdminWhitelistRequest) (_ *types.RemoveFromGlobalAdminWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromGlobalAdminWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("RemoveFromGlobalAdminWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -279,7 +310,10 @@ func (ms msgServer) RemoveFromGlobalAdminWhitelist(ctx context.Context, msg *typ
 }
 
 func (ms msgServer) BulkAddToGlobalWorkerWhitelist(ctx context.Context, msg *types.BulkAddToGlobalWorkerWhitelistRequest) (_ *types.BulkAddToGlobalWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkAddToGlobalWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("BulkAddToGlobalWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -315,7 +349,10 @@ func (ms msgServer) BulkAddToGlobalWorkerWhitelist(ctx context.Context, msg *typ
 }
 
 func (ms msgServer) BulkRemoveFromGlobalWorkerWhitelist(ctx context.Context, msg *types.BulkRemoveFromGlobalWorkerWhitelistRequest) (_ *types.BulkRemoveFromGlobalWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkRemoveFromGlobalWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("BulkRemoveFromGlobalWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -351,7 +388,10 @@ func (ms msgServer) BulkRemoveFromGlobalWorkerWhitelist(ctx context.Context, msg
 }
 
 func (ms msgServer) BulkAddToGlobalReputerWhitelist(ctx context.Context, msg *types.BulkAddToGlobalReputerWhitelistRequest) (_ *types.BulkAddToGlobalReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkAddToGlobalReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("BulkAddToGlobalReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -387,7 +427,10 @@ func (ms msgServer) BulkAddToGlobalReputerWhitelist(ctx context.Context, msg *ty
 }
 
 func (ms msgServer) BulkRemoveFromGlobalReputerWhitelist(ctx context.Context, msg *types.BulkRemoveFromGlobalReputerWhitelistRequest) (_ *types.BulkRemoveFromGlobalReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkRemoveFromGlobalReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("BulkRemoveFromGlobalReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -423,7 +466,10 @@ func (ms msgServer) BulkRemoveFromGlobalReputerWhitelist(ctx context.Context, ms
 }
 
 func (ms msgServer) BulkAddToTopicWorkerWhitelist(ctx context.Context, msg *types.BulkAddToTopicWorkerWhitelistRequest) (_ *types.BulkAddToTopicWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkAddToTopicWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("BulkAddToTopicWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -470,7 +516,10 @@ func (ms msgServer) BulkAddToTopicWorkerWhitelist(ctx context.Context, msg *type
 }
 
 func (ms msgServer) BulkRemoveFromTopicWorkerWhitelist(ctx context.Context, msg *types.BulkRemoveFromTopicWorkerWhitelistRequest) (_ *types.BulkRemoveFromTopicWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkRemoveFromTopicWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("BulkRemoveFromTopicWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -517,7 +566,11 @@ func (ms msgServer) BulkRemoveFromTopicWorkerWhitelist(ctx context.Context, msg 
 }
 
 func (ms msgServer) BulkAddToTopicReputerWhitelist(ctx context.Context, msg *types.BulkAddToTopicReputerWhitelistRequest) (_ *types.BulkAddToTopicReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkAddToTopicReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("BulkAddToTopicReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -564,7 +617,11 @@ func (ms msgServer) BulkAddToTopicReputerWhitelist(ctx context.Context, msg *typ
 }
 
 func (ms msgServer) BulkRemoveFromTopicReputerWhitelist(ctx context.Context, msg *types.BulkRemoveFromTopicReputerWhitelistRequest) (_ *types.BulkRemoveFromTopicReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("BulkRemoveFromTopicReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("BulkRemoveFromTopicReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -611,7 +668,11 @@ func (ms msgServer) BulkRemoveFromTopicReputerWhitelist(ctx context.Context, msg
 }
 
 func (ms msgServer) EnableTopicWorkerWhitelist(ctx context.Context, msg *types.EnableTopicWorkerWhitelistRequest) (_ *types.EnableTopicWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("EnableTopicWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("EnableTopicWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -630,7 +691,11 @@ func (ms msgServer) EnableTopicWorkerWhitelist(ctx context.Context, msg *types.E
 }
 
 func (ms msgServer) DisableTopicWorkerWhitelist(ctx context.Context, msg *types.DisableTopicWorkerWhitelistRequest) (_ *types.DisableTopicWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("DisableTopicWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("DisableTopicWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -649,7 +714,11 @@ func (ms msgServer) DisableTopicWorkerWhitelist(ctx context.Context, msg *types.
 }
 
 func (ms msgServer) EnableTopicReputerWhitelist(ctx context.Context, msg *types.EnableTopicReputerWhitelistRequest) (_ *types.EnableTopicReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("EnableTopicReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("EnableTopicReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -668,7 +737,11 @@ func (ms msgServer) EnableTopicReputerWhitelist(ctx context.Context, msg *types.
 }
 
 func (ms msgServer) DisableTopicReputerWhitelist(ctx context.Context, msg *types.DisableTopicReputerWhitelistRequest) (_ *types.DisableTopicReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("DisableTopicReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("DisableTopicReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -687,7 +760,10 @@ func (ms msgServer) DisableTopicReputerWhitelist(ctx context.Context, msg *types
 }
 
 func (ms msgServer) AddToTopicCreatorWhitelist(ctx context.Context, msg *types.AddToTopicCreatorWhitelistRequest) (_ *types.AddToTopicCreatorWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("AddToTopicCreatorWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("AddToTopicCreatorWhitelist", time.Now(), &err, labels)
 
 	// Validate the address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -712,7 +788,10 @@ func (ms msgServer) AddToTopicCreatorWhitelist(ctx context.Context, msg *types.A
 }
 
 func (ms msgServer) RemoveFromTopicCreatorWhitelist(ctx context.Context, msg *types.RemoveFromTopicCreatorWhitelistRequest) (_ *types.RemoveFromTopicCreatorWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromTopicCreatorWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Sender,
+	}
+	defer metrics.RecordMetrics("RemoveFromTopicCreatorWhitelist", time.Now(), &err, labels)
 
 	// Validate the address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -737,7 +816,11 @@ func (ms msgServer) RemoveFromTopicCreatorWhitelist(ctx context.Context, msg *ty
 }
 
 func (ms msgServer) AddToTopicWorkerWhitelist(ctx context.Context, msg *types.AddToTopicWorkerWhitelistRequest) (_ *types.AddToTopicWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("AddToTopicWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("AddToTopicWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -762,7 +845,11 @@ func (ms msgServer) AddToTopicWorkerWhitelist(ctx context.Context, msg *types.Ad
 }
 
 func (ms msgServer) RemoveFromTopicWorkerWhitelist(ctx context.Context, msg *types.RemoveFromTopicWorkerWhitelistRequest) (_ *types.RemoveFromTopicWorkerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromTopicWorkerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("RemoveFromTopicWorkerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -787,7 +874,11 @@ func (ms msgServer) RemoveFromTopicWorkerWhitelist(ctx context.Context, msg *typ
 }
 
 func (ms msgServer) AddToTopicReputerWhitelist(ctx context.Context, msg *types.AddToTopicReputerWhitelistRequest) (_ *types.AddToTopicReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("AddToTopicReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("AddToTopicReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -812,7 +903,11 @@ func (ms msgServer) AddToTopicReputerWhitelist(ctx context.Context, msg *types.A
 }
 
 func (ms msgServer) RemoveFromTopicReputerWhitelist(ctx context.Context, msg *types.RemoveFromTopicReputerWhitelistRequest) (_ *types.RemoveFromTopicReputerWhitelistResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromTopicReputerWhitelist", time.Now(), &err)
+	labels := map[string]string{
+		"address":  msg.Sender,
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("RemoveFromTopicReputerWhitelist", time.Now(), &err, labels)
 
 	// Validate the sender
 	err = ms.k.ValidateStringIsBech32(msg.Sender)

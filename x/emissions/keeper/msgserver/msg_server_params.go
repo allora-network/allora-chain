@@ -9,7 +9,7 @@ import (
 )
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (_ *types.UpdateParamsResponse, err error) {
-	defer metrics.RecordMetrics("UpdateParams", time.Now(), &err)
+	defer metrics.RecordMetrics("UpdateParams", time.Now(), &err, map[string]string{})
 
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {

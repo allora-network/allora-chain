@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -18,33 +19,49 @@ import (
 // registered worker and none from any unregistered actor.
 // Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (_ *types.InsertWorkerPayloadResponse, err error) {
-	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), &err)
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
+
+	moduleParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err, map[string]string{"error": err.Error()})
+		return nil, errorsmod.Wrapf(err, "Error getting params")
+	}
+
+	// fast permission check before entering validations which are more expensive
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
+		defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err, map[string]string{"error": err.Error()})
 		return nil, errorsmod.Wrapf(err, "Error validating sender address")
 	}
 	err = ms.k.ValidateStringIsBech32(msg.WorkerDataBundle.Worker)
 	if err != nil {
+		defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err, map[string]string{"error": err.Error()})
 		return nil, errorsmod.Wrapf(err, "Error validating worker address")
 	}
 	canSubmit, err := ms.k.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
 	if err != nil {
+		defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err, map[string]string{"error": err.Error()})
 		return nil, errorsmod.Wrapf(err, "Error checking if worker can submit payload")
 	} else if !canSubmit {
+		defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err, map[string]string{"error": types.ErrNotPermittedToSubmitWorkerPayload.Error()})
 		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
 	}
 
-	moduleParams, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params")
-	}
-	blockHeight := sdkCtx.BlockHeight()
 	wdb, err := types.NewWorkerDataBundleFromInput(msg.WorkerDataBundle)
 	if err != nil {
+		defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err, map[string]string{"error": err.Error()})
 		return nil, errorsmod.Wrapf(err,
 			"Worker bad data format for block: %d", blockHeight)
 	}
+	// if validated, record metrics with appropriate labels
+	labels := map[string]string{
+		"address":  msg.WorkerDataBundle.Worker,
+		"topic_id": strconv.FormatUint(msg.WorkerDataBundle.TopicId, 10),
+		"nonce":    strconv.FormatUint(uint64(msg.WorkerDataBundle.Nonce.BlockHeight), 10),
+	}
+	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), &err, labels)
 
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {

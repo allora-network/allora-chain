@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	metrics "github.com/hashicorp/go-metrics"
 )
 
@@ -14,15 +15,22 @@ import (
 // Metric Name:
 //
 //	allora_rpc_request_counter
-func IncrementRpcRequestCounter(endpoint string, err *error) {
+func IncrementRpcRequestCounter(endpoint string, err *error, labels map[string]string) {
 	success := *err == nil
+	metricLabels := []metrics.Label{
+		telemetry.NewLabel("endpoint", endpoint),
+		telemetry.NewLabel("success", strconv.FormatBool(success)),
+	}
+
+	// Add any additional labels
+	for k, v := range labels {
+		metricLabels = append(metricLabels, telemetry.NewLabel(k, v))
+	}
+
 	telemetry.IncrCounterWithLabels(
 		[]string{"allora", "request", "counter"},
 		float32(1),
-		[]metrics.Label{
-			telemetry.NewLabel("endpoint", endpoint),
-			telemetry.NewLabel("success", strconv.FormatBool(success)),
-		},
+		metricLabels,
 	)
 }
 
@@ -58,7 +66,42 @@ func IncrProducerEventCountWithLabels(msgType string, labels map[string]string) 
 	)
 }
 
-func RecordMetrics(apiMethod string, startTime time.Time, err *error) {
-	IncrementRpcRequestCounter(apiMethod, err)
+func RecordMetrics(apiMethod string, startTime time.Time, err *error, labels map[string]string) {
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	IncrementRpcRequestCounter(apiMethod, err, labels)
 	MeasureRpcRequestLatency(apiMethod, startTime)
+}
+
+// Helper function to create labels map with topicId and blockHeight if available
+func CreateLabelsFromContext(ctx sdk.Context, topicId uint64) map[string]string {
+	labels := make(map[string]string)
+	if topicId > 0 {
+		labels["topic_id"] = strconv.FormatUint(topicId, 10)
+	}
+	labels["blockHeight"] = strconv.FormatInt(ctx.BlockHeight(), 10)
+	return labels
+}
+
+// Helper function to create labels for transactions
+func CreateTxLabels(ctx sdk.Context, topicId uint64, address string, actorType string) map[string]string {
+	labels := CreateLabelsFromContext(ctx, topicId)
+	labels["blockHeightTx"] = strconv.FormatInt(ctx.BlockHeight(), 10)
+	if address != "" {
+		labels["address"] = address
+	}
+	if actorType != "" {
+		labels["actorType"] = actorType
+	}
+	return labels
+}
+
+// Helper function to create labels for payload insertions
+func CreatePayloadLabels(ctx sdk.Context, topicId uint64, address string, nonce int64) map[string]string {
+	labels := CreateLabelsFromContext(ctx, topicId)
+	labels["blockHeightTx"] = strconv.FormatInt(ctx.BlockHeight(), 10)
+	labels["address"] = address
+	labels["nonce"] = strconv.FormatInt(nonce, 10)
+	return labels
 }

@@ -11,7 +11,10 @@ import (
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
-	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err)
+	labels := map[string]string{
+		"address": msg.Creator,
+	}
+	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err, labels)
 
 	// Validate the address
 	if err := ms.k.ValidateStringIsBech32(msg.Creator); err != nil {

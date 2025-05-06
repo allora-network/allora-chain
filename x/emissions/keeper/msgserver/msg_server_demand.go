@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"cosmossdk.io/errors"
@@ -12,7 +13,10 @@ import (
 )
 
 func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) (_ *types.FundTopicResponse, err error) {
-	defer metrics.RecordMetrics("FundTopic", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(msg.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("FundTopic", time.Now(), &err, labels)
 
 	if err := types.ValidateSdkIntRepresentingMonetaryValue(msg.Amount); err != nil {
 		return nil, errors.Wrap(err, "amount is not valid")

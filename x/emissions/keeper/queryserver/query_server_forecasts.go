@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
@@ -12,7 +13,11 @@ import (
 )
 
 func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.GetForecastsAtBlockRequest) (_ *types.GetForecastsAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetForecastsAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":    strconv.FormatUint(req.TopicId, 10),
+		"blockHeight": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetForecastsAtBlock", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
@@ -30,7 +35,10 @@ func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.GetFor
 }
 
 func (qs queryServer) GetActiveForecastersForTopic(ctx context.Context, req *types.GetActiveForecastersForTopicRequest) (_ *types.GetActiveForecastersForTopicResponse, err error) {
-	defer metrics.RecordMetrics("GetActiveForecastersForTopic", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetActiveForecastersForTopic", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {

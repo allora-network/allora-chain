@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
@@ -14,7 +15,11 @@ import (
 
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
 func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInferenceByTopicIdRequest) (_ *emissionstypes.GetWorkerLatestInferenceByTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerLatestInferenceByTopicId", time.Now(), &err)
+	labels := map[string]string{
+		"worker_address": req.WorkerAddress,
+		"topic_id":       strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetWorkerLatestInferenceByTopicId", time.Now(), &err, labels)
 
 	if err = qs.k.ValidateStringIsBech32(req.WorkerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
@@ -35,7 +40,11 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 }
 
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (_ *emissionstypes.GetInferencesAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetInferencesAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":    strconv.FormatUint(req.TopicId, 10),
+		"blockHeight": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetInferencesAtBlock", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
@@ -53,7 +62,10 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionsty
 }
 
 func (qs queryServer) GetActiveInferersForTopic(ctx context.Context, req *emissionstypes.GetActiveInferersForTopicRequest) (_ *emissionstypes.GetActiveInferersForTopicResponse, err error) {
-	defer metrics.RecordMetrics("GetActiveInferersForTopic", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetActiveInferersForTopic", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
@@ -72,7 +84,11 @@ func (qs queryServer) GetActiveInferersForTopic(ctx context.Context, req *emissi
 
 // Return full set of inferences in I_i from the chain
 func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emissionstypes.GetNetworkInferencesAtBlockRequest) (_ *emissionstypes.GetNetworkInferencesAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetNetworkInferencesAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":    strconv.FormatUint(req.TopicId, 10),
+		"blockHeight": strconv.FormatInt(req.BlockHeightLastInference, 10),
+	}
+	defer metrics.RecordMetrics("GetNetworkInferencesAtBlock", time.Now(), &err, labels)
 
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
@@ -94,7 +110,11 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 	ctx context.Context,
 	req *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest) (_ *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse, err error) {
-	defer metrics.RecordMetrics("GetNetworkInferencesAtBlockOutlierResistant", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":    strconv.FormatUint(req.TopicId, 10),
+		"blockHeight": strconv.FormatInt(req.BlockHeightLastInference, 10),
+	}
+	defer metrics.RecordMetrics("GetNetworkInferencesAtBlockOutlierResistant", time.Now(), &err, labels)
 
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
@@ -114,7 +134,10 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 
 // Return full set of inferences in I_i from the chain
 func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emissionstypes.GetLatestNetworkInferencesRequest) (_ *emissionstypes.GetLatestNetworkInferencesResponse, err error) {
-	defer metrics.RecordMetrics("GetLatestNetworkInferences", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetLatestNetworkInferences", time.Now(), &err, labels)
 
 	result, err := qs.k.GetLatestNetworkInferences(ctx, req.TopicId, false)
 	if err != nil {
@@ -132,7 +155,10 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Context,
 	req *emissionstypes.GetLatestNetworkInferencesOutlierResistantRequest) (
 	_ *emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse, err error) {
-	defer metrics.RecordMetrics("GetLatestNetworkInferencesOutlierResistant", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetLatestNetworkInferencesOutlierResistant", time.Now(), &err, labels)
 
 	result, err := qs.k.GetLatestNetworkInferences(ctx, req.TopicId, true)
 	if err != nil {
@@ -147,7 +173,11 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 }
 
 func (qs queryServer) GetLatestTopicInferences(ctx context.Context, req *emissionstypes.GetLatestTopicInferencesRequest) (_ *emissionstypes.GetLatestTopicInferencesResponse, err error) {
-	defer metrics.RecordMetrics("GetLatestTopicInferences", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetLatestTopicInferences", time.Now(), &err, labels)
+
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -164,7 +194,11 @@ func (qs queryServer) GetLatestTopicInferences(ctx context.Context, req *emissio
 }
 
 func (qs queryServer) IsWorkerNonceUnfulfilled(ctx context.Context, req *emissionstypes.IsWorkerNonceUnfulfilledRequest) (_ *emissionstypes.IsWorkerNonceUnfulfilledResponse, err error) {
-	defer metrics.RecordMetrics("IsWorkerNonceUnfulfilled", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":    strconv.FormatUint(req.TopicId, 10),
+		"blockHeight": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("IsWorkerNonceUnfulfilled", time.Now(), &err, labels)
 	isWorkerNonceUnfulfilled, err :=
 		qs.k.IsWorkerNonceUnfulfilled(ctx, req.TopicId, &emissionstypes.Nonce{BlockHeight: req.BlockHeight})
 
@@ -172,7 +206,10 @@ func (qs queryServer) IsWorkerNonceUnfulfilled(ctx context.Context, req *emissio
 }
 
 func (qs queryServer) GetUnfulfilledWorkerNonces(ctx context.Context, req *emissionstypes.GetUnfulfilledWorkerNoncesRequest) (_ *emissionstypes.GetUnfulfilledWorkerNoncesResponse, err error) {
-	defer metrics.RecordMetrics("GetUnfulfilledWorkerNonces", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetUnfulfilledWorkerNonces", time.Now(), &err, labels)
 	unfulfilledNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -182,7 +219,11 @@ func (qs queryServer) GetUnfulfilledWorkerNonces(ctx context.Context, req *emiss
 }
 
 func (qs queryServer) GetInfererNetworkRegret(ctx context.Context, req *emissionstypes.GetInfererNetworkRegretRequest) (_ *emissionstypes.GetInfererNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetInfererNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"actor_id": req.ActorId,
+	}
+	defer metrics.RecordMetrics("GetInfererNetworkRegret", time.Now(), &err, labels)
 	infererNetworkRegret, _, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
 	if err != nil {
 		return nil, err
@@ -192,7 +233,11 @@ func (qs queryServer) GetInfererNetworkRegret(ctx context.Context, req *emission
 }
 
 func (qs queryServer) GetForecasterNetworkRegret(ctx context.Context, req *emissionstypes.GetForecasterNetworkRegretRequest) (_ *emissionstypes.GetForecasterNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetForecasterNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"worker":   req.Worker,
+	}
+	defer metrics.RecordMetrics("GetForecasterNetworkRegret", time.Now(), &err, labels)
 	forecasterNetworkRegret, _, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
 	if err != nil {
 		return nil, err
@@ -202,7 +247,12 @@ func (qs queryServer) GetForecasterNetworkRegret(ctx context.Context, req *emiss
 }
 
 func (qs queryServer) GetOneInForecasterNetworkRegret(ctx context.Context, req *emissionstypes.GetOneInForecasterNetworkRegretRequest) (_ *emissionstypes.GetOneInForecasterNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetOneInForecasterNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":   strconv.FormatUint(req.TopicId, 10),
+		"forecaster": req.Forecaster,
+		"inferer":    req.Inferer,
+	}
+	defer metrics.RecordMetrics("GetOneInForecasterNetworkRegret", time.Now(), &err, labels)
 	oneInForecasterNetworkRegret, _, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -212,7 +262,11 @@ func (qs queryServer) GetOneInForecasterNetworkRegret(ctx context.Context, req *
 }
 
 func (qs queryServer) GetNaiveInfererNetworkRegret(ctx context.Context, req *emissionstypes.GetNaiveInfererNetworkRegretRequest) (_ *emissionstypes.GetNaiveInfererNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetNaiveInfererNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"inferer":  req.Inferer,
+	}
+	defer metrics.RecordMetrics("GetNaiveInfererNetworkRegret", time.Now(), &err, labels)
 	regret, _, err := qs.k.GetNaiveInfererNetworkRegret(ctx, req.TopicId, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -222,7 +276,11 @@ func (qs queryServer) GetNaiveInfererNetworkRegret(ctx context.Context, req *emi
 }
 
 func (qs queryServer) GetOneOutInfererInfererNetworkRegret(ctx context.Context, req *emissionstypes.GetOneOutInfererInfererNetworkRegretRequest) (_ *emissionstypes.GetOneOutInfererInfererNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetOneOutInfererInfererNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"inferer":  req.Inferer,
+	}
+	defer metrics.RecordMetrics("GetOneOutInfererInfererNetworkRegret", time.Now(), &err, labels)
 	regret, _, err := qs.k.GetOneOutInfererInfererNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -232,7 +290,12 @@ func (qs queryServer) GetOneOutInfererInfererNetworkRegret(ctx context.Context, 
 }
 
 func (qs queryServer) GetOneOutInfererForecasterNetworkRegret(ctx context.Context, req *emissionstypes.GetOneOutInfererForecasterNetworkRegretRequest) (_ *emissionstypes.GetOneOutInfererForecasterNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetOneOutInfererForecasterNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":        strconv.FormatUint(req.TopicId, 10),
+		"one_out_inferer": req.OneOutInferer,
+		"forecaster":      req.Forecaster,
+	}
+	defer metrics.RecordMetrics("GetOneOutInfererForecasterNetworkRegret", time.Now(), &err, labels)
 	regret, _, err := qs.k.GetOneOutInfererForecasterNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Forecaster)
 	if err != nil {
 		return nil, err
@@ -242,7 +305,12 @@ func (qs queryServer) GetOneOutInfererForecasterNetworkRegret(ctx context.Contex
 }
 
 func (qs queryServer) GetOneOutForecasterInfererNetworkRegret(ctx context.Context, req *emissionstypes.GetOneOutForecasterInfererNetworkRegretRequest) (_ *emissionstypes.GetOneOutForecasterInfererNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetOneOutForecasterInfererNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":           strconv.FormatUint(req.TopicId, 10),
+		"one_out_forecaster": req.OneOutForecaster,
+		"inferer":            req.Inferer,
+	}
+	defer metrics.RecordMetrics("GetOneOutForecasterInfererNetworkRegret", time.Now(), &err, labels)
 	regret, _, err := qs.k.GetOneOutForecasterInfererNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -252,7 +320,12 @@ func (qs queryServer) GetOneOutForecasterInfererNetworkRegret(ctx context.Contex
 }
 
 func (qs queryServer) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, req *emissionstypes.GetOneOutForecasterForecasterNetworkRegretRequest) (_ *emissionstypes.GetOneOutForecasterForecasterNetworkRegretResponse, err error) {
-	defer metrics.RecordMetrics("GetOneOutForecasterForecasterNetworkRegret", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":           strconv.FormatUint(req.TopicId, 10),
+		"one_out_forecaster": req.OneOutForecaster,
+		"forecaster":         req.Forecaster,
+	}
+	defer metrics.RecordMetrics("GetOneOutForecasterForecasterNetworkRegret", time.Now(), &err, labels)
 	regret, _, err := qs.k.GetOneOutForecasterForecasterNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Forecaster)
 	if err != nil {
 		return nil, err

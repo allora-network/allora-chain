@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
@@ -12,7 +13,11 @@ import (
 )
 
 func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *types.GetNetworkLossBundleAtBlockRequest) (_ *types.GetNetworkLossBundleAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetNetworkLossBundleAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"nonce":    strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetNetworkLossBundleAtBlock", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
@@ -30,7 +35,11 @@ func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *type
 }
 
 func (qs queryServer) IsReputerNonceUnfulfilled(ctx context.Context, req *types.IsReputerNonceUnfulfilledRequest) (_ *types.IsReputerNonceUnfulfilledResponse, err error) {
-	defer metrics.RecordMetrics("IsReputerNonceUnfulfilled", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"nonce":    strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("IsReputerNonceUnfulfilled", time.Now(), &err, labels)
 
 	isReputerNonceUnfulfilled, err := qs.k.IsReputerNonceUnfulfilled(ctx, req.TopicId, &types.Nonce{BlockHeight: req.BlockHeight})
 	if err != nil {
@@ -41,7 +50,10 @@ func (qs queryServer) IsReputerNonceUnfulfilled(ctx context.Context, req *types.
 }
 
 func (qs queryServer) GetUnfulfilledReputerNonces(ctx context.Context, req *types.GetUnfulfilledReputerNoncesRequest) (_ *types.GetUnfulfilledReputerNoncesResponse, err error) {
-	defer metrics.RecordMetrics("GetUnfulfilledReputerNonces", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetUnfulfilledReputerNonces", time.Now(), &err, labels)
 
 	unfulfilledNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
 	if err != nil {
@@ -52,7 +64,11 @@ func (qs queryServer) GetUnfulfilledReputerNonces(ctx context.Context, req *type
 }
 
 func (qs queryServer) GetReputerLossBundlesAtBlock(ctx context.Context, req *types.GetReputerLossBundlesAtBlockRequest) (_ *types.GetReputerLossBundlesAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetReputerLossBundlesAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"nonce":    strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetReputerLossBundlesAtBlock", time.Now(), &err, labels)
 
 	reputerLossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
@@ -63,7 +79,10 @@ func (qs queryServer) GetReputerLossBundlesAtBlock(ctx context.Context, req *typ
 }
 
 func (qs queryServer) GetActiveReputersForTopic(ctx context.Context, req *types.GetActiveReputersForTopicRequest) (_ *types.GetActiveReputersForTopicResponse, err error) {
-	defer metrics.RecordMetrics("GetActiveReputersForTopic", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetActiveReputersForTopic", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {

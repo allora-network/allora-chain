@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -12,7 +13,11 @@ import (
 )
 
 func (qs queryServer) GetInfererScoreEma(ctx context.Context, req *types.GetInfererScoreEmaRequest) (_ *types.GetInfererScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetInfererScoreEma", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"address":  req.Inferer,
+	}
+	defer metrics.RecordMetrics("GetInfererScoreEma", time.Now(), &err, labels)
 
 	latestInfererScore, err := qs.k.GetInfererScoreEma(ctx, req.TopicId, req.Inferer)
 	if err != nil {
@@ -23,7 +28,11 @@ func (qs queryServer) GetInfererScoreEma(ctx context.Context, req *types.GetInfe
 }
 
 func (qs queryServer) GetForecasterScoreEma(ctx context.Context, req *types.GetForecasterScoreEmaRequest) (_ *types.GetForecasterScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetForecasterScoreEma", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"address":  req.Forecaster,
+	}
+	defer metrics.RecordMetrics("GetForecasterScoreEma", time.Now(), &err, labels)
 
 	latestForecasterScore, err := qs.k.GetForecasterScoreEma(ctx, req.TopicId, req.Forecaster)
 	if err != nil {
@@ -37,7 +46,11 @@ func (qs queryServer) GetReputerScoreEma(
 	ctx context.Context,
 	req *types.GetReputerScoreEmaRequest,
 ) (_ *types.GetReputerScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetReputerScoreEma", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"address":  req.Reputer,
+	}
+	defer metrics.RecordMetrics("GetReputerScoreEma", time.Now(), &err, labels)
 
 	latestReputerScore, err := qs.k.GetReputerScoreEma(ctx, req.TopicId, req.Reputer)
 	if err != nil {
@@ -48,7 +61,10 @@ func (qs queryServer) GetReputerScoreEma(
 }
 
 func (qs queryServer) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, req *types.GetPreviousTopicQuantileForecasterScoreEmaRequest) (_ *types.GetPreviousTopicQuantileForecasterScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetPreviousTopicQuantileForecasterScoreEma", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetPreviousTopicQuantileForecasterScoreEma", time.Now(), &err, labels)
 	previousQuantileForecasterScore, err := qs.k.GetPreviousTopicQuantileForecasterScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -58,7 +74,10 @@ func (qs queryServer) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Con
 }
 
 func (qs queryServer) GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, req *types.GetPreviousTopicQuantileInfererScoreEmaRequest) (_ *types.GetPreviousTopicQuantileInfererScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetPreviousTopicQuantileInfererScoreEma", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetPreviousTopicQuantileInfererScoreEma", time.Now(), &err, labels)
 	previousQuantileInfererScore, err := qs.k.GetPreviousTopicQuantileInfererScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -68,7 +87,10 @@ func (qs queryServer) GetPreviousTopicQuantileInfererScoreEma(ctx context.Contex
 }
 
 func (qs queryServer) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, req *types.GetPreviousTopicQuantileReputerScoreEmaRequest) (resp *types.GetPreviousTopicQuantileReputerScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetPreviousTopicQuantileReputerScoreEma", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetPreviousTopicQuantileReputerScoreEma", time.Now(), &err, labels)
 	previousQuantileReputerScore, err := qs.k.GetPreviousTopicQuantileReputerScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -78,7 +100,11 @@ func (qs queryServer) GetPreviousTopicQuantileReputerScoreEma(ctx context.Contex
 }
 
 func (qs queryServer) GetInferenceScoresUntilBlock(ctx context.Context, req *types.GetInferenceScoresUntilBlockRequest) (_ *types.GetInferenceScoresUntilBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetInferenceScoresUntilBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":     strconv.FormatUint(req.TopicId, 10),
+		"block_height": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetInferenceScoresUntilBlock", time.Now(), &err, labels)
 	inferenceScores, err := qs.k.GetInferenceScoresUntilBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -88,7 +114,11 @@ func (qs queryServer) GetInferenceScoresUntilBlock(ctx context.Context, req *typ
 }
 
 func (qs queryServer) GetWorkerInferenceScoresAtBlock(ctx context.Context, req *types.GetWorkerInferenceScoresAtBlockRequest) (_ *types.GetWorkerInferenceScoresAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerInferenceScoresAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":     strconv.FormatUint(req.TopicId, 10),
+		"block_height": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetWorkerInferenceScoresAtBlock", time.Now(), &err, labels)
 	workerInferenceScores, err := qs.k.GetWorkerInferenceScoresAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -98,7 +128,10 @@ func (qs queryServer) GetWorkerInferenceScoresAtBlock(ctx context.Context, req *
 }
 
 func (qs queryServer) GetCurrentLowestInfererScore(ctx context.Context, req *types.GetCurrentLowestInfererScoreRequest) (_ *types.GetCurrentLowestInfererScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetCurrentLowestInfererScore", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetCurrentLowestInfererScore", time.Now(), &err, labels)
 	lowestInfererScore, found, err := qs.k.GetLowestInfererScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest inferer score EMA")
@@ -110,7 +143,11 @@ func (qs queryServer) GetCurrentLowestInfererScore(ctx context.Context, req *typ
 }
 
 func (qs queryServer) GetForecastScoresUntilBlock(ctx context.Context, req *types.GetForecastScoresUntilBlockRequest) (_ *types.GetForecastScoresUntilBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetForecastScoresUntilBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":     strconv.FormatUint(req.TopicId, 10),
+		"block_height": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetForecastScoresUntilBlock", time.Now(), &err, labels)
 	forecastScores, err := qs.k.GetForecastScoresUntilBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -120,7 +157,11 @@ func (qs queryServer) GetForecastScoresUntilBlock(ctx context.Context, req *type
 }
 
 func (qs queryServer) GetWorkerForecastScoresAtBlock(ctx context.Context, req *types.GetWorkerForecastScoresAtBlockRequest) (_ *types.GetWorkerForecastScoresAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerForecastScoresAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":     strconv.FormatUint(req.TopicId, 10),
+		"block_height": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetWorkerForecastScoresAtBlock", time.Now(), &err, labels)
 	workerForecastScores, err := qs.k.GetWorkerForecastScoresAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -130,7 +171,10 @@ func (qs queryServer) GetWorkerForecastScoresAtBlock(ctx context.Context, req *t
 }
 
 func (qs queryServer) GetCurrentLowestForecasterScore(ctx context.Context, req *types.GetCurrentLowestForecasterScoreRequest) (_ *types.GetCurrentLowestForecasterScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetCurrentLowestForecasterScore", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetCurrentLowestForecasterScore", time.Now(), &err, labels)
 	lowestForecasterScore, found, err := qs.k.GetLowestForecasterScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest forecaster score EMA")
@@ -142,7 +186,11 @@ func (qs queryServer) GetCurrentLowestForecasterScore(ctx context.Context, req *
 }
 
 func (qs queryServer) GetReputersScoresAtBlock(ctx context.Context, req *types.GetReputersScoresAtBlockRequest) (_ *types.GetReputersScoresAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetReputersScoresAtBlock", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id":     strconv.FormatUint(req.TopicId, 10),
+		"block_height": strconv.FormatInt(req.BlockHeight, 10),
+	}
+	defer metrics.RecordMetrics("GetReputersScoresAtBlock", time.Now(), &err, labels)
 	reputersScores, err := qs.k.GetReputersScoresAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -152,7 +200,10 @@ func (qs queryServer) GetReputersScoresAtBlock(ctx context.Context, req *types.G
 }
 
 func (qs queryServer) GetCurrentLowestReputerScore(ctx context.Context, req *types.GetCurrentLowestReputerScoreRequest) (_ *types.GetCurrentLowestReputerScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetCurrentLowestReputerScore", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetCurrentLowestReputerScore", time.Now(), &err, labels)
 	lowestReputerScore, found, err := qs.k.GetLowestReputerScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
@@ -164,7 +215,11 @@ func (qs queryServer) GetCurrentLowestReputerScore(ctx context.Context, req *typ
 }
 
 func (qs queryServer) GetListeningCoefficient(ctx context.Context, req *types.GetListeningCoefficientRequest) (_ *types.GetListeningCoefficientResponse, err error) {
-	defer metrics.RecordMetrics("GetListeningCoefficient", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+		"address":  req.Reputer,
+	}
+	defer metrics.RecordMetrics("GetListeningCoefficient", time.Now(), &err, labels)
 
 	listeningCoefficient, err := qs.k.GetListeningCoefficient(ctx, req.TopicId, req.Reputer)
 	if err != nil {
@@ -175,7 +230,10 @@ func (qs queryServer) GetListeningCoefficient(ctx context.Context, req *types.Ge
 }
 
 func (qs queryServer) GetTopicInitialInfererEmaScore(ctx context.Context, req *types.GetTopicInitialInfererEmaScoreRequest) (_ *types.GetTopicInitialInfererEmaScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetTopicInitialInfererEmaScore", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetTopicInitialInfererEmaScore", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
@@ -193,7 +251,10 @@ func (qs queryServer) GetTopicInitialInfererEmaScore(ctx context.Context, req *t
 }
 
 func (qs queryServer) GetTopicInitialForecasterEmaScore(ctx context.Context, req *types.GetTopicInitialForecasterEmaScoreRequest) (_ *types.GetTopicInitialForecasterEmaScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetTopicInitialForecasterEmaScore", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetTopicInitialForecasterEmaScore", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
@@ -211,7 +272,10 @@ func (qs queryServer) GetTopicInitialForecasterEmaScore(ctx context.Context, req
 }
 
 func (qs queryServer) GetTopicInitialReputerEmaScore(ctx context.Context, req *types.GetTopicInitialReputerEmaScoreRequest) (_ *types.GetTopicInitialReputerEmaScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetTopicInitialReputerEmaScore", time.Now(), &err)
+	labels := map[string]string{
+		"topic_id": strconv.FormatUint(req.TopicId, 10),
+	}
+	defer metrics.RecordMetrics("GetTopicInitialReputerEmaScore", time.Now(), &err, labels)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
