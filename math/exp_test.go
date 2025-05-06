@@ -27,6 +27,12 @@ func TestExp(t *testing.T) {
 			shouldErr: false,
 		},
 		{
+			name:      "below min boundary",
+			input:     math.MustNewDecFromString("-230258.509299404568401799145468436422"),
+			expected:  math.ZeroDec(),
+			shouldErr: false,
+		},
+		{
 			name:      "arbitrary negative number",
 			input:     math.MustNewDecFromString("-5.0000000000000024912482190471290471"),
 			expected:  math.MustNewDecFromString("0.006737946999085450310737586917551778"),
