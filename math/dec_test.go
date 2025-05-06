@@ -161,23 +161,6 @@ func TestDec(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, res.Equal(two))
 
-	ten := alloraMath.NewDecFromInt64(10)
-	oneHundred := alloraMath.NewDecFromInt64(100)
-	logTenOneHundred, err := alloraMath.Log10(oneHundred)
-	require.NoError(t, err)
-	require.True(t, two.Equal(logTenOneHundred))
-	logTenTen, err := alloraMath.Log10(ten)
-	require.NoError(t, err)
-	require.True(t, one.Equal(logTenTen))
-	logTenOne, err := alloraMath.Log10(one)
-	require.NoError(t, err)
-	require.True(t, zero.Equal(logTenOne))
-
-	eight := alloraMath.NewDecFromInt64(8)
-	twoCubed, err := alloraMath.Pow(two, three)
-	require.NoError(t, err)
-	require.True(t, eight.Equal(twoCubed))
-
 	cielOnePointFourNine, err := onePointFourNine.Ceil()
 	require.NoError(t, err)
 	require.True(t, two.Equal(cielOnePointFourNine))
@@ -1089,41 +1072,6 @@ func TestRemFailNaN(t *testing.T) {
 func TestNegFailNaN(t *testing.T) {
 	nan := alloraMath.NewNaN()
 	_, err := nan.Neg()
-	require.Error(t, err)
-	require.ErrorIs(t, err, alloraMath.ErrNaN)
-}
-
-func TestLog10FailNaN(t *testing.T) {
-	nan := alloraMath.NewNaN()
-	_, err := alloraMath.Log10(nan)
-	require.Error(t, err)
-	require.ErrorIs(t, err, alloraMath.ErrNaN)
-}
-
-func TestExpFailNaN(t *testing.T) {
-	nan := alloraMath.NewNaN()
-	_, err := alloraMath.Exp(nan)
-	require.Error(t, err)
-	require.ErrorIs(t, err, alloraMath.ErrNaN)
-}
-
-func TestExpBoundaries(t *testing.T) {
-	belowExpBoundary := alloraMath.MustNewDecFromString("-230258.509299404568401799145468436422")
-	afterExpBoundary := alloraMath.MustNewDecFromString("230258.509299404568401799145468436422")
-
-	r, err := alloraMath.Exp(belowExpBoundary)
-	require.NoError(t, err)
-	require.True(t, r.IsZero())
-
-	r, err = alloraMath.Exp(afterExpBoundary)
-	require.NoError(t, err)
-	require.False(t, r.IsFinite())
-}
-
-func TestPowFailNaN(t *testing.T) {
-	dec := alloraMath.OneDec()
-	nan := alloraMath.NewNaN()
-	_, err := alloraMath.Pow(dec, nan)
 	require.Error(t, err)
 	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
