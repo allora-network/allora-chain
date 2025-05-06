@@ -226,7 +226,7 @@ allorad --home=$APP_HOME q staking validators -o=json | \
 `allorad --home=$APP_HOME status | jq -r '.validator_info.voting_power'`
 - Output should be > 0
 
-## Unstaking/unbounding  a validator
+## Unstaking/unbounding a validator
 
 If you need to delete a validator from the chain, you just need to unbound the stake.
 
@@ -356,6 +356,13 @@ For workers, the submission window is defined at the topic level, as the blocks 
 For reputers, the submission window starts at `(nonce.BlockHeight + topic.GroundTruthLag)` and it lasts 1 `topic.EpochLength` + any remaining additional lag until end of epoch, only applying when `topic.GroundTruthLag` and `topic.EpochLength` are not multiples, and calculated as `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`.
 
 Both windows are inclusive of start and end boundaries.
+
+## Monitoring
+
+Allora node emits metrics in each event, query and tx.
+event: `allora_loadtest_produce_count`
+query/tx: `allora_request_counter` for occurrences, `allora_request_latency_ms` for latency measures.
+Different labels are applied where appropriate (eg "topic_id", "address", "nonce", etc.)
 
 ## References
 
