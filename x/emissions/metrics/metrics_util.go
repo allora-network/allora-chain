@@ -37,14 +37,16 @@ func IncrementRpcRequestCounter(endpoint string, err *error, labels map[string]s
 // Measures the RPC request latency in milliseconds
 // Metric Name:
 //
-//	allora_rpc_request_latency_ms
-func MeasureRpcRequestLatency(endpoint string, startTime time.Time) {
+//	allora_request_latency_ms
+func MeasureRpcRequestLatency(endpoint string, startTime time.Time, labels map[string]string) {
+	allLabels := []metrics.Label{telemetry.NewLabel("endpoint", endpoint)}
+	for k, v := range labels {
+		allLabels = append(allLabels, telemetry.NewLabel(k, v))
+	}
 	metrics.MeasureSinceWithLabels(
 		[]string{"allora", "request", "latency_ms"},
 		startTime.UTC(),
-		[]metrics.Label{
-			telemetry.NewLabel("endpoint", endpoint),
-		},
+		allLabels,
 	)
 }
 
@@ -71,7 +73,7 @@ func RecordMetrics(apiMethod string, startTime time.Time, err *error, labels map
 		labels = make(map[string]string)
 	}
 	IncrementRpcRequestCounter(apiMethod, err, labels)
-	MeasureRpcRequestLatency(apiMethod, startTime)
+	MeasureRpcRequestLatency(apiMethod, startTime, labels)
 }
 
 // Helper function to create labels map with topicId and blockHeight if available
