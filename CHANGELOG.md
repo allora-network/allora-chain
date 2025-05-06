@@ -68,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # v0.12.0
 
 ### Added
-* [#781](https://github.com/allora-network/allora-chain/pull/781/files) Enable pebbledb
+* [#781](https://github.com/allora-network/allora-chain/pull/781) Enable pebbledb
+* [#816](https://github.com/allora-network/allora-chain/pull/816) Generic labels in metrics, usage in events and q/tx
 
 ### Changed
 * [#777](https://github.com/allora-network/allora-chain/pull/777) Allow forecasts with unregistered inferers to proceed
