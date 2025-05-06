@@ -9,6 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/exp/slices"
 )
 
 type CalcTopicRewardsArgs struct {
@@ -572,6 +573,12 @@ func payoutRewards(
 	reputerAndDelegatorRewards := make([]types.TaskReward, 0)
 	infererRewards := make([]types.TaskReward, 0)
 	forecasterRewards := make([]types.TaskReward, 0)
+
+	// Track unique TopicIds per task type using slices
+	reputerTopicIds := make([]types.TopicId, 0)
+	infererTopicIds := make([]types.TopicId, 0)
+	forecasterTopicIds := make([]types.TopicId, 0)
+
 	blockHeightTx := ctx.BlockHeight()
 	for _, reward := range rewards {
 		if reward.Reward.IsZero() {
@@ -616,6 +623,10 @@ func payoutRewards(
 			}
 
 			reputerAndDelegatorRewards = append(reputerAndDelegatorRewards, reward)
+			topicId := types.TopicId(reward.TopicId)
+			if !slices.Contains(reputerTopicIds, topicId) {
+				reputerTopicIds = append(reputerTopicIds, topicId)
+			}
 		} else {
 			_, err := sdk.AccAddressFromBech32(reward.Address)
 			if err != nil {
@@ -647,6 +658,10 @@ func payoutRewards(
 
 			if reward.Type == types.WorkerInferenceRewardType {
 				infererRewards = append(infererRewards, reward)
+				topicId := types.TopicId(reward.TopicId)
+				if !slices.Contains(infererTopicIds, topicId) {
+					infererTopicIds = append(infererTopicIds, topicId)
+				}
 
 				err := k.IncrementCountInfererInclusionsInTopic(ctx, reward.TopicId, reward.Address)
 				if err != nil {
@@ -655,6 +670,10 @@ func payoutRewards(
 				}
 			} else if reward.Type == types.WorkerForecastRewardType {
 				forecasterRewards = append(forecasterRewards, reward)
+				topicId := types.TopicId(reward.TopicId)
+				if !slices.Contains(forecasterTopicIds, topicId) {
+					forecasterTopicIds = append(forecasterTopicIds, topicId)
+				}
 
 				err := k.IncrementCountForecasterInclusionsInTopic(ctx, reward.TopicId, reward.Address)
 				if err != nil {
@@ -665,9 +684,16 @@ func payoutRewards(
 		}
 	}
 
-	types.EmitNewInfererRewardsSettledEvent(ctx, nonce, blockHeightTx, infererRewards)
-	types.EmitNewForecasterRewardsSettledEvent(ctx, nonce, blockHeightTx, forecasterRewards)
-	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, nonce, blockHeightTx, reputerAndDelegatorRewards)
+	// Emit events with lists of topic IDs
+	if len(infererRewards) > 0 {
+		types.EmitNewInfererRewardsSettledEvent(ctx, nonce, blockHeightTx, infererRewards, infererTopicIds)
+	}
+	if len(forecasterRewards) > 0 {
+		types.EmitNewForecasterRewardsSettledEvent(ctx, nonce, blockHeightTx, forecasterRewards, forecasterTopicIds)
+	}
+	if len(reputerAndDelegatorRewards) > 0 {
+		types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, nonce, blockHeightTx, reputerAndDelegatorRewards, reputerTopicIds)
+	}
 	return ret
 }
 

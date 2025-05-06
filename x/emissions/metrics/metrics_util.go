@@ -40,16 +40,21 @@ func MeasureRpcRequestLatency(endpoint string, startTime time.Time) {
 	)
 }
 
-// IncrProducerEventCount increments the counter for events produced.
-// This metric counts the number of events produced by the system.
+// IncrProducerEventCountWithLabels increments the counter for events produced, with custom labels.
+// This metric counts the number of events produced by the system, with additional labels.
 // Metric Name:
 //
 //	allora_loadtest_produce_count
-func IncrProducerEventCount(msgType string) {
+func IncrProducerEventCountWithLabels(msgType string, labels map[string]string) {
+	// Always include the msg_type label
+	allLabels := []metrics.Label{telemetry.NewLabel("msg_type", msgType)}
+	for k, v := range labels {
+		allLabels = append(allLabels, telemetry.NewLabel(k, v))
+	}
 	telemetry.IncrCounterWithLabels(
 		[]string{"allora", "loadtest", "produce", "count"},
 		1,
-		[]metrics.Label{telemetry.NewLabel("msg_type", msgType)},
+		allLabels,
 	)
 }
 
