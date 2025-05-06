@@ -173,21 +173,6 @@ func TestDec(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, zero.Equal(logTenOne))
 
-	logEOne, err := alloraMath.Ln(one)
-	require.NoError(t, err)
-	require.True(t, zero.Equal(logEOne))
-
-	// See https://github.com/allora-network/allora-chain/pull/789
-	logDeterminism, err := alloraMath.Ln(alloraMath.MustNewDecFromString("1.6285091944505809264504560045920167"))
-	require.NoError(t, err)
-	fmt.Println(logDeterminism.String())
-	require.True(t, alloraMath.MustNewDecFromString("0.4876649916811116824516548471782887").Equal(logDeterminism))
-
-	_, err = alloraMath.Ln(alloraMath.MustNewDecFromString("-1"))
-	require.Error(t, err)
-	_, err = alloraMath.Ln(alloraMath.MustNewDecFromString("0"))
-	require.Error(t, err)
-
 	eight := alloraMath.NewDecFromInt64(8)
 	twoCubed, err := alloraMath.Pow(two, three)
 	require.NoError(t, err)
@@ -1111,13 +1096,6 @@ func TestNegFailNaN(t *testing.T) {
 func TestLog10FailNaN(t *testing.T) {
 	nan := alloraMath.NewNaN()
 	_, err := alloraMath.Log10(nan)
-	require.Error(t, err)
-	require.ErrorIs(t, err, alloraMath.ErrNaN)
-}
-
-func TestLnFailNaN(t *testing.T) {
-	nan := alloraMath.NewNaN()
-	_, err := alloraMath.Ln(nan)
 	require.Error(t, err)
 	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
