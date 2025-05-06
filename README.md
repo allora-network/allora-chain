@@ -357,12 +357,6 @@ For reputers, the submission window starts at `(nonce.BlockHeight + topic.Ground
 
 Both windows are inclusive of start and end boundaries.
 
-## Monitoring
-
-Allora node emits metrics in each event, query and tx.
-event: `allora_loadtest_produce_count`
-query/tx: `allora_request_counter` for occurrences, `allora_request_latency_ms` for latency measures.
-Different labels are applied where appropriate (eg "topic_id", "address", "nonce", etc.)
 
 ## References
 
