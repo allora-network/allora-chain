@@ -183,8 +183,8 @@ func GenerateReputerScores(
 		types.EmitNewTopicInitialEmaScoreSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, topicId, block, initialEmaScore)
 	}
 
-	types.EmitNewReputerScoresSetEvent(ctx, instantScores, types.TopicId(topicId))
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr, types.TopicId(topicId))
+	types.EmitNewReputerScoresSetEvent(ctx, instantScores, topicId)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr, topicId)
 	types.EmitNewListeningCoefficientsSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, topicId, block, reputers, newCoefficients)
 	return instantScores, nil
 }
@@ -214,7 +214,7 @@ func GenerateInferenceScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 		instantScores = append(instantScores, newScore)
-		types.EmitNewInfererScoresSetEvent(ctx, instantScores, types.TopicId(topicId))
+		types.EmitNewInfererScoresSetEvent(ctx, instantScores, topicId)
 		return instantScores, nil
 	}
 	topic, err := keeper.GetTopic(ctx, topicId)
@@ -276,8 +276,8 @@ func GenerateInferenceScores(
 		types.EmitNewTopicInitialEmaScoreSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, topicId, block, initialEmaScore)
 	}
 
-	types.EmitNewInfererScoresSetEvent(ctx, instantScores, types.TopicId(topicId))
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr, types.TopicId(topicId))
+	types.EmitNewInfererScoresSetEvent(ctx, instantScores, topicId)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr, topicId)
 	return instantScores, nil
 }
 
@@ -311,7 +311,7 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 		instantScores = append(instantScores, newScore)
-		types.EmitNewForecasterScoresSetEvent(ctx, instantScores, types.TopicId(topicId))
+		types.EmitNewForecasterScoresSetEvent(ctx, instantScores, topicId)
 		return instantScores, nil
 	}
 
@@ -393,8 +393,8 @@ func GenerateForecastScores(
 		types.EmitNewTopicInitialEmaScoreSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, topicId, block, initialEmaScore)
 	}
 
-	types.EmitNewForecasterScoresSetEvent(ctx, instantScores, types.TopicId(topicId))
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr, types.TopicId(topicId))
+	types.EmitNewForecasterScoresSetEvent(ctx, instantScores, topicId)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr, topicId)
 	return instantScores, nil
 }
 

@@ -623,7 +623,7 @@ func payoutRewards(
 			}
 
 			reputerAndDelegatorRewards = append(reputerAndDelegatorRewards, reward)
-			topicId := types.TopicId(reward.TopicId)
+			topicId := reward.TopicId
 			if !slices.Contains(reputerTopicIds, topicId) {
 				reputerTopicIds = append(reputerTopicIds, topicId)
 			}
@@ -658,7 +658,7 @@ func payoutRewards(
 
 			if reward.Type == types.WorkerInferenceRewardType {
 				infererRewards = append(infererRewards, reward)
-				topicId := types.TopicId(reward.TopicId)
+				topicId := reward.TopicId
 				if !slices.Contains(infererTopicIds, topicId) {
 					infererTopicIds = append(infererTopicIds, topicId)
 				}
@@ -670,7 +670,7 @@ func payoutRewards(
 				}
 			} else if reward.Type == types.WorkerForecastRewardType {
 				forecasterRewards = append(forecasterRewards, reward)
-				topicId := types.TopicId(reward.TopicId)
+				topicId := reward.TopicId
 				if !slices.Contains(forecasterTopicIds, topicId) {
 					forecasterTopicIds = append(forecasterTopicIds, topicId)
 				}
