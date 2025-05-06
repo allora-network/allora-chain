@@ -53,13 +53,12 @@ var (
 var (
 	logOfEbase2 = MustNewDecFromString("1.442695040888963407359924681001892137")
 	// 0.5 with sufficient precision digit to allow right shifting keeping dec128 precision
-	log2B      apd.Decimal
-	oneBigInt  = apd.NewBigInt(1)
-	tenBigInt  = apd.NewBigInt(10)
-	zeroDec    = apd.New(0, 0)
-	oneDec     = apd.New(1, 0)
-	twoDec     = apd.New(2, 0)
-	epsilonDec = apd.New(1, -18) // Represents 1e-18
+	log2B     apd.Decimal
+	oneBigInt = apd.NewBigInt(1)
+	tenBigInt = apd.NewBigInt(10)
+	zeroDec   = apd.New(0, 0)
+	oneDec    = apd.New(1, 0)
+	twoDec    = apd.New(2, 0)
 )
 
 func init() {
@@ -69,13 +68,6 @@ func init() {
 	}
 	enforceDecimalPrecision(b, dec128Context.Precision+2)
 	log2B = *b
-}
-
-// EpsilonDec represents a small positive value (1e-18), used to prevent division by zero or issues with zero values.
-func EpsilonDec() Dec {
-	var d apd.Decimal
-	d.Set(epsilonDec)
-	return Dec{dec: d, isNaN: false}
 }
 
 // The number 0 encoded as Dec

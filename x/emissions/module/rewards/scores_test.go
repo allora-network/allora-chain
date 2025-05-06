@@ -174,8 +174,8 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 		epoch301Get("reputer_score_4"),
 	}
 	for i, reputerScore := range scores {
-		// Use a more lenient epsilon value (1% instead of 0.001%)
-		testutil.InEpsilon2(s.T(), reputerScore.Score, expectedScores[i].String())
+		// Use a more lenient epsilon value (0.01% instead of 0.001%)
+		testutil.InEpsilon3(s.T(), reputerScore.Score, expectedScores[i].String())
 	}
 }
 

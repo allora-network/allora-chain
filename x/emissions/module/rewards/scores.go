@@ -107,21 +107,17 @@ func GenerateReputerScores(
 			reputerListeningCoefficients[i] = cappedCoefficient
 		}
 
-		// Only normalize coefficients when there are multiple reputers
-		// When there's only one reputer, normalization is unnecessary and would force the value to 1.0
-		if len(reputerListeningCoefficients) > 1 {
-			// Normalize coefficients after setting them to epsilon
-			coeffSum, err := alloraMath.SumDecSlice(reputerListeningCoefficients)
-			if err != nil {
-				return []types.Score{}, errors.Wrap(err, "Error summing coefficients after capping")
-			}
+		// Normalize coefficients after setting them to epsilon
+		coeffSum, err := alloraMath.SumDecSlice(reputerListeningCoefficients)
+		if err != nil {
+			return []types.Score{}, errors.Wrap(err, "Error summing coefficients after capping")
+		}
 
-			if !coeffSum.IsZero() && !coeffSum.Equal(alloraMath.OneDec()) {
-				for i := range reputerListeningCoefficients {
-					reputerListeningCoefficients[i], err = reputerListeningCoefficients[i].Quo(coeffSum)
-					if err != nil {
-						return []types.Score{}, errors.Wrapf(err, "Error normalizing coefficient %d after capping", i)
-					}
+		if !coeffSum.IsZero() && !coeffSum.Equal(alloraMath.OneDec()) {
+			for i := range reputerListeningCoefficients {
+				reputerListeningCoefficients[i], err = reputerListeningCoefficients[i].Quo(coeffSum)
+				if err != nil {
+					return []types.Score{}, errors.Wrapf(err, "Error normalizing coefficient %d after capping", i)
 				}
 			}
 		}

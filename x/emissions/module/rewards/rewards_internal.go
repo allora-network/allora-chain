@@ -10,6 +10,11 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+const epsilon = "0.0000001"
+
+// EpsilonDec represents a small positive value (1e-18), used to prevent division by zero or issues with zero values.
+var EpsilonDec = alloraMath.MustNewDecFromString(epsilon)
+
 // flatten converts a double slice of alloraMath.Dec to a single slice of alloraMath.Dec
 func flatten(arr [][]alloraMath.Dec) []alloraMath.Dec {
 	var flat []alloraMath.Dec
@@ -243,78 +248,66 @@ func GetStakeWeightedLossMatrix(stakes []alloraMath.Dec, losses [][]alloraMath.D
 		}
 	}
 
-	// First check if all stakes are zero or epsilon
-	allZeroOrEpsilon := true
+	allZero := true
 	for _, stake := range stakes {
-		if !stake.IsZero() && !stake.Equal(alloraMath.EpsilonDec()) {
-			allZeroOrEpsilon = false
+		if !stake.IsZero() {
+			allZero = false
 			break
 		}
 	}
+	if allZero {
+		// Create default results using the average of the losses for each column
+		consensusLosses := make([]alloraMath.Dec, numCols)
+		mostDistantLosses := make([]alloraMath.Dec, numCols)
 
-	// If all stakes are zero, use epsilon values instead to avoid division by zero
-	if allZeroOrEpsilon {
-		allZero := true
-		for _, stake := range stakes {
-			if !stake.IsZero() {
-				allZero = false
-				break
-			}
-		}
-		if allZero {
-			// Create default results using the average of the losses for each column
-			consensusLosses := make([]alloraMath.Dec, numCols)
-			mostDistantLosses := make([]alloraMath.Dec, numCols)
-
-			// For each column, calculate the average (equally weighted)
-			for j := 0; j < numCols; j++ {
-				// Collect all non-NaN values for this column
-				validLosses := make([]alloraMath.Dec, 0)
-				for i := 0; i < len(losses); i++ {
-					if !losses[i][j].IsNaN() {
-						validLosses = append(validLosses, losses[i][j])
-					}
+		// For each column, calculate the average (equally weighted)
+		for j := 0; j < numCols; j++ {
+			// Collect all non-NaN values for this column
+			validLosses := make([]alloraMath.Dec, 0)
+			for i := 0; i < len(losses); i++ {
+				if !losses[i][j].IsNaN() {
+					validLosses = append(validLosses, losses[i][j])
 				}
-
-				// If there are no valid losses, use zero
-				if len(validLosses) == 0 {
-					consensusLosses[j] = alloraMath.ZeroDec()
-					mostDistantLosses[j] = alloraMath.ZeroDec()
-					continue
-				}
-
-				// Calculate the average
-				sum := alloraMath.ZeroDec()
-				for _, loss := range validLosses {
-					sum, _ = sum.Add(loss)
-				}
-				avg, _ := sum.Quo(alloraMath.NewDecFromInt64(int64(len(validLosses))))
-				consensusLosses[j] = avg
-
-				// Find the most distant value from the average
-				maxDistance := alloraMath.ZeroDec()
-				mostDistantValue := validLosses[0]
-				for _, loss := range validLosses {
-					distance, _ := loss.Sub(avg)
-					distance, _ = distance.Abs()
-
-					// Get absolute values for comparison
-					mostDistantAbs, _ := mostDistantValue.Abs()
-					currentAbs, _ := loss.Abs()
-
-					// If distance is equal, prefer the value that's further from zero
-					if distance.Equal(maxDistance) && currentAbs.Gt(mostDistantAbs) {
-						mostDistantValue = loss
-					} else if distance.Gt(maxDistance) {
-						maxDistance = distance
-						mostDistantValue = loss
-					}
-				}
-				mostDistantLosses[j] = mostDistantValue
 			}
 
-			return consensusLosses, mostDistantLosses, nil
+			// If there are no valid losses, use zero
+			if len(validLosses) == 0 {
+				consensusLosses[j] = alloraMath.ZeroDec()
+				mostDistantLosses[j] = alloraMath.ZeroDec()
+				continue
+			}
+
+			// Calculate the average
+			sum := alloraMath.ZeroDec()
+			for _, loss := range validLosses {
+				sum, _ = sum.Add(loss)
+			}
+			avg, _ := sum.Quo(alloraMath.NewDecFromInt64(int64(len(validLosses))))
+			consensusLosses[j] = avg
+
+			// Find the most distant value from the average
+			maxDistance := alloraMath.ZeroDec()
+			mostDistantValue := validLosses[0]
+			for _, loss := range validLosses {
+				distance, _ := loss.Sub(avg)
+				distance, _ = distance.Abs()
+
+				// Get absolute values for comparison
+				mostDistantAbs, _ := mostDistantValue.Abs()
+				currentAbs, _ := loss.Abs()
+
+				// If distance is equal, prefer the value that's further from zero
+				if distance.Equal(maxDistance) && currentAbs.Gt(mostDistantAbs) {
+					mostDistantValue = loss
+				} else if distance.Gt(maxDistance) {
+					maxDistance = distance
+					mostDistantValue = loss
+				}
+			}
+			mostDistantLosses[j] = mostDistantValue
 		}
+
+		return consensusLosses, mostDistantLosses, nil
 	}
 
 	// Initialize results
@@ -345,9 +338,9 @@ func GetStakeWeightedLossMatrix(stakes []alloraMath.Dec, losses [][]alloraMath.D
 		if len(validStakes) == 0 {
 			for i := 0; i < len(stakes); i++ {
 				if !losses[i][j].IsNaN() {
-					validStakes = append(validStakes, alloraMath.EpsilonDec())
+					validStakes = append(validStakes, EpsilonDec)
 					validLosses = append(validLosses, losses[i][j])
-					totalStakeToConsider, _ = totalStakeToConsider.Add(alloraMath.EpsilonDec())
+					totalStakeToConsider, _ = totalStakeToConsider.Add(EpsilonDec)
 				}
 			}
 		}
@@ -615,7 +608,7 @@ func GetAllReputersOutput(
 			}
 			max, err := alloraMath.Max(
 				coefficientsPlusLearningRateTimesGradient,
-				alloraMath.EpsilonDec(),
+				alloraMath.ZeroDec(),
 			)
 			if err != nil {
 				return nil, nil, errors.Wrap(err, "GetAllReputersOutput, err taking max")
@@ -636,22 +629,12 @@ func GetAllReputersOutput(
 			return nil, nil, errors.Wrap(err, "GetAllReputersOutput, err summing new coefficients")
 		}
 
-		// Avoid division by zero if sum is zero (shouldn't happen with EpsilonDec clamp, but safety first)
-		if coeffSum.IsZero() || coeffSum.Lt(alloraMath.EpsilonDec()) {
-			// If the sum is effectively zero even after epsilon clamp, something is wrong. Maybe return initial state or error.
-			// For now, let's return an error, as this state indicates a potential deeper issue.
-			return nil, nil, errors.Wrap(types.ErrDivisionByZero, "GetAllReputersOutput, coefficient sum effectively zero during normalization")
-		}
-
-		normalizedCoefficients := make([]alloraMath.Dec, len(newCoefficients))
 		for j := range newCoefficients {
-			normalizedCoefficients[j], err = newCoefficients[j].Quo(coeffSum)
+			newCoefficients[j], err = newCoefficients[j].Quo(coeffSum)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "GetAllReputersOutput, error normalizing coefficient %d", j)
 			}
 		}
-		// Update newCoefficients to use the normalized values for subsequent checks
-		newCoefficients = normalizedCoefficients
 
 		sumStakes, err := alloraMath.SumDecSlice(stakes)
 		if err != nil {
@@ -725,15 +708,13 @@ func GetAllReputersOutput(
 		return nil, nil, errors.Wrap(err, "GetAllReputersOutput, err summing final coefficients")
 	}
 
-	if !finalCoeffSum.IsZero() && !finalCoeffSum.Equal(alloraMath.OneDec()) {
-		normalizedCoefficients := make([]alloraMath.Dec, len(coefficients))
+	if !finalCoeffSum.Equal(alloraMath.OneDec()) {
 		for j := range coefficients {
-			normalizedCoefficients[j], err = coefficients[j].Quo(finalCoeffSum)
+			coefficients[j], err = coefficients[j].Quo(finalCoeffSum)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "GetAllReputersOutput, error normalizing final coefficient %d", j)
 			}
 		}
-		coefficients = normalizedCoefficients
 	}
 
 	return newScores, coefficients, nil
@@ -801,7 +782,7 @@ func GetAdjustedStake(
 		return alloraMath.ZeroDec(), errors.Wrap(err, "GetAdjustedStake, err calculating denominator")
 	}
 	// Clamp denominator to be at least epsilon
-	if denominator.Lte(alloraMath.EpsilonDec()) {
+	if denominator.Lte(EpsilonDec) {
 		return alloraMath.ZeroDec(), nil
 	}
 	numReputersTimesListeningCoefficent, err := numReputers.Mul(listeningCoefficient)

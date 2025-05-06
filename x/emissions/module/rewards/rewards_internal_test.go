@@ -991,7 +991,7 @@ func TestGetStakeWeightedLossMatrixDivisionByZero(t *testing.T) {
 		{
 			name: "mix_zero_epsilon",
 			reputersAdjustedStakes: []alloraMath.Dec{
-				alloraMath.EpsilonDec(),
+				rewards.EpsilonDec,
 				alloraMath.ZeroDec(),
 				alloraMath.ZeroDec(),
 			},
@@ -1006,9 +1006,9 @@ func TestGetStakeWeightedLossMatrixDivisionByZero(t *testing.T) {
 		{
 			name: "all_epsilon",
 			reputersAdjustedStakes: []alloraMath.Dec{
-				alloraMath.EpsilonDec(),
-				alloraMath.EpsilonDec(),
-				alloraMath.EpsilonDec(),
+				rewards.EpsilonDec,
+				rewards.EpsilonDec,
+				rewards.EpsilonDec,
 			},
 			reputersReportedLosses: [][]alloraMath.Dec{
 				{alloraMath.NewDecFromInt64(1)},
@@ -1022,7 +1022,7 @@ func TestGetStakeWeightedLossMatrixDivisionByZero(t *testing.T) {
 			name: "mix_zero_epsilon_valid",
 			reputersAdjustedStakes: []alloraMath.Dec{
 				alloraMath.NewDecFromInt64(1),
-				alloraMath.EpsilonDec(),
+				rewards.EpsilonDec,
 				alloraMath.ZeroDec(),
 			},
 			reputersReportedLosses: [][]alloraMath.Dec{
@@ -1051,4 +1051,17 @@ func TestGetStakeWeightedLossMatrixDivisionByZero(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEpsilonDec(t *testing.T) {
+	epsilon := rewards.EpsilonDec
+	expected, err := alloraMath.NewDecFromString("0.0000001")
+	require.NoError(t, err)
+
+	// Check if EpsilonDec is equal to the expected small value
+	require.True(t, epsilon.Equal(expected), "EpsilonDec should be equal to 0.0000001")
+
+	// Check if EpsilonDec is positive and not zero
+	require.True(t, epsilon.IsPositive(), "EpsilonDec should be positive")
+	require.False(t, epsilon.IsZero(), "EpsilonDec should not be zero")
 }
