@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * [#815](https://github.com/allora-network/allora-chain/pull/815) Refund ecosystem account when invalid topic to reward 
 * [#777](https://github.com/allora-network/allora-chain/pull/777) Allow forecasts with unregistered inferers to proceed
+* [#773](https://github.com/allora-network/allora-chain/pull/773) Update the topic's state and weight on RemoveStakes()
 
 ### Deprecated
 
