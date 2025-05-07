@@ -170,6 +170,8 @@ func ProcessAndStoreNetworkInferences(
 		return errorsmod.Wrap(err, "failed to insert network inference")
 	}
 
+	types.EmitNewNetworkInferencesEvent(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences)
+
 	// Get outlier resistant inferences
 	outlierResistantFilteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
 	if err != nil {

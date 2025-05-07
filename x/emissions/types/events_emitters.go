@@ -49,6 +49,14 @@ func EmitNewNetworkLossSetEvent(ctx sdk.Context, topicId TopicId, blockHeight Bl
 	}
 }
 
+func EmitNewNetworkInferencesEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
+	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(topicId, blockHeight, networkInferences))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
+	}
+}
+
 func EmitNewForecastTaskUtilityScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.FORECAST_TASK_SCORE_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score))
