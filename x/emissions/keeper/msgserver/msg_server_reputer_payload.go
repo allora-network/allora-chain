@@ -119,72 +119,78 @@ func (ms msgServer) validateValueBundle(ctx context.Context, valueBundle *types.
 	}
 
 	if err := validateWorkerValues(
-		types.ConvertToWorkerValues(networkInferences.InfererValues),
-		types.ConvertToWorkerValues(valueBundle.InfererValues),
+		networkInferences.InfererValues,
+		valueBundle.InfererValues,
 	); err != nil {
 		return err
 	}
 
 	if err := validateWorkerValues(
-		types.ConvertToWorkerValues(networkInferences.ForecasterValues),
-		types.ConvertToWorkerValues(valueBundle.ForecasterValues),
+		networkInferences.ForecasterValues,
+		valueBundle.ForecasterValues,
 	); err != nil {
 		return err
 	}
 
 	if err := validateWorkerValues(
-		types.ConvertToWorkerValues(networkInferences.OneOutInfererValues),
-		types.ConvertToWorkerValues(valueBundle.OneOutInfererValues),
+		networkInferences.OneOutInfererValues,
+		valueBundle.OneOutInfererValues,
 	); err != nil {
 		return err
 	}
 
 	if err := validateWorkerValues(
-		types.ConvertToWorkerValues(networkInferences.OneInForecasterValues),
-		types.ConvertToWorkerValues(valueBundle.OneInForecasterValues),
+		networkInferences.OneInForecasterValues,
+		valueBundle.OneInForecasterValues,
 	); err != nil {
 		return err
 	}
 
 	if err := validateWorkerValues(
-		types.ConvertToWorkerValues(networkInferences.OneOutForecasterValues),
-		types.ConvertToWorkerValues(valueBundle.OneOutForecasterValues)); err != nil {
+		networkInferences.OneOutForecasterValues,
+		valueBundle.OneOutForecasterValues); err != nil {
 		return err
 	}
 
 	if err := validateWorkerValues(
-		types.ConvertToWorkerValues(networkInferences.OneOutInfererForecasterValues),
-		types.ConvertToWorkerValues(valueBundle.OneOutInfererForecasterValues)); err != nil {
+		networkInferences.OneOutInfererForecasterValues,
+		valueBundle.OneOutInfererForecasterValues); err != nil {
 		return err
 	}
 
 	return nil
 }
-func validateWorkerValues(workerValues, inputWorkerValues []*types.WorkerValue) error {
+
+type worker interface {
+	GetWorker() string
+	GetIValue() any
+}
+
+func validateWorkerValues[T, K worker](workerValues []T, inputWorkerValues []K) error {
 	if len(workerValues) != len(inputWorkerValues) {
 		return fmt.Errorf("worker sets don't match - different unique workers")
 	}
 
 	sort.Slice(workerValues, func(i, j int) bool {
-		return workerValues[i].Worker < workerValues[j].Worker
+		return workerValues[i].GetWorker() < workerValues[j].GetWorker()
 	})
 
 	sort.Slice(inputWorkerValues, func(i, j int) bool {
-		return inputWorkerValues[i].Worker < inputWorkerValues[j].Worker
+		return inputWorkerValues[i].GetWorker() < inputWorkerValues[j].GetWorker()
 	})
 
 	for i := range workerValues {
-		if workerValues[i].Worker != inputWorkerValues[i].Worker {
+		if workerValues[i].GetWorker() != inputWorkerValues[i].GetWorker() {
 			return fmt.Errorf("worker mismatch: expected %s, got %s",
-				workerValues[i].Worker, inputWorkerValues[i].Worker)
+				workerValues[i].GetWorker(), inputWorkerValues[i].GetWorker())
 		}
 
-		valList, ok := workerValues[i].Value.([]*types.WorkerValue)
+		valList, ok := workerValues[i].GetIValue().([]*types.WithheldWorkerAttributedValue)
 		if !ok {
 			continue
 		}
 
-		inValList, ok := inputWorkerValues[i].Value.([]*types.WorkerValue)
+		inValList, ok := inputWorkerValues[i].GetIValue().([]*types.InputWithheldWorkerAttributedValue)
 		if !ok {
 			continue
 		}

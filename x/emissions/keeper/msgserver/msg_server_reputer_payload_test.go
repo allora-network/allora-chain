@@ -344,6 +344,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }
 
+// nolint: exhaustruct
 func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadWorkerAddressValidation() {
 	testCases := []struct {
 		name               string

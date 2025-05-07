@@ -5,11 +5,12 @@ import (
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
 
-/// EXTERNAL TYPE VALIDATIONS
+// EXTERNAL TYPE VALIDATIONS
 
 // ValidateDec checks if the given value is a valid Dec by our standards
 func ValidateDec(value alloraMath.Dec) error {
@@ -66,7 +67,7 @@ func ValidateBech32(value string) error {
 	return nil
 }
 
-/// PRIMITIVE TYPE VALIDATIONS
+// PRIMITIVE TYPE VALIDATIONS
 
 // ValidateBlockHeight checks if the given value is a valid block height
 func ValidateBlockHeight(value BlockHeight) error {
@@ -84,7 +85,7 @@ func ValidateTopicId(value TopicId) error {
 	return nil
 }
 
-/// EMISSIONS TYPES PACKAGE VALIDATIONS
+// EMISSIONS TYPES PACKAGE VALIDATIONS
 
 // Validate performs basic genesis state validation returning an error upon any
 func (gs *GenesisState) Validate() error {
@@ -709,11 +710,11 @@ func (bundle *ReputerValueBundle) Validate() error {
 }
 
 // validate that a worker attributed value follows the expected format
-func (inputWorkerValue *InputWorkerAttributedValue) Validate() error {
-	if inputWorkerValue == nil {
+func (w *InputWorkerAttributedValue) Validate() error {
+	if w == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "input worker attributed value cannot be nil")
 	}
-	_, err := sdk.AccAddressFromBech32(inputWorkerValue.Worker)
+	_, err := sdk.AccAddressFromBech32(w.Worker)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
 	}
@@ -722,27 +723,27 @@ func (inputWorkerValue *InputWorkerAttributedValue) Validate() error {
 }
 
 // validate that a worker attributed value follows the expected format
-func (workerValue *WorkerAttributedValue) Validate() error {
-	if workerValue == nil {
+func (w *WorkerAttributedValue) Validate() error {
+	if w == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker attributed value cannot be nil")
 	}
-	_, err := sdk.AccAddressFromBech32(workerValue.Worker)
+	_, err := sdk.AccAddressFromBech32(w.Worker)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
 	}
 
-	if err := ValidateDec(workerValue.Value); err != nil {
+	if err := ValidateDec(w.Value); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (inputWithheldWorkerValue *InputWithheldWorkerAttributedValue) Validate() error {
-	if inputWithheldWorkerValue == nil {
+func (w *InputWithheldWorkerAttributedValue) Validate() error {
+	if w == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "input withheld worker attributed value cannot be nil")
 	}
-	_, err := sdk.AccAddressFromBech32(inputWithheldWorkerValue.Worker)
+	_, err := sdk.AccAddressFromBech32(w.Worker)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
 	}
@@ -751,33 +752,33 @@ func (inputWithheldWorkerValue *InputWithheldWorkerAttributedValue) Validate() e
 }
 
 // validate that a withheld worker attributed value follows the expected format
-func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
-	if withheldWorkerValue == nil {
+func (w *WithheldWorkerAttributedValue) Validate() error {
+	if w == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "withheld worker attributed value cannot be nil")
 	}
-	_, err := sdk.AccAddressFromBech32(withheldWorkerValue.Worker)
+	_, err := sdk.AccAddressFromBech32(w.Worker)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
 	}
 
-	if err := ValidateDec(withheldWorkerValue.Value); err != nil {
+	if err := ValidateDec(w.Value); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (inputOneOutInfererForecasterValues *InputOneOutInfererForecasterValues) Validate() error {
-	if inputOneOutInfererForecasterValues == nil {
+func (w *InputOneOutInfererForecasterValues) Validate() error {
+	if w == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "input one out inferer forecaster values cannot be nil")
 	}
-	if err := ValidateBech32(inputOneOutInfererForecasterValues.Forecaster); err != nil {
+	if err := ValidateBech32(w.Forecaster); err != nil {
 		return errors.Wrap(err, "one out inferer forecaster values forecaster is invalid")
 	}
-	if inputOneOutInfererForecasterValues.OneOutInfererValues == nil {
+	if w.OneOutInfererValues == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
 	}
-	for _, oneOutInfererValue := range inputOneOutInfererForecasterValues.OneOutInfererValues {
+	for _, oneOutInfererValue := range w.OneOutInfererValues {
 		if err := oneOutInfererValue.Validate(); err != nil {
 			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
 		}
@@ -786,17 +787,17 @@ func (inputOneOutInfererForecasterValues *InputOneOutInfererForecasterValues) Va
 }
 
 // validate that a types.OneOutInfererForecasterValues follows the expected format
-func (oneOutInfererForecasterValues *OneOutInfererForecasterValues) Validate() error {
-	if oneOutInfererForecasterValues == nil {
+func (w *OneOutInfererForecasterValues) Validate() error {
+	if w == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "one out inferer forecaster values cannot be nil")
 	}
-	if err := ValidateBech32(oneOutInfererForecasterValues.Forecaster); err != nil {
+	if err := ValidateBech32(w.Forecaster); err != nil {
 		return errors.Wrap(err, "one out inferer forecaster values forecaster is invalid")
 	}
-	if oneOutInfererForecasterValues.OneOutInfererValues == nil {
+	if w.OneOutInfererValues == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "one out inferer forecaster values one out inferer values cannot be nil")
 	}
-	for _, oneOutInfererValue := range oneOutInfererForecasterValues.OneOutInfererValues {
+	for _, oneOutInfererValue := range w.OneOutInfererValues {
 		if err := oneOutInfererValue.Validate(); err != nil {
 			return errors.Wrap(err, "one out inferer forecaster values one out inferer value is invalid")
 		}
@@ -1081,7 +1082,7 @@ func (oc *OffchainNode) Validate() error {
 	return nil
 }
 
-/// PROTOBUF MESSAGE VALIDATIONS
+// PROTOBUF MESSAGE VALIDATIONS
 
 // validate that a register request follows the expected format
 func (msg *RegisterRequest) Validate() error {
