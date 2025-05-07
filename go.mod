@@ -45,6 +45,7 @@ require (
 	github.com/ignite/cli/v28 v28.5.3
 	github.com/pelletier/go-toml/v2 v2.2.3
 	github.com/pkg/errors v0.9.1
+	github.com/rs/zerolog v1.33.0
 	github.com/skip-mev/feemarket v1.1.1
 	github.com/spf13/cast v1.7.1
 	github.com/spf13/cobra v1.8.1
@@ -178,7 +179,6 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/rs/cors v1.11.1 // indirect
-	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sasha-s/go-deadlock v0.3.5 // indirect
