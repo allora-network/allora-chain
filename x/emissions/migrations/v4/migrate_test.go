@@ -3,78 +3,40 @@ package v4_test
 import (
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
-
-	collections "cosmossdk.io/collections"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
-
-	"cosmossdk.io/core/store"
-	"github.com/allora-network/allora-chain/app/params"
-
+	"cosmossdk.io/collections"
 	"cosmossdk.io/store/prefix"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/gogo/protobuf/proto"
+	"github.com/stretchr/testify/suite"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
 	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	v4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
 	oldV3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
-	emissions "github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/gogo/protobuf/proto"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/suite"
-
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-
-	storetypes "cosmossdk.io/store/types"
-	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 )
 
 type EmissionsV4MigrationTestSuite struct {
-	suite.Suite
-	ctrl *gomock.Controller
-
-	ctx             sdk.Context
-	storeService    store.KVStoreService
-	emissionsKeeper *keeper.Keeper
+	testutil.TestSuite
 }
 
 func TestEmissionsV4MigrationTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV4MigrationTestSuite))
-}
-
-func (s *EmissionsV4MigrationTestSuite) SetupTest() {
-	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
-	key := storetypes.NewKVStoreKey(emissionstypes.StoreKey)
-	storeService := runtime.NewKVStoreService(key)
-	s.storeService = storeService
-	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	s.ctx = testCtx.Ctx
-
-	// gomock initializations
-	s.ctrl = gomock.NewController(s.T())
-	accountKeeper := emissionstestutil.NewMockAccountKeeper(s.ctrl)
-	bankKeeper := emissionstestutil.NewMockBankKeeper(s.ctrl)
-	emissionsKeeper := keeper.NewKeeper(
-		encCfg.Codec,
-		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName)
-
-	s.emissionsKeeper = &emissionsKeeper
+	suite.Run(t, &EmissionsV4MigrationTestSuite{
+		testutil.TestSuite{
+			ModuleName: "emissions_V4Migrations",
+		},
+	})
 }
 
 // in this test we check that the emissions module params have been migrated
 // and the expected new field is set.
 func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	defaultParams := emissionstypes.DefaultParams()
 	paramsOld := oldV3Types.Params{
@@ -131,7 +93,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -175,17 +137,19 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 	s.Require().Equal(paramsExpected.MaxActiveTopicsPerBlock, params.MaxActiveTopicsPerBlock)
 	s.Require().Equal(paramsExpected.MaxStringLength, params.MaxStringLength)
 	// commenting this out as this migration has already happened, so this test is no longer relevant
-	//s.Require().Equal(paramsExpected, params)
+	// s.Require().Equal(paramsExpected, params)
 }
 
 // in this test, we check that an already migrated topic, that has all the new fields
 // for merit sortition, and everything looks correct, will not change at all
 func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	topicId := uint64(2)
 
 	migratedOldTopic := emissionstypes.Topic{
-		Id:                       1,
+		Id:                       topicId,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
 		LossMethod:               "lossMethod",
@@ -214,12 +178,13 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
 
-	err = v4.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator := topicStore.Iterator(nil, nil)
 	s.Require().True(iterator.Valid())
+	iterator.Next() // skip the already existing topic at ID 1
 	defer iterator.Close()
 
 	var newMsg emissionstypes.Topic
@@ -246,7 +211,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 	s.Require().Equal(migratedOldTopic.ActiveReputerQuantile.String(), newMsg.ActiveReputerQuantile.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -255,8 +220,8 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 // for merit sortition, but has a NaN for initial regret, will have its initial regret
 // set to 0 but everything else will remain the same
 func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{
 		Id:                       1,
@@ -287,7 +252,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v4.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -320,7 +285,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().Equal("0", newMsg.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -329,8 +294,8 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 // new fields for merit sortition, will have all the new fields set to the default values
 // and everything else will remain the same
 func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	notMigratedTopic := oldV2Types.Topic{
 		Id:                     1,
@@ -357,10 +322,10 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v4.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
-	err = v4.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -393,7 +358,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 	s.Require().Equal("0.25", newMsg.ActiveReputerQuantile.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -402,8 +367,8 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 // new fields for merit sortition, and also  has a NaN for initial regret,
 // will have its initial regret set to 0 and all the new fields set to the default values
 func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	notMigratedTopicWithNaNInitialRegret := oldV2Types.Topic{
 		Id:                     1,
@@ -430,13 +395,13 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v4.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
-	err = v4.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
-	err = v4.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v4.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -470,7 +435,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	s.Require().Equal("0", newMsg.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -503,7 +468,7 @@ func testScoreMapDeletion(
 	s.Require().NoError(err)
 	iterator.Close()
 
-	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -543,7 +508,7 @@ func testScoresMapDeletion(
 	iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
-	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -555,8 +520,8 @@ func testScoresMapDeletion(
 
 // check that the specified maps are reset correctly
 func (s *EmissionsV4MigrationTestSuite) TestResetMapsWithNonNumericValues() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	testScoresMapDeletion(s, store, cdc, emissionstypes.InferenceScoresKey)
 	testScoresMapDeletion(s, store, cdc, emissionstypes.ForecastScoresKey)
 	testScoresMapDeletion(s, store, cdc, emissionstypes.ReputerScoresKey)
@@ -575,7 +540,7 @@ func (s *EmissionsV4MigrationTestSuite) TestResetMapsWithNonNumericValues() {
 	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey)
 }
 
-/// HELPER FUNCTIONS
+// / HELPER FUNCTIONS
 
 // example value bundle for testing
 func getBundle() emissionstypes.ValueBundle {
@@ -648,7 +613,7 @@ func testValueBundleMapDeletion(
 	iterator.Close()
 	s.Require().Equal(bundle, getBundle())
 
-	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -690,7 +655,7 @@ func testReputerValueBundleMapDeletion(
 	iterator.Close()
 	s.Require().Len(reputerValueBundles.ReputerValueBundles, 1)
 
-	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -726,7 +691,7 @@ func testTimeStampedValueMapDeletion(
 	s.Require().NoError(err)
 	iterator.Close()
 
-	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly

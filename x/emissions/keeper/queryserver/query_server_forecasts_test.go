@@ -6,21 +6,20 @@ import (
 )
 
 func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryserver := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryserver := s.EmissionsQueryServer()
 	topicId := uint64(1)
 	blockHeight := types.BlockHeight(100)
 	expectedForecasts := types.Forecasts{
 		Forecasts: []*types.Forecast{
 			{
 				TopicId:     topicId,
-				Forecaster:  s.addrsStr[6],
+				Forecaster:  s.AddrsStr()[6],
 				BlockHeight: blockHeight,
 				ForecastElements: []*types.ForecastElement{
 					{
-						Inferer: s.addrsStr[4],
+						Inferer: s.AddrsStr()[4],
 						Value:   alloraMath.MustNewDecFromString("0.5"),
 					},
 				},
@@ -28,11 +27,11 @@ func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 			},
 			{
 				TopicId:     topicId,
-				Forecaster:  s.addrsStr[7],
+				Forecaster:  s.AddrsStr()[7],
 				BlockHeight: blockHeight,
 				ForecastElements: []*types.ForecastElement{
 					{
-						Inferer: s.addrsStr[4],
+						Inferer: s.AddrsStr()[4],
 						Value:   alloraMath.MustNewDecFromString("0.5"),
 					},
 				},
@@ -59,17 +58,16 @@ func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetActiveForecastersForTopic() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
 	topicId := uint64(1)
 
 	// Add some active forecasters
 	activeForecasters := []string{
-		s.addrsStr[0],
-		s.addrsStr[1],
-		s.addrsStr[2],
+		s.AddrsStr()[0],
+		s.AddrsStr()[1],
+		s.AddrsStr()[2],
 	}
 
 	for _, forecaster := range activeForecasters {
@@ -106,7 +104,7 @@ func (s *QueryServerTestSuite) TestGetActiveForecastersForTopic() {
 	s.Require().Contains(err.Error(), "not found")
 
 	// Test with no active forecasters
-	emptyTopicId := s.CreateOneTopic()
+	emptyTopicId := s.CreateTopic()
 	emptyResponse, err := queryServer.GetActiveForecastersForTopic(
 		ctx,
 		&types.GetActiveForecastersForTopicRequest{

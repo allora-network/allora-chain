@@ -4,14 +4,15 @@ import (
 	"strconv"
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
-	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
-	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type RewardsMathTestSuite struct {
@@ -786,7 +787,7 @@ func TestGetAllConsensusScores(t *testing.T) {
 func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require := s.Require()
 
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	params.EpsilonReputer = alloraMath.MustNewDecFromString("0.01")
 	require.NoError(err)
 

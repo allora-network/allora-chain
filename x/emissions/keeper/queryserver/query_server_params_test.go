@@ -5,16 +5,12 @@ import (
 )
 
 func (s *QueryServerTestSuite) TestParams() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
-
 	expectedParams := types.DefaultParams()
 
-	err := keeper.SetParams(ctx, expectedParams)
+	err := s.EmissionsKeeper().SetParams(s.Ctx(), expectedParams)
 	s.Require().NoError(err, "Setting parameters should not produce an error")
 
-	response, err := queryServer.GetParams(ctx, &types.GetParamsRequest{})
+	response, err := s.EmissionsQueryServer().GetParams(s.Ctx(), &types.GetParamsRequest{})
 
 	s.Require().NoError(err, "Retrieving parameters should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")

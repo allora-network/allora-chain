@@ -6,14 +6,14 @@ import (
 )
 
 func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic := types.Topic{
 		Id:                       uint64(1),
 		WorkerSubmissionWindow:   10,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
-		Creator:                  s.addrsStr[0],
+		Creator:                  s.AddrsStr()[0],
 		Metadata:                 "",
 		LossMethod:               "",
 		EpochLastEnded:           0,
@@ -28,7 +28,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 		ActiveForecasterQuantile: alloraMath.ZeroDec(),
 		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr()[1]
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -38,36 +38,36 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 		Address:     worker,
 		Score:       alloraMath.MustNewDecFromString("0.2"),
 	}
-	emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, worker, newScore)
+	emaScore, err := k.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, worker, newScore)
 	s.Require().NoError(err)
 	s.Require().Equal("0.2", emaScore.Score.String())
 
 	// Verify the EMA score was saved
-	savedScore, err := keeper.GetInfererScoreEma(ctx, topic.Id, worker)
+	savedScore, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(newScore.Score, savedScore.Score)
 
 	// Test case 2: Don't update blockheight of score
 	newScore.BlockHeight = block + 5
-	emaScore, err = keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, worker, newScore)
+	emaScore, err = k.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, worker, newScore)
 	s.Require().NoError(err)
 	s.Require().Equal("0.2", emaScore.Score.String())
 
 	// Verify the blockheight of the EMA score was not updated
-	savedScoreAgain, err := keeper.GetInfererScoreEma(ctx, topic.Id, worker)
+	savedScoreAgain, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(savedScore.BlockHeight, savedScoreAgain.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic := types.Topic{
 		Id:                       uint64(1),
 		WorkerSubmissionWindow:   10,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
-		Creator:                  s.addrsStr[0],
+		Creator:                  s.AddrsStr()[0],
 		Metadata:                 "",
 		LossMethod:               "",
 		EpochLastEnded:           0,
@@ -82,7 +82,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 		ActiveForecasterQuantile: alloraMath.ZeroDec(),
 		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr()[1]
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -92,33 +92,33 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 		Address:     worker,
 		Score:       alloraMath.MustNewDecFromString("0.5"),
 	}
-	emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, worker, newScore)
+	emaScore, err := k.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, worker, newScore)
 	s.Require().NoError(err)
 	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the EMA score was saved
-	savedScore, err := keeper.GetForecasterScoreEma(ctx, topic.Id, worker)
+	savedScore, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(newScore.Score, savedScore.Score)
 
 	// Test case 2: Not update blockheight of score
 	newScore.BlockHeight = block + 5
-	emaScore, err = keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, worker, newScore)
+	emaScore, err = k.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, worker, newScore)
 	s.Require().NoError(err)
 	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the blockheight of the EMA score was not updated
-	savedScoreAgain, err := keeper.GetForecasterScoreEma(ctx, topic.Id, worker)
+	savedScoreAgain, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(savedScore.BlockHeight, savedScoreAgain.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic := types.Topic{
-		Creator:                  s.addrsStr[0],
+		Creator:                  s.AddrsStr()[0],
 		Id:                       uint64(1),
 		EpochLength:              20,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
@@ -136,7 +136,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 		ActiveForecasterQuantile: alloraMath.ZeroDec(),
 		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr()[2]
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -146,35 +146,35 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 		Address:     reputer,
 		Score:       alloraMath.MustNewDecFromString("0.5"),
 	}
-	emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, reputer, newScore)
+	emaScore, err := k.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, reputer, newScore)
 	s.Require().NoError(err)
 	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the EMA score was saved
-	savedScore, err := keeper.GetReputerScoreEma(ctx, topic.Id, reputer)
+	savedScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
 	s.Require().NoError(err)
 	s.Require().Equal(newScore.Score, savedScore.Score)
 
 	// Test case 2: Don't update blockheight of score
 	newScore.BlockHeight = block + 10
-	emaScore, err = keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, reputer, newScore)
+	emaScore, err = k.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, reputer, newScore)
 	s.Require().NoError(err)
 	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the blockheight of the EMA score was not updated
-	savedScoreAgain, err := keeper.GetReputerScoreEma(ctx, topic.Id, reputer)
+	savedScoreAgain, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
 	s.Require().NoError(err)
 	s.Require().Equal(savedScore.BlockHeight, savedScoreAgain.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic := types.Topic{
 		Id:                       uint64(1),
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
-		Creator:                  s.addrsStr[0],
+		Creator:                  s.AddrsStr()[0],
 		Metadata:                 "",
 		LossMethod:               "",
 		EpochLastEnded:           0,
@@ -190,12 +190,12 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaWithLastSavedTopicQuanti
 		ActiveForecasterQuantile: alloraMath.ZeroDec(),
 		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr()[1]
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score
 	previousQuantileScore := alloraMath.MustNewDecFromString("0.8")
-	err := keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topic.Id, previousQuantileScore)
+	err := k.SetPreviousTopicQuantileInfererScoreEma(ctx, topic.Id, previousQuantileScore)
 	s.Require().NoError(err)
 
 	score := types.Score{
@@ -204,24 +204,24 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaWithLastSavedTopicQuanti
 		Address:     worker,
 		Score:       previousQuantileScore,
 	}
-	err = keeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
+	err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
 	s.Require().NoError(err)
 
 	// Verify the EMA score was calculated and saved
-	savedScore, err := keeper.GetInfererScoreEma(ctx, topic.Id, worker)
+	savedScore, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(previousQuantileScore, savedScore.Score)
 	s.Require().Equal(block, savedScore.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic := types.Topic{
 		Id:                       uint64(1),
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
-		Creator:                  s.addrsStr[0],
+		Creator:                  s.AddrsStr()[0],
 		Metadata:                 "",
 		LossMethod:               "",
 		EpochLastEnded:           0,
@@ -237,12 +237,12 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaWithLastSavedTopicQua
 		ActiveForecasterQuantile: alloraMath.ZeroDec(),
 		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr()[1]
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score
 	previousQuantileScore := alloraMath.MustNewDecFromString("0.8")
-	err := keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topic.Id, previousQuantileScore)
+	err := k.SetPreviousTopicQuantileForecasterScoreEma(ctx, topic.Id, previousQuantileScore)
 	s.Require().NoError(err)
 
 	score := types.Score{
@@ -251,24 +251,24 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaWithLastSavedTopicQua
 		Address:     worker,
 		Score:       previousQuantileScore,
 	}
-	err = keeper.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
+	err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
 	s.Require().NoError(err)
 
 	// Verify the EMA score was calculated and saved
-	savedScore, err := keeper.GetForecasterScoreEma(ctx, topic.Id, worker)
+	savedScore, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(previousQuantileScore, savedScore.Score)
 	s.Require().Equal(block, savedScore.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic := types.Topic{
 		Id:                       uint64(1),
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
-		Creator:                  s.addrsStr[0],
+		Creator:                  s.AddrsStr()[0],
 		Metadata:                 "",
 		LossMethod:               "",
 		EpochLastEnded:           0,
@@ -284,12 +284,12 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaWithLastSavedTopicQuanti
 		ActiveForecasterQuantile: alloraMath.ZeroDec(),
 		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr()[2]
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score
 	previousQuantileScore := alloraMath.MustNewDecFromString("0.8")
-	err := keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topic.Id, previousQuantileScore)
+	err := k.SetPreviousTopicQuantileReputerScoreEma(ctx, topic.Id, previousQuantileScore)
 	s.Require().NoError(err)
 
 	score := types.Score{
@@ -298,11 +298,11 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaWithLastSavedTopicQuanti
 		Address:     reputer,
 		Score:       previousQuantileScore,
 	}
-	err = keeper.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
+	err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
 	s.Require().NoError(err)
 
 	// Verify the EMA score was calculated and saved
-	savedScore, err := keeper.GetReputerScoreEma(ctx, topic.Id, reputer)
+	savedScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
 	s.Require().NoError(err)
 	s.Require().Equal(previousQuantileScore, savedScore.Score)
 	s.Require().Equal(block, savedScore.BlockHeight)

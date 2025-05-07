@@ -1,16 +1,11 @@
 package rewards_test
 
 import (
-	"math/rand"
-	"strconv"
-
 	cosmosMath "cosmossdk.io/math"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
-	"github.com/allora-network/allora-chain/utils/fn"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -21,73 +16,52 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 	epoch300Get := epochGet[300]
 	epoch301Get := epochGet[301]
 	block := int64(1003)
+	topicId := uint64(1)
 
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
-
-	reputer0 := s.addrsStr[13]
-	reputer1 := s.addrsStr[14]
-	reputer2 := s.addrsStr[15]
-	reputer3 := s.addrsStr[16]
-	reputer4 := s.addrsStr[17]
+	reputer0 := s.AddrsStr()[13]
+	reputer1 := s.AddrsStr()[14]
+	reputer2 := s.AddrsStr()[15]
+	reputer3 := s.AddrsStr()[16]
+	reputer4 := s.AddrsStr()[17]
 	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
 
-	inferer0 := s.addrsStr[5]
-	inferer1 := s.addrsStr[6]
-	inferer2 := s.addrsStr[7]
-	inferer3 := s.addrsStr[8]
-	inferer4 := s.addrsStr[9]
+	inferer0 := s.AddrsStr()[5]
+	inferer1 := s.AddrsStr()[6]
+	inferer2 := s.AddrsStr()[7]
+	inferer3 := s.AddrsStr()[8]
+	inferer4 := s.AddrsStr()[9]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrsStr[10]
-	forecaster1 := s.addrsStr[11]
-	forecaster2 := s.addrsStr[12]
+	forecaster0 := s.AddrsStr()[10]
+	forecaster1 := s.AddrsStr()[11]
+	forecaster2 := s.AddrsStr()[12]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	reputers := []testutil.ReputerKey{
 		{
-			Address:    s.addrsStr[13],
-			PrivateKey: s.privKeys[13],
-			PubKeyHex:  s.pubKeyHexStr[13],
+			Address:    s.AddrsStr()[13],
+			PrivateKey: s.PrivKeys()[13],
+			PubKeyHex:  s.PubKeyHexStr()[13],
 		},
 		{
-			Address:    s.addrsStr[14],
-			PrivateKey: s.privKeys[14],
-			PubKeyHex:  s.pubKeyHexStr[14],
+			Address:    s.AddrsStr()[14],
+			PrivateKey: s.PrivKeys()[14],
+			PubKeyHex:  s.PubKeyHexStr()[14],
 		},
 		{
-			Address:    s.addrsStr[15],
-			PrivateKey: s.privKeys[15],
-			PubKeyHex:  s.pubKeyHexStr[15],
+			Address:    s.AddrsStr()[15],
+			PrivateKey: s.PrivKeys()[15],
+			PubKeyHex:  s.PubKeyHexStr()[15],
 		},
 		{
-			Address:    s.addrsStr[16],
-			PrivateKey: s.privKeys[16],
-			PubKeyHex:  s.pubKeyHexStr[16],
+			Address:    s.AddrsStr()[16],
+			PrivateKey: s.PrivKeys()[16],
+			PubKeyHex:  s.PubKeyHexStr()[16],
 		},
 		{
-			Address:    s.addrsStr[17],
-			PrivateKey: s.privKeys[17],
-			PubKeyHex:  s.pubKeyHexStr[17],
+			Address:    s.AddrsStr()[17],
+			PrivateKey: s.PrivKeys()[17],
+			PubKeyHex:  s.PubKeyHexStr()[17],
 		},
 	}
 
@@ -136,11 +110,11 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 
 		s.MintTokensToAddress(addrBech, stakes[i])
 
-		err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, addr, stakes[i])
+		err = s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, addr, stakes[i])
 		s.Require().NoError(err)
 
-		err = s.emissionsKeeper.SetListeningCoefficient(
-			s.ctx,
+		err = s.EmissionsKeeper().SetListeningCoefficient(
+			s.Ctx(),
 			topicId,
 			addr,
 			types.ListeningCoefficient{Coefficient: coefficients[i]},
@@ -160,8 +134,8 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 
 	// Generate new reputer scores
 	scores, err := rewards.GenerateReputerScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block,
 		reportedLosses,
@@ -181,27 +155,7 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceScores() {
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	block := int64(1003)
 
 	// Generate workers data for tests
@@ -210,8 +164,8 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 
 	// Get inference scores
 	scores, err := rewards.GenerateInferenceScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block,
 		reportedLosses,
@@ -239,27 +193,7 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 }
 
 func (s *RewardsTestSuite) TestGenerateInferenceScores_AllNilOneOutAndOneIn() {
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	block := int64(2001)
 
 	// Generate normal network losses, then set all one-out/one-in fields to nil
@@ -271,8 +205,8 @@ func (s *RewardsTestSuite) TestGenerateInferenceScores_AllNilOneOutAndOneIn() {
 	reportedLosses.OneInForecasterValues = nil
 
 	scores, err := rewards.GenerateInferenceScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block,
 		reportedLosses,
@@ -285,42 +219,22 @@ func (s *RewardsTestSuite) TestGenerateInferenceScores_AllNilOneOutAndOneIn() {
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	block := int64(1003)
 
-	inferer0 := s.addrs[5].String()
-	inferer1 := s.addrs[6].String()
-	inferer2 := s.addrs[7].String()
-	inferer3 := s.addrs[8].String()
-	inferer4 := s.addrs[9].String()
+	inferer0 := s.Addrs()[5].String()
+	inferer1 := s.Addrs()[6].String()
+	inferer2 := s.Addrs()[7].String()
+	inferer3 := s.Addrs()[8].String()
+	inferer4 := s.Addrs()[9].String()
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrs[10].String()
-	forecaster1 := s.addrs[11].String()
-	forecaster2 := s.addrs[12].String()
+	forecaster0 := s.Addrs()[10].String()
+	forecaster1 := s.Addrs()[11].String()
+	forecaster2 := s.Addrs()[12].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	reputer0 := s.addrs[13].String()
+	reputer0 := s.Addrs()[13].String()
 
 	reportedLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
@@ -333,8 +247,8 @@ func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	s.Require().NoError(err)
 
 	scores, err := rewards.GenerateInferenceScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block,
 		reportedLosses,
@@ -357,27 +271,7 @@ func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 // and the second with higher one out losses.
 // We then compare the resulting scores and check that the higher one out losses result in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
 
@@ -385,8 +279,8 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	require.NoError(err)
 
 	scores0, err := rewards.GenerateInferenceScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block0,
 		networkLosses0,
@@ -399,8 +293,8 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	require.NoError(err)
 
 	scores1, err := rewards.GenerateInferenceScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block1,
 		networkLosses1,
@@ -412,35 +306,15 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 
 func (s *RewardsTestSuite) TestGetForecastScores() {
 	block := int64(1003)
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 
 	// Generate workers data for tests
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
 	scores, err := rewards.GenerateForecastScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block,
 		reportedLosses,
@@ -469,42 +343,22 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	block := int64(1003)
 
-	inferer0 := s.addrs[5].String()
-	inferer1 := s.addrs[6].String()
-	inferer2 := s.addrs[7].String()
-	inferer3 := s.addrs[8].String()
-	inferer4 := s.addrs[9].String()
+	inferer0 := s.Addrs()[5].String()
+	inferer1 := s.Addrs()[6].String()
+	inferer2 := s.Addrs()[7].String()
+	inferer3 := s.Addrs()[8].String()
+	inferer4 := s.Addrs()[9].String()
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrs[10].String()
-	forecaster1 := s.addrs[11].String()
-	forecaster2 := s.addrs[12].String()
+	forecaster0 := s.Addrs()[10].String()
+	forecaster1 := s.Addrs()[11].String()
+	forecaster2 := s.Addrs()[12].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	reputer0 := s.addrsStr[13]
+	reputer0 := s.AddrsStr()[13]
 
 	reportedLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
@@ -517,8 +371,8 @@ func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 	s.Require().NoError(err)
 
 	scores, err := rewards.GenerateForecastScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block,
 		reportedLosses,
@@ -540,27 +394,7 @@ func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 // We then compare the resulting forecaster scores and check that the higher one out losses result
 // in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
 
@@ -568,8 +402,8 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	require.NoError(err)
 
 	scores0, err := rewards.GenerateForecastScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block0,
 		networkLosses0,
@@ -583,8 +417,8 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 
 	// Get inference scores
 	scores1, err := rewards.GenerateForecastScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block1,
 		networkLosses1,
@@ -597,22 +431,22 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {
 	// Setup
 	allWorkers := map[string]struct{}{
-		s.addrsStr[1]: {},
-		s.addrsStr[2]: {},
-		"worker3":     {},
-		"worker4":     {},
+		s.AddrsStr()[1]: {},
+		s.AddrsStr()[2]: {},
+		"worker3":       {},
+		"worker4":       {},
 	}
 
 	values := []*types.WorkerAttributedValue{
-		{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(100)},
+		{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(100)},
 		{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
 	}
 
 	expectedValues := map[string]string{
-		s.addrsStr[1]: "100",
-		s.addrsStr[2]: "NaN",
-		"worker3":     "300",
-		"worker4":     "NaN",
+		s.AddrsStr()[1]: "100",
+		s.AddrsStr()[2]: "NaN",
+		"worker3":       "300",
+		"worker4":       "NaN",
 	}
 
 	// Act
@@ -642,22 +476,22 @@ func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {
 func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
 	// Setup
 	allWorkers := map[string]struct{}{
-		s.addrsStr[1]: {},
-		s.addrsStr[2]: {},
-		"worker3":     {},
-		"worker4":     {},
+		s.AddrsStr()[1]: {},
+		s.AddrsStr()[2]: {},
+		"worker3":       {},
+		"worker4":       {},
 	}
 
 	values := []*types.WithheldWorkerAttributedValue{
-		{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(100)},
+		{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(100)},
 		{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
 	}
 
 	expectedValues := map[string]string{
-		s.addrsStr[1]: "100",
-		s.addrsStr[2]: "NaN",
-		"worker3":     "300",
-		"worker4":     "NaN",
+		s.AddrsStr()[1]: "100",
+		s.AddrsStr()[2]: "NaN",
+		"worker3":       "300",
+		"worker4":       "NaN",
 	}
 
 	// Act
@@ -700,27 +534,27 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 					CombinedValue: alloraMath.NewDecFromInt64(100),
 					NaiveValue:    alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
-						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(100)},
-						{Worker: s.addrsStr[2], Value: alloraMath.NewDecFromInt64(200)},
+						{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(100)},
+						{Worker: s.AddrsStr()[2], Value: alloraMath.NewDecFromInt64(200)},
 					},
 					ForecasterValues: []*types.WorkerAttributedValue{
-						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(300)},
+						{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(300)},
 					},
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(100)},
-						{Worker: s.addrsStr[2], Value: alloraMath.NewDecFromInt64(200)},
+						{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(100)},
+						{Worker: s.AddrsStr()[2], Value: alloraMath.NewDecFromInt64(200)},
 					},
 					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(300)},
+						{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(300)},
 					},
 					OneInForecasterValues: []*types.WorkerAttributedValue{
-						{Worker: s.addrsStr[2], Value: alloraMath.NewDecFromInt64(400)},
+						{Worker: s.AddrsStr()[2], Value: alloraMath.NewDecFromInt64(400)},
 					},
 					OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
 						{
 							Forecaster: "allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h",
 							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-								{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(500)},
+								{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(500)},
 							},
 						},
 					},
@@ -742,17 +576,17 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 					},
 					ForecasterValues: nil,
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(100)},
-						{Worker: s.addrsStr[2], Value: alloraMath.NewDecFromInt64(200)},
+						{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(100)},
+						{Worker: s.AddrsStr()[2], Value: alloraMath.NewDecFromInt64(200)},
 						{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
 						{Worker: "worker4", Value: alloraMath.NewDecFromInt64(400)},
 					},
 					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(500)},
+						{Worker: s.AddrsStr()[1], Value: alloraMath.NewDecFromInt64(500)},
 						{Worker: "worker3", Value: alloraMath.NewDecFromInt64(600)},
 					},
 					OneInForecasterValues: []*types.WorkerAttributedValue{
-						{Worker: s.addrsStr[2], Value: alloraMath.NewDecFromInt64(700)},
+						{Worker: s.AddrsStr()[2], Value: alloraMath.NewDecFromInt64(700)},
 						{Worker: "worker4", Value: alloraMath.NewDecFromInt64(800)},
 					},
 					OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
@@ -791,473 +625,24 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 	s.Require().Equal(len(reputer1Losses), len(reputer2Losses), "Lengths should be equal after processing")
 }
 
-func prepareMockLosses(reputersCount int, workersCount int) (
-	reputersLosses []alloraMath.Dec,
-	reputersInfererLosses [][]alloraMath.Dec,
-	reputersForecasterLosses [][]alloraMath.Dec,
-	reputersNaiveLosses []alloraMath.Dec,
-	reputersInfererOneOutLosses [][]alloraMath.Dec,
-	reputersForecasterOneOutLosses [][]alloraMath.Dec,
-	reputersOneInNaiveLosses [][]alloraMath.Dec,
-) {
-	rnd := rand.New(rand.NewSource(20))
-	for i := 0; i < reputersCount; i++ {
-		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-		var infererLosses = make([]alloraMath.Dec, 0)
-		var forecasterLosses = make([]alloraMath.Dec, 0)
-		var infererOneOutLosses = make([]alloraMath.Dec, 0)
-		var forecasterOneOutLosses = make([]alloraMath.Dec, 0)
-		var oneInNaiveLosses = make([]alloraMath.Dec, 0)
-		for j := 0; j < workersCount; j++ {
-			infererLosses = append(infererLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			forecasterLosses = append(forecasterLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			infererOneOutLosses = append(infererOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			forecasterOneOutLosses = append(forecasterOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			oneInNaiveLosses = append(oneInNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-		}
-		reputersInfererLosses = append(reputersInfererLosses, infererLosses)
-		reputersForecasterLosses = append(reputersForecasterLosses, forecasterLosses)
-		reputersInfererOneOutLosses = append(reputersInfererOneOutLosses, infererOneOutLosses)
-		reputersForecasterOneOutLosses = append(reputersForecasterOneOutLosses, forecasterOneOutLosses)
-		reputersOneInNaiveLosses = append(reputersOneInNaiveLosses, oneInNaiveLosses)
-	}
-	return reputersLosses,
-		reputersInfererLosses,
-		reputersForecasterLosses,
-		reputersNaiveLosses,
-		reputersInfererOneOutLosses,
-		reputersForecasterOneOutLosses,
-		reputersOneInNaiveLosses
-}
-
-func (s *RewardsTestSuite) generateLossBundles(
-	blockHeight int64,
-	topicId uint64,
-	reputerIndexes []int,
-	reputerValues ...map[string]string,
-) (reputerValueBundles types.InputReputerValueBundles) {
-	rv := len(reputerValues)
-	hasReputerValues := rv > 0
-	if hasReputerValues && len(reputerIndexes) != rv {
-		panic("invalid reputer values length")
-	}
-
-	networkInferences, err := s.emissionsKeeper.GetLatestNetworkInferences(s.ctx, topicId, false)
-	s.Require().NoError(err)
-
-	deltaVal := alloraMath.MustNewDecFromString("0.01988")
-
-	for i, reputerIndex := range reputerIndexes {
-		var val alloraMath.Dec
-		combinedVal := alloraMath.MustNewDecFromString("0.1") // , _ := networkInferences.CombinedValue.Sub(deltaVal)
-
-		valueBundle := &types.InputValueBundle{
-			TopicId: topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{
-				ReputerNonce: &types.Nonce{
-					BlockHeight: blockHeight,
-				},
-			},
-			Reputer:       s.addrsStr[reputerIndex],
-			ExtraData:     nil,
-			CombinedValue: alloraMath.MustNewBoundedExp40Dec(combinedVal),
-			NaiveValue:    alloraMath.MustNewBoundedExp40Dec(combinedVal),
-			InfererValues: fn.Map(networkInferences.InfererValues, func(inf *types.WorkerAttributedValue) *types.InputWorkerAttributedValue {
-				val, _ = inf.Value.Sub(deltaVal)
-				if hasReputerValues {
-					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
-				}
-				return &types.InputWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
-			}),
-			ForecasterValues: fn.Map(networkInferences.ForecasterValues, func(inf *types.WorkerAttributedValue) *types.InputWorkerAttributedValue {
-				val, _ = inf.Value.Sub(deltaVal)
-				if hasReputerValues {
-					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
-				}
-				return &types.InputWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
-			}),
-			OneOutInfererValues: fn.Map(networkInferences.OneOutInfererValues, func(inf *types.WithheldWorkerAttributedValue) *types.InputWithheldWorkerAttributedValue {
-				val, _ = inf.Value.Sub(deltaVal)
-				if hasReputerValues {
-					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
-				}
-				return &types.InputWithheldWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
-			}),
-			OneOutForecasterValues: fn.Map(networkInferences.OneOutForecasterValues, func(inf *types.WithheldWorkerAttributedValue) *types.InputWithheldWorkerAttributedValue {
-				val, _ = inf.Value.Sub(deltaVal)
-				if hasReputerValues {
-					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
-				}
-				return &types.InputWithheldWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
-			}),
-			OneInForecasterValues: fn.Map(networkInferences.OneInForecasterValues, func(inf *types.WorkerAttributedValue) *types.InputWorkerAttributedValue {
-				val, _ = inf.Value.Sub(deltaVal)
-				if hasReputerValues {
-					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
-				}
-				return &types.InputWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
-			}),
-			OneOutInfererForecasterValues: fn.Map(networkInferences.OneOutInfererForecasterValues, func(inf *types.OneOutInfererForecasterValues) *types.InputOneOutInfererForecasterValues {
-				return &types.InputOneOutInfererForecasterValues{Forecaster: inf.Forecaster, OneOutInfererValues: fn.Map(inf.OneOutInfererValues, func(inf *types.WithheldWorkerAttributedValue) *types.InputWithheldWorkerAttributedValue {
-					val, _ = inf.Value.Sub(deltaVal)
-					if hasReputerValues {
-						val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
-					}
-					return &types.InputWithheldWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewCappedBoundedExp40Dec(val)}
-				})}
-			}),
-		}
-
-		if len(valueBundle.ForecasterValues) > 0 {
-			infererValues := make([]*types.InputWorkerAttributedValue, len(valueBundle.InfererValues))
-			for i, inf := range valueBundle.InfererValues {
-				infererValues[i] = &types.InputWorkerAttributedValue{
-					Worker: inf.Worker,
-					Value:  inf.Value,
-				}
-			}
-			valueBundle.ForecasterValues = infererValues
-			valueBundle.ForecasterValues[0].Value = valueBundle.CombinedValue
-			valueBundle.OneOutInfererValues[0].Value = valueBundle.CombinedValue
-			valueBundle.OneOutForecasterValues = valueBundle.OneOutInfererValues
-			valueBundle.OneOutForecasterValues[0].Value = valueBundle.CombinedValue
-			valueBundle.OneInForecasterValues = valueBundle.ForecasterValues
-			valueBundle.OneInForecasterValues[0].Value = valueBundle.CombinedValue
-		}
-		valueBundle.OneOutInfererForecasterValues = nil
-
-		sig, err := signInputValueBundle(valueBundle, s.privKeys[reputerIndex])
-		s.Require().NoError(err)
-
-		bundle := &types.InputReputerValueBundle{
-			Pubkey:      s.pubKeyHexStr[reputerIndex],
-			Signature:   sig,
-			ValueBundle: valueBundle,
-		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
-	}
-
-	return reputerValueBundles
-}
-
-func signValueBundle(valueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) ([]byte, error) {
-	src := make([]byte, 0)
-	src, err := valueBundle.XXX_Marshal(src, true)
-	if err != nil {
-		return nil, err
-	}
-
-	valueBundleSignature, err := privateKey.Sign(src)
-	if err != nil {
-		return nil, err
-	}
-
-	return valueBundleSignature, nil
-}
-
-func signInputValueBundle(InputValueBundle *types.InputValueBundle, privateKey secp256k1.PrivKey) ([]byte, error) {
-	valueBundle, err := types.NewValueBundleFromInput(InputValueBundle)
-	if err != nil {
-		return nil, err
-	}
-	return signValueBundle(valueBundle, privateKey)
-}
-
-func signInferenceForecastBundle(
-	inferenceForecastBundle *types.InferenceForecastBundle,
-	privateKey secp256k1.PrivKey,
-) ([]byte, error) {
-	src := make([]byte, 0)
-	src, err := inferenceForecastBundle.XXX_Marshal(src, true)
-	if err != nil {
-		return nil, err
-	}
-
-	sig, err := privateKey.Sign(src)
-	if err != nil {
-		return nil, err
-	}
-
-	return sig, nil
-}
-
-func signInputInferenceForecastBundle(
-	InputInferenceForecastBundle *types.InputInferenceForecastBundle,
-	privateKey secp256k1.PrivKey,
-) ([]byte, error) {
-	bundle, err := types.NewInferenceForecastBundleFromInput(InputInferenceForecastBundle)
-	if err != nil {
-		return nil, err
-	}
-	return signInferenceForecastBundle(bundle, privateKey)
-}
-
-func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, workerIndexes []int, workerValues ...TestWorkerValue) []*types.InputWorkerDataBundle {
-	lwv := len(workerValues)
-	hasWorkerValues := lwv > 0
-	if hasWorkerValues && len(workerIndexes) != lwv {
-		panic("invalid worker values length")
-	}
-	var bundles []*types.InputWorkerDataBundle
-	totalAddresses := len(s.addrsStr)
-
-	for i, workerIdx := range workerIndexes {
-		// Generate random inference value between 0.01 and 0.025
-		inferenceValueStr := workerValues[i].Value
-		if !hasWorkerValues {
-			rand.Seed(int64(workerIdx) + blockHeight)
-			inferenceValueStr = strconv.FormatFloat(0.01+rand.Float64()*0.015, 'f', 5, 64)
-		}
-
-		// Select forecast targets (next two workers in sequence, wrapping if needed)
-		forecastTargets := []int{
-			(workerIdx + 0) % totalAddresses,
-			(workerIdx + 1) % totalAddresses,
-			(workerIdx + 2) % totalAddresses,
-		}
-
-		// Create forecast elements
-		forecastElements := []*types.InputForecastElement{
-			{
-				Inferer: s.addrs[forecastTargets[0]].String(),
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
-			},
-			{
-				Inferer: s.addrs[forecastTargets[1]].String(),
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
-			},
-			{
-				Inferer: s.addrs[forecastTargets[2]].String(),
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
-			},
-		}
-
-		// Create inference-forecast bundle
-		inferenceForecastBundle := &types.InputInferenceForecastBundle{
-			Inference: &types.InputInference{
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-				Inferer:     s.addrsStr[workerIdx],
-				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
-				ExtraData:   nil,
-				Proof:       "",
-			},
-			Forecast: &types.InputForecast{
-				TopicId:          topicId,
-				BlockHeight:      blockHeight,
-				Forecaster:       s.addrsStr[workerIdx],
-				ForecastElements: forecastElements,
-				ExtraData:        nil,
-			},
-		}
-
-		// Sign the bundle
-		signature, err := signInputInferenceForecastBundle(inferenceForecastBundle, s.privKeys[workerIdx])
-		s.Require().NoError(err)
-
-		// Create the complete worker data bundle
-		bundle := &types.InputWorkerDataBundle{
-			Worker:                             s.addrsStr[workerIdx],
-			Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-			TopicId:                            topicId,
-			InferenceForecastsBundle:           inferenceForecastBundle,
-			InferencesForecastsBundleSignature: signature,
-			Pubkey:                             s.pubKeyHexStr[workerIdx],
-		}
-
-		bundles = append(bundles, bundle)
-	}
-
-	return bundles
-}
-
-type TestWorkerValue struct {
-	Index int
-	Value string
-}
-
-func generateSimpleWorkerDataBundles(
-	s *RewardsTestSuite,
-	topicId uint64,
-	nonce int64,
-	blockHeight int64,
-	workerValues []TestWorkerValue,
-	infererIndexes []int,
-) []*types.InputWorkerDataBundle {
-	require := s.Require()
-	if len(workerValues) < 2 {
-		require.Fail("workerValues must have at least 2 elements")
-	}
-	if len(infererIndexes) < 2 {
-		require.Fail("infererIndexes must have at least 2 elements")
-	}
-
-	var inferences []*types.InputWorkerDataBundle
-
-	infererIndex := 0
-
-	getInfererIndex := func() int {
-		if infererIndex >= len(infererIndexes) {
-			infererIndex = 0
-		}
-		currentInfererIndex := infererIndex
-		infererIndex++
-		return currentInfererIndex
-	}
-
-	for _, workerValue := range workerValues {
-		newWorkerInferenceForecastBundle := &types.InputInferenceForecastBundle{
-			Inference: &types.InputInference{
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-				Inferer:     s.addrsStr[workerValue.Index],
-				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(workerValue.Value)),
-				ExtraData:   nil,
-				Proof:       "",
-			},
-			Forecast: &types.InputForecast{
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-				Forecaster:  s.addrsStr[workerValue.Index],
-				ForecastElements: []*types.InputForecastElement{
-					{
-						Inferer: s.addrsStr[infererIndexes[getInfererIndex()]],
-						Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(workerValue.Value)),
-					},
-					{
-						Inferer: s.addrsStr[infererIndexes[getInfererIndex()]],
-						Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(workerValue.Value)),
-					},
-				},
-				ExtraData: nil,
-			},
-		}
-		workerSig, err := signInputInferenceForecastBundle(newWorkerInferenceForecastBundle, s.privKeys[workerValue.Index])
-		s.Require().NoError(err)
-		workerBundle := &types.InputWorkerDataBundle{
-			Worker:                             s.addrsStr[workerValue.Index],
-			Nonce:                              &types.Nonce{BlockHeight: nonce},
-			TopicId:                            topicId,
-			InferenceForecastsBundle:           newWorkerInferenceForecastBundle,
-			InferencesForecastsBundleSignature: workerSig,
-			Pubkey:                             s.pubKeyHexStr[workerValue.Index],
-		}
-		inferences = append(inferences, workerBundle)
-	}
-
-	return inferences
-}
-
-func generateSimpleLossBundles(
-	s *RewardsTestSuite,
-	topicId uint64,
-	nonce int64,
-	workerValues []TestWorkerValue,
-	reputerValues []TestWorkerValue,
-	workerZeroAddress sdk.AccAddress,
-	workerZeroOneOutInfererValue string,
-	workerZeroInfererValue string,
-) types.InputReputerValueBundles {
-	var reputerValueBundles types.InputReputerValueBundles
-	for _, reputer := range reputerValues {
-		var countValues int
-		if len(workerValues) < len(reputerValues) {
-			countValues = len(workerValues)
-		} else {
-			countValues = len(reputerValues)
-		}
-
-		valueBundle := &types.InputValueBundle{
-			TopicId: topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{
-				ReputerNonce: &types.Nonce{
-					BlockHeight: nonce,
-				},
-			},
-			Reputer:                       s.addrsStr[reputer.Index],
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputer.Value)),
-			NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputer.Value)),
-			InfererValues:                 make([]*types.InputWorkerAttributedValue, countValues),
-			ForecasterValues:              make([]*types.InputWorkerAttributedValue, countValues),
-			OneOutInfererValues:           make([]*types.InputWithheldWorkerAttributedValue, countValues),
-			OneOutForecasterValues:        make([]*types.InputWithheldWorkerAttributedValue, countValues),
-			OneInForecasterValues:         make([]*types.InputWorkerAttributedValue, countValues),
-			OneOutInfererForecasterValues: nil,
-		}
-
-		for j, worker := range workerValues {
-			if j < len(reputerValues) {
-				if s.addrs[worker.Index].Equals(workerZeroAddress) {
-					valueBundle.InfererValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(workerZeroInfererValue))}
-				} else {
-					valueBundle.InfererValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[j].Value))}
-				}
-				valueBundle.ForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[j].Value))}
-				if s.addrs[worker.Index].Equals(workerZeroAddress) {
-					valueBundle.OneOutInfererValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(workerZeroOneOutInfererValue))}
-				} else {
-					valueBundle.OneOutInfererValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[j].Value))}
-				}
-				valueBundle.OneOutForecasterValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[j].Value))}
-				valueBundle.OneInForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[worker.Index], Value: alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(reputerValues[j].Value))}
-			}
-		}
-
-		sig, err := signInputValueBundle(valueBundle, s.privKeys[reputer.Index])
-		s.Require().NoError(err)
-
-		bundle := &types.InputReputerValueBundle{
-			Pubkey:      s.pubKeyHexStr[reputer.Index],
-			Signature:   sig,
-			ValueBundle: valueBundle,
-		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
-	}
-
-	return reputerValueBundles
-}
-
 func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficients() {
-	// Create a new topic
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[0].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            true,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	block := int64(1003)
 
 	// Set up reputer with zero listening coefficient
-	reputer := s.addrsStr[13]
+	reputer := s.AddrsStr()[13]
 	stake := cosmosMath.NewInt(1000000000)
 
 	// Mint tokens and add stake
 	addrBech, err := sdk.AccAddressFromBech32(reputer)
 	s.Require().NoError(err)
 	s.MintTokensToAddress(addrBech, stake)
-	err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, reputer, stake)
+	err = s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, reputer, stake)
 	s.Require().NoError(err)
 
 	// Set zero listening coefficient
-	err = s.emissionsKeeper.SetListeningCoefficient(
-		s.ctx,
+	err = s.EmissionsKeeper().SetListeningCoefficient(
+		s.Ctx(),
 		topicId,
 		reputer,
 		types.ListeningCoefficient{Coefficient: alloraMath.ZeroDec()},
@@ -1268,7 +653,7 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 	reportedLosses := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
-				Pubkey: s.pubKeyHexStr[13],
+				Pubkey: s.PubKeyHexStr()[13],
 				ValueBundle: &types.ValueBundle{
 					TopicId: topicId,
 					ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -1279,11 +664,11 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 					NaiveValue:    alloraMath.MustNewDecFromString("3.8"),
 					InfererValues: []*types.WorkerAttributedValue{
 						{
-							Worker: s.addrsStr[5],
+							Worker: s.AddrsStr()[5],
 							Value:  alloraMath.MustNewDecFromString("3.81"),
 						},
 						{
-							Worker: s.addrsStr[6],
+							Worker: s.AddrsStr()[6],
 							Value:  alloraMath.MustNewDecFromString("3.82"),
 						},
 					},
@@ -1299,20 +684,20 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 	}
 
 	// Sign the value bundle
-	sig, err := signValueBundle(reportedLosses.ReputerValueBundles[0].ValueBundle, s.privKeys[13])
+	sig := s.SignValueBundle(reportedLosses.ReputerValueBundles[0].ValueBundle, s.PrivKeys()[13])
 	s.Require().NoError(err)
 	reportedLosses.ReputerValueBundles[0].Signature = sig
 
 	// Get params and set epsilon reputer
 	params := types.DefaultParams()
 	params.EpsilonReputer = alloraMath.MustNewDecFromString("0.1")
-	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err)
 
 	// Generate scores
 	scores, err := rewards.GenerateReputerScores(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		block,
 		reportedLosses,
@@ -1321,7 +706,7 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 	s.Require().Len(scores, 1)
 
 	// Verify that the listening coefficient was updated to epsilon reputer value
-	coefficient, err := s.emissionsKeeper.GetListeningCoefficient(s.ctx, topicId, reputer)
+	coefficient, err := s.EmissionsKeeper().GetListeningCoefficient(s.Ctx(), topicId, reputer)
 	s.Require().NoError(err)
 	s.Require().True(coefficient.Coefficient.Equal(params.EpsilonReputer))
 }
@@ -1332,41 +717,41 @@ func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScore() {
 		{
 			TopicId:     1,
 			BlockHeight: 1000,
-			Address:     s.addrs[0].String(),
+			Address:     s.Addrs()[0].String(),
 			Score:       alloraMath.MustNewDecFromString("0.5"),
 		},
 		{
 			TopicId:     1,
 			BlockHeight: 1000,
-			Address:     s.addrs[1].String(),
+			Address:     s.Addrs()[1].String(),
 			Score:       alloraMath.MustNewDecFromString("0.3"),
 		},
 		{
 			TopicId:     1,
 			BlockHeight: 1000,
-			Address:     s.addrs[2].String(),
+			Address:     s.Addrs()[2].String(),
 			Score:       alloraMath.MustNewDecFromString("0.1"),
 		},
 		{
 			TopicId:     1,
 			BlockHeight: 1000,
-			Address:     s.addrs[3].String(),
+			Address:     s.Addrs()[3].String(),
 			Score:       alloraMath.MustNewDecFromString("0.4"),
 		},
 		{
 			TopicId:     1,
 			BlockHeight: 1000,
-			Address:     s.addrs[4].String(),
+			Address:     s.Addrs()[4].String(),
 			Score:       alloraMath.MustNewDecFromString("0.2"),
 		},
 	}
 
 	// Calculate initial EMA score
-	initialScore, err := rewards.CalculateTopicInitialEmaScore(s.ctx, s.emissionsKeeper, scores)
+	initialScore, err := rewards.CalculateTopicInitialEmaScore(s.Ctx(), *s.EmissionsKeeper(), scores)
 	s.Require().NoError(err)
 
 	// Get lambda from params
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	lambda := params.LambdaInitialScore
 
@@ -1414,7 +799,7 @@ func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScoreEdgeCases() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			initialScore, err := rewards.CalculateTopicInitialEmaScore(s.ctx, s.emissionsKeeper, tc.scores)
+			initialScore, err := rewards.CalculateTopicInitialEmaScore(s.Ctx(), *s.EmissionsKeeper(), tc.scores)
 
 			if tc.expectedError {
 				s.Require().Error(err)

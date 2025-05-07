@@ -2,17 +2,17 @@ package queryserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
 	topicId := uint64(1)
 	blockHeight := types.BlockHeight(100)
 	expectedInferences := types.Inferences{
@@ -49,11 +49,11 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
 
-	topicId := s.CreateOneTopic()
+	topicId := uint64(1)
 	workerAddress := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
 	wrongWorkerAddress := "invalidAddress"
 
@@ -107,17 +107,17 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 }
 
 func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	require := s.Require()
-	topicId := s.CreateOneTopic()
+	topicId := uint64(1)
 
-	reputer0 := s.addrsStr[5]
-	reputer1 := s.addrsStr[6]
-	reputer2 := s.addrsStr[7]
-	reputer3 := s.addrsStr[8]
-	reputer4 := s.addrsStr[9]
+	reputer0 := s.AddrsStr()[5]
+	reputer1 := s.AddrsStr()[6]
+	reputer2 := s.AddrsStr()[7]
+	reputer3 := s.AddrsStr()[8]
+	reputer4 := s.AddrsStr()[9]
 
 	blockHeight := int64(10)
 
@@ -147,7 +147,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature1 := s.signValueBundle(&valueBundle1, s.privKeys[5])
+	signature1 := s.SignValueBundle(&valueBundle1, s.PrivKeys()[5])
 
 	valueBundle2 := types.ValueBundle{
 		TopicId:             topicId,
@@ -168,7 +168,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature2 := s.signValueBundle(&valueBundle2, s.privKeys[6])
+	signature2 := s.SignValueBundle(&valueBundle2, s.PrivKeys()[6])
 	valueBundle3 := types.ValueBundle{
 		Reputer:             reputer2,
 		ExtraData:           nil,
@@ -188,7 +188,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature3 := s.signValueBundle(&valueBundle3, s.privKeys[7])
+	signature3 := s.SignValueBundle(&valueBundle3, s.PrivKeys()[7])
 	valueBundle4 := types.ValueBundle{
 		Reputer:             reputer3,
 		ExtraData:           nil,
@@ -208,7 +208,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature4 := s.signValueBundle(&valueBundle4, s.privKeys[8])
+	signature4 := s.SignValueBundle(&valueBundle4, s.PrivKeys()[8])
 	valueBundle5 := types.ValueBundle{
 		Reputer:             reputer4,
 		ExtraData:           nil,
@@ -228,18 +228,18 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature5 := s.signValueBundle(&valueBundle5, s.privKeys[9])
+	signature5 := s.SignValueBundle(&valueBundle5, s.PrivKeys()[9])
 	reputerLossBundles := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
-			{ValueBundle: &valueBundle1, Signature: signature1, Pubkey: s.pubKeyHexStr[5]},
-			{ValueBundle: &valueBundle2, Signature: signature2, Pubkey: s.pubKeyHexStr[6]},
-			{ValueBundle: &valueBundle3, Signature: signature3, Pubkey: s.pubKeyHexStr[7]},
-			{ValueBundle: &valueBundle4, Signature: signature4, Pubkey: s.pubKeyHexStr[8]},
-			{ValueBundle: &valueBundle5, Signature: signature5, Pubkey: s.pubKeyHexStr[9]},
+			{ValueBundle: &valueBundle1, Signature: signature1, Pubkey: s.PubKeyHexStr()[5]},
+			{ValueBundle: &valueBundle2, Signature: signature2, Pubkey: s.PubKeyHexStr()[6]},
+			{ValueBundle: &valueBundle3, Signature: signature3, Pubkey: s.PubKeyHexStr()[7]},
+			{ValueBundle: &valueBundle4, Signature: signature4, Pubkey: s.PubKeyHexStr()[8]},
+			{ValueBundle: &valueBundle5, Signature: signature5, Pubkey: s.PubKeyHexStr()[9]},
 		},
 	}
 
-	err := keeper.InsertActiveReputerLosses(s.ctx, topicId, blockHeight, reputerLossBundles)
+	err := keeper.InsertActiveReputerLosses(s.Ctx(), topicId, blockHeight, reputerLossBundles)
 	require.NoError(err)
 
 	// Set Stake
@@ -253,15 +253,15 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	s.Require().True(ok)
 	stake4, ok := cosmosMath.NewIntFromString("206169717590569000000000")
 	s.Require().True(ok)
-	err = keeper.AddReputerStake(s.ctx, topicId, reputer0, stake0)
+	err = keeper.AddReputerStake(s.Ctx(), topicId, reputer0, stake0)
 	require.NoError(err)
-	err = keeper.AddReputerStake(s.ctx, topicId, reputer1, stake1)
+	err = keeper.AddReputerStake(s.Ctx(), topicId, reputer1, stake1)
 	require.NoError(err)
-	err = keeper.AddReputerStake(s.ctx, topicId, reputer2, stake2)
+	err = keeper.AddReputerStake(s.Ctx(), topicId, reputer2, stake2)
 	require.NoError(err)
-	err = keeper.AddReputerStake(s.ctx, topicId, reputer3, stake3)
+	err = keeper.AddReputerStake(s.Ctx(), topicId, reputer3, stake3)
 	require.NoError(err)
-	err = keeper.AddReputerStake(s.ctx, topicId, reputer4, stake4)
+	err = keeper.AddReputerStake(s.Ctx(), topicId, reputer4, stake4)
 	require.NoError(err)
 
 	// Set Inferences
@@ -301,14 +301,14 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		},
 	}
 
-	err = keeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = keeper.InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	// Set actual block
-	s.ctx = s.ctx.WithBlockHeight(blockHeight + 10)
+	s.WithBlockHeight(blockHeight + 10)
 
 	// Update epoch topic epoch last ended
-	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, blockHeight+10)
+	err = keeper.UpdateTopicEpochLastEnded(s.Ctx(), topicId, blockHeight+10)
 	require.NoError(err)
 
 	// Test querying the server
@@ -316,18 +316,18 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		TopicId:                  topicId,
 		BlockHeightLastInference: blockHeight,
 	}
-	response, err := queryServer.GetNetworkInferencesAtBlock(s.ctx, req)
+	response, err := queryServer.GetNetworkInferencesAtBlock(s.Ctx(), req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 }
 
 func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	queryServer := s.EmissionsQueryServer()
+	keeper := *s.EmissionsKeeper()
 
 	require := s.Require()
-	topicId := s.CreateOneTopic()
-	topic, err := keeper.GetTopic(s.ctx, topicId)
+	topicId := uint64(1)
+	topic, err := keeper.GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 
 	epochLength := topic.EpochLength
@@ -341,14 +341,14 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 
 	reputerLossRequestNonce := &types.ReputerRequestNonce{ReputerNonce: &lossNonce}
 
-	s.ctx = s.ctx.WithBlockHeight(lossBlockHeight)
+	s.WithBlockHeight(lossBlockHeight)
 
 	// Set Loss bundles
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, lossBlockHeight, types.ValueBundle{
+	err = keeper.InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, lossBlockHeight, types.ValueBundle{
 		TopicId:             topicId,
 		ReputerRequestNonce: reputerLossRequestNonce,
 		ExtraData:           nil,
-		Reputer:             s.addrsStr[8],
+		Reputer:             s.AddrsStr()[8],
 		CombinedValue:       alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
 		InfererValues: []*types.WorkerAttributedValue{
 			{
@@ -366,11 +366,11 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	require.NoError(err)
 
 	// Set Latest Worker commit
-	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
+	err = keeper.SetWorkerTopicLastCommit(s.Ctx(), topicId, inferenceBlockHeight, &inferenceNonce)
 	require.NoError(err)
 
 	// Set Inferences
-	s.ctx = s.ctx.WithBlockHeight(inferenceBlockHeight)
+	s.WithBlockHeight(inferenceBlockHeight)
 
 	getWorkerRegretValue := func(value string) types.TimestampedValue {
 		return types.TimestampedValue{
@@ -389,22 +389,22 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
 	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker0, getWorkerRegretValue("0.1"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker1, getWorkerRegretValue("0.2"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker2, getWorkerRegretValue("0.3"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker3, getWorkerRegretValue("0.4"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker4, getWorkerRegretValue("0.5"))
 	require.NoError(err)
 
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	err = keeper.SetForecasterNetworkRegret(s.Ctx(), topicId, forecaster0, getWorkerRegretValue("0.1"))
 	require.NoError(err)
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	err = keeper.SetForecasterNetworkRegret(s.Ctx(), topicId, forecaster1, getWorkerRegretValue("0.2"))
 	require.NoError(err)
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.Ctx(), topicId, forecaster2, getWorkerRegretValue("0.3"))
 	require.NoError(err)
 
 	inferences := types.Inferences{
@@ -442,7 +442,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		},
 	}
 
-	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce.BlockHeight, inferences)
+	err = keeper.InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	// Set Forecasts
@@ -487,16 +487,16 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		},
 	}
 
-	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce.BlockHeight, forecasts)
+	err = keeper.InsertActiveForecasts(s.Ctx(), topicId, inferenceNonce.BlockHeight, forecasts)
 	require.NoError(err)
 
 	// Update epoch topic epoch last ended
-	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight)
+	err = keeper.UpdateTopicEpochLastEnded(s.Ctx(), topicId, inferenceBlockHeight)
 	require.NoError(err)
 
 	// Now calculate and set the network inferences
 	networkInferences, err := synth.GetNetworkInferences(
-		sdk.UnwrapSDKContext(s.ctx),
+		sdk.UnwrapSDKContext(s.Ctx()),
 		keeper,
 		topicId,
 		&inferenceNonce.BlockHeight,
@@ -505,14 +505,14 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		false,
 	)
 	require.NoError(err)
-	err = keeper.InsertNetworkInferences(s.ctx, topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
+	err = keeper.InsertNetworkInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
 	require.NoError(err)
 
 	// Test querying the server
 	req := &types.GetLatestNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	response, err := queryServer.GetLatestNetworkInferences(s.ctx, req)
+	response, err := queryServer.GetLatestNetworkInferences(s.Ctx(), req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 	require.Equal(len(response.NetworkInferences.ForecasterValues), 3)
@@ -520,8 +520,8 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 }
 
 func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 	newNonce := &types.Nonce{BlockHeight: 42}
 
@@ -529,7 +529,7 @@ func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
 		TopicId:     topicId,
 		BlockHeight: newNonce.BlockHeight,
 	}
-	response, err := s.queryServer.IsWorkerNonceUnfulfilled(s.ctx, req)
+	response, err := s.EmissionsQueryServer().IsWorkerNonceUnfulfilled(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().False(response.IsWorkerNonceUnfulfilled)
@@ -538,22 +538,22 @@ func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
 	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
-	response, err = s.queryServer.IsWorkerNonceUnfulfilled(s.ctx, req)
+	response, err = s.EmissionsQueryServer().IsWorkerNonceUnfulfilled(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().True(response.IsWorkerNonceUnfulfilled)
 }
 
 func (s *QueryServerTestSuite) TestGetUnfulfilledWorkerNonces() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Initially, ensure no unfulfilled nonces exist
 	req := &types.GetUnfulfilledWorkerNoncesRequest{
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetUnfulfilledWorkerNonces(s.ctx, req)
+	response, err := s.EmissionsQueryServer().GetUnfulfilledWorkerNonces(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().Len(response.Nonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
@@ -566,7 +566,7 @@ func (s *QueryServerTestSuite) TestGetUnfulfilledWorkerNonces() {
 	}
 
 	// Retrieve and verify the nonces
-	response, err = s.queryServer.GetUnfulfilledWorkerNonces(s.ctx, req)
+	response, err = s.EmissionsQueryServer().GetUnfulfilledWorkerNonces(s.Ctx(), req)
 	s.Require().NoError(err, "Error retrieving nonces after adding")
 	s.Require().Len(response.Nonces.Nonces, len(nonceValues), "Should match the number of added nonces")
 
@@ -577,10 +577,10 @@ func (s *QueryServerTestSuite) TestGetUnfulfilledWorkerNonces() {
 }
 
 func (s *QueryServerTestSuite) TestGetInfererNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
-	worker := s.addrsStr[1]
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(1)
+	worker := s.AddrsStr()[1]
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	emptyRegret := types.TimestampedValue{
 		BlockHeight: 0,
@@ -591,7 +591,7 @@ func (s *QueryServerTestSuite) TestGetInfererNetworkRegret() {
 		TopicId: topicId,
 		ActorId: worker,
 	}
-	response, err := s.queryServer.GetInfererNetworkRegret(s.ctx, req)
+	response, err := s.EmissionsQueryServer().GetInfererNetworkRegret(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &emptyRegret)
 
@@ -600,16 +600,16 @@ func (s *QueryServerTestSuite) TestGetInfererNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get Inferer Network Regret
-	response, err = s.queryServer.GetInfererNetworkRegret(s.ctx, req)
+	response, err = s.EmissionsQueryServer().GetInfererNetworkRegret(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &regret)
 }
 
 func (s *QueryServerTestSuite) TestGetForecasterNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
-	worker := s.addrsStr[1]
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(1)
+	worker := s.AddrsStr()[1]
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	emptyRegret := types.TimestampedValue{
 		BlockHeight: 0,
@@ -620,7 +620,7 @@ func (s *QueryServerTestSuite) TestGetForecasterNetworkRegret() {
 		TopicId: topicId,
 		Worker:  worker,
 	}
-	response, err := s.queryServer.GetForecasterNetworkRegret(s.ctx, req)
+	response, err := s.EmissionsQueryServer().GetForecasterNetworkRegret(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &emptyRegret)
 
@@ -629,17 +629,17 @@ func (s *QueryServerTestSuite) TestGetForecasterNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get Forecaster Network Regret
-	response, err = s.queryServer.GetForecasterNetworkRegret(s.ctx, req)
+	response, err = s.EmissionsQueryServer().GetForecasterNetworkRegret(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &regret)
 }
 
 func (s *QueryServerTestSuite) TestGetOneInForecasterNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
-	forecaster := s.addrsStr[3]
-	inferer := s.addrsStr[1]
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(1)
+	forecaster := s.AddrsStr()[3]
+	inferer := s.AddrsStr()[1]
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	emptyRegret := types.TimestampedValue{
 		BlockHeight: 0,
@@ -651,7 +651,7 @@ func (s *QueryServerTestSuite) TestGetOneInForecasterNetworkRegret() {
 		Forecaster: forecaster,
 		Inferer:    inferer,
 	}
-	response, err := s.queryServer.GetOneInForecasterNetworkRegret(s.ctx, req)
+	response, err := s.EmissionsQueryServer().GetOneInForecasterNetworkRegret(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &emptyRegret)
 
@@ -660,22 +660,22 @@ func (s *QueryServerTestSuite) TestGetOneInForecasterNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get One In Forecaster Network Regret
-	response, err = s.queryServer.GetOneInForecasterNetworkRegret(s.ctx, req)
+	response, err = s.EmissionsQueryServer().GetOneInForecasterNetworkRegret(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &regret)
 }
 
 func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 
-	topicId := s.CreateOneTopic()
+	topicId := uint64(1)
 
 	// Initially, there should be no inferences, so we expect an empty result
 	req := &types.GetLatestTopicInferencesRequest{
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetLatestTopicInferences(ctx, req)
+	response, err := s.EmissionsQueryServer().GetLatestTopicInferences(ctx, req)
 	s.Require().NoError(err)
 	emptyInferences := response.Inferences
 	emptyBlockHeight := response.BlockHeight
@@ -689,7 +689,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	newInference1 := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
-		Inferer:     s.addrsStr[1],
+		Inferer:     s.AddrsStr()[1],
 		Value:       alloraMath.MustNewDecFromString("10"),
 		ExtraData:   []byte("data1"),
 		Proof:       "proof1",
@@ -706,7 +706,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	newInference2 := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
-		Inferer:     s.addrsStr[2],
+		Inferer:     s.AddrsStr()[2],
 		Value:       alloraMath.MustNewDecFromString("20"),
 		ExtraData:   []byte("data2"),
 		Proof:       "proof2",
@@ -719,7 +719,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
-	response, err = s.queryServer.GetLatestTopicInferences(ctx, req)
+	response, err = s.EmissionsQueryServer().GetLatestTopicInferences(ctx, req)
 	s.Require().NoError(err)
 	latestInferences := response.Inferences
 	latestBlockHeight := response.BlockHeight
@@ -729,12 +729,12 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 }
 
 func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferences() {
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	require := s.Require()
-	topicId := s.CreateOneTopic()
-	topic, err := keeper.GetTopic(s.ctx, topicId)
+	topicId := uint64(1)
+	topic, err := keeper.GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 
 	epochLength := topic.EpochLength
@@ -750,14 +750,14 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 
 	reputerLossRequestNonce := &types.ReputerRequestNonce{ReputerNonce: &lossNonce}
 
-	s.ctx = s.ctx.WithBlockHeight(lossBlockHeight)
+	s.WithBlockHeight(lossBlockHeight)
 
 	// Set Loss bundles
 	lossBundle := types.ValueBundle{
 		CombinedValue:       alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
 		ReputerRequestNonce: reputerLossRequestNonce,
 		TopicId:             topicId,
-		Reputer:             s.addrsStr[0],
+		Reputer:             s.AddrsStr()[0],
 		ExtraData:           nil,
 		NaiveValue:          alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
 		InfererValues: []*types.WorkerAttributedValue{
@@ -772,11 +772,11 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, lossBlockHeight, lossBundle)
+	err = keeper.InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, lossBlockHeight, lossBundle)
 	require.NoError(err)
 
 	// Set Inferences
-	s.ctx = s.ctx.WithBlockHeight(inferenceBlockHeight)
+	s.WithBlockHeight(inferenceBlockHeight)
 
 	getWorkerRegretValue := func(value string) types.TimestampedValue {
 		return types.TimestampedValue{
@@ -785,32 +785,32 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 		}
 	}
 
-	worker0 := s.addrsStr[1]
-	worker1 := s.addrsStr[2]
-	worker2 := s.addrsStr[3]
-	worker3 := s.addrsStr[4]
-	worker4 := s.addrsStr[5]
+	worker0 := s.AddrsStr()[1]
+	worker1 := s.AddrsStr()[2]
+	worker2 := s.AddrsStr()[3]
+	worker3 := s.AddrsStr()[4]
+	worker4 := s.AddrsStr()[5]
 
-	forecaster0 := s.addrsStr[6]
-	forecaster1 := s.addrsStr[7]
-	forecaster2 := s.addrsStr[8]
+	forecaster0 := s.AddrsStr()[6]
+	forecaster1 := s.AddrsStr()[7]
+	forecaster2 := s.AddrsStr()[8]
 
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker0, getWorkerRegretValue("0.1"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker1, getWorkerRegretValue("0.2"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker2, getWorkerRegretValue("0.3"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker3, getWorkerRegretValue("0.4"))
 	require.NoError(err)
-	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.Ctx(), topicId, worker4, getWorkerRegretValue("0.5"))
 	require.NoError(err)
 
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	err = keeper.SetForecasterNetworkRegret(s.Ctx(), topicId, forecaster0, getWorkerRegretValue("0.1"))
 	require.NoError(err)
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	err = keeper.SetForecasterNetworkRegret(s.Ctx(), topicId, forecaster1, getWorkerRegretValue("0.2"))
 	require.NoError(err)
-	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.Ctx(), topicId, forecaster2, getWorkerRegretValue("0.3"))
 	require.NoError(err)
 
 	getInferencesForBlockHeight := func(blockHeight int64) types.Inferences {
@@ -895,21 +895,21 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 
 	// dont insert inferences at the blockheight that matches with the losses
 
-	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce2.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight2))
+	err = keeper.InsertActiveInferences(s.Ctx(), topicId, inferenceNonce2.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight2))
 	s.Require().NoError(err)
 
-	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce2.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight2))
+	err = keeper.InsertActiveForecasts(s.Ctx(), topicId, inferenceNonce2.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight2))
 	require.NoError(err)
 
 	// Update epoch topic epoch last ended
-	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight2)
+	err = keeper.UpdateTopicEpochLastEnded(s.Ctx(), topicId, inferenceBlockHeight2)
 	require.NoError(err)
 
 	// Test querying the server
 	req := &types.GetLatestNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	response, err := queryServer.GetLatestNetworkInferences(s.ctx, req)
+	response, err := queryServer.GetLatestNetworkInferences(s.Ctx(), req)
 
 	require.NoError(err)
 	require.NotNil(response)
@@ -919,17 +919,16 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 }
 
 func (s *QueryServerTestSuite) TestGetActiveInferersForTopic() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
 	topicId := uint64(1)
 
 	// Add some active inferers
 	activeInferers := []string{
-		s.addrsStr[0],
-		s.addrsStr[1],
-		s.addrsStr[2],
+		s.AddrsStr()[0],
+		s.AddrsStr()[1],
+		s.AddrsStr()[2],
 	}
 
 	for _, inferer := range activeInferers {
@@ -966,7 +965,7 @@ func (s *QueryServerTestSuite) TestGetActiveInferersForTopic() {
 	s.Require().Contains(err.Error(), "not found")
 
 	// Test with no active inferers
-	emptyTopicId := s.CreateOneTopic()
+	emptyTopicId := s.CreateTopic()
 	emptyResponse, err := queryServer.GetActiveInferersForTopic(
 		ctx,
 		&types.GetActiveInferersForTopicRequest{

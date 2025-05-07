@@ -3,184 +3,38 @@ package keeper_test
 import (
 	"encoding/binary"
 	"testing"
-	"time"
 
 	"cosmossdk.io/collections"
-	cosmosAddress "cosmossdk.io/core/address"
-	"cosmossdk.io/core/header"
-	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
-	storetypes "cosmossdk.io/store/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
-	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	minttypes "github.com/allora-network/allora-chain/x/mint/types"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/stretchr/testify/suite"
-)
-
-const (
-	multiPerm  = "multiple permissions account"
-	randomPerm = "random permission"
 )
 
 type KeeperTestSuite struct {
-	suite.Suite
-
-	ctx             sdk.Context
-	codec           codec.Codec
-	addressCodec    cosmosAddress.Codec
-	accountKeeper   authkeeper.AccountKeeper
-	bankKeeper      bankkeeper.BaseKeeper
-	emissionsKeeper keeper.Keeper
-	appModule       module.AppModule
-	msgServer       types.MsgServiceServer
-	privKeys        []secp256k1.PrivKey
-	addrs           []sdk.AccAddress
-	addrsStr        []string
-	pubKeyHexStr    []string
-}
-
-func (s *KeeperTestSuite) SetupTest() {
-	var (
-		keyEmissions          = storetypes.NewKVStoreKey("emissions")
-		keyAccount            = storetypes.NewKVStoreKey("account")
-		keyBank               = storetypes.NewKVStoreKey("bank")
-		storeServiceEmissions = runtime.NewKVStoreService(keyEmissions)
-		storeServiceAccount   = runtime.NewKVStoreService(keyAccount)
-		storeServiceBank      = runtime.NewKVStoreService(keyBank)
-	)
-
-	// It's simply test suite setup so just ignore the exhaustruct linter
-	//nolint:exhaustruct
-	ctx := testutil.DefaultContextWithKeys(map[string]*storetypes.KVStoreKey{
-		"emissions": keyEmissions,
-		"account":   keyAccount,
-		"bank":      keyBank,
-	}, map[string]*storetypes.TransientStoreKey{
-		"transient_test": storetypes.NewTransientStoreKey("transient_test"),
-	}, nil).WithHeaderInfo(header.Info{Time: time.Now()})
-
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	s.codec = encCfg.Codec
-	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
-	s.addressCodec = addressCodec
-
-	maccPerms := map[string][]string{
-		"fee_collector":                {"minter"},
-		"mint":                         {"minter"},
-		types.AlloraStakingAccountName: {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName: {"minter"},
-		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
-		minttypes.EcosystemModuleName:                    nil,
-		"bonded_tokens_pool":                             {"burner", "staking"},
-		"not_bonded_tokens_pool":                         {"burner", "staking"},
-		multiPerm:                                        {"burner", "minter", "staking"},
-		randomPerm:                                       {"random"},
-	}
-
-	accountKeeper := authkeeper.NewAccountKeeper(
-		encCfg.Codec,
-		storeServiceAccount,
-		authtypes.ProtoBaseAccount,
-		maccPerms,
-		authcodec.NewBech32Codec(params.Bech32PrefixAccAddr),
-		params.Bech32PrefixAccAddr,
-		authtypes.NewModuleAddress("gov").String(),
-	)
-
-	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(10)
-
-	bankKeeper := bankkeeper.NewBaseKeeper(
-		encCfg.Codec,
-		storeServiceBank,
-		accountKeeper,
-		map[string]bool{},
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		log.NewNopLogger(),
-	)
-
-	s.ctx = ctx
-	s.accountKeeper = accountKeeper
-	s.bankKeeper = bankKeeper
-	s.emissionsKeeper = keeper.NewKeeper(
-		encCfg.Codec,
-		addressCodec,
-		storeServiceEmissions,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName)
-	// s.key = key
-	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
-
-	s.appModule = appModule
-
-	// Add all tests addresses in whitelists
-	for _, addr := range s.addrsStr {
-		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.Require().NoError(err)
-
-		err = s.emissionsKeeper.AddToGlobalWhitelist(ctx, addr)
-		s.Require().NoError(err)
-
-		err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, addr)
-		s.Require().NoError(err)
-	}
+	alloratestutil.TestSuite
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
+	suite.Run(t, &KeeperTestSuite{
+		alloratestutil.TestSuite{
+			ModuleName: "emissions_keeper",
+		},
+	})
 }
 
 func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
-	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	err := s.BankKeeper().MintCoins(s.Ctx(), types.AlloraStakingAccountName, creatorInitialBalanceCoins)
 	s.Require().NoError(err)
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(s.Ctx(), types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
 	s.Require().NoError(err)
-}
-
-func (s *KeeperTestSuite) mockTopic() types.Topic {
-	return types.Topic{
-		Id:                       123,
-		Creator:                  s.addrsStr[9],
-		Metadata:                 "metadata",
-		LossMethod:               "method",
-		EpochLastEnded:           123,
-		EpochLength:              135,
-		GroundTruthLag:           135,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		AllowNegative:            false,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		InitialRegret:            alloraMath.MustNewDecFromString("0.5"),
-		WorkerSubmissionWindow:   135,
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-	}
 }
 
 func (s *KeeperTestSuite) signValueBundle(valueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) []byte {
@@ -195,59 +49,24 @@ func (s *KeeperTestSuite) signValueBundle(valueBundle *types.ValueBundle, privat
 	return valueBundleSignature
 }
 
-func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Create a topic first
-	metadata := "Some metadata for the new topic"
-	// Create a CreateNewTopicRequest message
-
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrsStr[0],
-		Metadata:                 metadata,
-		LossMethod:               "method",
-		EpochLength:              epochLen,
-		GroundTruthLag:           epochLen,
-		WorkerSubmissionWindow:   epochLen,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-
-	s.MintTokensToAddress(s.addrs[0], types.DefaultParams().CreateTopicFee)
-
-	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.NoError(err, "CreateTopic fails on first creation")
-
-	return result.TopicId
-}
-
-/// WORKER NONCE TESTS
+// WORKER NONCE TESTS
 
 func (s *KeeperTestSuite) TestAddWorkerNonce() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
-	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
 
 	s.Require().Empty(unfulfilledNonces.Nonces, "Unfulfilled nonces should be empty")
 
 	// Set worker nonce
 	newNonce := &types.Nonce{BlockHeight: 42}
-	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
+	err = k.AddWorkerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
-	unfulfilledNonces, err = keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	unfulfilledNonces, err = k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err)
 
 	s.Require().Len(unfulfilledNonces.Nonces, 1, "Unfulfilled nonces should not be empty")
@@ -257,68 +76,68 @@ func (s *KeeperTestSuite) TestAddWorkerNonce() {
 }
 
 func (s *KeeperTestSuite) TestNewlyAddedWorkerNonceIsUnfulfilled() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	newNonce := &types.Nonce{BlockHeight: 42}
 
-	isUnfulfilled, err := keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	isUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 	s.Require().False(isUnfulfilled, "non existent nonce should not be listed as unfulfilled")
 
 	// Set worker nonce
-	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
+	err = k.AddWorkerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
-	isUnfulfilled, err = keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	isUnfulfilled, err = k.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 	s.Require().True(isUnfulfilled, "new nonce should be unfulfilled")
 }
 
 func (s *KeeperTestSuite) TestCanFulfillNewWorkerNonce() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	newNonce := &types.Nonce{BlockHeight: 42}
 
 	// Set worker nonce
-	err := keeper.AddWorkerNonce(ctx, topicId, newNonce)
+	err := k.AddWorkerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
-	isUnfulfilled, err := keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	isUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 	s.Require().True(isUnfulfilled, "new nonce should not be unfulfilled")
 
 	// Fulfill the nonce
-	success, err := keeper.FulfillWorkerNonce(ctx, topicId, newNonce)
+	success, err := k.FulfillWorkerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 	s.Require().True(success, "nonce should be able to be fulfilled")
 
 	// Check that the nonce is no longer unfulfilled
-	isUnfulfilled, err = keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	isUnfulfilled, err = k.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 	s.Require().False(isUnfulfilled, "new nonce should be fulfilled")
 }
 
 func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Initially, ensure no unfulfilled nonces exist
-	initialNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	initialNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
 	s.Require().Empty(initialNonces.Nonces, "Initial unfulfilled nonces should be empty")
 
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44}
 	for _, val := range nonceValues {
-		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		err = k.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
 	// Retrieve and verify the nonces
-	retrievedNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	retrievedNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after adding")
 	s.Require().Len(retrievedNonces.Nonces, len(nonceValues), "Should match the number of added nonces")
 
@@ -329,36 +148,36 @@ func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
 }
 
 func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Initially, ensure no unfulfilled nonces exist
-	initialNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	initialNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
 	s.Require().Empty(initialNonces.Nonces, "Initial unfulfilled nonces should be empty")
 
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
 	for _, val := range nonceValues {
-		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		err = k.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 	// Retrieve and verify the nonces
-	retrievedNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	retrievedNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after fulfilling some")
 	s.Require().Len(retrievedNonces.Nonces, len(nonceValues), "Should match the number of unfulfilled nonces")
 
 	// Fulfill some nonces: 43 and 45
 	fulfillNonces := []int64{43, 45}
 	for _, val := range fulfillNonces {
-		success, err := keeper.FulfillWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		success, err := k.FulfillWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().True(success, "Nonce should be successfully fulfilled")
 		s.Require().NoError(err, "Error fulfilling nonce")
 	}
 
 	// Retrieve and verify the nonces
-	retrievedNonces, err = keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	retrievedNonces, err = k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after fulfilling some")
 	s.Require().Len(retrievedNonces.Nonces, len(nonceValues)-len(fulfillNonces), "Should match the number of unfulfilled nonces")
 
@@ -370,8 +189,8 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 }
 
 func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	maxUnfulfilledRequests := 3
 	// Set the maximum number of unfulfilled worker nonces
@@ -379,18 +198,18 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	params.MaxUnfulfilledWorkerRequests = uint64(maxUnfulfilledRequests)
 
 	// Set the maximum number of unfulfilled worker nonces via the SetParams method
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
 
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		err = k.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
 	// Retrieve and verify the nonces to check if only the last 'maxUnfulfilledRequests' are retained
-	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
 	s.Require().Len(unfulfilledNonces.Nonces, maxUnfulfilledRequests, "Should only contain max unfulfilled nonces")
 
@@ -401,24 +220,24 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	}
 }
 
-/// REPUTER NONCE TESTS
+// REPUTER NONCE TESTS
 
 func (s *KeeperTestSuite) TestAddReputerNonce() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
-	unfulfilledNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
 
 	s.Require().Empty(unfulfilledNonces.Nonces, "Unfulfilled nonces should be empty")
 
 	// Set reputer nonce
 	newReputerNonce := &types.Nonce{BlockHeight: 42}
-	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce)
+	err = k.AddReputerNonce(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 
-	unfulfilledNonces, err = keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	unfulfilledNonces, err = k.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
 
 	s.Require().Len(unfulfilledNonces.Nonces, 1, "Unfulfilled nonces should not be empty")
@@ -431,77 +250,77 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 }
 
 func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	newReputerNonce := &types.Nonce{BlockHeight: 42}
 
-	isUnfulfilled, err := keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
+	isUnfulfilled, err := k.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 	s.Require().False(isUnfulfilled, "Non-existent nonce should not be listed as unfulfilled")
 
 	// Set reputer nonce
-	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce)
+	err = k.AddReputerNonce(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 
-	isUnfulfilled, err = keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
+	isUnfulfilled, err = k.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 	s.Require().True(isUnfulfilled, "New nonce should be unfulfilled")
 }
 
 func (s *KeeperTestSuite) TestCanFulfillNewReputerNonce() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	newReputerNonce := &types.Nonce{BlockHeight: 42}
 
 	// Set reputer nonce
-	err := keeper.AddReputerNonce(ctx, topicId, newReputerNonce)
+	err := k.AddReputerNonce(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 
 	// Check that the nonce is the correct nonce
-	isUnfulfilled, err := keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
+	isUnfulfilled, err := k.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 	s.Require().True(isUnfulfilled, "New nonce should be unfulfilled")
 
 	// Fulfill the nonce
-	nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, newReputerNonce)
+	nonceIsUnfulfilled, err := k.FulfillReputerNonce(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 	s.Require().True(nonceIsUnfulfilled, "Nonce should be able to be fulfilled")
 
 	// Check that the nonce is no longer unfulfilled
-	isUnfulfilled, err = keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
+	isUnfulfilled, err = k.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 	s.Require().False(isUnfulfilled, "New nonce should be fulfilled")
 }
 
 func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Initially, ensure no unfulfilled nonces exist
-	initialNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	initialNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
 	s.Require().Empty(initialNonces.Nonces, "Initial unfulfilled nonces should be empty")
 
 	// Set multiple reputer nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
 	for _, val := range nonceValues {
-		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		err = k.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
 	// Fulfill some nonces: 43 and 45
 	fulfillNonces := []int64{43, 45}
 	for _, val := range fulfillNonces {
-		nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		nonceIsUnfulfilled, err := k.FulfillReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Error fulfilling nonce")
 		s.Require().True(nonceIsUnfulfilled, "Nonce should be able to be fulfilled")
 	}
 
 	// Retrieve and verify the nonces
-	retrievedNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	retrievedNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after fulfilling some")
 	s.Require().Len(retrievedNonces.Nonces, len(nonceValues)-len(fulfillNonces), "Should match the number of unfulfilled nonces")
 
@@ -513,8 +332,8 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 }
 
 func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	maxUnfulfilledRequests := 3
 
@@ -523,18 +342,18 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	params.MaxUnfulfilledReputerRequests = uint64(maxUnfulfilledRequests)
 
 	// Set the maximum number of unfulfilled reputer nonces via the SetParams method
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Failed to set parameters")
 
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		err := k.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
 	// Retrieve and verify the nonces to check if only the last 'maxUnfulfilledRequests' are retained
-	unfulfilledNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
 	s.Require().Len(unfulfilledNonces.Nonces, maxUnfulfilledRequests, "Should only contain max unfulfilled nonces")
 
@@ -545,82 +364,82 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	}
 }
 
-/// REGRET TESTS
+// REGRET TESTS
 
 func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr()[1]
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 
 	// Set Inferer Network Regret
-	err := keeper.SetInfererNetworkRegret(ctx, topicId, worker, regret)
+	err := k.SetInfererNetworkRegret(ctx, topicId, worker, regret)
 	s.Require().NoError(err)
 
 	// Get Inferer Network Regret
-	gotRegret, _, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
+	gotRegret, _, err := k.GetInfererNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
 
 func (s *KeeperTestSuite) TestSetAndGetForecasterNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[3] // Assuming sdk.AccAddress is initialized with a string representing the address
+	worker := s.AddrsStr()[3] // Assuming sdk.AccAddress is initialized with a string representing the address
 
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(20)}
 
 	// Set Forecaster Network Regret
-	err := keeper.SetForecasterNetworkRegret(ctx, topicId, worker, regret)
+	err := k.SetForecasterNetworkRegret(ctx, topicId, worker, regret)
 	s.Require().NoError(err)
 
 	// Get Forecaster Network Regret
-	gotRegret, _, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
+	gotRegret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 	s.Require().Equal(regret.BlockHeight, gotRegret.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestSetAndGetOneInForecasterNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	forecaster := s.addrsStr[3]
-	inferer := s.addrsStr[1]
+	forecaster := s.AddrsStr()[3]
+	inferer := s.AddrsStr()[1]
 
 	regret := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(30)}
 
 	// Set One-In Forecaster Network Regret
-	err := keeper.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer, regret)
+	err := k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer, regret)
 	s.Require().NoError(err)
 
 	// Get One-In Forecaster Network Regret
-	gotRegret, _, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
+	gotRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 	s.Require().Equal(regret.BlockHeight, gotRegret.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	worker := s.addrsStr[1]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	worker := s.AddrsStr()[1]
 
 	// Topic IDs
-	topicId1 := s.CreateOneTopic(10800)
-	topicId2 := s.CreateOneTopic(10800)
+	topicId1 := s.CreateTopic()
+	topicId2 := s.CreateTopic()
 
 	// Zero regret for initial check
 	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
 
 	// Initial regrets should be zero
-	gotRegret1, _, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err := k.GetInfererNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
 
-	gotRegret2, _, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, _, err := k.GetInfererNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
 
@@ -629,18 +448,18 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
 	// Set regrets for the same worker under different topic IDs
-	err = keeper.SetInfererNetworkRegret(ctx, topicId1, worker, regret1)
+	err = k.SetInfererNetworkRegret(ctx, topicId1, worker, regret1)
 	s.Require().NoError(err)
-	err = keeper.SetInfererNetworkRegret(ctx, topicId2, worker, regret2)
+	err = k.SetInfererNetworkRegret(ctx, topicId2, worker, regret2)
 	s.Require().NoError(err)
 
 	// Get and compare regrets after setting them
-	gotRegret1, _, err = keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err = k.GetInfererNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
 
-	gotRegret2, _, err = keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, _, err = k.GetInfererNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
@@ -649,36 +468,36 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 }
 
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	worker := s.addrsStr[1]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	worker := s.AddrsStr()[1]
 
 	// Topic IDs
-	topicId1 := s.CreateOneTopic(10800)
-	topicId2 := s.CreateOneTopic(10800)
+	topicId1 := s.CreateTopic()
+	topicId2 := s.CreateTopic()
 
 	// Regrets
 	noRagret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
-	gotRegret1, _, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err := k.GetForecasterNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(noRagret, gotRegret1)
 
 	// Set regrets for the same worker under different topic IDs
-	err = keeper.SetForecasterNetworkRegret(ctx, topicId1, worker, regret1)
+	err = k.SetForecasterNetworkRegret(ctx, topicId1, worker, regret1)
 	s.Require().NoError(err)
-	err = keeper.SetForecasterNetworkRegret(ctx, topicId2, worker, regret2)
+	err = k.SetForecasterNetworkRegret(ctx, topicId2, worker, regret2)
 	s.Require().NoError(err)
 
 	// Get and compare regrets
-	gotRegret1, _, err = keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err = k.GetForecasterNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
 
-	gotRegret2, _, err := keeper.GetForecasterNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, _, err := k.GetForecasterNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
@@ -687,26 +506,22 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 }
 
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetworkRegrets() {
-	ctx := s.ctx
-	s.CreateOneTopic(10800) // Topic 1
-	s.CreateOneTopic(10800) // Topic 2
-	keeper := s.emissionsKeeper
-	forecaster := s.addrsStr[3]
-	inferer := s.addrsStr[1]
-
-	// Topic IDs
-	topicId1 := uint64(1)
-	topicId2 := uint64(2)
+	ctx := s.Ctx()
+	topicId1 := s.CreateTopic() // Topic 1
+	topicId2 := s.CreateTopic() // Topic 2
+	k := s.EmissionsKeeper()
+	forecaster := s.AddrsStr()[3]
+	inferer := s.AddrsStr()[1]
 
 	// Zero regret for initial checks
 	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
 
 	// Initial regrets should be zero
-	gotRegret1, _, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	gotRegret1, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
 
-	gotRegret2, _, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	gotRegret2, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
 
@@ -715,18 +530,18 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
 	// Set regrets for the same forecaster-inferer pair under different topic IDs
-	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer, regret1)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer, regret1)
 	s.Require().NoError(err)
-	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer, regret2)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer, regret2)
 	s.Require().NoError(err)
 
 	// Get and compare regrets after setting them
-	gotRegret1, _, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	gotRegret1, _, err = k.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
 
-	gotRegret2, _, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	gotRegret2, _, err = k.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
@@ -735,368 +550,368 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 }
 
 func (s *KeeperTestSuite) TestSetAndGetNaiveInfererNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	inferer := s.addrsStr[1]
+	inferer := s.AddrsStr()[1]
 
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 
-	err := keeper.SetNaiveInfererNetworkRegret(ctx, topicId, inferer, regret)
+	err := k.SetNaiveInfererNetworkRegret(ctx, topicId, inferer, regret)
 	s.Require().NoError(err)
 
-	gotRegret, _, err := keeper.GetNaiveInfererNetworkRegret(ctx, topicId, inferer)
+	gotRegret, _, err := k.GetNaiveInfererNetworkRegret(ctx, topicId, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
 
 func (s *KeeperTestSuite) TestSetAndGetLatestOneOutInfererInfererNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	inferer1 := s.addrsStr[1]
-	inferer2 := s.addrsStr[2]
+	inferer1 := s.AddrsStr()[1]
+	inferer2 := s.AddrsStr()[2]
 
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(15)}
 
-	err := keeper.SetOneOutInfererInfererNetworkRegret(ctx, topicId, inferer1, inferer2, regret)
+	err := k.SetOneOutInfererInfererNetworkRegret(ctx, topicId, inferer1, inferer2, regret)
 	s.Require().NoError(err)
 
-	gotRegret, _, err := keeper.GetOneOutInfererInfererNetworkRegret(ctx, topicId, inferer1, inferer2)
+	gotRegret, _, err := k.GetOneOutInfererInfererNetworkRegret(ctx, topicId, inferer1, inferer2)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
 
 func (s *KeeperTestSuite) TestSetAndGetLatestOneOutInfererForecasterNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	inferer := s.addrsStr[1]
-	forecaster := s.addrsStr[3]
+	inferer := s.AddrsStr()[1]
+	forecaster := s.AddrsStr()[3]
 
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(20)}
 
-	err := keeper.SetOneOutInfererForecasterNetworkRegret(ctx, topicId, inferer, forecaster, regret)
+	err := k.SetOneOutInfererForecasterNetworkRegret(ctx, topicId, inferer, forecaster, regret)
 	s.Require().NoError(err)
 
-	gotRegret, _, err := keeper.GetOneOutInfererForecasterNetworkRegret(ctx, topicId, inferer, forecaster)
+	gotRegret, _, err := k.GetOneOutInfererForecasterNetworkRegret(ctx, topicId, inferer, forecaster)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
 
 func (s *KeeperTestSuite) TestSetAndGetLatestOneOutForecasterInfererNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	forecaster := s.addrsStr[3]
-	inferer := s.addrsStr[1]
+	forecaster := s.AddrsStr()[3]
+	inferer := s.AddrsStr()[1]
 
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(25)}
 
-	err := keeper.SetOneOutForecasterInfererNetworkRegret(ctx, topicId, forecaster, inferer, regret)
+	err := k.SetOneOutForecasterInfererNetworkRegret(ctx, topicId, forecaster, inferer, regret)
 	s.Require().NoError(err)
 
-	gotRegret, _, err := keeper.GetOneOutForecasterInfererNetworkRegret(ctx, topicId, forecaster, inferer)
+	gotRegret, _, err := k.GetOneOutForecasterInfererNetworkRegret(ctx, topicId, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
 
 func (s *KeeperTestSuite) TestSetAndGetLatestOneOutForecasterForecasterNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	forecaster1 := s.addrsStr[3]
-	forecaster2 := s.addrsStr[4]
+	forecaster1 := s.AddrsStr()[3]
+	forecaster2 := s.AddrsStr()[4]
 
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(30)}
 
-	err := keeper.SetOneOutForecasterForecasterNetworkRegret(ctx, topicId, forecaster1, forecaster2, regret)
+	err := k.SetOneOutForecasterForecasterNetworkRegret(ctx, topicId, forecaster1, forecaster2, regret)
 	s.Require().NoError(err)
 
-	gotRegret, _, err := keeper.GetOneOutForecasterForecasterNetworkRegret(ctx, topicId, forecaster1, forecaster2)
+	gotRegret, _, err := k.GetOneOutForecasterForecasterNetworkRegret(ctx, topicId, forecaster1, forecaster2)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
 
-// / PARAMS TESTS
+// PARAMS TESTS
 func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := uint64(100)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MaxActiveTopicsPerBlock = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxActiveTopicsPerBlock
 	s.Require().Equal(expectedValue, actualValue)
 }
 
 func (s *KeeperTestSuite) TestSetGetRemoveStakeDelayWindow() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := types.BlockHeight(50)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.RemoveStakeDelayWindow = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.RemoveStakeDelayWindow
 	s.Require().Equal(expectedValue, actualValue)
 }
 
 func (s *KeeperTestSuite) TestSetGetValidatorsVsAlloraPercentReward() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := alloraMath.MustNewDecFromString("0.25") // Assume a function to create LegacyDec
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.ValidatorsVsAlloraPercentReward = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.ValidatorsVsAlloraPercentReward
 	s.Require().Equal(expectedValue, actualValue)
 }
 
 func (s *KeeperTestSuite) TestGetParamsMinTopicUnmetDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := alloraMath.NewDecFromInt64(300)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MinTopicWeight = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MinTopicWeight
 	s.Require().Equal(expectedValue, actualValue)
 }
 
 func (s *KeeperTestSuite) TestGetParamsRequiredMinimumStake() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue, ok := cosmosMath.NewIntFromString("500")
 	s.Require().True(ok)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.RequiredMinimumStake = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.RequiredMinimumStake
 	s.Require().Equal(expectedValue, actualValue)
 }
 
 func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := types.BlockHeight(720)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MinEpochLength = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MinEpochLength
 	s.Require().Equal(expectedValue, actualValue)
 }
 
 func (s *KeeperTestSuite) TestGetParamsEpsilon() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := alloraMath.MustNewDecFromString("0.1234")
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.EpsilonReputer = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.EpsilonReputer
 	s.Require().True(expectedValue.Equal(actualValue))
 }
 
 func (s *KeeperTestSuite) TestGetParamsTopicCreationFee() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := cosmosMath.NewInt(1000)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.CreateTopicFee = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.CreateTopicFee
 	s.Require().True(expectedValue.Equal(actualValue))
 }
 
 func (s *KeeperTestSuite) TestGetParamsRegistrationFee() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := cosmosMath.NewInt(500)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.RegistrationFee = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.RegistrationFee
 	s.Require().True(expectedValue.Equal(actualValue))
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := uint64(1500)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxSamplesToScaleScores
 	s.Require().Equal(expectedValue, actualValue)
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxTopInferersToReward() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := uint64(50) // Example expected value
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxTopInferersToReward
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopInferersToReward should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxTopForecastersToReward() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := uint64(50) // Example expected value
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MaxTopForecastersToReward = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
 
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxTopForecastersToReward
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopForecastersToReward should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxTopForecasterElementToSubmit() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := uint64(50) // Example expected value
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MaxElementsPerForecast = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
 
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxElementsPerForecast
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxElementsPerForecast should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetMinEpochLengthRecordLimit() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := int64(10)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MinEpochLengthRecordLimit = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MinEpochLengthRecordLimit
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MinEpochLengthRecordLimit should be equal to the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetMaxSerializedMsgLength() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	expectedValue := int64(2048)
 
 	// Set the parameter
 	params := types.DefaultParams()
 	params.MaxSerializedMsgLength = expectedValue
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxSerializedMsgLength
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxSerializedMsgLength should be equal to the expected value")
 }
 
-/// INFERENCES, FORECASTS
+// INFERENCES, FORECASTS
 
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 	expectedInferences := types.Inferences{
@@ -1118,24 +933,24 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 
 	// Assume InsertActiveInferences correctly sets up inferences
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := keeper.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
+	err := k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err)
 
 	// Retrieve inferences
-	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block, false)
+	actualInferences, err := k.GetInferencesAtBlock(ctx, topicId, block, false)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedInferences, actualInferences)
 }
 
 func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 	// Force setting values of MAD and last_median to 10
-	err := keeper.SetLastMedianInferences(ctx, topicId, alloraMath.NewDecFromInt64(150))
+	err := k.SetLastMedianInferences(ctx, topicId, alloraMath.NewDecFromInt64(150))
 	s.Require().NoError(err)
-	err = keeper.SetMadInferences(ctx, topicId, alloraMath.NewDecFromInt64(10))
+	err = k.SetMadInferences(ctx, topicId, alloraMath.NewDecFromInt64(10))
 	s.Require().NoError(err)
 
 	// Create a set of inferences with a high value to test outlier resistant filtering
@@ -1164,15 +979,15 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 
 	// Insert directly as active inferences
 	nonce := types.Nonce{BlockHeight: block}
-	err = keeper.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
+	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err)
 
 	// Confirm the non-or keeps all inferences
-	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block, false)
+	actualInferences, err := k.GetInferencesAtBlock(ctx, topicId, block, false)
 	s.Require().NoError(err)
 	s.Require().Len(actualInferences.Inferences, 3)
 
-	actualInferences, err = keeper.GetInferencesAtBlock(ctx, topicId, block, true)
+	actualInferences, err = k.GetInferencesAtBlock(ctx, topicId, block, true)
 	s.Require().NoError(err)
 	s.Require().Len(actualInferences.Inferences, 2)
 	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Value)
@@ -1181,13 +996,13 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 }
 
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topicId := uint64(1)
 
 	// Initially, there should be no inferences, so we expect an empty result
-	emptyInferences, emptyBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId, false)
+	emptyInferences, emptyBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId, false)
 	s.Require().NoError(err, "Retrieving latest inferences when none exist should not result in an error")
 	s.Require().Equal(&types.Inferences{Inferences: []*types.Inference{}}, emptyInferences, "Expected no inferences initially")
 	s.Require().Equal(types.BlockHeight(0), emptyBlockHeight, "Expected block height to be zero initially")
@@ -1206,7 +1021,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference1},
 	}
 	nonce1 := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertActiveInferences(ctx, topicId, nonce1.BlockHeight, inferences1)
+	err = k.InsertActiveInferences(ctx, topicId, nonce1.BlockHeight, inferences1)
 	s.Require().NoError(err, "Inserting first set of inferences should not fail")
 
 	// Insert second set of inferences
@@ -1223,24 +1038,24 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference2},
 	}
 	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertActiveInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
+	err = k.InsertActiveInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
-	latestInferences, latestBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId, false)
+	latestInferences, latestBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId, false)
 	s.Require().NoError(err, "Retrieving latest inferences should not fail")
 	s.Require().Equal(&inferences2, latestInferences, "Latest inferences should match the second inserted set")
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
 func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topicId := uint64(1)
 	workerAccStr := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
 
-	_, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
+	_, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
 	s.Require().Error(err, "Retrieving an inference that does not exist should result in an error")
 
 	blockHeight1 := int64(12345)
@@ -1252,7 +1067,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	err = keeper.InsertInference(ctx, topicId, newInference1)
+	err = k.InsertInference(ctx, topicId, newInference1)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	blockHeight2 := int64(12346)
@@ -1264,17 +1079,17 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	err = keeper.InsertInference(ctx, topicId, newInference2)
+	err = k.InsertInference(ctx, topicId, newInference2)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
-	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
+	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
 	s.Require().NoError(err, "Retrieving an existing inference should not fail")
 	s.Require().Equal(newInference2, retrievedInference, "Retrieved inference should match the inserted one")
 }
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 	expectedForecasts := types.Forecasts{
@@ -1314,17 +1129,17 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 
 	// Assume InsertActiveForecasts correctly sets up forecasts
 	nonce := types.Nonce{BlockHeight: block}
-	err := keeper.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
+	err := k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	// Retrieve forecasts
-	actualForecasts, err := keeper.GetForecastsAtBlock(ctx, topicId, block)
+	actualForecasts, err := k.GetForecastsAtBlock(ctx, topicId, block)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedForecasts, actualForecasts)
 }
 
 func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
-	ctx := s.ctx
+	ctx := s.Ctx()
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
@@ -1334,7 +1149,7 @@ func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{BlockHeight: block},
 		},
-		Reputer:                       s.addrsStr[0],
+		Reputer:                       s.AddrsStr()[0],
 		ExtraData:                     []byte("data"),
 		CombinedValue:                 alloraMath.MustNewDecFromString("123"),
 		InfererValues:                 s.createDefaultInfererValues(),
@@ -1345,42 +1160,42 @@ func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(valueBundle, s.privKeys[0])
+	signature := s.signValueBundle(valueBundle, s.PrivKeys()[0])
 	reputerLossBundles := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
 				ValueBundle: valueBundle,
 				Signature:   signature,
-				Pubkey:      s.pubKeyHexStr[0],
+				Pubkey:      s.PubKeyHexStr()[0],
 			},
 		},
 	}
 
 	// Test inserting data
-	err := s.emissionsKeeper.InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
+	err := s.EmissionsKeeper().InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
 	require.NoError(err, "InsertActiveReputerLosses should not return an error")
 
 	// Retrieve data to verify insertion
-	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
+	result, err := s.EmissionsKeeper().GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	require.NoError(err)
 	require.NotNil(result)
 	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
 }
 
 func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
-	ctx := s.ctx
+	ctx := s.Ctx()
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 
 	// Test getting data before any insert, should return error or nil
-	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
+	result, err := s.EmissionsKeeper().GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	require.NoError(err)
 	require.Empty(result.ReputerValueBundles, "Result should be empty for non-existent data")
 }
 
 func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
-	ctx := s.ctx
+	ctx := s.Ctx()
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
@@ -1401,11 +1216,11 @@ func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
 		OneOutInfererForecasterValues: nil,
 	}
 
-	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
+	err := s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
 	require.NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
 
 	// Verify the insertion
-	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
+	result, err := s.EmissionsKeeper().GetNetworkLossBundleAtBlock(ctx, topicId, block)
 	require.NoError(err)
 	require.NotNil(result)
 	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
@@ -1413,25 +1228,25 @@ func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
 
 // this unit test needs to be completely rewritten, PROTO-2575
 func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
-	ctx := s.ctx
+	ctx := s.Ctx()
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 
 	// Attempt to retrieve before insertion
-	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
+	result, err := s.EmissionsKeeper().GetNetworkLossBundleAtBlock(ctx, topicId, block)
 	require.NoError(err, "Should not return error for empty loss bundle")
 	require.NotNil(result)
 	require.Equal(topicId, result.TopicId, "Result should be not be nil for non-existent data")
 }
 
 func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
 
 	// Initially, there should be no loss bundle, so we expect a zero result
-	emptyLossBundle, err := keeper.GetLatestNetworkLossBundle(ctx, topicId)
+	emptyLossBundle, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 	s.Require().ErrorIs(err, types.ErrNotFound)
 	s.Require().Nil(emptyLossBundle, "Expected no network loss bundle initially")
 
@@ -1453,7 +1268,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	err = keeper.InsertNetworkLossBundleAtBlock(ctx, topicId, blockHeight1, lossBundle1)
+	err = k.InsertNetworkLossBundleAtBlock(ctx, topicId, blockHeight1, lossBundle1)
 	s.Require().NoError(err, "Inserting first network loss bundle should not fail")
 
 	// Insert second network loss bundle
@@ -1474,11 +1289,11 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	err = keeper.InsertNetworkLossBundleAtBlock(ctx, topicId, blockHeight2, lossBundle2)
+	err = k.InsertNetworkLossBundleAtBlock(ctx, topicId, blockHeight2, lossBundle2)
 	s.Require().NoError(err, "Inserting second network loss bundle should not fail")
 
 	// Retrieve the latest network loss bundle
-	latestLossBundle, err := keeper.GetLatestNetworkLossBundle(ctx, topicId)
+	latestLossBundle, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 	s.Require().NoError(err, "Retrieving latest network loss bundle should not fail")
 	s.Require().Equal(&lossBundle2, latestLossBundle, "Latest network loss bundle should match the second inserted set")
 }
@@ -1488,25 +1303,25 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 // ########################################
 
 func (s *KeeperTestSuite) TestGetSetTotalStake() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	// Set total stake
 	newTotalStake := cosmosMath.NewInt(1000)
-	err := keeper.SetTotalStake(ctx, newTotalStake)
+	err := k.SetTotalStake(ctx, newTotalStake)
 	s.Require().NoError(err)
 
 	// Check total stake
-	totalStake, err := keeper.GetTotalStake(ctx)
+	totalStake, err := k.GetTotalStake(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(newTotalStake, totalStake)
 }
 
 func (s *KeeperTestSuite) TestAddReputerStake() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrs[0].String()
+	reputerAddr := s.Addrs()[0].String()
 	stakeAmount := cosmosMath.NewInt(500)
 
 	// Initial Values
@@ -1514,86 +1329,86 @@ func (s *KeeperTestSuite) TestAddReputerStake() {
 	initialTopicStake := cosmosMath.NewInt(0)
 
 	// Add stake
-	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	err := k.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
-	delegatorStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	delegatorStake, err := k.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount, delegatorStake, "Delegator stake should be equal to stake amount after addition")
 
 	// Check updated topic stake
-	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	topicStake, err := k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(initialTopicStake.Add(stakeAmount), topicStake, "Topic stake should be incremented by stake amount after addition")
 
 	// Check updated total stake
-	totalStake, err := keeper.GetTotalStake(ctx)
+	totalStake, err := k.GetTotalStake(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(initialTotalStake.Add(stakeAmount), totalStake, "Total stake should be incremented by stake amount after addition")
 }
 
 func (s *KeeperTestSuite) TestAddDelegateStake() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	delegatorAddr := s.addrsStr[0]
-	reputerAddr := s.addrsStr[1]
+	delegatorAddr := s.AddrsStr()[0]
+	reputerAddr := s.AddrsStr()[1]
 	initialStakeAmount := cosmosMath.NewInt(500)
 	additionalStakeAmount := cosmosMath.NewInt(300)
 
 	// Setup initial stake
-	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err := k.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
-	delegatorStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
+	delegatorStake, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount, delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
 
 	// Add additional stake
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, additionalStakeAmount)
+	err = k.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, additionalStakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
-	delegatorStake, err = keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
+	delegatorStake, err = k.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
 }
 
 func (s *KeeperTestSuite) TestAddReputerStakeZeroAmount() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	delegatorAddr := s.addrs[0].String()
+	delegatorAddr := s.Addrs()[0].String()
 	zeroStakeAmount := cosmosMath.NewInt(0)
 
 	// Try to add zero stake
-	err := keeper.AddReputerStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
+	err := k.AddReputerStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
 	s.Require().ErrorIs(err, types.ErrInvalidValue)
 }
 
 func (s *KeeperTestSuite) TestRemoveStake() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrs[0].String()
+	reputerAddr := s.Addrs()[0].String()
 	stakeAmount := cosmosMath.NewInt(500)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = k.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Capture the initial total and topic stakes after adding stake
-	initialTotalStake, err := keeper.GetTotalStake(ctx)
+	initialTotalStake, err := k.GetTotalStake(ctx)
 	s.Require().NoError(err)
 
 	// make a request to remove stake
-	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+	err = k.SetStakeRemoval(ctx, types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               reputerAddr,
 		Amount:                stakeAmount,
@@ -1603,44 +1418,44 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	s.Require().NoError(err)
 
 	// Remove stake
-	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	err = k.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator after removal
-	delegatorStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	delegatorStake, err := k.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), delegatorStake, "Delegator stake should be zero after removal")
 
 	// Check updated topic stake after removal
-	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	topicStake, err := k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
 
 	// Check updated total stake after removal
-	finalTotalStake, err := keeper.GetTotalStake(ctx)
+	finalTotalStake, err := k.GetTotalStake(ctx)
 	s.Require().NoError(err)
 	s.Require().True(initialTotalStake.Sub(stakeAmount).Equal(finalTotalStake), "Total stake should be decremented by stake amount after removal")
 }
 
 func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	delegatorAddr := s.addrsStr[0]
-	reputerAddr := s.addrsStr[1]
+	delegatorAddr := s.AddrsStr()[0]
+	reputerAddr := s.AddrsStr()[1]
 	initialStakeAmount := cosmosMath.NewInt(1000)
 	removeStakeAmount := cosmosMath.NewInt(500)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = k.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// make a request to remove stake
-	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+	err = k.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   startBlock,
 		BlockRemovalCompleted: endBlock,
 		TopicId:               topicId,
@@ -1651,38 +1466,38 @@ func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
 	s.Require().NoError(err)
 
 	// Remove a portion of stake
-	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, removeStakeAmount)
+	err = k.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, removeStakeAmount)
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
-	remainingStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
+	remainingStake, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
 	// Check remaining stake for delegator
-	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
+	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 }
 
 func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	delegatorAddr := s.addrsStr[0]
-	reputerAddr := s.addrsStr[1]
+	delegatorAddr := s.AddrsStr()[0]
+	reputerAddr := s.AddrsStr()[1]
 	initialStakeAmount := cosmosMath.NewInt(1000)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = k.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// make a request to remove stake
-	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+	err = k.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   startBlock,
 		BlockRemovalCompleted: endBlock,
 		TopicId:               topicId,
@@ -1693,77 +1508,77 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	s.Require().NoError(err)
 
 	// Remove a portion of stake
-	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = k.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
-	remainingStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
+	remainingStake, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
 	// Check remaining stake for Reputer
-	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
+	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 }
 
 func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrsStr[0]
+	reputerAddr := s.AddrsStr()[0]
 	initialStakeAmount := cosmosMath.NewInt(500)
 	zeroStakeAmount := cosmosMath.NewInt(0)
 
 	// Setup initial stake
-	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, initialStakeAmount)
+	err := k.AddReputerStake(ctx, topicId, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// Try to remove zero stake
-	err = keeper.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, reputerAddr, zeroStakeAmount)
+	err = k.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, reputerAddr, zeroStakeAmount)
 	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	nonExistingDelegatorAddr := s.addrsStr[0]
+	nonExistingDelegatorAddr := s.AddrsStr()[0]
 	stakeAmount := cosmosMath.NewInt(500)
 
 	// Try to remove stake with non-existing delegator or target
-	err := keeper.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, nonExistingDelegatorAddr, stakeAmount)
+	err := k.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, nonExistingDelegatorAddr, stakeAmount)
 	s.Require().Error(err)
 }
 
 func (s *KeeperTestSuite) TestGetAllStakeForDelegator() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	delegatorAddr := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	delegatorAddr := s.AddrsStr()[0]
 
 	// Mock setup
 	topicId := uint64(1)
-	targetAddr := s.addrsStr[1]
+	targetAddr := s.AddrsStr()[1]
 	stakeAmount := cosmosMath.NewInt(500)
 
 	// Add stake to create bonds
-	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, targetAddr, stakeAmount)
+	err := k.AddDelegateStake(ctx, topicId, delegatorAddr, targetAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Add stake to create bonds
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, targetAddr, stakeAmount.Mul(cosmosMath.NewInt(2)))
+	err = k.AddDelegateStake(ctx, topicId, delegatorAddr, targetAddr, stakeAmount.Mul(cosmosMath.NewInt(2)))
 	s.Require().NoError(err)
 
 	// Get all bonds for delegator
-	amount, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
+	amount, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 
 	s.Require().NoError(err, "Getting all bonds for delegator should not return an error")
 	s.Require().Equal(stakeAmount.Mul(cosmosMath.NewInt(3)), amount, "The total amount is incorrect")
 }
 
 func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlacement() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic0 := uint64(101)
 	reputer0 := "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n"
@@ -1788,15 +1603,15 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	}
 
 	// Set stake removal information
-	err := keeper.SetStakeRemoval(ctx, removalInfo0)
+	err := k.SetStakeRemoval(ctx, removalInfo0)
 	s.Require().NoError(err)
-	err = keeper.SetStakeRemoval(ctx, removalInfo1)
+	err = k.SetStakeRemoval(ctx, removalInfo1)
 	s.Require().NoError(err)
 
 	// Topic 101
 
 	// Retrieve the stake removal information
-	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 1)
+	retrievedInfo, limitHit, err := k.GetStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 1)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
 	s.Require().False(limitHit, "The limit should not be hit")
@@ -1809,7 +1624,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	// Topic 102
 
 	// Retrieve the stake removal information
-	retrievedInfo, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 2)
+	retrievedInfo, limitHit, err = k.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 2)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 2, "There should be only one delegate stake removal information for the block")
 	s.Require().False(limitHit, "The limit should not be hit")
@@ -1820,42 +1635,42 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	s.Require().Equal(removalInfo1.Amount, retrievedInfo[1].Amount, "Amounts should match for all placements")
 
 	// delete 101
-	err = keeper.DeleteStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer)
+	err = k.DeleteStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer)
 	s.Require().NoError(err)
-	removals, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
+	removals, limitHit, err := k.GetStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 
 	// delete 102
-	err = keeper.DeleteStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer)
+	err = k.DeleteStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer)
 	s.Require().NoError(err)
-	removals, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
+	removals, limitHit, err = k.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockNotFound() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	// Attempt to retrieve stake removal info for an address with no set info
-	removals, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, 202, 100)
+	removals, limitHit, err := k.GetStakeRemovalsUpUntilBlock(ctx, 202, 100)
 	s.Require().NoError(err)
 	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitPreviousBlocks() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicIdStart := uint64(100)
 	blockRemovalsStart := int64(12)
 	blockRemovalsEnd := int64(13)
 
 	topicId := topicIdStart
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr()[2]
 	removalInfo := types.StakeRemovalInfo{
 		BlockRemovalStarted:   blockRemovalsStart,
 		BlockRemovalCompleted: blockRemovalsEnd,
@@ -1863,10 +1678,10 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitPreviousBlocks() 
 		Reputer:               reputer,
 		Amount:                cosmosMath.NewInt(100),
 	}
-	err := keeper.SetStakeRemoval(ctx, removalInfo)
+	err := k.SetStakeRemoval(ctx, removalInfo)
 	s.Require().NoError(err)
 
-	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+	retrievedInfo, limitHit, err := k.GetStakeRemovalsUpUntilBlock(
 		ctx,
 		blockRemovalsEnd+1, // note how we are getting a block AFTER blockRemovalsEnd
 		1000,
@@ -1877,14 +1692,14 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitPreviousBlocks() 
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitExactBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicIdStart := uint64(100)
 	blockRemovalsStart := int64(12)
 	blockRemovalsEnd := int64(13)
 
 	topicId := topicIdStart
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr()[2]
 	removalInfo := types.StakeRemovalInfo{
 		BlockRemovalStarted:   blockRemovalsStart,
 		BlockRemovalCompleted: blockRemovalsEnd,
@@ -1892,10 +1707,10 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitExactBlock() {
 		Reputer:               reputer,
 		Amount:                cosmosMath.NewInt(100),
 	}
-	err := keeper.SetStakeRemoval(ctx, removalInfo)
+	err := k.SetStakeRemoval(ctx, removalInfo)
 	s.Require().NoError(err)
 
-	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+	retrievedInfo, limitHit, err := k.GetStakeRemovalsUpUntilBlock(
 		ctx,
 		blockRemovalsEnd,
 		1000,
@@ -1906,8 +1721,8 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitExactBlock() {
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitGreaterThanNumRemovals() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	numRemovals := int64(5)
 	topicIdStart := uint64(100)
 	blockRemovalsStart := int64(12)
@@ -1915,7 +1730,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitGreaterThanNumRem
 
 	for i := int64(0); i < numRemovals; i++ {
 		topicId := topicIdStart + uint64(i)
-		reputer := s.addrsStr[2]
+		reputer := s.AddrsStr()[2]
 		// Create a sample stake removal information
 		removalInfo := types.StakeRemovalInfo{
 			BlockRemovalStarted:   blockRemovalsStart + i,
@@ -1924,10 +1739,10 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitGreaterThanNumRem
 			Reputer:               reputer,
 			Amount:                cosmosMath.NewInt(100),
 		}
-		err := keeper.SetStakeRemoval(ctx, removalInfo)
+		err := k.SetStakeRemoval(ctx, removalInfo)
 		s.Require().NoError(err)
 	}
-	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+	retrievedInfo, limitHit, err := k.GetStakeRemovalsUpUntilBlock(
 		ctx,
 		blockRemovalsEnd+numRemovals,
 		uint64(numRemovals),
@@ -1938,8 +1753,8 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitGreaterThanNumRem
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitLessThanNumRemovals() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	numRemovals := int64(5)
 	limitRemovals := numRemovals - 2
 	topicIdStart := uint64(100)
@@ -1948,7 +1763,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitLessThanNumRemova
 
 	for i := int64(0); i < numRemovals; i++ {
 		topicId := topicIdStart + uint64(i)
-		reputer := s.addrsStr[2]
+		reputer := s.AddrsStr()[2]
 		// Create a sample stake removal information
 		removalInfo := types.StakeRemovalInfo{
 			BlockRemovalStarted:   blockRemovalsStart + i,
@@ -1957,10 +1772,10 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitLessThanNumRemova
 			Reputer:               reputer,
 			Amount:                cosmosMath.NewInt(100),
 		}
-		err := keeper.SetStakeRemoval(ctx, removalInfo)
+		err := k.SetStakeRemoval(ctx, removalInfo)
 		s.Require().NoError(err)
 	}
-	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+	retrievedInfo, limitHit, err := k.GetStakeRemovalsUpUntilBlock(
 		ctx,
 		blockRemovalsEnd+numRemovals,
 		uint64(limitRemovals),
@@ -1971,8 +1786,8 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitLessThanNumRemova
 }
 
 func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	topic0 := uint64(201)
 	reputer0 := "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n"
@@ -2001,15 +1816,15 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	}
 
 	// Set delegate stake removal information
-	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo0)
+	err := k.SetDelegateStakeRemoval(ctx, removalInfo0)
 	s.Require().NoError(err)
-	err = keeper.SetDelegateStakeRemoval(ctx, removalInfo1)
+	err = k.SetDelegateStakeRemoval(ctx, removalInfo1)
 	s.Require().NoError(err)
 
 	// Topic 201
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
+	retrievedInfo, limitHit, err := k.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
 	s.Require().False(limitHit)
@@ -2022,7 +1837,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	// Topic 202
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
+	retrievedInfo, limitHit, err = k.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 2)
 	s.Require().False(limitHit)
@@ -2033,25 +1848,25 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	s.Require().Equal(removalInfo1.Amount, retrievedInfo[1].Amount, "Amounts should match for all placements")
 
 	// delete 101
-	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
+	err = k.DeleteDelegateStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
 	s.Require().NoError(err)
-	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
+	removals, limitHit, err := k.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Empty(removals)
 	s.Require().False(limitHit)
 
 	// delete 102
-	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo1.Delegator)
+	err = k.DeleteDelegateStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo1.Delegator)
 	s.Require().NoError(err)
-	removals, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
+	removals, limitHit, err = k.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Empty(removals)
 	s.Require().False(limitHit)
 }
 
 func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	// Create sample delegate stake removal information
 	removalInfo := types.DelegateStakeRemovalInfo{
@@ -2064,10 +1879,10 @@ func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
 	}
 
 	// Set delegate stake removal information
-	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo)
+	err := k.SetDelegateStakeRemoval(ctx, removalInfo)
 	s.Require().NoError(err)
 
-	_, err = keeper.GetDelegateStakeRemoval(ctx,
+	_, err = k.GetDelegateStakeRemoval(ctx,
 		removalInfo.BlockRemovalStarted,
 		removalInfo.TopicId,
 		removalInfo.Delegator,
@@ -2076,7 +1891,7 @@ func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
 	// index is on BlockRemovalCompleted not BlockRemovalStarted
 	s.Require().Error(err)
 
-	retrievedInfo, err := keeper.GetDelegateStakeRemoval(ctx,
+	retrievedInfo, err := k.GetDelegateStakeRemoval(ctx,
 		removalInfo.BlockRemovalCompleted,
 		removalInfo.TopicId,
 		removalInfo.Delegator,
@@ -2092,35 +1907,35 @@ func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
 }
 
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	// Attempt to retrieve delegate stake removal info for an address with no set info
-	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, 201, 100)
+	removals, limitHit, err := k.GetDelegateStakeRemovalsUpUntilBlock(ctx, 201, 100)
 	s.Require().NoError(err)
 	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 }
 
 func (s *KeeperTestSuite) TestSetParams() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	params := types.DefaultParams()
 	// Set params
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Check params
-	paramsFromKeeper, err := keeper.GetParams(ctx)
+	paramsFromKeeper, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(params, paramsFromKeeper, "Params should be equal to the set params")
 }
 
-// / REPUTERS AND WORKER
+// REPUTERS AND WORKER
 func (s *KeeperTestSuite) TestInsertWorker() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	topicId := uint64(401)
 
@@ -2131,10 +1946,10 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	}
 
 	// Attempt to insert the worker for multiple topics
-	err := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
+	err := k.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(err)
 
-	node, err := keeper.GetWorkerInfo(ctx, worker)
+	node, err := k.GetWorkerInfo(ctx, worker)
 
 	s.Require().NoError(err)
 	s.Require().Equal(workerInfo.Owner, node.Owner)
@@ -2142,8 +1957,8 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 }
 
 func (s *KeeperTestSuite) TestRemoveWorker() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	topicId := uint64(401) // Assume the worker is associated with this topicId initially
 
@@ -2154,221 +1969,215 @@ func (s *KeeperTestSuite) TestRemoveWorker() {
 	}
 
 	// Insert the worker
-	insertErr := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
+	insertErr := k.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(insertErr, "Failed to insert worker initially")
 
 	// Verify the worker is registered in the topic
-	isRegisteredPre, preErr := keeper.IsWorkerRegisteredInTopic(ctx, topicId, worker)
+	isRegisteredPre, preErr := k.IsWorkerRegisteredInTopic(ctx, topicId, worker)
 	s.Require().NoError(preErr, "Failed to check worker registration before removal")
 	s.Require().True(isRegisteredPre, "Worker should be registered in the topic before removal")
 
 	// Perform the removal
-	removeErr := keeper.RemoveWorker(ctx, topicId, worker)
+	removeErr := k.RemoveWorker(ctx, topicId, worker)
 	s.Require().NoError(removeErr, "Failed to remove worker")
 
 	// Verify the worker is no longer registered in the topic
-	isRegisteredPost, postErr := keeper.IsWorkerRegisteredInTopic(ctx, topicId, worker)
+	isRegisteredPost, postErr := k.IsWorkerRegisteredInTopic(ctx, topicId, worker)
 	s.Require().NoError(postErr, "Failed to check worker registration after removal")
 	s.Require().False(isRegisteredPost, "Worker should not be registered in the topic after removal")
 }
 
 func (s *KeeperTestSuite) TestInsertReputer() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	reputer := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	reputer := s.AddrsStr()[0]
 	topicId := uint64(501)
 
 	// Define sample OffchainNode information for a reputer
 	reputerInfo := types.OffchainNode{
-		Owner:       s.addrsStr[1],
-		NodeAddress: s.addrsStr[2],
+		Owner:       s.AddrsStr()[1],
+		NodeAddress: s.AddrsStr()[2],
 	}
 
 	// Attempt to insert the reputer for multiple topics
-	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
+	err := k.InsertReputer(ctx, topicId, reputer, reputerInfo)
 	s.Require().NoError(err)
 
 	// Optionally check if reputer is registered in each topic using an assumed IsReputerRegisteredInTopic method
-	isRegistered, regErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+	isRegistered, regErr := k.IsReputerRegisteredInTopic(ctx, topicId, reputer)
 	s.Require().NoError(regErr, "Checking reputer registration should not fail")
 	s.Require().True(isRegistered, "Reputer should be registered in each topic")
 }
 
 func (s *KeeperTestSuite) TestGetReputerInfo() {
-	ctx := s.ctx
+	ctx := s.Ctx()
 	reputer := "allo17srupely9uux7axep5shdsezva4znz6g30ntdw"
 	topicId := uint64(501)
-	keeper := s.emissionsKeeper
+	k := s.EmissionsKeeper()
 	reputerInfo := types.OffchainNode{
-		Owner:       s.addrsStr[2],
+		Owner:       s.AddrsStr()[2],
 		NodeAddress: reputer,
 	}
 
-	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
+	err := k.InsertReputer(ctx, topicId, reputer, reputerInfo)
 	s.Require().NoError(err)
 
-	actualReputer, err := keeper.GetReputerInfo(ctx, reputer)
+	actualReputer, err := k.GetReputerInfo(ctx, reputer)
 	s.Require().NoError(err)
 	s.Require().Equal(reputerInfo, actualReputer)
 
 	nonExistentKey := "nonExistentKey123"
-	_, err = keeper.GetReputerInfo(ctx, nonExistentKey)
+	_, err = k.GetReputerInfo(ctx, nonExistentKey)
 	s.Require().Error(err)
 }
 
 func (s *KeeperTestSuite) TestRemoveReputer() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	reputer := "allo17srupely9uux7axep5shdsezva4znz6g30ntdw"
 	topicId := uint64(501)
 
 	// Pre-setup: Insert the reputer for initial setup
-	err := keeper.InsertReputer(ctx, topicId, reputer, types.OffchainNode{
-		Owner:       s.addrsStr[1],
+	err := k.InsertReputer(ctx, topicId, reputer, types.OffchainNode{
+		Owner:       s.AddrsStr()[1],
 		NodeAddress: reputer,
 	})
 	s.Require().NoError(err, "InsertReputer failed during setup")
 
 	// Verify the reputer is registered in the topic
-	isRegisteredPre, preErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+	isRegisteredPre, preErr := k.IsReputerRegisteredInTopic(ctx, topicId, reputer)
 	s.Require().NoError(preErr, "Failed to check reputer registration before removal")
 	s.Require().True(isRegisteredPre, "Reputer should be registered in the topic before removal")
 
 	// Perform the removal
-	removeErr := keeper.RemoveReputer(ctx, topicId, reputer)
+	removeErr := k.RemoveReputer(ctx, topicId, reputer)
 	s.Require().NoError(removeErr, "Failed to remove reputer")
 
 	// Verify the reputer is no longer registered in the topic
-	isRegisteredPost, postErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+	isRegisteredPost, postErr := k.IsReputerRegisteredInTopic(ctx, topicId, reputer)
 	s.Require().NoError(postErr, "Failed to check reputer registration after removal")
 	s.Require().False(isRegisteredPost, "Reputer should not be registered in the topic after removal")
 }
 
-/// TOPICS
+// TOPICS
 
 func (s *KeeperTestSuite) TestSetAndGetPreviousTopicWeight() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Set previous topic weight
 	weightToSet := alloraMath.NewDecFromInt64(10)
-	err := keeper.SetPreviousTopicWeight(ctx, topicId, weightToSet)
+	err := k.SetPreviousTopicWeight(ctx, topicId, weightToSet)
 	s.Require().NoError(err, "Setting previous topic weight should not fail")
 
 	// Get the previously set topic weight
-	retrievedWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	retrievedWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 	s.Require().NoError(err, "Getting previous topic weight should not fail")
 	s.Require().Equal(weightToSet, retrievedWeight, "Retrieved weight should match the set weight")
 	s.Require().False(noPrior, "Should indicate prior weight for a set topic")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousTopicWeightNotFound() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(2)
 
 	// Attempt to get a weight for a topic that has no set weight
-	retrievedWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	retrievedWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 	s.Require().NoError(err, "Getting weight for an unset topic should not error but return zero value")
 	s.Require().True(alloraMath.ZeroDec().Equal(retrievedWeight), "Weight for an unset topic should be zero")
 	s.Require().True(noPrior, "Should indicate no prior weight for an unset topic")
 }
 
 func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(3)
 
 	maxActiveTopicsNum := uint64(5)
 	params := types.DefaultParams()
 	params.MaxActiveTopicsPerBlock = maxActiveTopicsNum
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Assume topic initially active
-	initialTopic := s.mockTopic()
-	err = keeper.SetTopic(ctx, topicId, initialTopic)
+	initialTopic := *s.MockTopic()
+	err = k.SetTopic(ctx, topicId, initialTopic)
 	s.Require().NoError(err, "Setting topic should not fail")
 
 	// Activate the topic
-	err = keeper.ActivateTopic(ctx, topicId)
+	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
-	topicActive, err := keeper.IsTopicActive(ctx, topicId)
+	topicActive, err := k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
 	s.Require().True(topicActive, "Topic should be active again")
 
 	// Inactivate the topic
-	err = keeper.InactivateTopic(ctx, topicId)
+	err = k.InactivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
-	topicActive, err = keeper.IsTopicActive(ctx, topicId)
+	topicActive, err = k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after inactivation")
 	s.Require().False(topicActive, "Topic should be inactive")
 
 	// Activate the topic
-	err = keeper.ActivateTopic(ctx, topicId)
+	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active again
-	topicActive, err = keeper.IsTopicActive(ctx, topicId)
+	topicActive, err = k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
 	s.Require().True(topicActive, "Topic should be active again")
 }
 
 func (s *KeeperTestSuite) TestGetActiveTopicIdsAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	maxActiveTopicsNum := uint64(2)
 	params := types.DefaultParams()
 	params.MaxActiveTopicsPerBlock = maxActiveTopicsNum
 	params.MaxPageLimit = 100
 	params.MinEpochLength = 1
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
-	topic1 := s.mockTopic()
-	topic1.Id = 1
-	topic1.EpochLength = 5
-	topic1.WorkerSubmissionWindow = topic1.EpochLength
-	topic2 := s.mockTopic()
-	topic2.Id = 2
-	topic2.EpochLength = 5
-	topic2.WorkerSubmissionWindow = topic2.EpochLength
-	topic3 := s.mockTopic()
-	topic3.Id = 3
-	topic3.EpochLength = 15
-	topic3.WorkerSubmissionWindow = topic3.EpochLength
+	// Create topics using CreateTopic with functional options
+	topic1Id := s.CreateTopic(
+		alloratestutil.WithEpochLength(5),
+		alloratestutil.WithWorkerSubmissionWindow(5),
+	)
+	s.CreateTopic(
+		alloratestutil.WithEpochLength(5),
+		alloratestutil.WithWorkerSubmissionWindow(5),
+	) // Inactive topic
+	topic3Id := s.CreateTopic(
+		alloratestutil.WithEpochLength(15),
+		alloratestutil.WithWorkerSubmissionWindow(15),
+	)
 
-	err = keeper.SetTopic(ctx, topic1.Id, topic1)
-	s.Require().NoError(err, "Setting topic should not fail")
-	err = keeper.ActivateTopic(ctx, topic1.Id)
+	err = k.ActivateTopic(ctx, topic1Id)
 	s.Require().NoError(err, "Activating topic should not fail")
-	err = keeper.SetTopic(ctx, topic2.Id, topic2) // Inactive topic
-	s.Require().NoError(err, "Setting topic should not fail")
-	err = keeper.SetTopic(ctx, topic3.Id, topic3)
-	s.Require().NoError(err, "Setting topic should not fail")
-	err = keeper.ActivateTopic(ctx, topic3.Id)
+	err = k.ActivateTopic(ctx, topic3Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	// Fetch only active topics
-	activeTopics, err := keeper.GetActiveTopicIdsAtBlock(ctx, 5)
+	activeTopics, err := k.GetActiveTopicIdsAtBlock(ctx, 5)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 1, "Should retrieve exactly one active topic")
 
-	activeTopics, err = keeper.GetActiveTopicIdsAtBlock(ctx, 15)
+	activeTopics, err = k.GetActiveTopicIdsAtBlock(ctx, 15)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 1, "Should retrieve exactly one active topic")
-	s.Require().Equal(activeTopics.TopicIds[0], topic3.Id, "The details of topic 1 should match")
+	s.Require().Equal(activeTopics.TopicIds[0], topic3Id, "The details of topic 3 should match")
 }
 
 func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	k := s.EmissionsKeeper()
 
 	params := types.DefaultParams()
 	params.MaxActiveTopicsPerBlock = uint64(3)
@@ -2376,216 +2185,216 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	params.MinEpochLength = 1
 	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
 	params.TopicRewardStakeImportance = alloraMath.MustNewDecFromString("1")
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(s.Ctx(), params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
-	topic1 := s.mockTopic()
-	topic1.Id = 1
-	topic1.EpochLength = 15
-	topic1.WorkerSubmissionWindow = topic1.EpochLength
-	topic2 := s.mockTopic()
-	topic2.Id = 2
-	topic2.EpochLength = 15
-	topic2.WorkerSubmissionWindow = topic2.EpochLength
-	topic3 := s.mockTopic()
-	topic3.Id = 3
-	topic3.EpochLength = 5
-	topic3.WorkerSubmissionWindow = topic3.EpochLength
-	topic4 := s.mockTopic()
-	topic4.Id = 4
-	topic4.EpochLength = 5
-	topic4.WorkerSubmissionWindow = topic4.EpochLength
+	epochLength1 := int64(15)
+	epochLength2 := int64(15)
+	epochLength3 := int64(5)
+	epochLength4 := int64(5)
+
+	topic1Id := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength1),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength1),
+	)
+	topic2Id := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength2),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength2),
+	)
+	topic3Id := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength3),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength3),
+	)
+	topic4Id := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength4),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength4),
+	)
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		err := keeper.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
+		err := k.AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue))
 		s.Require().NoError(err, "Adding topic fee revenue should not fail")
-		err = keeper.SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake))
+		err = k.SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake))
 		s.Require().NoError(err, "Setting topic stake should not fail")
 	}
 
-	setTopicWeight(topic1.Id, 10, 10)
-	err = keeper.SetTopic(ctx, topic1.Id, topic1)
-	s.Require().NoError(err, "Setting topic should not fail")
-	err = keeper.ActivateTopic(ctx, topic1.Id)
+	setTopicWeight(topic1Id, 10, 10)
+	err = k.ActivateTopic(s.Ctx(), topic1Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	setTopicWeight(topic2.Id, 20, 10)
-	err = keeper.SetTopic(ctx, topic2.Id, topic2)
-	s.Require().NoError(err, "Setting topic should not fail")
-	err = keeper.ActivateTopic(ctx, topic2.Id)
+	setTopicWeight(topic2Id, 20, 10)
+	err = k.ActivateTopic(s.Ctx(), topic2Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	// Fetch next page -- should only return topic 5
-	activeTopics, err := keeper.GetActiveTopicIdsAtBlock(ctx, 15)
+	activeTopics, err := k.GetActiveTopicIdsAtBlock(s.Ctx(), 15)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 2, "Should retrieve exactly two active topics")
 
-	ctx = s.ctx.WithBlockHeight(15)
-	err = keeper.AttemptTopicReactivation(ctx, topic1.Id)
+	s.WithBlockHeight(15)
+	err = k.AttemptTopicReactivation(s.Ctx(), topic1Id)
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
-	err = keeper.AttemptTopicReactivation(ctx, topic2.Id)
+	err = k.AttemptTopicReactivation(s.Ctx(), topic2Id)
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
 
-	ctx = s.ctx.WithBlockHeight(25)
-	setTopicWeight(topic3.Id, 50, 10)
-	err = keeper.SetTopic(ctx, topic3.Id, topic3)
-	s.Require().NoError(err, "Setting topic should not fail")
-	err = keeper.ActivateTopic(ctx, topic3.Id)
+	s.WithBlockHeight(25)
+	setTopicWeight(topic3Id, 50, 10)
+	err = k.ActivateTopic(s.Ctx(), topic3Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	activeTopics, err = keeper.GetActiveTopicIdsAtBlock(ctx, 30)
+	activeTopics, err = k.GetActiveTopicIdsAtBlock(s.Ctx(), 30)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Len(activeTopics.TopicIds, 3, "Should retrieve exactly two active topics")
-	s.Require().Equal(uint64(1), activeTopics.TopicIds[0])
-	s.Require().Equal(uint64(2), activeTopics.TopicIds[1])
-	s.Require().Equal(uint64(3), activeTopics.TopicIds[2])
+	s.Require().Equal(topic1Id, activeTopics.TopicIds[0])
+	s.Require().Equal(topic2Id, activeTopics.TopicIds[1])
+	s.Require().Equal(topic3Id, activeTopics.TopicIds[2])
 
-	ctx = s.ctx.WithBlockHeight(30)
-	setTopicWeight(topic4.Id, 1, 1)
-	isActive, err := keeper.IsTopicActive(ctx, topic4.Id)
+	s.WithBlockHeight(30)
+	setTopicWeight(topic4Id, 1, 1)
+	isActive, err := k.IsTopicActive(s.Ctx(), topic4Id)
 	s.Require().NoError(err, "Is topic active should not produce an error")
 	s.Require().False(isActive, "Topic4 should not be activated")
 }
+
 func (s *KeeperTestSuite) TestIncrementTopicId() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	// Initial check for the current topic ID
-	initialTopicId, err := keeper.IncrementTopicId(ctx)
+	initialTopicId, err := k.IncrementTopicId(ctx)
 	s.Require().NoError(err, "Getting initial topic ID should not fail")
 
 	// Increment the topic ID
-	newTopicId, err := keeper.IncrementTopicId(ctx)
+	newTopicId, err := k.IncrementTopicId(ctx)
 	s.Require().NoError(err, "Incrementing topic ID should not fail")
 	s.Require().Equal(initialTopicId+1, newTopicId, "New topic ID should be one more than the initial topic ID")
 }
 
 func (s *KeeperTestSuite) TestGetNumTopicsWithActualTopicCreation() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
-	nextTopicIdStart, err := keeper.GetNextTopicId(ctx)
+	nextTopicIdStart, err := k.GetNextTopicId(ctx)
 	s.Require().NoError(err, "Fetching the number of topics should not fail")
 
 	// Create multiple topics to simulate actual usage
 	topicsToCreate := 5
 	for i := 1; i <= topicsToCreate; i++ {
-		topicId, err := keeper.IncrementTopicId(ctx)
+		topicId, err := k.IncrementTopicId(ctx)
 		s.Require().NoError(err, "Incrementing topic ID should not fail")
 
-		newTopic := s.mockTopic()
+		newTopic := *s.MockTopic()
 		newTopic.Id = topicId
 
-		err = keeper.SetTopic(ctx, topicId, newTopic)
+		err = k.SetTopic(ctx, topicId, newTopic)
 		s.Require().NoError(err, "Setting a new topic should not fail")
 	}
 
 	// Now retrieve the total number of topics
-	nextTopicIdEnd, err := keeper.GetNextTopicId(ctx)
+	nextTopicIdEnd, err := k.GetNextTopicId(ctx)
 	s.Require().NoError(err, "Fetching the number of topics should not fail")
 	s.Require().Equal(uint64(topicsToCreate), nextTopicIdEnd-nextTopicIdStart)
 }
 
 func (s *KeeperTestSuite) TestUpdateAndGetTopicEpochLastEnded() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := uint64(2)
 	epochLastEnded := types.BlockHeight(100)
 
 	// Setup a topic initially
-	initialTopic := s.mockTopic()
-	err := keeper.SetTopic(ctx, topicId, initialTopic)
+	initialTopic := *s.MockTopic()
+	err := k.SetTopic(ctx, topicId, initialTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
 	// Update the epoch last ended
-	err = keeper.UpdateTopicEpochLastEnded(ctx, topicId, epochLastEnded)
+	err = k.UpdateTopicEpochLastEnded(ctx, topicId, epochLastEnded)
 	s.Require().NoError(err, "Updating topic epoch last ended should not fail")
 
 	// Retrieve the last ended epoch for the topic
-	topic, err := keeper.GetTopic(ctx, topicId)
+	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err, "Retrieving topic epoch last ended should not fail")
 	s.Require().Equal(epochLastEnded, topic.EpochLastEnded, "The retrieved epoch last ended should match the updated value")
 }
 
 func (s *KeeperTestSuite) TestTopicExists() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	// Test a topic ID that does not exist
 	nonExistentTopicId := uint64(999) // Assuming this ID has not been used
-	exists, err := keeper.TopicExists(ctx, nonExistentTopicId)
+	exists, err := k.TopicExists(ctx, nonExistentTopicId)
 	s.Require().NoError(err, "Checking existence for a non-existent topic should not fail")
 	s.Require().False(exists, "No topic should exist for an unused topic ID")
 
 	// Create a topic to test existence
-	existentTopicId, err := keeper.IncrementTopicId(ctx)
+	existentTopicId, err := k.IncrementTopicId(ctx)
 	s.Require().NoError(err, "Incrementing topic ID should not fail")
 
-	newTopic := s.mockTopic()
-	err = keeper.SetTopic(ctx, existentTopicId, newTopic)
+	newTopic := *s.MockTopic()
+	err = k.SetTopic(ctx, existentTopicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
 	// Test the newly created topic ID
-	exists, err = keeper.TopicExists(ctx, existentTopicId)
+	exists, err = k.TopicExists(ctx, existentTopicId)
 	s.Require().NoError(err, "Checking existence for an existent topic should not fail")
 	s.Require().True(exists, "Topic should exist for a newly created topic ID")
 }
 
 func (s *KeeperTestSuite) TestGetTopic() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
-	topicId := uint64(1)
-	_, err := keeper.GetTopic(ctx, topicId)
+	topicId := uint64(2)
+	_, err := k.GetTopic(ctx, topicId)
 	s.Require().ErrorIs(err, types.ErrTopicDoesNotExist, "Retrieving a non-existent topic should result in an error")
 
-	newTopic := s.mockTopic()
+	newTopic := *s.MockTopic()
 
-	err = keeper.SetTopic(ctx, topicId, newTopic)
+	err = k.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
-	retrievedTopic, err := keeper.GetTopic(ctx, topicId)
+	retrievedTopic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err, "Retrieving an existent topic should not fail")
 	s.Require().Equal(newTopic, retrievedTopic, "Retrieved topic should match the set topic")
 	s.Require().Equal(newTopic.Metadata, retrievedTopic.Metadata, "Retrieved topic should match the set topic")
 }
 
-/// FEE REVENUE
+// FEE REVENUE
 
 func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := uint64(2)
 
-	newTopic := s.mockTopic()
-	err := keeper.SetTopic(ctx, topicId, newTopic)
+	newTopic := *s.MockTopic()
+	err := k.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
 	// Test getting revenue for a topic with no existing revenue
-	feeRev, err := keeper.GetTopicFeeRevenue(ctx, topicId)
+	feeRev, err := k.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when revenue does not exist")
 	s.Require().Equal(cosmosMath.ZeroInt(), feeRev, "Revenue should be zero for non-existing entries")
 
 	// Setup a topic with some revenue
 	initialRevenue := cosmosMath.NewInt(100)
 	initialRevenueInt := cosmosMath.NewInt(100)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
 
 	// Test getting revenue for a topic with existing revenue
-	feeRev, err = keeper.GetTopicFeeRevenue(ctx, topicId)
+	feeRev, err = k.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")
 	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
 
 func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := uint64(2)
 	block := int64(100)
 
 	newTopic := types.Topic{
-		Creator:                  s.addrs[0].String(),
+		Creator:                  s.Addrs()[0].String(),
 		Id:                       topicId,
 		Metadata:                 "metadata",
 		LossMethod:               "LOSS",
@@ -2603,7 +2412,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.5"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.5"),
 	}
-	err := keeper.SetTopic(ctx, topicId, newTopic)
+	err := k.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
 	params := types.DefaultParams()
@@ -2611,32 +2420,32 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(params.BlocksPerMonth)
 	s.Require().NoError(err, "error calculating blocks per week")
 
-	err = keeper.DripTopicFeeRevenue(ctx, newTopic, blocksPerWeek, block)
+	err = k.DripTopicFeeRevenue(ctx, newTopic, blocksPerWeek, block)
 	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
 	// Add initial revenue
 	initialAmount := cosmosMath.NewInt(100)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId, initialAmount)
+	err = k.AddTopicFeeRevenue(ctx, topicId, initialAmount)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
 
 	// Verify initial revenue
-	feeRev, err := keeper.GetTopicFeeRevenue(ctx, topicId)
+	feeRev, err := k.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Getting topic fee revenue should not fail")
 	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
 }
 
-/// SCORES
+// SCORES
 
 func (s *KeeperTestSuite) TestGetScoreEmas() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	forecaster := "allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h"
 	reputer := "allo144nqxgt6jdrm4srzzgx4dvz04hd8q2e8cel9hu"
 
 	// Test getting latest scores when none are set
-	infererScore, err := keeper.GetInfererScoreEma(ctx, topicId, worker)
+	infererScore, err := k.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching latest inferer score should not fail")
 	s.Require().Equal(types.Score{
 		TopicId:     topicId,
@@ -2645,7 +2454,7 @@ func (s *KeeperTestSuite) TestGetScoreEmas() {
 		Score:       alloraMath.ZeroDec(),
 	}, infererScore, "Inferer score should be zero if not set")
 
-	forecasterScore, err := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
+	forecasterScore, err := k.GetForecasterScoreEma(ctx, topicId, forecaster)
 	s.Require().NoError(err, "Fetching latest forecaster score should not fail")
 	s.Require().Equal(types.Score{
 		TopicId:     topicId,
@@ -2654,7 +2463,7 @@ func (s *KeeperTestSuite) TestGetScoreEmas() {
 		Score:       alloraMath.ZeroDec(),
 	}, forecasterScore, "Forecaster score should be empty if not set")
 
-	reputerScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
+	reputerScore, err := k.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching latest reputer score should not fail")
 	s.Require().Equal(types.Score{
 		TopicId:     topicId,
@@ -2665,8 +2474,8 @@ func (s *KeeperTestSuite) TestGetScoreEmas() {
 }
 
 func (s *KeeperTestSuite) TestSetScoreEmas() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	forecaster := "allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h"
@@ -2674,30 +2483,30 @@ func (s *KeeperTestSuite) TestSetScoreEmas() {
 	score := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
-	err := keeper.SetInfererScoreEma(ctx, topicId, worker, score)
+	err := k.SetInfererScoreEma(ctx, topicId, worker, score)
 	s.Require().NoError(err)
-	infererScore, err := keeper.GetInfererScoreEma(ctx, topicId, worker)
+	infererScore, err := k.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(score.Score, infererScore.Score, "Newer inferer score should be set")
 
 	// Set a new score for forecaster
-	err = keeper.SetForecasterScoreEma(ctx, topicId, forecaster, score)
+	err = k.SetForecasterScoreEma(ctx, topicId, forecaster, score)
 	s.Require().NoError(err)
-	forecasterScore, err := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
+	forecasterScore, err := k.GetForecasterScoreEma(ctx, topicId, forecaster)
 	s.Require().NoError(err)
 	s.Require().Equal(score.Score, forecasterScore.Score, "Newer forecaster score should be set")
 
 	// Set a new score for reputer
-	err = keeper.SetReputerScoreEma(ctx, topicId, reputer, score)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer, score)
 	s.Require().NoError(err)
-	reputerScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
+	reputerScore, err := k.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().NoError(err)
 	s.Require().Equal(score.Score, reputerScore.Score, "Newer reputer score should be set")
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 	score := types.Score{
@@ -2712,24 +2521,24 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopInferersToReward = 1
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
 	for i := 0; i < maxNumScores+2; i++ {
-		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
+		err := k.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting worker inference score should not fail")
 	}
 
 	// Fetch scores to check if trimming happened
-	scores, err := keeper.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching scores at block should not fail")
 	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -2738,7 +2547,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopInferersToReward = 1
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
@@ -2750,12 +2559,12 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 			Address:     "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
 			Score:       scoreValue,
 		}
-		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
+		err := k.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting worker inference score should not fail")
 	}
 
 	// Fetch scores to check if trimming happened
-	scores, err := keeper.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching scores at block should not fail")
 	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 
@@ -2767,10 +2576,10 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 }
 
 func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	workerAddress := s.addrs[0]
+	workerAddress := s.Addrs()[0]
 	blockHeight := int64(105)
 
 	// Insert scores for different workers and blocks
@@ -2782,12 +2591,12 @@ func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
 			Address:     workerAddress.String(),
 			Score:       alloraMath.NewDecFromInt64(blockHeight),
 		}
-		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, scoreForWorker)
+		err := k.InsertWorkerInferenceScore(ctx, topicId, blockHeight, scoreForWorker)
 		s.Require().NoError(err, "Inserting worker inference score should not fail")
 	}
 
 	// Get scores for the worker up to block 105
-	scores, err := keeper.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching worker inference scores until block should not fail")
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
 
@@ -2802,8 +2611,8 @@ func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -2812,7 +2621,7 @@ func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopForecastersToReward = 1
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
@@ -2823,19 +2632,19 @@ func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
 			Address:     "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
 			Score:       alloraMath.NewDecFromInt64(int64(90 + i)), // Increment score value to simulate variation
 		}
-		err := keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
+		err := k.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting worker forecast score should not fail")
 	}
 
 	// Fetch scores to check if trimming happened
-	scores, err := keeper.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
 	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
 func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(105)
 
@@ -2845,21 +2654,21 @@ func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
 			TopicId:     topicId,
 			BlockHeight: i,
 			Score:       alloraMath.NewDecFromInt64(i),
-			Address:     s.addrsStr[0],
+			Address:     s.AddrsStr()[0],
 		}
-		err := keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
+		err := k.InsertWorkerForecastScore(ctx, topicId, i, score)
 		s.Require().NoError(err, "Inserting worker forecast score should not fail")
 	}
 
 	// Get forecast scores for the worker up to block 105
-	scores, err := keeper.GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching worker forecast scores until block should not fail")
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
 }
 
 func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -2868,22 +2677,22 @@ func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     s.addrsStr[i],
+			Address:     s.AddrsStr()[i],
 			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
 		}
-		err := keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
+		err := k.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting worker forecast score should not fail")
 	}
 
 	// Fetch scores at the specific block
-	scores, err := keeper.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
 
 func (s *KeeperTestSuite) TestInsertReputerScore() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -2891,7 +2700,7 @@ func (s *KeeperTestSuite) TestInsertReputerScore() {
 	maxNumScores := 5
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
@@ -2902,19 +2711,19 @@ func (s *KeeperTestSuite) TestInsertReputerScore() {
 			Address:     "allo144nqxgt6jdrm4srzzgx4dvz04hd8q2e8cel9hu",
 			Score:       alloraMath.NewDecFromInt64(int64(90 + i)), // Increment score value to simulate variation
 		}
-		err := keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
+		err := k.InsertReputerScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting reputer score should not fail")
 	}
 
 	// Fetch scores to check if trimming happened
-	scores, err := keeper.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
 	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
 func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -2923,22 +2732,22 @@ func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     s.addrsStr[i],
+			Address:     s.AddrsStr()[i],
 			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
 		}
-		err := keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
+		err := k.InsertReputerScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting reputer score should not fail")
 	}
 
 	// Fetch scores at the specific block
-	scores, err := keeper.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
+	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
 
 func (s *KeeperTestSuite) TestSetListeningCoefficient() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	reputer := "allo17srupely9uux7axep5shdsezva4znz6g30ntdw"
 
@@ -2948,23 +2757,23 @@ func (s *KeeperTestSuite) TestSetListeningCoefficient() {
 	}
 
 	// Set the listening coefficient
-	err := keeper.SetListeningCoefficient(ctx, topicId, reputer, coefficient)
+	err := k.SetListeningCoefficient(ctx, topicId, reputer, coefficient)
 	s.Require().NoError(err, "Setting listening coefficient should not fail")
 
 	// Retrieve the set coefficient to verify it was set correctly
-	retrievedCoef, err := keeper.GetListeningCoefficient(ctx, topicId, reputer)
+	retrievedCoef, err := k.GetListeningCoefficient(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching listening coefficient should not fail")
 	s.Require().Equal(coefficient.Coefficient, retrievedCoef.Coefficient, "The retrieved coefficient should match the set value")
 }
 
 func (s *KeeperTestSuite) TestGetListeningCoefficient() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	reputer := "allo17srupely9uux7axep5shdsezva4znz6g30ntdw"
 
 	// Attempt to fetch a coefficient before setting it
-	defaultCoef, err := keeper.GetListeningCoefficient(ctx, topicId, reputer)
+	defaultCoef, err := k.GetListeningCoefficient(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching coefficient should not fail when not set")
 	s.Require().Equal(alloraMath.NewDecFromInt64(1), defaultCoef.Coefficient, "Should return the default coefficient when not set")
 
@@ -2972,198 +2781,198 @@ func (s *KeeperTestSuite) TestGetListeningCoefficient() {
 	setCoef := types.ListeningCoefficient{
 		Coefficient: alloraMath.NewDecFromInt64(5),
 	}
-	err = keeper.SetListeningCoefficient(ctx, topicId, reputer, setCoef)
+	err = k.SetListeningCoefficient(ctx, topicId, reputer, setCoef)
 	s.Require().NoError(err, "Setting listening coefficient should not fail")
 	// Fetch and verify the coefficient after setting
-	fetchedCoef, err := keeper.GetListeningCoefficient(ctx, topicId, reputer)
+	fetchedCoef, err := k.GetListeningCoefficient(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching coefficient should not fail after setting")
 	s.Require().Equal(setCoef.Coefficient, fetchedCoef.Coefficient, "The fetched coefficient should match the set value")
 }
 
-/// REWARD FRACTION
+// REWARD FRACTION
 
 func (s *KeeperTestSuite) TestSetPreviousReputerRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr()[2]
 
 	// Define a reward fraction to set
 	rewardFraction := alloraMath.NewDecFromInt64(75) // Assuming 0.75 as a fraction example
 
 	// Set the reward fraction
-	err := keeper.SetPreviousReputerRewardFraction(ctx, topicId, reputer, rewardFraction)
+	err := k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, rewardFraction)
 	s.Require().NoError(err, "Setting previous reputer reward fraction should not fail")
 
 	// Verify by fetching the same
-	fetchedReward, noPrior, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	fetchedReward, noPrior, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching the set reward fraction should not fail")
 	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value when set")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr()[2]
 
 	// Attempt to fetch a reward fraction before setting it
-	defaultReward, _, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	defaultReward, _, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching reward fraction should not fail when not set")
 	s.Require().True(defaultReward.IsZero(), "Should return zero reward fraction when not set")
 
 	// Now set a specific reward fraction
 	setReward := alloraMath.NewDecFromInt64(50) // Assuming 0.50 as a fraction example
-	err = keeper.SetPreviousReputerRewardFraction(ctx, topicId, reputer, setReward)
+	err = k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, setReward)
 	s.Require().NoError(err, "Setting previous reputer reward fraction should not fail")
 
 	// Fetch and verify the reward fraction after setting
-	fetchedReward, noPrior, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	fetchedReward, noPrior, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
 func (s *KeeperTestSuite) TestSetPreviousInferenceRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr()[1]
 
 	// Define a reward fraction to set
 	rewardFraction := alloraMath.NewDecFromInt64(25)
 
 	// Set the reward fraction
-	err := keeper.SetPreviousInferenceRewardFraction(ctx, topicId, worker, rewardFraction)
+	err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, rewardFraction)
 	s.Require().NoError(err, "Setting previous inference reward fraction should not fail")
 
 	// Verify by fetching the same
-	fetchedReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := k.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching the set reward fraction should not fail")
 	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value when set")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr()[1]
 
 	// Attempt to fetch a reward fraction before setting it
-	defaultReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	defaultReward, noPrior, err := k.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching reward fraction should not fail when not set")
 	s.Require().True(defaultReward.IsZero(), "Should return zero reward fraction when not set")
 	s.Require().True(noPrior, "Should return no prior value when not set")
 
 	// Now set a specific reward fraction
 	setReward := alloraMath.NewDecFromInt64(75)
-	err = keeper.SetPreviousInferenceRewardFraction(ctx, topicId, worker, setReward)
+	err = k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, setReward)
 	s.Require().NoError(err, "Setting previous inference reward fraction should not fail")
 	// Fetch and verify the reward fraction after setting
-	fetchedReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := k.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
 func (s *KeeperTestSuite) TestSetPreviousForecastRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[3]
+	worker := s.AddrsStr()[3]
 
 	// Define a reward fraction to set
 	rewardFraction := alloraMath.NewDecFromInt64(50) // Assume setting the fraction to 0.50
 
 	// Set the forecast reward fraction
-	err := keeper.SetPreviousForecastRewardFraction(ctx, topicId, worker, rewardFraction)
+	err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, rewardFraction)
 	s.Require().NoError(err, "Setting previous forecast reward fraction should not fail")
 
 	// Verify by fetching the set value
-	fetchedReward, noPrior, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := k.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching the set forecast reward fraction should not fail")
 	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched forecast reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value when set")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[3]
+	worker := s.AddrsStr()[3]
 
 	// Attempt to fetch the reward fraction before setting it, expecting default value
-	defaultReward, noPrior, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	defaultReward, noPrior, err := k.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching forecast reward fraction should not fail when not set")
 	s.Require().True(defaultReward.IsZero(), "Should return zero forecast reward fraction when not set")
 	s.Require().True(noPrior, "Should return no prior value when not set")
 
 	// Now set a specific reward fraction
 	setReward := alloraMath.NewDecFromInt64(75) // Assume setting it to 0.75
-	err = keeper.SetPreviousForecastRewardFraction(ctx, topicId, worker, setReward)
+	err = k.SetPreviousForecastRewardFraction(ctx, topicId, worker, setReward)
 	s.Require().NoError(err, "Setting previous forecast reward fraction should not fail")
 
 	// Fetch and verify the reward fraction after setting
-	fetchedReward, noPrior, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := k.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching forecast reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched forecast reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
 func (s *KeeperTestSuite) TestSetGetPreviousPercentageRewardToStakedReputers() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	previousPercentageReward := alloraMath.NewDecFromInt64(50)
 
 	// Set the previous percentage reward to staked reputers
-	err := keeper.SetPreviousPercentageRewardToStakedReputers(ctx, previousPercentageReward)
+	err := k.SetPreviousPercentageRewardToStakedReputers(ctx, previousPercentageReward)
 	s.Require().NoError(err, "Setting previous percentage reward to staked reputers should not fail")
 
 	// Get the previous percentage reward to staked reputers
-	fetchedPercentageReward, err := keeper.GetPreviousPercentageRewardToStakedReputers(ctx)
+	fetchedPercentageReward, err := k.GetPreviousPercentageRewardToStakedReputers(ctx)
 	s.Require().NoError(err, "Fetching previous percentage reward to staked reputers should not fail")
 	s.Require().Equal(previousPercentageReward, fetchedPercentageReward, "The fetched percentage reward should match the set value")
 }
 
-/// TOPIC REWARD NONCE
+// TOPIC REWARD NONCE
 
 func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Test Get on an unset topicId, should return 0
-	nonce, err := keeper.GetTopicRewardNonce(ctx, topicId)
+	nonce, err := k.GetTopicRewardNonce(ctx, topicId)
 	s.Require().NoError(err, "Getting an unset topic reward nonce should not fail")
 	s.Require().Equal(int64(0), nonce, "Nonce for an unset topicId should be 0")
 
 	// Test Set
 	expectedNonce := int64(12345)
-	err = keeper.SetTopicRewardNonce(ctx, topicId, expectedNonce)
+	err = k.SetTopicRewardNonce(ctx, topicId, expectedNonce)
 	s.Require().NoError(err, "Setting topic reward nonce should not fail")
 
 	// Test Get after Set, should return the set value
-	nonce, err = keeper.GetTopicRewardNonce(ctx, topicId)
+	nonce, err = k.GetTopicRewardNonce(ctx, topicId)
 	s.Require().NoError(err, "Getting set topic reward nonce should not fail")
 	s.Require().Equal(expectedNonce, nonce, "Nonce should match the value set earlier")
 
 	// Test Delete
-	err = keeper.DeleteTopicRewardNonce(ctx, topicId)
+	err = k.DeleteTopicRewardNonce(ctx, topicId)
 	s.Require().NoError(err, "Deleting topic reward nonce should not fail")
 
 	// Test Get after Delete, should return 0
-	nonce, err = keeper.GetTopicRewardNonce(ctx, topicId)
+	nonce, err = k.GetTopicRewardNonce(ctx, topicId)
 	s.Require().NoError(err, "Getting deleted topic reward nonce should not fail")
 	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
 }
 
-/// UTILS
+// UTILS
 
 func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	defaultLimit := uint64(20)
 	maxLimit := uint64(50)
@@ -3171,23 +2980,23 @@ func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
 	params := types.DefaultParams()
 	params.DefaultPageLimit = defaultLimit
 	params.MaxPageLimit = maxLimit
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting default and max limit parameters should not fail")
 
-	paramsActual, err := keeper.GetParams(ctx)
+	paramsActual, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(maxLimit, paramsActual.MaxPageLimit, "Max limit should be set correctly")
 	s.Require().Equal(defaultLimit, paramsActual.DefaultPageLimit, "Default limit should be set correctly")
 
 	// Test 1: Pagination request is nil
-	limit, cursor, err := keeper.CalcAppropriatePaginationForUint64Cursor(ctx, nil)
+	limit, cursor, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, nil)
 	s.Require().NoError(err, "Should handle nil pagination request without error")
 	s.Require().Equal(defaultLimit, limit, "Limit should default to the default limit")
 	s.Require().Equal(uint64(0), cursor, "Cursor should be 0 when key nil")
 
 	// Test 2: Pagination Key is empty and Limit is zero
 	pagination := &types.SimpleCursorPaginationRequest{Key: []byte{}, Limit: 0}
-	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	limit, cursor, err = k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	s.Require().NoError(err, "Should handle empty key and zero limit without error")
 	s.Require().Equal(defaultLimit, limit, "Limit should default to the default limit")
 	s.Require().Equal(uint64(0), cursor, "Cursor should be 0 when key is empty")
@@ -3195,14 +3004,14 @@ func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
 	// Test 3: Valid key and non-zero limit within bounds
 	validKey := binary.BigEndian.AppendUint64(nil, uint64(12345)) // Convert 12345 to big-endian byte slice
 	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 30}
-	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	limit, cursor, err = k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	s.Require().NoError(err, "Handling valid key and valid limit should not fail")
 	s.Require().Equal(uint64(30), limit, "Limit should be as specified")
 	s.Require().Equal(uint64(12345), cursor, "Cursor should decode correctly from key")
 
 	// Test 4: Limit exceeds maximum limit
 	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 60}
-	limit, _, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	limit, _, err = k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	s.Require().NoError(err, "Handling limit exceeding maximum should not fail")
 	s.Require().Equal(maxLimit, limit, "Limit should be capped at the maximum limit")
 }
@@ -3219,18 +3028,18 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 				TopicId:     topicId,
 				BlockHeight: block,
 				Value:       alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
-				Inferer:     s.addrsStr[0],
+				Inferer:     s.AddrsStr()[0],
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
 				Value:       alloraMath.NewDecFromInt64(2),
-				Inferer:     s.addrsStr[1],
+				Inferer:     s.AddrsStr()[1],
 			},
 		},
 	}
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, nonce.BlockHeight, expectedInferences)
+	err := s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	expectedForecasts := types.Forecasts{
@@ -3238,14 +3047,14 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Forecaster:  s.addrsStr[6],
+				Forecaster:  s.AddrsStr()[6],
 				ForecastElements: []*types.ForecastElement{
 					{
-						Inferer: s.addrsStr[0],
+						Inferer: s.AddrsStr()[0],
 						Value:   alloraMath.MustNewDecFromString("1"),
 					},
 					{
-						Inferer: s.addrsStr[1],
+						Inferer: s.AddrsStr()[1],
 						Value:   alloraMath.MustNewDecFromString("2"),
 					},
 				},
@@ -3253,34 +3062,34 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Forecaster:  s.addrsStr[7],
+				Forecaster:  s.AddrsStr()[7],
 				ForecastElements: []*types.ForecastElement{
 					{
-						Inferer: s.addrsStr[0],
+						Inferer: s.AddrsStr()[0],
 						Value:   alloraMath.MustNewDecFromString("3"),
 					},
 					{
-						Inferer: s.addrsStr[1],
+						Inferer: s.AddrsStr()[1],
 						Value:   alloraMath.MustNewDecFromString("4"),
 					},
 				},
 			},
 		},
 	}
-	err = s.emissionsKeeper.InsertActiveForecasts(s.ctx, topicId, nonce.BlockHeight, expectedForecasts)
+	err = s.EmissionsKeeper().InsertActiveForecasts(s.Ctx(), topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	reputerLossBundles := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{},
 	}
-	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, block, reputerLossBundles)
+	err = s.EmissionsKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, reputerLossBundles)
 	s.Require().NoError(err, "InsertActiveReputerLosses should not return an error")
 
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: &types.Nonce{BlockHeight: block},
 	}
 	networkLosses := types.ValueBundle{
-		Reputer:                       s.addrsStr[4],
+		Reputer:                       s.AddrsStr()[4],
 		CombinedValue:                 alloraMath.MustNewDecFromString(".0000117005278862668"),
 		ReputerRequestNonce:           reputerRequestNonce,
 		TopicId:                       topicId,
@@ -3293,35 +3102,35 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
+	err = s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
 
 	// Check if the records are set
-	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block, false)
+	_, err = s.EmissionsKeeper().GetInferencesAtBlock(s.Ctx(), topicId, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
-	_, err = s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
+	_, err = s.EmissionsKeeper().GetForecastsAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting forecasts should not fail")
-	lossBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
+	lossBundles, err := s.EmissionsKeeper().GetReputerLossBundlesAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
 	s.Require().NotNil(lossBundles)
-	_, err = s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
+	_, err = s.EmissionsKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting network loss bundle should not fail")
 
 	// Prune records in the subsequent block
-	err = s.emissionsKeeper.PruneRecordsAfterRewards(s.ctx, topicId, block+1)
+	err = s.EmissionsKeeper().PruneRecordsAfterRewards(s.Ctx(), topicId, block+1)
 	s.Require().NoError(err, "Pruning records after rewards should not fail")
 
 	// Check if the records are pruned
-	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block, false)
+	inferences, err := s.EmissionsKeeper().GetInferencesAtBlock(s.Ctx(), topicId, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
 	s.Require().Empty(inferences.Inferences, "Must be pruned")
-	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
+	forecasts, err := s.EmissionsKeeper().GetForecastsAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting forecasts should not fail")
 	s.Require().Empty(forecasts.Forecasts, "Must be pruned")
-	lossbundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
+	lossbundles, err := s.EmissionsKeeper().GetReputerLossBundlesAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
 	s.Require().Empty(lossbundles.ReputerValueBundles, "Must be pruned")
-	networkBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
+	networkBundles, err := s.EmissionsKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting network loss bundle should not fail but be empty")
 	s.Require().Equal(topicId, networkBundles.TopicId, "topic id returned")
 	s.Require().Empty(networkBundles.InfererValues, "inferer values is empty")
@@ -3335,18 +3144,18 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 }
 
 func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicNoNonces() {
-	keeper := s.emissionsKeeper
+	k := s.EmissionsKeeper()
 	topicId1 := uint64(1)
 	blockHeightThreshold := int64(10)
-	err := keeper.DeleteUnfulfilledWorkerNonces(s.ctx, topicId1)
+	err := k.DeleteUnfulfilledWorkerNonces(s.Ctx(), topicId1)
 	s.Require().NoError(err, "Failed to delete unfulfilled worker nonces, topicId1")
 
 	// Call pruneWorkerNonces
-	err = s.emissionsKeeper.PruneWorkerNonces(s.ctx, topicId1, blockHeightThreshold)
+	err = s.EmissionsKeeper().PruneWorkerNonces(s.Ctx(), topicId1, blockHeightThreshold)
 	s.Require().ErrorIs(err, collections.ErrNotFound)
 
 	// Check remaining nonces
-	nonces, err := s.emissionsKeeper.GetUnfulfilledWorkerNonces(s.ctx, topicId1)
+	nonces, err := s.EmissionsKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topicId1)
 	s.Require().NoError(err)
 	s.Require().Empty(nonces.Nonces)
 }
@@ -3384,24 +3193,24 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
 			expectedNonces:       []*types.Nonce{{BlockHeight: 15}, {BlockHeight: 20}},
 		},
 	}
-	keeper := s.emissionsKeeper
+	k := s.EmissionsKeeper()
 	topicId1 := uint64(1)
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			err := keeper.DeleteUnfulfilledWorkerNonces(s.ctx, topicId1)
+			err := k.DeleteUnfulfilledWorkerNonces(s.Ctx(), topicId1)
 			s.Require().NoError(err, "Failed to delete unfulfilled worker nonces, topicId1")
 			// Set multiple worker nonces
 			for _, val := range tt.nonces {
-				err := keeper.AddWorkerNonce(s.ctx, topicId1, val)
+				err := k.AddWorkerNonce(s.Ctx(), topicId1, val)
 				s.Require().NoError(err, "Failed to add worker nonce, topicId1")
 			}
 
 			// Call pruneWorkerNonces
-			err = s.emissionsKeeper.PruneWorkerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
+			err = s.EmissionsKeeper().PruneWorkerNonces(s.Ctx(), topicId1, tt.blockHeightThreshold)
 			s.Require().NoError(err)
 
 			// Check remaining nonces
-			nonces, err := s.emissionsKeeper.GetUnfulfilledWorkerNonces(s.ctx, topicId1)
+			nonces, err := s.EmissionsKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topicId1)
 			s.Require().NoError(err)
 			// for loop nonces
 			for _, nonce := range nonces.Nonces {
@@ -3467,24 +3276,24 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 				{ReputerNonce: &types.Nonce{BlockHeight: 20}}},
 		},
 	}
-	keeper := s.emissionsKeeper
+	k := s.EmissionsKeeper()
 	topicId1 := uint64(1)
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			err := keeper.DeleteUnfulfilledReputerNonces(s.ctx, topicId1)
+			err := k.DeleteUnfulfilledReputerNonces(s.Ctx(), topicId1)
 			s.Require().NoError(err, "Failed to delete unfulfilled reputer nonces, topicId1")
 			// Set multiple reputer nonces
 			for _, val := range tt.nonces {
-				err := keeper.AddReputerNonce(s.ctx, topicId1, val.ReputerNonce)
+				err := k.AddReputerNonce(s.Ctx(), topicId1, val.ReputerNonce)
 				s.Require().NoError(err, "Failed to add reputer nonce, topicId1")
 			}
 
 			// Call PruneReputerNonces
-			err = s.emissionsKeeper.PruneReputerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
+			err = s.EmissionsKeeper().PruneReputerNonces(s.Ctx(), topicId1, tt.blockHeightThreshold)
 			s.Require().NoError(err)
 
 			// Check remaining nonces
-			nonces, err := s.emissionsKeeper.GetUnfulfilledReputerNonces(s.ctx, topicId1)
+			nonces, err := s.EmissionsKeeper().GetUnfulfilledReputerNonces(s.Ctx(), topicId1)
 			s.Require().NoError(err)
 			// for loop nonces
 			for _, nonce := range nonces.Nonces {
@@ -3498,7 +3307,7 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 }
 
 func (s *KeeperTestSuite) TestGetTargetWeight() {
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	if err != nil {
 		s.T().Fatalf("Failed to get parameters: %v", err)
 	}
@@ -3556,7 +3365,7 @@ func (s *KeeperTestSuite) TestGetTargetWeight() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			got, err := s.emissionsKeeper.GetTargetWeight(tc.topicStake, tc.topicFeeRevenue, tc.stakeImportance, tc.feeImportance)
+			got, err := s.EmissionsKeeper().GetTargetWeight(tc.topicStake, tc.topicFeeRevenue, tc.stakeImportance, tc.feeImportance)
 			if tc.expectError {
 				s.Require().Error(err, "Expected an error for case: %s", tc.name)
 			} else {
@@ -3569,38 +3378,38 @@ func (s *KeeperTestSuite) TestGetTargetWeight() {
 
 func (s *KeeperTestSuite) TestDeleteUnfulfilledWorkerNonces() {
 	topicId := uint64(1)
-	keeper := s.emissionsKeeper
+	k := s.EmissionsKeeper()
 	// Setup initial nonces
-	err := keeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 10})
+	err := k.AddWorkerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 10})
 	s.Require().NoError(err)
-	err = keeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 20})
+	err = k.AddWorkerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 20})
 	s.Require().NoError(err)
 
 	// Call DeleteUnfulfilledWorkerNonces
-	err = s.emissionsKeeper.DeleteUnfulfilledWorkerNonces(s.ctx, topicId)
+	err = s.EmissionsKeeper().DeleteUnfulfilledWorkerNonces(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Check that the nonces were removed
-	nonces, err := s.emissionsKeeper.GetUnfulfilledWorkerNonces(s.ctx, topicId)
+	nonces, err := s.EmissionsKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().Empty(nonces.Nonces)
 }
 
 func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
 	topicId := uint64(1)
-	keeper := s.emissionsKeeper
+	k := s.EmissionsKeeper()
 	// Setup initial nonces
-	err := keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 50})
+	err := k.AddReputerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 50})
 	s.Require().NoError(err)
-	err = keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 60})
+	err = k.AddReputerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: 60})
 	s.Require().NoError(err)
 
 	// Call DeleteUnfulfilledWorkerNonces
-	err = s.emissionsKeeper.DeleteUnfulfilledReputerNonces(s.ctx, topicId)
+	err = s.EmissionsKeeper().DeleteUnfulfilledReputerNonces(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Check that the nonces were removed
-	nonces, err := s.emissionsKeeper.GetUnfulfilledReputerNonces(s.ctx, topicId)
+	nonces, err := s.EmissionsKeeper().GetUnfulfilledReputerNonces(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().Empty(nonces.Nonces)
 }
@@ -3608,42 +3417,41 @@ func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
 // TestActiveTopicStakeRemoval tests that when a stake is removed from an active topic,
 // it correctly updates the stake
 func (s *KeeperTestSuite) TestActiveTopicStakeRemoval() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrs[0].String()
+	reputerAddr := s.Addrs()[0].String()
 	stakeAmount := cosmosMath.NewInt(500)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+	epochLength := int64(100)
 
 	// Create a topic and activate it
-	topic := s.mockTopic()
-	topic.Id = topicId
-	topic.EpochLength = 100
-	topic.WorkerSubmissionWindow = 100 // Make sure WorkerSubmissionWindow matches EpochLength to pass validation
-	err = keeper.SetTopic(ctx, topicId, topic)
-	s.Require().NoError(err)
-	err = keeper.ActivateTopic(ctx, topicId)
+	s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+	)
+	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Verify the topic is active
-	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	isActive, err := k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().True(isActive, "Topic should be active")
 
 	// Add some stake to the topic
-	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = k.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Verify the stake was added correctly
-	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	topicStake, err := k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount, topicStake, "Topic stake should match the added amount")
 
 	// Setup for stake removal
-	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+	err = k.SetStakeRemoval(ctx, types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               reputerAddr,
 		Amount:                stakeAmount,
@@ -3653,11 +3461,11 @@ func (s *KeeperTestSuite) TestActiveTopicStakeRemoval() {
 	s.Require().NoError(err)
 
 	// Remove stake
-	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	err = k.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check that the stake was removed correctly
-	topicStake, err = keeper.GetTopicStake(ctx, topicId)
+	topicStake, err = k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
 }
@@ -3665,43 +3473,42 @@ func (s *KeeperTestSuite) TestActiveTopicStakeRemoval() {
 // TestDelegateStakeRemoval tests that when a delegate stake is removed,
 // it correctly updates the stake
 func (s *KeeperTestSuite) TestDelegateStakeRemoval() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrsStr[1]
-	delegatorAddr := s.addrsStr[0]
+	reputerAddr := s.AddrsStr()[1]
+	delegatorAddr := s.AddrsStr()[0]
 	stakeAmount := cosmosMath.NewInt(500)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+	epochLength := int64(100)
 
 	// Create a topic and activate it
-	topic := s.mockTopic()
-	topic.Id = topicId
-	topic.EpochLength = 100
-	topic.WorkerSubmissionWindow = 100 // Make sure WorkerSubmissionWindow matches EpochLength to pass validation
-	err = keeper.SetTopic(ctx, topicId, topic)
-	s.Require().NoError(err)
-	err = keeper.ActivateTopic(ctx, topicId)
+	s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+	)
+	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Verify the topic is active
-	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	isActive, err := k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().True(isActive, "Topic should be active")
 
 	// Add some delegate stake to the topic
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
+	err = k.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Verify the stake was added correctly
-	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	topicStake, err := k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount, topicStake, "Topic stake should match the added amount")
 
 	// Setup for delegate stake removal
-	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+	err = k.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
 		TopicId:               topicId,
 		Delegator:             delegatorAddr,
 		Reputer:               reputerAddr,
@@ -3712,11 +3519,11 @@ func (s *KeeperTestSuite) TestDelegateStakeRemoval() {
 	s.Require().NoError(err)
 
 	// Remove delegate stake
-	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, stakeAmount)
+	err = k.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check that the stake was removed correctly
-	topicStake, err = keeper.GetTopicStake(ctx, topicId)
+	topicStake, err = k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
 }
@@ -3724,40 +3531,39 @@ func (s *KeeperTestSuite) TestDelegateStakeRemoval() {
 // TestInactiveTopicStakeRemoval tests that when a stake is removed from an inactive topic,
 // it still correctly updates the stake but does not affect the total weight calculations
 func (s *KeeperTestSuite) TestInactiveTopicStakeRemoval() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrs[0].String()
+	reputerAddr := s.Addrs()[0].String()
 	stakeAmount := cosmosMath.NewInt(500)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+	epochLength := int64(100)
 
 	// Create a topic but do NOT activate it
-	topic := s.mockTopic()
-	topic.Id = topicId
-	topic.EpochLength = 100
-	topic.WorkerSubmissionWindow = 100 // Make sure WorkerSubmissionWindow matches EpochLength to pass validation
-	err = keeper.SetTopic(ctx, topicId, topic)
-	s.Require().NoError(err)
+	s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+	)
 
 	// Verify the topic is not active
-	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	isActive, err := k.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().False(isActive, "Topic should not be active")
 
 	// Add some stake to the topic
-	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = k.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Verify the stake was added correctly
-	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	topicStake, err := k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount, topicStake, "Topic stake should match the added amount")
 
 	// Setup for stake removal
-	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+	err = k.SetStakeRemoval(ctx, types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               reputerAddr,
 		Amount:                stakeAmount,
@@ -3767,11 +3573,11 @@ func (s *KeeperTestSuite) TestInactiveTopicStakeRemoval() {
 	s.Require().NoError(err)
 
 	// Remove stake first (this should work even for inactive topics)
-	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	err = k.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check that the stake was removed correctly
-	topicStake, err = keeper.GetTopicStake(ctx, topicId)
+	topicStake, err = k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
 }
@@ -3779,49 +3585,48 @@ func (s *KeeperTestSuite) TestInactiveTopicStakeRemoval() {
 // TestTopicWeightRecalculationAfterStakeRemoval tests that when a stake is removed,
 // the topic weight is recalculated correctly based on the remaining stake
 func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	reputerAddr := s.addrs[0].String()
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := uint64(2)
+	reputerAddr := s.Addrs()[0].String()
 	stakeAmount := cosmosMath.NewInt(1000)
 	feeRevenue := cosmosMath.NewInt(100)
-	moduleParams, err := keeper.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	s.Require().NoError(err)
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+	epochLength := int64(100)
 
 	// Create and activate topic
-	topic := s.mockTopic()
-	topic.Id = topicId
-	topic.EpochLength = 100
-	topic.WorkerSubmissionWindow = 100
-	err = keeper.SetTopic(ctx, topicId, topic)
-	s.Require().NoError(err)
-	err = keeper.ActivateTopic(ctx, topicId)
+	s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+	)
+	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Add stake and fee revenue
-	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = k.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
 	s.Require().NoError(err)
 
 	// Get initial weight and set it
-	initialWeight, _, err := keeper.GetCurrentTopicWeight(
+	initialWeight, _, err := k.GetCurrentTopicWeight(
 		ctx,
 		topicId,
-		topic.EpochLength,
+		epochLength,
 		moduleParams.TopicRewardAlpha,
 		moduleParams.TopicRewardStakeImportance,
 		moduleParams.TopicRewardFeeRevenueImportance,
 		moduleParams.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
-	err = keeper.SetPreviousTopicWeight(ctx, topicId, initialWeight)
+	err = k.SetPreviousTopicWeight(ctx, topicId, initialWeight)
 	s.Require().NoError(err)
 
 	// Remove half the stake
-	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+	err = k.SetStakeRemoval(ctx, types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               reputerAddr,
 		Amount:                stakeAmount.QuoRaw(2),
@@ -3829,16 +3634,16 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
 		BlockRemovalCompleted: endBlock,
 	})
 	s.Require().NoError(err)
-	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount.QuoRaw(2))
+	err = k.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount.QuoRaw(2))
 	s.Require().NoError(err)
 
 	// Verify weight and stake changes
-	newWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	newWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().False(noPrior, "Should still have a prior weight")
 	s.Require().True(newWeight.Lt(initialWeight), "New weight should be less than initial weight")
 
-	remainingStake, err := keeper.GetTopicStake(ctx, topicId)
+	remainingStake, err := k.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount.QuoRaw(2), remainingStake, "Remaining stake should be half of initial stake")
 }
@@ -3846,16 +3651,16 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
 // TestTopicWeightRecalculationWithMultipleTopics tests that when stakes are removed,
 // the weights of multiple topics are recalculated correctly and the total sum is updated
 func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	reputerAddr := s.addrs[0].String()
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	reputerAddr := s.Addrs()[0].String()
 
 	// Set up test parameters
 	stakeAmount1 := cosmosMath.NewInt(1000)
 	stakeAmount2 := cosmosMath.NewInt(2000)
+	epochLength := int64(100)
 	feeRevenue1 := cosmosMath.NewInt(100)
 	feeRevenue2 := cosmosMath.NewInt(200)
-	topicId1, topicId2 := uint64(1), uint64(2)
 
 	// Set up params
 	params := types.DefaultParams()
@@ -3864,37 +3669,34 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
 	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
 	params.TopicRewardStakeImportance = alloraMath.OneDec()
 	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Create and activate both topics
-	for id, epochLength := range map[uint64]int64{topicId1: 100, topicId2: 100} {
-		topic := s.mockTopic()
-		topic.Id = id
-		topic.EpochLength = epochLength
-		topic.WorkerSubmissionWindow = epochLength
-		err = keeper.SetTopic(ctx, id, topic)
-		s.Require().NoError(err)
-		err = keeper.ActivateTopic(ctx, id)
-		s.Require().NoError(err)
-	}
+	topicId1, topicId2 :=
+		s.CreateTopic(alloratestutil.WithEpochLength(epochLength)),
+		s.CreateTopic(alloratestutil.WithEpochLength(epochLength))
+	err = k.ActivateTopic(ctx, topicId1)
+	s.Require().NoError(err)
+	err = k.ActivateTopic(ctx, topicId2)
+	s.Require().NoError(err)
 
 	// Add stake and fee revenue to both topics
-	err = keeper.AddReputerStake(ctx, topicId1, reputerAddr, stakeAmount1)
+	err = k.AddReputerStake(ctx, topicId1, reputerAddr, stakeAmount1)
 	s.Require().NoError(err)
-	err = keeper.AddReputerStake(ctx, topicId2, reputerAddr, stakeAmount2)
+	err = k.AddReputerStake(ctx, topicId2, reputerAddr, stakeAmount2)
 	s.Require().NoError(err)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId1, feeRevenue1)
+	err = k.AddTopicFeeRevenue(ctx, topicId1, feeRevenue1)
 	s.Require().NoError(err)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId2, feeRevenue2)
+	err = k.AddTopicFeeRevenue(ctx, topicId2, feeRevenue2)
 	s.Require().NoError(err)
 
 	// Calculate and set initial weights for both topics
 	for id := range map[uint64]struct{}{topicId1: {}, topicId2: {}} {
-		weight, _, err := keeper.GetCurrentTopicWeight(
+		weight, _, err := k.GetCurrentTopicWeight(
 			ctx,
 			id,
-			100, // epochLength
+			epochLength, // epochLength
 			params.TopicRewardAlpha,
 			params.TopicRewardStakeImportance,
 			params.TopicRewardFeeRevenueImportance,
@@ -3902,18 +3704,18 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
 		)
 		s.Require().NoError(err)
 		s.Require().True(weight.Gt(params.MinTopicWeight), "Initial weight should be greater than minimum weight")
-		err = keeper.SetPreviousTopicWeight(ctx, id, weight)
+		err = k.SetPreviousTopicWeight(ctx, id, weight)
 		s.Require().NoError(err)
 	}
 
 	// Get total sum before stake removal
-	totalSumBefore, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	totalSumBefore, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 
 	// Remove stake from first topic
 	startBlock := ctx.BlockHeight()
 	endBlock := startBlock + params.RemoveStakeDelayWindow
-	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+	err = k.SetStakeRemoval(ctx, types.StakeRemovalInfo{
 		TopicId:               topicId1,
 		Reputer:               reputerAddr,
 		Amount:                stakeAmount1,
@@ -3921,19 +3723,19 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
 		BlockRemovalCompleted: endBlock,
 	})
 	s.Require().NoError(err)
-	err = keeper.RemoveReputerStake(ctx, endBlock, topicId1, reputerAddr, stakeAmount1)
+	err = k.RemoveReputerStake(ctx, endBlock, topicId1, reputerAddr, stakeAmount1)
 	s.Require().NoError(err)
 
 	// Verify total sum was updated correctly
-	totalSumAfter, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	totalSumAfter, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(totalSumAfter.Lt(totalSumBefore), "Total sum should decrease after stake removal")
 }
 
 func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicId() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
-	reputer := s.addrsStr[2]
+	k := s.EmissionsKeeper()
+	ctx := s.Ctx()
+	reputer := s.AddrsStr()[2]
 	topicId := uint64(1)
 
 	// Create a stake removal info
@@ -3966,9 +3768,9 @@ func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicId() {
 }
 
 func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicIdNotFound() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
-	reputer := s.addrsStr[2]
+	k := s.EmissionsKeeper()
+	ctx := s.Ctx()
+	reputer := s.AddrsStr()[2]
 	topicId := uint64(1)
 
 	_, found, err := k.GetStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
@@ -3977,11 +3779,11 @@ func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicIdNotFound()
 }
 
 func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
-	delegator := s.addrsStr[5]
-	reputer := s.addrsStr[2]
-	reputer2 := s.addrsStr[3]
+	k := s.EmissionsKeeper()
+	ctx := s.Ctx()
+	delegator := s.AddrsStr()[5]
+	reputer := s.AddrsStr()[2]
+	reputer2 := s.AddrsStr()[3]
 	topicId := uint64(1)
 
 	// Create a stake removal info
@@ -4016,10 +3818,10 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 }
 
 func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAndTopicIdNotFound() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := s.EmissionsKeeper()
+	ctx := s.Ctx()
 	delegator := "delegator"
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr()[2]
 	topicId := uint64(1)
 
 	_, found, err := k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
@@ -4028,10 +3830,10 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 }
 
 func (s *KeeperTestSuite) TestAppendInference() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	// Topic IDs
-	topicId := s.CreateOneTopic(10800)
+	topicId := s.CreateTopic()
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
 
@@ -4177,10 +3979,10 @@ func getNewAddress() string {
 }
 
 func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	// Topic IDs
-	topicId := s.CreateOneTopic(10801)
+	topicId := s.CreateTopic(alloratestutil.WithEpochLength(10801), alloratestutil.WithGroundTruthLag(10801))
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
 
@@ -4344,17 +4146,17 @@ func mockUninitializedParams() types.Params {
 }
 
 func (s *KeeperTestSuite) TestAppendForecast() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
 
-	worker1 := s.addrsStr[0]
-	worker2 := s.addrsStr[1]
-	worker3 := s.addrsStr[2]
-	worker4 := s.addrsStr[3]
-	worker5 := s.addrsStr[4]
+	worker1 := s.AddrsStr()[0]
+	worker2 := s.AddrsStr()[1]
+	worker3 := s.AddrsStr()[2]
+	worker4 := s.AddrsStr()[3]
+	worker5 := s.AddrsStr()[4]
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
@@ -4481,17 +4283,17 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 
 func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {
 
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
 
-	worker1 := s.addrsStr[0]
-	worker2 := s.addrsStr[1]
-	worker3 := s.addrsStr[2]
-	worker4 := s.addrsStr[3]
-	worker5 := s.addrsStr[4]
+	worker1 := s.AddrsStr()[0]
+	worker2 := s.AddrsStr()[1]
+	worker3 := s.AddrsStr()[2]
+	worker4 := s.AddrsStr()[3]
+	worker5 := s.AddrsStr()[4]
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
@@ -4628,20 +4430,20 @@ func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {
 }
 
 func (s *KeeperTestSuite) TestAppendReputerLoss() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
 	blockHeight := int64(10)
 	nonce := types.Nonce{BlockHeight: blockHeight}
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
 	}
 
-	reputer1 := s.addrsStr[0]
-	reputer2 := s.addrsStr[1]
-	reputer3 := s.addrsStr[2]
-	reputer4 := s.addrsStr[3]
-	reputer5 := s.addrsStr[4]
+	reputer1 := s.AddrsStr()[0]
+	reputer2 := s.AddrsStr()[1]
+	reputer3 := s.AddrsStr()[2]
+	reputer4 := s.AddrsStr()[3]
+	reputer5 := s.AddrsStr()[4]
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer2, Score: alloraMath.NewDecFromInt64(90)}
@@ -4678,11 +4480,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(&valueBundleReputer1, s.privKeys[0])
+	signature := s.signValueBundle(&valueBundleReputer1, s.PrivKeys()[0])
 	reputerValueBundle1 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer1,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[0],
+		Pubkey:      s.PubKeyHexStr()[0],
 	}
 	valueBundleReputer2 := types.ValueBundle{
 		Reputer:                       reputer2,
@@ -4698,11 +4500,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer2, s.privKeys[1])
+	signature = s.signValueBundle(&valueBundleReputer2, s.PrivKeys()[1])
 	reputerValueBundle2 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer2,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[1],
+		Pubkey:      s.PubKeyHexStr()[1],
 	}
 	valueBundleReputer3 := types.ValueBundle{
 		Reputer:                       reputer3,
@@ -4718,11 +4520,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer3, s.privKeys[2])
+	signature = s.signValueBundle(&valueBundleReputer3, s.PrivKeys()[2])
 	reputerValueBundle3 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer3,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[2],
+		Pubkey:      s.PubKeyHexStr()[2],
 	}
 
 	allReputerLosses := types.ReputerValueBundles{
@@ -4754,11 +4556,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer4, s.privKeys[3])
+	signature = s.signValueBundle(&valueBundleReputer4, s.PrivKeys()[3])
 	reputerValueBundle4 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer4,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[3],
+		Pubkey:      s.PubKeyHexStr()[3],
 	}
 
 	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &reputerValueBundle4)
@@ -4781,11 +4583,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer5, s.privKeys[4])
+	signature = s.signValueBundle(&valueBundleReputer5, s.PrivKeys()[4])
 	reputerValueBundle5 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer5,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[4],
+		Pubkey:      s.PubKeyHexStr()[4],
 	}
 	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &reputerValueBundle5)
 	s.Require().NoError(err)
@@ -4795,20 +4597,20 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 }
 
 func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
 	blockHeight := int64(10)
 	nonce := types.Nonce{BlockHeight: blockHeight}
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
 	}
 
-	reputer1 := s.addrsStr[0]
-	reputer2 := s.addrsStr[1]
-	reputer3 := s.addrsStr[2]
-	reputer4 := s.addrsStr[3]
-	reputer5 := s.addrsStr[4]
+	reputer1 := s.AddrsStr()[0]
+	reputer2 := s.AddrsStr()[1]
+	reputer3 := s.AddrsStr()[2]
+	reputer4 := s.AddrsStr()[3]
+	reputer5 := s.AddrsStr()[4]
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer2, Score: alloraMath.NewDecFromInt64(90)}
@@ -4845,11 +4647,11 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(&valueBundleReputer1, s.privKeys[0])
+	signature := s.signValueBundle(&valueBundleReputer1, s.PrivKeys()[0])
 	reputerValueBundle1 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer1,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[0],
+		Pubkey:      s.PubKeyHexStr()[0],
 	}
 	valueBundleReputer2 := types.ValueBundle{
 		Reputer:                       reputer2,
@@ -4865,11 +4667,11 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer2, s.privKeys[1])
+	signature = s.signValueBundle(&valueBundleReputer2, s.PrivKeys()[1])
 	reputerValueBundle2 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer2,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[1],
+		Pubkey:      s.PubKeyHexStr()[1],
 	}
 	valueBundleReputer3 := types.ValueBundle{
 		Reputer:                       reputer3,
@@ -4885,11 +4687,11 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer3, s.privKeys[2])
+	signature = s.signValueBundle(&valueBundleReputer3, s.PrivKeys()[2])
 	reputerValueBundle3 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer3,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[2],
+		Pubkey:      s.PubKeyHexStr()[2],
 	}
 	valueBundleReputer4 := types.ValueBundle{
 		Reputer:                       reputer4,
@@ -4905,11 +4707,11 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer4, s.privKeys[3])
+	signature = s.signValueBundle(&valueBundleReputer4, s.PrivKeys()[3])
 	reputerValueBundle4 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer4,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[3],
+		Pubkey:      s.PubKeyHexStr()[3],
 	}
 	valueBundleReputer5 := types.ValueBundle{
 		Reputer:                       reputer5,
@@ -4925,11 +4727,11 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature = s.signValueBundle(&valueBundleReputer5, s.privKeys[4])
+	signature = s.signValueBundle(&valueBundleReputer5, s.PrivKeys()[4])
 	reputerValueBundle5 := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer5,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[4],
+		Pubkey:      s.PubKeyHexStr()[4],
 	}
 
 	allReputerLosses := types.ReputerValueBundles{
@@ -4973,8 +4775,8 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 
 func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	// Initialize the test environment
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	require := s.Require()
 
 	// Define test data
@@ -4989,9 +4791,11 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	require.NoError(err, "Setting a new topic should not fail")
 
 	// Create and activate a topic
-	topic := s.mockTopic()
+	topic := *s.MockTopic()
+	topic.Id = 2
 	topic.EpochLength = 5
 	topic.WorkerSubmissionWindow = 5
+	topic.GroundTruthLag = 5
 	err = k.SetTopic(ctx, topic.Id, topic)
 	require.NoError(err, "Setting a new topic should not fail")
 
@@ -5026,13 +4830,13 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 
 func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLengths() {
 	// Initialize the test environment
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	require := s.Require()
 
 	// Define test data
-	topicId1 := uint64(1)
-	topicId2 := uint64(2)
+	topicId1 := uint64(2)
+	topicId2 := uint64(3)
 	block := int64(100)
 	initialRevenue := cosmosMath.NewInt(1000000) // 0.001 in Int representation (assuming 6 decimal places)
 
@@ -5042,17 +4846,19 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 	require.NoError(err, "Setting a new topic should not fail")
 
 	// Create and activate topics
-	topic1 := s.mockTopic()
+	topic1 := *s.MockTopic()
 	topic1.Id = topicId1
 	topic1.EpochLength = 5
 	topic1.WorkerSubmissionWindow = 5
+	topic1.GroundTruthLag = 5
 	err = k.SetTopic(ctx, topicId1, topic1)
 	require.NoError(err, "Setting a new topic should not fail")
 
-	topic2 := s.mockTopic()
+	topic2 := *s.MockTopic()
 	topic2.Id = topicId2
 	topic2.EpochLength = 10
 	topic2.WorkerSubmissionWindow = 10
+	topic2.GroundTruthLag = 10
 	err = k.SetTopic(ctx, topicId2, topic2)
 	require.NoError(err, "Setting a new topic should not fail")
 
@@ -5110,10 +4916,10 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenueWithTwoTopicsDifferentEpochLeng
 }
 
 func (s *KeeperTestSuite) TestActiveInfererFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	inferer := s.addrsStr[0]
+	inferer := s.AddrsStr()[0]
 
 	err := k.AddActiveInferer(ctx, topicId, inferer)
 	s.Require().NoError(err)
@@ -5129,10 +4935,10 @@ func (s *KeeperTestSuite) TestActiveInfererFunctions() {
 }
 
 func (s *KeeperTestSuite) TestActiveForecasterFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	forecaster := s.addrsStr[1]
+	forecaster := s.AddrsStr()[1]
 
 	err := k.AddActiveForecaster(ctx, topicId, forecaster)
 	s.Require().NoError(err)
@@ -5155,10 +4961,10 @@ func (s *KeeperTestSuite) TestActiveForecasterFunctions() {
 }
 
 func (s *KeeperTestSuite) TestLowestScoreEmaFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	address := s.addrsStr[2]
+	address := s.AddrsStr()[2]
 
 	lowestInfererScore := types.Score{
 		TopicId:     topicId,
@@ -5190,10 +4996,10 @@ func (s *KeeperTestSuite) TestLowestScoreEmaFunctions() {
 }
 
 func (s *KeeperTestSuite) TestActiveReputerFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputer := s.addrsStr[3]
+	reputer := s.AddrsStr()[3]
 
 	err := k.AddActiveReputer(ctx, topicId, reputer)
 	s.Require().NoError(err)
@@ -5216,15 +5022,15 @@ func (s *KeeperTestSuite) TestActiveReputerFunctions() {
 }
 
 func (s *KeeperTestSuite) TestResetFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 
-	err := k.AddActiveReputer(ctx, topicId, s.addrsStr[0])
+	err := k.AddActiveReputer(ctx, topicId, s.AddrsStr()[0])
 	s.Require().NoError(err)
-	err = k.AddActiveInferer(ctx, topicId, s.addrsStr[1])
+	err = k.AddActiveInferer(ctx, topicId, s.AddrsStr()[1])
 	s.Require().NoError(err)
-	err = k.AddActiveForecaster(ctx, topicId, s.addrsStr[2])
+	err = k.AddActiveForecaster(ctx, topicId, s.AddrsStr()[2])
 	s.Require().NoError(err)
 
 	err = k.ResetActiveReputersForTopic(ctx, topicId)
@@ -5250,10 +5056,10 @@ func (s *KeeperTestSuite) TestResetFunctions() {
 }
 
 func (s *KeeperTestSuite) TestLowestReputerScoreEmaFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	address := s.addrsStr[4]
+	address := s.AddrsStr()[4]
 
 	lowestReputerScore := types.Score{
 		TopicId:     topicId,
@@ -5271,10 +5077,10 @@ func (s *KeeperTestSuite) TestLowestReputerScoreEmaFunctions() {
 }
 
 func (s *KeeperTestSuite) TestRemoveReputerLoss() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
-	reputer := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
+	reputer := s.AddrsStr()[0]
 
 	// Create a reputer loss bundle
 	valueBundle := &types.ValueBundle{
@@ -5293,11 +5099,11 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(valueBundle, s.privKeys[0])
+	signature := s.signValueBundle(valueBundle, s.PrivKeys()[0])
 	reputerLossBundle := types.ReputerValueBundle{
 		ValueBundle: valueBundle,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[0],
+		Pubkey:      s.PubKeyHexStr()[0],
 	}
 
 	// Insert the reputer loss bundle
@@ -5319,10 +5125,10 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 }
 
 func (s *KeeperTestSuite) TestRemoveForecast() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
-	forecaster := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
+	forecaster := s.AddrsStr()[0]
 
 	// Create a forecast
 	forecast := types.Forecast{
@@ -5361,10 +5167,10 @@ func (s *KeeperTestSuite) TestRemoveForecast() {
 }
 
 func (s *KeeperTestSuite) TestRemoveInference() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
-	inferer := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
+	inferer := s.AddrsStr()[0]
 
 	// Create an inference
 	inference := types.Inference{
@@ -5396,14 +5202,14 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 
 func (s *KeeperTestSuite) TestGetCountInfererInclusionsInTopic() {
 	// Initialize the test environment
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	require := s.Require()
 
 	// Define test data
 	topicId := uint64(1)
-	inferer1 := s.addrsStr[0]
-	inferer2 := s.addrsStr[1]
+	inferer1 := s.AddrsStr()[0]
+	inferer2 := s.AddrsStr()[1]
 	err := k.IncrementCountInfererInclusionsInTopic(ctx, topicId, inferer1)
 	require.NoError(err)
 	err = k.IncrementCountInfererInclusionsInTopic(ctx, topicId, inferer1)
@@ -5422,14 +5228,14 @@ func (s *KeeperTestSuite) TestGetCountInfererInclusionsInTopic() {
 
 func (s *KeeperTestSuite) TestGetCountForecasterInclusionsInTopic() {
 	// Initialize the test environment
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	require := s.Require()
 
 	// Define test data
 	topicId := uint64(1)
-	forecaster1 := s.addrsStr[0]
-	forecaster2 := s.addrsStr[1]
+	forecaster1 := s.AddrsStr()[0]
+	forecaster2 := s.AddrsStr()[1]
 	err := k.IncrementCountForecasterInclusionsInTopic(ctx, topicId, forecaster1)
 	require.NoError(err)
 	err = k.IncrementCountForecasterInclusionsInTopic(ctx, topicId, forecaster1)
@@ -5447,9 +5253,9 @@ func (s *KeeperTestSuite) TestGetCountForecasterInclusionsInTopic() {
 }
 
 func (s *KeeperTestSuite) TestScoreLimiting() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
-	topicId := s.CreateOneTopic(10800)
+	k := s.EmissionsKeeper()
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
 	blockHeight := int64(10)
 
 	params := types.DefaultParams()
@@ -5462,7 +5268,7 @@ func (s *KeeperTestSuite) TestScoreLimiting() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     s.addrsStr[i],
+			Address:     s.AddrsStr()[i],
 			Score:       alloraMath.NewDecFromInt64(int64(90 + i)),
 		}
 		err := k.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
@@ -5474,14 +5280,14 @@ func (s *KeeperTestSuite) TestScoreLimiting() {
 	s.Require().Len(scores.Scores, 6, "Should keep MaxSamplesToScaleScores * MaxTopInferersToReward scores")
 
 	for i, score := range scores.Scores {
-		expectedWorker := s.addrsStr[i+2]
+		expectedWorker := s.AddrsStr()[i+2]
 		s.Require().Equal(expectedWorker, score.Address)
 	}
 }
 
 func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 	// Create one topic
-	topicId := s.CreateOneTopic(10800)
+	topicId := s.CreateTopic()
 	blockHeight := int64(1)
 
 	// Create specific inferences for testing
@@ -5490,33 +5296,33 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 			Value:       alloraMath.NewDecFromInt64(10),
-			Inferer:     s.addrsStr[0],
+			Inferer:     s.AddrsStr()[0],
 		},
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 			Value:       alloraMath.NewDecFromInt64(11),
-			Inferer:     s.addrsStr[1],
+			Inferer:     s.AddrsStr()[1],
 		},
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 			Value:       alloraMath.NewDecFromInt64(12),
-			Inferer:     s.addrsStr[2],
+			Inferer:     s.AddrsStr()[2],
 		},
 	}
 
 	inferencesWrapper := types.Inferences{Inferences: inferences}
-	err := s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, blockHeight, inferencesWrapper)
+	err := s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, blockHeight, inferencesWrapper)
 	s.Require().NoError(err)
 	// Test the update function
-	err = s.emissionsKeeper.UpdateNetworkInferencesOutlierMetrics(s.ctx, topicId, blockHeight)
+	err = s.EmissionsKeeper().UpdateNetworkInferencesOutlierMetrics(s.Ctx(), topicId, blockHeight)
 	s.Require().NoError(err)
 
 	// Verify results
-	mad, err := s.emissionsKeeper.GetMadInferences(s.ctx, topicId)
+	mad, err := s.EmissionsKeeper().GetMadInferences(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	median, err := s.emissionsKeeper.GetLastMedianInferences(s.ctx, topicId)
+	median, err := s.EmissionsKeeper().GetLastMedianInferences(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	// Verify expected values
 	s.Require().Equal(alloraMath.NewDecFromInt64(1), mad)
@@ -5525,15 +5331,15 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 	// Modify a copy of the previous inferences and run it again
 	inferencesWrapper.Inferences[0].Value = alloraMath.NewDecFromInt64(100)
 	inferencesWrapper.Inferences[1].Value = alloraMath.NewDecFromInt64(50)
-	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, blockHeight, inferencesWrapper)
+	err = s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, blockHeight, inferencesWrapper)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.UpdateNetworkInferencesOutlierMetrics(s.ctx, topicId, blockHeight)
+	err = s.EmissionsKeeper().UpdateNetworkInferencesOutlierMetrics(s.Ctx(), topicId, blockHeight)
 	s.Require().NoError(err)
 
-	mad, err = s.emissionsKeeper.GetMadInferences(s.ctx, topicId)
+	mad, err = s.EmissionsKeeper().GetMadInferences(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	median, err = s.emissionsKeeper.GetLastMedianInferences(s.ctx, topicId)
+	median, err = s.EmissionsKeeper().GetLastMedianInferences(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	s.Require().Equal(alloraMath.MustNewDecFromString("8.4"), mad)
@@ -5541,14 +5347,14 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 }
 
 func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
-	topicId := s.CreateOneTopic(10800)
+	topicId := s.CreateTopic()
 
 	// Ensure param is set to 11
 	params := types.DefaultParams()
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("11")
 
 	// Set the maximum number of unfulfilled worker nonces via the SetParams method
-	err := s.emissionsKeeper.SetParams(s.ctx, params)
+	err := s.EmissionsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
 
 	testCases := []struct {
@@ -5561,9 +5367,9 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 		{
 			name: "filter with median=10, mad=1",
 			setupMetrics: func() {
-				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				err := s.EmissionsKeeper().SetLastMedianInferences(s.Ctx(), topicId, alloraMath.NewDecFromInt64(10))
 				s.Require().NoError(err)
-				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(1))
+				err = s.EmissionsKeeper().SetMadInferences(s.Ctx(), topicId, alloraMath.NewDecFromInt64(1))
 				s.Require().NoError(err)
 			},
 			inferences: types.Inferences{
@@ -5585,9 +5391,9 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 		{
 			name: "filter with median=100, mad=10",
 			setupMetrics: func() {
-				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(100))
+				err := s.EmissionsKeeper().SetLastMedianInferences(s.Ctx(), topicId, alloraMath.NewDecFromInt64(100))
 				s.Require().NoError(err)
-				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				err = s.EmissionsKeeper().SetMadInferences(s.Ctx(), topicId, alloraMath.NewDecFromInt64(10))
 				s.Require().NoError(err)
 			},
 			inferences: types.Inferences{
@@ -5609,9 +5415,9 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 		{
 			name: "zero mad - should return all inferences",
 			setupMetrics: func() {
-				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				err := s.EmissionsKeeper().SetLastMedianInferences(s.Ctx(), topicId, alloraMath.NewDecFromInt64(10))
 				s.Require().NoError(err)
-				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.ZeroDec())
+				err = s.EmissionsKeeper().SetMadInferences(s.Ctx(), topicId, alloraMath.ZeroDec())
 				s.Require().NoError(err)
 			},
 			inferences: types.Inferences{
@@ -5629,9 +5435,9 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 		{
 			name: "zero last_median - should return all inferences",
 			setupMetrics: func() {
-				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.ZeroDec())
+				err := s.EmissionsKeeper().SetLastMedianInferences(s.Ctx(), topicId, alloraMath.ZeroDec())
 				s.Require().NoError(err)
-				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(1))
+				err = s.EmissionsKeeper().SetMadInferences(s.Ctx(), topicId, alloraMath.NewDecFromInt64(1))
 				s.Require().NoError(err)
 			},
 			inferences: types.Inferences{
@@ -5654,7 +5460,7 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 		s.Run(tc.name, func() {
 			tc.setupMetrics()
 
-			filtered, err := s.emissionsKeeper.FilterOutlierResistantInferences(s.ctx, topicId, tc.inferences)
+			filtered, err := s.EmissionsKeeper().FilterOutlierResistantInferences(s.Ctx(), topicId, tc.inferences)
 			s.Require().NoError(err)
 
 			s.Require().Len(filtered.Inferences, tc.expectedCount)
@@ -5667,10 +5473,10 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 }
 
 func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
-	worker := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
+	worker := s.AddrsStr()[0]
 	blockHeight := int64(10)
 
 	// Set initial EMA score for the topic
@@ -5705,10 +5511,10 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 }
 
 func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendForecast() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
-	worker := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
+	worker := s.AddrsStr()[0]
 	blockHeight := int64(10)
 
 	// Set initial EMA score for the topic
@@ -5723,7 +5529,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendForecast() {
 		Forecaster:  worker,
 		ForecastElements: []*types.ForecastElement{
 			{
-				Inferer: s.addrsStr[1],
+				Inferer: s.AddrsStr()[1],
 				Value:   alloraMath.MustNewDecFromString("0.52"),
 			},
 		},
@@ -5747,10 +5553,10 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendForecast() {
 }
 
 func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
-	reputer := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
+	reputer := s.AddrsStr()[0]
 	blockHeight := int64(10)
 
 	// Set initial EMA score for the topic
@@ -5775,11 +5581,11 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(valueBundle, s.privKeys[0])
+	signature := s.signValueBundle(valueBundle, s.PrivKeys()[0])
 	reputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: valueBundle,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[0],
+		Pubkey:      s.PubKeyHexStr()[0],
 	}
 
 	topic, err := k.GetTopic(ctx, topicId)
@@ -5800,27 +5606,27 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 }
 
 func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic()
 
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 4
 	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
-	//nolint: gosec
+	// nolint: gosec
 	for i := int64(0); i < int64(params.MaxTopInferersToReward); i++ {
 		score := types.Score{
 			TopicId:     topicId,
-			Address:     s.addrsStr[i],
+			Address:     s.AddrsStr()[i],
 			BlockHeight: 1,
 			Score:       alloraMath.NewDecFromInt64(90 + i),
 		}
-		err := k.SetInfererScoreEma(ctx, topicId, s.addrsStr[i], score)
+		err := k.SetInfererScoreEma(ctx, topicId, s.AddrsStr()[i], score)
 		s.Require().NoError(err)
 
-		err = k.AddActiveInferer(ctx, topicId, s.addrsStr[i])
+		err = k.AddActiveInferer(ctx, topicId, s.AddrsStr()[i])
 		s.Require().NoError(err)
 
 		if i == 0 {
@@ -5838,7 +5644,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: 2,
-		Inferer:     s.addrsStr[9], // Using a different address
+		Inferer:     s.AddrsStr()[9], // Using a different address
 		Value:       alloraMath.NewDecFromInt64(100),
 		ExtraData:   nil,
 		Proof:       "",
@@ -5853,28 +5659,33 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 	s.Require().NoError(err)
 
 	// Verify score remains at initial value
-	score, err := k.GetInfererScoreEma(ctx, topicId, s.addrsStr[9])
+	score, err := k.GetInfererScoreEma(ctx, topicId, s.AddrsStr()[9])
 	s.Require().NoError(err)
 	s.Require().Equal(initialScore, score.Score)
 }
 
 func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topic := s.mockTopic()
-	topic.EpochLastEnded = 10000
-	topic.EpochLength = 1000
-	topic.GroundTruthLag = 1000
-	s.Require().NoError(s.emissionsKeeper.SetTopic(ctx, topic.Id, topic))
-	worker := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+
+	epochLength := int64(1000)
+	groundTruthLag := int64(1000)
+
+	topicId := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithGroundTruthLag(groundTruthLag),
+		alloratestutil.WithInitialRegret("0.5"),
+		alloratestutil.WithEpochLastEnded(10000),
+	)
+	worker := s.AddrsStr()[0]
 	blockHeight := int64(10000)
 
 	// Set initial EMA score for the topic
 	initialScore := alloraMath.MustNewDecFromString("50")
-	s.Require().NoError(k.SetTopicInitialInfererEmaScore(ctx, topic.Id, initialScore))
+	s.Require().NoError(k.SetTopicInitialInfererEmaScore(ctx, topicId, initialScore))
 
-	s.Require().NoError(k.SetInfererScoreEma(ctx, topic.Id, worker, types.Score{
-		TopicId:     topic.Id,
+	s.Require().NoError(k.SetInfererScoreEma(ctx, topicId, worker, types.Score{
+		TopicId:     topicId,
 		BlockHeight: 5000,
 		Address:     worker,
 		Score:       alloraMath.MustNewDecFromString("100"),
@@ -5882,7 +5693,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 
 	// Create and append a new inference
 	inference := &types.Inference{
-		TopicId:     topic.Id,
+		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Value:       alloraMath.MustNewDecFromString("0.52"),
 		Inferer:     worker,
@@ -5890,7 +5701,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 		Proof:       "",
 	}
 
-	topic, err := k.GetTopic(ctx, topic.Id)
+	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Append the inference
@@ -5899,33 +5710,37 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 
 	// Verify the worker's EMA score trended toward the topic initial score especially when there is a lapse in their
 	// liveness
-	score, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
+	score, err := k.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err)
 	inDelta, err := alloraMath.InDelta(alloraMath.MustNewDecFromString("82.805"), score.Score, alloraMath.MustNewDecFromString("0.0001"))
 	s.Require().NoError(err)
 	s.Require().True(inDelta, "expected %s, got %s", "82.805", score.Score.String())
 	s.Require().Equal(blockHeight, score.BlockHeight)
 	s.Require().Equal(worker, score.Address)
-	s.Require().Equal(topic.Id, score.TopicId)
+	s.Require().Equal(topicId, score.TopicId)
 }
 
 func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendForecast() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topic := s.mockTopic()
-	topic.EpochLastEnded = 10000
-	topic.EpochLength = 1000
-	topic.GroundTruthLag = 1000
-	s.Require().NoError(s.emissionsKeeper.SetTopic(ctx, topic.Id, topic))
-	worker := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+
+	epochLength := int64(1000)
+	groundTruthLag := int64(1000)
+
+	topicId := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithGroundTruthLag(groundTruthLag),
+		alloratestutil.WithEpochLastEnded(10000),
+	)
+	worker := s.AddrsStr()[0]
 	blockHeight := int64(10000)
 
 	// Set initial EMA score for the topic
 	initialScore := alloraMath.MustNewDecFromString("50")
-	s.Require().NoError(k.SetTopicInitialForecasterEmaScore(ctx, topic.Id, initialScore))
+	s.Require().NoError(k.SetTopicInitialForecasterEmaScore(ctx, topicId, initialScore))
 
-	s.Require().NoError(k.SetForecasterScoreEma(ctx, topic.Id, worker, types.Score{
-		TopicId:     topic.Id,
+	s.Require().NoError(k.SetForecasterScoreEma(ctx, topicId, worker, types.Score{
+		TopicId:     topicId,
 		BlockHeight: 5000,
 		Address:     worker,
 		Score:       alloraMath.MustNewDecFromString("100"),
@@ -5933,7 +5748,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendForecast() {
 
 	// Create and append a new forecast
 	forecast := &types.Forecast{
-		TopicId:     topic.Id,
+		TopicId:     topicId,
 		BlockHeight: 10000,
 		Forecaster:  worker,
 		ForecastElements: []*types.ForecastElement{
@@ -5945,7 +5760,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendForecast() {
 		ExtraData: nil,
 	}
 
-	topic, err := k.GetTopic(ctx, topic.Id)
+	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Append the forecast
@@ -5955,25 +5770,29 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendForecast() {
 
 	// Verify the worker's EMA score trended toward the topic initial score especially when there is a lapse in their
 	// liveness
-	score, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
+	score, err := k.GetForecasterScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err)
 	inDelta, err := alloraMath.InDelta(alloraMath.MustNewDecFromString("82.805"), score.Score, alloraMath.MustNewDecFromString("0.0001"))
 	s.Require().NoError(err)
 	s.Require().True(inDelta, "expected %s, got %s", "82.805", score.Score.String())
 	s.Require().Equal(blockHeight, score.BlockHeight)
 	s.Require().Equal(worker, score.Address)
-	s.Require().Equal(topic.Id, score.TopicId)
+	s.Require().Equal(topicId, score.TopicId)
 }
 
 func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topic := s.mockTopic()
-	topic.EpochLastEnded = 10000
-	topic.EpochLength = 1000
-	topic.GroundTruthLag = 1000
-	s.Require().NoError(s.emissionsKeeper.SetTopic(ctx, topic.Id, topic))
-	reputer := s.addrsStr[0]
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+
+	epochLength := int64(1000)
+	groundTruthLag := int64(1000)
+
+	topicId := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithGroundTruthLag(groundTruthLag),
+		alloratestutil.WithEpochLastEnded(10000),
+	)
+	reputer := s.AddrsStr()[0]
 	blockHeight := int64(10000)
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
@@ -5981,10 +5800,10 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 
 	// Set initial EMA score for the topic
 	initialScore := alloraMath.MustNewDecFromString("50")
-	s.Require().NoError(k.SetTopicInitialReputerEmaScore(ctx, topic.Id, initialScore))
+	s.Require().NoError(k.SetTopicInitialReputerEmaScore(ctx, topicId, initialScore))
 
-	s.Require().NoError(k.SetReputerScoreEma(ctx, topic.Id, reputer, types.Score{
-		TopicId:     topic.Id,
+	s.Require().NoError(k.SetReputerScoreEma(ctx, topicId, reputer, types.Score{
+		TopicId:     topicId,
 		BlockHeight: 5000,
 		Address:     reputer,
 		Score:       alloraMath.MustNewDecFromString("100"),
@@ -5995,7 +5814,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 		Reputer:                       reputer,
 		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
 		ReputerRequestNonce:           reputerRequestNonce,
-		TopicId:                       topic.Id,
+		TopicId:                       topicId,
 		ExtraData:                     nil,
 		InfererValues:                 s.createDefaultInfererValues(),
 		ForecasterValues:              nil,
@@ -6005,14 +5824,14 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(&valueBundleReputer, s.privKeys[0])
+	signature := s.signValueBundle(&valueBundleReputer, s.PrivKeys()[0])
 	reputerValueBundle := types.ReputerValueBundle{
 		ValueBundle: &valueBundleReputer,
 		Signature:   signature,
-		Pubkey:      s.pubKeyHexStr[0],
+		Pubkey:      s.PubKeyHexStr()[0],
 	}
 
-	topic, err := k.GetTopic(ctx, topic.Id)
+	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Append the reputer loss
@@ -6021,21 +5840,21 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 
 	// Verify the reputer's EMA score trended toward the topic initial score especially when there is a lapse in their
 	// liveness
-	score, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
+	score, err := k.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().NoError(err)
 	inDelta, err := alloraMath.InDelta(alloraMath.MustNewDecFromString("86.450"), score.Score, alloraMath.MustNewDecFromString("0.0001"))
 	s.Require().NoError(err)
 	s.Require().True(inDelta, "expected %s, got %s", "86.450", score.Score.String())
 	s.Require().Equal(blockHeight, score.BlockHeight)
 	s.Require().Equal(reputer, score.Address)
-	s.Require().Equal(topic.Id, score.TopicId)
+	s.Require().Equal(topicId, score.TopicId)
 }
 
 func (s *KeeperTestSuite) TestLatestForecasterWeightFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	forecaster := s.addrsStr[0]
+	forecaster := s.AddrsStr()[0]
 	weight := alloraMath.NewDecFromInt64(100)
 
 	// Test initial state (should be zero)
@@ -6060,10 +5879,10 @@ func (s *KeeperTestSuite) TestLatestForecasterWeightFunctions() {
 }
 
 func (s *KeeperTestSuite) TestLatestInfererWeightFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	inferer := s.addrsStr[1]
+	inferer := s.AddrsStr()[1]
 	weight := alloraMath.NewDecFromInt64(75)
 
 	// Test initial state (should be zero)
@@ -6088,8 +5907,8 @@ func (s *KeeperTestSuite) TestLatestInfererWeightFunctions() {
 }
 
 func (s *KeeperTestSuite) TestLatestRegretStdNormFunctions() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 	topicId := uint64(1)
 	stdNorm := alloraMath.NewDecFromInt64(50)
 
@@ -6122,10 +5941,10 @@ func (s *KeeperTestSuite) TestLatestRegretStdNormFunctions() {
 // This can be used to ensure ValueBundle validation passes when InfererValues cannot be nil
 func (s *KeeperTestSuite) createDefaultInfererValues() []*types.WorkerAttributedValue {
 	// Create an array to hold all worker attributed values
-	infererValues := make([]*types.WorkerAttributedValue, len(s.addrsStr))
+	infererValues := make([]*types.WorkerAttributedValue, len(s.AddrsStr()))
 
 	// Add a WorkerAttributedValue for each address in the test suite
-	for i, addr := range s.addrsStr {
+	for i, addr := range s.AddrsStr() {
 		infererValues[i] = &types.WorkerAttributedValue{
 			Worker: addr,
 			Value:  alloraMath.NewDecFromInt64(int64(i + 1)), // Using different values based on index
@@ -6136,8 +5955,8 @@ func (s *KeeperTestSuite) createDefaultInfererValues() []*types.WorkerAttributed
 }
 
 func (s *KeeperTestSuite) TestMonthlyRewards() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
 
 	// Initial state should be zero
 	reputerRewards, err := k.GetMonthlyReputerRewards(ctx)
@@ -6197,10 +6016,9 @@ func (s *KeeperTestSuite) TestMonthlyRewards() {
 // TestRemoveTopicFromPreviousTopicWeights tests that when a topic is removed from previous topic weights,
 // its weight is correctly subtracted from the total sum while preserving the weight itself
 func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	reputerAddr := s.addrs[0].String()
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	reputerAddr := s.Addrs()[0].String()
 	stakeAmount := cosmosMath.NewInt(1000)
 	feeRevenue := cosmosMath.NewInt(100)
 
@@ -6209,66 +6027,67 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
 	params.TopicRewardStakeImportance = alloraMath.OneDec()
 	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
-	err := keeper.SetParams(ctx, params)
+	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
+	epochLength := int64(100)
+	workerSubmissionWindow := int64(100)
+
 	// Create and activate topic
-	topic := s.mockTopic()
-	topic.Id = topicId
-	topic.EpochLength = 100
-	topic.WorkerSubmissionWindow = 100
-	err = keeper.SetTopic(ctx, topicId, topic)
-	s.Require().NoError(err)
-	err = keeper.ActivateTopic(ctx, topicId)
+	topicId := s.CreateTopic(
+		alloratestutil.WithEpochLength(epochLength),
+		alloratestutil.WithWorkerSubmissionWindow(workerSubmissionWindow),
+	)
+	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Add stake and fee revenue
-	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = k.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+	err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
 	s.Require().NoError(err)
 
 	// Calculate and set initial weight
-	initialWeight, _, err := keeper.GetCurrentTopicWeight(
+	initialWeight, _, err := k.GetCurrentTopicWeight(
 		ctx,
 		topicId,
-		topic.EpochLength,
+		epochLength,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
 		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
-	err = keeper.SetPreviousTopicWeight(ctx, topicId, initialWeight)
+	err = k.SetPreviousTopicWeight(ctx, topicId, initialWeight)
 	s.Require().NoError(err)
 
 	// Get initial total sum
-	initialTotalSum, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	initialTotalSum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(initialTotalSum.Equal(initialWeight), "Initial total sum should equal initial weight")
 
 	// Remove topic from previous weights
-	err = keeper.RemoveTopicFromPreviousTopicWeights(ctx, topicId)
+	err = k.RemoveTopicFromPreviousTopicWeights(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Verify total sum is updated
-	newTotalSum, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	newTotalSum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(newTotalSum.IsZero(), "Total sum should be zero after removal")
 
 	// Verify the topic's weight is still preserved
-	topicWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	topicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().False(noPrior, "Topic weight should still exist")
 	s.Require().True(topicWeight.Equal(initialWeight), "Topic weight should remain unchanged")
 
 	// Test removing a topic that has no prior weight
 	nonExistentTopicId := uint64(999)
-	err = keeper.RemoveTopicFromPreviousTopicWeights(ctx, nonExistentTopicId)
+	err = k.RemoveTopicFromPreviousTopicWeights(ctx, nonExistentTopicId)
 	s.Require().NoError(err, "Removing non-existent topic should not error")
 
 	// Verify total sum remains unchanged after removing non-existent topic
-	finalTotalSum, err := keeper.GetTotalSumPreviousTopicWeights(ctx)
+	finalTotalSum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }

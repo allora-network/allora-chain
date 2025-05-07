@@ -3,46 +3,46 @@ package msgserver_test
 import (
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/types"
-	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+
+	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
+	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputer() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Mock setup for addresses
-	reputerAddr := s.addrs[0]
-	topic1 := s.CreateOneTopic()
-
-	// Topic register
-	err := s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
-	require.NoError(err, "SetTopic should not return an error")
-	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
+	reputerAddr := s.Addrs()[0]
+	// Get topic
+	topic := uint64(1)
+	err := s.EmissionsKeeper().ActivateTopic(ctx, topic)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Reputer register
 	registerMsg := &types.RegisterRequest{
 		Sender:    reputerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: true,
 		Owner:     reputerAddr.String(),
 	}
 
-	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
 	require.NoError(err)
 
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
-	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		reputerAddr,
@@ -50,45 +50,42 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputer() {
 	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
-	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topic1.Id, reputerAddr.String())
+	isReputerRegistered, err := s.EmissionsKeeper().IsReputerRegisteredInTopic(ctx, topic, reputerAddr.String())
 	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should not be registered in topic")
 
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topic1.Id, reputerAddr.String())
+	isReputerRegistered, err = s.EmissionsKeeper().IsReputerRegisteredInTopic(ctx, topic, reputerAddr.String())
 	require.NoError(err)
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 }
 
 func (s *MsgServerTestSuite) TestMsgRemoveRegistration() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Mock setup for addresses
-	reputerAddr := s.addrs[0]
-	topic1 := s.CreateOneTopic()
-
-	// Topic register
-	err := s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
-	require.NoError(err)
-	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
+	reputerAddr := s.Addrs()[0]
+	// Get topic
+	topic := uint64(1)
+	err := s.EmissionsKeeper().ActivateTopic(ctx, topic)
 	require.NoError(err)
 	// Reputer register
 	registerMsg := &types.RegisterRequest{
 		Sender:    reputerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: true,
 		Owner:     reputerAddr.String(),
 	}
 
-	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
 	require.NoError(err)
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
-	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		reputerAddr,
@@ -99,51 +96,48 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistration() {
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topic1.Id, reputerAddr.String())
+	isReputerRegistered, err := s.EmissionsKeeper().IsReputerRegisteredInTopic(ctx, topic, reputerAddr.String())
 	require.NoError(err)
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 
 	unregisterMsg := &types.RemoveRegistrationRequest{
 		Sender:    reputerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: true,
 	}
 
 	_, err = msgServer.RemoveRegistration(ctx, unregisterMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topic1.Id, reputerAddr.String())
+	isReputerRegistered, err = s.EmissionsKeeper().IsReputerRegisteredInTopic(ctx, topic, reputerAddr.String())
 	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should be registered in topic")
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterWorker() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Mock setup for addresses
-	workerAddr := s.addrs[0]
-	topic1 := s.CreateOneTopic()
-
-	// Topic register
-	err := s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
-	require.NoError(err)
-	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
+	workerAddr := s.Addrs()[0]
+	// Get topic
+	topic := uint64(1)
+	err := s.EmissionsKeeper().ActivateTopic(ctx, topic)
 	require.NoError(err)
 	// Reputer register
 	registerMsg := &types.RegisterRequest{
 		Sender:    workerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: false,
 		Owner:     workerAddr.String(),
 	}
 
-	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
 	require.NoError(err)
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
-	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		workerAddr,
@@ -151,49 +145,46 @@ func (s *MsgServerTestSuite) TestMsgRegisterWorker() {
 	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
-	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topic1.Id, workerAddr.String())
+	isWorkerRegistered, err := s.EmissionsKeeper().IsWorkerRegisteredInTopic(ctx, topic, workerAddr.String())
 	require.NoError(err)
 	require.False(isWorkerRegistered, "Worker should not be registered in topic")
 
-	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topic1.Id, workerAddr.String())
+	isReputerRegistered, err := s.EmissionsKeeper().IsReputerRegisteredInTopic(ctx, topic, workerAddr.String())
 	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should not be registered in topic")
 
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
-	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topic1.Id, workerAddr.String())
+	isWorkerRegistered, err = s.EmissionsKeeper().IsWorkerRegisteredInTopic(ctx, topic, workerAddr.String())
 	require.NoError(err)
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 }
 
 func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Mock setup for addresses
-	workerAddr := s.addrs[0]
-	topic1 := s.CreateOneTopic()
-
-	// Topic register
-	err := s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
-	require.NoError(err)
-	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
+	workerAddr := s.Addrs()[0]
+	// Get topic
+	topic := uint64(1)
+	err := s.EmissionsKeeper().ActivateTopic(ctx, topic)
 	require.NoError(err)
 	// Reputer register
 	registerMsg := &types.RegisterRequest{
 		Sender:    workerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: false,
 		Owner:     workerAddr.String(),
 	}
 
-	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
 	require.NoError(err)
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
-	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		workerAddr,
@@ -204,34 +195,32 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
-	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topic1.Id, workerAddr.String())
+	isWorkerRegistered, err := s.EmissionsKeeper().IsWorkerRegisteredInTopic(ctx, topic, workerAddr.String())
 	require.NoError(err)
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 
 	unregisterMsg := &types.RemoveRegistrationRequest{
 		Sender:    workerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: false,
 	}
 
 	_, err = msgServer.RemoveRegistration(ctx, unregisterMsg)
 	require.NoError(err, "Unregistering worker should not return an error")
 
-	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topic1.Id, workerAddr.String())
+	isWorkerRegistered, err = s.EmissionsKeeper().IsWorkerRegisteredInTopic(ctx, topic, workerAddr.String())
 	require.NoError(err)
 	require.False(isWorkerRegistered, "Worker should be registered in topic")
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Mock setup for addresses
-	reputerAddr := s.addrs[0]
-	topic1 := s.CreateOneTopic()
-	err := s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
-	require.NoError(err)
-	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
+	reputerAddr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
+	topic := uint64(1)
+	err := s.EmissionsKeeper().ActivateTopic(ctx, topic)
 	require.NoError(err)
 	// Zero initial stake
 
@@ -240,7 +229,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	registerMsg := &types.RegisterRequest{
 		Sender:    reputerAddr.String(),
 		Owner:     reputerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: true,
 	}
 	_, err = msgServer.Register(ctx, registerMsg)
@@ -248,23 +237,23 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
-	topic1 := s.CreateOneTopic()
+	topic := uint64(1)
 
 	// Mock setup for addresses
-	reputerAddr := s.addrs[0]
+	reputerAddr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
 	registrationInitialStake := cosmosMath.NewInt(100)
 
 	// Register Reputer
 	reputerRegMsg := &types.RegisterRequest{
 		Sender:    reputerAddr.String(),
-		TopicId:   topic1.Id,
+		TopicId:   topic,
 		IsReputer: true,
 		Owner:     reputerAddr.String(),
 	}
 
-	err := s.emissionsKeeper.AddReputerStake(ctx, topic1.Id, reputerAddr.String(), registrationInitialStake.QuoRaw(2))
+	err := s.EmissionsKeeper().AddReputerStake(ctx, topic, reputerAddr.String(), registrationInitialStake.QuoRaw(2))
 	require.NoError(err)
 
 	// Try to register without any funds to pay fees
@@ -274,59 +263,37 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 
 func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	// Reputer Addresses
-	reputer := s.addrs[2]
+	reputer := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
 	// Worker Addresses
-	worker := s.addrs[3]
+	worker := s.Addrs()[3]
 	cosmosOneE18, ok := cosmosMath.NewIntFromString("1000000000000000000")
 	s.Require().True(ok)
 
-	s.bankKeeper = bankkeeper.NewBaseKeeper(
-		s.codec,
-		s.storeService,
-		s.accountKeeper,
+	bankKeeper := bankkeeper.NewBaseKeeper(
+		s.Codec(),
+		s.StoreServiceBank(),
+		s.AccountKeeper(),
 		map[string]bool{
-			s.addrsStr[0]: true,
+			s.AddrsStr()[0]: true,
 		},
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		log.NewNopLogger(),
 	)
-	s.emissionsKeeper = keeper.NewKeeper(
-		s.codec,
-		s.addressCodec,
-		s.storeService,
-		s.accountKeeper,
-		s.bankKeeper,
+	emissionsKeeper := keeper.NewKeeper(
+		s.Codec(),
+		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
+		s.StoreServiceEmissions(),
+		s.AccountKeeper(),
+		bankKeeper,
 		authtypes.FeeCollectorName,
 	)
+	msgServer := msgserver.NewMsgServerImpl(emissionsKeeper)
 
 	blockHeight := int64(600)
-	s.ctx = s.ctx.WithBlockHeight(blockHeight)
-	epochLength := int64(10800)
+	s.WithBlockHeight(blockHeight)
 
 	s.MintTokensToAddress(worker, cosmosMath.NewInt(10).Mul(cosmosOneE18))
-	// Create topic
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  worker.String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              epochLength,
-		GroundTruthLag:           epochLength,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	// Get Topic Id
-	topicId := res.TopicId
+	topicId := uint64(1) // already included
 
 	// Register 1 worker
 	workerRegMsg := &types.RegisterRequest{
@@ -335,7 +302,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		IsReputer: false,
 		Owner:     worker.String(),
 	}
-	_, err = s.msgServer.Register(s.ctx, workerRegMsg)
+	_, err := msgServer.Register(s.Ctx(), workerRegMsg)
 	s.Require().NoError(err)
 
 	reputerRegMsg := &types.RegisterRequest{
@@ -344,18 +311,18 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		IsReputer: true,
 		Owner:     reputer.String(),
 	}
-	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
+	_, err = msgServer.Register(s.Ctx(), reputerRegMsg)
 	s.Require().ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	topicId := uint64(0)
 
 	// Mock setup for addresses
-	reputerAddr := s.addrs[3]
+	reputerAddr := s.Addrs()[3]
 
 	// Topic does not exist
 	registerMsg := &types.RegisterRequest{

@@ -2,22 +2,22 @@ package queryserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *QueryServerTestSuite) TestGetNetworkLossBundleAtBlock() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
 	topicId := uint64(1)
 	blockHeight := types.BlockHeight(100)
 
 	// Set up a sample NetworkLossBundle
 	expectedBundle := &types.ValueBundle{
 		TopicId: topicId,
-		Reputer: s.addrsStr[0],
+		Reputer: s.AddrsStr()[0],
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
 				BlockHeight: blockHeight,
@@ -57,8 +57,8 @@ func (s *QueryServerTestSuite) TestGetNetworkLossBundleAtBlock() {
 }
 
 func (s *QueryServerTestSuite) TestIsReputerNonceUnfulfilled() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 	newNonce := &types.Nonce{BlockHeight: 42}
 
@@ -66,7 +66,7 @@ func (s *QueryServerTestSuite) TestIsReputerNonceUnfulfilled() {
 		TopicId:     topicId,
 		BlockHeight: newNonce.BlockHeight,
 	}
-	response, err := s.queryServer.IsReputerNonceUnfulfilled(s.ctx, req)
+	response, err := s.EmissionsQueryServer().IsReputerNonceUnfulfilled(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().False(response.IsReputerNonceUnfulfilled)
@@ -75,22 +75,22 @@ func (s *QueryServerTestSuite) TestIsReputerNonceUnfulfilled() {
 	err = keeper.AddReputerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
-	response, err = s.queryServer.IsReputerNonceUnfulfilled(s.ctx, req)
+	response, err = s.EmissionsQueryServer().IsReputerNonceUnfulfilled(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().True(response.IsReputerNonceUnfulfilled)
 }
 
 func (s *QueryServerTestSuite) TestGetUnfulfilledReputerNonces() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Initially, ensure no unfulfilled nonces exist
 	req := &types.GetUnfulfilledReputerNoncesRequest{
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetUnfulfilledReputerNonces(s.ctx, req)
+	response, err := s.EmissionsQueryServer().GetUnfulfilledReputerNonces(s.Ctx(), req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().Len(response.Nonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
@@ -103,7 +103,7 @@ func (s *QueryServerTestSuite) TestGetUnfulfilledReputerNonces() {
 	}
 
 	// Retrieve and verify the nonces
-	response, err = s.queryServer.GetUnfulfilledReputerNonces(s.ctx, req)
+	response, err = s.EmissionsQueryServer().GetUnfulfilledReputerNonces(s.Ctx(), req)
 	s.Require().NoError(err, "Error retrieving nonces after adding")
 	s.Require().Len(response.Nonces.Nonces, len(nonceValues), "Should match the number of added nonces")
 
@@ -114,13 +114,13 @@ func (s *QueryServerTestSuite) TestGetUnfulfilledReputerNonces() {
 }
 
 func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
-	ctx := s.ctx
+	ctx := s.Ctx()
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 	valueBundle := types.ValueBundle{
 		TopicId:             topicId,
-		Reputer:             s.addrsStr[0],
+		Reputer:             s.AddrsStr()[0],
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
 		ExtraData:           []byte("sample_extra_data"),
 		CombinedValue:       alloraMath.NewDecFromInt64(100),
@@ -138,13 +138,13 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
-	signature := s.signValueBundle(&valueBundle, s.privKeys[0])
+	signature := s.SignValueBundle(&valueBundle, s.PrivKeys()[0])
 	reputerLossBundles := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
 				ValueBundle: &valueBundle,
 				Signature:   signature,
-				Pubkey:      s.pubKeyHexStr[0],
+				Pubkey:      s.PubKeyHexStr()[0],
 			},
 		},
 	}
@@ -152,15 +152,15 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 		TopicId:     topicId,
 		BlockHeight: block,
 	}
-	response, err := s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
+	response, err := s.EmissionsQueryServer().GetReputerLossBundlesAtBlock(ctx, req)
 	require.NoError(err)
 	require.Empty(response.LossBundles.ReputerValueBundles)
 
 	// Test inserting data
-	err = s.emissionsKeeper.InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
+	err = s.EmissionsKeeper().InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
 	require.NoError(err, "InsertActiveReputerLosses should not return an error")
 
-	response, err = s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
+	response, err = s.EmissionsQueryServer().GetReputerLossBundlesAtBlock(ctx, req)
 	require.NotEmpty(response)
 	require.NoError(err)
 
@@ -170,8 +170,8 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetDeleteDelegateStake() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 
 	// Create sample delegate stake removal information
 	removalInfo := types.DelegateStakeRemovalInfo{
@@ -193,13 +193,13 @@ func (s *QueryServerTestSuite) TestGetDeleteDelegateStake() {
 		Reputer:     removalInfo.Reputer,
 		Delegator:   removalInfo.Delegator,
 	}
-	response, err := s.queryServer.GetDelegateStakeRemoval(ctx, req)
+	response, err := s.EmissionsQueryServer().GetDelegateStakeRemoval(ctx, req)
 	s.Require().Error(err)
 	s.Require().Nil(response)
 
 	req.BlockHeight = removalInfo.BlockRemovalCompleted
 
-	response, err = s.queryServer.GetDelegateStakeRemoval(ctx, req)
+	response, err = s.EmissionsQueryServer().GetDelegateStakeRemoval(ctx, req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response)
 
@@ -213,17 +213,16 @@ func (s *QueryServerTestSuite) TestGetDeleteDelegateStake() {
 }
 
 func (s *QueryServerTestSuite) TestGetActiveReputersForTopic() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
 	topicId := uint64(1)
 
 	// Add some active reputers
 	activeReputers := []string{
-		s.addrsStr[0],
-		s.addrsStr[1],
-		s.addrsStr[2],
+		s.AddrsStr()[0],
+		s.AddrsStr()[1],
+		s.AddrsStr()[2],
 	}
 
 	for _, reputer := range activeReputers {
@@ -260,7 +259,7 @@ func (s *QueryServerTestSuite) TestGetActiveReputersForTopic() {
 	s.Require().Contains(err.Error(), "not found")
 
 	// Test with no active reputers
-	emptyTopicId := s.CreateOneTopic()
+	emptyTopicId := s.CreateTopic()
 	emptyResponse, err := queryServer.GetActiveReputersForTopic(
 		ctx,
 		&types.GetActiveReputersForTopicRequest{

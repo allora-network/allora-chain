@@ -104,7 +104,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 				Forecaster: "forecaster0",
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("3")},
-					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("4")},
+					{Inferer: s.AddrsStr()[1], Value: alloraMath.MustNewDecFromString("4")},
 				},
 			},
 		},
@@ -114,18 +114,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.055841253742177320400327600231111")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0":       {Value: alloraMath.MustNewDecFromString("1")},
+		s.AddrsStr()[1]: {Value: alloraMath.MustNewDecFromString("2")},
 	}
 
 	allInferersAreNew := false
-	inferers := []string{"worker0", s.addrsStr[1]}
+	inferers := []string{"worker0", s.AddrsStr()[1]}
 	forecasters := []string{"forecaster0"}
 	forecastByWorker := map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]}
 	zero := alloraMath.ZeroDec()
 	infererRegrets := map[string]*alloraMath.Dec{
-		"worker0":     &zero,
-		s.addrsStr[1]: &zero,
+		"worker0":       &zero,
+		s.AddrsStr()[1]: &zero,
 	}
 	forecasterRegrets := map[string]*alloraMath.Dec{
 
@@ -134,7 +134,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.ctx.Logger(),
+			Logger:               s.Ctx().Logger(),
 			TopicId:              topicId,
 			AllInferersAreNew:    allInferersAreNew,
 			Inferers:             inferers,
@@ -181,7 +181,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			{
 				Forecaster: "worker0",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("4")},
+					{Inferer: s.AddrsStr()[1], Value: alloraMath.MustNewDecFromString("4")},
 				},
 			},
 		},
@@ -191,19 +191,19 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"worker0": {Value: alloraMath.MustNewDecFromString("2")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0":       {Value: alloraMath.MustNewDecFromString("1")},
+		s.AddrsStr()[1]: {Value: alloraMath.MustNewDecFromString("2")},
 	}
 
 	topicId := uint64(1)
 	allInferersAreNew := false
-	inferers := []string{"worker0", s.addrsStr[1]}
+	inferers := []string{"worker0", s.AddrsStr()[1]}
 	forecasters := []string{"worker0"}
 	forecastByWorker := map[string]*emissionstypes.Forecast{"worker0": forecasts.Forecasts[0]}
 	zero := alloraMath.ZeroDec()
 	infererRegrets := map[string]*alloraMath.Dec{
-		"worker0":     &zero,
-		s.addrsStr[1]: &zero,
+		"worker0":       &zero,
+		s.AddrsStr()[1]: &zero,
 	}
 	forecasterRegrets := map[string]*alloraMath.Dec{
 		"worker0": &zero,
@@ -211,7 +211,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.ctx.Logger(),
+			Logger:               s.Ctx().Logger(),
 			TopicId:              topicId,
 			AllInferersAreNew:    allInferersAreNew,
 			Inferers:             inferers,
@@ -259,54 +259,54 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 				Forecaster: "worker0",
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("1")},
-					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("2")},
-					{Inferer: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("3")},
+					{Inferer: s.AddrsStr()[1], Value: alloraMath.MustNewDecFromString("2")},
+					{Inferer: s.AddrsStr()[2], Value: alloraMath.MustNewDecFromString("3")},
 				},
 			},
 			{
-				Forecaster: s.addrsStr[1],
+				Forecaster: s.AddrsStr()[1],
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("4")},
-					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("5")},
-					{Inferer: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("6")},
+					{Inferer: s.AddrsStr()[1], Value: alloraMath.MustNewDecFromString("5")},
+					{Inferer: s.AddrsStr()[2], Value: alloraMath.MustNewDecFromString("6")},
 				},
 			},
 		},
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1.158380376510523897775902553985830")},
-		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("1.149124717287201046499545990921485")},
-		s.addrsStr[2]: nil,
+		"worker0":       {Value: alloraMath.MustNewDecFromString("1.158380376510523897775902553985830")},
+		s.AddrsStr()[1]: {Value: alloraMath.MustNewDecFromString("1.149124717287201046499545990921485")},
+		s.AddrsStr()[2]: nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
-		s.addrsStr[2]: {Value: alloraMath.MustNewDecFromString("3")},
+		"worker0":       {Value: alloraMath.MustNewDecFromString("1")},
+		s.AddrsStr()[1]: {Value: alloraMath.MustNewDecFromString("2")},
+		s.AddrsStr()[2]: {Value: alloraMath.MustNewDecFromString("3")},
 	}
 
 	topicId := uint64(1)
 	allInferersAreNew := false
-	inferers := []string{"worker0", s.addrsStr[1], s.addrsStr[2]}
-	forecasters := []string{"worker0", s.addrsStr[1]}
+	inferers := []string{"worker0", s.AddrsStr()[1], s.AddrsStr()[2]}
+	forecasters := []string{"worker0", s.AddrsStr()[1]}
 	forecastByWorker := map[string]*emissionstypes.Forecast{
-		"worker0":     forecasts.Forecasts[0],
-		s.addrsStr[1]: forecasts.Forecasts[1],
+		"worker0":       forecasts.Forecasts[0],
+		s.AddrsStr()[1]: forecasts.Forecasts[1],
 	}
 	zero := alloraMath.ZeroDec()
 	infererRegrets := map[string]*alloraMath.Dec{
-		"worker0":     &zero,
-		s.addrsStr[1]: &zero,
-		s.addrsStr[2]: &zero,
+		"worker0":       &zero,
+		s.AddrsStr()[1]: &zero,
+		s.AddrsStr()[2]: &zero,
 	}
 	forecasterRegrets := map[string]*alloraMath.Dec{
-		"worker0":     &zero,
-		s.addrsStr[1]: &zero,
+		"worker0":       &zero,
+		s.AddrsStr()[1]: &zero,
 	}
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.ctx.Logger(),
+			Logger:               s.Ctx().Logger(),
 			TopicId:              topicId,
 			AllInferersAreNew:    allInferersAreNew,
 			Inferers:             inferers,
@@ -352,12 +352,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[302]
 
-	worker0 := s.addrsStr[0]
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	worker3 := s.addrsStr[3]
-	worker4 := s.addrsStr[4]
-	forecaster0 := s.addrsStr[5]
+	worker0 := s.AddrsStr()[0]
+	worker1 := s.AddrsStr()[1]
+	worker2 := s.AddrsStr()[2]
+	worker3 := s.AddrsStr()[3]
+	worker4 := s.AddrsStr()[4]
+	forecaster0 := s.AddrsStr()[5]
 
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
@@ -407,7 +407,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.ctx.Logger(),
+			Logger:               s.Ctx().Logger(),
 			TopicId:              topicId,
 			AllInferersAreNew:    allInferersAreNew,
 			Inferers:             inferers,
@@ -445,12 +445,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[303]
 
-	worker0 := s.addrsStr[0]
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	worker3 := s.addrsStr[3]
-	worker4 := s.addrsStr[4]
-	forecaster0 := s.addrsStr[5]
+	worker0 := s.AddrsStr()[0]
+	worker1 := s.AddrsStr()[1]
+	worker2 := s.AddrsStr()[2]
+	worker3 := s.AddrsStr()[3]
+	worker4 := s.AddrsStr()[4]
+	forecaster0 := s.AddrsStr()[5]
 
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
@@ -500,7 +500,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.ctx.Logger(),
+			Logger:               s.Ctx().Logger(),
 			TopicId:              topicId,
 			AllInferersAreNew:    allInferersAreNew,
 			Inferers:             inferers,

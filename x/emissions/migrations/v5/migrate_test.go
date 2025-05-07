@@ -3,77 +3,39 @@ package v5_test
 import (
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
-	oldV4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v5/oldtypes"
-
-	collections "cosmossdk.io/collections"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
-
-	"cosmossdk.io/core/store"
-	"github.com/allora-network/allora-chain/app/params"
-
+	"cosmossdk.io/collections"
 	"cosmossdk.io/store/prefix"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	v5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
-	emissions "github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/gogo/protobuf/proto"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-
-	storetypes "cosmossdk.io/store/types"
-	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
+	v5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
+	oldV4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v5/oldtypes"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type EmissionsV5MigrationTestSuite struct {
-	suite.Suite
-	ctrl *gomock.Controller
-
-	ctx             sdk.Context
-	storeService    store.KVStoreService
-	emissionsKeeper *keeper.Keeper
+	testutil.TestSuite
 }
 
 func TestEmissionsV5MigrationTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV5MigrationTestSuite))
-}
-
-func (s *EmissionsV5MigrationTestSuite) SetupTest() {
-	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
-	key := storetypes.NewKVStoreKey(emissionstypes.StoreKey)
-	storeService := runtime.NewKVStoreService(key)
-	s.storeService = storeService
-	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	s.ctx = testCtx.Ctx
-
-	// gomock initializations
-	s.ctrl = gomock.NewController(s.T())
-	accountKeeper := emissionstestutil.NewMockAccountKeeper(s.ctrl)
-	bankKeeper := emissionstestutil.NewMockBankKeeper(s.ctrl)
-	emissionsKeeper := keeper.NewKeeper(
-		encCfg.Codec,
-		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName)
-
-	s.emissionsKeeper = &emissionsKeeper
+	suite.Run(t, &EmissionsV5MigrationTestSuite{
+		testutil.TestSuite{
+			ModuleName: "emissions_V5Migrations",
+		},
+	})
 }
 
 // in this test we check that the emissions module params have been migrated
 // and the expected new field is set.
 func (s *EmissionsV5MigrationTestSuite) TestMigrateParams() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	defaultParams := emissionstypes.DefaultParams()
 	paramsOld := oldV4Types.Params{
@@ -132,7 +94,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigrateParams() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -185,13 +147,11 @@ func (s *EmissionsV5MigrationTestSuite) TestMigrateParams() {
 // in this test, we check that an already migrated topic, that only initialRegret
 // set to 0 but everything else will remain the same
 func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
-	_, err := s.emissionsKeeper.IncrementTopicId(s.ctx)
-	s.Require().NoError(err)
 	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{
-		Id:                       1,
+		Id:                       2,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
 		LossMethod:               "lossMethod",
@@ -210,7 +170,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.1337"),
 	}
 
-	_, err = s.emissionsKeeper.IncrementTopicId(s.ctx)
+	_, err := s.EmissionsKeeper().IncrementTopicId(s.Ctx())
 	s.Require().NoError(err)
 	bz, err := proto.Marshal(&migratedOldTopicWithNaNInitialRegret)
 	s.Require().NoError(err)
@@ -221,12 +181,13 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v5.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v5.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator := topicStore.Iterator(nil, nil)
 	s.Require().True(iterator.Valid())
+	iterator.Next() // skip the already existing topic at ID 1
 	defer iterator.Close()
 
 	var newMsg emissionstypes.Topic
@@ -254,19 +215,17 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().Equal("0", newMsg.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
 
 func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
-	_, err := s.emissionsKeeper.IncrementTopicId(s.ctx)
-	s.Require().NoError(err)
 	migratedOldTopic1 := emissionstypes.Topic{
-		Id:                       1,
+		Id:                       2,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
 		LossMethod:               "lossMethod",
@@ -285,9 +244,9 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.1337"),
 	}
 	migratedOldTopic2 := migratedOldTopic1
-	migratedOldTopic2.Id = 2
+	migratedOldTopic2.Id = 3
 
-	_, err = s.emissionsKeeper.IncrementTopicId(s.ctx)
+	_, err := s.EmissionsKeeper().IncrementTopicId(s.Ctx())
 	s.Require().NoError(err)
 
 	// Create 2 topics
@@ -302,7 +261,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	topicStore.Set(bytesKey, bz)
 
 	// Topic 2
-	_, err = s.emissionsKeeper.IncrementTopicId(s.ctx)
+	_, err = s.EmissionsKeeper().IncrementTopicId(s.Ctx())
 	s.Require().NoError(err)
 
 	bz, err = proto.Marshal(&migratedOldTopic2)
@@ -334,7 +293,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	s.Require().NoError(err)
 	topicWeightStore.Set(bytesKey, marshaledWeight)
 
-	err = v5.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v5.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the sumPreviousTopicWeights store has been updated correctly
@@ -351,6 +310,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	// Verify the rest of the topic store has been updated correctly
 	topicIterator := topicStore.Iterator(nil, nil)
 	s.Require().True(topicIterator.Valid())
+	topicIterator.Next() // skip the already existing topic at ID 1
 	defer topicIterator.Close()
 
 	// Check topic 1
@@ -403,19 +363,19 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	s.Require().Equal("0", topic2.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(topic1, topic)
 }
 
 // check that the specified maps are reset correctly
 func (s *EmissionsV5MigrationTestSuite) TestResetMapsWithNonNumericValues() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	testPreviousQuantileMapDeletion(s, store, cdc, emissionstypes.PreviousTopicQuantileInfererScoreEmaKey)
 }
 
-/// HELPER FUNCTIONS
+// / HELPER FUNCTIONS
 
 // test for deletes on maps that have previous quantile as the value of the map
 func testPreviousQuantileMapDeletion(
@@ -454,7 +414,7 @@ func testPreviousQuantileMapDeletion(
 	s.Require().True(iterator.Valid())
 	defer iterator.Close()
 
-	err = v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v5.ResetMapsWithNonNumericValues(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the inferer store has been updated correctly

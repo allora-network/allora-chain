@@ -1,8 +1,10 @@
 package keeper_test
 
+import "github.com/allora-network/allora-chain/test/testutil"
+
 func (s *KeeperTestSuite) TestWhitelistAdminOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	adminAddress := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	// Test Adding to whitelist
@@ -32,8 +34,8 @@ func (s *KeeperTestSuite) TestWhitelistAdminOperations() {
 }
 
 func (s *KeeperTestSuite) TestGlobalWhitelistOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	// Test global whitelist operations
@@ -60,8 +62,8 @@ func (s *KeeperTestSuite) TestGlobalWhitelistOperations() {
 }
 
 func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 
 	// Test removing non-existent admin
 	nonExistentAdmin := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv"
@@ -88,8 +90,8 @@ func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
 }
 
 func (s *KeeperTestSuite) TestTopicCreatorWhitelistOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	// Test topic creator whitelist operations
@@ -116,8 +118,8 @@ func (s *KeeperTestSuite) TestTopicCreatorWhitelistOperations() {
 }
 
 func (s *KeeperTestSuite) TestTopicWorkerWhitelistOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	topicId := uint64(1)
 
@@ -145,8 +147,8 @@ func (s *KeeperTestSuite) TestTopicWorkerWhitelistOperations() {
 }
 
 func (s *KeeperTestSuite) TestTopicReputerWhitelistOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	topicId := uint64(1)
 
@@ -174,9 +176,9 @@ func (s *KeeperTestSuite) TestTopicReputerWhitelistOperations() {
 }
 
 func (s *KeeperTestSuite) TestIsTopicWhitelistEnabled() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(2)
 
 	enabled, err := keeper.IsTopicWorkerWhitelistEnabled(ctx, topicId)
 	s.Require().NoError(err)
@@ -191,8 +193,8 @@ func (s *KeeperTestSuite) TestIsTopicWhitelistEnabled() {
 }
 
 func (s *KeeperTestSuite) TestIsEnabledGlobalActor() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	enabled, err := keeper.IsEnabledGlobalActor(ctx, testAddr)
@@ -208,8 +210,8 @@ func (s *KeeperTestSuite) TestIsEnabledGlobalActor() {
 }
 
 func (s *KeeperTestSuite) TestDisableTopicWorkerWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Test disabling when not enabled
@@ -238,8 +240,8 @@ func (s *KeeperTestSuite) TestDisableTopicWorkerWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestDisableTopicReputerWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Test disabling when not enabled
@@ -268,8 +270,8 @@ func (s *KeeperTestSuite) TestDisableTopicReputerWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestRemoveFromGlobalWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 
 	// Test removing non-existent actor
 	nonExistentActor := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv"
@@ -296,8 +298,8 @@ func (s *KeeperTestSuite) TestRemoveFromGlobalWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestRemoveFromTopicCreatorWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 
 	actor := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv" // Replace with a valid Bech32 actor ID for testing
 
@@ -325,8 +327,8 @@ func (s *KeeperTestSuite) TestRemoveFromTopicCreatorWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestRemoveFromTopicWorkerWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Test removing non-existent worker
@@ -355,8 +357,8 @@ func (s *KeeperTestSuite) TestRemoveFromTopicWorkerWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestRemoveFromTopicReputerWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Test removing non-existent reputer
@@ -385,8 +387,8 @@ func (s *KeeperTestSuite) TestRemoveFromTopicReputerWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestIsEnabledWhitelistedTopicCreator() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	enabled, err := keeper.IsEnabledWhitelistedTopicCreator(ctx, testAddr)
@@ -402,8 +404,8 @@ func (s *KeeperTestSuite) TestIsEnabledWhitelistedTopicCreator() {
 }
 
 func (s *KeeperTestSuite) TestIsEnabledTopicWorker() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	topicId := uint64(1)
 
@@ -433,8 +435,8 @@ func (s *KeeperTestSuite) TestIsEnabledTopicWorker() {
 }
 
 func (s *KeeperTestSuite) TestIsEnabledTopicReputer() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	topicId := uint64(1)
 
@@ -464,8 +466,8 @@ func (s *KeeperTestSuite) TestIsEnabledTopicReputer() {
 }
 
 func (s *KeeperTestSuite) TestCanUpdateGlobalWhitelists() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	can, err := keeper.CanUpdateAllGlobalWhitelists(ctx, testAddr)
@@ -481,8 +483,8 @@ func (s *KeeperTestSuite) TestCanUpdateGlobalWhitelists() {
 }
 
 func (s *KeeperTestSuite) TestCanUpdateParams() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	can, err := keeper.CanUpdateParams(ctx, testAddr)
@@ -498,10 +500,10 @@ func (s *KeeperTestSuite) TestCanUpdateParams() {
 }
 
 func (s *KeeperTestSuite) TestCanUpdateTopicWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
-	topicId := s.CreateOneTopic(60)
+	topicId := s.CreateTopic(testutil.WithEpochLength(60))
 	topic, err := keeper.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
@@ -522,8 +524,8 @@ func (s *KeeperTestSuite) TestCanUpdateTopicWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestCanCreateTopicWithWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	testAddr := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	can, err := keeper.CanCreateTopic(ctx, testAddr)
@@ -539,8 +541,8 @@ func (s *KeeperTestSuite) TestCanCreateTopicWithWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestCanSubmitWorkerPayloadWithWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	enabledTopicWorker := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	enabledGlobalActor := "allo14s7gd09y7mkje8547ukm0c8gjnd3hak7v3fwz6"
 	neitherAddr := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv"
@@ -576,8 +578,8 @@ func (s *KeeperTestSuite) TestCanSubmitWorkerPayloadWithWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestCanSubmitReputerPayloadWithWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	enabledTopicReputer := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	enabledGlobalActor := "allo14s7gd09y7mkje8547ukm0c8gjnd3hak7v3fwz6"
 	neitherAddr := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv"
@@ -613,8 +615,8 @@ func (s *KeeperTestSuite) TestCanSubmitReputerPayloadWithWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestCanAddReputerStakeWithWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	enabledTopicReputer := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	enabledGlobalActor := "allo14s7gd09y7mkje8547ukm0c8gjnd3hak7v3fwz6"
 	neitherAddr := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv"
@@ -650,9 +652,9 @@ func (s *KeeperTestSuite) TestCanAddReputerStakeWithWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestEnableDisableTopicWorkerWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(2)
 
 	// Initially should be disabled
 	enabled, err := keeper.IsTopicWorkerWhitelistEnabled(ctx, topicId)
@@ -677,9 +679,9 @@ func (s *KeeperTestSuite) TestEnableDisableTopicWorkerWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestEnableDisableTopicReputerWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(2)
 
 	// Initially should be disabled
 	enabled, err := keeper.IsTopicReputerWhitelistEnabled(ctx, topicId)
@@ -704,8 +706,8 @@ func (s *KeeperTestSuite) TestEnableDisableTopicReputerWhitelist() {
 }
 
 func (s *KeeperTestSuite) TestCanUpdateTopicCreatorWhitelist() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 
 	// Test non-admin actor
 	nonAdmin := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv"

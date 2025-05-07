@@ -9,40 +9,16 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func createNewTopic(s *RewardsTestSuite) uint64 {
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.addrs[5].String(),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		AllowNegative:            false,
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
-	s.Require().NoError(err)
-	return res.TopicId
-}
-
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameFractionsForEqualZeroScores() {
-	topicId := createNewTopic(s)
+	topicId := uint64(1)
 	blockHeight := int64(1003)
 
 	workerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+		s.Addrs()[0],
+		s.Addrs()[1],
+		s.Addrs()[2],
+		s.Addrs()[3],
+		s.Addrs()[4],
 	}
 
 	// Check with all scores being 0
@@ -58,11 +34,11 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 			}
 
 			// Persist worker inference score
-			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			// Persist worker forecast score
-			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err = s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 		}
 
@@ -76,8 +52,8 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 
 	// Get worker rewards
 	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
@@ -88,8 +64,8 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 	s.Require().Equal(5, len(inferersRewardFractions))
 
 	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
@@ -121,15 +97,15 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFractionsForEqualScores() {
-	topicId := createNewTopic(s)
+	topicId := uint64(1)
 	blockHeight := int64(1003)
 
 	workerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+		s.Addrs()[0],
+		s.Addrs()[1],
+		s.Addrs()[2],
+		s.Addrs()[3],
+		s.Addrs()[4],
 	}
 
 	// Generate old scores - 3 equal past scores per worker
@@ -145,11 +121,11 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 			}
 
 			// Persist worker inference score
-			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			// Persist worker forecast score
-			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err = s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 		}
 
@@ -163,8 +139,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 
 	// Get worker rewards
 	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
@@ -174,8 +150,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(inferersRewardFractions))
 	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
@@ -207,7 +183,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
-	topicId := createNewTopic(s)
+	topicId := uint64(1)
 	blockHeight := int64(4)
 
 	finalEpoch := 304
@@ -215,25 +191,25 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch4Get := epochGet[finalEpoch]
 
-	inferer0 := s.addrsStr[0]
-	inferer1 := s.addrsStr[1]
-	inferer2 := s.addrsStr[2]
-	inferer3 := s.addrsStr[3]
-	inferer4 := s.addrsStr[4]
+	inferer0 := s.AddrsStr()[0]
+	inferer1 := s.AddrsStr()[1]
+	inferer2 := s.AddrsStr()[2]
+	inferer3 := s.AddrsStr()[3]
+	inferer4 := s.AddrsStr()[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrsStr[5]
-	forecaster1 := s.addrsStr[6]
-	forecaster2 := s.addrsStr[7]
+	forecaster0 := s.AddrsStr()[5]
+	forecaster1 := s.AddrsStr()[6]
+	forecaster2 := s.AddrsStr()[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// CSV values were generated considering just max scores = 10
 	// The actual implementation considers max scores = 10 * max actors to reward
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	params.MaxTopInferersToReward = 1
 	params.MaxTopForecastersToReward = 1
-	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err)
 
 	// Add scores from previous epochs
@@ -264,7 +240,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			}
 
 			// Persist worker inference score
-			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			if j == 3 {
@@ -281,7 +257,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			}
 
 			// Persist worker forecast score
-			err := s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err := s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			if j == 3 {
@@ -292,8 +268,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 
 	// Get worker rewards
 	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("3"),
@@ -314,8 +290,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	}
 
 	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("3"),
@@ -343,11 +319,11 @@ func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
 	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
 	betaEntropy := alloraMath.MustNewDecFromString("0.25")
 
-	inferer0 := s.addrs[5].String()
-	inferer1 := s.addrs[6].String()
-	inferer2 := s.addrs[7].String()
-	inferer3 := s.addrs[8].String()
-	inferer4 := s.addrs[9].String()
+	inferer0 := s.Addrs()[5].String()
+	inferer1 := s.Addrs()[6].String()
+	inferer2 := s.Addrs()[7].String()
+	inferer3 := s.Addrs()[8].String()
+	inferer4 := s.Addrs()[9].String()
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
 	infererPreviousFractions := []alloraMath.Dec{
@@ -360,7 +336,7 @@ func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
 
 	// Add previous reward fractions
 	for i, infererAddr := range infererAddresses {
-		err := s.emissionsKeeper.SetPreviousInferenceRewardFraction(s.ctx, topicId, infererAddr, infererPreviousFractions[i])
+		err := s.EmissionsKeeper().SetPreviousInferenceRewardFraction(s.Ctx(), topicId, infererAddr, infererPreviousFractions[i])
 		s.Require().NoError(err)
 	}
 
@@ -373,8 +349,8 @@ func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
 	}
 
 	inferenceEntropy, err := rewards.GetInferenceTaskEntropy(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		taskRewardAlpha,
 		betaEntropy,
@@ -388,7 +364,7 @@ func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
-	topicId := createNewTopic(s)
+	topicId := s.CreateTopic()
 	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
 	betaEntropy := alloraMath.MustNewDecFromString("0.25")
 
@@ -396,9 +372,9 @@ func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
 	epoch1Get := epochGet[301]
 	epoch2Get := epochGet[302]
 
-	forecaster0 := s.addrs[10].String()
-	forecaster1 := s.addrs[11].String()
-	forecaster2 := s.addrs[12].String()
+	forecaster0 := s.Addrs()[10].String()
+	forecaster1 := s.Addrs()[11].String()
+	forecaster2 := s.Addrs()[12].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	forecasterPreviousFractions := []alloraMath.Dec{
@@ -409,7 +385,7 @@ func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
 
 	// Add previous reward fractions
 	for i, forecasterAddr := range forecasterAddresses {
-		err := s.emissionsKeeper.SetPreviousForecastRewardFraction(s.ctx, topicId, forecasterAddr, forecasterPreviousFractions[i])
+		err := s.EmissionsKeeper().SetPreviousForecastRewardFraction(s.Ctx(), topicId, forecasterAddr, forecasterPreviousFractions[i])
 		s.Require().NoError(err)
 	}
 
@@ -420,8 +396,8 @@ func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
 	}
 
 	forecastEntropy, err := rewards.GetForecastTaskEntropy(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		taskRewardAlpha,
 		betaEntropy,
@@ -435,7 +411,7 @@ func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
-	topicId := createNewTopic(s)
+	topicId := s.CreateTopic()
 	blockHeight := int64(1003)
 
 	// Generate old scores
@@ -444,8 +420,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 
 	// Get worker rewards
 	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
@@ -465,7 +441,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
-	topicId := createNewTopic(s)
+	topicId := s.CreateTopic()
 	blockHeight := int64(1003)
 
 	// Generate old scores
@@ -474,8 +450,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 
 	// Get worker rewards
 	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
@@ -501,11 +477,11 @@ func (s *RewardsTestSuite) TestInferenceRewardsFromCsv() {
 	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []types.Score{
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[0], Score: epoch3Get("inferer_score_0")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[1], Score: epoch3Get("inferer_score_1")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[2], Score: epoch3Get("inferer_score_2")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[3], Score: epoch3Get("inferer_score_3")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[4], Score: epoch3Get("inferer_score_4")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[0], Score: epoch3Get("inferer_score_0")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[1], Score: epoch3Get("inferer_score_1")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[2], Score: epoch3Get("inferer_score_2")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[3], Score: epoch3Get("inferer_score_3")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[4], Score: epoch3Get("inferer_score_4")},
 	}
 	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
@@ -539,11 +515,11 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []types.Score{
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[0], Score: epoch3Get("inferer_score_0")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[1], Score: epoch3Get("inferer_score_1")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[2], Score: epoch3Get("inferer_score_2")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[3], Score: epoch3Get("inferer_score_3")},
-		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[4], Score: epoch3Get("inferer_score_4")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[0], Score: epoch3Get("inferer_score_0")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[1], Score: epoch3Get("inferer_score_1")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[2], Score: epoch3Get("inferer_score_2")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[3], Score: epoch3Get("inferer_score_3")},
+		{TopicId: 1, BlockHeight: 300, Address: s.AddrsStr()[4], Score: epoch3Get("inferer_score_4")},
 	}
 	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
@@ -573,92 +549,92 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
 	infererValues := []*types.WorkerAttributedValue{
 		{
-			Worker: s.addrs[0].String(),
+			Worker: s.Addrs()[0].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01327"),
 		},
 		{
-			Worker: s.addrs[1].String(),
+			Worker: s.Addrs()[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01302"),
 		},
 		{
-			Worker: s.addrs[2].String(),
+			Worker: s.Addrs()[2].String(),
 			Value:  alloraMath.MustNewDecFromString("0.0136"),
 		},
 		{
-			Worker: s.addrs[3].String(),
+			Worker: s.Addrs()[3].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01491"),
 		},
 		{
-			Worker: s.addrs[4].String(),
+			Worker: s.Addrs()[4].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01686"),
 		},
 	}
 
 	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
-			Worker: s.addrs[0].String(),
+			Worker: s.Addrs()[0].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01327"),
 		},
 		{
-			Worker: s.addrs[1].String(),
+			Worker: s.Addrs()[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01302"),
 		},
 		{
-			Worker: s.addrs[2].String(),
+			Worker: s.Addrs()[2].String(),
 			Value:  alloraMath.MustNewDecFromString("0.0136"),
 		},
 		{
-			Worker: s.addrs[3].String(),
+			Worker: s.Addrs()[3].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01491"),
 		},
 		{
-			Worker: s.addrs[4].String(),
+			Worker: s.Addrs()[4].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01686"),
 		},
 	}
 
 	oneOutForecasterLosses := []*types.WithheldWorkerAttributedValue{
 		{
-			Worker: s.addrs[0].String(),
+			Worker: s.Addrs()[0].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01402"),
 		},
 		{
-			Worker: s.addrs[1].String(),
+			Worker: s.Addrs()[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01316"),
 		},
 		{
-			Worker: s.addrs[2].String(),
+			Worker: s.Addrs()[2].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01657"),
 		},
 		{
-			Worker: s.addrs[3].String(),
+			Worker: s.Addrs()[3].String(),
 			Value:  alloraMath.MustNewDecFromString("0.0124"),
 		},
 		{
-			Worker: s.addrs[4].String(),
+			Worker: s.Addrs()[4].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01341"),
 		},
 	}
 
 	oneInNaiveLosses := []*types.WorkerAttributedValue{
 		{
-			Worker: s.addrs[0].String(),
+			Worker: s.Addrs()[0].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01529"),
 		},
 		{
-			Worker: s.addrs[1].String(),
+			Worker: s.Addrs()[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01141"),
 		},
 		{
-			Worker: s.addrs[2].String(),
+			Worker: s.Addrs()[2].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01562"),
 		},
 		{
-			Worker: s.addrs[3].String(),
+			Worker: s.Addrs()[3].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01444"),
 		},
 		{
-			Worker: s.addrs[4].String(),
+			Worker: s.Addrs()[4].String(),
 			Value:  alloraMath.MustNewDecFromString("0.01396"),
 		},
 	}
@@ -666,7 +642,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	networkLosses := types.ValueBundle{
 		TopicId:                       topicId,
 		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-		Reputer:                       s.addrsStr[9],
+		Reputer:                       s.AddrsStr()[9],
 		ExtraData:                     nil,
 		CombinedValue:                 alloraMath.MustNewDecFromString("0.013481256018186383"),
 		InfererValues:                 infererValues,
@@ -679,7 +655,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	}
 
 	// Persist network losses
-	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
+	err := s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	if err != nil {
 		return types.ValueBundle{}, err
 	}
@@ -695,45 +671,45 @@ func mockSimpleNetworkLosses(
 ) (types.ValueBundle, error) {
 	infererValues := []*types.WorkerAttributedValue{
 		{
-			Worker: s.addrs[0].String(),
+			Worker: s.Addrs()[0].String(),
 			Value:  alloraMath.MustNewDecFromString(worker0Value),
 		},
 		{
-			Worker: s.addrs[1].String(),
+			Worker: s.Addrs()[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.3"),
 		},
 		{
-			Worker: s.addrs[2].String(),
+			Worker: s.Addrs()[2].String(),
 			Value:  alloraMath.MustNewDecFromString("0.4"),
 		},
 	}
 
 	genericLossesWithheld := []*types.WithheldWorkerAttributedValue{
 		{
-			Worker: s.addrs[0].String(),
+			Worker: s.Addrs()[0].String(),
 			Value:  alloraMath.MustNewDecFromString(worker0Value),
 		},
 		{
-			Worker: s.addrs[1].String(),
+			Worker: s.Addrs()[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.3"),
 		},
 		{
-			Worker: s.addrs[2].String(),
+			Worker: s.Addrs()[2].String(),
 			Value:  alloraMath.MustNewDecFromString("0.4"),
 		},
 	}
 
 	genericLosses := []*types.WorkerAttributedValue{
 		{
-			Worker: s.addrs[0].String(),
+			Worker: s.Addrs()[0].String(),
 			Value:  alloraMath.MustNewDecFromString(worker0Value),
 		},
 		{
-			Worker: s.addrs[1].String(),
+			Worker: s.Addrs()[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.3"),
 		},
 		{
-			Worker: s.addrs[2].String(),
+			Worker: s.Addrs()[2].String(),
 			Value:  alloraMath.MustNewDecFromString("0.4"),
 		},
 	}
@@ -741,7 +717,7 @@ func mockSimpleNetworkLosses(
 	networkLosses := types.ValueBundle{
 		TopicId:                       topicId,
 		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-		Reputer:                       s.addrsStr[9],
+		Reputer:                       s.AddrsStr()[9],
 		ExtraData:                     nil,
 		CombinedValue:                 alloraMath.MustNewDecFromString("0.05"),
 		InfererValues:                 infererValues,
@@ -753,7 +729,7 @@ func mockSimpleNetworkLosses(
 		OneOutInfererForecasterValues: nil,
 	}
 
-	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
+	err := s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	if err != nil {
 		return types.ValueBundle{}, err
 	}
@@ -763,11 +739,11 @@ func mockSimpleNetworkLosses(
 
 func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, error) {
 	workerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+		s.Addrs()[0],
+		s.Addrs()[1],
+		s.Addrs()[2],
+		s.Addrs()[3],
+		s.Addrs()[4],
 	}
 
 	var blocks = []int64{
@@ -794,13 +770,13 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, e
 			}
 
 			// Persist worker inference score
-			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blocks[j], scoreToAdd)
+			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blocks[j], scoreToAdd)
 			if err != nil {
 				return nil, err
 			}
 
 			// Persist worker forecast score
-			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blocks[j], scoreToAdd)
+			err = s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blocks[j], scoreToAdd)
 			if err != nil {
 				return nil, err
 			}
