@@ -1,10 +1,13 @@
 package inferencesynthesis
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type RunningWeightedLoss struct {
@@ -104,6 +107,8 @@ func CalcNetworkLosses(
 					"reputer", report.ValueBundle.Reputer)
 				continue
 			}
+
+			fmt.Println(stakeAmount.String(), report.ValueBundle.CombinedValue.String())
 
 			// Update combined loss with reputer reported loss and stake
 			runningWeightedCombinedLoss, err = RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue)

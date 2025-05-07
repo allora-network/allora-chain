@@ -3,74 +3,34 @@ package v7_test
 import (
 	"testing"
 
-	v7 "github.com/allora-network/allora-chain/x/emissions/migrations/v7"
-	oldV6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
-
-	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
-
-	"cosmossdk.io/core/store"
-	"github.com/allora-network/allora-chain/app/params"
-
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-
-	emissions "github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-
-	storetypes "cosmossdk.io/store/types"
-	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
+	"github.com/allora-network/allora-chain/test/testutil"
+	v7 "github.com/allora-network/allora-chain/x/emissions/migrations/v7"
+	oldV6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-type EmissionsV6MigrationTestSuite struct {
-	suite.Suite
-	ctrl *gomock.Controller
-
-	ctx             sdk.Context
-	storeService    store.KVStoreService
-	emissionsKeeper *keeper.Keeper
+type EmissionsV7MigrationTestSuite struct {
+	testutil.TestSuite
 }
 
-func TestEmissionsV6MigrationTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV6MigrationTestSuite))
-}
-
-func (s *EmissionsV6MigrationTestSuite) SetupTest() {
-	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
-	key := storetypes.NewKVStoreKey(emissionstypes.StoreKey)
-	storeService := runtime.NewKVStoreService(key)
-	s.storeService = storeService
-	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	s.ctx = testCtx.Ctx
-
-	// gomock initializations
-	s.ctrl = gomock.NewController(s.T())
-	accountKeeper := emissionstestutil.NewMockAccountKeeper(s.ctrl)
-	bankKeeper := emissionstestutil.NewMockBankKeeper(s.ctrl)
-	emissionsKeeper := keeper.NewKeeper(
-		encCfg.Codec,
-		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName)
-
-	s.emissionsKeeper = &emissionsKeeper
+func TestEmissionsV7MigrationTestSuite(t *testing.T) {
+	suite.Run(t, &EmissionsV7MigrationTestSuite{
+		testutil.TestSuite{
+			ModuleName: "emissions_V7Migrations",
+		},
+	})
 }
 
 // In this test we check that the emissions module params have been migrated
 // and the expected new fields are added and set to true:
 // GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV7MigrationTestSuite) TestMigrateParams() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	defaultParams := emissionstypes.DefaultParams()
 	paramsOld := oldV6Types.Params{
@@ -125,7 +85,7 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
-	err := v7.MigrateParams(s.ctx, store, cdc)
+	err := v7.MigrateParams(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// TO BE ADDED VIA DEFAULT PARAMS:
@@ -134,7 +94,7 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 	// - LambdaInitialScore
 	paramsExpected := defaultParams
 
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)

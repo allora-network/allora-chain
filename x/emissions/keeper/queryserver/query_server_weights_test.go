@@ -6,12 +6,12 @@ import (
 )
 
 func (s *QueryServerTestSuite) TestGetInfererWeight() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(1)
-	worker := s.addrsStr[0]
+	worker := s.AddrsStr()[0]
 	weight := alloraMath.NewDecFromInt64(100)
 
 	// Set initial weight
@@ -27,7 +27,7 @@ func (s *QueryServerTestSuite) TestGetInfererWeight() {
 	s.Require().Equal(weight, response.Weight, "Retrieved weight should match set weight")
 
 	// Test non-existent worker
-	nonExistentWorker := s.addrsStr[1]
+	nonExistentWorker := s.AddrsStr()[1]
 	req.ActorId = nonExistentWorker
 	response, err = queryServer.GetLatestInfererWeight(ctx, req)
 	s.Require().NoError(err)
@@ -35,12 +35,12 @@ func (s *QueryServerTestSuite) TestGetInfererWeight() {
 }
 
 func (s *QueryServerTestSuite) TestGetForecasterWeight() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(1)
-	forecaster := s.addrsStr[0]
+	forecaster := s.AddrsStr()[0]
 	weight := alloraMath.NewDecFromInt64(100)
 
 	// Set initial weight
@@ -56,7 +56,7 @@ func (s *QueryServerTestSuite) TestGetForecasterWeight() {
 	s.Require().Equal(weight, response.Weight, "Retrieved weight should match set weight")
 
 	// Test non-existent forecaster
-	nonExistentForecaster := s.addrsStr[1]
+	nonExistentForecaster := s.AddrsStr()[1]
 	req.ActorId = nonExistentForecaster
 	response, err = queryServer.GetLatestForecasterWeight(ctx, req)
 	s.Require().NoError(err)
@@ -64,9 +64,9 @@ func (s *QueryServerTestSuite) TestGetForecasterWeight() {
 }
 
 func (s *QueryServerTestSuite) TestGetLatestStdnorm() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(1)
 	stdnorm := alloraMath.NewDecFromInt64(100)

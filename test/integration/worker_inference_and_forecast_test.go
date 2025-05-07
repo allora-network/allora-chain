@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/stretchr/testify/require"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/stretchr/testify/require"
 )
 
 func waitForNextChurningBlock(m testCommon.TestConfig, topicId uint64) (*types.Topic, error) {
@@ -135,6 +136,13 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 		BlockHeight: BlockHeightCurrent,
 	}
 
+	inferences, err := m.Client.QueryEmissions().GetLatestNetworkInferences(ctx, &types.GetLatestNetworkInferencesRequest{
+		TopicId: topic.Id,
+	})
+	require.NoError(m.T, err)
+
+	require.NotNil(m.T, inferences.NetworkInferences)
+
 	reputerValueBundle := &types.InputValueBundle{
 		TopicId: topicId,
 		Reputer: reputerAddr,
@@ -143,54 +151,28 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 		},
 		ExtraData:     nil,
 		CombinedValue: alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+		NaiveValue:    alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 		InfererValues: []*types.InputWorkerAttributedValue{
 			{
 				Worker: workerAddr,
 				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
 			},
 		},
-		ForecasterValues: []*types.InputWorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
-		NaiveValue: alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-		OneOutInfererValues: []*types.InputWithheldWorkerAttributedValue{
-			// There cannot be a 1-out inferer value if there is just 1 inferer => this will be ignored by msgserver
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
-		OneOutForecasterValues: []*types.InputWithheldWorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
-		// Just as valid:
-		// OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
-		// OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
-		OneInForecasterValues: []*types.InputWorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-			},
-		},
+		ForecasterValues:              nil,
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
 
 	// Sign
 	src := make([]byte, 0)
-	src, err := reputerValueBundle.XXX_Marshal(src, true)
-	// require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
+	src, err = reputerValueBundle.XXX_Marshal(src, true)
 	if err != nil {
 		return err
 	}
 
 	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(m.AliceAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	// require.NoError(m.T, err, "Sign should not return an error")
 	if err != nil {
 		return err
 	}

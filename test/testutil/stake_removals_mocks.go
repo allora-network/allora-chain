@@ -5,14 +5,15 @@
 package testutil
 
 import (
-	context "context"
-	reflect "reflect"
+	"context"
+	"reflect"
 
-	math "cosmossdk.io/math"
-	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	types "github.com/allora-network/allora-chain/x/emissions/types"
+	"cosmossdk.io/math"
 	types0 "github.com/cosmos/cosmos-sdk/types"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
+
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // MockEmissionsKeeper is a mock of EmissionsKeeper interface.

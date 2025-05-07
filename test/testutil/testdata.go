@@ -4,15 +4,18 @@ import (
 	"encoding/csv"
 	"encoding/hex"
 	"fmt"
+	"math/rand"
 	"strings"
+
+	cosmosMath "cosmossdk.io/math"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/utils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var valueBundleBufferPool = utils.NewBytesPool(1024, 0)
@@ -34,6 +37,22 @@ func GenerateTestAccounts(count int) (
 		addrsStr[i] = addrs[i].String()
 	}
 	return privKeys, pubKeyHexStr, addrs, addrsStr
+}
+
+func GenerateTestStakes(count int) []cosmosMath.Int {
+	minStake := int64(200000)
+	maxStake := int64(1200000)
+
+	stakes := make([]cosmosMath.Int, count)
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
+
+	for i := 0; i < count; i++ {
+		randomValue := minStake + rand.Int63n(maxStake-minStake)
+
+		stakes[i] = cosmosMath.NewInt(randomValue).Mul(cosmosOneE18)
+	}
+
+	return stakes
 }
 
 func GetSimulatedValuesGetterForEpoch(

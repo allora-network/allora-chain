@@ -2,143 +2,26 @@ package actorutils_test
 
 import (
 	"testing"
-	"time"
 
-	"cosmossdk.io/core/header"
-	clog "cosmossdk.io/log"
-	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
-
-	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
-	"github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	auth "github.com/cosmos/cosmos-sdk/x/auth"
-	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
-)
 
-const (
-	multiPerm  = "multiple permissions account"
-	randomPerm = "random permission"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type ActorUtilsTestSuite struct {
-	suite.Suite
-
-	ctx             sdk.Context
-	accountKeeper   keeper.AccountKeeper
-	bankKeeper      keeper.BankKeeper
-	emissionsKeeper keeper.Keeper
-	appModule       module.AppModule
-	key             *storetypes.KVStoreKey
-	privKeys        []secp256k1.PrivKey
-	addrs           []sdk.AccAddress
-	addrsStr        []string
-	pubKeyHexStr    []string
-}
-
-func (a *ActorUtilsTestSuite) SetupTest() {
-	key := storetypes.NewKVStoreKey("emissions")
-	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(a.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
-
-	maccPerms := map[string][]string{
-		"fee_collector":                         {"minter"},
-		"mint":                                  {"minter"},
-		emissionstypes.AlloraStakingAccountName: {"burner", "minter", "staking"},
-		emissionstypes.AlloraRewardsAccountName: {"minter"},
-		emissionstypes.AlloraPendingRewardForDelegatorAccountName: {"minter"},
-		"bonded_tokens_pool":     {"burner", "staking"},
-		"not_bonded_tokens_pool": {"burner", "staking"},
-		multiPerm:                {"burner", "minter", "staking"},
-		randomPerm:               {"random"},
-	}
-
-	accountKeeper := authkeeper.NewAccountKeeper(
-		encCfg.Codec,
-		storeService,
-		authtypes.ProtoBaseAccount,
-		maccPerms,
-		authcodec.NewBech32Codec(params.Bech32PrefixAccAddr),
-		params.Bech32PrefixAccAddr,
-		authtypes.NewModuleAddress("gov").String(),
-	)
-
-	a.privKeys, a.pubKeyHexStr, a.addrs, a.addrsStr = alloratestutil.GenerateTestAccounts(50)
-
-	bankKeeper := bankkeeper.NewBaseKeeper(
-		encCfg.Codec,
-		storeService,
-		accountKeeper,
-		map[string]bool{},
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		clog.NewNopLogger(),
-	)
-
-	a.ctx = ctx
-	a.accountKeeper = accountKeeper
-	a.bankKeeper = bankKeeper
-	a.emissionsKeeper = keeper.NewKeeper(
-		encCfg.Codec,
-		addressCodec,
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName,
-	)
-	a.key = key
-	appModule := module.NewAppModule(encCfg.Codec, a.emissionsKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	a.appModule = appModule
-
-	// Add all tests addresses in whitelists
-	for _, addr := range a.addrsStr {
-		err := a.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		a.Require().NoError(err)
-	}
-
-	err := a.emissionsKeeper.SetTopic(a.ctx, 1, emissionstypes.Topic{
-		Id:                       1,
-		Creator:                  a.addrsStr[49],
-		Metadata:                 "metadata",
-		LossMethod:               "mse",
-		EpochLastEnded:           0,
-		EpochLength:              100,
-		GroundTruthLag:           100,
-		WorkerSubmissionWindow:   100,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            false,
-		InitialRegret:            alloraMath.MustNewDecFromString("0.0001"),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.0001"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.0001"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.0001"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.0001"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.0001"),
-	})
-	a.Require().NoError(err)
+	testutil.TestSuite
 }
 
 func TestModuleTestSuite(t *testing.T) {
-	suite.Run(t, new(ActorUtilsTestSuite))
+	suite.Run(t, &ActorUtilsTestSuite{
+		testutil.TestSuite{
+			ModuleName: "actor_utils_losses",
+		},
+	})
 }
 
 func (a *ActorUtilsTestSuite) signValueBundle(valueBundle *emissionstypes.ValueBundle, privateKey secp256k1.PrivKey) []byte {
@@ -158,16 +41,16 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 		BlockHeight: 1,
 	}
 
-	inferer1 := a.addrsStr[0]
-	inferer2 := a.addrsStr[1]
-	inferer4 := a.addrsStr[3]
-	inferer5 := a.addrsStr[4]
+	inferer1 := a.AddrsStr()[0]
+	inferer2 := a.AddrsStr()[1]
+	inferer4 := a.AddrsStr()[3]
+	inferer5 := a.AddrsStr()[4]
 
-	forecaster1 := a.addrsStr[5]
-	forecaster2 := a.addrsStr[6]
-	forecaster3 := a.addrsStr[7]
-	forecaster4 := a.addrsStr[8]
-	forecaster5 := a.addrsStr[9]
+	forecaster1 := a.AddrsStr()[5]
+	forecaster2 := a.AddrsStr()[6]
+	forecaster3 := a.AddrsStr()[7]
+	forecaster4 := a.AddrsStr()[8]
+	forecaster5 := a.AddrsStr()[9]
 
 	infererLossBundle := emissionstypes.Inferences{
 		Inferences: []*emissionstypes.Inference{
@@ -191,7 +74,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			},
 		},
 	}
-	err := a.emissionsKeeper.InsertActiveInferences(a.ctx, 1, workerNonce.BlockHeight, infererLossBundle)
+	err := a.EmissionsKeeper().InsertActiveInferences(a.Ctx(), 1, workerNonce.BlockHeight, infererLossBundle)
 	a.Require().NoError(err)
 
 	forecasterLossBundle := emissionstypes.Forecasts{
@@ -224,7 +107,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			},
 		},
 	}
-	err = a.emissionsKeeper.InsertActiveForecasts(a.ctx, 1, workerNonce.BlockHeight, forecasterLossBundle)
+	err = a.EmissionsKeeper().InsertActiveForecasts(a.Ctx(), 1, workerNonce.BlockHeight, forecasterLossBundle)
 	a.Require().NoError(err)
 
 	// Prepare a sample ReputerValueBundle
@@ -233,7 +116,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: &workerNonce,
 		},
-		Reputer:       a.addrsStr[40],
+		Reputer:       a.AddrsStr()[40],
 		ExtraData:     nil,
 		CombinedValue: alloraMath.NewDecFromInt64(1000),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
@@ -274,14 +157,14 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			{Worker: forecaster5, Value: alloraMath.NewDecFromInt64(1300)}, // Should be filtered out
 		},
 	}
-	signature := a.signValueBundle(valueBundle, a.privKeys[40])
+	signature := a.signValueBundle(valueBundle, a.PrivKeys()[40])
 	reputerValueBundle := &emissionstypes.ReputerValueBundle{
 		Signature:   signature,
-		Pubkey:      a.pubKeyHexStr[40],
+		Pubkey:      a.PubKeyHexStr()[40],
 		ValueBundle: valueBundle,
 	}
 
-	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(&a.emissionsKeeper, a.ctx, 1, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, reputerValueBundle)
+	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(a.EmissionsKeeper(), a.Ctx(), 1, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, reputerValueBundle)
 	a.Require().NoError(err)
 
 	// Validate the bundle

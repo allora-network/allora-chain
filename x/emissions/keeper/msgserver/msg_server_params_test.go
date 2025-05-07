@@ -2,15 +2,16 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *MsgServerTestSuite) TestUpdateAllParams() {
-	ctx, msgServer := s.ctx, s.msgServer
-	keeper := s.emissionsKeeper
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	keeper := s.EmissionsKeeper()
 	require := s.Require()
 
 	adminPrivateKey := secp256k1.GenPrivKey()
@@ -145,7 +146,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Setup a non-whitelisted sender address
