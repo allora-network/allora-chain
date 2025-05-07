@@ -5,13 +5,15 @@ import (
 	"strconv"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/utils/fn"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
@@ -829,279 +831,27 @@ func prepareMockLosses(reputersCount int, workersCount int) (
 		reputersOneInNaiveLosses
 }
 
-func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputerIndexes []int, workerIndexes []int) types.InputReputerValueBundles {
-	if len(workerIndexes) != 5 {
-		panic("workerIndexes length must be 5")
-	}
-	workers := []sdk.AccAddress{
-		s.addrs[workerIndexes[0]],
-		s.addrs[workerIndexes[1]],
-		s.addrs[workerIndexes[2]],
-		s.addrs[workerIndexes[3]],
-		s.addrs[workerIndexes[4]],
-	}
-	reputersLosses := []alloraMath.BoundedExp40Dec{
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01127")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01791")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01404")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02318")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01251")),
-	}
-	reputersInfererLosses := [][]alloraMath.BoundedExp40Dec{
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0112")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.00231")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02274")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01299")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02515")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01635")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.00179")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.03396")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0153")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01988")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01345")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.00209")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.03249")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01688")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02126")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01675")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.00318")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02623")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02734")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.03526")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02093")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.00213")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02462")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0203")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.03115")),
-		},
-	}
-	reputersForecasterLosses := [][]alloraMath.BoundedExp40Dec{
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0185")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01018")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02105")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01041")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0183")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.00962")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01191")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01616")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01417")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01216")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01338")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0116")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01605")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0133")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01407")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02733")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01697")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01619")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01925")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02018")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01545")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01785")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01662")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01156")),
-		},
-	}
-	reputersNaiveLosses := []alloraMath.BoundedExp40Dec{
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0116")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01428")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01441")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01594")),
-		alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01705")),
-	}
-	reputersInfererOneOutLosses := [][]alloraMath.BoundedExp40Dec{
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0148")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01046")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01192")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01381")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01687")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01043")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01308")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01455")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01607")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01205")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01339")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01053")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01424")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01428")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01446")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01674")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02944")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01796")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02187")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01895")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01049")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02068")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01573")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01487")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02639")),
-		},
-	}
-	reputersForecasterOneOutLosses := [][]alloraMath.BoundedExp40Dec{
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01136")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01185")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01568")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.00949")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01339")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01357")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01108")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01633")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01208")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01278")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01805")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01229")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01586")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01234")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01513")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01637")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01594")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01608")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02203")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01486")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01981")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02123")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02134")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0217")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01177")),
-		},
-	}
-	reputersOneInNaiveLosses := [][]alloraMath.BoundedExp40Dec{
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01588")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01012")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01467")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0128")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01234")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01239")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01023")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01712")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0116")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01639")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01419")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01497")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01629")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01514")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01133")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01936")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01518")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.018")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02212")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02259")),
-		},
-		{
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01602")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01194")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0153")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.0199")),
-			alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01673")),
-		},
-	}
-
-	var reputerValueBundles types.InputReputerValueBundles
-	for i, reputerIndex := range reputerIndexes {
-		valueBundle := &types.InputValueBundle{
-			TopicId: topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{
-				ReputerNonce: &types.Nonce{
-					BlockHeight: blockHeight,
-				},
-			},
-			Reputer:                       s.addrsStr[reputerIndex],
-			ExtraData:                     nil,
-			CombinedValue:                 reputersLosses[i],
-			NaiveValue:                    reputersNaiveLosses[i],
-			InfererValues:                 make([]*types.InputWorkerAttributedValue, len(workers)),
-			ForecasterValues:              make([]*types.InputWorkerAttributedValue, len(workers)),
-			OneOutInfererValues:           make([]*types.InputWithheldWorkerAttributedValue, len(workers)),
-			OneOutForecasterValues:        make([]*types.InputWithheldWorkerAttributedValue, len(workers)),
-			OneInForecasterValues:         make([]*types.InputWorkerAttributedValue, len(workers)),
-			OneOutInfererForecasterValues: nil,
-		}
-
-		for j, worker := range workers {
-			valueBundle.InfererValues[j] = &types.InputWorkerAttributedValue{Worker: worker.String(), Value: reputersInfererLosses[i][j]}
-			valueBundle.ForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: worker.String(), Value: reputersForecasterLosses[i][j]}
-			valueBundle.OneOutInfererValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersInfererOneOutLosses[i][j]}
-			valueBundle.OneOutForecasterValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersForecasterOneOutLosses[i][j]}
-			valueBundle.OneInForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: worker.String(), Value: reputersOneInNaiveLosses[i][j]}
-		}
-
-		sig, err := signInputValueBundle(valueBundle, s.privKeys[reputerIndex])
-		s.Require().NoError(err)
-
-		bundle := &types.InputReputerValueBundle{
-			Pubkey:      s.pubKeyHexStr[reputerIndex],
-			Signature:   sig,
-			ValueBundle: valueBundle,
-		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
-	}
-
-	return reputerValueBundles
-}
-
-func generateHugeLossBundles(
-	s *RewardsTestSuite,
+func (s *RewardsTestSuite) generateLossBundles(
 	blockHeight int64,
 	topicId uint64,
 	reputerIndexes []int,
-	workerIndexes []int,
-) types.InputReputerValueBundles {
-	var (
-		reputersLosses,
-		reputersInfererLosses,
-		reputersForecasterLosses,
-		reputersNaiveLosses,
-		reputersInfererOneOutLosses,
-		reputersForecasterOneOutLosses,
-		reputersOneInNaiveLosses = prepareMockLosses(len(reputerIndexes), len(workerIndexes))
-	)
+	reputerValues ...map[string]string,
+) (reputerValueBundles types.InputReputerValueBundles) {
+	rv := len(reputerValues)
+	hasReputerValues := rv > 0
+	if hasReputerValues && len(reputerIndexes) != rv {
+		panic("invalid reputer values length")
+	}
 
-	var reputerValueBundles types.InputReputerValueBundles
+	networkInferences, err := s.emissionsKeeper.GetLatestNetworkInferences(s.ctx, topicId, false)
+	s.Require().NoError(err)
+
+	deltaVal := alloraMath.MustNewDecFromString("0.01988")
+
 	for i, reputerIndex := range reputerIndexes {
+		var val alloraMath.Dec
+		combinedVal := alloraMath.MustNewDecFromString("0.1") // , _ := networkInferences.CombinedValue.Sub(deltaVal)
+
 		valueBundle := &types.InputValueBundle{
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -1109,25 +859,73 @@ func generateHugeLossBundles(
 					BlockHeight: blockHeight,
 				},
 			},
-			ExtraData:                     nil,
-			Reputer:                       s.addrsStr[reputerIndex],
-			CombinedValue:                 alloraMath.MustNewBoundedExp40Dec(reputersLosses[i]),
-			NaiveValue:                    alloraMath.MustNewBoundedExp40Dec(reputersNaiveLosses[i]),
-			InfererValues:                 make([]*types.InputWorkerAttributedValue, len(workerIndexes)),
-			ForecasterValues:              make([]*types.InputWorkerAttributedValue, len(workerIndexes)),
-			OneOutInfererValues:           make([]*types.InputWithheldWorkerAttributedValue, len(workerIndexes)),
-			OneOutForecasterValues:        make([]*types.InputWithheldWorkerAttributedValue, len(workerIndexes)),
-			OneInForecasterValues:         make([]*types.InputWorkerAttributedValue, len(workerIndexes)),
-			OneOutInfererForecasterValues: nil,
+			Reputer:       s.addrsStr[reputerIndex],
+			ExtraData:     nil,
+			CombinedValue: alloraMath.MustNewBoundedExp40Dec(combinedVal),
+			NaiveValue:    alloraMath.MustNewBoundedExp40Dec(combinedVal),
+			InfererValues: fn.Map(networkInferences.InfererValues, func(inf *types.WorkerAttributedValue) *types.InputWorkerAttributedValue {
+				val, _ = inf.Value.Sub(deltaVal)
+				if hasReputerValues {
+					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
+				}
+				return &types.InputWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
+			}),
+			ForecasterValues: fn.Map(networkInferences.ForecasterValues, func(inf *types.WorkerAttributedValue) *types.InputWorkerAttributedValue {
+				val, _ = inf.Value.Sub(deltaVal)
+				if hasReputerValues {
+					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
+				}
+				return &types.InputWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
+			}),
+			OneOutInfererValues: fn.Map(networkInferences.OneOutInfererValues, func(inf *types.WithheldWorkerAttributedValue) *types.InputWithheldWorkerAttributedValue {
+				val, _ = inf.Value.Sub(deltaVal)
+				if hasReputerValues {
+					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
+				}
+				return &types.InputWithheldWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
+			}),
+			OneOutForecasterValues: fn.Map(networkInferences.OneOutForecasterValues, func(inf *types.WithheldWorkerAttributedValue) *types.InputWithheldWorkerAttributedValue {
+				val, _ = inf.Value.Sub(deltaVal)
+				if hasReputerValues {
+					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
+				}
+				return &types.InputWithheldWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
+			}),
+			OneInForecasterValues: fn.Map(networkInferences.OneInForecasterValues, func(inf *types.WorkerAttributedValue) *types.InputWorkerAttributedValue {
+				val, _ = inf.Value.Sub(deltaVal)
+				if hasReputerValues {
+					val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
+				}
+				return &types.InputWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewBoundedExp40Dec(val)}
+			}),
+			OneOutInfererForecasterValues: fn.Map(networkInferences.OneOutInfererForecasterValues, func(inf *types.OneOutInfererForecasterValues) *types.InputOneOutInfererForecasterValues {
+				return &types.InputOneOutInfererForecasterValues{Forecaster: inf.Forecaster, OneOutInfererValues: fn.Map(inf.OneOutInfererValues, func(inf *types.WithheldWorkerAttributedValue) *types.InputWithheldWorkerAttributedValue {
+					val, _ = inf.Value.Sub(deltaVal)
+					if hasReputerValues {
+						val = alloraMath.MustNewDecFromString(reputerValues[i][inf.Worker])
+					}
+					return &types.InputWithheldWorkerAttributedValue{Worker: inf.Worker, Value: alloraMath.MustNewCappedBoundedExp40Dec(val)}
+				})}
+			}),
 		}
 
-		for j, workerIndex := range workerIndexes {
-			valueBundle.InfererValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersInfererLosses[i][j])}
-			valueBundle.ForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersForecasterLosses[i][j])}
-			valueBundle.OneOutInfererValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersInfererOneOutLosses[i][j])}
-			valueBundle.OneOutForecasterValues[j] = &types.InputWithheldWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersForecasterOneOutLosses[i][j])}
-			valueBundle.OneInForecasterValues[j] = &types.InputWorkerAttributedValue{Worker: s.addrsStr[workerIndex], Value: alloraMath.MustNewBoundedExp40Dec(reputersOneInNaiveLosses[i][j])}
+		if len(valueBundle.ForecasterValues) > 0 {
+			infererValues := make([]*types.InputWorkerAttributedValue, len(valueBundle.InfererValues))
+			for i, inf := range valueBundle.InfererValues {
+				infererValues[i] = &types.InputWorkerAttributedValue{
+					Worker: inf.Worker,
+					Value:  inf.Value,
+				}
+			}
+			valueBundle.ForecasterValues = infererValues
+			valueBundle.ForecasterValues[0].Value = valueBundle.CombinedValue
+			valueBundle.OneOutInfererValues[0].Value = valueBundle.CombinedValue
+			valueBundle.OneOutForecasterValues = valueBundle.OneOutInfererValues
+			valueBundle.OneOutForecasterValues[0].Value = valueBundle.CombinedValue
+			valueBundle.OneInForecasterValues = valueBundle.ForecasterValues
+			valueBundle.OneInForecasterValues[0].Value = valueBundle.CombinedValue
 		}
+		valueBundle.OneOutInfererForecasterValues = nil
 
 		sig, err := signInputValueBundle(valueBundle, s.privKeys[reputerIndex])
 		s.Require().NoError(err)
@@ -1141,55 +939,6 @@ func generateHugeLossBundles(
 	}
 
 	return reputerValueBundles
-}
-
-func generateHugeWorkerDataBundles(
-	s *RewardsTestSuite,
-	blockHeight int64,
-	topicId uint64,
-	workerIndexes []int,
-) []*types.InputWorkerDataBundle {
-	var inferences []*types.InputWorkerDataBundle
-	for _, workerIndex := range workerIndexes {
-		workerInferenceForecastBundle := &types.InputInferenceForecastBundle{
-			Inference: &types.InputInference{
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-				Inferer:     s.addrsStr[workerIndex],
-				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10))),
-				ExtraData:   nil,
-				Proof:       "",
-			},
-			Forecast: &types.InputForecast{
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-				Forecaster:  s.addrsStr[workerIndex],
-				ForecastElements: []*types.InputForecastElement{
-					{
-						Inferer: s.addrs[26].String(),
-						Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10))),
-					},
-					{
-						Inferer: s.addrs[27].String(),
-						Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10))),
-					},
-				},
-				ExtraData: nil,
-			},
-		}
-		workerSig, err := signInputInferenceForecastBundle(workerInferenceForecastBundle, s.privKeys[workerIndex])
-		s.Require().NoError(err)
-		workerBundle := &types.InputWorkerDataBundle{
-			Worker:                             s.addrsStr[workerIndex],
-			TopicId:                            topicId,
-			Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-			InferenceForecastsBundle:           workerInferenceForecastBundle,
-			InferencesForecastsBundleSignature: workerSig,
-			Pubkey:                             s.pubKeyHexStr[workerIndex],
-		}
-		inferences = append(inferences, workerBundle)
-	}
-	return inferences
 }
 
 func signValueBundle(valueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) ([]byte, error) {
@@ -1244,379 +993,84 @@ func signInputInferenceForecastBundle(
 	return signInferenceForecastBundle(bundle, privateKey)
 }
 
-func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.InputWorkerDataBundle {
-	var inferences []*types.InputWorkerDataBundle
-	worker1 := 5
-	worker2 := 6
-	worker3 := 7
-	worker4 := 8
-	worker5 := 9
+func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, workerIndexes []int, workerValues ...TestWorkerValue) []*types.InputWorkerDataBundle {
+	lwv := len(workerValues)
+	hasWorkerValues := lwv > 0
+	if hasWorkerValues && len(workerIndexes) != lwv {
+		panic("invalid worker values length")
+	}
+	var bundles []*types.InputWorkerDataBundle
+	totalAddresses := len(s.addrsStr)
 
-	// inference and forecast data - worker 1
-	worker1InferenceForecastBundle := &types.InputInferenceForecastBundle{
-		Inference: &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker1],
-			Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01127")),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.InputForecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker1],
-			ForecastElements: []*types.InputForecastElement{
-				{
-					Inferer: s.addrs[6].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01127")),
-				},
-				{
-					Inferer: s.addrs[7].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01127")),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker1Sig, err := signInputInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker1])
-	s.Require().NoError(err)
-	worker1Bundle := &types.InputWorkerDataBundle{
-		Worker:                             s.addrsStr[worker1],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker1InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker1Sig,
-		Pubkey:                             s.pubKeyHexStr[worker1],
-	}
-	inferences = append(inferences, worker1Bundle)
-	// inference and forecast data - worker 2
-	worker2InferenceForecastBundle := &types.InputInferenceForecastBundle{
-		Inference: &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker2],
-			Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01791")),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.InputForecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker2],
-			ForecastElements: []*types.InputForecastElement{
-				{
-					Inferer: s.addrs[7].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01791")),
-				},
-				{
-					Inferer: s.addrs[8].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01791")),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker2Sig, err := signInputInferenceForecastBundle(worker2InferenceForecastBundle, s.privKeys[worker2])
-	s.Require().NoError(err)
-	worker2Bundle := &types.InputWorkerDataBundle{
-		Worker:                             s.addrsStr[worker2],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker2InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker2Sig,
-		Pubkey:                             s.pubKeyHexStr[worker2],
-	}
-	inferences = append(inferences, worker2Bundle)
-	// inference and forecast data - worker 3
-	worker3InferenceForecastBundle := &types.InputInferenceForecastBundle{
-		Inference: &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker3],
-			Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01404")),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.InputForecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker3],
-			ForecastElements: []*types.InputForecastElement{
-				{
-					Inferer: s.addrs[8].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01404")),
-				},
-				{
-					Inferer: s.addrs[9].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01404")),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker3Sig, err := signInputInferenceForecastBundle(worker3InferenceForecastBundle, s.privKeys[worker3])
-	s.Require().NoError(err)
-	worker3Bundle := &types.InputWorkerDataBundle{
-		Worker:                             s.addrsStr[worker3],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker3InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker3Sig,
-		Pubkey:                             s.pubKeyHexStr[worker3],
-	}
-	inferences = append(inferences, worker3Bundle)
-	// inference and forecast data - worker 4
-	worker4InferenceForecastBundle := &types.InputInferenceForecastBundle{
-		Inference: &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker4],
-			Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02318")),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.InputForecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker4],
-			ForecastElements: []*types.InputForecastElement{
-				{
-					Inferer: s.addrs[9].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02318")),
-				},
-				{
-					Inferer: s.addrs[0].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.02318")),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker4Sig, err := signInputInferenceForecastBundle(worker4InferenceForecastBundle, s.privKeys[worker4])
-	s.Require().NoError(err)
-	worker4Bundle := &types.InputWorkerDataBundle{
-		Worker:                             s.addrsStr[worker4],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker4InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker4Sig,
-		Pubkey:                             s.pubKeyHexStr[worker4],
-	}
-	inferences = append(inferences, worker4Bundle)
-	// inference and forecast data - worker 5
-	worker5InferenceForecastBundle := &types.InputInferenceForecastBundle{
-		Inference: &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker5],
-			Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01251")),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.InputForecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker5],
-			ForecastElements: []*types.InputForecastElement{
-				{
-					Inferer: s.addrs[0].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01251")),
-				},
-				{
-					Inferer: s.addrs[1].String(),
-					Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("0.01251")),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker5Sig, err := signInputInferenceForecastBundle(worker5InferenceForecastBundle, s.privKeys[worker5])
-	s.Require().NoError(err)
-	worker5Bundle := &types.InputWorkerDataBundle{
-		Worker:                             s.addrsStr[worker5],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker5InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker5Sig,
-		Pubkey:                             s.pubKeyHexStr[worker5],
-	}
-	inferences = append(inferences, worker5Bundle)
+	for i, workerIdx := range workerIndexes {
+		// Generate random inference value between 0.01 and 0.025
+		inferenceValueStr := workerValues[i].Value
+		if !hasWorkerValues {
+			rand.Seed(int64(workerIdx) + blockHeight)
+			inferenceValueStr = strconv.FormatFloat(0.01+rand.Float64()*0.015, 'f', 5, 64)
+		}
 
-	return inferences
+		// Select forecast targets (next two workers in sequence, wrapping if needed)
+		forecastTargets := []int{
+			(workerIdx + 0) % totalAddresses,
+			(workerIdx + 1) % totalAddresses,
+			(workerIdx + 2) % totalAddresses,
+		}
+
+		// Create forecast elements
+		forecastElements := []*types.InputForecastElement{
+			{
+				Inferer: s.addrs[forecastTargets[0]].String(),
+				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
+			},
+			{
+				Inferer: s.addrs[forecastTargets[1]].String(),
+				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
+			},
+			{
+				Inferer: s.addrs[forecastTargets[2]].String(),
+				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
+			},
+		}
+
+		// Create inference-forecast bundle
+		inferenceForecastBundle := &types.InputInferenceForecastBundle{
+			Inference: &types.InputInference{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Inferer:     s.addrsStr[workerIdx],
+				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
+				ExtraData:   nil,
+				Proof:       "",
+			},
+			Forecast: &types.InputForecast{
+				TopicId:          topicId,
+				BlockHeight:      blockHeight,
+				Forecaster:       s.addrsStr[workerIdx],
+				ForecastElements: forecastElements,
+				ExtraData:        nil,
+			},
+		}
+
+		// Sign the bundle
+		signature, err := signInputInferenceForecastBundle(inferenceForecastBundle, s.privKeys[workerIdx])
+		s.Require().NoError(err)
+
+		// Create the complete worker data bundle
+		bundle := &types.InputWorkerDataBundle{
+			Worker:                             s.addrsStr[workerIdx],
+			Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+			TopicId:                            topicId,
+			InferenceForecastsBundle:           inferenceForecastBundle,
+			InferencesForecastsBundleSignature: signature,
+			Pubkey:                             s.pubKeyHexStr[workerIdx],
+		}
+
+		bundles = append(bundles, bundle)
+	}
+
+	return bundles
 }
-
-/* to be rewritten in PROTO-3088
-func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
-	var newInferences []*types.WorkerDataBundle
-	worker1 := 13
-	worker2 := 14
-
-	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
-		Inference: &types.Inference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker1],
-			Value:       alloraMath.MustNewDecFromString("0.01251"),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.Forecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker1],
-			ForecastElements: []*types.ForecastElement{
-				{
-					Inferer: s.addrs[7].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-				{
-					Inferer: s.addrs[8].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker1Sig, err := signInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker1])
-	s.Require().NoError(err)
-	worker1Bundle := &types.WorkerDataBundle{
-		Worker:                             s.addrsStr[worker1],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker1InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker1Sig,
-		Pubkey:                             s.pubKeyHexStr[worker1],
-	}
-	newInferences = append(newInferences, worker1Bundle)
-
-	worker2InferenceForecastBundle := &types.InferenceForecastBundle{
-		Inference: &types.Inference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker2],
-			Value:       alloraMath.MustNewDecFromString("10000"),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.Forecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker2],
-			ForecastElements: []*types.ForecastElement{
-				{
-					Inferer: s.addrs[5].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-				{
-					Inferer: s.addrs[6].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker2Sig, err := signInferenceForecastBundle(worker2InferenceForecastBundle, s.privKeys[worker2])
-	s.Require().NoError(err)
-	worker2Bundle := &types.WorkerDataBundle{
-		Worker:                             s.addrsStr[worker2],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker2InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker2Sig,
-		Pubkey:                             s.pubKeyHexStr[worker2],
-	}
-	newInferences = append(newInferences, worker2Bundle)
-
-	return newInferences
-}
-*/
-
-/* to be rewritten in PROTO-3088
-func generateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
-	var newForecasts []*types.WorkerDataBundle
-	worker1 := 13
-	worker2 := 14
-
-	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
-		Inference: &types.Inference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker1],
-			Value:       alloraMath.MustNewDecFromString("0.01251"),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.Forecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker1],
-			ForecastElements: []*types.ForecastElement{
-				{
-					Inferer: s.addrs[7].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-				{
-					Inferer: s.addrs[8].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker1Sig, err := signInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker1])
-	s.Require().NoError(err)
-	worker1Bundle := &types.WorkerDataBundle{
-		Worker:                             s.addrsStr[worker1],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker1InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker1Sig,
-		Pubkey:                             s.pubKeyHexStr[worker1],
-	}
-	newForecasts = append(newForecasts, worker1Bundle)
-
-	worker2InferenceForecastBundle := &types.InferenceForecastBundle{
-		Inference: &types.Inference{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Inferer:     s.addrsStr[worker2],
-			Value:       alloraMath.MustNewDecFromString("0.01251"),
-			ExtraData:   nil,
-			Proof:       "",
-		},
-		Forecast: &types.Forecast{
-			TopicId:     topicId,
-			BlockHeight: blockHeight,
-			Forecaster:  s.addrsStr[worker2],
-			ForecastElements: []*types.ForecastElement{
-				{
-					Inferer: s.addrs[5].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-				{
-					Inferer: s.addrs[6].String(),
-					Value:   alloraMath.MustNewDecFromString("0.01251"),
-				},
-			},
-			ExtraData: nil,
-		},
-	}
-	worker2Sig, err := signInferenceForecastBundle(worker2InferenceForecastBundle, s.privKeys[worker2])
-	s.Require().NoError(err)
-	worker2Bundle := &types.WorkerDataBundle{
-		Worker:                             s.addrsStr[worker2],
-		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
-		TopicId:                            topicId,
-		InferenceForecastsBundle:           worker2InferenceForecastBundle,
-		InferencesForecastsBundleSignature: worker2Sig,
-		Pubkey:                             s.pubKeyHexStr[worker2],
-	}
-	newForecasts = append(newForecasts, worker2Bundle)
-
-	return newForecasts
-}
-*/
 
 type TestWorkerValue struct {
 	Index int

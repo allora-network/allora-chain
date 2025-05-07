@@ -3,11 +3,12 @@ package rewards_test
 import (
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Test defer execution of CloseReputerNonce
@@ -39,9 +40,8 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	topicId := res.TopicId
 
 	// Reputer Addresses
-	reputerIndexes := s.returnIndexes(0, 5)
-
-	workerIndexes := s.returnIndexes(5, 5)
+	reputerIndexes := returnIndexes(0, 5)
+	workerIndexes := returnIndexes(5, 5)
 
 	// Register and add stakes for reputers
 	for _, index := range reputerIndexes {
@@ -137,8 +137,8 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	// Insert loss bundle from reputer
 	// Use different indexes to enforce different workers are used
 	// This will trigger an error and test if the defer execution of CloseReputerNonce works properly
-	workerIndexes = s.returnIndexes(10, 5)
-	lossBundles := generateLossBundles(s, currentBlockHeight, topicId, reputerIndexes, workerIndexes)
+	workerIndexes = returnIndexes(10, 5)
+	lossBundles := s.generateLossBundles(currentBlockHeight, topicId, reputerIndexes)
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
@@ -217,7 +217,7 @@ func (s *RewardsTestSuite) TestCloseWorkerNonce_DeferExecWhenError() {
 	s.Require().NoError(err)
 	topicId := res.TopicId
 
-	workerIndexes := s.returnIndexes(0, 5)
+	workerIndexes := returnIndexes(0, 5)
 
 	// Register workers
 	for _, index := range workerIndexes {

@@ -2,11 +2,12 @@ package rewards_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func mockTopic(s *RewardsTestSuite) types.Topic {
@@ -130,27 +131,21 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 
 	s.SetParamsForTest()
 
-	reputerIndexes := s.returnIndexes(0, 3)
-	workerIndexes := s.returnIndexes(3, 3)
+	reputerIndexes := returnIndexes(0, 3)
+	workerIndexes := returnIndexes(3, 3)
 	// setup topics
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	epochLength := int64(100)
 	topicId0 := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, epochLength)
-	//topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
+	// topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
 	//
 	// setup values to be identical for both topics
 	reputerValues := []TestWorkerValue{
 		{Index: reputerIndexes[0], Value: "0.2"},
 		{Index: reputerIndexes[1], Value: "0.2"},
 		{Index: reputerIndexes[2], Value: "0.2"},
-	}
-
-	workerValues := []TestWorkerValue{
-		{Index: workerIndexes[0], Value: "0.2"},
-		{Index: workerIndexes[1], Value: "0.2"},
-		{Index: workerIndexes[2], Value: "0.2"},
 	}
 
 	// mint some rewards to give out
@@ -168,7 +163,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	s.Require().NoError(err)
 
 	// Insert inference
-	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId0, topic0.EpochLastEnded, block, workerValues, workerIndexes)
+	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId0, topic0.EpochLastEnded, block, nil, workerIndexes)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId0, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
@@ -186,17 +181,13 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
-	// Generate loss data
-	lossBundles := generateSimpleLossBundles(
-		s,
-		topicId0,
-		topic0.EpochLastEnded,
-		workerValues,
-		reputerValues,
-		s.addrs[workerIndexes[0]],
-		"0.1",
-		"0.1",
-	)
+	// Advance to close the window
+	block = block + topic0.WorkerSubmissionWindow
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
+	// EndBlock closes the  worker nonce
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 
 	// Run endBlock at 201, epoch end block - important bc of the topic in/activation
 	block = block + (topic0.GroundTruthLag - topic0.WorkerSubmissionWindow)
@@ -208,6 +199,14 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	// Insert reputation
 	block = block + 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
+	// Generate loss data
+	lossBundles := s.generateLossBundles(
+		topic0.EpochLastEnded,
+		topicId0,
+		getIndexesFromValues(reputerValues),
+	)
+
 	for _, payload := range lossBundles.ReputerValueBundles {
 		s.RegisterAllReputersOfPayload(topicId0, payload)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.InsertReputerPayloadRequest{
@@ -243,8 +242,8 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 
 	s.SetParamsForTest()
 
-	reputerIndexes := s.returnIndexes(0, 3)
-	workerIndexes := s.returnIndexes(3, 3)
+	reputerIndexes := returnIndexes(0, 3)
+	workerIndexes := returnIndexes(3, 3)
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
@@ -333,6 +332,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 		"0.1",
 		"0.1",
 	)
+
 	for _, payload := range lossBundles.ReputerValueBundles {
 		s.RegisterAllReputersOfPayload(topicId, payload)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.InsertReputerPayloadRequest{

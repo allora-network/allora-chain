@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 
 	cosmosMath "cosmossdk.io/math"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/utils/fn"
@@ -17,10 +18,11 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	coreStore "cosmossdk.io/core/store"
-	"github.com/allora-network/allora-chain/x/emissions/types"
-	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
 
 type TopicId = uint64
@@ -36,14 +38,14 @@ type Keeper struct {
 	addressCodec     address.Codec
 	feeCollectorName string
 
-	/// TYPES
+	// TYPES
 
 	schema     collections.Schema
 	params     collections.Item[types.Params]
 	authKeeper AccountKeeper
 	bankKeeper BankKeeper
 
-	/// TOPIC
+	// TOPIC
 
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
@@ -79,7 +81,7 @@ type Keeper struct {
 	// lowest reputer score ema for a topic
 	lowestReputerScoreEma collections.Map[TopicId, types.Score]
 
-	/// SCORES
+	// SCORES
 
 	// map of (topic, block_height, worker) -> score
 	infererScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
@@ -110,7 +112,7 @@ type Keeper struct {
 	// previous topic reputer ema score at topic quantile
 	previousTopicQuantileReputerScoreEma collections.Map[TopicId, alloraMath.Dec]
 
-	/// STAKING
+	// STAKING
 
 	// total sum stake of all stakers on the network
 	totalStake collections.Item[cosmosMath.Int]
@@ -139,7 +141,7 @@ type Keeper struct {
 	// key set of (delegator, reputer, topicId, blockHeight) to existence of a removal in the forwards map
 	delegateStakeRemovalsByActor collections.KeySet[Quadruple[Delegator, Reputer, TopicId, BlockHeight]]
 
-	/// MISC GLOBAL STATE
+	// MISC GLOBAL STATE
 
 	// map of (topic, worker) -> inference
 	inferences collections.Map[collections.Pair[TopicId, ActorId], types.Inference]
@@ -189,7 +191,7 @@ type Keeper struct {
 	// MAD (Median Absolute Deviation) per topic
 	madInferences collections.Map[TopicId, alloraMath.Dec]
 
-	/// NONCES
+	// NONCES
 
 	// map of open worker nonce windows for topics on particular block heights
 	openWorkerWindows collections.Map[BlockHeight, types.TopicIds]
@@ -203,7 +205,7 @@ type Keeper struct {
 	// map of (topic) -> last dripped block
 	lastDripBlock collections.Map[TopicId, BlockHeight]
 
-	/// REGRETS
+	// REGRETS
 
 	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
 	latestInfererNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
@@ -231,12 +233,12 @@ type Keeper struct {
 	latestInfererWeights    collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	latestForecasterWeights collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 
-	/// INCLUSIONS
+	// INCLUSIONS
 
 	countInfererInclusionsInTopicActiveSet    collections.Map[collections.Pair[TopicId, ActorId], uint64]
 	countForecasterInclusionsInTopicActiveSet collections.Map[collections.Pair[TopicId, ActorId], uint64]
 
-	/// WHITELISTS
+	// WHITELISTS
 
 	// can change parameters and decide who can be included in any whitelist
 	whitelistAdmins collections.KeySet[ActorId]
@@ -259,7 +261,7 @@ type Keeper struct {
 	// map from topic id to whether the whitelist is enabled for topic reputers
 	topicReputerWhitelistEnabled collections.KeySet[TopicId]
 
-	/// RECORD COMMITS
+	// RECORD COMMITS
 
 	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
@@ -545,7 +547,7 @@ func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId
 	}, nil
 }
 
-/// NONCES
+// NONCES
 
 // GetWorkerWindowTopicIds returns the TopicIds for a given BlockHeight.
 // If no TopicIds are found for the BlockHeight, it returns an empty slice.
@@ -812,7 +814,7 @@ func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId Top
 	return k.unfulfilledReputerNonces.Remove(ctx, topicId)
 }
 
-/// INCLUSIONS
+// INCLUSIONS
 
 // Get the count of inferer inclusions in topic active set
 func (k *Keeper) GetCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) (uint64, error) {
@@ -860,7 +862,7 @@ func (k *Keeper) IncrementCountForecasterInclusionsInTopic(ctx context.Context, 
 	return k.countForecasterInclusionsInTopicActiveSet.Set(ctx, key, count)
 }
 
-/// REGRETS
+// REGRETS
 
 func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
@@ -1216,7 +1218,7 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(
 	return regret, false, nil
 }
 
-/// PARAMETERS
+// PARAMETERS
 
 func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 	if err := params.Validate(); err != nil {
@@ -1235,7 +1237,7 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	return ret, nil
 }
 
-/// INFERENCES, FORECASTS
+// INFERENCES, FORECASTS
 
 // Remove the inferences that are outliers
 func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Inferences, error) {
@@ -1803,7 +1805,7 @@ func (k *Keeper) GetWorkerLatestForecastByTopicId(
 	return k.forecasts.Get(ctx, key)
 }
 
-/// TOPIC REWARD NONCE
+// TOPIC REWARD NONCE
 
 // GetTopicRewardNonce retrieves the reward nonce for a given topic ID.
 func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (BlockHeight, error) {
@@ -1832,7 +1834,7 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 	return k.topicRewardNonce.Remove(ctx, topicId)
 }
 
-/// LOSS BUNDLES
+// LOSS BUNDLES
 
 // Append loss bundle for a topic and blockHeight
 func (k *Keeper) AppendReputerLoss(
@@ -2121,7 +2123,7 @@ func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TopicId
 	return nil, types.ErrNotFound
 }
 
-/// STAKING
+// STAKING
 
 // Adds stake to the system for a given topic and reputer
 // Adds to: totalStake, topicStake, stakeReputerAuthority,
@@ -2152,6 +2154,7 @@ func (k *Keeper) AddReputerStake(
 	}
 	totalStakeNew := totalStake.Add(stakeToAdd)
 
+	fmt.Println(reputerAuthority.String(), reputerAuthorityNew.String())
 	// SET NEW VALUES
 	if err := k.SetStakeReputerAuthority(ctx, topicId, reputer, reputerAuthorityNew); err != nil {
 		return errorsmod.Wrap(err, "error setting reputer authority")
@@ -2342,6 +2345,11 @@ func (k *Keeper) RemoveReputerStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
 
+	// Calculate new weight and update totalSumPreviousTopicWeights
+	if err := k.updateTopicWeightAfterStakeChange(ctx, topicId); err != nil {
+		return err
+	}
+
 	// remove stake withdrawal information
 	err = k.DeleteStakeRemoval(ctx, blockHeight, topicId, reputer)
 	if err != nil {
@@ -2494,6 +2502,12 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.SetTotalStake(ctx, totalStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
+
+	// Calculate new weight and update totalSumPreviousTopicWeights
+	if err := k.updateTopicWeightAfterStakeChange(ctx, topicId); err != nil {
+		return err
+	}
+
 	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalBlockHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
@@ -2960,7 +2974,7 @@ func (k *Keeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 	return ret, true, nil
 }
 
-/// REPUTERS
+// REPUTERS
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
 func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer ActorId, reputerInfo types.OffchainNode) error {
@@ -2999,7 +3013,7 @@ func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.Offc
 	return k.reputers.Get(ctx, reputerKey)
 }
 
-/// WORKERS
+// WORKERS
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
 func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker ActorId, workerInfo types.OffchainNode) error {
@@ -3038,7 +3052,7 @@ func (k *Keeper) GetWorkerInfo(ctx sdk.Context, workerKey ActorId) (types.Offcha
 	return k.workers.Get(ctx, workerKey)
 }
 
-/// TOPICS
+// TOPICS
 
 // Get the previous weight during rewards calculation for a topic
 // Returns ((0,0), true) if there was no prior topic weight set, else ((x,y), false) where x,y!=0
@@ -3053,6 +3067,7 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (t
 }
 
 // Set the previous weight during rewards calculation for a topic
+// This function also updates the total sum of previous topic weights
 func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight alloraMath.Dec) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -3287,7 +3302,7 @@ func (k *Keeper) SetBlockToLowestActiveTopicWeight(
 	return k.blockToLowestActiveTopicWeight.Set(ctx, block, weightPair)
 }
 
-/// TOPIC FEE REVENUE
+// TOPIC FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
 func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (cosmosMath.Int, error) {
@@ -3414,7 +3429,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topic types.Topic, blocksP
 	return nil
 }
 
-/// SCORES
+// SCORES
 
 // If the new score is older than the current score, don't update
 func (k *Keeper) SetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
@@ -3826,7 +3841,7 @@ func (k *Keeper) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, to
 	return score, nil
 }
 
-/// REWARD FRACTION
+// REWARD FRACTION
 
 // Gets the previous W_{i-1,m}
 // Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
@@ -3930,7 +3945,7 @@ func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context)
 	return k.previousPercentageRewardToStakedReputers.Get(ctx)
 }
 
-/// BANK KEEPER WRAPPERS
+// BANK KEEPER WRAPPERS
 
 // wrapper around bank keeper SendCoinsFromModuleToAccount
 func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipient ActorId, amt sdk.Coins) error {
@@ -3993,7 +4008,7 @@ func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec
 	return totalRewardDec, nil
 }
 
-/// UTILS
+// UTILS
 
 // Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
 // Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
@@ -4020,7 +4035,7 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 	return limit, cursor, nil
 }
 
-/// STATE MANAGEMENT
+// STATE MANAGEMENT
 
 // Iterate through topic state and prune records that are no longer needed
 func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, blockHeight int64) error {
@@ -4668,4 +4683,58 @@ func (k Keeper) ResetMonthlyRewards(ctx context.Context) error {
 		return err
 	}
 	return k.monthlyTopicRewards.Set(ctx, cosmosMath.ZeroInt())
+}
+
+// updateTopicWeightAfterStakeChange updates the topic weight and total sum of previous topic weights
+// after a stake change occurs, if there is no prior topic weight. This is used by both RemoveReputerStake and RemoveDelegateStake.
+func (k *Keeper) updateTopicWeightAfterStakeChange(
+	ctx context.Context,
+	topicId TopicId,
+) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Get the current topic weight before updating stake
+	_, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting previous topic weight")
+	}
+
+	// If there is no prior topic weight, do nothing
+	if noPrior {
+		return nil
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting topic")
+	}
+
+	// Get params for weight calculation
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+
+	// Calculate the new weight based on updated stake
+	newWeight, _, err := k.GetCurrentTopicWeight(
+		ctx,
+		topicId,
+		topic.EpochLength,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
+	)
+	if err != nil {
+		return errorsmod.Wrap(err, "error calculating new topic weight")
+	}
+
+	// Update previous topic weight and total sum
+	if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
+		return errorsmod.Wrapf(err, "Setting previous topic weight failed")
+	}
+
+	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
+
+	return nil
 }
