@@ -13,11 +13,11 @@ import (
 // Measures RPC endpoint request throughput
 // Metric Name:
 //
-//	allora_rpc_request_counter
+//	allora_emissions_request_counter
 func IncrementRpcRequestCounter(endpoint string, err *error) {
 	success := *err == nil
 	telemetry.IncrCounterWithLabels(
-		[]string{"allora", "request", "counter"},
+		[]string{"allora", "emissions", "request", "counter"},
 		float32(1),
 		[]metrics.Label{
 			telemetry.NewLabel("endpoint", endpoint),
@@ -29,10 +29,10 @@ func IncrementRpcRequestCounter(endpoint string, err *error) {
 // Measures the RPC request latency in milliseconds
 // Metric Name:
 //
-//	allora_rpc_request_latency_ms
+//	allora_request_latency_ms
 func MeasureRpcRequestLatency(endpoint string, startTime time.Time) {
 	metrics.MeasureSinceWithLabels(
-		[]string{"allora", "request", "latency_ms"},
+		[]string{"allora", "emissions", "request", "latency_ms"},
 		startTime.UTC(),
 		[]metrics.Label{
 			telemetry.NewLabel("endpoint", endpoint),
@@ -44,10 +44,10 @@ func MeasureRpcRequestLatency(endpoint string, startTime time.Time) {
 // This metric counts the number of events produced by the system.
 // Metric Name:
 //
-//	allora_loadtest_produce_count
+//	allora_emissions_produce_count
 func IncrProducerEventCount(msgType string) {
 	telemetry.IncrCounterWithLabels(
-		[]string{"allora", "loadtest", "produce", "count"},
+		[]string{"allora", "emissions", "event", "count"},
 		1,
 		[]metrics.Label{telemetry.NewLabel("msg_type", msgType)},
 	)
