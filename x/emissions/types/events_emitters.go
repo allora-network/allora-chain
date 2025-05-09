@@ -50,7 +50,7 @@ func EmitNewNetworkLossSetEvent(ctx sdk.Context, topicId TopicId, blockHeight Bl
 }
 
 func EmitNewNetworkInferencesEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
-	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
+	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	err := ctx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(topicId, blockHeight, networkInferences))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
