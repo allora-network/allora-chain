@@ -14,7 +14,7 @@ import (
 //	allora_mint_produce_count
 func IncrProducerEventCount(msgType string) {
 	telemetry.IncrCounterWithLabels(
-		[]string{"allora", "mint", "event", "count"},
+		[]string{"allora", "mint", "event", "total"},
 		1,
 		[]metrics.Label{telemetry.NewLabel("msg_type", msgType)},
 	)

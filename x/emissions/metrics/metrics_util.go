@@ -29,7 +29,7 @@ func IncrementRpcRequestCounter(endpoint string, err *error) {
 // Measures the RPC request latency in milliseconds
 // Metric Name:
 //
-//	allora_request_latency_ms
+//	allora_request_duration_ms
 func MeasureRpcRequestLatency(endpoint string, startTime time.Time) {
 	metrics.MeasureSinceWithLabels(
 		[]string{"allora", "emissions", "request", "duration_ms"},

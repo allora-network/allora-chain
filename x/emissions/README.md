@@ -15,7 +15,7 @@ Key Features:
 ## Monitoring
 
 Allora node emits its own `emissions` module metrics in each event, query and tx.
-event: `allora_loadtest_produce_count`
-query/tx: `allora_request_counter` for occurrences, `allora_request_latency_ms` for latency measures.
+event: `allora_emissions_event_total`
+query/tx: `allora_emissions_request_total` for occurrences, `allora_emissions_request_duration_ms` for latency measures.
 Different labels are applied where appropriate (eg "topic_id", "address", "nonce", etc.)
 See `x/emissions/metrics/` for details.
