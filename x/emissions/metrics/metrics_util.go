@@ -47,7 +47,7 @@ func MeasureRpcRequestLatency(endpoint string, startTime time.Time) {
 //	allora_emissions_produce_count
 func IncrProducerEventCount(msgType string) {
 	telemetry.IncrCounterWithLabels(
-		[]string{"allora", "emissions", "event", "count"},
+		[]string{"allora", "emissions", "event", "total"},
 		1,
 		[]metrics.Label{telemetry.NewLabel("msg_type", msgType)},
 	)
