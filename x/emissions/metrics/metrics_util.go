@@ -32,7 +32,7 @@ func IncrementRpcRequestCounter(endpoint string, err *error) {
 //	allora_request_latency_ms
 func MeasureRpcRequestLatency(endpoint string, startTime time.Time) {
 	metrics.MeasureSinceWithLabels(
-		[]string{"allora", "emissions", "request", "latency_ms"},
+		[]string{"allora", "emissions", "request", "duration_ms"},
 		startTime.UTC(),
 		[]metrics.Label{
 			telemetry.NewLabel("endpoint", endpoint),
