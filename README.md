@@ -357,6 +357,67 @@ For reputers, the submission window starts at `(nonce.BlockHeight + topic.Ground
 
 Both windows are inclusive of start and end boundaries.
 
+## Using PebbleDB as the backend database
+
+PebbleDB is a high-performance, RocksDB-inspired key-value store written in Go.  
+Allora binaries are compiled with the `pebbledb` build-tag (see the Makefile), so no extra steps are required at build time.  
+You only need to tell CometBFT which backend to use at runtime.
+
+### 1. One-off via CLI flag
+
+```bash
+allorad start --db-backend pebbledb
+```
+
+### 2. Persistently via `config.toml`
+
+Edit the node's configuration file (default path: `~/.allorad/config/config.toml`) and set:
+
+```toml
+# Database backend: goleveldb | pebbledb | rocksdb | boltdb | badgerdb
+db_backend = "pebbledb"
+```
+
+Restart the node after saving the file.
+
+### Migrating an existing node
+
+1. Stop the node.
+2. **Back up** your current data directory (`$HOME/.allorad/data/`).
+3. Change the backend using one of the methods above.
+4. Delete or rename the old data directory (Pebble cannot read an existing Goleveldb database).
+5. (Re)start the node – it will create a fresh Pebble database and begin catching up from genesis.  
+
+#### Using StateSync for a much faster catch-up
+
+Instead of syncing from genesis, you can enable StateSync so the node joins the network within minutes:
+
+1. Identify two healthy RPC endpoints that serve state-sync snapshots.  You can use the [public peer list](https://github.com/allora-network/networks) or your own full nodes.  
+2. Export them as environment variables **before** starting the node:
+
+   ```bash
+   export STATE_SYNC_RPC1=https://rpc1.allora.network:26657
+   export STATE_SYNC_RPC2=https://rpc2.allora.network:26657
+   ```
+   (Replace the URLs with the ones you wish to use.)
+3. Start the node with Pebble enabled:
+
+   ```bash
+   allorad start --db-backend pebbledb
+   ```
+
+   The node will automatically download the most recent snapshot, verify it, and then fast-sync the remaining ~1,000 blocks.
+
+Docker users can achieve the same by adding the two variables to the **validator** service in `docker-compose.yml`, as shown in the *Run a node with statesync enabled* section.
+
+### Why Pebble?
+
+• 2-3× faster I/O throughput on typical validator hardware.  
+• Lower write-amplification and reduced disk usage versus GolevelDB.  
+• Developed and actively maintained by CockroachDB engineers.
+
+*If you do not explicitly set a backend, Allora will continue to use the default `goleveldb` implementation.*
+
 ## References
 
 - https://github.com/go-delve/delve/blob/master/Documentation/faq.md#remote
