@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * [#781](https://github.com/allora-network/allora-chain/pull/781) Enable pebbledb
 * [#818](https://github.com/allora-network/allora-chain/pull/818) Emit new `EventNetworkInferences` event when closing worker nonce
+* [#819](https://github.com/allora-network/allora-chain/pull/819) Mint module metrics + refactor on metric names
 
 ### Changed
 * [#815](https://github.com/allora-network/allora-chain/pull/815) Refund ecosystem account when invalid topic to reward 
