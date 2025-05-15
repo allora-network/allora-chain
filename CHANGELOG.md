@@ -65,6 +65,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+### Added
+
+* [#820](https://github.com/allora-network/allora-chain/pull/820) Add script to compute differences between network params #820
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+
 # v0.12.1
 
 ### Added
@@ -85,11 +108,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Removed
 
-#### Added
+#### Added 
 
 #### Changed
 
-# [Released]
+
 
 # v0.12.0
 
@@ -122,6 +145,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 29eff356 (add changelog)
 # v0.11.0
 
 ### Added
