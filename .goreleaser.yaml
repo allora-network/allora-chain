@@ -31,6 +31,10 @@ builds:
       - darwin
       - windows
 
+    # Environment variables
+    env:
+      - CGO_ENABLED=0
+
     # GOARCH to build for.
     # For more info refer to: https://go.dev/doc/install/source#environment
     goarch:
