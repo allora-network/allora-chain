@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"errors"
 	"strconv"
 	"testing"
 
@@ -696,7 +697,7 @@ func TestGetStakeWeightedLossMatrixAbsoluteDifference(t *testing.T) {
 				{alloraMath.NewDecFromInt64(7)},
 			},
 			expectedConsensus:   []alloraMath.Dec{alloraMath.NewDecFromInt64(4)},
-			expectedMostDistant: []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+			expectedMostDistant: []alloraMath.Dec{alloraMath.NewDecFromInt64(7)},
 		},
 	}
 
@@ -874,6 +875,17 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 			sumAdjustedStakes, err = sumAdjustedStakes.Add(adjustedStake)
 			require.NoError(err)
 		}
+
+		// Avoid division by zero in adjusted stake calculation
+		if sumAdjustedStakes.IsZero() {
+			// Handle the zero sum case, maybe return zero stakes or error
+			// For now, let's return zero adjusted stakes to avoid panic
+			for i := range adjustedStakes {
+				adjustedStakes[i] = alloraMath.ZeroDec()
+			}
+			return adjustedStakes
+		}
+
 		for i, adjustedStakeNumerator := range adjustedStakeNumerators {
 			adjustedStake, err := adjustedStakeNumerator.Quo(sumAdjustedStakes)
 			require.NoError(err)
@@ -940,4 +952,116 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	slicesInDelta, err := alloraMath.SlicesInDelta(gotScores3, wantScores3, alloraMath.MustNewDecFromString("0.01"))
 	require.NoError(err)
 	require.True(slicesInDelta, "GetAllConsensusScores() got %v, want %v", gotScores3, wantScores3)
+
+	// Verify final coefficients are normalized (sum close to 1)
+	finalCoeffSum, err := alloraMath.SumDecSlice(gotCoefficients3)
+	require.NoError(err, "Error summing final coefficients")
+	isSumOne, deltaErr := alloraMath.InDelta(alloraMath.OneDec(), finalCoeffSum, alloraMath.MustNewDecFromString("1e-9")) // Capture both return values
+	require.NoError(deltaErr, "Error checking delta for final coefficient sum")                                           // Check the error separately
+	require.True(
+		isSumOne, // Use the boolean result here
+		"Final coefficients should sum to 1 (within 1e-9), but sum is %s",
+		finalCoeffSum.String(),
+	)
+}
+
+func TestGetStakeWeightedLossMatrixDivisionByZero(t *testing.T) {
+	tests := []struct {
+		name                   string
+		reputersAdjustedStakes []alloraMath.Dec
+		reputersReportedLosses [][]alloraMath.Dec
+		wantErr                bool
+		errType                error
+	}{
+		{
+			name: "all_zeros",
+			reputersAdjustedStakes: []alloraMath.Dec{
+				alloraMath.ZeroDec(),
+				alloraMath.ZeroDec(),
+				alloraMath.ZeroDec(),
+			},
+			reputersReportedLosses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(1)},
+				{alloraMath.NewDecFromInt64(2)},
+				{alloraMath.NewDecFromInt64(3)},
+			},
+			wantErr: false,
+			errType: nil,
+		},
+		{
+			name: "mix_zero_epsilon",
+			reputersAdjustedStakes: []alloraMath.Dec{
+				rewards.EpsilonDec,
+				alloraMath.ZeroDec(),
+				alloraMath.ZeroDec(),
+			},
+			reputersReportedLosses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(1)},
+				{alloraMath.NewDecFromInt64(2)},
+				{alloraMath.NewDecFromInt64(3)},
+			},
+			wantErr: false,
+			errType: nil,
+		},
+		{
+			name: "all_epsilon",
+			reputersAdjustedStakes: []alloraMath.Dec{
+				rewards.EpsilonDec,
+				rewards.EpsilonDec,
+				rewards.EpsilonDec,
+			},
+			reputersReportedLosses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(1)},
+				{alloraMath.NewDecFromInt64(2)},
+				{alloraMath.NewDecFromInt64(3)},
+			},
+			wantErr: false,
+			errType: nil,
+		},
+		{
+			name: "mix_zero_epsilon_valid",
+			reputersAdjustedStakes: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				rewards.EpsilonDec,
+				alloraMath.ZeroDec(),
+			},
+			reputersReportedLosses: [][]alloraMath.Dec{
+				{alloraMath.NewDecFromInt64(1)},
+				{alloraMath.NewDecFromInt64(2)},
+				{alloraMath.NewDecFromInt64(3)},
+			},
+			wantErr: false,
+			errType: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil && !errors.Is(err, tt.errType) {
+				t.Errorf("GetStakeWeightedLossMatrix() error type = %v, want %v", err, tt.errType)
+				return
+			}
+			if !tt.wantErr && got == nil {
+				t.Errorf("GetStakeWeightedLossMatrix() got nil, want non-nil result")
+			}
+		})
+	}
+}
+
+func TestEpsilonDec(t *testing.T) {
+	epsilon := rewards.EpsilonDec
+	expected, err := alloraMath.NewDecFromString("0.0000001")
+	require.NoError(t, err)
+
+	// Check if EpsilonDec is equal to the expected small value
+	require.True(t, epsilon.Equal(expected), "EpsilonDec should be equal to 0.0000001")
+
+	// Check if EpsilonDec is positive and not zero
+	require.True(t, epsilon.IsPositive(), "EpsilonDec should be positive")
+	require.False(t, epsilon.IsZero(), "EpsilonDec should not be zero")
 }

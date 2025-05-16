@@ -106,6 +106,21 @@ func GenerateReputerScores(
 			}
 			reputerListeningCoefficients[i] = cappedCoefficient
 		}
+
+		// Normalize coefficients after setting them to epsilon
+		coeffSum, err := alloraMath.SumDecSlice(reputerListeningCoefficients)
+		if err != nil {
+			return []types.Score{}, errors.Wrap(err, "Error summing coefficients after capping")
+		}
+
+		if !coeffSum.IsZero() && !coeffSum.Equal(alloraMath.OneDec()) {
+			for i := range reputerListeningCoefficients {
+				reputerListeningCoefficients[i], err = reputerListeningCoefficients[i].Quo(coeffSum)
+				if err != nil {
+					return []types.Score{}, errors.Wrapf(err, "Error normalizing coefficient %d after capping", i)
+				}
+			}
+		}
 	}
 
 	// Get reputer output
@@ -125,11 +140,20 @@ func GenerateReputerScores(
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
 	for i, reputer := range reputers {
+		// If there was only one coefficient and the original coefficient was zero,
+		// and we set it to epsilonReputer, we need to preserve that value here
+		var coefficientToSet alloraMath.Dec
+		if len(reputers) == 1 && allCoefficientsZero {
+			coefficientToSet = params.EpsilonReputer
+		} else {
+			coefficientToSet = newCoefficients[i]
+		}
+
 		err := keeper.SetListeningCoefficient(
 			ctx,
 			topicId,
 			reputer,
-			types.ListeningCoefficient{Coefficient: newCoefficients[i]},
+			types.ListeningCoefficient{Coefficient: coefficientToSet},
 		)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting listening coefficient")
