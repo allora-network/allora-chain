@@ -5,20 +5,26 @@ import os
 '''
 This script calculates the average signing efficiency of validators from a CSV file (CVMS data).
 The CSV file should contain a 'Time' column and a 'moniker' column.
-The script will calculate the average value for each validator and save the results to a new CSV file.
+The script will calculate the average value for each validator, compute uptime percentage,
+and save the results to a new CSV file.
+
+Usage:
+    python generate-avg-signing-efficiency.py <input_csv_path> [output_csv_path]
 '''
 
 def print_usage():
-    print("Usage: python generate-avg-signing-efficiency.py <input_csv_path>")
-    print("Example: python generate-avg-signing-efficiency.py exported_data.csv")
+    print("Usage: python generate-avg-signing-efficiency.py <input_csv_path> [output_csv_path]")
+    print("Example: python generate-avg-signing-efficiency.py exported_data.csv results.csv")
 
 def main():
-    if len(sys.argv) != 2:
-        print("Error: Missing input CSV file.")
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        print("Error: Invalid number of arguments.")
         print_usage()
         sys.exit(1)
 
     input_path = sys.argv[1]
+    output_path = sys.argv[2] if len(sys.argv) == 3 else "moniker_averages_with_uptime.csv"
+
     if not os.path.isfile(input_path):
         print(f"Error: File not found: {input_path}")
         sys.exit(1)
@@ -54,10 +60,8 @@ def main():
     df_final = pd.merge(df_avg_sorted, uptime_percentage, on="moniker")
 
     # Save to CSV
-    output_path = "moniker_averages_with_uptime.csv"
     df_final.to_csv(output_path, index=False)
     print(f"Output saved to: {output_path}")
 
 if __name__ == "__main__":
     main()
-
