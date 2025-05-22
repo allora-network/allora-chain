@@ -65,6 +65,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+### Added
+
+* [#822](https://github.com/allora-network/allora-chain/pull/822) Add util script - Calculate Signing Efficiency from cvms data
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+
+# [Released]
+
 # v0.12.1
 
 ### Added
@@ -89,7 +114,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-# [Released]
 
 # v0.12.0
 

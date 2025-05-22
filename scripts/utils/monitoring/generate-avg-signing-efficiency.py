@@ -2,9 +2,15 @@ import pandas as pd
 import sys
 import os
 
+'''
+This script calculates the average signing efficiency of validators from a CSV file (CVMS data).
+The CSV file should contain a 'Time' column and a 'moniker' column.
+The script will calculate the average value for each validator and save the results to a new CSV file.
+'''
+
 def print_usage():
-    print("Usage: python process_moniker_averages_with_uptime.py <input_csv_path>")
-    print("Example: python process_moniker_averages_with_uptime.py exported_data.csv")
+    print("Usage: python generate-avg-signing-efficiency.py <input_csv_path>")
+    print("Example: python generate-avg-signing-efficiency.py exported_data.csv")
 
 def main():
     if len(sys.argv) != 2:
