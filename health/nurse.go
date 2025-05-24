@@ -257,7 +257,7 @@ func (n *Nurse) appendLog(now time.Time, reason string, meta Meta, wg *sync.Wait
 	lines := make([]string, 2+len(meta))
 	lines[0] = fmt.Sprintf("==== %v", now)
 	lines[1] = fmt.Sprintf("reason: %v", reason)
-	i := 0
+	i := 2
 	for k, v := range meta {
 		lines[i] = fmt.Sprintf("- %v: %v", k, v)
 		i++
