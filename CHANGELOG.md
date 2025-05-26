@@ -264,7 +264,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* [728](https://github.com/allora-network/allora-chain/pull/728) Remove unneccessary directories in go releaser CI build flow
+* [728](https://github.com/allora-network/allora-chain/pull/728) Remove unnecessary directories in go releaser CI build flow
 * Update goreleaser.yml and disk cleanup [890617c](https://github.com/allora-network/allora-chain/commit/890617c28658371b8360b7474370c301d345d2f7) [cb2c1c5](https://github.com/allora-network/allora-chain/commit/cb2c1c528ade3b932e171b9b51ac4836835938eb)
 
 ### Deprecated
@@ -280,7 +280,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * [#694](https://github.com/allora-network/allora-chain/pull/694) Make fuzzer whitelist aware
-* [#708](https://github.com/allora-network/allora-chain/pull/708) Add Emission Enabled bolean flag to Mint Module
+* [#708](https://github.com/allora-network/allora-chain/pull/708) Add Emission Enabled boolean flag to Mint Module
 * [#703](https://github.com/allora-network/allora-chain/pull/703) Add outlier detection to inferences
 * [#714](https://github.com/allora-network/allora-chain/pull/714) Add initialization of actors' EMA scores
 * [#716](https://github.com/allora-network/allora-chain/pull/716) Add global workers, reputers, admins + bulk operations
