@@ -25,7 +25,7 @@ type Upgrade struct {
 	// PreStartupUpgrade is a function that is called before the application starts, allowing for any necessary direct
 	// store access, before the app or comet get a lock on them.
 	//
-	// **IMPORTANT**: Any logic here must be idempotent. This is called before the upgrade is effectively run si there's
+	// **IMPORTANT**: Any logic here must be idempotent. This is called before the upgrade is effectively run so there's
 	// no tracking of a previous run. If the application is restarted before the upgrade is completely done, this will be
 	// called again.
 	PreStartupUpgrade PreStartupUpgradeHandler
