@@ -37,6 +37,7 @@ var Upgrade = upgrades.Upgrade{
 		Renamed: nil,
 		Deleted: nil,
 	},
+	PreStartupUpgrade: nil,
 }
 
 func CreateUpgradeHandler(

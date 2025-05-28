@@ -3,6 +3,7 @@ package upgrades
 import (
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 
 	"github.com/allora-network/allora-chain/app/keepers"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -20,4 +21,14 @@ type Upgrade struct {
 
 	// StoreUpgrades should be used for any new modules introduced, new modules deleted, or store names renamed.
 	StoreUpgrades storetypes.StoreUpgrades
+
+	// PreStartupUpgrade is a function that is called before the application starts, allowing for any necessary direct
+	// store access, before the app or comet get a lock on them.
+	//
+	// **IMPORTANT**: Any logic here must be idempotent. This is called before the upgrade is effectively run si there's
+	// no tracking of a previous run. If the application is restarted before the upgrade is completely done, this will be
+	// called again.
+	PreStartupUpgrade PreStartupUpgradeHandler
 }
+
+type PreStartupUpgradeHandler func(appOpts servertypes.AppOptions) error

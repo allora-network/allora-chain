@@ -9,6 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/app/upgrades/v0_10_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_11_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_12_0"
+	"github.com/allora-network/allora-chain/app/upgrades/v0_13_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_3_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_4_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_5_0"
@@ -16,6 +17,7 @@ import (
 	"github.com/allora-network/allora-chain/app/upgrades/v0_7_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_8_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_9_0"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 )
 
 var upgradeHandlers = []upgrades.Upgrade{
@@ -29,6 +31,7 @@ var upgradeHandlers = []upgrades.Upgrade{
 	v0_10_0.Upgrade,
 	v0_11_0.Upgrade,
 	v0_12_0.Upgrade,
+	v0_13_0.Upgrade,
 	// Add more upgrade handlers here
 	// ...
 }
@@ -37,11 +40,10 @@ func (app *AlloraApp) setupUpgradeHandlers(appKeepers *keepers.AppKeepers) {
 	for _, handler := range upgradeHandlers {
 		app.UpgradeKeeper.SetUpgradeHandler(handler.UpgradeName,
 			handler.CreateUpgradeHandler(app.ModuleManager, app.Configurator(), appKeepers))
-
 	}
 }
 
-func (app *AlloraApp) setupUpgradeStoreLoaders() {
+func (app *AlloraApp) setupUpgradeStoreLoaders(appOpts servertypes.AppOptions) {
 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 	if err != nil {
 		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
@@ -55,6 +57,12 @@ func (app *AlloraApp) setupUpgradeStoreLoaders() {
 		if upgradeInfo.Name == upgrade.UpgradeName {
 			storeUpgrades := upgrade.StoreUpgrades
 			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
+
+			if upgrade.PreStartupUpgrade != nil {
+				if err := upgrade.PreStartupUpgrade(appOpts); err != nil {
+					panic(fmt.Sprintf("failed to run pre-startup upgrade for %s: %s", upgrade.UpgradeName, err))
+				}
+			}
 		}
 	}
 }
