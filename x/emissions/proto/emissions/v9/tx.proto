@@ -18,6 +18,8 @@ service MsgService {
 
   rpc CreateNewTopic(CreateNewTopicRequest) returns (CreateNewTopicResponse);
 
+  rpc UpdateTopic(UpdateTopicRequest) returns (UpdateTopicResponse);
+
   rpc Register(RegisterRequest) returns (RegisterResponse);
 
   rpc RemoveRegistration(RemoveRegistrationRequest) returns (RemoveRegistrationResponse);
@@ -318,6 +320,52 @@ message CreateNewTopicRequest {
 message CreateNewTopicResponse {
   uint64 topic_id = 1;
 }
+
+/// UPDATE TOPIC
+
+message UpdateTopicRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  uint64 topic_id = 2;
+  
+  // Optional fields using repeated pattern - if empty, field is not updated
+  repeated string metadata = 3;
+  repeated string loss_method = 4;
+  repeated int64 epoch_length = 5;
+  repeated int64 ground_truth_lag = 6;
+  repeated string p_norm = 7 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string alpha_regret = 8 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string epsilon = 9 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated int64 worker_submission_window = 10;
+  repeated string merit_sortition_alpha = 11 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string active_inferer_quantile = 12 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string active_forecaster_quantile = 13 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string active_reputer_quantile = 14 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message UpdateTopicResponse {}
 
 /// Worker and Reputer Interface
 

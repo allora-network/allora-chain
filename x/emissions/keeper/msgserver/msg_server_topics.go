@@ -97,3 +97,129 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	types.EmitNewCreateNewTopicEvent(ctx, &topic)
 	return &types.CreateNewTopicResponse{TopicId: topicId}, err
 }
+
+func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {
+	defer metrics.RecordMetrics("UpdateTopic", time.Now(), &err)
+
+	// Validate the sender address
+	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+		return nil, err
+	}
+
+	params, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+
+	// Validate the request
+	if err := msg.Validate(params.MaxStringLength); err != nil {
+		return nil, err
+	}
+
+	// Check if topic exists
+	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting topic: %v", msg.TopicId)
+	}
+
+	// Check if sender is the topic creator
+	if topic.Creator != msg.Sender {
+		return nil, types.ErrNotTopicCreator
+	}
+
+	// Create updated topic by copying existing topic and applying changes
+	updatedTopic := topic
+	hasChanges := false
+
+	if len(msg.Metadata) > 0 {
+		updatedTopic.Metadata = msg.Metadata[0]
+		hasChanges = true
+	}
+
+	if len(msg.LossMethod) > 0 {
+		updatedTopic.LossMethod = msg.LossMethod[0]
+		hasChanges = true
+	}
+
+	if len(msg.EpochLength) > 0 {
+		if msg.EpochLength[0] < params.MinEpochLength {
+			return nil, types.ErrTopicCadenceBelowMinimum
+		}
+		updatedTopic.EpochLength = msg.EpochLength[0]
+		hasChanges = true
+	}
+
+	if len(msg.GroundTruthLag) > 0 {
+		// Validate ground truth lag in relation to epoch length
+		epochLength := updatedTopic.EpochLength
+		if uint64(msg.GroundTruthLag[0]) > params.MaxUnfulfilledReputerRequests*uint64(epochLength) {
+			return nil, types.ErrGroundTruthLagTooBig
+		}
+		updatedTopic.GroundTruthLag = msg.GroundTruthLag[0]
+		hasChanges = true
+	}
+
+	if len(msg.PNorm) > 0 {
+		updatedTopic.PNorm = msg.PNorm[0]
+		hasChanges = true
+	}
+
+	if len(msg.AlphaRegret) > 0 {
+		updatedTopic.AlphaRegret = msg.AlphaRegret[0]
+		hasChanges = true
+	}
+
+	if len(msg.Epsilon) > 0 {
+		updatedTopic.Epsilon = msg.Epsilon[0]
+		hasChanges = true
+	}
+
+	if len(msg.WorkerSubmissionWindow) > 0 {
+		updatedTopic.WorkerSubmissionWindow = msg.WorkerSubmissionWindow[0]
+		hasChanges = true
+	}
+
+	if len(msg.MeritSortitionAlpha) > 0 {
+		updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha[0]
+		hasChanges = true
+	}
+
+	if len(msg.ActiveInfererQuantile) > 0 {
+		updatedTopic.ActiveInfererQuantile = msg.ActiveInfererQuantile[0]
+		hasChanges = true
+	}
+
+	if len(msg.ActiveForecasterQuantile) > 0 {
+		updatedTopic.ActiveForecasterQuantile = msg.ActiveForecasterQuantile[0]
+		hasChanges = true
+	}
+
+	if len(msg.ActiveReputerQuantile) > 0 {
+		updatedTopic.ActiveReputerQuantile = msg.ActiveReputerQuantile[0]
+		hasChanges = true
+	}
+
+	if !hasChanges {
+		return nil, errorsmod.Wrap(types.ErrInvalidValue, "No fields to update")
+	}
+
+	// Additional cross-field validations after applying all updates
+	if updatedTopic.GroundTruthLag < updatedTopic.EpochLength {
+		return nil, errorsmod.Wrap(types.ErrGroundTruthLagTooBig, "ground truth lag cannot be lower than epoch length")
+	}
+	if updatedTopic.WorkerSubmissionWindow > updatedTopic.EpochLength {
+		return nil, errorsmod.Wrap(types.ErrInvalidValue, "worker submission window cannot be higher than epoch length")
+	}
+
+	// Validate the updated topic
+	if err := updatedTopic.Validate(params); err != nil {
+		return nil, errorsmod.Wrap(err, "Updated topic validation failed")
+	}
+
+	// Store the pending update to be applied at epoch end
+	if err := ms.k.SetPendingTopicUpdate(ctx, msg.TopicId, updatedTopic); err != nil {
+		return nil, errorsmod.Wrap(err, "Failed to set pending topic update")
+	}
+
+	return &types.UpdateTopicResponse{}, nil
+}
