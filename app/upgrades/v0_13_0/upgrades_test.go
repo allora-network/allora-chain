@@ -1,4 +1,4 @@
-package v0_13_0
+package v0_13_0 //nolint:revive // var-naming: don't use an underscore in package name
 
 import (
 	"testing"
@@ -53,6 +53,7 @@ func TestResetValidatorsProposerPriorities(t *testing.T) {
 		},
 	}
 
+	//nolint: exhaustruct
 	err := store.Save(sm.State{
 		NextValidators: valSet,
 		Validators:     valSet,
