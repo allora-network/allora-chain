@@ -2,37 +2,34 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *MsgServerTestSuite) TestFundTopicSimple() {
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
-	topic := s.CreateOneTopic()
+	senderAddr := s.Addrs(0)
+	topic := uint64(1)
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddReputerStake(s.ctx, topic.Id, s.addrsStr[1], cosmosMath.NewInt(500000))
+	err := s.EmissionsKeeper().AddReputerStake(s.Ctx(), topic, s.AddrsStr(1), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.InactivateTopic(s.ctx, topic.Id)
+	err = s.EmissionsKeeper().InactivateTopic(s.Ctx(), topic)
 	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	err = s.BankKeeper().MintCoins(s.Ctx(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.Require().NoError(err)
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(s.Ctx(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.Require().NoError(err)
-	r := types.FundTopicRequest{
-		Sender:  sender,
-		TopicId: topic.Id,
-		Amount:  cosmosMath.NewInt(initialStake),
-	}
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err, "GetParams should not return an error")
-	topicWeightBefore, feeRevBefore, err := s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r.TopicId,
+	topicWeightBefore, feeRevBefore, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic,
 		10800,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
@@ -40,18 +37,16 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 		params.BlocksPerMonth,
 	)
 	s.Require().NoError(err)
-	response, err := s.msgServer.FundTopic(s.ctx, &r)
-	s.Require().NoError(err, "RequestInference should not return an error")
-	s.Require().NotNil(response, "Response should not be nil")
+	s.FundTopic(topic, senderAddr, cosmosMath.NewInt(initialStake))
 
 	// Check if the topic is activated
-	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
+	res, err := s.EmissionsKeeper().IsTopicActive(s.Ctx(), topic)
 	s.Require().NoError(err)
 	s.Require().Equal(true, res, "TopicId is not activated")
 	// check that the topic fee revenue has been updated
-	topicWeightAfter, feeRevAfter, err := s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r.TopicId,
+	topicWeightAfter, feeRevAfter, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic,
 		10800,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
@@ -64,56 +59,43 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 }
 
 func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
-	reputer := s.addrsStr[1]
-	topic1 := s.CreateOneTopic()
-	topic2 := s.CreateCustomEpochTopic(10900)
+	senderAddr := s.Addrs(0)
+	reputer := s.AddrsStr(1)
+	topic1 := s.CreateTopic()
+	topic2 := s.CreateTopic(testutil.WithEpochLength(10900), testutil.WithGroundTruthLag(10900))
+
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddReputerStake(s.ctx, topic1.Id, reputer, cosmosMath.NewInt(500000))
+	err := s.EmissionsKeeper().AddReputerStake(s.Ctx(), topic1, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.InactivateTopic(s.ctx, topic1.Id)
+	err = s.EmissionsKeeper().InactivateTopic(s.Ctx(), topic1)
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.AddReputerStake(s.ctx, topic2.Id, reputer, cosmosMath.NewInt(500000))
+	err = s.EmissionsKeeper().AddReputerStake(s.Ctx(), topic2, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.InactivateTopic(s.ctx, topic2.Id)
+	err = s.EmissionsKeeper().InactivateTopic(s.Ctx(), topic2)
 	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	var initialStake2 int64 = 10000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)))
-	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	err = s.BankKeeper().MintCoins(s.Ctx(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.Require().NoError(err)
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(s.Ctx(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.Require().NoError(err)
-	r := types.FundTopicRequest{
-		Sender:  sender,
-		TopicId: topic1.Id,
-		Amount:  cosmosMath.NewInt(initialStake),
-	}
-	r2 := types.FundTopicRequest{
-		Sender:  sender,
-		TopicId: topic2.Id,
-		Amount:  cosmosMath.NewInt(initialStake2),
-	}
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
-	s.Require().NoError(err, "GetParams should not return an error")
 
-	response, err := s.msgServer.FundTopic(s.ctx, &r)
-	s.Require().NoError(err, "RequestInference should not return an error")
-	s.Require().NotNil(response, "Response should not be nil")
-
-	response2, err := s.msgServer.FundTopic(s.ctx, &r2)
-	s.Require().NoError(err, "RequestInference should not return an error")
-	s.Require().NotNil(response2, "Response should not be nil")
+	s.FundTopic(topic1, senderAddr, cosmosMath.NewInt(initialStake))
+	s.FundTopic(topic2, senderAddr, cosmosMath.NewInt(initialStake2))
 
 	// Check if the topic is activated
-	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
+	res, err := s.EmissionsKeeper().IsTopicActive(s.Ctx(), topic1)
 	s.Require().NoError(err)
 	s.Require().Equal(true, res, "TopicId is not activated")
+
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err, "GetParams should not return an error")
+
 	// check that the topic fee revenue has been updated
-	topicWeight, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r.TopicId,
+	topicWeight, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic1,
 		10800,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
@@ -122,9 +104,9 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	)
 	s.Require().NoError(err)
 
-	topic2Weight, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r2.TopicId,
+	topic2Weight, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic2,
 		10800,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
@@ -137,74 +119,56 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 }
 
 func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengths() {
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
-	reputer := s.addrsStr[1]
+	senderAddr := s.Addrs(0)
+	reputer := s.AddrsStr(1)
 
 	// Create two topics with different epoch lengths
 	epochLength1 := int64(125)
 	epochLength2 := int64(50)
-	topic1 := s.CreateCustomEpochTopic(epochLength1) // Longer epoch
-	topic2 := s.CreateCustomEpochTopic(epochLength2) // Shorter epoch
+	topic1 := s.CreateTopic(testutil.WithEpochLength(epochLength1)) // Longer epoch
+	topic2 := s.CreateTopic(testutil.WithEpochLength(epochLength2)) // Shorter epoch
 
 	// Put same stake in both topics
-	err := s.emissionsKeeper.AddReputerStake(s.ctx, topic1.Id, reputer, cosmosMath.NewInt(500000))
+	err := s.EmissionsKeeper().AddReputerStake(s.Ctx(), topic1, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.InactivateTopic(s.ctx, topic1.Id)
+	err = s.EmissionsKeeper().InactivateTopic(s.Ctx(), topic1)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.AddReputerStake(s.ctx, topic2.Id, reputer, cosmosMath.NewInt(500000))
+	err = s.EmissionsKeeper().AddReputerStake(s.Ctx(), topic2, reputer, cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.InactivateTopic(s.ctx, topic2.Id)
+	err = s.EmissionsKeeper().InactivateTopic(s.Ctx(), topic2)
 	s.Require().NoError(err)
 
 	// Set up funding amounts
 	var initialStake int64 = 10000
 	var initialStake2 int64 = 10000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)))
-	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	err = s.BankKeeper().MintCoins(s.Ctx(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.Require().NoError(err)
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(s.Ctx(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.Require().NoError(err)
-
-	// Create funding requests
-	r := types.FundTopicRequest{
-		Sender:  sender,
-		TopicId: topic1.Id,
-		Amount:  cosmosMath.NewInt(initialStake),
-	}
-	r2 := types.FundTopicRequest{
-		Sender:  sender,
-		TopicId: topic2.Id,
-		Amount:  cosmosMath.NewInt(initialStake2),
-	}
-
-	// Get params for weight calculation
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
-	s.Require().NoError(err, "GetParams should not return an error")
 
 	// Fund both topics
-	response, err := s.msgServer.FundTopic(s.ctx, &r)
-	s.Require().NoError(err, "FundTopic should not return an error")
-	s.Require().NotNil(response, "Response should not be nil")
-
-	response2, err := s.msgServer.FundTopic(s.ctx, &r2)
-	s.Require().NoError(err, "FundTopic should not return an error")
-	s.Require().NotNil(response2, "Response should not be nil")
+	s.FundTopic(topic1, senderAddr, cosmosMath.NewInt(initialStake))
+	s.FundTopic(topic2, senderAddr, cosmosMath.NewInt(initialStake2))
 
 	// Check if both topics are activated
-	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
+	res, err := s.EmissionsKeeper().IsTopicActive(s.Ctx(), topic1)
 	s.Require().NoError(err)
 	s.Require().Equal(true, res, "Topic1 is not activated")
 
-	res2, err := s.emissionsKeeper.IsTopicActive(s.ctx, r2.TopicId)
+	res2, err := s.EmissionsKeeper().IsTopicActive(s.Ctx(), topic2)
 	s.Require().NoError(err)
 	s.Require().Equal(true, res2, "Topic2 is not activated")
 
+	// Get params for weight calculation
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err, "GetParams should not return an error")
+
 	// Get weights for both topics
-	topicWeight1, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r.TopicId,
+	topicWeight1, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic1,
 		epochLength1,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
@@ -213,9 +177,9 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	)
 	s.Require().NoError(err)
 
-	topicWeight2, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r2.TopicId,
+	topicWeight2, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic2,
 		epochLength2,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
@@ -227,15 +191,15 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	s.Require().Equal(topicWeight2.Equal(topicWeight1), true, "Topic2 weight should be equal to Topic1 weight if no previous topic weight is set")
 
 	// Setting previous topic weights
-	err = s.emissionsKeeper.SetPreviousTopicWeight(s.ctx, r.TopicId, alloraMath.MustNewDecFromString("100"))
+	err = s.EmissionsKeeper().SetPreviousTopicWeight(s.Ctx(), topic1, alloraMath.MustNewDecFromString("100"))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetPreviousTopicWeight(s.ctx, r2.TopicId, alloraMath.MustNewDecFromString("100"))
+	err = s.EmissionsKeeper().SetPreviousTopicWeight(s.Ctx(), topic2, alloraMath.MustNewDecFromString("100"))
 	s.Require().NoError(err)
 
 	// Recalculate having set previous topic weights
-	topicWeight1, _, err = s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r.TopicId,
+	topicWeight1, _, err = s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic1,
 		epochLength1,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
@@ -244,9 +208,9 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	)
 	s.Require().NoError(err)
 
-	topicWeight2, _, err = s.emissionsKeeper.GetCurrentTopicWeight(
-		s.ctx,
-		r2.TopicId,
+	topicWeight2, _, err = s.EmissionsKeeper().GetCurrentTopicWeight(
+		s.Ctx(),
+		topic2,
 		epochLength2,
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,

@@ -5,13 +5,14 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/module"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // nolint: exhaustruct
@@ -110,7 +111,7 @@ func TestRemoveStakes(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			kMock := emissionstestutil.NewMockEmissionsKeeper(ctrl)
+			kMock := alloratestutil.NewMockEmissionsKeeper(ctrl)
 			kMock.EXPECT().GetStakeRemovalsUpUntilBlock(gomock.Any(), tc.currentBlock, uint64(2)).Return(tc.stakeRemovals, tc.limitHit, nil)
 			for _, removal := range tc.stakeRemovals {
 				kMock.EXPECT().RemoveReputerStake(gomock.Any(), removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer, removal.Amount).Return(nil)
@@ -225,7 +226,7 @@ func TestRemoveDelegateStakes(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			kMock := emissionstestutil.NewMockEmissionsKeeper(ctrl)
+			kMock := alloratestutil.NewMockEmissionsKeeper(ctrl)
 			kMock.EXPECT().GetDelegateStakeRemovalsUpUntilBlock(gomock.Any(), tc.currentBlock, uint64(2)).Return(tc.stakeRemovals, tc.limitHit, nil)
 			for _, removal := range tc.stakeRemovals {
 				kMock.EXPECT().RemoveDelegateStake(gomock.Any(), removal.BlockRemovalCompleted, removal.TopicId, removal.Delegator, removal.Reputer, removal.Amount).Return(nil)

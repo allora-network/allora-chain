@@ -2,15 +2,16 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *MsgServerTestSuite) TestUpdateAllParams() {
-	ctx, msgServer := s.ctx, s.msgServer
-	keeper := s.emissionsKeeper
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	keeper := s.EmissionsKeeper()
 	require := s.Require()
 
 	adminPrivateKey := secp256k1.GenPrivKey()
@@ -19,7 +20,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	err := keeper.AddWhitelistAdmin(ctx, adminAddr.String())
 	require.NoError(err)
 
-	newParams := &types.OptionalParams{
+	newParams := &types.OptionalParams{ //nolint:exhaustruct
 		Version:                             []string{"1234"},
 		MinTopicWeight:                      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		RequiredMinimumStake:                []cosmosMath.Int{cosmosMath.NewInt(1234)},
@@ -145,7 +146,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Setup a non-whitelisted sender address
@@ -153,62 +154,9 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 	nonAdminAddr := sdk.AccAddress(nonAdminPrivateKey.PubKey().Address())
 
 	// Define new parameters to update
-	newParams := &types.OptionalParams{
+	newParams := &types.OptionalParams{ //nolint:exhaustruct
 		Version: []string{"2.0"}, // example of changing the version
-		// don't update the following params
-		MaxSerializedMsgLength:              nil,
-		MinTopicWeight:                      nil,
-		RequiredMinimumStake:                nil,
-		RemoveStakeDelayWindow:              nil,
-		MinEpochLength:                      nil,
-		BetaEntropy:                         nil,
-		LearningRate:                        nil,
-		MaxGradientThreshold:                nil,
-		MinStakeFraction:                    nil,
-		MaxUnfulfilledWorkerRequests:        nil,
-		MaxUnfulfilledReputerRequests:       nil,
-		TopicRewardStakeImportance:          nil,
-		TopicRewardFeeRevenueImportance:     nil,
-		TopicRewardAlpha:                    nil,
-		TaskRewardAlpha:                     nil,
-		ValidatorsVsAlloraPercentReward:     nil,
-		MaxSamplesToScaleScores:             nil,
-		MaxTopInferersToReward:              nil,
-		MaxTopForecastersToReward:           nil,
-		MaxTopReputersToReward:              nil,
-		CreateTopicFee:                      nil,
-		GradientDescentMaxIters:             nil,
-		RegistrationFee:                     nil,
-		DefaultPageLimit:                    nil,
-		MaxPageLimit:                        nil,
-		MinEpochLengthRecordLimit:           nil,
-		BlocksPerMonth:                      nil,
-		PRewardInference:                    nil,
-		PRewardForecast:                     nil,
-		PRewardReputer:                      nil,
-		CRewardInference:                    nil,
-		CRewardForecast:                     nil,
-		CNorm:                               nil,
-		EpsilonReputer:                      nil,
-		HalfMaxProcessStakeRemovalsEndBlock: nil,
-		DataSendingFee:                      nil,
-		EpsilonSafeDiv:                      nil,
-		MaxElementsPerForecast:              nil,
-		MaxActiveTopicsPerBlock:             nil,
-		MaxStringLength:                     nil,
-		InitialRegretQuantile:               nil,
-		PNormSafeDiv:                        nil,
-		GlobalWhitelistEnabled:              nil,
-		TopicCreatorWhitelistEnabled:        nil,
-		MinExperiencedWorkerRegrets:         nil,
-		InferenceOutlierDetectionThreshold:  nil,
-		InferenceOutlierDetectionAlpha:      nil,
-		LambdaInitialScore:                  nil,
-		GlobalWorkerWhitelistEnabled:        nil,
-		GlobalReputerWhitelistEnabled:       nil,
-		GlobalAdminWhitelistAppended:        nil,
-		MaxWhitelistInputArrayLength:        nil,
-		MinWeightThresholdForStdnorm:        nil,
+		// don't update the other params
 	}
 
 	// Creating the UpdateParamsRequest message with a non-whitelisted user

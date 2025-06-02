@@ -1,20 +1,21 @@
 package queryserver_test
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
-	worker := s.addrsStr[0]
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
+	worker := s.AddrsStr(0)
 
 	expectedNode := types.OffchainNode{
-		Owner:       s.addrsStr[1],
+		Owner:       s.AddrsStr(1),
 		NodeAddress: worker,
 	}
 
@@ -41,13 +42,13 @@ func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
 }
 
 func (s *QueryServerTestSuite) TestGetReputerNodeInfo() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
 
-	reputer := s.addrsStr[1]
+	reputer := s.AddrsStr(1)
 	expectedReputer := types.OffchainNode{
-		NodeAddress: s.addrsStr[0],
+		NodeAddress: s.AddrsStr(0),
 		Owner:       reputer,
 	}
 
@@ -74,9 +75,8 @@ func (s *QueryServerTestSuite) TestGetReputerNodeInfo() {
 }
 
 func (s *QueryServerTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
 
 	notRegisteredWorkerAddr := "allo12gjf2mrtva0p33gqtvsxp37zgglmdgpwaq22m2"
 
@@ -92,19 +92,19 @@ func (s *QueryServerTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
 }
 
 func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Mock setup for addresses
-	workerAddr := s.addrs[1]
+	workerAddr := s.Addrs(1)
 	workerAddrString := workerAddr.String()
 	topicId := uint64(1)
-	topic1 := s.mockTopic()
+	topic1 := s.MockTopic()
 
 	// Topic register
-	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	err := s.EmissionsKeeper().SetTopic(ctx, topicId, topic1)
 	require.NoError(err, "SetTopic should not return an error")
-	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	err = s.EmissionsKeeper().ActivateTopic(ctx, topicId)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Worker register
 	registerMsg := &types.RegisterRequest{
@@ -114,12 +114,12 @@ func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 		Owner:     workerAddrString,
 	}
 
-	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
-	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		workerAddr,
@@ -131,31 +131,32 @@ func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 		Address: workerAddrString,
 		TopicId: topicId,
 	}
-	queryResp, err := s.queryServer.IsWorkerRegisteredInTopicId(ctx, queryReq)
+	queryResp, err := s.EmissionsQueryServer().IsWorkerRegisteredInTopicId(ctx, queryReq)
 	require.NoError(err, "IsWorkerRegisteredInTopicId should not return an error")
 	require.False(queryResp.IsRegistered, "Query response should confirm worker is registered")
 
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
-	queryResp, err = s.queryServer.IsWorkerRegisteredInTopicId(ctx, queryReq)
+	queryResp, err = s.EmissionsQueryServer().IsWorkerRegisteredInTopicId(ctx, queryReq)
 	require.NoError(err, "IsWorkerRegisteredInTopicId should not return an error")
 	require.True(queryResp.IsRegistered, "Query response should confirm worker is registered")
 }
 
 func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
 	// Mock setup for addresses
-	reputerAddr := s.addrs[2]
+	reputerAddr := s.Addrs(2)
 	topicId := uint64(1)
-	topic1 := s.mockTopic()
+	topic1, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err, "Getting topic should not fail")
 
 	// Topic register
-	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	err = s.EmissionsKeeper().SetTopic(ctx, topicId, topic1)
 	require.NoError(err, "SetTopic should not return an error")
-	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	err = s.EmissionsKeeper().ActivateTopic(ctx, topicId)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Register reputer
 	registerMsg := &types.RegisterRequest{
@@ -165,26 +166,26 @@ func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 		Owner:     reputerAddr.String(),
 	}
 
-	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	moduleParams, err := s.EmissionsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
-	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err = s.BankKeeper().MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, reputerAddr, mintAmount)
+	err = s.BankKeeper().SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, reputerAddr, mintAmount)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
 	queryReq := &types.IsReputerRegisteredInTopicIdRequest{
 		Address: reputerAddr.String(),
 		TopicId: topicId,
 	}
-	queryResp, err := s.queryServer.IsReputerRegisteredInTopicId(ctx, queryReq)
+	queryResp, err := s.EmissionsQueryServer().IsReputerRegisteredInTopicId(ctx, queryReq)
 	require.NoError(err, "IsReputerRegisteredInTopicId should not return an error")
 	require.False(queryResp.IsRegistered, "Query response should confirm reputer is registered")
 
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	queryResp, err = s.queryServer.IsReputerRegisteredInTopicId(ctx, queryReq)
+	queryResp, err = s.EmissionsQueryServer().IsReputerRegisteredInTopicId(ctx, queryReq)
 	require.NoError(err, "IsReputerRegisteredInTopicId should not return an error")
 	require.True(queryResp.IsRegistered, "Query response should confirm reputer is registered")
 }

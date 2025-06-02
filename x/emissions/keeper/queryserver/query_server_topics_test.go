@@ -2,28 +2,23 @@ package queryserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *QueryServerTestSuite) TestGetNextTopicId() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	// Get the initial next topic ID
 	initialNextTopicId, err := keeper.GetNextTopicId(ctx)
 	s.Require().NoError(err, "Fetching the initial next topic ID should not fail")
 
 	topicsToCreate := 5
-	for i := 1; i <= topicsToCreate; i++ {
-		topicId, err := keeper.IncrementTopicId(ctx)
-		s.Require().NoError(err, "Incrementing topic ID should not fail")
-
-		newTopic := s.mockTopic()
-		newTopic.Id = topicId
-		err = keeper.SetTopic(ctx, topicId, newTopic)
-		s.Require().NoError(err, "Setting a new topic should not fail")
+	for range topicsToCreate {
+		s.CreateTopic()
 	}
 
 	req := &types.GetNextTopicIdRequest{}
@@ -36,9 +31,9 @@ func (s *QueryServerTestSuite) TestGetNextTopicId() {
 }
 
 func (s *QueryServerTestSuite) TestGetTopic() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	topicId, err := keeper.GetNextTopicId(ctx)
 	s.Require().NoError(err)
@@ -46,7 +41,7 @@ func (s *QueryServerTestSuite) TestGetTopic() {
 	req := &types.GetTopicRequest{TopicId: topicId}
 
 	// Setting up a new topic
-	newTopic := s.mockTopic()
+	newTopic := s.MockTopic()
 	newTopic.Id = topicId
 	newTopic.Metadata = metadata
 	err = keeper.SetTopic(ctx, topicId, newTopic)
@@ -62,15 +57,15 @@ func (s *QueryServerTestSuite) TestGetTopic() {
 }
 
 func (s *QueryServerTestSuite) TestGetLatestCommit() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	blockHeight := 100
 	nonce := types.Nonce{
 		BlockHeight: 95,
 	}
 
-	topic := s.mockTopic()
+	topic := s.MockTopic()
 	_ = keeper.SetReputerTopicLastCommit(
 		ctx,
 		topic.Id,
@@ -88,7 +83,7 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 	s.Require().Equal(int64(blockHeight), response.LastCommit.BlockHeight, "Retrieved blockheight should match")
 	s.Require().Equal(&nonce, response.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
 
-	topic2 := s.mockTopic()
+	topic2 := s.MockTopic()
 	topic2.Id = 2
 	blockHeight = 101
 	nonce = types.Nonce{
@@ -114,17 +109,17 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 }
 
 func (s *QueryServerTestSuite) TestGetSetDeleteTopicRewardNonce() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Test Get on an unset topicId, should return 0
 	req := &types.GetTopicRewardNonceRequest{
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetTopicRewardNonce(ctx, req)
-	nonce := response.Nonce
+	response, err := s.EmissionsQueryServer().GetTopicRewardNonce(ctx, req)
 	s.Require().NoError(err, "Getting an unset topic reward nonce should not fail")
+	nonce := response.Nonce
 	s.Require().Equal(int64(0), nonce, "Nonce for an unset topicId should be 0")
 
 	// Test Set
@@ -133,9 +128,9 @@ func (s *QueryServerTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	s.Require().NoError(err, "Setting topic reward nonce should not fail")
 
 	// Test Get after Set, should return the set value
-	response, err = s.queryServer.GetTopicRewardNonce(ctx, req)
-	nonce = response.Nonce
+	response, err = s.EmissionsQueryServer().GetTopicRewardNonce(ctx, req)
 	s.Require().NoError(err, "Getting set topic reward nonce should not fail")
+	nonce = response.Nonce
 	s.Require().Equal(expectedNonce, nonce, "Nonce should match the value set earlier")
 
 	// Test Delete
@@ -143,15 +138,15 @@ func (s *QueryServerTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	s.Require().NoError(err, "Deleting topic reward nonce should not fail")
 
 	// Test Get after Delete, should return 0
-	response, err = s.queryServer.GetTopicRewardNonce(ctx, req)
-	nonce = response.Nonce
+	response, err = s.EmissionsQueryServer().GetTopicRewardNonce(ctx, req)
 	s.Require().NoError(err, "Getting deleted topic reward nonce should not fail")
+	nonce = response.Nonce
 	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
 }
 
 func (s *QueryServerTestSuite) TestGetPreviousTopicWeight() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 
 	// Set previous topic weight
@@ -161,30 +156,30 @@ func (s *QueryServerTestSuite) TestGetPreviousTopicWeight() {
 
 	// Get the previously set topic weight
 	req := &types.GetPreviousTopicWeightRequest{TopicId: topicId}
-	response, err := s.queryServer.GetPreviousTopicWeight(ctx, req)
-	retrievedWeight := response.Weight
-
+	response, err := s.EmissionsQueryServer().GetPreviousTopicWeight(ctx, req)
 	s.Require().NoError(err, "Getting previous topic weight should not fail")
+
+	retrievedWeight := response.Weight
 	s.Require().Equal(weightToSet, retrievedWeight, "Retrieved weight should match the set weight")
 }
 
 func (s *QueryServerTestSuite) TestTopicExists() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 
 	// Test a topic ID that does not exist
 	nonExistentTopicId := uint64(999) // Assuming this ID has not been used
 	req := &types.TopicExistsRequest{TopicId: nonExistentTopicId}
-	response, err := s.queryServer.TopicExists(ctx, req)
-	exists := response.Exists
+	response, err := s.EmissionsQueryServer().TopicExists(ctx, req)
 	s.Require().NoError(err, "Checking existence for a non-existent topic should not fail")
+	exists := response.Exists
 	s.Require().False(exists, "No topic should exist for an unused topic ID")
 
 	// Create a topic to test existence
 	existentTopicId, err := keeper.IncrementTopicId(ctx)
 	s.Require().NoError(err, "Incrementing topic ID should not fail")
 
-	newTopic := s.mockTopic()
+	newTopic := s.MockTopic()
 	newTopic.Id = existentTopicId
 
 	err = keeper.SetTopic(ctx, existentTopicId, newTopic)
@@ -192,19 +187,19 @@ func (s *QueryServerTestSuite) TestTopicExists() {
 
 	// Test the newly created topic ID
 	req = &types.TopicExistsRequest{TopicId: existentTopicId}
-	response, err = s.queryServer.TopicExists(ctx, req)
-	exists = response.Exists
+	response, err = s.EmissionsQueryServer().TopicExists(ctx, req)
 	s.Require().NoError(err, "Checking existence for an existent topic should not fail")
+	exists = response.Exists
 	s.Require().True(exists, "Topic should exist for a newly created topic ID")
 }
 
 func (s *QueryServerTestSuite) TestIsTopicActive() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(3)
 
 	// Assume topic initially active
-	initialTopic := s.mockTopic()
+	initialTopic := s.MockTopic()
 	initialTopic.Id = topicId
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
@@ -214,10 +209,10 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 
 	// Check if topic is active
 	req := &types.IsTopicActiveRequest{TopicId: topicId}
-	response, err := s.queryServer.IsTopicActive(ctx, req)
-	topicActive := response.IsActive
-
+	response, err := s.EmissionsQueryServer().IsTopicActive(ctx, req)
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
+
+	topicActive := response.IsActive
 	s.Require().True(topicActive, "Topic should be active again")
 
 	// Inactivate the topic
@@ -226,9 +221,9 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 
 	// Check if topic is inactive
 	req = &types.IsTopicActiveRequest{TopicId: topicId}
-	response, err = s.queryServer.IsTopicActive(ctx, req)
-	topicActive = response.IsActive
+	response, err = s.EmissionsQueryServer().IsTopicActive(ctx, req)
 	s.Require().NoError(err, "Getting topic should not fail after inactivation")
+	topicActive = response.IsActive
 	s.Require().False(topicActive, "Topic should be inactive")
 
 	// Activate the topic
@@ -237,27 +232,22 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 
 	// Check if topic is active again
 	req = &types.IsTopicActiveRequest{TopicId: topicId}
-	response, err = s.queryServer.IsTopicActive(ctx, req)
-	topicActive = response.IsActive
+	response, err = s.EmissionsQueryServer().IsTopicActive(ctx, req)
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
+	topicActive = response.IsActive
 	s.Require().True(topicActive, "Topic should be active again")
 }
 
 func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-
-	newTopic := s.mockTopic()
-	newTopic.Id = topicId
-	err := keeper.SetTopic(ctx, topicId, newTopic)
-	s.Require().NoError(err, "Setting a new topic should not fail")
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(2)
 
 	// Test getting revenue for a topic with no existing revenue
 	req := &types.GetTopicFeeRevenueRequest{TopicId: topicId}
-	response, err := s.queryServer.GetTopicFeeRevenue(ctx, req)
-	feeRev := response.FeeRevenue
+	response, err := s.EmissionsQueryServer().GetTopicFeeRevenue(ctx, req)
 	s.Require().NoError(err, "Should not error when revenue does not exist")
+	feeRev := response.FeeRevenue
 	s.Require().Equal(cosmosMath.ZeroInt(), feeRev, "Revenue should be zero for non-existing entries")
 
 	// Setup a topic with some revenue
@@ -268,8 +258,8 @@ func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 
 	// Test getting revenue for a topic with existing revenue
 	req = &types.GetTopicFeeRevenueRequest{TopicId: topicId}
-	response, err = s.queryServer.GetTopicFeeRevenue(ctx, req)
-	feeRev = response.FeeRevenue
+	response, err = s.EmissionsQueryServer().GetTopicFeeRevenue(ctx, req)
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")
+	feeRev = response.FeeRevenue
 	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }

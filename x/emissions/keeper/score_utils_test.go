@@ -1,73 +1,53 @@
 package keeper_test
 
 import (
+	"context"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
-	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *KeeperTestSuite) TestGetLowScoreFromAllInferences() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
+func (s *KeeperTestSuite) TestGetLowestScore() {
+	k := s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 
-	worker1 := s.addrsStr[0]
-	worker2 := s.addrsStr[1]
-	worker3 := s.addrsStr[2]
-	workerAddresses := []string{worker1, worker2, worker3}
+	testCases := []struct {
+		name           string
+		setScore       func(ctx context.Context, topicId uint64, addr string, score types.Score) error
+		getLowestScore func(ctx context.Context, k *keeper.Keeper, topicId uint64, addresses []string) (types.Score, error)
+	}{
+		{
+			name:           "inferences",
+			setScore:       k.SetInfererScoreEma,
+			getLowestScore: keeper.GetLowestScoreFromAllInferers,
+		}, {
+			name:           "forecasts",
+			setScore:       k.SetForecasterScoreEma,
+			getLowestScore: keeper.GetLowestScoreFromAllForecasters,
+		}, {
+			name:           "loss bundles",
+			setScore:       k.SetReputerScoreEma,
+			getLowestScore: keeper.GetLowestScoreFromAllReputers,
+		},
+	}
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			workers := []string{s.AddrsStr(0), s.AddrsStr(1), s.AddrsStr(2)}
+			scores := []types.Score{
+				{TopicId: topicId, BlockHeight: 2, Address: workers[0], Score: alloraMath.NewDecFromInt64(95)},
+				{TopicId: topicId, BlockHeight: 2, Address: workers[1], Score: alloraMath.NewDecFromInt64(90)},
+				{TopicId: topicId, BlockHeight: 2, Address: workers[2], Score: alloraMath.NewDecFromInt64(99)},
+			}
 
-	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
-	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
-	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
-	_ = k.SetInfererScoreEma(ctx, topicId, worker1, score1)
-	_ = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
-	_ = k.SetInfererScoreEma(ctx, topicId, worker3, score3)
+			for i := range workers {
+				_ = tc.setScore(ctx, topicId, workers[i], scores[i])
+			}
 
-	lowScore, err := keeper.GetLowestScoreFromAllInferers(ctx, &k, topicId, workerAddresses)
-	s.Require().NoError(err)
-	s.Require().Equal(lowScore, score2)
-}
-
-func (s *KeeperTestSuite) TestGetLowScoreFromAllForecasts() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := uint64(1)
-
-	worker1 := s.addrsStr[0]
-	worker2 := s.addrsStr[1]
-	worker3 := s.addrsStr[2]
-	forecasterAddresses := []string{worker1, worker2, worker3}
-
-	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
-	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
-	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
-	_ = k.SetForecasterScoreEma(ctx, topicId, worker1, score1)
-	_ = k.SetForecasterScoreEma(ctx, topicId, worker2, score2)
-	_ = k.SetForecasterScoreEma(ctx, topicId, worker3, score3)
-
-	lowScore, err := keeper.GetLowestScoreFromAllForecasters(ctx, &k, topicId, forecasterAddresses)
-	s.Require().NoError(err)
-	s.Require().Equal(lowScore, score2)
-}
-
-func (s *KeeperTestSuite) TestGetLowScoreFromAllLossBundles() {
-	ctx := s.ctx
-	k := s.emissionsKeeper
-	topicId := uint64(1)
-
-	reputer1 := s.addrsStr[0]
-	reputer2 := s.addrsStr[1]
-	reputer3 := s.addrsStr[2]
-	reputerAddresses := []string{reputer1, reputer2, reputer3}
-
-	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer1, Score: alloraMath.NewDecFromInt64(95)}
-	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer2, Score: alloraMath.NewDecFromInt64(90)}
-	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer3, Score: alloraMath.NewDecFromInt64(99)}
-	_ = k.SetReputerScoreEma(ctx, topicId, reputer1, score1)
-	_ = k.SetReputerScoreEma(ctx, topicId, reputer2, score2)
-	_ = k.SetReputerScoreEma(ctx, topicId, reputer3, score3)
-
-	lowScore, err := keeper.GetLowestScoreFromAllReputers(ctx, &k, topicId, reputerAddresses)
-	s.Require().NoError(err)
-	s.Require().Equal(lowScore, score2)
+			lowScore, err := tc.getLowestScore(ctx, k, topicId, workers)
+			s.Require().NoError(err)
+			s.Require().Equal(lowScore, scores[1])
+		})
+	}
 }

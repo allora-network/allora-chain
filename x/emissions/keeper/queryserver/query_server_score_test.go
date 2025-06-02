@@ -6,10 +6,10 @@ import (
 )
 
 func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[0]
+	worker := s.AddrsStr(0)
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
@@ -20,7 +20,7 @@ func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 		TopicId: topicId,
 		Inferer: worker,
 	}
-	response, err := s.queryServer.GetInfererScoreEma(ctx, req)
+	response, err := s.EmissionsQueryServer().GetInfererScoreEma(ctx, req)
 	s.Require().NoError(err)
 
 	s.Require().True(
@@ -31,11 +31,11 @@ func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 }
 
 func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[0]
-	forecaster := s.addrsStr[2]
+	worker := s.AddrsStr(0)
+	forecaster := s.AddrsStr(2)
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for forecaster
@@ -45,7 +45,7 @@ func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 		TopicId:    topicId,
 		Forecaster: forecaster,
 	}
-	response, err := s.queryServer.GetForecasterScoreEma(ctx, req)
+	response, err := s.EmissionsQueryServer().GetForecasterScoreEma(ctx, req)
 	s.Require().NoError(err)
 
 	forecasterScore := response.Score
@@ -53,11 +53,11 @@ func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 }
 
 func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[0]
-	reputer := s.addrsStr[2]
+	worker := s.AddrsStr(0)
+	reputer := s.AddrsStr(2)
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for reputer
@@ -67,7 +67,7 @@ func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 		TopicId: topicId,
 		Reputer: reputer,
 	}
-	response, err := s.queryServer.GetReputerScoreEma(ctx, req)
+	response, err := s.EmissionsQueryServer().GetReputerScoreEma(ctx, req)
 	s.Require().NoError(err)
 
 	reputerScore := response.Score
@@ -75,10 +75,10 @@ func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 }
 
 func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	workerAddress := s.addrs[0]
+	workerAddress := s.Addrs(0)
 	blockHeight := int64(105)
 
 	// Insert scores for different workers and blocks
@@ -87,7 +87,7 @@ func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 		scoreForWorker := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     s.addrsStr[0],
+			Address:     s.AddrsStr(0),
 			Score:       alloraMath.NewDecFromInt64(blockHeight),
 		}
 		_ = keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, scoreForWorker)
@@ -98,7 +98,7 @@ func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
-	response, err := s.queryServer.GetInferenceScoresUntilBlock(ctx, req)
+	response, err := s.EmissionsQueryServer().GetInferenceScoresUntilBlock(ctx, req)
 	s.Require().NoError(err)
 	scores := response.Scores
 
@@ -116,14 +116,14 @@ func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 	score := types.Score{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Address:     s.addrsStr[0],
+		Address:     s.AddrsStr(0),
 		Score:       alloraMath.NewDecFromInt64(95),
 	}
 
@@ -146,7 +146,7 @@ func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
-	response, err := s.queryServer.GetWorkerInferenceScoresAtBlock(ctx, req)
+	response, err := s.EmissionsQueryServer().GetWorkerInferenceScoresAtBlock(ctx, req)
 	scores := response.Scores
 
 	s.Require().NoError(err, "Fetching scores at block should not fail")
@@ -154,8 +154,8 @@ func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(105)
 
@@ -164,7 +164,7 @@ func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: i,
-			Address:     s.addrsStr[i-100],
+			Address:     s.AddrsStr(int(i - 100)),
 			Score:       alloraMath.NewDecFromInt64(i),
 		}
 		err := keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
@@ -175,15 +175,15 @@ func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
-	response, err := s.queryServer.GetForecastScoresUntilBlock(ctx, req)
+	response, err := s.EmissionsQueryServer().GetForecastScoresUntilBlock(ctx, req)
 	scores := response.Scores
 	s.Require().NoError(err, "Fetching worker forecast scores until block should not fail")
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
 }
 
 func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -192,7 +192,7 @@ func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     s.addrsStr[i],
+			Address:     s.AddrsStr(i),
 			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
 		}
 		_ = keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
@@ -203,7 +203,7 @@ func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
-	response, err := s.queryServer.GetWorkerForecastScoresAtBlock(ctx, req)
+	response, err := s.EmissionsQueryServer().GetWorkerForecastScoresAtBlock(ctx, req)
 	scores := response.Scores
 
 	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
@@ -211,8 +211,8 @@ func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -221,7 +221,7 @@ func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     s.addrsStr[i],
+			Address:     s.AddrsStr(i),
 			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
 		}
 		_ = keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
@@ -232,7 +232,7 @@ func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
-	response, err := s.queryServer.GetReputersScoresAtBlock(ctx, req)
+	response, err := s.EmissionsQueryServer().GetReputersScoresAtBlock(ctx, req)
 	s.Require().NoError(err)
 	scores := response.Scores
 
@@ -241,17 +241,17 @@ func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputer := s.addrsStr[1]
+	reputer := s.AddrsStr(1)
 
 	// Attempt to fetch a coefficient before setting it
 	req := &types.GetListeningCoefficientRequest{
 		TopicId: topicId,
 		Reputer: reputer,
 	}
-	response, err := s.queryServer.GetListeningCoefficient(ctx, req)
+	response, err := s.EmissionsQueryServer().GetListeningCoefficient(ctx, req)
 	s.Require().NoError(err)
 	defaultCoef := response.ListeningCoefficient
 
@@ -265,7 +265,7 @@ func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 	_ = keeper.SetListeningCoefficient(ctx, topicId, reputer, setCoef)
 
 	// Fetch and verify the coefficient after setting
-	response, err = s.queryServer.GetListeningCoefficient(ctx, req)
+	response, err = s.EmissionsQueryServer().GetListeningCoefficient(ctx, req)
 	s.Require().NoError(err)
 	fetchedCoef := response.ListeningCoefficient
 
@@ -274,7 +274,7 @@ func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 }
 
 func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
-	ctx, keeper, require := s.ctx, s.emissionsKeeper, s.Require()
+	ctx, keeper, require := s.Ctx(), s.EmissionsKeeper(), s.Require()
 
 	topicId := uint64(1)
 	blockHeight := int64(100)
@@ -283,14 +283,14 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 	score := types.Score{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Address:     s.addrsStr[0],
+		Address:     s.AddrsStr(0),
 		Score:       alloraMath.NewDecFromInt64(95),
 	}
 	err := keeper.SetLowestInfererScoreEma(ctx, topicId, score)
 	require.NoError(err, "Setting inferer score ema should not fail")
 
 	req := &types.GetCurrentLowestInfererScoreRequest{TopicId: topicId}
-	response, err := s.queryServer.GetCurrentLowestInfererScore(ctx, req)
+	response, err := s.EmissionsQueryServer().GetCurrentLowestInfererScore(ctx, req)
 	require.NoError(err, "Fetching current lowest inferer score should not fail")
 	require.True(
 		response.Score.Score.Equal(alloraMath.NewDecFromInt64(95)),
@@ -300,7 +300,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 }
 
 func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
-	ctx, keeper, require := s.ctx, s.emissionsKeeper, s.Require()
+	ctx, keeper, require := s.Ctx(), s.EmissionsKeeper(), s.Require()
 
 	topicId := uint64(1)
 	blockHeight := int64(100)
@@ -309,14 +309,14 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 	score := types.Score{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Address:     s.addrsStr[0],
+		Address:     s.AddrsStr(0),
 		Score:       alloraMath.NewDecFromInt64(95),
 	}
 	err := keeper.SetLowestForecasterScoreEma(ctx, topicId, score)
 	require.NoError(err, "Setting forecaster score ema should not fail")
 
 	req := &types.GetCurrentLowestForecasterScoreRequest{TopicId: topicId}
-	response, err := s.queryServer.GetCurrentLowestForecasterScore(ctx, req)
+	response, err := s.EmissionsQueryServer().GetCurrentLowestForecasterScore(ctx, req)
 	require.NoError(err, "Fetching current lowest forecaster score should not fail")
 	require.True(
 		response.Score.Score.Equal(score.Score),
@@ -326,7 +326,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 }
 
 func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
-	ctx, keeper, require := s.ctx, s.emissionsKeeper, s.Require()
+	ctx, keeper, require := s.Ctx(), s.EmissionsKeeper(), s.Require()
 
 	topicId := uint64(1)
 	blockHeight := int64(100)
@@ -335,14 +335,14 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 	score := types.Score{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Address:     s.addrsStr[0],
+		Address:     s.AddrsStr(0),
 		Score:       alloraMath.NewDecFromInt64(95),
 	}
 	err := keeper.SetLowestReputerScoreEma(ctx, topicId, score)
 	require.NoError(err, "Setting reputer score ema should not fail")
 
 	req := &types.GetCurrentLowestReputerScoreRequest{TopicId: topicId}
-	response, err := s.queryServer.GetCurrentLowestReputerScore(ctx, req)
+	response, err := s.EmissionsQueryServer().GetCurrentLowestReputerScore(ctx, req)
 	require.NoError(err, "Fetching current lowest reputer score should not fail")
 	require.True(
 		response.Score.Score.Equal(alloraMath.NewDecFromInt64(95)),
@@ -352,9 +352,9 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 }
 
 func (s *QueryServerTestSuite) TestGetTopicInitialInfererEmaScore() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(1)
 	initialScore := alloraMath.MustNewDecFromString("95.5")
 
 	// Set initial score
@@ -364,7 +364,7 @@ func (s *QueryServerTestSuite) TestGetTopicInitialInfererEmaScore() {
 	req := &types.GetTopicInitialInfererEmaScoreRequest{
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetTopicInitialInfererEmaScore(ctx, req)
+	response, err := s.EmissionsQueryServer().GetTopicInitialInfererEmaScore(ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(initialScore, response.Score, "Initial inferer score should match what was set")
 
@@ -372,14 +372,14 @@ func (s *QueryServerTestSuite) TestGetTopicInitialInfererEmaScore() {
 	req = &types.GetTopicInitialInfererEmaScoreRequest{
 		TopicId: 999,
 	}
-	_, err = s.queryServer.GetTopicInitialInfererEmaScore(ctx, req)
+	_, err = s.EmissionsQueryServer().GetTopicInitialInfererEmaScore(ctx, req)
 	s.Require().Error(err, "Query for non-existent topic should fail")
 }
 
 func (s *QueryServerTestSuite) TestGetTopicInitialForecasterEmaScore() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(1)
 	initialScore := alloraMath.MustNewDecFromString("92.5")
 
 	// Set initial score
@@ -389,7 +389,7 @@ func (s *QueryServerTestSuite) TestGetTopicInitialForecasterEmaScore() {
 	req := &types.GetTopicInitialForecasterEmaScoreRequest{
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetTopicInitialForecasterEmaScore(ctx, req)
+	response, err := s.EmissionsQueryServer().GetTopicInitialForecasterEmaScore(ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(initialScore, response.Score, "Initial forecaster score should match what was set")
 
@@ -397,14 +397,14 @@ func (s *QueryServerTestSuite) TestGetTopicInitialForecasterEmaScore() {
 	req = &types.GetTopicInitialForecasterEmaScoreRequest{
 		TopicId: 999,
 	}
-	_, err = s.queryServer.GetTopicInitialForecasterEmaScore(ctx, req)
+	_, err = s.EmissionsQueryServer().GetTopicInitialForecasterEmaScore(ctx, req)
 	s.Require().Error(err, "Query for non-existent topic should fail")
 }
 
 func (s *QueryServerTestSuite) TestGetTopicInitialReputerEmaScore() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(1)
 	initialScore := alloraMath.MustNewDecFromString("93.5")
 
 	// Set initial score
@@ -414,7 +414,7 @@ func (s *QueryServerTestSuite) TestGetTopicInitialReputerEmaScore() {
 	req := &types.GetTopicInitialReputerEmaScoreRequest{
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetTopicInitialReputerEmaScore(ctx, req)
+	response, err := s.EmissionsQueryServer().GetTopicInitialReputerEmaScore(ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(initialScore, response.Score, "Initial reputer score should match what was set")
 
@@ -422,6 +422,6 @@ func (s *QueryServerTestSuite) TestGetTopicInitialReputerEmaScore() {
 	req = &types.GetTopicInitialReputerEmaScoreRequest{
 		TopicId: 999,
 	}
-	_, err = s.queryServer.GetTopicInitialReputerEmaScore(ctx, req)
+	_, err = s.EmissionsQueryServer().GetTopicInitialReputerEmaScore(ctx, req)
 	s.Require().Error(err, "Query for non-existent topic should fail")
 }

@@ -5,9 +5,9 @@ import (
 )
 
 func (s *QueryServerTestSuite) TestIsWhitelistAdmin() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	// Create a test address
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
@@ -36,9 +36,9 @@ func (s *QueryServerTestSuite) TestIsWhitelistAdmin() {
 }
 
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalWorker() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
@@ -66,9 +66,9 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalWorker() {
 }
 
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalReputer() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
@@ -96,9 +96,9 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalReputer() {
 }
 
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalAdmin() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
@@ -126,11 +126,11 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalAdmin() {
 }
 
 func (s *QueryServerTestSuite) TestIsTopicWhitelistEnabled() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
-	topicId := uint64(1)
+	topicId := uint64(2)
 
 	// Initially should be disabled
 	req := &types.IsTopicWorkerWhitelistEnabledRequest{
@@ -153,11 +153,11 @@ func (s *QueryServerTestSuite) TestIsTopicWhitelistEnabled() {
 }
 
 func (s *QueryServerTestSuite) TestIsTopicReputerWhitelistEnabled() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
-	topicId := uint64(1)
+	topicId := uint64(2)
 
 	// Initially should be disabled
 	req := &types.IsTopicReputerWhitelistEnabledRequest{
@@ -180,9 +180,9 @@ func (s *QueryServerTestSuite) TestIsTopicReputerWhitelistEnabled() {
 }
 
 func (s *QueryServerTestSuite) TestIsWhitelistedTopicCreator() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -207,9 +207,9 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicCreator() {
 }
 
 func (s *QueryServerTestSuite) TestIsWhitelistedGlobalActor() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -234,12 +234,12 @@ func (s *QueryServerTestSuite) TestIsWhitelistedGlobalActor() {
 }
 
 func (s *QueryServerTestSuite) TestIsWhitelistedTopicWorker() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
-	topicId := uint64(1)
+	topicId := uint64(2)
 
 	req := &types.IsWhitelistedTopicWorkerRequest{
 		TopicId: topicId,
@@ -263,9 +263,9 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicWorker() {
 }
 
 func (s *QueryServerTestSuite) TestIsWhitelistedTopicReputer() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	topicId := uint64(1)
@@ -292,9 +292,9 @@ func (s *QueryServerTestSuite) TestIsWhitelistedTopicReputer() {
 }
 
 func (s *QueryServerTestSuite) TestCanUpdateGlobalWhitelists() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -319,9 +319,9 @@ func (s *QueryServerTestSuite) TestCanUpdateGlobalWhitelists() {
 }
 
 func (s *QueryServerTestSuite) TestCanUpdateParams() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 
@@ -346,14 +346,14 @@ func (s *QueryServerTestSuite) TestCanUpdateParams() {
 }
 
 func (s *QueryServerTestSuite) TestCanUpdateTopicWhitelist() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
 	// Create topic
-	topicId := s.CreateOneTopic()
+	topicId := uint64(1)
 
 	req := &types.CanUpdateTopicWhitelistRequest{
 		TopicId: topicId,
@@ -377,9 +377,9 @@ func (s *QueryServerTestSuite) TestCanUpdateTopicWhitelist() {
 }
 
 func (s *QueryServerTestSuite) TestCanCreateTopic() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo14s7gd09y7mkje8547ukm0c8gjnd3hak7v3fwz6"
 
@@ -423,9 +423,9 @@ func (s *QueryServerTestSuite) TestCanCreateTopic() {
 }
 
 func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 	topicId := uint64(1)
@@ -467,9 +467,9 @@ func (s *QueryServerTestSuite) TestCanSubmitWorkerPayload() {
 }
 
 func (s *QueryServerTestSuite) TestCanSubmitReputerPayload() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	testAddr := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 	topicId := uint64(1)

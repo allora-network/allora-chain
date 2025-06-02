@@ -3,75 +3,33 @@ package v6_test
 import (
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
-	v6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
-	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
-
-	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
-
-	"cosmossdk.io/core/store"
-	"github.com/allora-network/allora-chain/app/params"
-
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	v5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
-	emissions "github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-
-	storetypes "cosmossdk.io/store/types"
-	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
+	"github.com/allora-network/allora-chain/test/testutil"
+	v5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
+	v6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
+	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type EmissionsV6MigrationTestSuite struct {
-	suite.Suite
-	ctrl *gomock.Controller
-
-	ctx             sdk.Context
-	storeService    store.KVStoreService
-	emissionsKeeper *keeper.Keeper
+	testutil.TestSuite
 }
 
 func TestEmissionsV6MigrationTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV6MigrationTestSuite))
-}
-
-func (s *EmissionsV6MigrationTestSuite) SetupTest() {
-	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
-	key := storetypes.NewKVStoreKey(emissionstypes.StoreKey)
-	storeService := runtime.NewKVStoreService(key)
-	s.storeService = storeService
-	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	s.ctx = testCtx.Ctx
-
-	// gomock initializations
-	s.ctrl = gomock.NewController(s.T())
-	accountKeeper := emissionstestutil.NewMockAccountKeeper(s.ctrl)
-	bankKeeper := emissionstestutil.NewMockBankKeeper(s.ctrl)
-	emissionsKeeper := keeper.NewKeeper(
-		encCfg.Codec,
-		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName)
-
-	s.emissionsKeeper = &emissionsKeeper
+	suite.Run(t, &EmissionsV6MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V6Migrations"),
+	})
 }
 
 // In this test we check that the emissions module params have been migrated
 // and the expected new fields are added and set to true:
 // GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
 func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	defaultParams := emissionstypes.DefaultParams()
 	paramsOld := oldV5Types.Params{
@@ -132,7 +90,7 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -184,54 +142,38 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 // In this test we check that the topic worker and reputer whitelists
 // have been turned on for all topics.
 func (s *EmissionsV6MigrationTestSuite) TestFlipOnTopicWhitelists() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	const (
+		startTopicID = 2
+		numTopics    = 4
+	)
 
 	// Create 3 test topics
-	for i := uint64(1); i <= 3; i++ {
-		_, err := s.emissionsKeeper.IncrementTopicId(s.ctx)
+	for i := uint64(startTopicID); i <= numTopics-startTopicID; i++ {
+		_, err := s.EmissionsKeeper().IncrementTopicId(s.Ctx())
 		s.Require().NoError(err)
 
-		topic := emissionstypes.Topic{
-			Id:                       i,
-			Creator:                  "allo1qgqeu0twe5t6gr30k3e3sumaqs5a29ug5um8lr",
-			Metadata:                 "metadata",
-			LossMethod:               "mse",
-			EpochLastEnded:           0,
-			EpochLength:              1000,
-			GroundTruthLag:           1000,
-			PNorm:                    alloraMath.NewDecFromInt64(3),
-			AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-			AllowNegative:            false,
-			Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-			InitialRegret:            alloraMath.ZeroDec(),
-			WorkerSubmissionWindow:   120,
-			MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-			ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.1337"),
-			ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.1337"),
-			ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.1337"),
-		}
+		s.CreateTopic()
 
-		err = s.emissionsKeeper.SetTopic(s.ctx, i, topic)
-		s.Require().NoError(err)
-
-		_, err = s.emissionsKeeper.IncrementTopicId(s.ctx)
+		_, err = s.EmissionsKeeper().IncrementTopicId(s.Ctx())
 		s.Require().NoError(err)
 	}
 
 	// Run the migration
-	err := v6.FlipOnTopicWhitelists(s.ctx, store, cdc, *s.emissionsKeeper)
+	err := v6.FlipOnTopicWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify each topic has whitelists enabled
-	for i := uint64(1); i <= 3; i++ {
+	for i := uint64(startTopicID); i <= numTopics-startTopicID; i++ {
 		// Check worker whitelist is enabled
-		workerWhitelistEnabled, err := s.emissionsKeeper.IsTopicWorkerWhitelistEnabled(s.ctx, i)
+		workerWhitelistEnabled, err := s.EmissionsKeeper().IsTopicWorkerWhitelistEnabled(s.Ctx(), i)
 		s.Require().NoError(err)
 		s.Require().True(workerWhitelistEnabled)
 
 		// Check reputer whitelist is enabled
-		reputerWhitelistEnabled, err := s.emissionsKeeper.IsTopicReputerWhitelistEnabled(s.ctx, i)
+		reputerWhitelistEnabled, err := s.EmissionsKeeper().IsTopicReputerWhitelistEnabled(s.Ctx(), i)
 		s.Require().NoError(err)
 		s.Require().True(reputerWhitelistEnabled)
 	}

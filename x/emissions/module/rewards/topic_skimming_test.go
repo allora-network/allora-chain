@@ -16,7 +16,7 @@ func (s *RewardsTestSuite) TestSkimTopTopicsByWeightDescSimple() {
 		weights[topicId] = &weight
 	}
 	N := uint64(3)
-	mapOfTopN, listOfTopN, err := rewards.SkimTopTopicsByWeightDesc(s.ctx, weights, N)
+	mapOfTopN, listOfTopN, err := rewards.SkimTopTopicsByWeightDesc(s.Ctx(), weights, N)
 	s.Require().NoError(err)
 
 	// Check that mapOfTopN has the expected keys

@@ -6,17 +6,17 @@ import (
 )
 
 func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputer := s.addrsStr[2]
+	reputer := s.AddrsStr(2)
 
 	// Attempt to fetch a reward fraction before setting it
 	req := &types.GetPreviousReputerRewardFractionRequest{
 		TopicId: topicId,
 		Reputer: reputer,
 	}
-	response, err := s.queryServer.GetPreviousReputerRewardFraction(ctx, req)
+	response, err := s.EmissionsQueryServer().GetPreviousReputerRewardFraction(ctx, req)
 	s.Require().NoError(err)
 	defaultReward := response.RewardFraction
 	notFound := response.NotFound
@@ -30,7 +30,7 @@ func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
 	_ = keeper.SetPreviousReputerRewardFraction(ctx, topicId, reputer, setReward)
 
 	// Fetch and verify the reward fraction after setting
-	response, err = s.queryServer.GetPreviousReputerRewardFraction(ctx, req)
+	response, err = s.EmissionsQueryServer().GetPreviousReputerRewardFraction(ctx, req)
 	s.Require().NoError(err)
 	fetchedReward := response.RewardFraction
 	notFound = response.NotFound
@@ -40,17 +40,17 @@ func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
 }
 
 func (s *QueryServerTestSuite) TestGetPreviousInferenceRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[1]
+	worker := s.AddrsStr(1)
 
 	// Attempt to fetch a reward fraction before setting it
 	req := &types.GetPreviousInferenceRewardFractionRequest{
 		TopicId: topicId,
 		Worker:  worker,
 	}
-	response, err := s.queryServer.GetPreviousInferenceRewardFraction(ctx, req)
+	response, err := s.EmissionsQueryServer().GetPreviousInferenceRewardFraction(ctx, req)
 	s.Require().NoError(err)
 	defaultReward := response.RewardFraction
 	noPrior := response.NotFound
@@ -66,24 +66,24 @@ func (s *QueryServerTestSuite) TestGetPreviousInferenceRewardFraction() {
 	// Fetch and verify the reward fraction after setting
 	fetchedReward, _, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err)
-	response, err = s.queryServer.GetPreviousInferenceRewardFraction(ctx, req)
+	response, err = s.EmissionsQueryServer().GetPreviousInferenceRewardFraction(ctx, req)
 	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
 	s.Require().True(response.RewardFraction.Equal(setReward), "The fetched reward fraction should match the set value")
 }
 
 func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	worker := s.addrsStr[3]
+	worker := s.AddrsStr(3)
 
 	// Attempt to fetch the reward fraction before setting it, expecting default value
 	req := &types.GetPreviousForecastRewardFractionRequest{
 		TopicId: topicId,
 		Worker:  worker,
 	}
-	response, err := s.queryServer.GetPreviousForecastRewardFraction(ctx, req)
+	response, err := s.EmissionsQueryServer().GetPreviousForecastRewardFraction(ctx, req)
 	s.Require().NoError(err)
 	defaultReward := response.RewardFraction
 	noPrior := response.NotFound
@@ -97,7 +97,7 @@ func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
 	_ = keeper.SetPreviousForecastRewardFraction(ctx, topicId, worker, setReward)
 
 	// Fetch and verify the reward fraction after setting
-	response, err = s.queryServer.GetPreviousForecastRewardFraction(ctx, req)
+	response, err = s.EmissionsQueryServer().GetPreviousForecastRewardFraction(ctx, req)
 	s.Require().NoError(err)
 	fetchedReward := response.RewardFraction
 	noPrior = response.NotFound
@@ -107,8 +107,8 @@ func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
 }
 
 func (s *QueryServerTestSuite) TestGetPreviousPercentageRewardToStakedReputers() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	previousPercentageReward := alloraMath.NewDecFromInt64(50)
 
 	// Set the previous percentage reward to staked reputers
@@ -125,7 +125,7 @@ func (s *QueryServerTestSuite) TestGetPreviousPercentageRewardToStakedReputers()
 		previousPercentageReward.String(),
 	)
 	req := &types.GetPreviousPercentageRewardToStakedReputersRequest{}
-	response, err := s.queryServer.GetPreviousPercentageRewardToStakedReputers(ctx, req)
+	response, err := s.EmissionsQueryServer().GetPreviousPercentageRewardToStakedReputers(ctx, req)
 	s.Require().NoError(err)
 	fetchedPercentageReward = response.PercentageReward
 
