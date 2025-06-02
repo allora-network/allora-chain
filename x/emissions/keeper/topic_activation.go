@@ -85,11 +85,16 @@ func (k *Keeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, block 
 		return k.PruneTopicActivationDataAtBlock(ctx, block)
 	}
 
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get params")
+	}
+
 	firstIter := true
 	lowestWeight := alloraMath.NewDecFromInt64(0)
 	idOfLowestWeightTopic := uint64(0)
 	for _, topicId := range activeTopicIds.TopicIds {
-		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId, params)
 		if err != nil {
 			continue
 		}
@@ -234,7 +239,7 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 			return err
 		}
 
-		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId, params)
 		if err != nil {
 			return err
 		}

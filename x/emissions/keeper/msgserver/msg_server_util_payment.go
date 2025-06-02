@@ -11,13 +11,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-type TopicId = uint64
-type Allo = cosmosMath.Int
-
 func activateTopicIfWeightAtLeastGlobalMin(
 	ctx context.Context,
 	ms msgServer,
-	topicId TopicId,
+	topicId uint64,
 ) error {
 	isActivated, err := ms.k.IsTopicActive(ctx, topicId)
 	if err != nil {
@@ -27,10 +24,6 @@ func activateTopicIfWeightAtLeastGlobalMin(
 		params, err := ms.k.GetParams(ctx)
 		if err != nil {
 			return errors.Wrapf(err, "error getting params")
-		}
-		topic, err := ms.k.GetTopic(ctx, topicId)
-		if err != nil {
-			return errors.Wrapf(err, "error getting topic")
 		}
 
 		newTopicWeight, _, _, err := ms.k.GetCurrentTopicWeight(
@@ -43,7 +36,7 @@ func activateTopicIfWeightAtLeastGlobalMin(
 			params.BlocksPerMonth,
 		)
 		if err != nil {
-			return errors.Wrapf(err, "error getting current topic weight")
+			return errors.Wrapf(err, "error getting topic weight")
 		}
 
 		if newTopicWeight.Gte(params.MinTopicWeight) {
@@ -62,7 +55,7 @@ func checkBalanceAndSendFee(
 	ctx context.Context,
 	ms msgServer,
 	sender string,
-	amount Allo,
+	amount cosmosMath.Int,
 ) error {
 	accAddress, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
@@ -94,8 +87,8 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 	ctx context.Context,
 	ms msgServer,
 	sender string,
-	topicId TopicId,
-	amount Allo,
+	topicId uint64,
+	amount cosmosMath.Int,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := checkBalanceAndSendFee(ctx, ms, sender, amount)

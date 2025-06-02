@@ -5708,3 +5708,126 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
+
+// TestPendingTopicUpdateFunctions tests all pending topic update functions
+func (s *KeeperTestSuite) TestPendingTopicUpdateFunctions() {
+	// Create a test topic first
+	topicId := s.CreateOneTopic(100)
+
+	// Get the original topic for reference
+	originalTopic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	// Create a modified topic for pending update
+	pendingTopic := originalTopic
+	pendingTopic.EpochLength = 200
+	pendingTopic.GroundTruthLag = 250 // Must be >= EpochLength
+	pendingTopic.WorkerSubmissionWindow = 30
+	pendingTopic.Metadata = "Updated metadata"
+	pendingTopic.LossMethod = "mae"
+	pendingTopic.AlphaRegret = alloraMath.MustNewDecFromString("0.2")
+
+	// Test HasPendingTopicUpdate when none exists
+	hasPending, err := s.emissionsKeeper.HasPendingTopicUpdate(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(hasPending)
+
+	// Test GetPendingTopicUpdate when none exists - should return error
+	_, err = s.emissionsKeeper.GetPendingTopicUpdate(s.ctx, topicId)
+	s.Require().Error(err)
+
+	// Test SetPendingTopicUpdate
+	err = s.emissionsKeeper.SetPendingTopicUpdate(s.ctx, topicId, pendingTopic)
+	s.Require().NoError(err)
+
+	// Test HasPendingTopicUpdate after setting
+	hasPending, err = s.emissionsKeeper.HasPendingTopicUpdate(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(hasPending)
+
+	// Test GetPendingTopicUpdate
+	retrievedPending, err := s.emissionsKeeper.GetPendingTopicUpdate(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(pendingTopic.EpochLength, retrievedPending.EpochLength)
+	s.Require().Equal(pendingTopic.GroundTruthLag, retrievedPending.GroundTruthLag)
+	s.Require().Equal(pendingTopic.WorkerSubmissionWindow, retrievedPending.WorkerSubmissionWindow)
+	s.Require().Equal(pendingTopic.Metadata, retrievedPending.Metadata)
+	s.Require().Equal(pendingTopic.LossMethod, retrievedPending.LossMethod)
+	s.Require().Equal(pendingTopic.AlphaRegret, retrievedPending.AlphaRegret)
+
+	// Create another topic for testing GetAllPendingTopicUpdates
+	topicId2 := s.CreateOneTopic(150)
+	originalTopic2, err := s.emissionsKeeper.GetTopic(s.ctx, topicId2)
+	s.Require().NoError(err)
+
+	pendingTopic2 := originalTopic2
+	pendingTopic2.EpochLength = 300
+	pendingTopic2.GroundTruthLag = 350 // Must be >= EpochLength
+	pendingTopic2.Metadata = "Second updated metadata"
+
+	// Set pending update for second topic
+	err = s.emissionsKeeper.SetPendingTopicUpdate(s.ctx, topicId2, pendingTopic2)
+	s.Require().NoError(err)
+
+	// Test GetAllPendingTopicUpdates
+	allPending, err := s.emissionsKeeper.GetAllPendingTopicUpdates(s.ctx)
+	s.Require().NoError(err)
+	s.Require().Len(allPending, 2)
+	s.Require().Contains(allPending, topicId)
+	s.Require().Contains(allPending, topicId2)
+	s.Require().Equal(pendingTopic.EpochLength, allPending[topicId].EpochLength)
+	s.Require().Equal(pendingTopic2.EpochLength, allPending[topicId2].EpochLength)
+
+	// Test ApplyPendingTopicUpdate for first topic
+	err = s.emissionsKeeper.ApplyPendingTopicUpdate(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	// Verify the topic was updated
+	updatedTopic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(pendingTopic.EpochLength, updatedTopic.EpochLength)
+	s.Require().Equal(pendingTopic.GroundTruthLag, updatedTopic.GroundTruthLag)
+	s.Require().Equal(pendingTopic.WorkerSubmissionWindow, updatedTopic.WorkerSubmissionWindow)
+	s.Require().Equal(pendingTopic.Metadata, updatedTopic.Metadata)
+	s.Require().Equal(pendingTopic.LossMethod, updatedTopic.LossMethod)
+	s.Require().Equal(pendingTopic.AlphaRegret, updatedTopic.AlphaRegret)
+
+	// Verify pending update was removed after applying
+	hasPending, err = s.emissionsKeeper.HasPendingTopicUpdate(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(hasPending)
+
+	// Test DeletePendingTopicUpdate for second topic
+	err = s.emissionsKeeper.DeletePendingTopicUpdate(s.ctx, topicId2)
+	s.Require().NoError(err)
+
+	// Verify it was deleted
+	hasPending, err = s.emissionsKeeper.HasPendingTopicUpdate(s.ctx, topicId2)
+	s.Require().NoError(err)
+	s.Require().False(hasPending)
+
+	// Test GetAllPendingTopicUpdates after removals
+	allPending, err = s.emissionsKeeper.GetAllPendingTopicUpdates(s.ctx)
+	s.Require().NoError(err)
+	s.Require().Len(allPending, 0)
+
+	// Test error cases
+
+	// Test ApplyPendingTopicUpdate when no pending update exists
+	err = s.emissionsKeeper.ApplyPendingTopicUpdate(s.ctx, topicId)
+	s.Require().Error(err)
+
+	// Test DeletePendingTopicUpdate when no pending update exists
+	err = s.emissionsKeeper.DeletePendingTopicUpdate(s.ctx, topicId)
+	s.Require().NoError(err) // Delete should not error even if item doesn't exist
+
+	// Test SetPendingTopicUpdate with invalid topic ID
+	err = s.emissionsKeeper.SetPendingTopicUpdate(s.ctx, 0, pendingTopic)
+	s.Require().Error(err)
+
+	// Test SetPendingTopicUpdate with invalid topic (validation should fail)
+	invalidTopic := pendingTopic
+	invalidTopic.GroundTruthLag = 100 // Less than EpochLength (200) - should fail validation
+	err = s.emissionsKeeper.SetPendingTopicUpdate(s.ctx, topicId, invalidTopic)
+	s.Require().Error(err)
+}

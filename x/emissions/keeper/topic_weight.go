@@ -102,11 +102,7 @@ func (k *Keeper) GetCurrentTopicWeight(
 	return alloraMath.ZeroDec(), topicFeeRevenue, topicStake, nil
 }
 
-func (k *Keeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.TopicId) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
+func (k *Keeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.TopicId, params types.Params) (alloraMath.Dec, error) {
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
