@@ -5669,39 +5669,90 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
-	topicId := s.CreateOneTopic(10800)
-	worker := s.addrsStr[0]
-	blockHeight := int64(10)
 
-	// Set initial EMA score for the topic
-	initialScore := alloraMath.MustNewDecFromString("95.5")
-	err := k.SetTopicInitialInfererEmaScore(ctx, topicId, initialScore)
-	s.Require().NoError(err)
-
-	// Create and append a new inference
-	inference := &types.Inference{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
-		Inferer:     worker,
-		ExtraData:   nil,
-		Proof:       "",
+	testCases := []struct {
+		name           string
+		topicId        uint64
+		epochLength    int64
+		initialScore   string
+		blockHeight    int64
+		inferenceValue string
+		worker         string
+		expectedError  error
+	}{
+		{
+			name:           "Standard case",
+			topicId:        1,
+			epochLength:    10800,
+			initialScore:   "95.5",
+			blockHeight:    10,
+			inferenceValue: "0.52",
+			worker:         s.addrsStr[0],
+			expectedError:  nil,
+		},
+		{
+			name:           "Zero initial score",
+			topicId:        2,
+			epochLength:    5400,
+			initialScore:   "0",
+			blockHeight:    100,
+			inferenceValue: "1.0",
+			worker:         s.addrsStr[1],
+			expectedError:  nil,
+		},
+		{
+			name:           "High initial score",
+			topicId:        3,
+			epochLength:    21600,
+			initialScore:   "999.999",
+			blockHeight:    1000,
+			inferenceValue: "0.75",
+			worker:         s.addrsStr[2],
+			expectedError:  nil,
+		},
 	}
 
-	topic, err := k.GetTopic(ctx, topicId)
-	s.Require().NoError(err)
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			// Create topic
+			topicId := s.CreateOneTopic(tc.epochLength)
 
-	// Append the inference
-	err = k.AppendInference(ctx, topic, blockHeight, inference, 4)
-	s.Require().NoError(err)
+			// Set initial EMA score for the topic
+			initialScore := alloraMath.MustNewDecFromString(tc.initialScore)
+			err := k.SetTopicInitialInfererEmaScore(ctx, topicId, initialScore)
+			s.Require().NoError(err)
 
-	// Verify the worker received the initial EMA score
-	score, err := k.GetInfererScoreEma(ctx, topicId, worker)
-	s.Require().NoError(err)
-	s.Require().Equal(initialScore, score.Score)
-	s.Require().Equal(blockHeight, score.BlockHeight)
-	s.Require().Equal(worker, score.Address)
-	s.Require().Equal(topicId, score.TopicId)
+			// Create and append a new inference
+			inference := &types.Inference{
+				TopicId:     topicId,
+				BlockHeight: tc.blockHeight,
+				Value:       alloraMath.MustNewDecFromString(tc.inferenceValue),
+				Inferer:     tc.worker,
+				ExtraData:   nil,
+				Proof:       "",
+			}
+
+			topic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+
+			// Append the inference
+			err = k.AppendInference(ctx, topic, tc.blockHeight, inference, 4)
+
+			if tc.expectedError != nil {
+				s.Require().ErrorIs(err, tc.expectedError)
+			} else {
+				s.Require().NoError(err)
+
+				// Verify the worker received the initial EMA score
+				score, err := k.GetInfererScoreEma(ctx, topicId, tc.worker)
+				s.Require().NoError(err)
+				s.Require().Equal(initialScore, score.Score)
+				s.Require().Equal(tc.blockHeight, score.BlockHeight)
+				s.Require().Equal(tc.worker, score.Address)
+				s.Require().Equal(topicId, score.TopicId)
+			}
+		})
+	}
 }
 
 func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendForecast() {
