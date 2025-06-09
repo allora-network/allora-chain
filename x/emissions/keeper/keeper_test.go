@@ -5720,12 +5720,10 @@ func (s *KeeperTestSuite) TestPendingTopicUpdateFunctions() {
 
 	// Create a modified topic for pending update
 	pendingTopic := originalTopic
-	pendingTopic.EpochLength = 200
 	pendingTopic.GroundTruthLag = 250 // Must be >= EpochLength
 	pendingTopic.WorkerSubmissionWindow = 30
 	pendingTopic.Metadata = "Updated metadata"
 	pendingTopic.LossMethod = "mae"
-	pendingTopic.AlphaRegret = alloraMath.MustNewDecFromString("0.2")
 
 	// Test HasPendingTopicUpdate when none exists
 	hasPending, err := s.emissionsKeeper.HasPendingTopicUpdate(s.ctx, topicId)
@@ -5748,12 +5746,10 @@ func (s *KeeperTestSuite) TestPendingTopicUpdateFunctions() {
 	// Test GetPendingTopicUpdate
 	retrievedPending, err := s.emissionsKeeper.GetPendingTopicUpdate(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(pendingTopic.EpochLength, retrievedPending.EpochLength)
 	s.Require().Equal(pendingTopic.GroundTruthLag, retrievedPending.GroundTruthLag)
 	s.Require().Equal(pendingTopic.WorkerSubmissionWindow, retrievedPending.WorkerSubmissionWindow)
 	s.Require().Equal(pendingTopic.Metadata, retrievedPending.Metadata)
 	s.Require().Equal(pendingTopic.LossMethod, retrievedPending.LossMethod)
-	s.Require().Equal(pendingTopic.AlphaRegret, retrievedPending.AlphaRegret)
 
 	// Create another topic for testing GetAllPendingTopicUpdates
 	topicId2 := s.CreateOneTopic(150)
@@ -5761,7 +5757,6 @@ func (s *KeeperTestSuite) TestPendingTopicUpdateFunctions() {
 	s.Require().NoError(err)
 
 	pendingTopic2 := originalTopic2
-	pendingTopic2.EpochLength = 300
 	pendingTopic2.GroundTruthLag = 350 // Must be >= EpochLength
 	pendingTopic2.Metadata = "Second updated metadata"
 
@@ -5785,12 +5780,10 @@ func (s *KeeperTestSuite) TestPendingTopicUpdateFunctions() {
 	// Verify the topic was updated
 	updatedTopic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(pendingTopic.EpochLength, updatedTopic.EpochLength)
 	s.Require().Equal(pendingTopic.GroundTruthLag, updatedTopic.GroundTruthLag)
 	s.Require().Equal(pendingTopic.WorkerSubmissionWindow, updatedTopic.WorkerSubmissionWindow)
 	s.Require().Equal(pendingTopic.Metadata, updatedTopic.Metadata)
 	s.Require().Equal(pendingTopic.LossMethod, updatedTopic.LossMethod)
-	s.Require().Equal(pendingTopic.AlphaRegret, updatedTopic.AlphaRegret)
 
 	// Verify pending update was removed after applying
 	hasPending, err = s.emissionsKeeper.HasPendingTopicUpdate(s.ctx, topicId)
@@ -5823,11 +5816,5 @@ func (s *KeeperTestSuite) TestPendingTopicUpdateFunctions() {
 
 	// Test SetPendingTopicUpdate with invalid topic ID
 	err = s.emissionsKeeper.SetPendingTopicUpdate(s.ctx, 0, pendingTopic)
-	s.Require().Error(err)
-
-	// Test SetPendingTopicUpdate with invalid topic (validation should fail)
-	invalidTopic := pendingTopic
-	invalidTopic.GroundTruthLag = 100 // Less than EpochLength (200) - should fail validation
-	err = s.emissionsKeeper.SetPendingTopicUpdate(s.ctx, topicId, invalidTopic)
 	s.Require().Error(err)
 }

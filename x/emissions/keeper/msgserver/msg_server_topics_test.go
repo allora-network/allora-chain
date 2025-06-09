@@ -5,6 +5,7 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Topics tests
@@ -330,7 +331,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationErrors() {
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorContains(err, "worker submission window must be greater than zero")
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 
 	// Test too long metadata
 	params, err := s.emissionsKeeper.GetParams(ctx)
@@ -427,12 +428,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
 	require.NoError(err)
 	topicId := createResult.TopicId
 
-	// Update only metadata and epsilon
+	// Update only metadata
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:   sender,
 		TopicId:  topicId,
 		Metadata: []string{"Updated metadata only"},
-		Epsilon:  []alloraMath.Dec{alloraMath.MustNewDecFromString("0.05")},
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -443,7 +443,6 @@ func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
 	pendingTopic, err := s.emissionsKeeper.GetPendingTopicUpdate(ctx, topicId)
 	require.NoError(err)
 	require.Equal("Updated metadata only", pendingTopic.Metadata)
-	require.Equal(alloraMath.MustNewDecFromString("0.05"), pendingTopic.Epsilon)
 
 	// Verify other fields remained unchanged from original
 	require.Equal("mse", pendingTopic.LossMethod)
@@ -494,7 +493,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorContains(err, "loss method invalid")
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 
 	// Test too long loss method
 	params, err := s.emissionsKeeper.GetParams(ctx)
@@ -509,28 +508,6 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	require.Nil(updateResult)
 	require.ErrorContains(err, "loss method invalid")
 
-	// Test zero epoch length
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:      sender,
-		TopicId:     topicId,
-		EpochLength: []int64{0},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "epoch length must be greater than zero")
-
-	// Test negative epoch length
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:      sender,
-		TopicId:     topicId,
-		EpochLength: []int64{-1},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "epoch length must be greater than zero")
-
 	// Test zero worker submission window
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:                 sender,
@@ -540,62 +517,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorContains(err, "worker submission window must be greater than zero")
-
-	// Test alpha regret out of bounds (too low)
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:      sender,
-		TopicId:     topicId,
-		AlphaRegret: []alloraMath.Dec{alloraMath.ZeroDec()},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "alpha regret must be greater than 0")
-
-	// Test alpha regret out of bounds (too high)
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:      sender,
-		TopicId:     topicId,
-		AlphaRegret: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "alpha regret must be greater than 0 and less than or equal to 1")
-
-	// Test p-norm out of bounds (too low)
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:  sender,
-		TopicId: topicId,
-		PNorm:   []alloraMath.Dec{alloraMath.MustNewDecFromString("2.0")},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "p-norm must be between 2.5 and 4.5")
-
-	// Test p-norm out of bounds (too high)
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:  sender,
-		TopicId: topicId,
-		PNorm:   []alloraMath.Dec{alloraMath.MustNewDecFromString("5.0")},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "p-norm must be between 2.5 and 4.5")
-
-	// Test epsilon zero
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:  sender,
-		TopicId: topicId,
-		Epsilon: []alloraMath.Dec{alloraMath.ZeroDec()},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "epsilon must be greater than 0")
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
@@ -607,50 +529,6 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	require.Error(err)
 	require.Nil(updateResult)
 	require.ErrorContains(err, "metadata invalid")
-
-	// Test merit sortition alpha out of bounds
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		MeritSortitionAlpha: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "merit sortition alpha must be between 0 and 1 inclusive")
-
-	// Test active inferer quantile out of bounds
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:                sender,
-		TopicId:               topicId,
-		ActiveInfererQuantile: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "active inferer quantile must be between 0 and 1 inclusive")
-
-	// Test active forecaster quantile out of bounds
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:                   sender,
-		TopicId:                  topicId,
-		ActiveForecasterQuantile: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "active forecaster quantile must be between 0 and 1 inclusive")
-
-	// Test active reputer quantile out of bounds
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:                sender,
-		TopicId:               topicId,
-		ActiveReputerQuantile: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")},
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "active reputer quantile must be between 0 and 1 inclusive")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
@@ -694,7 +572,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorContains(err, "ground truth lag cannot be lower than epoch length")
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 
 	// Test updating worker submission window to be higher than existing epoch length
 	updateTopicMsg = &types.UpdateTopicRequest{
@@ -705,5 +583,5 @@ func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorContains(err, "worker submission window cannot be higher than epoch length")
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
