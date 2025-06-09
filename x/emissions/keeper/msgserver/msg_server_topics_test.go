@@ -189,20 +189,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:                   sender,
-		TopicId:                  topicId,
-		Metadata:                 []string{"Updated metadata"},
-		LossMethod:               []string{"mae"},
-		EpochLength:              []int64{21600},
-		GroundTruthLag:           []int64{21600},
-		PNorm:                    []alloraMath.Dec{alloraMath.NewDecFromInt64(3)},
-		AlphaRegret:              []alloraMath.Dec{alloraMath.MustNewDecFromString("0.2")},
-		Epsilon:                  []alloraMath.Dec{alloraMath.MustNewDecFromString("0.02")},
-		WorkerSubmissionWindow:   []int64{20},
-		MeritSortitionAlpha:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.2")},
-		ActiveInfererQuantile:    []alloraMath.Dec{alloraMath.MustNewDecFromString("0.3")},
-		ActiveForecasterQuantile: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.3")},
-		ActiveReputerQuantile:    []alloraMath.Dec{alloraMath.MustNewDecFromString("0.3")},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               []string{"Updated metadata"},
+		LossMethod:             []string{"mae"},
+		GroundTruthLag:         []int64{21600},
+		WorkerSubmissionWindow: []int64{20},
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -219,16 +211,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NoError(err)
 	require.Equal("Updated metadata", pendingTopic.Metadata)
 	require.Equal("mae", pendingTopic.LossMethod)
-	require.Equal(int64(21600), pendingTopic.EpochLength)
 	require.Equal(int64(21600), pendingTopic.GroundTruthLag)
-	require.Equal(alloraMath.NewDecFromInt64(3), pendingTopic.PNorm)
-	require.Equal(alloraMath.MustNewDecFromString("0.2"), pendingTopic.AlphaRegret)
-	require.Equal(alloraMath.MustNewDecFromString("0.02"), pendingTopic.Epsilon)
 	require.Equal(int64(20), pendingTopic.WorkerSubmissionWindow)
-	require.Equal(alloraMath.MustNewDecFromString("0.2"), pendingTopic.MeritSortitionAlpha)
-	require.Equal(alloraMath.MustNewDecFromString("0.3"), pendingTopic.ActiveInfererQuantile)
-	require.Equal(alloraMath.MustNewDecFromString("0.3"), pendingTopic.ActiveForecasterQuantile)
-	require.Equal(alloraMath.MustNewDecFromString("0.3"), pendingTopic.ActiveReputerQuantile)
+
+	// Verify other fields remained unchanged from original
+	require.Equal(int64(10800), pendingTopic.EpochLength)
+	require.Equal(alloraMath.NewDecFromInt64(3), pendingTopic.PNorm)
+	require.Equal(alloraMath.NewDecFromInt64(1), pendingTopic.AlphaRegret)
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
@@ -332,31 +321,29 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationErrors() {
 	require.NoError(err)
 	topicId := createResult.TopicId
 
-	// Test epoch length below minimum
+	// Test zero worker submission window
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		WorkerSubmissionWindow: []int64{0},
+	}
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "worker submission window must be greater than zero")
+
+	// Test too long metadata
 	params, err := s.emissionsKeeper.GetParams(ctx)
 	require.NoError(err)
-
-	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:      sender,
-		TopicId:     topicId,
-		EpochLength: []int64{params.MinEpochLength - 1},
-	}
-
-	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorIs(err, types.ErrTopicCadenceBelowMinimum)
-	require.Nil(updateResult)
-
-	// Test ground truth lag too big
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:         sender,
-		TopicId:        topicId,
-		EpochLength:    []int64{100},
-		GroundTruthLag: []int64{int64(params.MaxUnfulfilledReputerRequests*100 + 1)},
+		Sender:   sender,
+		TopicId:  topicId,
+		Metadata: []string{strings.Repeat("a", int(params.MaxStringLength)+1)},
 	}
-
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorIs(err, types.ErrGroundTruthLagTooBig)
+	require.Error(err)
 	require.Nil(updateResult)
+	require.ErrorContains(err, "metadata invalid")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNoChanges() {
@@ -698,37 +685,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
 	require.NoError(err)
 	topicId := createResult.TopicId
 
-	// Test ground truth lag lower than epoch length (when updating both)
-	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:         sender,
-		TopicId:        topicId,
-		EpochLength:    []int64{1000},
-		GroundTruthLag: []int64{500}, // Lower than epoch length
-	}
-	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "ground truth lag cannot be lower than epoch length")
-
-	// Test worker submission window higher than epoch length (when updating both)
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:                 sender,
-		TopicId:                topicId,
-		EpochLength:            []int64{1000},
-		WorkerSubmissionWindow: []int64{1500}, // Higher than epoch length
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "worker submission window cannot be higher than epoch length")
-
 	// Test updating ground truth lag to be lower than existing epoch length
-	updateTopicMsg = &types.UpdateTopicRequest{
+	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:         sender,
 		TopicId:        topicId,
 		GroundTruthLag: []int64{5000}, // Lower than original epoch length (10800)
 	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
 	require.ErrorContains(err, "ground truth lag cannot be lower than epoch length")

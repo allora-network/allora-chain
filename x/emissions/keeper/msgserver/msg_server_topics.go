@@ -111,11 +111,6 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
 
-	// Validate the request
-	if err := msg.Validate(params.MaxStringLength); err != nil {
-		return nil, err
-	}
-
 	// Check if topic exists
 	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
@@ -125,6 +120,11 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	// Check if sender is the topic creator
 	if topic.Creator != msg.Sender {
 		return nil, types.ErrNotTopicCreator
+	}
+
+	// Validate the request now that we have the existing topic's epoch length
+	if err := msg.Validate(params.MaxStringLength, topic.EpochLength); err != nil {
+		return nil, err
 	}
 
 	// Create updated topic by copying existing topic and applying changes
@@ -141,61 +141,13 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		hasChanges = true
 	}
 
-	if len(msg.EpochLength) > 0 {
-		if msg.EpochLength[0] < params.MinEpochLength {
-			return nil, types.ErrTopicCadenceBelowMinimum
-		}
-		updatedTopic.EpochLength = msg.EpochLength[0]
-		hasChanges = true
-	}
-
 	if len(msg.GroundTruthLag) > 0 {
-		// Validate ground truth lag in relation to epoch length
-		epochLength := updatedTopic.EpochLength
-		if uint64(msg.GroundTruthLag[0]) > params.MaxUnfulfilledReputerRequests*uint64(epochLength) {
-			return nil, types.ErrGroundTruthLagTooBig
-		}
 		updatedTopic.GroundTruthLag = msg.GroundTruthLag[0]
-		hasChanges = true
-	}
-
-	if len(msg.PNorm) > 0 {
-		updatedTopic.PNorm = msg.PNorm[0]
-		hasChanges = true
-	}
-
-	if len(msg.AlphaRegret) > 0 {
-		updatedTopic.AlphaRegret = msg.AlphaRegret[0]
-		hasChanges = true
-	}
-
-	if len(msg.Epsilon) > 0 {
-		updatedTopic.Epsilon = msg.Epsilon[0]
 		hasChanges = true
 	}
 
 	if len(msg.WorkerSubmissionWindow) > 0 {
 		updatedTopic.WorkerSubmissionWindow = msg.WorkerSubmissionWindow[0]
-		hasChanges = true
-	}
-
-	if len(msg.MeritSortitionAlpha) > 0 {
-		updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha[0]
-		hasChanges = true
-	}
-
-	if len(msg.ActiveInfererQuantile) > 0 {
-		updatedTopic.ActiveInfererQuantile = msg.ActiveInfererQuantile[0]
-		hasChanges = true
-	}
-
-	if len(msg.ActiveForecasterQuantile) > 0 {
-		updatedTopic.ActiveForecasterQuantile = msg.ActiveForecasterQuantile[0]
-		hasChanges = true
-	}
-
-	if len(msg.ActiveReputerQuantile) > 0 {
-		updatedTopic.ActiveReputerQuantile = msg.ActiveReputerQuantile[0]
 		hasChanges = true
 	}
 

@@ -332,37 +332,8 @@ message UpdateTopicRequest {
   // Optional fields using repeated pattern - if empty, field is not updated
   repeated string metadata = 3;
   repeated string loss_method = 4;
-  repeated int64 epoch_length = 5;
-  repeated int64 ground_truth_lag = 6;
-  repeated string p_norm = 7 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated string alpha_regret = 8 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated string epsilon = 9 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated int64 worker_submission_window = 10;
-  repeated string merit_sortition_alpha = 11 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated string active_inferer_quantile = 12 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated string active_forecaster_quantile = 13 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated string active_reputer_quantile = 14 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  repeated int64 ground_truth_lag = 5;
+  repeated int64 worker_submission_window = 6;
 }
 
 message UpdateTopicResponse {}

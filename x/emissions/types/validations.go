@@ -1219,7 +1219,7 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 }
 
 // Validate checks if the given UpdateTopicRequest is valid
-func (msg *UpdateTopicRequest) Validate(maxStringLen uint64) error {
+func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, epochLength int64) error {
 	if err := ValidateBech32(msg.Sender); err != nil {
 		return errors.Wrap(err, "invalid msg Sender address")
 	}
@@ -1231,83 +1231,27 @@ func (msg *UpdateTopicRequest) Validate(maxStringLen uint64) error {
 		}
 	}
 
-	if len(msg.EpochLength) > 0 {
-		if msg.EpochLength[0] <= 0 {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
-		}
-	}
-
 	if len(msg.WorkerSubmissionWindow) > 0 {
 		if msg.WorkerSubmissionWindow[0] <= 0 {
 			return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window must be greater than zero")
 		}
-	}
-
-	currentEpochLength := int64(0)
-	if len(msg.EpochLength) > 0 {
-		currentEpochLength = msg.EpochLength[0]
-	}
-
-	if len(msg.GroundTruthLag) > 0 {
-		// If epoch length is also being updated, validate against new epoch length
-		// Otherwise, this will be validated in the message server against the existing topic's epoch length
-		if len(msg.EpochLength) > 0 && msg.GroundTruthLag[0] < currentEpochLength {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be lower than epoch length")
-		}
-	}
-
-	// Validate worker submission window against epoch length if both are provided
-	if len(msg.WorkerSubmissionWindow) > 0 && len(msg.EpochLength) > 0 {
-		if msg.WorkerSubmissionWindow[0] > currentEpochLength {
+		if epochLength > 0 && msg.WorkerSubmissionWindow[0] > epochLength {
 			return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window cannot be higher than epoch length")
 		}
 	}
 
-	if len(msg.AlphaRegret) > 0 {
-		if msg.AlphaRegret[0].Lte(alloraMath.ZeroDec()) || msg.AlphaRegret[0].Gt(alloraMath.OneDec()) || ValidateDec(msg.AlphaRegret[0]) != nil {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
+	if len(msg.GroundTruthLag) > 0 {
+		if msg.GroundTruthLag[0] <= 0 {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag must be greater than zero")
 		}
-	}
-
-	if len(msg.PNorm) > 0 {
-		if msg.PNorm[0].Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm[0].Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(msg.PNorm[0]) != nil {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
-		}
-	}
-
-	if len(msg.Epsilon) > 0 {
-		if msg.Epsilon[0].Lte(alloraMath.ZeroDec()) || msg.Epsilon[0].IsNaN() || !msg.Epsilon[0].IsFinite() {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
+		if epochLength > 0 && msg.GroundTruthLag[0] < epochLength {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be lower than epoch length")
 		}
 	}
 
 	if len(msg.Metadata) > 0 {
 		if uint64(len(msg.Metadata[0])) > maxStringLen {
 			return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata invalid")
-		}
-	}
-
-	if len(msg.MeritSortitionAlpha) > 0 {
-		if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha[0]) {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
-		}
-	}
-
-	if len(msg.ActiveInfererQuantile) > 0 {
-		if !isAlloraDecZeroOrLessThanOne(msg.ActiveInfererQuantile[0]) {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
-		}
-	}
-
-	if len(msg.ActiveForecasterQuantile) > 0 {
-		if !isAlloraDecZeroOrLessThanOne(msg.ActiveForecasterQuantile[0]) {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be between 0 and 1 inclusive")
-		}
-	}
-
-	if len(msg.ActiveReputerQuantile) > 0 {
-		if !isAlloraDecZeroOrLessThanOne(msg.ActiveReputerQuantile[0]) {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 		}
 	}
 
