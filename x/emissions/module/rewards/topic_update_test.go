@@ -27,16 +27,17 @@ func (s *RewardsTestSuite) TestPendingTopicUpdateAppliedAtEpochEnd() {
 	// Get original topic
 	originalTopic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(originalEpochLength, originalTopic.EpochLength)
+	s.Require().Equal("test", originalTopic.Metadata) // Check initial metadata
 
-	// Create update request with new epoch length
-	newEpochLength := int64(150)
+	// Create update request with new metadata
+	newMetadata := "updated metadata"
 	updateMsg := &types.UpdateTopicRequest{
 		Sender:                 originalTopic.Creator,
 		TopicId:                topicId,
-		EpochLength:            []int64{newEpochLength},
-		GroundTruthLag:         []int64{newEpochLength}, // Ensure validation passes
-		WorkerSubmissionWindow: []int64{20},             // Ensure it's less than epoch length
+		Metadata:               []string{newMetadata},
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 
 	// Submit the update request
@@ -48,31 +49,24 @@ func (s *RewardsTestSuite) TestPendingTopicUpdateAppliedAtEpochEnd() {
 	s.Require().NoError(err)
 	s.Require().True(hasPending)
 
-	// Original topic should still have old epoch length
+	// Original topic should still have old metadata
 	currentTopic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(originalEpochLength, currentTopic.EpochLength)
+	s.Require().Equal("test", currentTopic.Metadata)
 
 	// Move to end of current epoch to trigger the update
 	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId)
 	s.Require().NoError(err)
-	block = nextBlock
-	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(nextBlock)
 
 	// This should apply the pending update
-	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.ctx, s.emissionsKeeper, block)
+	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.ctx, s.emissionsKeeper, nextBlock)
 	s.Require().NoError(err)
 
 	// Verify the update was applied
 	updatedTopicAfter, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(newEpochLength, updatedTopicAfter.EpochLength)
-
-	// Verify new next churning block uses new epoch length
-	newNextBlock, isActive, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().True(isActive)
-	s.Require().Equal(block+newEpochLength, newNextBlock)
+	s.Require().Equal(newMetadata, updatedTopicAfter.Metadata)
 
 	// Verify pending update was removed
 	hasPending, err = s.emissionsKeeper.HasPendingTopicUpdate(s.ctx, topicId)

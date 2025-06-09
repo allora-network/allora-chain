@@ -5802,7 +5802,7 @@ func (s *KeeperTestSuite) TestPendingTopicUpdateFunctions() {
 	// Test GetAllPendingTopicUpdates after removals
 	allPending, err = s.emissionsKeeper.GetAllPendingTopicUpdates(s.ctx)
 	s.Require().NoError(err)
-	s.Require().Len(allPending, 0)
+	s.Require().Empty(allPending)
 
 	// Test error cases
 

@@ -5,7 +5,6 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Topics tests
@@ -256,9 +255,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:   otherUser,
-		TopicId:  topicId,
-		Metadata: []string{"Updated metadata"},
+		Sender:                 otherUser,
+		TopicId:                topicId,
+		Metadata:               []string{"Updated metadata"},
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -279,9 +281,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:   sender,
-		TopicId:  nonexistentTopicId,
-		Metadata: []string{"Updated metadata"},
+		Sender:                 sender,
+		TopicId:                nonexistentTopicId,
+		Metadata:               []string{"Updated metadata"},
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -297,7 +302,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationErrors() {
 	senderAddr := s.addrs[0]
 	sender := s.addrsStr[0]
 
-	// Create a topic first
+	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
@@ -327,19 +332,23 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationErrors() {
 		Sender:                 sender,
 		TopicId:                topicId,
 		WorkerSubmissionWindow: []int64{0},
+		Metadata:               nil,
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+	require.ErrorIs(err, types.ErrInvalidValue)
 
 	// Test too long metadata
-	params, err := s.emissionsKeeper.GetParams(ctx)
-	require.NoError(err)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:   sender,
-		TopicId:  topicId,
-		Metadata: []string{strings.Repeat("a", int(params.MaxStringLength)+1)},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               []string{strings.Repeat("a", 257)},
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -354,7 +363,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNoChanges() {
 	senderAddr := s.addrs[0]
 	sender := s.addrsStr[0]
 
-	// Create a topic first
+	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
@@ -381,13 +390,16 @@ func (s *MsgServerTestSuite) TestUpdateTopicNoChanges() {
 
 	// Try to update with no fields set
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:  sender,
-		TopicId: topicId,
-		// No fields set
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               nil,
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorIs(err, types.ErrNoUpdateFields)
 	require.Nil(updateResult)
 
 	// Verify no pending update was created
@@ -403,7 +415,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
 	senderAddr := s.addrs[0]
 	sender := s.addrsStr[0]
 
-	// Create a topic first
+	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
@@ -430,9 +442,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
 
 	// Update only metadata
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:   sender,
-		TopicId:  topicId,
-		Metadata: []string{"Updated metadata only"},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               []string{"Updated metadata only"},
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -445,63 +460,44 @@ func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
 	require.Equal("Updated metadata only", pendingTopic.Metadata)
 
 	// Verify other fields remained unchanged from original
-	require.Equal("mse", pendingTopic.LossMethod)
-	require.Equal(int64(10800), pendingTopic.EpochLength)
-	require.Equal(int64(10800), pendingTopic.GroundTruthLag)
-	require.Equal(alloraMath.NewDecFromInt64(3), pendingTopic.PNorm)
-	require.Equal(alloraMath.NewDecFromInt64(1), pendingTopic.AlphaRegret)
+	originalTopic, err := s.emissionsKeeper.GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(originalTopic.LossMethod, pendingTopic.LossMethod)
+	require.Equal(originalTopic.EpochLength, pendingTopic.EpochLength)
+	require.Equal(originalTopic.GroundTruthLag, pendingTopic.GroundTruthLag)
+	require.Equal(originalTopic.PNorm, pendingTopic.PNorm)
+	require.Equal(originalTopic.AlphaRegret, pendingTopic.AlphaRegret)
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
-	senderAddr := s.addrs[0]
 	sender := s.addrsStr[0]
-
-	// Create a topic first
-	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
-	createTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  sender,
-		Metadata:                 "Original metadata",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    false,
-		EnableReputerWhitelist:   false,
-	}
-
-	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
-	require.NoError(err)
-	topicId := createResult.TopicId
+	topicId := s.CreateOneTopic().Id
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		LossMethod: []string{""},
+		Sender:                 sender,
+		TopicId:                topicId,
+		LossMethod:             []string{""},
+		Metadata:               nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+	require.ErrorIs(err, types.ErrInvalidValue)
 
 	// Test too long loss method
-	params, err := s.emissionsKeeper.GetParams(ctx)
-	require.NoError(err)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		LossMethod: []string{strings.Repeat("a", int(params.MaxStringLength)+1)},
+		Sender:                 sender,
+		TopicId:                topicId,
+		LossMethod:             []string{strings.Repeat("a", 257)},
+		Metadata:               nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -513,17 +509,23 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		Sender:                 sender,
 		TopicId:                topicId,
 		WorkerSubmissionWindow: []int64{0},
+		Metadata:               nil,
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+	require.ErrorIs(err, types.ErrInvalidValue)
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:   sender,
-		TopicId:  topicId,
-		Metadata: []string{strings.Repeat("a", int(params.MaxStringLength)+1)},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               []string{strings.Repeat("a", 257)},
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
+		WorkerSubmissionWindow: nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -538,7 +540,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
 	senderAddr := s.addrs[0]
 	sender := s.addrsStr[0]
 
-	// Create a topic first
+	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
@@ -558,30 +560,35 @@ func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 	}
-
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
 	topicId := createResult.TopicId
 
 	// Test updating ground truth lag to be lower than existing epoch length
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:         sender,
-		TopicId:        topicId,
-		GroundTruthLag: []int64{5000}, // Lower than original epoch length (10800)
+		Sender:                 sender,
+		TopicId:                topicId,
+		GroundTruthLag:         []int64{5000}, // Lower than original epoch length (10800)
+		Metadata:               nil,
+		LossMethod:             nil,
+		WorkerSubmissionWindow: nil,
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+	require.ErrorIs(err, types.ErrInvalidValue)
 
 	// Test updating worker submission window to be higher than existing epoch length
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:                 sender,
 		TopicId:                topicId,
 		WorkerSubmissionWindow: []int64{15000}, // Higher than original epoch length (10800)
+		Metadata:               nil,
+		LossMethod:             nil,
+		GroundTruthLag:         nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+	require.ErrorIs(err, types.ErrInvalidValue)
 }
