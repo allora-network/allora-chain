@@ -155,11 +155,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
 
 	// Create a topic first
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -202,12 +202,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NotNil(updateResult)
 
 	// Verify that the pending update was stored
-	hasPending, err := s.emissionsKeeper.HasPendingTopicUpdate(ctx, topicId)
+	hasPending, err := s.EmissionsKeeper().HasPendingTopicUpdate(ctx, topicId)
 	require.NoError(err)
 	require.True(hasPending, "Should have pending topic update")
 
 	// Verify the pending update has the correct values
-	pendingTopic, err := s.emissionsKeeper.GetPendingTopicUpdate(ctx, topicId)
+	pendingTopic, err := s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
 	require.NoError(err)
 	require.Equal("Updated metadata", pendingTopic.Metadata)
 	require.Equal("mae", pendingTopic.LossMethod)
@@ -221,12 +221,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
-	otherUser := s.addrsStr[1]
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+	otherUser := s.AddrsStr(1)
 
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -268,16 +268,16 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 	require.Nil(updateResult)
 
 	// Verify no pending update was created
-	hasPending, err := s.emissionsKeeper.HasPendingTopicUpdate(ctx, topicId)
+	hasPending, err := s.EmissionsKeeper().HasPendingTopicUpdate(ctx, topicId)
 	require.NoError(err)
 	require.False(hasPending, "Should not have pending topic update")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	sender := s.addrsStr[0]
+	sender := s.AddrsStr(0)
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
@@ -296,11 +296,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicValidationErrors() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
 
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -339,7 +339,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationErrors() {
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorContains(err, "worker submission window must be greater than zero")
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
@@ -357,11 +357,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationErrors() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNoChanges() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
 
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -399,21 +399,21 @@ func (s *MsgServerTestSuite) TestUpdateTopicNoChanges() {
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorIs(err, types.ErrNoUpdateFields)
+	require.ErrorContains(err, "No fields to update")
 	require.Nil(updateResult)
 
 	// Verify no pending update was created
-	hasPending, err := s.emissionsKeeper.HasPendingTopicUpdate(ctx, topicId)
+	hasPending, err := s.EmissionsKeeper().HasPendingTopicUpdate(ctx, topicId)
 	require.NoError(err)
 	require.False(hasPending, "Should not have pending topic update")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
 
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -455,12 +455,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
 	require.NotNil(updateResult)
 
 	// Verify the pending update has correct values
-	pendingTopic, err := s.emissionsKeeper.GetPendingTopicUpdate(ctx, topicId)
+	pendingTopic, err := s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
 	require.NoError(err)
 	require.Equal("Updated metadata only", pendingTopic.Metadata)
 
 	// Verify other fields remained unchanged from original
-	originalTopic, err := s.emissionsKeeper.GetTopic(ctx, topicId)
+	originalTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(originalTopic.LossMethod, pendingTopic.LossMethod)
 	require.Equal(originalTopic.EpochLength, pendingTopic.EpochLength)
@@ -470,11 +470,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicPartialUpdate() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	sender := s.addrsStr[0]
-	topicId := s.CreateOneTopic().Id
+	sender := s.AddrsStr(0)
+	topicId := s.CreateTopic()
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
@@ -488,7 +488,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorContains(err, "loss method invalid")
 
 	// Test too long loss method
 	updateTopicMsg = &types.UpdateTopicRequest{
@@ -516,7 +516,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorContains(err, "worker submission window must be greater than zero")
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
@@ -534,11 +534,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
-	ctx, msgServer := s.ctx, s.msgServer
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
 
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
 
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -576,7 +576,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorContains(err, "ground truth lag cannot be lower than epoch length")
 
 	// Test updating worker submission window to be higher than existing epoch length
 	updateTopicMsg = &types.UpdateTopicRequest{
@@ -590,5 +590,5 @@ func (s *MsgServerTestSuite) TestUpdateTopicCrossFieldValidation() {
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorContains(err, "worker submission window cannot be higher than epoch length")
 }
