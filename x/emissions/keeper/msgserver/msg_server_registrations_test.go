@@ -8,7 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -202,14 +201,13 @@ func (s *MsgServerTestSuite) TestRegistrationErrors() {
 				err := s.EmissionsKeeper().ActivateTopic(ctx, topicId)
 				s.Require().NoError(err)
 
-				_, _, _, accs := alloratestutil.GenerateTestAccounts(1)
-				blockedReputer := accs[0]
+				blockedReputer := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
 
 				return &types.RegisterRequest{
-					Sender:    blockedReputer,
+					Sender:    blockedReputer.String(),
 					TopicId:   topicId,
 					IsReputer: true,
-					Owner:     blockedReputer,
+					Owner:     blockedReputer.String(),
 				}
 			},
 			expectedError: sdkerrors.ErrInsufficientFunds,

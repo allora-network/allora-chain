@@ -23,15 +23,6 @@ func TestQueryServerTestSuite(t *testing.T) {
 	})
 }
 
-func (s *QueryServerTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
-	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-
-	err := s.BankKeeper().MintCoins(s.Ctx(), types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.Require().NoError(err)
-	err = s.BankKeeper().SendCoinsFromModuleToAccount(s.Ctx(), types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
-	s.Require().NoError(err)
-}
-
 func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()

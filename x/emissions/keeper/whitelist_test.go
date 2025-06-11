@@ -6,6 +6,7 @@ import (
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 )
 
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestWhitelistOperations() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -123,6 +124,7 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 	}
 }
 
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestWhitelistEnableDisableOperations() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -384,6 +386,7 @@ func (s *KeeperTestSuite) TestTopicPermissionCanUpdateTopicWhitelist() {
 	s.Require().NoError(err)
 }
 
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()

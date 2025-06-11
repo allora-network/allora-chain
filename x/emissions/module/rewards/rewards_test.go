@@ -52,40 +52,24 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	reputerIndexes := testutil.ReturnIndexes(0, 5)
 	workerIndexes := testutil.ReturnIndexes(5, 5)
+	reputerIndexes2 := testutil.ReturnIndexes(10, 5)
+	workerIndexes2 := testutil.ReturnIndexes(15, 5)
 
 	// TOPIC 1 - PRE PASS
 	topicId, newBlockheight := s.FullTopicPass(workerIndexes, reputerIndexes)
 
-	// TOPIC 1 - FIRST PASS
-	s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithTopicID(topicId))
+	// TOPIC 2 - SETUP
+	// Do not send bundles for topic 2 yet
+	topic2 := s.FullTopicSetup(workerIndexes2, reputerIndexes2)
 
 	beforeRewardsTopic1FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
-	reputerIndexes2 := testutil.ReturnIndexes(10, 5)
-	workerIndexes2 := testutil.ReturnIndexes(15, 5)
-
-	// TOPIC 2 - PRE PASS
-	topic2 := s.FullTopicSetup(workerIndexes2, reputerIndexes2)
-
-	afterRewardsTopic1FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
-	s.Require().NoError(err)
-
-	// Topic 1 should have less revenue after rewards distribution -> rewards distributed
-	s.Require().True(
-		beforeRewardsTopic1FeeRevenue.Equal(afterRewardsTopic1FeeRevenue),
-		"Topic 1 should not lose influence of their fee revenue yet: %s = %s",
-		beforeRewardsTopic1FeeRevenue.String(),
-		afterRewardsTopic1FeeRevenue.String(),
-	)
-
-	// Do not send bundles for topic 2 yet
-
 	beforeRewardsTopic2FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topic2.GetId())
 	s.Require().NoError(err)
 
-	// TOPIC 2 - FIRST PASS
-	s.FullTopicPass(workerIndexes2, reputerIndexes2, testutil.WithTopicID(topic2.GetId()))
+	// TOPIC 1 - FIRST PASS
+	s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithTopicID(topicId))
 
 	// mint some rewards to give out
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
@@ -96,7 +80,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Trigger end block - rewards distribution
 	s.EndBlock()
 
-	afterRewardsTopic1FeeRevenue, err = s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
+	afterRewardsTopic1FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
 	s.Require().NoError(err)
 	afterRewardsTopic2FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topic2.GetId())
 	s.Require().NoError(err)

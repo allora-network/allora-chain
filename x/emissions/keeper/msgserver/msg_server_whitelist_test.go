@@ -6,6 +6,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+//nolint:exhaustruct
 func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -96,6 +97,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 	}
 }
 
+//nolint:exhaustruct
 func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -354,6 +356,7 @@ func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 	}
 }
 
+//nolint:exhaustruct
 func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -384,7 +387,6 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 		isGlobal      bool
 		operation     string // "add" or "remove"
 		addresses     []string
-		topicId       uint64
 		execute       func() error
 		verify        func(context.Context, string) (bool, error)
 		expectedError error
@@ -516,6 +518,7 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	}
 }
 
+//nolint:exhaustruct
 func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
@@ -777,6 +780,7 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 	}
 }
 
+//nolint:exhaustruct
 func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()

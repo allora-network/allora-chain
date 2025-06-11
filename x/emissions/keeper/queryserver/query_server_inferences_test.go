@@ -305,8 +305,8 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	}
 
 	// Set inferences and forecasts
-	inferernces := getInferencesForBlockHeight(workers, inferenceBlockHeight, topicId)
-	err = keeper.InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferernces)
+	inferences := getInferencesForBlockHeight(workers, inferenceBlockHeight, topicId)
+	err = keeper.InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferences)
 	require.NoError(err)
 
 	forecasts := getForecastsForBlockHeight(workers, forecasters, inferenceBlockHeight, topicId)
@@ -323,7 +323,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		keeper,
 		topicId,
 		&inferenceNonce.BlockHeight,
-		ptr.To(inferernces),
+		ptr.To(inferences),
 		ptr.To(forecasts),
 		false,
 	)
@@ -578,6 +578,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 	s.WithBlockHeight(blockHeights["loss"])
 
 	// Set Loss bundles
+	//nolint:exhaustruct
 	lossBundle := types.ValueBundle{
 		CombinedValue:       alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
 		ReputerRequestNonce: reputerLossRequestNonce,
@@ -659,6 +660,7 @@ func getInferencesForBlockHeight(workers []string, blockHeight int64, topicId ui
 	}
 
 	for i, worker := range workers {
+		//nolint:exhaustruct
 		inferences = append(inferences, &types.Inference{
 			Inferer:     worker,
 			Value:       alloraMath.MustNewDecFromString(inferenceValues[i]),
@@ -687,6 +689,7 @@ func getForecastsForBlockHeight(workers []string, forecasters []string, blockHei
 				Value:   alloraMath.MustNewDecFromString(forecastValues[i][j]),
 			})
 		}
+		//nolint:exhaustruct
 		forecasts = append(forecasts, &types.Forecast{
 			Forecaster:       forecaster,
 			ForecastElements: elements,

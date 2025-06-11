@@ -8,7 +8,7 @@ import (
 )
 
 // Topics tests
-
+//nolint:exhaustruct
 func (s *MsgServerTestSuite) TestCreateNewTopic() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()

@@ -12,7 +12,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -26,15 +25,6 @@ func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, &KeeperTestSuite{
 		alloratestutil.NewTestSuite("emissions_keeper"),
 	})
-}
-
-func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
-	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-
-	err := s.BankKeeper().MintCoins(s.Ctx(), types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.Require().NoError(err)
-	err = s.BankKeeper().SendCoinsFromModuleToAccount(s.Ctx(), types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
-	s.Require().NoError(err)
 }
 
 // WORKER NONCE TESTS
@@ -3973,6 +3963,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	// Create first set of inferences
 	inferences := make([]*types.Inference, 5)
 	for i := range inferences {
+		//nolint:exhaustruct
 		inferences[i] = &types.Inference{
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
@@ -4012,6 +4003,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	inferences = make([]*types.Inference, 5)
 	for i := 1; i <= len(inferences); i++ {
+		//nolint:exhaustruct
 		inferences[i-1] = &types.Inference{
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
@@ -4130,7 +4122,6 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	newForecast := types.Forecast{
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
-		Forecaster:  "",
 		ForecastElements: []*types.ForecastElement{
 			{
 				Inferer: workers[0],
@@ -4223,6 +4214,7 @@ func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {
 	// Create forecasts for all workers
 	allForecasts := types.Forecasts{Forecasts: make([]*types.Forecast, len(workers))}
 	for i, worker := range workers {
+		//nolint:exhaustruct
 		allForecasts.Forecasts[i] = &types.Forecast{
 			TopicId:          topicId,
 			BlockHeight:      blockHeightInferences,

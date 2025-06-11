@@ -68,6 +68,7 @@ type TestSuite struct {
 }
 
 func NewTestSuite(moduleName string) TestSuite {
+	//nolint:exhaustruct
 	return TestSuite{
 		ModuleName: moduleName,
 	}
@@ -753,6 +754,7 @@ type builderValueO interface {
 	SetValue(alloraMath.Dec)
 }
 
+//nolint:forcetypeassert
 func createValue[O builderValueO](worker string, value alloraMath.Dec) (out O) {
 	out = reflect.New(reflect.TypeOf(out).Elem()).Interface().(O)
 	out.SetWorker(worker)
@@ -834,7 +836,6 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 		s.Require().NoError(err)
 		maxGTL := prms.MaxUnfulfilledReputerRequests * uint64(newTopicMsg.EpochLength)
 		if uint64(newTopicMsg.GroundTruthLag) > maxGTL {
-			// TODO: on FullTopicPass they have to be the same. why?
 			newTopicMsg.GroundTruthLag = newTopicMsg.EpochLength
 		}
 	}
@@ -1031,6 +1032,18 @@ func (s *TestSuite) FullTopicSetup(workerIndexes, reputerIndexes []int, options 
 	return topic
 }
 
+// FullTopicPass runs a full pass for a topic. It:
+// 	- takes the option and sets up the topic
+// 	- in case topicID is provided, it assumes that topic exists so it skips creating it,
+// 	- finds the next churning block for the topic and uses it as the nonce,
+// 	- submits inferences for the unfulfilled worker nonce,
+// 	- forwards the chain to the end of the epoch,
+// 	- submits reputer loss bundles for the unfulfilled reputer nonce,
+// 	- forwards the chain to the rewards end blocker,
+// 	- runs the end blocker for closing the reputer nonce and calculating and distributing rewards (when appropriate),
+// 	- when running on a newly created topic, there will be no losses, so no rewards will be distributed.
+// Limitations:
+// 	- with the current design, `ground_truth_lag` needs to be the same as `epoch_length`.
 func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options ...Option) (uint64, int64) {
 	p := new(customParams)
 	for _, opt := range options {
