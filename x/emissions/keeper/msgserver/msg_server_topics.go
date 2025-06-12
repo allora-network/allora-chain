@@ -123,11 +123,12 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	}
 
 	// Validate the request now that we have the existing topic's epoch length
-	if err := msg.Validate(params.MaxStringLength, topic.EpochLength); err != nil {
+	if err := msg.Validate(params.MaxStringLength); err != nil {
 		return nil, err
 	}
 
-	// Create updated topic by copying existing topic and applying changes
+	// Create updated topic by copying existing topic and applying ONLY allowed changes
+	// Only LossMethod and Metadata can be updated
 	updatedTopic := topic
 	hasChanges := false
 
@@ -141,26 +142,8 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		hasChanges = true
 	}
 
-	if len(msg.GroundTruthLag) > 0 {
-		updatedTopic.GroundTruthLag = msg.GroundTruthLag[0]
-		hasChanges = true
-	}
-
-	if len(msg.WorkerSubmissionWindow) > 0 {
-		updatedTopic.WorkerSubmissionWindow = msg.WorkerSubmissionWindow[0]
-		hasChanges = true
-	}
-
 	if !hasChanges {
-		return nil, errorsmod.Wrap(types.ErrInvalidValue, "No fields to update")
-	}
-
-	// Additional cross-field validations after applying all updates
-	if updatedTopic.GroundTruthLag < updatedTopic.EpochLength {
-		return nil, errorsmod.Wrap(types.ErrGroundTruthLagTooBig, "ground truth lag cannot be lower than epoch length")
-	}
-	if updatedTopic.WorkerSubmissionWindow > updatedTopic.EpochLength {
-		return nil, errorsmod.Wrap(types.ErrInvalidValue, "worker submission window cannot be higher than epoch length")
+		return nil, errorsmod.Wrap(types.ErrNoUpdateFields, "No fields to update")
 	}
 
 	// Validate the updated topic

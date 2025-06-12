@@ -1,16 +1,29 @@
 package rewards_test
 
 import (
+	"testing"
+
 	cosmosMath "cosmossdk.io/math"
+	"github.com/stretchr/testify/suite"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+type TopicUpdateTestSuite struct {
+	testutil.TestSuite
+}
+
+func TestTopicUpdateTestSuite(t *testing.T) {
+	suite.Run(t, &TopicUpdateTestSuite{
+		testutil.NewTestSuite("topic_update"),
+	})
+}
+
 // Test that pending topic updates are applied at epoch end
-func (s *RewardsTestSuite) TestPendingTopicUpdateAppliedAtEpochEnd() {
+func (s *TopicUpdateTestSuite) TestPendingTopicUpdateAppliedAtEpochEnd() {
 	block := int64(1)
 	s.WithBlockHeight(block)
 
@@ -23,7 +36,6 @@ func (s *RewardsTestSuite) TestPendingTopicUpdateAppliedAtEpochEnd() {
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	originalEpochLength := int64(100)
 
-	// Setup topic with specific epoch length
 	topic := s.FullTopicSetup(
 		workerIndexes,
 		reputerIndexes,
@@ -41,12 +53,10 @@ func (s *RewardsTestSuite) TestPendingTopicUpdateAppliedAtEpochEnd() {
 	// Create update request with new metadata
 	newMetadata := "updated metadata"
 	updateMsg := &types.UpdateTopicRequest{
-		Sender:                 originalTopic.Creator,
-		TopicId:                topicId,
-		Metadata:               []string{newMetadata},
-		LossMethod:             nil,
-		GroundTruthLag:         nil,
-		WorkerSubmissionWindow: nil,
+		Sender:     originalTopic.Creator,
+		TopicId:    topicId,
+		Metadata:   []string{newMetadata},
+		LossMethod: nil,
 	}
 
 	// Submit the update request
@@ -68,9 +78,11 @@ func (s *RewardsTestSuite) TestPendingTopicUpdateAppliedAtEpochEnd() {
 	s.Require().NoError(err)
 	s.WithBlockHeight(nextBlock)
 
-	// This should apply the pending update
-	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(s.Ctx(), *s.EmissionsKeeper(), nextBlock)
+	// Set reward emission for this block to ensure the topic is processed
+	err = s.EmissionsKeeper().SetRewardCurrentBlockEmission(s.Ctx(), cosmosMath.NewInt(100))
 	s.Require().NoError(err)
+
+	s.EndBlock()
 
 	// Verify the update was applied
 	updatedTopicAfter, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)

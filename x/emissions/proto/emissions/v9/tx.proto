@@ -332,8 +332,6 @@ message UpdateTopicRequest {
   // Optional fields using repeated pattern - if empty, field is not updated
   repeated string metadata = 3;
   repeated string loss_method = 4;
-  repeated int64 ground_truth_lag = 5;
-  repeated int64 worker_submission_window = 6;
 }
 
 message UpdateTopicResponse {}

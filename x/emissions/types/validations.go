@@ -1219,7 +1219,7 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 }
 
 // Validate checks if the given UpdateTopicRequest is valid
-func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, epochLength int64) error {
+func (msg *UpdateTopicRequest) Validate(maxStringLen uint64) error {
 	if err := ValidateBech32(msg.Sender); err != nil {
 		return errors.Wrap(err, "invalid msg Sender address")
 	}
@@ -1228,24 +1228,6 @@ func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, epochLength int64) 
 	if len(msg.LossMethod) > 0 {
 		if len(msg.LossMethod[0]) == 0 || uint64(len(msg.LossMethod[0])) > maxStringLen {
 			return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
-		}
-	}
-
-	if len(msg.WorkerSubmissionWindow) > 0 {
-		if msg.WorkerSubmissionWindow[0] <= 0 {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window must be greater than zero")
-		}
-		if epochLength > 0 && msg.WorkerSubmissionWindow[0] > epochLength {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window cannot be higher than epoch length")
-		}
-	}
-
-	if len(msg.GroundTruthLag) > 0 {
-		if msg.GroundTruthLag[0] <= 0 {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag must be greater than zero")
-		}
-		if epochLength > 0 && msg.GroundTruthLag[0] < epochLength {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be lower than epoch length")
 		}
 	}
 
