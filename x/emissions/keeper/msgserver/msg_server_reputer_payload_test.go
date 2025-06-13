@@ -71,6 +71,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 	topicId := uint64(1)
 
 	unauthReputer := s.AddrsStr(3)
+	//nolint:exhaustruct
 	inputValueBundle := &types.InputValueBundle{
 		TopicId:             topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: 1}},

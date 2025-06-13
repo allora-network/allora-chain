@@ -16,12 +16,15 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 	invalidAddr := "invalid"
 
 	testCases := []struct {
-		name         string
-		setup        func(context.Context, string) error
-		setup1       func(context.Context, uint64, string) error
-		check        func(context.Context, string) (bool, error)
-		check1       func(context.Context, uint64, string) (bool, error)
-		remove       func(context.Context, string) error
+		name  string
+		setup func(context.Context, string) error
+		// alternative setup for topic-specific whitelists
+		setup1 func(context.Context, uint64, string) error
+		check  func(context.Context, string) (bool, error)
+		// alternative check for topic-specific whitelists
+		check1 func(context.Context, uint64, string) (bool, error)
+		remove func(context.Context, string) error
+		// alternative remove for topic-specific whitelists
 		remove1      func(context.Context, uint64, string) error
 		needsTopicId bool
 	}{
