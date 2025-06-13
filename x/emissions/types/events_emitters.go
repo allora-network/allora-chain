@@ -235,3 +235,12 @@ func EmitPreviousPercentageRewardToStakedReputersSetEvent(ctx sdk.Context, block
 		ctx.Logger().Warn("Error emitting PreviousPercentageRewardToStakedReputersSetEvent", "error", err)
 	}
 }
+
+// EmitPruneRecordsEvent emits a metric for pruning records after rewards.
+func EmitPruneRecordsEvent(ctx sdk.Context, blockHeight int64, topicId uint64) {
+	metrics.IncrProducerEventCount(metrics.PRUNE_RECORDS_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(NewPruneRecordsSetEventBase(blockHeight, topicId))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewPruneRecordsSetEventBase", "error", err)
+	}
+}

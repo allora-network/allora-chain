@@ -24,4 +24,5 @@ const (
 	INFERER_WEIGHTS_EVENT                                   = "inferer_weights_event"
 	FORECASTER_WEIGHTS_EVENT                                = "forecaster_weights_event"
 	PREVIOUS_PERCENTAGE_REWARD_TO_STAKED_REPUTERS_SET_EVENT = "previous_percentage_reward_to_staked_reputers_set_event"
+	PRUNE_RECORDS_EVENT                                     = "prune_records_event"
 )
