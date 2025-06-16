@@ -9,17 +9,17 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/allora-network/allora-chain/app/params"
-	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
+	testutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type QueryServerTestSuite struct {
-	alloratestutil.TestSuite
+	testutil.TestSuite
 }
 
 func TestQueryServerTestSuite(t *testing.T) {
 	suite.Run(t, &QueryServerTestSuite{
-		alloratestutil.NewTestSuite("emissions_query_server"),
+		testutil.NewTestSuite("emissions_query_server"),
 	})
 }
 

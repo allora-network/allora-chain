@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/test/testutil"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 )
 
 type WeightsTestSuite struct {

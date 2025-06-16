@@ -3,8 +3,8 @@ package rewards_test
 import (
 	"cosmossdk.io/collections"
 
-	"github.com/allora-network/allora-chain/test/testutil"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 

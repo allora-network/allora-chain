@@ -9,18 +9,19 @@ import (
 
 	"github.com/allora-network/allora-chain/app/params"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 var _, _, nonAdminAccounts, _ = alloratestutil.GenerateTestAccounts(4)
 
 type MsgServerTestSuite struct {
-	alloratestutil.TestSuite
+	testutil.TestSuite
 }
 
 func TestMsgServerTestSuite(t *testing.T) {
 	suite.Run(t, &MsgServerTestSuite{
-		alloratestutil.NewTestSuite("emissions_msg_server"),
+		testutil.NewTestSuite("emissions_msg_server"),
 	})
 }
 

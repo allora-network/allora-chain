@@ -3,7 +3,7 @@ package msgserver_test
 import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 

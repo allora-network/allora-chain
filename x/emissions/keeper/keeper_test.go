@@ -13,17 +13,17 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
+	testutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type KeeperTestSuite struct {
-	alloratestutil.TestSuite
+	testutil.TestSuite
 }
 
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, &KeeperTestSuite{
-		alloratestutil.NewTestSuite("emissions_keeper"),
+		testutil.NewTestSuite("emissions_keeper"),
 	})
 }
 
@@ -2110,16 +2110,16 @@ func (s *KeeperTestSuite) TestGetActiveTopicIdsAtBlock() {
 
 	// Create topics using CreateTopic with functional options
 	topic1Id := s.CreateTopic(
-		alloratestutil.WithEpochLength(5),
-		alloratestutil.WithWorkerSubmissionWindow(5),
+		testutil.WithEpochLength(5),
+		testutil.WithWorkerSubmissionWindow(5),
 	)
 	s.CreateTopic(
-		alloratestutil.WithEpochLength(5),
-		alloratestutil.WithWorkerSubmissionWindow(5),
+		testutil.WithEpochLength(5),
+		testutil.WithWorkerSubmissionWindow(5),
 	) // Inactive topic
 	topic3Id := s.CreateTopic(
-		alloratestutil.WithEpochLength(15),
-		alloratestutil.WithWorkerSubmissionWindow(15),
+		testutil.WithEpochLength(15),
+		testutil.WithWorkerSubmissionWindow(15),
 	)
 
 	err = k.ActivateTopic(ctx, topic1Id)
@@ -2156,20 +2156,20 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	epochLength4 := int64(5)
 
 	topic1Id := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength1),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength1),
+		testutil.WithEpochLength(epochLength1),
+		testutil.WithWorkerSubmissionWindow(epochLength1),
 	)
 	topic2Id := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength2),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength2),
+		testutil.WithEpochLength(epochLength2),
+		testutil.WithWorkerSubmissionWindow(epochLength2),
 	)
 	topic3Id := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength3),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength3),
+		testutil.WithEpochLength(epochLength3),
+		testutil.WithWorkerSubmissionWindow(epochLength3),
 	)
 	topic4Id := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength4),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength4),
+		testutil.WithEpochLength(epochLength4),
+		testutil.WithWorkerSubmissionWindow(epochLength4),
 	)
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
@@ -3371,8 +3371,8 @@ func (s *KeeperTestSuite) TestActiveTopicStakeRemoval() {
 
 	// Create a topic and activate it
 	s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithWorkerSubmissionWindow(epochLength),
 	)
 	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -3428,8 +3428,8 @@ func (s *KeeperTestSuite) TestDelegateStakeRemoval() {
 
 	// Create a topic and activate it
 	s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithWorkerSubmissionWindow(epochLength),
 	)
 	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -3485,8 +3485,8 @@ func (s *KeeperTestSuite) TestInactiveTopicStakeRemoval() {
 
 	// Create a topic but do NOT activate it
 	s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithWorkerSubmissionWindow(epochLength),
 	)
 
 	// Verify the topic is not active
@@ -3540,8 +3540,8 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
 
 	// Create and activate topic
 	s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithWorkerSubmissionWindow(epochLength),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithWorkerSubmissionWindow(epochLength),
 	)
 	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -3615,8 +3615,8 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
 
 	// Create and activate both topics
 	topicId1, topicId2 :=
-		s.CreateTopic(alloratestutil.WithEpochLength(epochLength)),
-		s.CreateTopic(alloratestutil.WithEpochLength(epochLength))
+		s.CreateTopic(testutil.WithEpochLength(epochLength)),
+		s.CreateTopic(testutil.WithEpochLength(epochLength))
 	err = k.ActivateTopic(ctx, topicId1)
 	s.Require().NoError(err)
 	err = k.ActivateTopic(ctx, topicId2)
@@ -3922,7 +3922,7 @@ func getNewAddress() string {
 func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
-	topicId := s.CreateTopic(alloratestutil.WithEpochLength(10801), alloratestutil.WithGroundTruthLag(10801))
+	topicId := s.CreateTopic(testutil.WithEpochLength(10801), testutil.WithGroundTruthLag(10801))
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
 
@@ -5295,10 +5295,10 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	groundTruthLag := int64(1000)
 
 	topicId := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithGroundTruthLag(groundTruthLag),
-		alloratestutil.WithInitialRegret("0.5"),
-		alloratestutil.WithEpochLastEnded(10000),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithGroundTruthLag(groundTruthLag),
+		testutil.WithInitialRegret("0.5"),
+		testutil.WithEpochLastEnded(10000),
 	)
 	worker := s.AddrsStr(0)
 	blockHeight := int64(10000)
@@ -5350,9 +5350,9 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendForecast() {
 	groundTruthLag := int64(1000)
 
 	topicId := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithGroundTruthLag(groundTruthLag),
-		alloratestutil.WithEpochLastEnded(10000),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithGroundTruthLag(groundTruthLag),
+		testutil.WithEpochLastEnded(10000),
 	)
 	worker := s.AddrsStr(0)
 	blockHeight := int64(10000)
@@ -5410,9 +5410,9 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 	groundTruthLag := int64(1000)
 
 	topicId := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithGroundTruthLag(groundTruthLag),
-		alloratestutil.WithEpochLastEnded(10000),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithGroundTruthLag(groundTruthLag),
+		testutil.WithEpochLastEnded(10000),
 	)
 	reputer := s.AddrsStr(0)
 	blockHeight := int64(10000)
@@ -5652,8 +5652,8 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 
 	// Create and activate topic
 	topicId := s.CreateTopic(
-		alloratestutil.WithEpochLength(epochLength),
-		alloratestutil.WithWorkerSubmissionWindow(workerSubmissionWindow),
+		testutil.WithEpochLength(epochLength),
+		testutil.WithWorkerSubmissionWindow(workerSubmissionWindow),
 	)
 	err = k.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err)

@@ -6,10 +6,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/allora-network/allora-chain/test/testutil"
 	v5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
 	v6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
 	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 

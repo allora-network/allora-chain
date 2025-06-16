@@ -8,6 +8,8 @@ import (
 )
 
 // Topics tests
+//
+//nolint:exhaustr
 //nolint:exhaustruct
 func (s *MsgServerTestSuite) TestCreateNewTopic() {
 	ctx := s.Ctx()

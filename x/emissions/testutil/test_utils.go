@@ -33,6 +33,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	alloralog "github.com/allora-network/allora-chain/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/utils/fn"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
@@ -358,7 +359,7 @@ func (s *TestSuite) SetupTest() {
 	// Fund the rewards account generously
 	s.FundAccount(10000000000, s.accountKeeper.GetModuleAddress(types.AlloraRewardsAccountName))
 
-	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = GenerateTestAccounts(50)
+	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(50)
 	for _, addr := range s.addrs {
 		s.FundAccount(10000000000, addr)
 	}
@@ -936,7 +937,7 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 	}
 
 	// Add Stake for reputers
-	stakes := GenerateTestStakes(len(addresses))
+	stakes := alloratestutil.GenerateTestStakes(len(addresses))
 	for i, addr := range addresses {
 		stake := stakes[i]
 		if p.reputerStake != nil {
@@ -1033,17 +1034,18 @@ func (s *TestSuite) FullTopicSetup(workerIndexes, reputerIndexes []int, options 
 }
 
 // FullTopicPass runs a full pass for a topic. It:
-// 	- takes the option and sets up the topic
-// 	- in case topicID is provided, it assumes that topic exists so it skips creating it,
-// 	- finds the next churning block for the topic and uses it as the nonce,
-// 	- submits inferences for the unfulfilled worker nonce,
-// 	- forwards the chain to the end of the epoch,
-// 	- submits reputer loss bundles for the unfulfilled reputer nonce,
-// 	- forwards the chain to the rewards end blocker,
-// 	- runs the end blocker for closing the reputer nonce and calculating and distributing rewards (when appropriate),
-// 	- when running on a newly created topic, there will be no losses, so no rewards will be distributed.
+//   - takes the option and sets up the topic
+//   - in case topicID is provided, it assumes that topic exists so it skips creating it,
+//   - finds the next churning block for the topic and uses it as the nonce,
+//   - submits inferences for the unfulfilled worker nonce,
+//   - forwards the chain to the end of the epoch,
+//   - submits reputer loss bundles for the unfulfilled reputer nonce,
+//   - forwards the chain to the rewards end blocker,
+//   - runs the end blocker for closing the reputer nonce and calculating and distributing rewards (when appropriate),
+//   - when running on a newly created topic, there will be no losses, so no rewards will be distributed.
+//
 // Limitations:
-// 	- with the current design, `ground_truth_lag` needs to be the same as `epoch_length`.
+//   - with the current design, `ground_truth_lag` needs to be the same as `epoch_length`.
 func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options ...Option) (uint64, int64) {
 	p := new(customParams)
 	for _, opt := range options {

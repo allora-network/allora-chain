@@ -16,16 +16,17 @@ import (
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type InferenceSynthesisTestSuite struct {
-	alloratestutil.TestSuite
+	testutil.TestSuite
 }
 
 func TestInferenceSynthesisTestSuite(t *testing.T) {
 	suite.Run(t, &InferenceSynthesisTestSuite{
-		alloratestutil.NewTestSuite("inference_synthesis"),
+		testutil.NewTestSuite("inference_synthesis"),
 	})
 }
 

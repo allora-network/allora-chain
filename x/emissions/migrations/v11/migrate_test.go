@@ -6,8 +6,8 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/allora-network/allora-chain/test/testutil"
 	v11 "github.com/allora-network/allora-chain/x/emissions/migrations/v11"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 )
 
 type EmissionsV11MigrationTestSuite struct {

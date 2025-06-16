@@ -6,9 +6,10 @@ import (
 
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/test/testutil"
+	cosmostestutil "github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -425,7 +426,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 }
 
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsFromCsv() {
-	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epochGet := cosmostestutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
 
 	topicId := uint64(1)
@@ -509,7 +510,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsFromCsv() {
 		epoch3Get("reputer_reward_fraction_4"),
 	}
 	for i, reputerRewardFraction := range reputersRewardFractions {
-		testutil.InEpsilon5(
+		cosmostestutil.InEpsilon5(
 			s.T(),
 			expectedFractions[i],
 			reputerRewardFraction.String(),
@@ -518,7 +519,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetReputerTaskEntropyFromCsv() {
-	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epochGet := cosmostestutil.GetSimulatedValuesGetterForEpochs()
 	epoch1Get := epochGet[301]
 	epoch2Get := epochGet[302]
 	topicId := uint64(1)
@@ -567,7 +568,7 @@ func (s *RewardsTestSuite) TestGetReputerTaskEntropyFromCsv() {
 	s.Require().NoError(err)
 
 	expectedEntropy := epoch2Get("reputers_entropy")
-	testutil.InEpsilon5(
+	cosmostestutil.InEpsilon5(
 		s.T(),
 		expectedEntropy,
 		reputerEntropy.String(),

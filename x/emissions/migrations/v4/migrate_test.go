@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/test/testutil"
 	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	v4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
 	oldV3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 

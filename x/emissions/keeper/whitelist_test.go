@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"context"
 
-	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 )
 
 //nolint:exhaustruct
@@ -360,7 +360,7 @@ func (s *KeeperTestSuite) TestTopicPermissionCanUpdateTopicWhitelist() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
 	address := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
-	topicId := s.CreateTopic(alloratestutil.WithEpochLength(60))
+	topicId := s.CreateTopic(testutil.WithEpochLength(60))
 
 	// Get topic creator for comparison
 	topic, err := k.GetTopic(ctx, topicId)
