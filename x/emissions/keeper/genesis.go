@@ -1007,6 +1007,19 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
+
+	// MonthlyReputerRewards
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyReputerRewards); err != nil {
+		return errors.Wrap(err, "monthly reputer rewards validation failed")
+	}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(data.MonthlyTopicRewards); err != nil {
+		return errors.Wrap(err, "monthly topic rewards validation failed")
+	}
+	// Will set to zero both monthlyReputerRewards and monthlyTopicRewards
+	if err := k.ResetMonthlyRewards(ctx); err != nil {
+		return errors.Wrap(err, "error setting monthlyTopicRewards")
+	}
+
 	return nil
 }
 
@@ -2578,6 +2591,18 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		})
 	}
 
+	// Get Monthly Reputer Rewards
+	monthlyReputerRewards, err := k.GetMonthlyReputerRewards(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get monthly reputer rewards")
+	}
+
+	// Get Monthly Topic Rewards
+	monthlyTopicRewards, err := k.GetMonthlyTopicRewards(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get monthly topic rewards")
+	}
+
 	return &types.GenesisState{
 		Params:                                         moduleParams,
 		NextTopicId:                                    nextTopicId,
@@ -2672,5 +2697,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		LatestForecasterWeights:                        latestForecasterWeights,
 		NetworkInferences:                              networkInferences,
 		OutlierResistantNetworkInferences:              outlierResistantNetworkInferences,
+		MonthlyReputerRewards:                          monthlyReputerRewards,
+		MonthlyTopicRewards:                            monthlyTopicRewards,
 	}, nil
 }

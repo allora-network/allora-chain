@@ -34,6 +34,14 @@ func NewNetworkLossSetEventBase(topicId TopicId, blockHeight BlockHeight, lossVa
 	}
 }
 
+func NewNetworkInferencesEventBase(topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) proto.Message {
+	return &EventNetworkInferences{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		ValueBundle: &networkInferences,
+	}
+}
+
 func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) proto.Message {
 	return &EventForecastTaskScoreSet{
 		TopicId: topicId,
@@ -195,5 +203,14 @@ func NewForecasterWeightSetEventBase(topicId uint64, blockHeight int64, address 
 		BlockHeight: blockHeight,
 		Address:     address,
 		Weight:      weight,
+	}
+}
+
+/// Previous Percentage Reward
+
+func NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight int64, percentage alloraMath.Dec) proto.Message {
+	return &EventPreviousPercentageRewardToStakedReputersSet{
+		BlockHeight: blockHeight,
+		Percentage:  percentage,
 	}
 }

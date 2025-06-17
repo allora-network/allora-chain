@@ -49,7 +49,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -108,7 +108,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -167,7 +167,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -226,7 +226,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -285,7 +285,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -344,7 +344,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -409,7 +409,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventNetworkLossSet", event.Type)
+	require.Equal(t, "emissions.v9.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 3)
@@ -427,6 +427,49 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Equal(t, loss.OneInForecasterValues, result.OneInForecasterValues)
 }
 
+func TestEmitNewNetworkInferencesEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	blockHeight := int64(10)
+	networkInferences := types.ValueBundle{
+		TopicId:                       topicId,
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
+		Reputer:                       "",
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.MustNewDecFromString("10"),
+		NaiveValue:                    alloraMath.MustNewDecFromString("20"),
+		InfererValues:                 []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:              []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneInForecasterValues:         []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererForecasterValues: nil,
+	}
+
+	types.EmitNewNetworkInferencesEvent(ctx, topicId, blockHeight, networkInferences)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v9.EventNetworkInferences", event.Type)
+
+	attributes := event.Attributes
+	require.Len(t, attributes, 3)
+
+	var result types.ValueBundle
+	val, exists := event.GetAttribute(AttributeKeyValueBundle)
+	require.True(t, exists)
+	_ = json.Unmarshal([]byte(val.GetValue()), &result)
+	require.Equal(t, networkInferences.CombinedValue, result.CombinedValue)
+	require.Equal(t, networkInferences.NaiveValue, result.NaiveValue)
+	require.Equal(t, networkInferences.InfererValues, result.InfererValues)
+	require.Equal(t, networkInferences.ForecasterValues, result.ForecasterValues)
+	require.Equal(t, networkInferences.OneOutInfererValues, result.OneOutInfererValues)
+	require.Equal(t, networkInferences.OneOutForecasterValues, result.OneOutForecasterValues)
+	require.Equal(t, networkInferences.OneInForecasterValues, result.OneInForecasterValues)
+}
+
 func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)
@@ -442,7 +485,7 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventForecastTaskScoreSet", event.Type)
+	require.Equal(t, "emissions.v9.EventForecastTaskScoreSet", event.Type)
 
 	require.Contains(t, event.Attributes[0].Key, "score")
 	require.Contains(t, event.Attributes[0].Value, "10")
@@ -465,9 +508,9 @@ func TestNewLastCommitSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 3)
 
-	require.Equal(t, "emissions.v8.EventWorkerLastCommitSet", events[0].Type)
-	require.Equal(t, "emissions.v8.EventWorkerLastCommitSet", events[1].Type)
-	require.Equal(t, "emissions.v8.EventReputerLastCommitSet", events[2].Type)
+	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[0].Type)
+	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[1].Type)
+	require.Equal(t, "emissions.v9.EventReputerLastCommitSet", events[2].Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "block_height")
 	require.Contains(t, events[0].Attributes[1].Key, "nonce")
@@ -504,7 +547,7 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	require.Equal(t, "emissions.v8.EventTopicRewardsSet", events[0].Type)
+	require.Equal(t, "emissions.v9.EventTopicRewardsSet", events[0].Type)
 	require.Contains(t, events[0].Attributes[0].Key, "rewards")
 	require.Contains(t, events[0].Attributes[0].Value, `["0","10","20","30","40"]`)
 	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
@@ -543,7 +586,7 @@ func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 3)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventEMAScoresSet", event.Type)
+	require.Equal(t, "emissions.v9.EventEMAScoresSet", event.Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "actor_type")
 	require.Contains(t, events[0].Attributes[0].Value, "\"ACTOR_TYPE_INFERER_UNSPECIFIED\"")
@@ -584,7 +627,7 @@ func TestEmitNewListeningCoefficientsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventListeningCoefficientsSet", event.Type)
+	require.Equal(t, "emissions.v9.EventListeningCoefficientsSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -651,7 +694,7 @@ func TestEmitNewInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v9.EventInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -708,7 +751,7 @@ func TestEmitNewForecasterNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventForecasterNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v9.EventForecasterNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -764,7 +807,7 @@ func TestEmitNewNaiveInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventNaiveInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v9.EventNaiveInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -819,7 +862,7 @@ func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v8.EventTopicInitialRegretSet", event.Type)
+	require.Equal(t, "emissions.v9.EventTopicInitialRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -832,4 +875,26 @@ func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
 	val, exists = event.GetAttribute(AttributeKeyRegret)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "100")
+}
+
+func TestEmitPreviousPercentageRewardToStakedReputersSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	blockHeight := int64(10)
+	percentage := alloraMath.MustNewDecFromString("0.75")
+
+	types.EmitPreviousPercentageRewardToStakedReputersSetEvent(ctx, blockHeight, percentage)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v9.EventPreviousPercentageRewardToStakedReputersSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), strconv.FormatInt(blockHeight, 10))
+
+	val, exists = event.GetAttribute("percentage")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), percentage.String())
 }

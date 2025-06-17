@@ -2,8 +2,8 @@ FROM golang:1.22-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV GOMODCACHE=/gocache
-ENV BASELINE_VERSION_TAG=v0.10.0
-ENV UPGRADE_VERSION_TAG=v0.11.0
+ENV BASELINE_VERSION_TAG=v0.11.0
+ENV UPGRADE_VERSION_TAG=v0.12.0
 ENV GIT_STASH_MESSAGE="Docker build"
 
 
@@ -43,7 +43,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \
     APP_PATH=/data
 
-#* curl jq - required for readyness probe and to download genesis
+#* curl jq - required for readiness probe and to download genesis
 #* bc - required for generate_genesis.sh
 RUN apt update && \
     apt -y dist-upgrade && \

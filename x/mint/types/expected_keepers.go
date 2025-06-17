@@ -34,6 +34,7 @@ type BankKeeper interface {
 	MintCoins(ctx context.Context, name string, amt sdk.Coins) error
 	GetSupply(ctx context.Context, denom string) sdk.Coin
 	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
+	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 }
 
 type EmissionsKeeper interface {

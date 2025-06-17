@@ -4171,3 +4171,233 @@ func (s *RewardsTestSuite) compareRewards(actual, expected map[uint64]*alloraMat
 	}
 	return true
 }
+
+func (s *RewardsTestSuite) TestMonthlyPercentageRewardCalculation() {
+	// 1. Setup Params
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	blocksPerMonth := int64(10)
+	params.BlocksPerMonth = uint64(blocksPerMonth)
+	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err)
+
+	// 2. Fund Rewards Module (required for EndBlocker checks)
+	initialRewardAmount := cosmosMath.NewInt(1000000)
+	s.MintTokensToModule(types.AlloraRewardsAccountName, initialRewardAmount)
+
+	// 3. Define simulated reward increments per block
+	reputerIncrement := cosmosMath.NewInt(10)
+	topicIncrement := cosmosMath.NewInt(50)
+
+	// 4. Simulate Block Progression and Reward Accumulation
+	for i := int64(1); i < blocksPerMonth; i++ {
+		loopCtx := s.ctx.WithBlockHeight(i)
+		// Run EndBlocker (simulates standard block processing)
+		err = module.EndBlocker(loopCtx, s.emissionsAppModule)
+		s.Require().NoError(err, "EndBlocker failed during block %d", i)
+
+		// Manually add rewards to simulate accumulation during the month
+		err = s.emissionsKeeper.AddMonthlyRewards(loopCtx, reputerIncrement, topicIncrement)
+		s.Require().NoError(err, "Failed to add rewards at block %d", i)
+	}
+
+	// 5. Calculate Expected Totals and Percentage *before* the reset block
+	totalReputerRewards := reputerIncrement.MulRaw(blocksPerMonth - 1)
+	totalTopicRewards := topicIncrement.MulRaw(blocksPerMonth - 1)
+
+	expectedPercentage := alloraMath.ZeroDec()
+	if !totalTopicRewards.IsZero() {
+		reputersDec, err := alloraMath.NewDecFromSdkInt(totalReputerRewards)
+		s.Require().NoError(err)
+		topicDec, err := alloraMath.NewDecFromSdkInt(totalTopicRewards)
+		s.Require().NoError(err)
+		expectedPercentage, err = reputersDec.Quo(topicDec)
+		s.Require().NoError(err)
+	}
+
+	// Sanity check the accumulated values before the final EndBlocker call
+	reputerRewardsBeforeFinal, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(totalReputerRewards.Equal(reputerRewardsBeforeFinal), "Mismatch in accumulated reputer rewards before reset")
+	topicRewardsBeforeFinal, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(totalTopicRewards.Equal(topicRewardsBeforeFinal), "Mismatch in accumulated topic rewards before reset")
+
+	// 6. Trigger End Blocker execution at the end of the month
+	endOfMonthCtx := s.ctx.WithBlockHeight(blocksPerMonth)
+	err = module.EndBlocker(endOfMonthCtx, s.emissionsAppModule)
+	s.Require().NoError(err, "EndBlocker execution failed at month boundary %d", blocksPerMonth)
+
+	// 7. Verify State After End Blocker
+	// Verify percentage calculated and stored by EndBlocker
+	actualPercentageAfter, err := s.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(s.ctx)
+	s.Require().NoError(err)
+	s.T().Logf("Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
+	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
+
+	// Verify counters reset by EndBlocker
+	reputerRewardsAfter, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by EndBlocker")
+
+	topicRewardsAfter, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by EndBlocker")
+}
+
+func (s *RewardsTestSuite) TestMonthlyPercentageRewardCalculation_ZeroTopicRewards() {
+
+	// 1. Setup Params
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	blocksPerMonth := int64(10)
+	params.BlocksPerMonth = uint64(blocksPerMonth)
+	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err)
+
+	// 2. Fund Rewards Module (required for EndBlocker checks)
+	initialRewardAmount := cosmosMath.NewInt(1000000)
+	s.MintTokensToModule(types.AlloraRewardsAccountName, initialRewardAmount)
+
+	// 3. Ensure No Topics or Reward Activity
+	// No topics created, no workers/reputers registered, no data submitted.
+	// This ensures EmitRewards calculates zero rewards throughout the month.
+
+	// 4. Simulate Block Progression up to the Monthly Boundary
+	for i := int64(1); i < blocksPerMonth; i++ {
+		loopCtx := s.ctx.WithBlockHeight(i)
+		err = module.EndBlocker(loopCtx, s.emissionsAppModule)
+		s.Require().NoError(err, "EndBlocker failed during block %d", i)
+
+		// Sanity check: Verify topic rewards remain zero during the month
+		topicRewards, err := s.emissionsKeeper.GetMonthlyTopicRewards(loopCtx)
+		s.Require().NoError(err)
+		s.Require().True(topicRewards.IsZero(), "Topic rewards became non-zero before month end at block %d", i)
+	}
+
+	// 5. Trigger End Blocker execution at the end of the month
+	endOfMonthCtx := s.ctx.WithBlockHeight(blocksPerMonth)
+	err = module.EndBlocker(endOfMonthCtx, s.emissionsAppModule)
+	s.Require().NoError(err, "EndBlocker execution failed at month boundary %d", blocksPerMonth)
+
+	// 6. Verify State After End Blocker
+	// Verify percentage is zero due to zero topic rewards
+	expectedPercentage := alloraMath.ZeroDec()
+	actualPercentageAfter, err := s.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
+
+	// Verify counters reset by EndBlocker
+	reputerRewardsAfter, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by EndBlocker")
+
+	topicRewardsAfter, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by EndBlocker")
+}
+
+func (s *RewardsTestSuite) TestNoActiveParticipantsNoRewardsForTopic() {
+	require := s.Require()
+
+	block := int64(1)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	s.SetParamsForTest()
+
+	creatorIndex := 40
+	reputerIndex := 41
+
+	// Create topic
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  s.addrsStr[creatorIndex],
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		AllowNegative:            false,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	require.NoError(err)
+	topicId := res.TopicId
+
+	// Register the single reputer
+	// But it will not be actively participating in the topic
+	reputerRegMsg := &types.RegisterRequest{
+		Sender:    s.addrsStr[reputerIndex],
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     s.addrsStr[reputerIndex],
+	}
+	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
+	require.NoError(err)
+
+	// Add stake for the reputer
+	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
+	s.MintTokensToAddress(s.addrs[reputerIndex], stake)
+	_, err = s.msgServer.AddStake(s.ctx, &types.AddStakeRequest{
+		Sender:  s.addrsStr[reputerIndex],
+		Amount:  stake,
+		TopicId: topicId,
+	})
+	require.NoError(err)
+
+	// Fund the topic
+	s.MintTokensToAddress(s.addrs[creatorIndex], stake)
+	fundTopicMessage := types.FundTopicRequest{
+		Sender:  s.addrsStr[creatorIndex],
+		TopicId: topicId,
+		Amount:  stake,
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
+
+	// Record initial balance of the rewards module account
+	rewardsModuleAddr := s.accountKeeper.GetModuleAddress(types.AlloraRewardsAccountName)
+	initialRewardsBalance := s.bankKeeper.GetBalance(s.ctx, rewardsModuleAddr, params.DefaultBondDenom)
+
+	// Record initial balance of the ecosystem account
+	ecosystemAddr := s.accountKeeper.GetModuleAddress(minttypes.EcosystemModuleName)
+	initialEcosystemBalance := s.bankKeeper.GetBalance(s.ctx, ecosystemAddr, params.DefaultBondDenom)
+
+	// Simulate moving to the end of the first epoch
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	require.NoError(err)
+	nextBlock := block + topic.EpochLength
+	s.ctx = s.ctx.WithBlockHeight(nextBlock)
+
+	// Set some block emission (even though it shouldn't be used for this topic)
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(1000))
+	require.NoError(err)
+
+	// Trigger EndBlocker to process potential rewards
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
+
+	// Check topic weight after funding and epoch end
+	topicWeight, _, err := s.emissionsKeeper.GetPreviousTopicWeight(s.ctx, topicId)
+	require.NoError(err)
+	require.True(topicWeight.Gt(alloraMath.ZeroDec()), "Topic weight should be greater than zero after funding")
+
+	// Verify no rewards were distributed for this topic (moved to ecosystem account)
+	finalRewardsBalance := s.bankKeeper.GetBalance(s.ctx, rewardsModuleAddr, params.DefaultBondDenom)
+	require.True(initialRewardsBalance.Amount.GT(finalRewardsBalance.Amount),
+		"Rewards module - topic %d: Initial: %s, Final: %s",
+		topicId, initialRewardsBalance.String(), finalRewardsBalance.String())
+
+	// Verify if rewards were moved to the ecosystem account
+	ecosystemBalance := s.bankKeeper.GetBalance(s.ctx, ecosystemAddr, params.DefaultBondDenom)
+	require.True(ecosystemBalance.Amount.GT(initialEcosystemBalance.Amount),
+		"Ecosystem account - topic %d: Initial: %s, Final: %s",
+		topicId, initialEcosystemBalance.String(), ecosystemBalance.String())
+}

@@ -4494,6 +4494,8 @@ var (
 	fd_GenesisState_latest_forecaster_weights                            protoreflect.FieldDescriptor
 	fd_GenesisState_network_inferences                                   protoreflect.FieldDescriptor
 	fd_GenesisState_outlier_resistant_network_inferences                 protoreflect.FieldDescriptor
+	fd_GenesisState_monthly_reputer_rewards                              protoreflect.FieldDescriptor
+	fd_GenesisState_monthly_topic_rewards                                protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -4592,6 +4594,8 @@ func init() {
 	fd_GenesisState_latest_forecaster_weights = md_GenesisState.Fields().ByName("latest_forecaster_weights")
 	fd_GenesisState_network_inferences = md_GenesisState.Fields().ByName("network_inferences")
 	fd_GenesisState_outlier_resistant_network_inferences = md_GenesisState.Fields().ByName("outlier_resistant_network_inferences")
+	fd_GenesisState_monthly_reputer_rewards = md_GenesisState.Fields().ByName("monthly_reputer_rewards")
+	fd_GenesisState_monthly_topic_rewards = md_GenesisState.Fields().ByName("monthly_topic_rewards")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -5217,6 +5221,18 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
+	if x.MonthlyReputerRewards != "" {
+		value := protoreflect.ValueOfString(x.MonthlyReputerRewards)
+		if !f(fd_GenesisState_monthly_reputer_rewards, value) {
+			return
+		}
+	}
+	if x.MonthlyTopicRewards != "" {
+		value := protoreflect.ValueOfString(x.MonthlyTopicRewards)
+		if !f(fd_GenesisState_monthly_topic_rewards, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -5418,6 +5434,10 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return len(x.NetworkInferences) != 0
 	case "emissions.v9.GenesisState.outlier_resistant_network_inferences":
 		return len(x.OutlierResistantNetworkInferences) != 0
+	case "emissions.v9.GenesisState.monthly_reputer_rewards":
+		return x.MonthlyReputerRewards != ""
+	case "emissions.v9.GenesisState.monthly_topic_rewards":
+		return x.MonthlyTopicRewards != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GenesisState"))
@@ -5620,6 +5640,10 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.NetworkInferences = nil
 	case "emissions.v9.GenesisState.outlier_resistant_network_inferences":
 		x.OutlierResistantNetworkInferences = nil
+	case "emissions.v9.GenesisState.monthly_reputer_rewards":
+		x.MonthlyReputerRewards = ""
+	case "emissions.v9.GenesisState.monthly_topic_rewards":
+		x.MonthlyTopicRewards = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GenesisState"))
@@ -6176,6 +6200,12 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 		}
 		listValue := &_GenesisState_96_list{list: &x.OutlierResistantNetworkInferences}
 		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.GenesisState.monthly_reputer_rewards":
+		value := x.MonthlyReputerRewards
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.GenesisState.monthly_topic_rewards":
+		value := x.MonthlyTopicRewards
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GenesisState"))
@@ -6556,6 +6586,10 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		lv := value.List()
 		clv := lv.(*_GenesisState_96_list)
 		x.OutlierResistantNetworkInferences = *clv.list
+	case "emissions.v9.GenesisState.monthly_reputer_rewards":
+		x.MonthlyReputerRewards = value.Interface().(string)
+	case "emissions.v9.GenesisState.monthly_topic_rewards":
+		x.MonthlyTopicRewards = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GenesisState"))
@@ -7113,6 +7147,10 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 		panic(fmt.Errorf("field total_sum_previous_topic_weights of message emissions.v9.GenesisState is not mutable"))
 	case "emissions.v9.GenesisState.reward_current_block_emission":
 		panic(fmt.Errorf("field reward_current_block_emission of message emissions.v9.GenesisState is not mutable"))
+	case "emissions.v9.GenesisState.monthly_reputer_rewards":
+		panic(fmt.Errorf("field monthly_reputer_rewards of message emissions.v9.GenesisState is not mutable"))
+	case "emissions.v9.GenesisState.monthly_topic_rewards":
+		panic(fmt.Errorf("field monthly_topic_rewards of message emissions.v9.GenesisState is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GenesisState"))
@@ -7400,6 +7438,10 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 	case "emissions.v9.GenesisState.outlier_resistant_network_inferences":
 		list := []*TopicIdBlockHeightValueBundles{}
 		return protoreflect.ValueOfList(&_GenesisState_96_list{list: &list})
+	case "emissions.v9.GenesisState.monthly_reputer_rewards":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.GenesisState.monthly_topic_rewards":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GenesisState"))
@@ -8018,6 +8060,14 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				n += 2 + l + runtime.Sov(uint64(l))
 			}
 		}
+		l = len(x.MonthlyReputerRewards)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.MonthlyTopicRewards)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -8046,6 +8096,24 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.MonthlyTopicRewards) > 0 {
+			i -= len(x.MonthlyTopicRewards)
+			copy(dAtA[i:], x.MonthlyTopicRewards)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MonthlyTopicRewards)))
+			i--
+			dAtA[i] = 0x6
+			i--
+			dAtA[i] = 0x92
+		}
+		if len(x.MonthlyReputerRewards) > 0 {
+			i -= len(x.MonthlyReputerRewards)
+			copy(dAtA[i:], x.MonthlyReputerRewards)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MonthlyReputerRewards)))
+			i--
+			dAtA[i] = 0x6
+			i--
+			dAtA[i] = 0x8a
 		}
 		if len(x.OutlierResistantNetworkInferences) > 0 {
 			for iNdEx := len(x.OutlierResistantNetworkInferences) - 1; iNdEx >= 0; iNdEx-- {
@@ -12958,6 +13026,70 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.OutlierResistantNetworkInferences[len(x.OutlierResistantNetworkInferences)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
+				iNdEx = postIndex
+			case 97:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MonthlyReputerRewards", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MonthlyReputerRewards = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 98:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MonthlyTopicRewards", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MonthlyTopicRewards = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -30137,6 +30269,9 @@ type GenesisState struct {
 	// NETWORK INFERENCES
 	NetworkInferences                 []*TopicIdBlockHeightValueBundles `protobuf:"bytes,95,rep,name=network_inferences,json=networkInferences,proto3" json:"network_inferences,omitempty"`
 	OutlierResistantNetworkInferences []*TopicIdBlockHeightValueBundles `protobuf:"bytes,96,rep,name=outlier_resistant_network_inferences,json=outlierResistantNetworkInferences,proto3" json:"outlier_resistant_network_inferences,omitempty"`
+	// MONTHLY REWARDS
+	MonthlyReputerRewards string `protobuf:"bytes,97,opt,name=monthly_reputer_rewards,json=monthlyReputerRewards,proto3" json:"monthly_reputer_rewards,omitempty"`
+	MonthlyTopicRewards   string `protobuf:"bytes,98,opt,name=monthly_topic_rewards,json=monthlyTopicRewards,proto3" json:"monthly_topic_rewards,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -30808,6 +30943,20 @@ func (x *GenesisState) GetOutlierResistantNetworkInferences() []*TopicIdBlockHei
 		return x.OutlierResistantNetworkInferences
 	}
 	return nil
+}
+
+func (x *GenesisState) GetMonthlyReputerRewards() string {
+	if x != nil {
+		return x.MonthlyReputerRewards
+	}
+	return ""
+}
+
+func (x *GenesisState) GetMonthlyTopicRewards() string {
+	if x != nil {
+		return x.MonthlyTopicRewards
+	}
+	return ""
 }
 
 type TopicIdAndTopic struct {
@@ -32418,7 +32567,7 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73,
 	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xab, 0x44, 0x0a, 0x0c,
+	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xfb, 0x45, 0x0a, 0x0c,
 	0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x32, 0x0a, 0x06,
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x65,
 	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x38, 0x2e, 0x50, 0x61, 0x72, 0x61,
@@ -32958,7 +33107,20 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x49, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x56, 0x61, 0x6c,
 	0x75, 0x65, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73, 0x52, 0x21, 0x6f, 0x75, 0x74, 0x6c, 0x69,
 	0x65, 0x72, 0x52, 0x65, 0x73, 0x69, 0x73, 0x74, 0x61, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f,
-	0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x4a, 0x04, 0x08, 0x0d,
+	0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x68, 0x0a, 0x17,
+	0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x6c, 0x79, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x5f,
+	0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x18, 0x61, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
+	0x15, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x6c, 0x79, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x52,
+	0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x12, 0x64, 0x0a, 0x15, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x6c,
+	0x79, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x18,
+	0x62, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49,
+	0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x13, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x6c, 0x79,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x4a, 0x04, 0x08, 0x0d,
 	0x10, 0x0e, 0x4a, 0x04, 0x08, 0x0e, 0x10, 0x0f, 0x4a, 0x04, 0x08, 0x0f, 0x10, 0x10, 0x52, 0x1b,
 	0x6c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x53, 0x63, 0x6f,
 	0x72, 0x65, 0x73, 0x42, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x1e, 0x6c, 0x61, 0x74,

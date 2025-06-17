@@ -65,6 +65,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+# v0.12.1
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#821](https://github.com/allora-network/allora-chain/pull/821) Disable CGO in goreleaser to produce static binaries
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added
+
+#### Changed
+
+# [Released]
+
+# v0.12.0
+
+### Added
+* [#781](https://github.com/allora-network/allora-chain/pull/781) Enable pebbledb
+* [#818](https://github.com/allora-network/allora-chain/pull/818) Emit new `EventNetworkInferences` event when closing worker nonce
+* [#819](https://github.com/allora-network/allora-chain/pull/819) Mint module metrics + refactor on metric names
+
+### Changed
+* [#815](https://github.com/allora-network/allora-chain/pull/815) Refund ecosystem account when invalid topic to reward 
+* [#777](https://github.com/allora-network/allora-chain/pull/777) Allow forecasts with unregistered inferers to proceed
+* [#773](https://github.com/allora-network/allora-chain/pull/773) Update the topic's state and weight on RemoveStakes()
+
+### Deprecated
+
+### Removed
+
+### Fixed
+* [#799](https://github.com/allora-network/allora-chain/pull/799) Correct Monthly PreviousPercentageRewardToStakedReputers Calculation
+* [#770](https://github.com/allora-network/allora-chain/pull/770) Allow delegate stake management after reputer unregister
+* [#796](https://github.com/allora-network/allora-chain/pull/796) Make all math calculations deterministic
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
 # v0.11.0
 
 ### Added
@@ -81,7 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* [#803](https://github.com/allora-network/allora-chain/pull/803) Add reset/cleanup functions to defer in CloseReputerNonce 
+* [#803](https://github.com/allora-network/allora-chain/pull/803) Add reset/cleanup functions to defer in CloseReputerNonce
 * [#804](https://github.com/allora-network/allora-chain/pull/804) Additional validations + use inferenceBlockheight in NetworkInferences
 * [#805](https://github.com/allora-network/allora-chain/pull/805) An invalid bundle gets ignored on networkLoss calc
 
@@ -91,11 +148,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Removed
 
-#### Added 
+#### Added
 
 #### Changed
-
-# [Released]
 
 # v0.10.0
 
@@ -167,7 +222,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#748](https://github.com/allora-network/allora-chain/pull/748) Add nonce to rewards events
 
 ### Security
-
 
 # v0.8.3
 

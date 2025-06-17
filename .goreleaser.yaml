@@ -15,6 +15,7 @@ builds:
     tags:
       - netgo
       - ledger
+      - pebbledb
 
     ldflags:
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger
@@ -29,6 +30,10 @@ builds:
       - linux
       - darwin
       - windows
+
+    # Environment variables
+    env:
+      - CGO_ENABLED=0
 
     # GOARCH to build for.
     # For more info refer to: https://go.dev/doc/install/source#environment

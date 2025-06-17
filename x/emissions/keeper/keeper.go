@@ -16,9 +16,9 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
-
 	coreStore "cosmossdk.io/core/store"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -273,6 +273,10 @@ type Keeper struct {
 	networkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 	// map of (topic, block_height) -> ValueBundle
 	outlierResistantNetworkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	// total reward for the month going to reputers
+	monthlyReputerRewards collections.Item[cosmosMath.Int]
+	// total reward for the month going to all topic participants (reputers, inferers, forecasters)
+	monthlyTopicRewards collections.Item[cosmosMath.Int]
 }
 
 func NewKeeper(
@@ -384,6 +388,8 @@ func NewKeeper(
 		latestForecasterWeights:                   collections.NewMap(sb, types.LatestForecasterWeightsKey, "latest_forecaster_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		monthlyReputerRewards:                     collections.NewItem(sb, types.MonthlyReputerRewardsKey, "monthly_reputer_rewards", sdk.IntValue),
+		monthlyTopicRewards:                       collections.NewItem(sb, types.MonthlyTopicRewardsKey, "monthly_topic_rewards", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -2336,6 +2342,11 @@ func (k *Keeper) RemoveReputerStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
 
+	// Calculate new weight and update totalSumPreviousTopicWeights
+	if err := k.updateTopicWeightAfterStakeChange(ctx, topicId); err != nil {
+		return err
+	}
+
 	// remove stake withdrawal information
 	err = k.DeleteStakeRemoval(ctx, blockHeight, topicId, reputer)
 	if err != nil {
@@ -2488,6 +2499,12 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.SetTotalStake(ctx, totalStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
+
+	// Calculate new weight and update totalSumPreviousTopicWeights
+	if err := k.updateTopicWeightAfterStakeChange(ctx, topicId); err != nil {
+		return err
+	}
+
 	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalBlockHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
@@ -3047,6 +3064,7 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (t
 }
 
 // Set the previous weight during rewards calculation for a topic
+// This function also updates the total sum of previous topic weights
 func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight alloraMath.Dec) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -3954,6 +3972,23 @@ func (k *Keeper) GetBankBalance(ctx context.Context, addr sdk.AccAddress, denom 
 	return k.bankKeeper.GetBalance(ctx, addr, denom)
 }
 
+// MoveCoinsFromAlloraRewardsToEcosystem moves funds from the allora rewards account to the ecosystem account
+func (k *Keeper) MoveCoinsFromAlloraRewardsToEcosystem(ctx context.Context, amount alloraMath.Dec) error {
+	if amount.IsZero() {
+		return nil
+	}
+	amountInt, err := amount.SdkIntTrim()
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to sdk int trim amount")
+	}
+	return k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.AlloraRewardsAccountName,
+		minttypes.EcosystemModuleName,
+		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt)),
+	)
+}
+
 // Gets the total rewards available to be distributed from the Allora Rewards Module Account
 func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
 	// Get Allora Rewards Account
@@ -4596,4 +4631,107 @@ func (k Keeper) SetLatestForecasterWeight(ctx context.Context, topicId TopicId, 
 		return errorsmod.Wrap(err, "worker address validation failed")
 	}
 	return k.latestForecasterWeights.Set(ctx, collections.Join(topicId, worker), weight)
+}
+
+// GetMonthlyReputerRewards retrieves the total reward for the month going to reputers.
+func (k *Keeper) GetMonthlyReputerRewards(ctx context.Context) (cosmosMath.Int, error) {
+	rewards, err := k.monthlyReputerRewards.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil // Return zero if not found
+	} else if err != nil {
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting monthly reputer rewards")
+	}
+	return rewards, nil
+}
+
+// GetMonthlyTopicRewards retrieves the total reward for the month going to all topic participants.
+func (k *Keeper) GetMonthlyTopicRewards(ctx context.Context) (cosmosMath.Int, error) {
+	rewards, err := k.monthlyTopicRewards.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil // Return zero if not found
+	} else if err != nil {
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting monthly topic rewards")
+	}
+	return rewards, nil
+}
+
+// AddMonthlyRewards adds the specified amounts to the monthly reputer and topic reward counters.
+func (k Keeper) AddMonthlyRewards(ctx context.Context, reputerReward cosmosMath.Int, topicReward cosmosMath.Int) error {
+	currentReputerRewards, err := k.GetMonthlyReputerRewards(ctx)
+	if err != nil {
+		return err
+	}
+	newReputerRewards := currentReputerRewards.Add(reputerReward)
+	if err := k.monthlyReputerRewards.Set(ctx, newReputerRewards); err != nil {
+		return err
+	}
+
+	currentTopicRewards, err := k.GetMonthlyTopicRewards(ctx)
+	if err != nil {
+		return err
+	}
+	newTopicRewards := currentTopicRewards.Add(topicReward)
+	return k.monthlyTopicRewards.Set(ctx, newTopicRewards)
+}
+
+// ResetMonthlyRewards resets the monthly reputer and topic reward counters to zero.
+func (k Keeper) ResetMonthlyRewards(ctx context.Context) error {
+	if err := k.monthlyReputerRewards.Set(ctx, cosmosMath.ZeroInt()); err != nil {
+		return err
+	}
+	return k.monthlyTopicRewards.Set(ctx, cosmosMath.ZeroInt())
+}
+
+// updateTopicWeightAfterStakeChange updates the topic weight and total sum of previous topic weights
+// after a stake change occurs, if there is no prior topic weight. This is used by both RemoveReputerStake and RemoveDelegateStake.
+func (k *Keeper) updateTopicWeightAfterStakeChange(
+	ctx context.Context,
+	topicId TopicId,
+) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Get the current topic weight before updating stake
+	_, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting previous topic weight")
+	}
+
+	// If there is no prior topic weight, do nothing
+	if noPrior {
+		return nil
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting topic")
+	}
+
+	// Get params for weight calculation
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+
+	// Calculate the new weight based on updated stake
+	newWeight, _, err := k.GetCurrentTopicWeight(
+		ctx,
+		topicId,
+		topic.EpochLength,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		params.BlocksPerMonth,
+	)
+	if err != nil {
+		return errorsmod.Wrap(err, "error calculating new topic weight")
+	}
+
+	// Update previous topic weight and total sum
+	if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
+		return errorsmod.Wrapf(err, "Setting previous topic weight failed")
+	}
+
+	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
+
+	return nil
 }

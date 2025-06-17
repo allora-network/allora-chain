@@ -2,7 +2,6 @@ package module
 
 import (
 	"context"
-	"time"
 
 	"cosmossdk.io/errors"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
@@ -13,16 +12,28 @@ import (
 )
 
 func EndBlocker(ctx context.Context, am AppModule) error {
-	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
+
 	moduleParams, err := am.keeper.GetParams(sdkCtx)
 	if err != nil {
 		sdkCtx.Logger().Error("Error Getting module params", err)
 		return err
 	}
+
+	defer func() {
+		if uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
+			resetErr := rewards.HandleMonthlyRewardsReset(sdkCtx, am.keeper)
+			if resetErr != nil {
+				sdkCtx.Logger().Error("Error handling monthly rewards reset", "error", resetErr)
+				err = resetErr
+			}
+		}
+	}()
+
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
 	err = RemoveStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 	if err != nil {
@@ -66,6 +77,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
 		return errors.Wrapf(err, "Rewards error")
 	}
+
 	// Close any open windows due this blockHeight
 	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {
@@ -100,5 +112,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
 		}
 	}
+
 	return nil
 }
