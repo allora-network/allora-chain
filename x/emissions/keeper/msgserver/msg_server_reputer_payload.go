@@ -2,14 +2,18 @@ package msgserver
 
 import (
 	"context"
+	"fmt"
+	"sort"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // A tx function that accepts a individual loss and possibly returns an error
@@ -81,6 +85,10 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
 	}
 
+	if err := ms.validateValueBundle(ctx, msg.ReputerValueBundle.ValueBundle, topicId, nonce.ReputerNonce.BlockHeight); err != nil {
+		return nil, err
+	}
+
 	// Check that the reputer enough stake in the topic
 	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, rvb.ValueBundle.Reputer)
 	if err != nil {
@@ -102,4 +110,95 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	return &types.InsertReputerPayloadResponse{}, err
+}
+
+func (ms msgServer) validateValueBundle(ctx context.Context, valueBundle *types.InputValueBundle, topicId uint64, blockHeight int64) error {
+	networkInferences, err := ms.k.GetNetworkInferences(ctx, topicId, blockHeight)
+	if err != nil {
+		return errorsmod.Wrapf(err, "error getting inferences")
+	}
+
+	if err := validateWorkerValues(
+		networkInferences.InfererValues,
+		valueBundle.InfererValues,
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		networkInferences.ForecasterValues,
+		valueBundle.ForecasterValues,
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		networkInferences.OneOutInfererValues,
+		valueBundle.OneOutInfererValues,
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		networkInferences.OneInForecasterValues,
+		valueBundle.OneInForecasterValues,
+	); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		networkInferences.OneOutForecasterValues,
+		valueBundle.OneOutForecasterValues); err != nil {
+		return err
+	}
+
+	if err := validateWorkerValues(
+		networkInferences.OneOutInfererForecasterValues,
+		valueBundle.OneOutInfererForecasterValues); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type worker interface {
+	GetWorker() string
+	GetIValue() any
+}
+
+func validateWorkerValues[T, K worker](workerValues []T, inputWorkerValues []K) error {
+	if len(workerValues) != len(inputWorkerValues) {
+		return fmt.Errorf("worker sets don't match - different unique workers")
+	}
+
+	sort.Slice(workerValues, func(i, j int) bool {
+		return workerValues[i].GetWorker() < workerValues[j].GetWorker()
+	})
+
+	sort.Slice(inputWorkerValues, func(i, j int) bool {
+		return inputWorkerValues[i].GetWorker() < inputWorkerValues[j].GetWorker()
+	})
+
+	for i := range workerValues {
+		if workerValues[i].GetWorker() != inputWorkerValues[i].GetWorker() {
+			return fmt.Errorf("worker mismatch: expected %s, got %s",
+				workerValues[i].GetWorker(), inputWorkerValues[i].GetWorker())
+		}
+
+		valList, ok := workerValues[i].GetIValue().([]*types.WithheldWorkerAttributedValue)
+		if !ok {
+			continue
+		}
+
+		inValList, ok := inputWorkerValues[i].GetIValue().([]*types.InputWithheldWorkerAttributedValue)
+		if !ok {
+			continue
+		}
+
+		if err := validateWorkerValues(valList, inValList); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

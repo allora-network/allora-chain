@@ -84,7 +84,7 @@ func calcNetworkInferencesMultipleByMedian(
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
 			ReputerNonce: &emissions.Nonce{BlockHeight: inferenceBlockHeight},
 		},
-		Reputer:       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		Reputer:       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy", // to pass validation
 		CombinedValue: medianValue,
 		InfererValues: fn.Map(inferences.Inferences, func(inf *emissions.Inference) *emissions.WorkerAttributedValue {
 			return &emissions.WorkerAttributedValue{Worker: inf.Inferer, Value: inf.Value}
