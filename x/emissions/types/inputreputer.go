@@ -11,6 +11,10 @@ func (m *InputWorkerAttributedValue) SetValue(val alloramath.Dec) {
 	m.Value = alloramath.MustNewBoundedExp40Dec(val)
 }
 
+func (m *InputWorkerAttributedValue) GetIValue() any {
+	return m.Value
+}
+
 func (m *InputWithheldWorkerAttributedValue) SetWorker(worker string) {
 	m.Worker = worker
 }
@@ -18,4 +22,16 @@ func (m *InputWithheldWorkerAttributedValue) SetWorker(worker string) {
 //nolint:stylecheck
 func (m *InputWithheldWorkerAttributedValue) SetValue(val alloramath.Dec) {
 	m.Value = alloramath.MustNewBoundedExp40Dec(val)
+}
+
+func (m *InputWithheldWorkerAttributedValue) GetIValue() any {
+	return m.Value
+}
+
+func (m *InputOneOutInfererForecasterValues) GetWorker() string {
+	return m.Forecaster
+}
+
+func (m *InputOneOutInfererForecasterValues) GetIValue() any {
+	return m.OneOutInfererValues
 }

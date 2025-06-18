@@ -59,15 +59,6 @@ func CloseReputerNonce(
 	}
 
 	defer func() {
-		if err != nil {
-			ctx.Logger().Error(
-				"Error occurred before finalization in CloseReputerNonce, attempting cleanup anyway",
-				"topicId", topic.Id,
-				"nonce", nonce,
-				"error", err,
-			)
-		}
-
 		_, fulfillErr := k.FulfillReputerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
@@ -282,5 +273,5 @@ func CloseReputerNonce(
 	}
 	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 
-	return nil
+	return
 }

@@ -96,109 +96,113 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 
 // nolint: exhaustruct
 func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadWorkerAddressValidation() {
+	require := s.Require()
+
+	reputerIndexes := testutil.ReturnIndexes(0, 1)
+	workerIndexes := testutil.ReturnIndexes(1, 3)
+	reputerPrivateKey := s.PrivKeys(0)
+	reputerAddr := s.Addrs(0)
+	reputerPublicKeyHex := s.PubKeyHexStr(0)
+	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "0.1")
+	reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1")
+
+	// Pre-emptive topic pass
+	topicId, _ := s.FullTopicPass(workerIndexes, reputerIndexes)
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
 	testCases := []struct {
 		name               string
-		setupBundle        func(bundle types.InputValueBundle) types.InputValueBundle
+		setupBundle        func(bundle *types.InputValueBundle)
 		setupNetworkValues func(valueBundle *types.ValueBundle)
 		expectedError      string
 	}{
 		{
 			name: "Different inferer sets - missing worker",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+			setupBundle: func(bundle *types.InputValueBundle) {
 				bundle.InfererValues = bundle.InfererValues[1:]
-				return bundle
 			},
 			expectedError: "worker sets don't match - different unique workers",
 		},
 		{
 			name: "Different forecaster sets - missing worker",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+			setupBundle: func(bundle *types.InputValueBundle) {
 				bundle.ForecasterValues = bundle.ForecasterValues[1:]
-				return bundle
 			},
 			expectedError: "worker sets don't match - different unique workers",
 		},
 		{
 			name: "Different inferer sets - different unique worker",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+			setupBundle: func(bundle *types.InputValueBundle) {
 				bundle.InfererValues[0] = &types.InputWorkerAttributedValue{
-					Worker: s.addrsStr[4],
+					Worker: s.AddrsStr(4),
 					Value:  bundle.InfererValues[0].Value,
 				}
-				return bundle
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Different forecaster sets - different unique worker",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+			setupBundle: func(bundle *types.InputValueBundle) {
 				bundle.ForecasterValues[0] = &types.InputWorkerAttributedValue{
-					Worker: s.addrsStr[4],
+					Worker: s.AddrsStr(4),
 					Value:  bundle.ForecasterValues[0].Value,
 				}
-				return bundle
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Same inferer workers but different frequencies",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+			setupBundle: func(bundle *types.InputValueBundle) {
 				bundle.InfererValues[1] = &types.InputWorkerAttributedValue{
 					Worker: bundle.InfererValues[0].Worker,
 					Value:  bundle.InfererValues[0].Value,
 				}
-				return bundle
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Same forecaster workers but different frequencies",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
+			setupBundle: func(bundle *types.InputValueBundle) {
 				bundle.ForecasterValues[1] = &types.InputWorkerAttributedValue{
 					Worker: bundle.ForecasterValues[0].Worker,
 					Value:  bundle.ForecasterValues[0].Value,
 				}
-				return bundle
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Invalid OneOutInfererValues - different worker",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
-				bundle.OneOutInfererValues[0].Worker = s.addrsStr[4]
-				return bundle
+			setupBundle: func(bundle *types.InputValueBundle) {
+				bundle.OneOutInfererValues[0].Worker = s.AddrsStr(4)
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Invalid OneOutForecasterValues - different worker",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
-				bundle.OneOutForecasterValues[0].Worker = s.addrsStr[4]
-				return bundle
+			setupBundle: func(bundle *types.InputValueBundle) {
+				bundle.OneOutForecasterValues[0].Worker = s.AddrsStr(4)
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Invalid OneInForecasterValues - different worker",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
-				bundle.OneInForecasterValues[0].Worker = s.addrsStr[4]
-				return bundle
+			setupBundle: func(bundle *types.InputValueBundle) {
+				bundle.OneInForecasterValues[0].Worker = s.AddrsStr(4)
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Invalid OneOutInfererForecasterValues - different forecaster",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
-				bundle.OneOutInfererForecasterValues[0].Forecaster = s.addrsStr[4]
-				return bundle
+			setupBundle: func(bundle *types.InputValueBundle) {
+				bundle.OneOutInfererForecasterValues[0].Forecaster = s.AddrsStr(4)
 			},
 			expectedError: "worker mismatch: expected",
 		},
 		{
 			name: "Invalid OneOutInfererForecasterValues - different inferer",
-			setupBundle: func(bundle types.InputValueBundle) types.InputValueBundle {
-				bundle.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Worker = s.addrsStr[4]
-				return bundle
+			setupBundle: func(bundle *types.InputValueBundle) {
+				bundle.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Worker = s.AddrsStr(4)
 			},
 			expectedError: "worker mismatch: expected",
 		},
@@ -280,111 +284,82 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadWorkerAddressValidation(
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			require := s.Require()
-			keeper := s.emissionsKeeper
+			// get next nonce
+			nonce, _, err := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), topicId)
+			s.Require().NoError(err)
+			s.WithBlockHeight(nonce)
+			s.EndBlock()
 
-			reputerPrivateKey := s.privKeys[0]
-			reputerAddr := s.addrs[0]
-			reputerPublicKeyHex := s.pubKeyHexStr[0]
-			workerAddr1 := s.addrs[1]
-			workerAddr2 := s.addrs[2]
-			workerAddr3 := s.addrs[3]
+			// get unfulfilled worker nonces
+			workerNonces, err := s.EmissionsKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topic.Id)
+			s.Require().NoError(err)
+			s.Require().True(len(workerNonces.Nonces) > 0)
 
-			reputerValueBundle,
-				expectedInferences,
-				expectedForecasts,
-				oneOutInfererValues,
-				oneOutForecasterValues,
-				oneInForecasterValues,
-				oneOutInfererForecasterValues,
-				topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr1, workerAddr2, workerAddr3)
-			inferenceValues := convertInferencesToWorkerValues(expectedInferences)
-			forecastValues := convertForecastsToWorkerValues(expectedForecasts)
+			// setup inferences
+			workerNonce := workerNonces.Nonces[0].BlockHeight
+			s.SetupInferences(topicId, workerNonce, workerIndexes, workerValues...)
+			wswBlock := nonce + topic.WorkerSubmissionWindow
+			s.WithBlockHeight(wswBlock)
+			s.EndBlock()
 
-			valueBundle := types.ValueBundle{
-				TopicId: topicId,
-				ReputerRequestNonce: &types.ReputerRequestNonce{
-					ReputerNonce: &types.Nonce{BlockHeight: block},
-				},
-				Reputer:                       reputerAddr.String(),
-				InfererValues:                 inferenceValues,
-				ForecasterValues:              forecastValues,
-				OneOutInfererValues:           oneOutInfererValues,
-				OneOutForecasterValues:        oneOutForecasterValues,
-				OneInForecasterValues:         oneInForecasterValues,
-				OneOutInfererForecasterValues: oneOutInfererForecasterValues,
+			// modify network inferences if needed
+			if tc.setupNetworkValues != nil {
+				inferenceBundle, err := s.EmissionsKeeper().GetLatestNetworkInferences(s.Ctx(), topicId, false)
+				s.Require().NoError(err)
+				tc.setupNetworkValues(inferenceBundle)
+				err = s.EmissionsKeeper().InsertNetworkInferences(s.Ctx(), topicId, nonce, *inferenceBundle)
+				require.NoError(err)
+			}
+
+			// get unfulfilled reputer nonces
+			reputerNonces, err := s.EmissionsKeeper().GetUnfulfilledReputerNonces(s.Ctx(), topicId)
+			s.Require().NoError(err)
+			s.Require().True(len(reputerNonces.Nonces) > 0)
+
+			reputerNonce := reputerNonces.Nonces[0].ReputerNonce.BlockHeight
+			reputerTxBlockHeight := reputerNonce + topic.GroundTruthLag + 1
+			s.WithBlockHeight(reputerTxBlockHeight)
+
+			genReputerBundleOptions := []testutil.Option{
+				testutil.WithReputerValues(reputerValues),
 			}
 
 			if tc.setupNetworkValues != nil {
-				tc.setupNetworkValues(&valueBundle)
+				genReputerBundleOptions = append(genReputerBundleOptions, testutil.WithSkipNetworkInferences())
 			}
 
-			err := keeper.InsertNetworkInferences(s.ctx, topicId, block, valueBundle)
-			require.NoError(err)
+			// generate reputer value bundle
+			reputerValueBundle := s.GenerateLossBundles(reputerNonce, topicId, reputerIndexes, genReputerBundleOptions...).ReputerValueBundles[0].ValueBundle
 
-			topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
-			require.NoError(err)
-
-			newBlockheight := block + topic.GroundTruthLag
-			s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
-
+			// modify reputer value bundle if needed
 			if tc.setupBundle != nil {
-				reputerValueBundle = tc.setupBundle(reputerValueBundle)
+				tc.setupBundle(reputerValueBundle)
 			}
 
-			valueBundleSignature := s.signInputValueBundle(&reputerValueBundle, reputerPrivateKey)
-
+			// generate and insert reputer payload
+			valueBundleSignature := s.SignInputValueBundle(reputerValueBundle, reputerPrivateKey)
 			lossesMsg := &types.InsertReputerPayloadRequest{
 				Sender: reputerAddr.String(),
 				ReputerValueBundle: &types.InputReputerValueBundle{
-					ValueBundle: &reputerValueBundle,
+					ValueBundle: reputerValueBundle,
 					Signature:   valueBundleSignature,
 					Pubkey:      reputerPublicKeyHex,
 				},
 			}
+			_, err = s.EmissionsMsgServer().InsertReputerPayload(s.Ctx(), lossesMsg)
 
-			_, err = s.msgServer.InsertReputerPayload(s.ctx, lossesMsg)
-
+			// check for expected error
 			if tc.expectedError != "" {
 				require.Error(err)
 				require.Contains(err.Error(), tc.expectedError)
 			} else {
 				require.NoError(err)
 			}
+
+			// end blocker to finalize the epoch
+			rewardsBlockHeight := nonce + topic.GroundTruthLag + topic.EpochLength
+			s.WithBlockHeight(rewardsBlockHeight)
+			s.EndBlock()
 		})
 	}
-}
-
-func convertInferencesToWorkerValues(inferences types.Inferences) []*types.WorkerAttributedValue {
-	workerValues := make([]*types.WorkerAttributedValue, len(inferences.Inferences))
-	for i, infVal := range inferences.Inferences {
-		workerValues[i] = &types.WorkerAttributedValue{
-			Worker: infVal.Inferer,
-			Value:  infVal.Value,
-		}
-	}
-	return workerValues
-}
-
-func convertForecastsToWorkerValues(forecasts types.Forecasts) []*types.WorkerAttributedValue {
-	workerValues := make([]*types.WorkerAttributedValue, len(forecasts.Forecasts))
-	for i, forecastVal := range forecasts.Forecasts {
-		workerValues[i] = &types.WorkerAttributedValue{
-			Worker: forecastVal.Forecaster,
-			Value:  alloraMath.NewDecFromInt64(1),
-		}
-	}
-	return workerValues
-}
-
-func convertWithheldWorkerValues(values []*types.InputWithheldWorkerAttributedValue) []*types.WithheldWorkerAttributedValue {
-	workerValues := make([]*types.WithheldWorkerAttributedValue, len(values))
-	for i, val := range values {
-		dec, _ := val.Value.ToDec()
-		workerValues[i] = &types.WithheldWorkerAttributedValue{
-			Worker: val.Worker,
-			Value:  dec,
-		}
-	}
-	return workerValues
 }

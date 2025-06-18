@@ -1,10 +1,11 @@
 package rewards
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Update unfullfilled reputer nonces for topic
@@ -22,7 +23,12 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 			ctx.Logger().Debug("ABCI EndBlocker: Closing reputer nonce", "topic", topic.Id, "nonce", nonce, "min", closingReputerNonceMinBlockHeight)
 			err = allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
 			if err != nil {
-				ctx.Logger().Error("Error closing reputer nonce", "error", err)
+				ctx.Logger().Error(
+					"Error closing reputer nonce",
+					"topicId", topic.Id,
+					"nonce", nonce.ReputerNonce.BlockHeight,
+					"error", err,
+				)
 			}
 		}
 	}

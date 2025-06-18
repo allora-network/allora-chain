@@ -26,9 +26,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 	blockHeight := int64(101)
 	s.WithBlockHeight(blockHeight)
 
-	// Create topic using MsgServer like in rewards_test.go
-	topicId := s.CreateTopic()
-
+	topicId := uint64(1)
 	// Get the topic
 	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
@@ -114,31 +112,9 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 }
 
 func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
+	topicId := uint64(1)
 	blockHeight := int64(101)
 	s.WithBlockHeight(blockHeight)
-
-	// Create topic using MsgServer
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.AddrsStr(0),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		AllowNegative:            false,
-		EpochLength:              100,
-		GroundTruthLag:           100,
-		WorkerSubmissionWindow:   10,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
 
 	// Get the topic
 	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
@@ -167,28 +143,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	keeper := s.EmissionsKeeper()
 	require := s.Require()
 
-	// Create topic using MsgServer
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.AddrsStr(0),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		AllowNegative:            false,
-		EpochLength:              100,
-		GroundTruthLag:           100,
-		WorkerSubmissionWindow:   10,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	blockHeight := int64(100)
 
 	// Set up workers/forecasters using existing suite addresses
@@ -260,7 +215,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	// Set up the last median and MAD for outlier detection
 	lastMedian := alloraMath.MustNewDecFromString("1.0")
 	mad := alloraMath.MustNewDecFromString("0.2")
-	err = keeper.SetLastMedianInferences(ctx, topicId, lastMedian)
+	err := keeper.SetLastMedianInferences(ctx, topicId, lastMedian)
 	require.NoError(err)
 	err = keeper.SetMadInferences(ctx, topicId, mad)
 	require.NoError(err)
@@ -322,28 +277,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	keeper := s.EmissionsKeeper()
 	require := s.Require()
 
-	// Create topic using MsgServer
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  s.AddrsStr(0),
-		Metadata:                 "test",
-		LossMethod:               "mse",
-		AllowNegative:            false,
-		EpochLength:              100,
-		GroundTruthLag:           100,
-		WorkerSubmissionWindow:   10,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
-	s.Require().NoError(err)
-	topicId := res.TopicId
+	topicId := uint64(1)
 	blockHeight := int64(100)
 
 	// Set up workers/forecasters using existing suite addresses
@@ -415,7 +349,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	// Set up the last median and MAD for outlier detection
 	lastMedian := alloraMath.MustNewDecFromString("1.0")
 	mad := alloraMath.MustNewDecFromString("0.2")
-	err = keeper.SetLastMedianInferences(ctx, topicId, lastMedian)
+	err := keeper.SetLastMedianInferences(ctx, topicId, lastMedian)
 	require.NoError(err)
 	err = keeper.SetMadInferences(ctx, topicId, mad)
 	require.NoError(err)
