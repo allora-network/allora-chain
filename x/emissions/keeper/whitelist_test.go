@@ -16,49 +16,46 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 	invalidAddr := "invalid"
 
 	testCases := []struct {
-		name  string
-		setup func(context.Context, string) error
-		// alternative setup for topic-specific whitelists
-		setup1 func(context.Context, uint64, string) error
-		check  func(context.Context, string) (bool, error)
-		// alternative check for topic-specific whitelists
-		check1 func(context.Context, uint64, string) (bool, error)
-		remove func(context.Context, string) error
-		// alternative remove for topic-specific whitelists
-		remove1      func(context.Context, uint64, string) error
-		needsTopicId bool
+		name                 string
+		setupWhitelist       func(context.Context, string) error
+		setupTopicWhitelist  func(context.Context, uint64, string) error
+		checkWhitelist       func(context.Context, string) (bool, error)
+		checkTopicWhitelist  func(context.Context, uint64, string) (bool, error)
+		removeWhitelist      func(context.Context, string) error
+		removeTopicWhitelist func(context.Context, uint64, string) error
+		needsTopicId         bool
 	}{
 		{
-			name:   "Admin whitelist operations",
-			setup:  k.AddWhitelistAdmin,
-			check:  k.IsWhitelistAdmin,
-			remove: k.RemoveWhitelistAdmin,
+			name:            "Admin whitelist operations",
+			setupWhitelist:  k.AddWhitelistAdmin,
+			checkWhitelist:  k.IsWhitelistAdmin,
+			removeWhitelist: k.RemoveWhitelistAdmin,
 		},
 		{
-			name:   "Global whitelist operations",
-			setup:  k.AddToGlobalWhitelist,
-			check:  k.IsWhitelistedGlobalActor,
-			remove: k.RemoveFromGlobalWhitelist,
+			name:            "Global whitelist operations",
+			setupWhitelist:  k.AddToGlobalWhitelist,
+			checkWhitelist:  k.IsWhitelistedGlobalActor,
+			removeWhitelist: k.RemoveFromGlobalWhitelist,
 		},
 		{
-			name:   "Topic creator whitelist operations",
-			setup:  k.AddToTopicCreatorWhitelist,
-			check:  k.IsWhitelistedTopicCreator,
-			remove: k.RemoveFromTopicCreatorWhitelist,
+			name:            "Topic creator whitelist operations",
+			setupWhitelist:  k.AddToTopicCreatorWhitelist,
+			checkWhitelist:  k.IsWhitelistedTopicCreator,
+			removeWhitelist: k.RemoveFromTopicCreatorWhitelist,
 		},
 		{
-			name:         "Topic worker whitelist operations",
-			setup1:       k.AddToTopicWorkerWhitelist,
-			check1:       k.IsWhitelistedTopicWorker,
-			remove1:      k.RemoveFromTopicWorkerWhitelist,
-			needsTopicId: true,
+			name:                 "Topic worker whitelist operations",
+			setupTopicWhitelist:  k.AddToTopicWorkerWhitelist,
+			checkTopicWhitelist:  k.IsWhitelistedTopicWorker,
+			removeTopicWhitelist: k.RemoveFromTopicWorkerWhitelist,
+			needsTopicId:         true,
 		},
 		{
-			name:         "Topic reputer whitelist operations",
-			setup1:       k.AddToTopicReputerWhitelist,
-			check1:       k.IsWhitelistedTopicReputer,
-			remove1:      k.RemoveFromTopicReputerWhitelist,
-			needsTopicId: true,
+			name:                 "Topic reputer whitelist operations",
+			setupTopicWhitelist:  k.AddToTopicReputerWhitelist,
+			checkTopicWhitelist:  k.IsWhitelistedTopicReputer,
+			removeTopicWhitelist: k.RemoveFromTopicReputerWhitelist,
+			needsTopicId:         true,
 		},
 	}
 
@@ -66,60 +63,60 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 		s.Run(tc.name, func() {
 			// Test basic operations
 			var err error
-			if tc.setup1 != nil {
-				err = tc.setup1(ctx, topicId, address)
+			if tc.setupTopicWhitelist != nil {
+				err = tc.setupTopicWhitelist(ctx, topicId, address)
 			} else {
-				err = tc.setup(ctx, address)
+				err = tc.setupWhitelist(ctx, address)
 			}
 			s.Require().NoError(err)
 
 			var isWhitelisted bool
-			if tc.check1 != nil {
-				isWhitelisted, err = tc.check1(ctx, topicId, address)
+			if tc.checkTopicWhitelist != nil {
+				isWhitelisted, err = tc.checkTopicWhitelist(ctx, topicId, address)
 			} else {
-				isWhitelisted, err = tc.check(ctx, address)
+				isWhitelisted, err = tc.checkWhitelist(ctx, address)
 			}
 			s.Require().NoError(err)
 			s.Require().True(isWhitelisted)
 
 			// Test removal
-			if tc.remove1 != nil {
-				err = tc.remove1(ctx, topicId, address)
+			if tc.removeTopicWhitelist != nil {
+				err = tc.removeTopicWhitelist(ctx, topicId, address)
 			} else {
-				err = tc.remove(ctx, address)
+				err = tc.removeWhitelist(ctx, address)
 			}
 			s.Require().NoError(err)
 
 			// Verify removal
-			if tc.check1 != nil {
-				isWhitelisted, err = tc.check1(ctx, topicId, address)
+			if tc.checkTopicWhitelist != nil {
+				isWhitelisted, err = tc.checkTopicWhitelist(ctx, topicId, address)
 			} else {
-				isWhitelisted, err = tc.check(ctx, address)
+				isWhitelisted, err = tc.checkWhitelist(ctx, address)
 			}
 			s.Require().NoError(err)
 			s.Require().False(isWhitelisted)
 
 			// Test removing non-existent entry (should not error)
-			if tc.remove1 != nil {
-				err = tc.remove1(ctx, topicId, nonExistentAddr)
+			if tc.removeTopicWhitelist != nil {
+				err = tc.removeTopicWhitelist(ctx, topicId, nonExistentAddr)
 			} else {
-				err = tc.remove(ctx, nonExistentAddr)
+				err = tc.removeWhitelist(ctx, nonExistentAddr)
 			}
 			s.Require().NoError(err)
 
 			// Test invalid address (should error)
-			if tc.setup1 != nil {
-				err = tc.setup1(ctx, topicId, invalidAddr)
+			if tc.setupTopicWhitelist != nil {
+				err = tc.setupTopicWhitelist(ctx, topicId, invalidAddr)
 			} else {
-				err = tc.setup(ctx, invalidAddr)
+				err = tc.setupWhitelist(ctx, invalidAddr)
 			}
 			s.Require().Error(err)
 			s.Require().Contains(err.Error(), "error validating admin id")
 
-			if tc.remove1 != nil {
-				err = tc.remove1(ctx, topicId, invalidAddr)
+			if tc.removeTopicWhitelist != nil {
+				err = tc.removeTopicWhitelist(ctx, topicId, invalidAddr)
 			} else {
-				err = tc.remove(ctx, invalidAddr)
+				err = tc.removeWhitelist(ctx, invalidAddr)
 			}
 			s.Require().Error(err)
 			s.Require().Contains(err.Error(), "error validating admin id")
