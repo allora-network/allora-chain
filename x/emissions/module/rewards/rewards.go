@@ -4,11 +4,12 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type CalcTopicRewardsArgs struct {
@@ -156,10 +157,10 @@ func EmitRewards(args EmitRewardsArgs) error {
 		})
 		if err != nil {
 			// return reward to ecosystem account
-			err = args.K.MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
-			if err != nil {
-				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
-				panic(err)
+			errMC := args.K.MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
+			if errMC != nil {
+				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", errMC)
+				panic(errMC)
 			}
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 

@@ -4,74 +4,33 @@ import (
 	"strconv"
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
-
-	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
-
-	"cosmossdk.io/core/store"
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
-
 	"cosmossdk.io/store/prefix"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	v3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
-	emissions "github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/gogo/protobuf/proto"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-
-	storetypes "cosmossdk.io/store/types"
-	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	v3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type EmissionsV3MigrationTestSuite struct {
-	suite.Suite
-	ctrl *gomock.Controller
-
-	ctx             sdk.Context
-	storeService    store.KVStoreService
-	emissionsKeeper *keeper.Keeper
+	testutil.TestSuite
 }
 
 func TestEmissionsV3MigrationTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV3MigrationTestSuite))
-}
-
-func (s *EmissionsV3MigrationTestSuite) SetupTest() {
-	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
-	key := storetypes.NewKVStoreKey(types.StoreKey)
-	storeService := runtime.NewKVStoreService(key)
-	s.storeService = storeService
-	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	s.ctx = testCtx.Ctx
-
-	// gomock initializations
-	s.ctrl = gomock.NewController(s.T())
-	accountKeeper := emissionstestutil.NewMockAccountKeeper(s.ctrl)
-	bankKeeper := emissionstestutil.NewMockBankKeeper(s.ctrl)
-	emissionsKeeper := keeper.NewKeeper(
-		encCfg.Codec,
-		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName)
-
-	s.emissionsKeeper = &emissionsKeeper
+	suite.Run(t, &EmissionsV3MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V3Migrations"),
+	})
 }
 
 func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	defaultParams := types.DefaultParams()
 	paramsOld := oldtypes.Params{
@@ -125,7 +84,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 	store.Set(types.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
-	err := v3.MigrateStore(s.ctx, *s.emissionsKeeper)
+	err := v3.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// TO BE ADDED VIA DEFAULT PARAMS
@@ -134,7 +93,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -177,15 +136,15 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 	s.Require().Equal(paramsExpected.MaxElementsPerForecast, params.MaxElementsPerForecast)
 	s.Require().Equal(paramsExpected.MaxActiveTopicsPerBlock, params.MaxActiveTopicsPerBlock)
 	// commenting this out as this migration has already happened, so this test is no longer relevant
-	//s.Require().Equal(paramsExpected, params)
+	// s.Require().Equal(paramsExpected, params)
 }
 
 func (s *EmissionsV3MigrationTestSuite) TestMigrateTopics() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	oldTopic := oldtypes.Topic{
-		Id:             1,
+		Id:             2,
 		Creator:        "creator",
 		Metadata:       "metadata",
 		LossMethod:     "lossmethod",
@@ -207,12 +166,13 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopics() {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	topicStore.Set([]byte("testKey"), bz)
 
-	err = v3.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v3.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator := topicStore.Iterator(nil, nil)
 	s.Require().True(iterator.Valid())
+	iterator.Next() // skip the already existing topic at ID 1
 	defer iterator.Close()
 
 	var newMsg types.Topic
@@ -240,8 +200,8 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopics() {
 }
 
 func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	oldTopics := []oldtypes.Topic{
 		{
@@ -291,18 +251,18 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 			WorkerSubmissionWindow: 130,
 		},
 	}
-	err := s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 1, cosmosMath.NewInt(40000))
+	err := s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 2, cosmosMath.NewInt(70000))
+	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(70000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 3, cosmosMath.NewInt(60000))
+	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 1, cosmosMath.NewInt(40000))
+	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 2, cosmosMath.NewInt(70000))
+	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 2, cosmosMath.NewInt(70000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 3, cosmosMath.NewInt(60000))
+	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
 	topicStore := prefix.NewStore(store, types.TopicsKey)
@@ -313,7 +273,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 		topicStore.Set([]byte("testKey"+strconv.Itoa(i+1)), bz)
 	}
 
-	err = v3.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v3.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -324,28 +284,28 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 	// this is from topic.BlockHeightEnded + topic.EpochLength
 	blockHeightEnded := int64(100)
 
-	churningBlock, inFuture, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 1)
+	churningBlock, inFuture, err := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(int64(0), churningBlock)
 	s.Require().False(inFuture)
 
-	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 2)
+	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded)
 	s.Require().True(inFuture)
 
-	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 3)
+	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 3)
 	s.Require().NoError(err)
 	s.Require().Equal(int64(0), churningBlock)
 	s.Require().False(inFuture)
 
 	// not the same as feeRev * stake because weight is EMAd with 0
-	lowestWeight, noPrior, err := s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded)
+	lowestWeight, noPrior, err := s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	activeTopicIds, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded)
+	activeTopicIds, err := s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().NotContains(activeTopicIds.TopicIds, uint64(1))
@@ -354,8 +314,8 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 }
 
 func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoch() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	blockHeightEnded1 := int64(100)
 	blockHeightEnded2 := int64(200)
@@ -409,18 +369,18 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoc
 			WorkerSubmissionWindow: 130,
 		},
 	}
-	err := s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 1, cosmosMath.NewInt(20000))
+	err := s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 1, cosmosMath.NewInt(20000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 2, cosmosMath.NewInt(40000))
+	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 2, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 3, cosmosMath.NewInt(60000))
+	err = s.EmissionsKeeper().AddTopicFeeRevenue(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 1, cosmosMath.NewInt(20000))
+	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 1, cosmosMath.NewInt(20000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 2, cosmosMath.NewInt(40000))
+	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 2, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 3, cosmosMath.NewInt(60000))
+	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
 	topicStore := prefix.NewStore(store, types.TopicsKey)
@@ -431,7 +391,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoc
 		topicStore.Set([]byte("testKey"+strconv.Itoa(i+1)), bz)
 	}
 
-	err = v3.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	err = v3.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -441,56 +401,56 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoc
 
 	// this is from topic.BlockHeightEnded + topic.EpochLength
 
-	churningBlock, inFuture, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 1)
+	churningBlock, inFuture, err := s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded1)
 	s.Require().True(inFuture)
 
-	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 2)
+	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded2)
 	s.Require().True(inFuture)
 
-	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 3)
+	churningBlock, inFuture, err = s.EmissionsKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), 3)
 	s.Require().NoError(err)
 	s.Require().Equal(churningBlock, blockHeightEnded3)
 	s.Require().True(inFuture)
 
 	// not the same as feeRev * stake because weight is EMAd with 0
-	lowestWeight, noPrior, err := s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded1)
+	lowestWeight, noPrior, err := s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded1)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	lowestWeight, noPrior, err = s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded2)
+	lowestWeight, noPrior, err = s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded2)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	lowestWeight, noPrior, err = s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded3)
+	lowestWeight, noPrior, err = s.EmissionsKeeper().GetLowestActiveTopicWeightAtBlock(s.Ctx(), blockHeightEnded3)
 	s.Require().False(noPrior)
 	s.Require().NoError(err)
 	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
 
-	activeTopicIds, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded1)
+	activeTopicIds, err := s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded1)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().Contains(activeTopicIds.TopicIds, uint64(1))
 
-	activeTopicIds, err = s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded2)
+	activeTopicIds, err = s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded2)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().Contains(activeTopicIds.TopicIds, uint64(2))
 
-	activeTopicIds, err = s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded3)
+	activeTopicIds, err = s.EmissionsKeeper().GetActiveTopicIdsAtBlock(s.Ctx(), blockHeightEnded3)
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().Contains(activeTopicIds.TopicIds, uint64(3))
 }
 
 func (s *EmissionsV3MigrationTestSuite) TestResetMapsWithNonNumericValues() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	score := []*types.Score{
 		{
@@ -510,19 +470,16 @@ func (s *EmissionsV3MigrationTestSuite) TestResetMapsWithNonNumericValues() {
 
 	// Sanity check
 	iterator := infererScoresByBlock.Iterator(nil, nil)
-	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &scores)
 	s.Require().NoError(err)
-	iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
-	err = v3.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v3.ResetMapsWithNonNumericValues(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = infererScoresByBlock.Iterator(nil, nil)
 	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-	iterator.Close()
 }

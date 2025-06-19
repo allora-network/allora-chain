@@ -1,16 +1,17 @@
 package testutil
 
 import (
-	context "context"
-	reflect "reflect"
+	"context"
+	"reflect"
 
-	address "cosmossdk.io/core/address"
+	"cosmossdk.io/core/address"
 	cosmosMath "cosmossdk.io/math"
+	types0 "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/golang/mock/gomock"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	keeperTypes "github.com/allora-network/allora-chain/x/emissions/types"
-	types0 "github.com/cosmos/cosmos-sdk/types"
-	types "github.com/cosmos/cosmos-sdk/x/auth/types"
-	gomock "github.com/golang/mock/gomock"
 )
 
 type MockBankKeeper struct {

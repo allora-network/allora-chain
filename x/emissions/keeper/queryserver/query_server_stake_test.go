@@ -4,14 +4,15 @@ import (
 	"strconv"
 
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *QueryServerTestSuite) TestGetTotalStake() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	expectedTotalStake := cosmosMath.NewInt(1000)
 	err := keeper.SetTotalStake(ctx, expectedTotalStake)
@@ -25,12 +26,11 @@ func (s *QueryServerTestSuite) TestGetTotalStake() {
 }
 
 func (s *QueryServerTestSuite) TestGetReputerStakeInTopic() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrsStr[1]
+	reputerAddr := s.AddrsStr(1)
 	initialStake := cosmosMath.NewInt(250)
 
 	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, initialStake)
@@ -48,13 +48,12 @@ func (s *QueryServerTestSuite) TestGetReputerStakeInTopic() {
 }
 
 func (s *QueryServerTestSuite) TestGetMultiReputerStakeInTopic() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputer1Addr := s.addrsStr[1]
-	reputer2Addr := s.addrsStr[2]
+	reputer1Addr := s.AddrsStr(1)
+	reputer2Addr := s.AddrsStr(2)
 	initialStake1 := cosmosMath.NewInt(250)
 	initialStake2 := cosmosMath.NewInt(251)
 
@@ -77,13 +76,12 @@ func (s *QueryServerTestSuite) TestGetMultiReputerStakeInTopic() {
 }
 
 func (s *QueryServerTestSuite) TestGetDelegateStakeInTopicInReputer() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	delegatorAddr := s.addrsStr[0]
-	reputerAddr := s.addrsStr[1]
+	delegatorAddr := s.AddrsStr(0)
+	reputerAddr := s.AddrsStr(1)
 	initialStakeAmount := cosmosMath.NewInt(1000)
 
 	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
@@ -101,14 +99,13 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeInTopicInReputer() {
 }
 
 func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(1)
-	delegatorAddr := s.addrsStr[0]
-	reputerAddr := s.addrsStr[1]
+	delegatorAddr := s.AddrsStr(0)
+	reputerAddr := s.AddrsStr(1)
 	stakeAmount := cosmosMath.NewInt(50)
 
 	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
@@ -127,20 +124,19 @@ func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 }
 
 func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopic() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(1)
-	delegatorAddr := s.addrsStr[0]
+	delegatorAddr := s.AddrsStr(0)
 	initialStakeAmount := cosmosMath.NewInt(500)
 	additionalStakeAmount := cosmosMath.NewInt(300)
 
-	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, s.addrsStr[1], initialStakeAmount)
+	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, s.AddrsStr(1), initialStakeAmount)
 	s.Require().NoError(err)
 
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, s.addrsStr[1], additionalStakeAmount)
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, s.AddrsStr(1), additionalStakeAmount)
 	s.Require().NoError(err)
 
 	req := &types.GetStakeFromDelegatorInTopicRequest{
@@ -156,13 +152,12 @@ func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopic() {
 }
 
 func (s *QueryServerTestSuite) TestGetTopicStake() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(1)
-	reputerAddr := s.addrsStr[0]
+	reputerAddr := s.AddrsStr(0)
 	stakeAmount := cosmosMath.NewInt(500)
 
 	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
@@ -179,13 +174,12 @@ func (s *QueryServerTestSuite) TestGetTopicStake() {
 }
 
 func (s *QueryServerTestSuite) TestGetStakeRemovalInfo() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	blockHeight := int64(1234)
 	topicId := uint64(1)
-	address := s.addrsStr[0]
+	address := s.AddrsStr(0)
 	removal := types.StakeRemovalInfo{
 		BlockRemovalStarted:   0,
 		BlockRemovalCompleted: blockHeight,
@@ -206,15 +200,14 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalInfo() {
 }
 
 func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalInfo() {
-	s.CreateOneTopic()
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	require := s.Require()
 	blockHeight := int64(1234)
 	topicId := uint64(1)
-	delegatorAddress := s.addrsStr[0]
-	reputerAddress := s.addrsStr[1]
+	delegatorAddress := s.AddrsStr(0)
+	reputerAddress := s.AddrsStr(1)
 	expectedRemoval := types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   0,
 		BlockRemovalCompleted: blockHeight,
@@ -239,9 +232,9 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalInfo() {
 }
 
 func (s *QueryServerTestSuite) TestGetStakeRemovalsForBlock() {
-	ctx := s.ctx
-	qs := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	qs := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	require := s.Require()
 	blockHeight := int64(1234)
 	expecteds := []types.StakeRemovalInfo{
@@ -249,14 +242,14 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalsForBlock() {
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               1,
-			Reputer:               s.addrsStr[0],
+			Reputer:               s.AddrsStr(0),
 			Amount:                cosmosMath.NewInt(100),
 		},
 		{
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               2,
-			Reputer:               s.addrsStr[1],
+			Reputer:               s.AddrsStr(1),
 			Amount:                cosmosMath.NewInt(200),
 		},
 	}
@@ -278,9 +271,9 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalsForBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalsForBlock() {
-	ctx := s.ctx
-	qs := s.queryServer
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	qs := s.EmissionsQueryServer()
+	keeper := s.EmissionsKeeper()
 	require := s.Require()
 	blockHeight := int64(1234)
 	expecteds := []types.DelegateStakeRemovalInfo{
@@ -288,16 +281,16 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               1,
-			Reputer:               s.addrsStr[0],
-			Delegator:             s.addrsStr[1],
+			Reputer:               s.AddrsStr(0),
+			Delegator:             s.AddrsStr(1),
 			Amount:                cosmosMath.NewInt(100),
 		},
 		{
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               2,
-			Reputer:               s.addrsStr[2],
-			Delegator:             s.addrsStr[3],
+			Reputer:               s.AddrsStr(2),
+			Delegator:             s.AddrsStr(3),
 			Amount:                cosmosMath.NewInt(200),
 		},
 	}
@@ -319,10 +312,10 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 }
 
 func (s *QueryServerTestSuite) TestGetStakeReputerAuthority() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	reputerAddr := s.addrsStr[0]
+	reputerAddr := s.AddrsStr(0)
 	stakeAmount := cosmosMath.NewInt(500)
 
 	// Add stake
@@ -333,7 +326,7 @@ func (s *QueryServerTestSuite) TestGetStakeReputerAuthority() {
 		TopicId: topicId,
 		Reputer: reputerAddr,
 	}
-	response, err := s.queryServer.GetStakeReputerAuthority(ctx, req)
+	response, err := s.EmissionsQueryServer().GetStakeReputerAuthority(ctx, req)
 	stakeAuthority := response.Authority
 
 	s.Require().NoError(err)
@@ -341,20 +334,20 @@ func (s *QueryServerTestSuite) TestGetStakeReputerAuthority() {
 }
 
 func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
-	ctx := s.ctx
+	ctx := s.Ctx()
 	require := s.Require()
-	keeper := s.emissionsKeeper
+	keeper := s.EmissionsKeeper()
 
-	delegator := s.addrs[0]
-	delegatorAddr := s.addrsStr[0]
-	reputerAddr := s.addrsStr[1]
-	topicId := s.CreateOneTopic()
+	delegator := s.Addrs(0)
+	delegatorAddr := s.AddrsStr(0)
+	reputerAddr := s.AddrsStr(1)
+	topicId := uint64(1)
 	stakeAmount := cosmosMath.NewInt(50)
 	s.MintTokensToAddress(delegator, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		Owner:       s.addrsStr[7],
-		NodeAddress: s.addrsStr[8],
+		Owner:       s.AddrsStr(7),
+		NodeAddress: s.AddrsStr(8),
 	}
 
 	err := keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
@@ -367,7 +360,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 		Amount:  stakeAmount,
 	}
 
-	reputerStake, err := s.emissionsKeeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	reputerStake, err := s.EmissionsKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	require.NoError(err)
 	require.Equal(cosmosMath.ZeroInt(), reputerStake, "Stake amount mismatch")
 
@@ -376,20 +369,20 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 		Delegator: delegatorAddr,
 		Target:    reputerAddr,
 	}
-	queryResponse, err := s.queryServer.GetDelegateStakePlacement(ctx, req)
+	queryResponse, err := s.EmissionsQueryServer().GetDelegateStakePlacement(ctx, req)
 	require.NoError(err)
 	require.Equal(alloraMath.NewDecFromInt64(0), queryResponse.DelegatorInfo.Amount)
 
 	// Perform the stake delegation
-	response, err := s.msgServer.DelegateStake(ctx, msg)
+	response, err := s.EmissionsMsgServer().DelegateStake(ctx, msg)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil after successful delegation")
 
-	reputerStake, err = s.emissionsKeeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	reputerStake, err = s.EmissionsKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	require.NoError(err)
 	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
 
-	queryResponse, err = s.queryServer.GetDelegateStakePlacement(ctx, req)
+	queryResponse, err = s.EmissionsQueryServer().GetDelegateStakePlacement(ctx, req)
 	require.NoError(err)
 
 	value0, err := strconv.ParseFloat(stakeAmount.ToLegacyDec().String(), 64)
@@ -402,11 +395,11 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 }
 
 func (s *QueryServerTestSuite) TestGetDelegateStakeUponReputer() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
-	delegatorAddr := s.addrsStr[0]
-	reputerAddr := s.addrsStr[1]
+	delegatorAddr := s.AddrsStr(0)
+	reputerAddr := s.AddrsStr(1)
 	initialStakeAmount := cosmosMath.NewInt(1000)
 	removeStakeAmount := cosmosMath.NewInt(500)
 	moduleParams, err := keeper.GetParams(ctx)
@@ -447,16 +440,16 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeUponReputer() {
 		TopicId: topicId,
 		Target:  reputerAddr,
 	}
-	queryResponse, err := s.queryServer.GetDelegateStakeUponReputer(ctx, req)
+	queryResponse, err := s.EmissionsQueryServer().GetDelegateStakeUponReputer(ctx, req)
 	stakeUponReputer = queryResponse.Stake
 	s.Require().NoError(err)
 	s.Require().Equal(expected, stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 }
 
 func (s *QueryServerTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
-	reputer := s.addrsStr[2]
+	k := s.EmissionsKeeper()
+	ctx := s.Ctx()
+	reputer := s.AddrsStr(2)
 	topicId := uint64(1)
 
 	// Create a stake removal info
@@ -469,7 +462,7 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
 	}
 	anotherStakeRemoval := types.StakeRemovalInfo{
 		BlockRemovalStarted:   0,
-		Reputer:               s.addrsStr[3],
+		Reputer:               s.AddrsStr(3),
 		TopicId:               topicId,
 		Amount:                cosmosMath.NewInt(200),
 		BlockRemovalCompleted: 30,
@@ -485,7 +478,7 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
 		Reputer: reputer,
 		TopicId: topicId,
 	}
-	response, err := s.queryServer.GetStakeRemovalForReputerAndTopicId(ctx, req)
+	response, err := s.EmissionsQueryServer().GetStakeRemovalForReputerAndTopicId(ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(&stakeRemovalInfo, response.StakeRemovalInfo)
 }

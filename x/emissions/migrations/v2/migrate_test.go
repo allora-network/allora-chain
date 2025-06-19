@@ -2,112 +2,43 @@ package v2_test
 
 import (
 	"testing"
-	"time"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/core/header"
-	"cosmossdk.io/core/store"
-	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
-	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/oldtypes"
-	"github.com/allora-network/allora-chain/x/emissions/module"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/codec/address"
-	runtime "github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/gogo/protobuf/proto"
 	"github.com/stretchr/testify/suite"
 
-	minttypes "github.com/allora-network/allora-chain/x/mint/types"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/oldtypes"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-type EmissionsV2MigrationsTestSuite struct {
-	suite.Suite
-	ctx             sdk.Context
-	codec           codec.Codec
-	storeService    store.KVStoreService
-	emissionsKeeper keeper.Keeper
+type EmissionsV2MigrationTestSuite struct {
+	testutil.TestSuite
 }
 
-func (s *EmissionsV2MigrationsTestSuite) SetupTest() {
-	key := storetypes.NewKVStoreKey("emissions")
-	storeService := runtime.NewKVStoreService(key)
-	s.storeService = storeService
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct
-	s.ctx = ctx
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	s.codec = encCfg.Codec
-	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
-	maccPerms := map[string][]string{
-		"fee_collector":                {"minter"},
-		"mint":                         {"minter"},
-		types.AlloraStakingAccountName: {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName: {"minter"},
-		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
-		minttypes.EcosystemModuleName:                    nil,
-		"bonded_tokens_pool":                             {"burner", "staking"},
-		"not_bonded_tokens_pool":                         {"burner", "staking"},
-		"multiple permissions account":                   {"burner", "minter", "staking"},
-		"random permission":                              {"random"},
-	}
-	accountKeeper := authkeeper.NewAccountKeeper(
-		encCfg.Codec,
-		storeService,
-		authtypes.ProtoBaseAccount,
-		maccPerms,
-		authcodec.NewBech32Codec(params.Bech32PrefixAccAddr),
-		params.Bech32PrefixAccAddr,
-		authtypes.NewModuleAddress("gov").String(),
-	)
-	bankKeeper := bankkeeper.NewBaseKeeper(
-		encCfg.Codec,
-		storeService,
-		accountKeeper,
-		map[string]bool{},
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		log.NewNopLogger(),
-	)
-	s.emissionsKeeper = keeper.NewKeeper(
-		encCfg.Codec,
-		addressCodec,
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName)
+func TestEmissionsV2MigrationTestSuite(t *testing.T) {
+	suite.Run(t, &EmissionsV2MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V2Migrations"),
+	})
 }
 
-func TestEmissionsV2MigrationsTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV2MigrationsTestSuite))
-}
-
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateStore() {
-	err := v2.MigrateStore(s.ctx, s.emissionsKeeper)
+func (s *EmissionsV2MigrationTestSuite) TestMigrateStore() {
+	err := v2.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
 }
 
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateTopic() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV2MigrationTestSuite) TestMigrateTopic() {
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	oldTopic := oldtypes.Topic{
-		Id:              1,
+		Id:              2,
 		Creator:         "creator",
 		Metadata:        "metadata",
 		LossLogic:       "losslogic",
@@ -135,6 +66,7 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateTopic() {
 	// Verify the store has been updated correctly
 	iterator := topicStore.Iterator(nil, nil)
 	s.Require().True(iterator.Valid())
+	iterator.Next() // skip the already existing topic at ID 1
 
 	var newMsg types.Topic
 	err = proto.Unmarshal(iterator.Value(), &newMsg)
@@ -152,7 +84,7 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateTopic() {
 	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
 }
 
-func (s *EmissionsV2MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc codec.BinaryCodec, prefixKey collections.Prefix) {
+func (s *EmissionsV2MigrationTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc codec.BinaryCodec, prefixKey collections.Prefix) {
 	oldOffchainNode := oldtypes.OffchainNode{
 		LibP2PKey:    "testLibP2PKey",
 		MultiAddress: "testMultiAddress",
@@ -204,16 +136,16 @@ func (s *EmissionsV2MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.S
 	s.Require().Equal(oldOffchainNode2.NodeAddress, newMsg.NodeAddress)
 }
 
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateOffchainNodeWorkers() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV2MigrationTestSuite) TestMigrateOffchainNodeWorkers() {
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	offchainNodeStoreWorker := prefix.NewStore(store, types.WorkerNodesKey)
 	s.MigrateOffchainNodeStore(offchainNodeStoreWorker, cdc, types.WorkerNodesKey)
 }
 
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateOffchainNodeReputers() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV2MigrationTestSuite) TestMigrateOffchainNodeReputers() {
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	offchainNodeStoreReputer := prefix.NewStore(store, types.ReputerNodesKey)
 	s.MigrateOffchainNodeStore(offchainNodeStoreReputer, cdc, types.ReputerNodesKey)
 }
@@ -242,9 +174,9 @@ func areWithHeldArraysEqual(oldValues []*oldtypes.WithheldWorkerAttributedValue,
 	return true
 }
 
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateValueBundle() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV2MigrationTestSuite) TestMigrateValueBundle() {
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	reputerNonce := &oldtypes.Nonce{
 		BlockHeight: 1,
@@ -324,9 +256,9 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateValueBundle() {
 	s.Require().Empty(newMsg.OneOutInfererForecasterValues)
 }
 
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllLossBundles() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV2MigrationTestSuite) TestMigrateAllLossBundles() {
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	reputerNonce := &oldtypes.Nonce{
 		BlockHeight: 1,
@@ -423,9 +355,9 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllLossBundles() {
 	s.Require().Equal(reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
 
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllRecordCommits() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV2MigrationTestSuite) TestMigrateAllRecordCommits() {
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	oldTimestampedActorNonce1 := oldtypes.TimestampedActorNonce{
 		BlockHeight: 1,
@@ -480,13 +412,13 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllRecordCommits() {
 	s.Require().Equal(oldTimestampedActorNonce2.Nonce.BlockHeight, newMsg2.Nonce.BlockHeight)
 }
 
-func (s *EmissionsV2MigrationsTestSuite) TestMigrateParams() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
+func (s *EmissionsV2MigrationTestSuite) TestMigrateParams() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	// Create a Params with garbage in it
 	defaultParams := types.DefaultParams()
-	prevParams := oldtypes.Params{ //nolint: exhaustruct
+	prevParams := oldtypes.Params{ // nolint: exhaustruct
 		Version:                         "v1",
 		MinTopicWeight:                  alloraMath.OneDec(),
 		RequiredMinimumStake:            cosmosMath.OneUint(),
@@ -515,9 +447,9 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateParams() {
 	s.Require().NoError(err)
 
 	// Run migration
-	err = v2.MigrateParams(s.ctx, s.emissionsKeeper)
+	err = v2.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
-	newParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	newParams, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 
 	// Check params after migration

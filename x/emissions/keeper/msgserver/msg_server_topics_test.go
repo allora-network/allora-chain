@@ -7,192 +7,149 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-/// Topics tests
+// Topics tests
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestCreateNewTopic() {
+	ctx := s.Ctx()
+	msgServer := s.EmissionsMsgServer()
+	keeper := s.EmissionsKeeper()
+	senderAddr := s.Addrs(0)
 
-func (s *MsgServerTestSuite) TestMsgCreateNewTopicAndWhitelistCheck() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
+	testCases := []struct {
+		name          string
+		setup         func() *types.CreateNewTopicRequest
+		postCheck     func(topicId uint64)
+		expectedError string
+		expectSuccess bool
+	}{
+		{
+			name: "Fails when sender not whitelisted",
+			setup: func() *types.CreateNewTopicRequest {
+				// Ensure sender is not whitelisted
+				err := keeper.RemoveFromTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+				err = keeper.RemoveFromGlobalWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
 
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
+				return s.MockTopicMsg()
+			},
+			expectedError: types.ErrNotPermittedToCreateTopic.Error(),
+			expectSuccess: false,
+		},
+		{
+			name: "Success when sender is whitelisted",
+			setup: func() *types.CreateNewTopicRequest {
+				// Add sender to whitelist
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
 
-	// Create a CreateNewTopicRequest message
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  sender,
-		Metadata:                 "Some metadata for the new topic",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
+				return s.MockTopicMsg()
+			},
+			postCheck: func(topicId uint64) {
+				// Check topic is not in active topics yet
+				activeTopics, err := keeper.GetActiveTopicIdsAtBlock(ctx, 10800)
+				s.Require().NoError(err)
+				found := false
+				for _, id := range activeTopics.TopicIds {
+					if id == topicId {
+						found = true
+						break
+					}
+				}
+				s.Require().False(found, "Added topic found in active topics")
+
+				// Check worker whitelist is enabled
+				enabled, err := keeper.IsTopicWorkerWhitelistEnabled(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().True(enabled, "Topic worker whitelist should be enabled")
+
+				// Check reputer whitelist is enabled
+				enabled, err = keeper.IsTopicReputerWhitelistEnabled(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().True(enabled, "Topic reputer whitelist should be enabled")
+			},
+			expectSuccess: true,
+		},
+		{
+			name: "Fails with epsilon zero",
+			setup: func() *types.CreateNewTopicRequest {
+				// Add to whitelist to avoid that error
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.Epsilon = alloraMath.MustNewDecFromString("0")
+				return msg
+			},
+			expectedError: "epsilon must be greater than",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails with too long metadata",
+			setup: func() *types.CreateNewTopicRequest {
+				// Add to whitelist
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.Metadata = strings.Repeat("a", 257)
+				return msg
+			},
+			expectedError: "metadata invalid",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails with too long loss method",
+			setup: func() *types.CreateNewTopicRequest {
+				// Add to whitelist
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.LossMethod = strings.Repeat("a", 257)
+				return msg
+			},
+			expectedError: "loss method invalid",
+			expectSuccess: false,
+		},
 	}
 
-	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+			msg := tc.setup()
 
-	// Should fail if sender is not whitelisted
-	err := s.emissionsKeeper.RemoveFromTopicCreatorWhitelist(ctx, sender)
-	require.NoError(err)
-	err = s.emissionsKeeper.RemoveFromGlobalWhitelist(ctx, sender)
-	require.NoError(err)
+			result, err := msgServer.CreateNewTopic(ctx, msg)
 
-	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.ErrorIs(err, types.ErrNotPermittedToCreateTopic)
-	require.Nil(result)
-
-	// Add sender to whitelist
-	err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, sender)
-	require.NoError(err)
-
-	// Should now succeed
-	result, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.NoError(err)
-	require.NotNil(result)
-
-	activeTopics, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, 10800)
-	require.NoError(err)
-	found := false
-	for _, topicId := range activeTopics.TopicIds {
-		if topicId == result.TopicId {
-			found = true
-			break
-		}
+			if tc.expectSuccess {
+				s.Require().NoError(err)
+				s.Require().NotNil(result)
+				if tc.postCheck != nil {
+					tc.postCheck(result.TopicId)
+				}
+			} else {
+				s.Require().Error(err)
+				s.Require().Nil(result)
+				if tc.expectedError != "" {
+					s.Require().ErrorContains(err, tc.expectedError)
+				}
+			}
+		})
 	}
-	require.False(found, "Added topic found in active topics")
-
-	enabled, err := s.emissionsKeeper.IsTopicWorkerWhitelistEnabled(s.ctx, result.TopicId)
-	require.NoError(err)
-	require.True(enabled, "Topic worker whitelist should be enabled")
-
-	enabled, err = s.emissionsKeeper.IsTopicReputerWhitelistEnabled(s.ctx, result.TopicId)
-	require.NoError(err)
-	require.True(enabled, "Topic reputer whitelist should be enabled")
-}
-
-func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
-
-	// Create a CreateNewTopicRequest message
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  sender,
-		Metadata:                 "Some metadata for the new topic",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-
-	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
-
-	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.Error(err)
-	require.True(strings.Contains(err.Error(), "epsilon must be greater than"))
-	s.Require().Nil(result)
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
-	ctx := s.ctx
-	require := s.Require()
-	topicPrev := s.CreateOneTopic()
-
-	// Mock setup for topic
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	topicId := uint64(1)
 	inferenceTs := int64(20)
 
-	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicPrev.Id, inferenceTs)
-	require.NoError(err, "UpdateTopicEpochLastEnded should not return an error")
+	err := keeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)
+	s.Require().NoError(err, "UpdateTopicEpochLastEnded should not return an error")
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicPrev.Id)
+	topic, err := keeper.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().NotNil(topic)
-	s.Require().Equal(topic.EpochLastEnded, inferenceTs)
-}
-
-func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongMetadataFails() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
-
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  sender,
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		Metadata:                 strings.Repeat("a", 257),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-
-	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
-
-	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.Error(err)
-	require.Nil(result)
-	require.ErrorContains(err, "metadata invalid")
-}
-
-func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongLossMethodFails() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	senderAddr := s.addrs[0]
-	sender := s.addrsStr[0]
-
-	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  sender,
-		Metadata:                 "Some metadata for the new topic",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		LossMethod:               strings.Repeat("a", 257),
-		EnableWorkerWhitelist:    true,
-		EnableReputerWhitelist:   true,
-	}
-
-	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
-
-	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.Error(err)
-	require.Nil(result)
-	require.ErrorContains(err, "loss method invalid")
+	s.Require().Equal(inferenceTs, topic.EpochLastEnded)
 }

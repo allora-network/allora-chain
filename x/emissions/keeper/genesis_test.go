@@ -8,24 +8,24 @@ import (
 
 // at minimum test that an import can be done from an export without error
 func (s *KeeperTestSuite) TestImportExportGenesisNoError() {
-	testAddr := s.addrs[0].String()
-	err := s.emissionsKeeper.AddWhitelistAdmin(s.ctx, testAddr)
+	testAddr := s.AddrsStr(0)
+	err := s.EmissionsKeeper().AddWhitelistAdmin(s.Ctx(), testAddr)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 2, cosmossdk_io_math.OneInt())
+	err = s.EmissionsKeeper().SetTopicStake(s.Ctx(), 1, cosmossdk_io_math.OneInt())
 	s.Require().NoError(err)
-	genesisState, err := s.emissionsKeeper.ExportGenesis(s.ctx)
+	genesisState, err := s.EmissionsKeeper().ExportGenesis(s.Ctx())
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.InitGenesis(s.ctx, genesisState)
+	err = s.EmissionsKeeper().InitGenesis(s.Ctx(), genesisState)
 	s.Require().NoError(err)
 
 	for _, addr := range types.DefaultCoreTeamAddresses() {
-		admin, err := s.emissionsKeeper.IsWhitelistAdmin(s.ctx, addr)
+		admin, err := s.EmissionsKeeper().IsWhitelistAdmin(s.Ctx(), addr)
 		s.Require().NoError(err)
 		s.Require().Equal(admin, true)
 	}
-	admin, err := s.emissionsKeeper.IsWhitelistAdmin(s.ctx, testAddr)
+	admin, err := s.EmissionsKeeper().IsWhitelistAdmin(s.Ctx(), testAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(admin, true)
 }

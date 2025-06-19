@@ -3,154 +3,31 @@ package inferencesynthesis_test
 import (
 	"strconv"
 	"testing"
-	"time"
 
 	"cosmossdk.io/log"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 
-	"cosmossdk.io/core/header"
 	cosmosMath "cosmossdk.io/math"
 
-	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/app/params"
-	alloralog "github.com/allora-network/allora-chain/log"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/suite"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	auth "github.com/cosmos/cosmos-sdk/x/auth"
-	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/stretchr/testify/suite"
-)
-
-const (
-	multiPerm  = "multiple permissions account"
-	randomPerm = "random permission"
 )
 
 type InferenceSynthesisTestSuite struct {
-	suite.Suite
-
-	ctx             sdk.Context
-	accountKeeper   keeper.AccountKeeper
-	bankKeeper      keeper.BankKeeper
-	emissionsKeeper keeper.Keeper
-	appModule       module.AppModule
-	key             *storetypes.KVStoreKey
-	privKeys        []secp256k1.PrivKey
-	addrs           []sdk.AccAddress
-	addrsStr        []string
-	pubKeyHexStr    []string
-}
-
-func (s *InferenceSynthesisTestSuite) SetupTest() {
-	key := storetypes.NewKVStoreKey("emissions")
-	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	// Set logger to show logs from the rewards module too
-	logger := alloralog.NewTestLogger(s.T()).With("module", "inference_synthesis")
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
-		Height:  1,
-		Hash:    []byte("1"),
-		AppHash: []byte("1"),
-		ChainID: "localnet",
-		Time:    time.Now(),
-	}).WithLogger(logger)
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
-
-	maccPerms := map[string][]string{
-		"fee_collector":                         {"minter"},
-		"mint":                                  {"minter"},
-		emissionstypes.AlloraStakingAccountName: {"burner", "minter", "staking"},
-		emissionstypes.AlloraRewardsAccountName: {"minter"},
-		emissionstypes.AlloraPendingRewardForDelegatorAccountName: {"minter"},
-		"bonded_tokens_pool":     {"burner", "staking"},
-		"not_bonded_tokens_pool": {"burner", "staking"},
-		multiPerm:                {"burner", "minter", "staking"},
-		randomPerm:               {"random"},
-	}
-
-	accountKeeper := authkeeper.NewAccountKeeper(
-		encCfg.Codec,
-		storeService,
-		authtypes.ProtoBaseAccount,
-		maccPerms,
-		authcodec.NewBech32Codec(params.Bech32PrefixAccAddr),
-		params.Bech32PrefixAccAddr,
-		authtypes.NewModuleAddress("gov").String(),
-	)
-
-	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(15)
-
-	bankKeeper := bankkeeper.NewBaseKeeper(
-		encCfg.Codec,
-		storeService,
-		accountKeeper,
-		map[string]bool{},
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		log.NewNopLogger(),
-	)
-
-	s.ctx = ctx
-	s.accountKeeper = accountKeeper
-	s.bankKeeper = bankKeeper
-	s.emissionsKeeper = keeper.NewKeeper(
-		encCfg.Codec,
-		addressCodec,
-		storeService,
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName,
-	)
-	s.key = key
-	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.appModule = appModule
-
-	// Add all tests addresses in whitelists
-	for _, addr := range s.addrsStr {
-		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.Require().NoError(err)
-	}
-
-	err := s.emissionsKeeper.SetTopic(s.ctx, 1, emissionstypes.Topic{
-		Id:                       1,
-		Creator:                  s.addrsStr[0],
-		Metadata:                 "metadata",
-		LossMethod:               "mse",
-		EpochLastEnded:           0,
-		EpochLength:              100,
-		GroundTruthLag:           100,
-		WorkerSubmissionWindow:   100,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            false,
-		InitialRegret:            alloraMath.MustNewDecFromString("0.0001"),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.01"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.01"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.01"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.01"),
-	})
-	s.Require().NoError(err)
+	testutil.TestSuite
 }
 
 func TestInferenceSynthesisTestSuite(t *testing.T) {
-	suite.Run(t, new(InferenceSynthesisTestSuite))
+	suite.Run(t, &InferenceSynthesisTestSuite{
+		testutil.NewTestSuite("inference_synthesis"),
+	})
 }
 
 func (s *InferenceSynthesisTestSuite) signValueBundle(
@@ -164,29 +41,6 @@ func (s *InferenceSynthesisTestSuite) signValueBundle(
 	valueBundleSignature, err := privateKey.Sign(src)
 	require.NoError(err, "Sign should not return an error")
 	return valueBundleSignature
-}
-
-func (s *InferenceSynthesisTestSuite) mockTopic() emissionstypes.Topic {
-	return emissionstypes.Topic{
-		Id:                     1,
-		Creator:                s.addrsStr[0],
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         100,
-		WorkerSubmissionWindow: 100,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
-		// Set Initial Regret
-		InitialRegret:            alloraMath.OneDec(),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.01"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.01"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.01"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.01"),
-	}
 }
 
 // ConvertInferencesToWorkerAttributedValues converts an Inferences type to a slice of WorkerAttributedValue
@@ -212,7 +66,7 @@ func (s *InferenceSynthesisTestSuite) mockEmptyValueBundle(
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: &emissionstypes.Nonce{BlockHeight: 200},
 		},
-		Reputer:                       s.addrsStr[9],
+		Reputer:                       s.AddrsStr(9),
 		ExtraData:                     nil,
 		CombinedValue:                 combinedAndNaiveValue,
 		InfererValues:                 infererValues,
@@ -231,7 +85,7 @@ func (s *InferenceSynthesisTestSuite) getValueBundleForCombinedLoss(topicId uint
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeight},
 		},
-		Reputer:                       s.addrsStr[0],
+		Reputer:                       s.AddrsStr(0),
 		ExtraData:                     nil,
 		CombinedValue:                 combinedLoss,
 		InfererValues:                 nil,
@@ -265,8 +119,8 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	cNorm alloraMath.Dec,
 	epochGetters map[int]func(header string) alloraMath.Dec,
 ) {
-	k = s.emissionsKeeper
-	ctx = s.ctx
+	k = *s.EmissionsKeeper()
+	ctx = s.Ctx()
 	topicId = uint64(1)
 	blockHeight := int64(1)
 
@@ -278,16 +132,16 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	if epochNumber > 0 {
 		epochPrevGet := epochGetters[epochNumber-1]
 		networkLossPrevious = epochPrevGet("network_loss")
-		worker0 := s.addrsStr[0]
-		worker1 := s.addrsStr[1]
-		worker2 := s.addrsStr[2]
-		worker3 := s.addrsStr[3]
-		worker4 := s.addrsStr[4]
+		worker0 := s.AddrsStr(0)
+		worker1 := s.AddrsStr(1)
+		worker2 := s.AddrsStr(2)
+		worker3 := s.AddrsStr(3)
+		worker4 := s.AddrsStr(4)
 		workerList := []string{worker0, worker1, worker2, worker3, worker4}
 
-		forecaster5 := s.addrsStr[8]
-		forecaster6 := s.addrsStr[9]
-		forecaster7 := s.addrsStr[10]
+		forecaster5 := s.AddrsStr(8)
+		forecaster6 := s.AddrsStr(9)
+		forecaster7 := s.AddrsStr(10)
 		forecasterList := make([]string, 8)
 		forecasterList[5] = forecaster5
 		forecasterList[6] = forecaster6
@@ -304,8 +158,8 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 				worker4: epochPrevGet("inference_regret_worker_4"),
 			}
 		for inferer, regret := range infererNetworkRegrets {
-			err := s.emissionsKeeper.SetInfererNetworkRegret(
-				s.ctx,
+			err := s.EmissionsKeeper().SetInfererNetworkRegret(
+				s.Ctx(),
 				topicId,
 				inferer,
 				emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
@@ -320,8 +174,8 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecaster7: epochPrevGet("inference_regret_worker_7"),
 		}
 		for forecaster, regret := range forecasterNetworkRegrets {
-			err := s.emissionsKeeper.SetForecasterNetworkRegret(
-				s.ctx,
+			err := s.EmissionsKeeper().SetForecasterNetworkRegret(
+				s.Ctx(),
 				topicId,
 				forecaster,
 				emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
@@ -339,8 +193,8 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 				worker4: epochPrevGet("naive_inference_regret_worker_4"),
 			}
 		for inferer, regret := range infererNaiveNetworkRegrets {
-			err := s.emissionsKeeper.SetNaiveInfererNetworkRegret(
-				s.ctx,
+			err := s.EmissionsKeeper().SetNaiveInfererNetworkRegret(
+				s.Ctx(),
 				topicId,
 				inferer,
 				emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
@@ -354,7 +208,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			infererName2 := workerList[infererIndex2]
 			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(infererIndex2)
 			err := k.SetOneOutInfererInfererNetworkRegret(
-				s.ctx,
+				s.Ctx(),
 				topicId,
 				infererName2,
 				infererName,
@@ -377,7 +231,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecasterName := forecasterList[forecasterIndex]
 			headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(infererIndex)
 			err := k.SetOneOutInfererForecasterNetworkRegret(
-				s.ctx,
+				s.Ctx(),
 				topicId,
 				infererName,
 				forecasterName,
@@ -400,7 +254,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecasterName := forecasterList[forecasterIndex]
 			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(forecasterIndex)
 			err := k.SetOneOutForecasterInfererNetworkRegret(
-				s.ctx,
+				s.Ctx(),
 				topicId,
 				forecasterName,
 				infererName,
@@ -423,7 +277,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecasterName2 := forecasterList[forecasterIndex2]
 			headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(forecasterIndex2)
 			err := k.SetOneOutForecasterForecasterNetworkRegret(
-				s.ctx,
+				s.Ctx(),
 				topicId,
 				forecasterName2,
 				forecasterName,
@@ -446,7 +300,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			infererName := workerList[infererIndex]
 			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_onein_" + strconv.Itoa(forecasterIndex)
 			err := k.SetOneInForecasterNetworkRegret(
-				s.ctx,
+				s.Ctx(),
 				topicId,
 				forecasterName,
 				infererName,
@@ -461,7 +315,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecasterName := forecasterList[forecaster+5]
 			headerName := "inference_regret_worker_5_onein_" + strconv.Itoa(forecaster)
 			err := k.SetOneInForecasterNetworkRegret(
-				s.ctx,
+				s.Ctx(),
 				topicId,
 				forecasterName,
 				forecasterName,
@@ -494,8 +348,8 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		stakeInt, ok := cosmosMath.NewIntFromString(stakeValueFloored.String())
 		s.Require().True(ok)
 
-		workerString := s.addrsStr[workerIndex]
-		err = k.AddReputerStake(s.ctx, topicId, workerString, stakeInt)
+		workerString := s.AddrsStr(workerIndex)
+		err = k.AddReputerStake(s.Ctx(), topicId, workerString, stakeInt)
 		s.Require().NoError(err)
 	}
 
@@ -506,7 +360,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 
 	for infererIndex := 0; infererIndex < 5; infererIndex++ {
 		inferences.Inferences = append(inferences.Inferences, &emissionstypes.Inference{
-			Inferer:     s.addrsStr[infererIndex],
+			Inferer:     s.AddrsStr(infererIndex),
 			Value:       epochGet("inference_" + strconv.Itoa(infererIndex)),
 			ExtraData:   nil,
 			Proof:       "",
@@ -523,12 +377,12 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		forecastElements := make([]*emissionstypes.ForecastElement, 0)
 		for infererIndex := 0; infererIndex < 5; infererIndex++ {
 			forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
-				Inferer: s.addrsStr[infererIndex],
+				Inferer: s.AddrsStr(infererIndex),
 				Value:   epochGet("forecasted_loss_" + strconv.Itoa(forecasterIndex) + "_for_" + strconv.Itoa(infererIndex)),
 			})
 		}
 		forecasts.Forecasts = append(forecasts.Forecasts, &emissionstypes.Forecast{
-			Forecaster:       s.addrsStr[forecasterIndex+8],
+			Forecaster:       s.AddrsStr(forecasterIndex + 8),
 			ForecastElements: forecastElements,
 			TopicId:          topicId,
 			BlockHeight:      blockHeight,
@@ -546,7 +400,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
 	moduleParams.CNorm = cNorm
 
-	topic := s.mockTopic()
+	topic := s.MockTopic()
 	topic.Id = topicId
 	topic.PNorm = pNorm
 	topic.Epsilon = epsilonTopic
@@ -594,7 +448,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	forecastImpliedInferenceByWorker map[string]*emissionstypes.Inference,
 ) {
 	topicId := uint64(1)
-	topic := s.mockTopic()
+	topic := s.MockTopic()
 	topic.Id = topicId
 	topic.Epsilon = epsilonTopic
 	topic.PNorm = pNorm
@@ -608,8 +462,8 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	var err error
 	var calcArgs inferencesynthesis.CalcNetworkInferencesArgs
 	calcArgs, err = inferencesynthesis.GetCalcNetworkInferenceArgs(
-		s.ctx,
-		s.emissionsKeeper,
+		s.Ctx(),
+		*s.EmissionsKeeper(),
 		topicId,
 		inferences,
 		forecasts,
@@ -631,10 +485,10 @@ func (s *InferenceSynthesisTestSuite) incrementRegretsInTopic(
 ) {
 	for index := 0; index < times; index++ {
 		if actorType == emissionstypes.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED {
-			err := s.emissionsKeeper.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, actor)
+			err := s.EmissionsKeeper().IncrementCountInfererInclusionsInTopic(s.Ctx(), topicId, actor)
 			s.Require().NoError(err)
 		} else if actorType == emissionstypes.ActorType_ACTOR_TYPE_FORECASTER {
-			err := s.emissionsKeeper.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, actor)
+			err := s.EmissionsKeeper().IncrementCountForecasterInclusionsInTopic(s.Ctx(), topicId, actor)
 			s.Require().NoError(err)
 		}
 	}
@@ -720,11 +574,11 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 		forecasters, forecastByWorker, _, forecasterRegrets,
 		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm, epochGet := s.getEpochValueBundleByEpoch(epoch)
 
-	worker0 := s.addrsStr[0]
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	worker3 := s.addrsStr[3]
-	worker4 := s.addrsStr[4]
+	worker0 := s.AddrsStr(0)
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	worker3 := s.AddrsStr(3)
+	worker4 := s.AddrsStr(4)
 
 	expectedValues := map[string]alloraMath.Dec{
 		worker0: epochGet[epoch]("network_inference_oneout_0"),
@@ -803,9 +657,9 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 		})
 	s.Require().NoError(err)
 
-	forecaster0 := s.addrsStr[8]
-	forecaster1 := s.addrsStr[9]
-	forecaster2 := s.addrsStr[10]
+	forecaster0 := s.AddrsStr(8)
+	forecaster1 := s.AddrsStr(9)
+	forecaster2 := s.AddrsStr(10)
 
 	expectedValues := map[string]alloraMath.Dec{
 		forecaster0: epochGet[epoch]("network_inference_oneout_5"),
@@ -862,9 +716,9 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 		})
 	s.Require().NoError(err)
 
-	forecaster0 := s.addrsStr[8]
-	forecaster1 := s.addrsStr[9]
-	forecaster2 := s.addrsStr[10]
+	forecaster0 := s.AddrsStr(8)
+	forecaster1 := s.AddrsStr(9)
+	forecaster2 := s.AddrsStr(10)
 
 	expectedValues := map[string]alloraMath.Dec{
 		forecaster0: epochGet[epoch]("network_naive_inference_onein_0"),
@@ -897,14 +751,14 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValuesEpoch4() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeightInferences := int64(390)
 	blockHeightForecaster := int64(380)
 
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
 
 	// Set up input data
 	inferences := &emissionstypes.Inferences{
@@ -984,14 +838,14 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForecasters() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	worker3 := s.addrsStr[3]
-	worker4 := s.addrsStr[4]
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	worker3 := s.AddrsStr(3)
+	worker4 := s.AddrsStr(4)
 
 	// Set up input data
 	inferences := &emissionstypes.Inferences{
@@ -1097,17 +951,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeForecasters() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	worker3 := s.addrsStr[3]
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	worker3 := s.AddrsStr(3)
 
-	forecaster1 := s.addrsStr[4]
-	forecaster2 := s.addrsStr[5]
-	forecaster3 := s.addrsStr[6]
+	forecaster1 := s.AddrsStr(4)
+	forecaster2 := s.AddrsStr(5)
+	forecaster3 := s.AddrsStr(6)
 
 	// Set up input data
 	inferences := &emissionstypes.Inferences{
@@ -1244,17 +1098,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoForecastersValidOneForecasterInvalid() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	worker3 := s.addrsStr[3]
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	worker3 := s.AddrsStr(3)
 
-	forecaster1 := s.addrsStr[4]
-	forecaster2 := s.addrsStr[5]
-	forecaster3 := s.addrsStr[6]
+	forecaster1 := s.AddrsStr(4)
+	forecaster2 := s.AddrsStr(5)
+	forecaster3 := s.AddrsStr(6)
 
 	// Set up input data
 	inferences := &emissionstypes.Inferences{
@@ -1398,12 +1252,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTwoInferersNewOneOldOneNew() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
 
 	// Set up input data
 	inferences := &emissionstypes.Inferences{
@@ -1502,16 +1356,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTw
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
 
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	worker3 := s.addrsStr[3]
-	forecaster1 := s.addrsStr[4]
-	forecaster2 := s.addrsStr[5]
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	worker3 := s.AddrsStr(3)
+	forecaster1 := s.AddrsStr(4)
+	forecaster2 := s.AddrsStr(5)
 
 	// Set up input data with 3 inferers and 2 forecasters
 	inferences := &emissionstypes.Inferences{
@@ -1647,15 +1501,15 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2inferers2forecasters() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
 
-	worker1 := s.addrsStr[1]
-	worker2 := s.addrsStr[2]
-	forecaster1 := s.addrsStr[3]
-	forecaster2 := s.addrsStr[4]
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	forecaster1 := s.AddrsStr(3)
+	forecaster2 := s.AddrsStr(4)
 
 	// Set up input data with 2 inferers and 2 forecasters
 	inferences := &emissionstypes.Inferences{
