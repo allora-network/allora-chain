@@ -246,9 +246,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:   otherUser,
-		TopicId:  topicId,
-		Metadata: []string{"Updated metadata"},
+		Sender:     otherUser,
+		TopicId:    topicId,
+		Metadata:   []string{"Updated metadata"},
+		LossMethod: nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -264,9 +265,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:   sender,
-		TopicId:  nonexistentTopicId,
-		Metadata: []string{"Updated metadata"},
+		Sender:     sender,
+		TopicId:    nonexistentTopicId,
+		Metadata:   []string{"Updated metadata"},
+		LossMethod: nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -309,8 +311,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicNoChanges() {
 
 	// Try to update with no fields set
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:  sender,
-		TopicId: topicId,
+		Sender:     sender,
+		TopicId:    topicId,
+		Metadata:   nil,
+		LossMethod: nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -329,6 +333,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:     sender,
 		TopicId:    topicId,
+		Metadata:   nil,
 		LossMethod: []string{""},
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -340,6 +345,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:     sender,
 		TopicId:    topicId,
+		Metadata:   nil,
 		LossMethod: []string{strings.Repeat("a", 257)},
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -349,9 +355,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:   sender,
-		TopicId:  topicId,
-		Metadata: []string{strings.Repeat("a", 257)},
+		Sender:     sender,
+		TopicId:    topicId,
+		Metadata:   []string{strings.Repeat("a", 257)},
+		LossMethod: nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -377,6 +384,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		EpochLength:              100,
 		GroundTruthLag:           100,
 		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),

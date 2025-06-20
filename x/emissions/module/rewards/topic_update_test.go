@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
