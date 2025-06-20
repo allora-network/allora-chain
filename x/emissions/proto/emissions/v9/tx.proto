@@ -328,7 +328,7 @@ message UpdateTopicRequest {
 
   string sender = 1;
   uint64 topic_id = 2;
-  
+
   // Optional fields using repeated pattern - if empty, field is not updated
   repeated string metadata = 3;
   repeated string loss_method = 4;
