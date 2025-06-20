@@ -22,7 +22,7 @@ func CloseReputerNonce(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonce types.Nonce,
-) (err error) {
+) error {
 	blockHeight := ctx.BlockHeight()
 
 	// All filters should be done in order of increasing computational complexity
@@ -273,5 +273,5 @@ func CloseReputerNonce(
 	}
 	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 
-	return
+	return nil
 }
