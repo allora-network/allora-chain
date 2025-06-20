@@ -253,7 +253,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorIs(err, types.ErrNotTopicCreator)
+	require.ErrorIs(err, types.ErrNotPermittedToModifyTopic)
 	require.Nil(updateResult)
 }
 

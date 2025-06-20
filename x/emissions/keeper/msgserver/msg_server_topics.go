@@ -119,7 +119,7 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 
 	// Check if sender is the topic creator
 	if topic.Creator != msg.Sender {
-		return nil, types.ErrNotTopicCreator
+		return nil, types.ErrNotPermittedToModifyTopic
 	}
 
 	// Validate the request now that we have the existing topic's epoch length
