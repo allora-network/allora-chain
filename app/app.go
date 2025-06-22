@@ -52,6 +52,7 @@ import (
 	_ "cosmossdk.io/x/feegrant/module"                            // import for side-effects
 	_ "cosmossdk.io/x/upgrade"                                    // import for side-effects
 	_ "github.com/allora-network/allora-chain/x/emissions/module" // import for side-effects
+	_ "github.com/allora-network/allora-chain/x/epochs/module"    // import for side-effects
 	_ "github.com/allora-network/allora-chain/x/mint/module"      // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"                       // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"             // import for side-effects
@@ -175,6 +176,7 @@ func NewAlloraApp(
 		&app.MintKeeper,
 		&app.GovKeeper,
 		&app.EmissionsKeeper,
+		&app.EpochsKeeper,
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
 		&app.AuthzKeeper,

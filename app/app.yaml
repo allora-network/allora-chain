@@ -19,6 +19,7 @@ modules:
         # staking module is required if HistoricalEntries param > 0
         - staking
         - mint
+        - epochs
         - feemarket
         - ibc
         - authz
@@ -43,6 +44,7 @@ modules:
         - slashing
         - gov
         - mint
+        - epochs
         - ibc
         # The genutil module must occur:
         # - after staking so that pools are properly initialized with tokens from genesis accounts;
@@ -139,3 +141,6 @@ modules:
   - name: evidence
     config:
       "@type": cosmos.evidence.module.v1.Module
+  - name: epochs
+    config:
+      "@type": epochs.module.v1.Module

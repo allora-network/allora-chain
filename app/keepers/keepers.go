@@ -8,6 +8,7 @@ import (
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	epochskeeper "github.com/allora-network/allora-chain/x/epochs/keeper"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -40,6 +41,7 @@ type AppKeepers struct {
 	MintKeeper            mintkeeper.Keeper
 	GovKeeper             *govkeeper.Keeper
 	EmissionsKeeper       emissionsKeeper.Keeper
+	EpochsKeeper          epochskeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
