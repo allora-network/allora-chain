@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
+	epochstypes "github.com/allora-network/allora-chain/x/epochs/types"
 	modulev1 "github.com/allora-network/allora-chain/x/mint/api/mint/module/v1"
 	v1beta1 "github.com/allora-network/allora-chain/x/mint/api/mint/v1beta1"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
@@ -201,6 +202,7 @@ type ModuleOutputs struct {
 
 	MintKeeper keeper.Keeper
 	Module     appmodule.AppModule
+	Hooks      epochstypes.EpochHooksWrapper
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -222,5 +224,9 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	// when no inflation calculation function is provided it will use the default types.DefaultInflationCalculationFn
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper)
 
-	return ModuleOutputs{MintKeeper: k, Module: m, Out: depinject.Out{}}
+	return ModuleOutputs{
+		MintKeeper: k,
+		Module:     m,
+		Hooks:      epochstypes.EpochHooksWrapper{EpochHooks: k.Hooks()},
+	}
 }

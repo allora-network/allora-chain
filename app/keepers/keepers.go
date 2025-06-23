@@ -41,7 +41,7 @@ type AppKeepers struct {
 	MintKeeper            mintkeeper.Keeper
 	GovKeeper             *govkeeper.Keeper
 	EmissionsKeeper       emissionsKeeper.Keeper
-	EpochsKeeper          epochskeeper.Keeper
+	EpochsKeeper          *epochskeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper

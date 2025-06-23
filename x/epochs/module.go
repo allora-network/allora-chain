@@ -9,10 +9,7 @@ import (
 	"google.golang.org/grpc"
 
 	"cosmossdk.io/core/appmodule"
-	"cosmossdk.io/core/store"
-	"cosmossdk.io/depinject"
 
-	modulev1 "github.com/allora-network/allora-chain/x/epochs/api/epochs/module/v1"
 	"github.com/allora-network/allora-chain/x/epochs/keeper"
 	"github.com/allora-network/allora-chain/x/epochs/simulation"
 	"github.com/allora-network/allora-chain/x/epochs/types"
@@ -24,6 +21,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 )
 
+const ConsensusVersion = 1
+
 var (
 	_ module.AppModuleSimulation = AppModule{}
 	_ module.HasGenesis          = AppModule{}
@@ -32,22 +31,17 @@ var (
 	_ appmodule.HasBeginBlocker = AppModule{}
 )
 
-const ConsensusVersion = 1
-
 // AppModule implements the AppModule interface for the epochs module.
 type AppModule struct {
-	keeper keeper.Keeper
+	keeper *keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object.
-func NewAppModule(keeper keeper.Keeper) AppModule {
+func NewAppModule(keeper *keeper.Keeper) AppModule {
 	return AppModule{
 		keeper: keeper,
 	}
 }
-
-// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
-func (am AppModule) IsOnePerModuleType() {}
 
 // IsAppModule implements the appmodule.AppModule interface.
 func (am AppModule) IsAppModule() {}
@@ -72,7 +66,7 @@ func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwrunt
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(registrar grpc.ServiceRegistrar) error {
-	types.RegisterQueryServer(registrar, keeper.NewQuerier(am.keeper))
+	types.RegisterQueryServer(registrar, keeper.NewQuerier(*am.keeper))
 	return nil
 }
 
@@ -157,40 +151,3 @@ func (am AppModule) ModuleCodec() (schema.ModuleCodec, error) {
 	return am.keeper.Schema.ModuleCodec(collections.IndexingOptions{})
 }
 */
-
-//
-// App Wiring Setup
-//
-
-func init() {
-	appmodule.Register(&modulev1.Module{},
-		appmodule.Provide(ProvideModule),
-	)
-}
-
-type ModuleInputs struct {
-	depinject.In
-
-	ModuleKey    depinject.OwnModuleKey
-	Config       *modulev1.Module
-	StoreService store.KVStoreService
-	Cdc          codec.Codec
-}
-
-type ModuleOutputs struct {
-	depinject.Out
-
-	EpochsKeeper keeper.Keeper
-	Module       appmodule.AppModule
-}
-
-func ProvideModule(in ModuleInputs) ModuleOutputs {
-	k := keeper.NewKeeper(
-		in.StoreService,
-		in.Cdc,
-	)
-
-	m := NewAppModule(k)
-
-	return ModuleOutputs{EpochsKeeper: k, Module: m}
-}
