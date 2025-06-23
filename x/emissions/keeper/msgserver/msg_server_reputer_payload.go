@@ -122,40 +122,40 @@ func (ms msgServer) validateValueBundle(ctx context.Context, valueBundle *types.
 		networkInferences.InfererValues,
 		valueBundle.InfererValues,
 	); err != nil {
-		return err
+		return fmt.Errorf("inferer values mismatch: %w", err)
 	}
 
 	if err := validateWorkerValues(
 		networkInferences.ForecasterValues,
 		valueBundle.ForecasterValues,
 	); err != nil {
-		return err
+		return fmt.Errorf("forecaster values mismatch: %w", err)
 	}
 
 	if err := validateWorkerValues(
 		networkInferences.OneOutInfererValues,
 		valueBundle.OneOutInfererValues,
 	); err != nil {
-		return err
+		return fmt.Errorf("one out inferer values mismatch: %w", err)
 	}
 
 	if err := validateWorkerValues(
 		networkInferences.OneInForecasterValues,
 		valueBundle.OneInForecasterValues,
 	); err != nil {
-		return err
+		return fmt.Errorf("one in forecaster values mismatch: %w", err)
 	}
 
 	if err := validateWorkerValues(
 		networkInferences.OneOutForecasterValues,
 		valueBundle.OneOutForecasterValues); err != nil {
-		return err
+		return fmt.Errorf("one out forecaster values mismatch: %w", err)
 	}
 
 	if err := validateWorkerValues(
 		networkInferences.OneOutInfererForecasterValues,
 		valueBundle.OneOutInfererForecasterValues); err != nil {
-		return err
+		return fmt.Errorf("one out inferer forecaster values mismatch: %w", err)
 	}
 
 	return nil
@@ -167,8 +167,10 @@ type worker interface {
 }
 
 func validateWorkerValues[T, K worker](workerValues []T, inputWorkerValues []K) error {
-	if len(workerValues) != len(inputWorkerValues) {
-		return fmt.Errorf("worker sets don't match - different unique workers")
+	numWorkers, numInputWorkers := len(workerValues), len(inputWorkerValues)
+	if numWorkers != numInputWorkers {
+		return fmt.Errorf("worker sets don't match - different unique workers: expected %d, got %d",
+			numWorkers, numInputWorkers)
 	}
 
 	sort.Slice(workerValues, func(i, j int) bool {
