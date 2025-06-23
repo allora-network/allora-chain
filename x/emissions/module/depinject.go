@@ -10,6 +10,7 @@ import (
 
 	modulev1 "github.com/allora-network/allora-chain/x/emissions/api/emissions/module/v1"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	epochstypes "github.com/allora-network/allora-chain/x/epochs/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
@@ -47,6 +48,7 @@ type ModuleOutputs struct {
 
 	Module appmodule.AppModule
 	Keeper keeper.Keeper
+	Hooks  epochstypes.EpochHooksWrapper
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -65,5 +67,9 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	)
 	m := NewAppModule(in.Cdc, k)
 
-	return ModuleOutputs{Module: m, Keeper: k, Out: depinject.Out{}}
+	return ModuleOutputs{
+		Module: m,
+		Keeper: k,
+		Hooks:  epochstypes.EpochHooksWrapper{EpochHooks: k.Hooks()},
+	}
 }

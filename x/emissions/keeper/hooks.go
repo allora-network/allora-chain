@@ -12,14 +12,14 @@ import (
 func (k Keeper) BeforeEpochStart(ctx context.Context, epochIdentifier string, epochNumber int64) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	fmt.Printf("🚀🚀🚀 MINT HOOK: BeforeEpochStart - Epoch '%s' #%d starting at block %d 🚀🚀🚀\n",
+	fmt.Printf("🔥🔥🔥 EMISSIONS HOOK: BeforeEpochStart - Epoch '%s' #%d starting at block %d 🔥🔥🔥\n",
 		epochIdentifier, epochNumber, sdkCtx.BlockHeight())
 
-	sdkCtx.Logger().Info("🚀 MINT HOOK: BeforeEpochStart",
+	sdkCtx.Logger().Info("🔥 EMISSIONS HOOK: BeforeEpochStart",
 		"epochIdentifier", epochIdentifier,
 		"epochNumber", epochNumber,
 		"blockHeight", sdkCtx.BlockHeight())
-
+	
 	return nil
 }
 
@@ -27,10 +27,10 @@ func (k Keeper) BeforeEpochStart(ctx context.Context, epochIdentifier string, ep
 func (k Keeper) AfterEpochEnd(ctx context.Context, epochIdentifier string, epochNumber int64) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	fmt.Printf("🎉🎉🎉 MINT HOOK: AfterEpochEnd - Epoch '%s' #%d ended at block %d 🎉🎉🎉\n",
+	fmt.Printf("💰💰💰 EMISSIONS HOOK: AfterEpochEnd - Epoch '%s' #%d ended at block %d 💰💰💰\n",
 		epochIdentifier, epochNumber, sdkCtx.BlockHeight())
 
-	sdkCtx.Logger().Info("🎉 MINT HOOK: AfterEpochEnd",
+	sdkCtx.Logger().Info("💰 EMISSIONS HOOK: AfterEpochEnd",
 		"epochIdentifier", epochIdentifier,
 		"epochNumber", epochNumber,
 		"blockHeight", sdkCtx.BlockHeight())
@@ -40,7 +40,7 @@ func (k Keeper) AfterEpochEnd(ctx context.Context, epochIdentifier string, epoch
 
 // ___________________________________________________________________________________________________
 
-// Hooks wrapper struct for mint keeper.
+// Hooks wrapper struct for emissions keeper.
 type Hooks struct {
 	k Keeper
 }
