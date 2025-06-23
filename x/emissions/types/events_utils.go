@@ -42,6 +42,14 @@ func NewNetworkInferencesEventBase(topicId TopicId, blockHeight BlockHeight, net
 	}
 }
 
+func NewOutlierResistantNetworkInferencesEventBase(topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) proto.Message {
+	return &EventOutlierResistantNetworkInferences{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		ValueBundle: &networkInferences,
+	}
+}
+
 func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) proto.Message {
 	return &EventForecastTaskScoreSet{
 		TopicId: topicId,
