@@ -4035,7 +4035,8 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 /// STATE MANAGEMENT
 
 // Iterate through topic state and prune records that are no longer needed
-func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, blockHeight int64) error {
+func (k *Keeper) PruneRecordsAfterRewards(ctx sdk.Context, topicId TopicId, blockHeight int64) error {
+	defer types.EmitPruneRecordsEvent(ctx, blockHeight, topicId)
 	// Delete records until the blockHeight
 	blockRange := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).

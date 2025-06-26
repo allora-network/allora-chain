@@ -214,3 +214,11 @@ func NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight int64, 
 		Percentage:  percentage,
 	}
 }
+
+// / Pruning
+func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Message {
+	return &EventPruneRecords{
+		BlockHeight: blockHeight,
+		TopicId:     topicId,
+	}
+}

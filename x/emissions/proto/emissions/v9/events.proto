@@ -198,3 +198,8 @@ message EventPreviousPercentageRewardToStakedReputersSet {
     (gogoproto.nullable) = false
   ];
 }
+
+message EventPruneRecords {
+  int64 block_height = 1;
+  uint64 topic_id = 2;
+}
