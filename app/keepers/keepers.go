@@ -71,7 +71,7 @@ func (r *DefaultFeemarketDenomResolver) ConvertToDenom(_ sdk.Context, coin sdk.D
 		return coin, nil
 	}
 
-	return sdk.DecCoin{}, fmt.Errorf("error resolving denom: the only denom supported is %s", coin.Denom)
+	return sdk.DecCoin{}, fmt.Errorf("error resolving denom: the only denom supported is %s", denom)
 }
 
 func (r *DefaultFeemarketDenomResolver) ExtraDenoms(_ sdk.Context) ([]string, error) {
