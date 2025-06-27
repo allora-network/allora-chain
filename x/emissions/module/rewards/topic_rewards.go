@@ -156,24 +156,26 @@ func GetAndUpdateActiveTopicWeights(
 	for _, topicId := range topicids.TopicIds {
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			continue
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
 		}
 
 		// Apply pending topic updates at epoch end, before calculating weight
 		hasPendingUpdate, err := k.HasPendingTopicUpdate(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Warn("Error checking pending topic update", "topicId", topicId, "error", err)
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
 		} else if hasPendingUpdate {
 			err = k.ApplyPendingTopicUpdate(ctx, topicId)
 			if err != nil {
 				Logger(ctx).Error("Error applying pending topic update", "topicId", topicId, "error", err)
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
 			} else {
 				Logger(ctx).Info("Applied pending topic update at epoch end", "topicId", topicId, "block", block)
 				// Re-fetch the topic with updated values
 				topic, err = k.GetTopic(ctx, topicId)
 				if err != nil {
 					Logger(ctx).Error("Error re-fetching topic after update", "topicId", topicId, "error", err)
-					continue
+					return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
 				}
 			}
 		}
