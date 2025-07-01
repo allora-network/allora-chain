@@ -194,14 +194,16 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	defer func() {
 		if r := recover(); r != nil {
 			err := fmt.Errorf("error: %v", r)
-			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
+			sdkCtx.Logger().Error("Recover panic in emissions EndBlocker", err)
+		} else {
+			sdkCtx.Logger().Debug("Emissions EndBlocker success")
 		}
 	}()
 
 	err := EndBlocker(ctx, am)
 	if err != nil {
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
-		sdkCtx.Logger().Error("EndBlocker error! ", err)
+		sdkCtx.Logger().Error("Emissions EndBlocker error! ", err)
 	}
 	return err
 }

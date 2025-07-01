@@ -165,9 +165,19 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // BeginBlock returns the begin blocker for the mint module.
 func (am AppModule) BeginBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer func() {
+		if r := recover(); r != nil {
+			err := fmt.Errorf("error: %v", r)
+			sdkCtx.Logger().Error("Recover panic in mint BeginBlocker", err)
+		} else {
+			sdkCtx.Logger().Debug("Mint BeginBlocker success")
+		}
+	}()
+
 	err := BeginBlocker(ctx, am.keeper)
 	if err != nil {
-		am.keeper.Logger(ctx).Error("BeginBlocker error! ", err)
+		am.keeper.Logger(ctx).Error("Mint BeginBlocker error! ", err)
 	}
 	return nil
 }
