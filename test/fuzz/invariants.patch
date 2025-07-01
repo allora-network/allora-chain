@@ -45,7 +45,9 @@ index bbfb75ca..8bd195d3 100644
 -	defer func() {
 -		if r := recover(); r != nil {
 -			err := fmt.Errorf("error: %v", r)
--			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
+-			sdkCtx.Logger().Error("Recover panic in emissions EndBlocker", err)
+-		} else {
+-			sdkCtx.Logger().Debug("Emissions EndBlocker success")
 -		}
 -	}()
 -
