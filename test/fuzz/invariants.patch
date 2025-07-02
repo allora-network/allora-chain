@@ -60,3 +60,24 @@ index bbfb75ca..fe6c7bc7 100644
 +func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 +	keeper.RegisterInvariants(ir, &am.keeper)
 +}
+diff --git a/x/mint/module/module.go b/x/mint/module/module.go
+index a7601d87..e31912be 100644
+--- a/x/mint/module/module.go
++++ b/x/mint/module/module.go
+@@ -165,16 +165,6 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
+ 
+ // BeginBlock returns the begin blocker for the mint module.
+ func (am AppModule) BeginBlock(ctx context.Context) error {
+-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+-	defer func() {
+-		if r := recover(); r != nil {
+-			err := fmt.Errorf("error: %v", r)
+-			sdkCtx.Logger().Error("Recover panic in mint BeginBlocker", err)
+-		} else {
+-			sdkCtx.Logger().Debug("Mint BeginBlocker success")
+-		}
+-	}()
+-
+ 	err := BeginBlocker(ctx, am.keeper)
+ 	if err != nil {
+ 		am.keeper.Logger(ctx).Error("Mint BeginBlocker error! ", err)
