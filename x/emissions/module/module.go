@@ -194,7 +194,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	defer func() {
 		if r := recover(); r != nil {
 			err := fmt.Errorf("error: %v", r)
-			sdkCtx.Logger().Error("Recover panic in EndBlocker", err))
+			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
 		}
 	}()
 
