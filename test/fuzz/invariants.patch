@@ -1,5 +1,5 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index 80418983..4a7cad47 100644
+index 94adfd8c..50495035 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
 @@ -2,8 +2,10 @@ package module
@@ -26,7 +26,7 @@ index 80418983..4a7cad47 100644
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index bbfb75ca..8bd195d3 100644
+index bbfb75ca..fe6c7bc7 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -40,6 +40,7 @@ var (
@@ -45,21 +45,18 @@ index bbfb75ca..8bd195d3 100644
 -	defer func() {
 -		if r := recover(); r != nil {
 -			err := fmt.Errorf("error: %v", r)
--			sdkCtx.Logger().Error("Recover panic in emissions EndBlocker", err)
--		} else {
--			sdkCtx.Logger().Debug("Emissions EndBlocker success")
+-			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
 -		}
 -	}()
 -
  	err := EndBlocker(ctx, am)
  	if err != nil {
  		sdkCtx := sdk.UnwrapSDKContext(ctx)
-@@ -205,3 +198,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
+@@ -205,3 +198,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
  	}
  	return err
  }
 +
-+// RegisterInvariants registers the emissions module invariants.
 +func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 +	keeper.RegisterInvariants(ir, &am.keeper)
 +}
