@@ -164,7 +164,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // BeginBlock returns the begin blocker for the mint module.
-func (am AppModule) BeginBlock(ctx context.Context) error {
+func (am AppModule) BeginBlock(ctx context.Context) (err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() {
 		if r := recover(); r != nil {
@@ -175,11 +175,11 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 		}
 	}()
 
-	err := BeginBlocker(ctx, am.keeper)
+	err = BeginBlocker(ctx, am.keeper)
 	if err != nil {
-		am.keeper.Logger(ctx).Error("Mint BeginBlocker error! ", err)
+		sdkCtx.Logger().Error("Mint BeginBlocker error! ", err)
 	}
-	return nil
+	return
 }
 
 //

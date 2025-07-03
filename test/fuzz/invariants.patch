@@ -26,7 +26,7 @@ index 94adfd8c..50495035 100644
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index bbfb75ca..fe6c7bc7 100644
+index 9856a05a..a1760694 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -40,6 +40,7 @@ var (
@@ -37,38 +37,37 @@ index bbfb75ca..fe6c7bc7 100644
  )
  
  // ConsensusVersion defines the current module consensus version.
-@@ -190,14 +191,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
- 
+@@ -191,18 +192,13 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
  // EndBlock returns the end blocker for the emissions module.
- func (am AppModule) EndBlock(ctx context.Context) error {
--	sdkCtx := sdk.UnwrapSDKContext(ctx)
+ func (am AppModule) EndBlock(ctx context.Context) (err error) {
+ 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 -	defer func() {
 -		if r := recover(); r != nil {
--			err := fmt.Errorf("error: %v", r)
--			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
+-			err = fmt.Errorf("error: %v", r)
+-			sdkCtx.Logger().Error("Recover panic in emissions EndBlocker", err)
+-		} else {
+-			sdkCtx.Logger().Debug("Emissions EndBlocker success")
 -		}
 -	}()
 -
- 	err := EndBlocker(ctx, am)
+ 	err = EndBlocker(ctx, am)
  	if err != nil {
- 		sdkCtx := sdk.UnwrapSDKContext(ctx)
-@@ -205,3 +198,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
+ 		sdkCtx.Logger().Error("Emissions EndBlocker error! ", err)
  	}
- 	return err
+ 	return
  }
 +
 +func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 +	keeper.RegisterInvariants(ir, &am.keeper)
 +}
 diff --git a/x/mint/module/module.go b/x/mint/module/module.go
-index a7601d87..e31912be 100644
+index a28caef2..ec8ad74c 100644
 --- a/x/mint/module/module.go
 +++ b/x/mint/module/module.go
-@@ -165,16 +165,6 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
- 
+@@ -166,15 +166,6 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
  // BeginBlock returns the begin blocker for the mint module.
- func (am AppModule) BeginBlock(ctx context.Context) error {
--	sdkCtx := sdk.UnwrapSDKContext(ctx)
+ func (am AppModule) BeginBlock(ctx context.Context) (err error) {
+ 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 -	defer func() {
 -		if r := recover(); r != nil {
 -			err := fmt.Errorf("error: %v", r)
@@ -78,6 +77,6 @@ index a7601d87..e31912be 100644
 -		}
 -	}()
 -
- 	err := BeginBlocker(ctx, am.keeper)
+ 	err = BeginBlocker(ctx, am.keeper)
  	if err != nil {
- 		am.keeper.Logger(ctx).Error("Mint BeginBlocker error! ", err)
+ 		sdkCtx.Logger().Error("Mint BeginBlocker error! ", err)
