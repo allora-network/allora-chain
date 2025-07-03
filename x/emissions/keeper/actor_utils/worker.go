@@ -3,7 +3,7 @@ package actorutils
 import (
 	"sort"
 
-	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/errors"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -19,7 +19,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	// Check if the nonce is unfulfilled
 	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: fetch is worker nonce unfulfilled")
 	}
 	// If the nonce is already fulfilled, return an error
 	if !nonceUnfulfilled {
@@ -32,54 +32,12 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
 
-	defer func() {
-		if err != nil {
-			ctx.Logger().Error(
-				"Error occurred before finalization in CloseWorkerNonce, attempting cleanup anyway",
-				"topicId", topic.Id,
-				"nonce", nonce,
-				"error", err,
-			)
-		}
-
-		_, fulfillErr := k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
-		if fulfillErr != nil {
-			ctx.Logger().Error(
-				"Error fulfilling worker nonce during deferred cleanup",
-				"topicId", topic.Id,
-				"nonce", nonce,
-				"error", fulfillErr,
-			)
-		}
-
-		resetActiveErr := k.ResetActiveWorkersForTopic(ctx, topic.Id)
-		if resetActiveErr != nil {
-			ctx.Logger().Error(
-				"Error resetting active workers during deferred cleanup",
-				"topicId", topic.Id,
-				"error", resetActiveErr,
-			)
-		}
-
-		resetSubmissionsErr := k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
-		if resetSubmissionsErr != nil {
-			ctx.Logger().Error(
-				"Error resetting worker individual submissions during deferred cleanup",
-				"topicId", topic.Id,
-				"error", resetSubmissionsErr,
-			)
-		}
-
-		ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
-	}()
-
 	// Get all active inferers for this topic
 	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
-		return err
-	}
-	if len(activeInfererAddresses) == 0 {
-		return types.ErrNoQualifiedInferers
+		return errors.Wrap(err, "failed: fetch active inferrers for topic")
+	} else if len(activeInfererAddresses) == 0 {
+		return errors.Wrap(types.ErrNoQualifiedInferers, "no qualified inferrers")
 	}
 
 	// Insert set of active activeInferences for this topic/block and return a map
@@ -92,13 +50,13 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		activeInfererAddresses,
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: close active inference set for topic")
 	}
 
 	// Get all active forecasters for this topic
 	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: fetch active forecasters for topic")
 	}
 
 	// Insert set of active forecasts for this topic/block and return a map
@@ -112,30 +70,47 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		activeInfererAddressesMap,
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: close active forecast set for topic")
 	}
 
 	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: add reputer nonce for topic")
 	}
 
 	err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: set worker topic last commit")
 	}
 
 	// Once inferences are closed, update the network inferences outlier metrics
 	err = k.UpdateNetworkInferencesOutlierMetrics(ctx, topic.Id, nonce.BlockHeight)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: update network inferences outlier metrics")
 	}
 
 	// Computes and stores both regular and outlier-resistant network inferences
 	err = ProcessAndStoreNetworkInferences(k, ctx, topic.Id, nonce.BlockHeight, activeInferences, activeForecasts)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed: process and store network inferences")
 	}
+
+	_, err = k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
+	if err != nil {
+		return errors.Wrap(err, "failed: fulfill worker nonce")
+	}
+
+	err = k.ResetActiveWorkersForTopic(ctx, topic.Id)
+	if err != nil {
+		return errors.Wrap(err, "failed: reset active workers for topic")
+	}
+
+	err = k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
+	if err != nil {
+		return errors.Wrap(err, "failed: reset workers individual submissions for topic")
+	}
+
+	ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
 
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
@@ -162,12 +137,13 @@ func ProcessAndStoreNetworkInferences(
 		false,
 	)
 	if err != nil {
-		return errorsmod.Wrap(err, "failed to calculate network inferences")
+		return errors.Wrap(err, "failed: calculate network inferences")
 	}
 
 	// Store regular network inferences
-	if err := k.InsertNetworkInferences(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences); err != nil {
-		return errorsmod.Wrap(err, "failed to insert network inference")
+	err = k.InsertNetworkInferences(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences)
+	if err != nil {
+		return errors.Wrap(err, "failed: insert network inference")
 	}
 
 	types.EmitNewNetworkInferencesEvent(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences)
@@ -175,7 +151,7 @@ func ProcessAndStoreNetworkInferences(
 	// Get outlier resistant inferences
 	outlierResistantFilteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
 	if err != nil {
-		return errorsmod.Wrap(err, "failed to filter outlier resistant inferences")
+		return errors.Wrap(err, "failed: filter outlier resistant inferences")
 	}
 
 	// Initialize outlier resistant result with regular result
@@ -193,13 +169,14 @@ func ProcessAndStoreNetworkInferences(
 			true,
 		)
 		if err != nil {
-			return errorsmod.Wrap(err, "failed to calculate outlier resistant network inferences")
+			return errors.Wrap(err, "failed: calculate outlier resistant network inferences")
 		}
 	}
 
 	// Store outlier resistant network inferences
-	if err := k.InsertOutlierResistantNetworkInferences(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
-		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
+	err = k.InsertOutlierResistantNetworkInferences(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences)
+	if err != nil {
+		return errors.Wrap(err, "failed: insert outlier resistant network inference")
 	}
 
 	return nil
@@ -219,7 +196,7 @@ func closeActiveInferencesSet(
 	for _, address := range activeInfererAddresses {
 		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, errors.Wrap(err, "failed: get worker latest inference by topic id")
 		}
 		activeInferences = append(activeInferences, &inference)
 		activeInfererAddressesMap[inference.Inferer] = true
@@ -236,9 +213,8 @@ func closeActiveInferencesSet(
 
 	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "failed: insert active inferences")
 	}
-
 	return activeInfererAddressesMap, inferences, nil
 }
 
@@ -259,17 +235,14 @@ func closeActiveForecastsSet(
 	for _, address := range activeForecastAddresses {
 		forecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, address)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed: get worker latest forecast by topic id")
 		}
 
 		// Forecast validations
 		if forecast.TopicId != topicId {
-			ctx.Logger().Warn("Forecast does not match topic: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-			continue
-		}
-		if forecast.BlockHeight != nonce.BlockHeight {
-			ctx.Logger().Warn("Forecast does not match blockHeight: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-			continue
+			return nil, errors.NewWithFields("forecast does not match topic", "forecaster", forecast.Forecaster)
+		} else if forecast.BlockHeight != nonce.BlockHeight {
+			return nil, errors.NewWithFields("forecast does not match block height", "forecaster", forecast.Forecaster)
 		}
 
 		// Examine forecast elements to verify that they're for inferers in the current set.
@@ -312,7 +285,7 @@ func closeActiveForecastsSet(
 
 	err = k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed: insert active forecasts")
 	}
 	return forecasts, nil
 }

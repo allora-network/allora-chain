@@ -3,54 +3,52 @@ package module
 import (
 	"context"
 
-	"cosmossdk.io/errors"
+	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/errors"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EndBlocker(ctx context.Context, am AppModule) error {
+func EndBlocker(ctx context.Context, am AppModule) (err error) {
 	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------")
 	blockHeight := sdkCtx.BlockHeight()
-	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
 
 	moduleParams, err := am.keeper.GetParams(sdkCtx)
 	if err != nil {
-		sdkCtx.Logger().Error("Error Getting module params", err)
-		return err
+		return errors.Wrapf(err, "failed: fetch module params")
 	}
-
-	defer func() {
-		if uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
-			resetErr := rewards.HandleMonthlyRewardsReset(sdkCtx, am.keeper)
-			if resetErr != nil {
-				sdkCtx.Logger().Error("Error handling monthly rewards reset", "error", resetErr)
-				err = resetErr
-			}
-		}
-	}()
 
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
 	err = RemoveStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 	if err != nil {
-		sdkCtx.Logger().Error("Error removing stakes: ", err)
+		return errors.Wrapf(err, "failed: remove stakes")
 	}
+
+	if uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
+		err := rewards.HandleMonthlyRewardsReset(sdkCtx, am.keeper)
+		if err != nil {
+			return errors.Wrap(err, "failed: monthly rewards reset")
+		}
+	}
+
 	err = RemoveDelegateStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 	if err != nil {
-		sdkCtx.Logger().Error("Error removing delegate stakes: ", err)
+		return errors.Wrapf(err, "failed: remove delegate stakes")
 	}
 
 	// Get unnormalized weights of active topics and the sum weight and revenue they have generated
 	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight)
 	if err != nil {
-		return errors.Wrapf(err, "Weights error")
+		return errors.Wrapf(err, "failed: get and update active topic weights")
 	}
 
-	sdkCtx.Logger().Debug("ABCI EndBlocker", "blockHeight", blockHeight, "totalRevenue", totalRevenue, "sumWeight", sumWeight)
+	sdkCtx.Logger().Debug("ABCI EndBlocker", "totalRevenue", totalRevenue, "sumWeight", sumWeight)
 
 	err = rewards.UpdateNoncesOfActiveTopics(
 		sdkCtx,
@@ -59,8 +57,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		weights,
 	)
 	if err != nil {
-		sdkCtx.Logger().Error("Error applying function on all rewardable topics: ", err)
-		return err
+		return errors.Wrapf(err, "failed: update nonces of active topics")
 	}
 
 	// REWARDS (will internally filter any non-RewardReady topics)
@@ -74,44 +71,44 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		TotalRevenue: totalRevenue,
 	})
 	if err != nil {
-		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
-		return errors.Wrapf(err, "Rewards error")
+		return errors.Wrapf(err, "failed: emit rewards")
 	}
 
 	// Close any open windows due this blockHeight
 	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
-	if len(workerWindowsToClose.TopicIds) > 0 {
-		for _, topicId := range workerWindowsToClose.TopicIds {
-			sdkCtx.Logger().Info("ABCI EndBlocker: Worker close cadence met for topic", "topicId", topicId)
-			// Check if there is an unfulfilled nonce
-			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId)
-			if err != nil {
-				sdkCtx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
-				continue
-			} else if len(nonces.Nonces) == 0 {
-				// No nonces to fulfill
-				continue
-			} else {
-				topic, err := am.keeper.GetTopic(sdkCtx, topicId)
-				if err != nil {
-					sdkCtx.Logger().Warn("Error getting topic", "error", err)
-					continue
-				}
-				for _, nonce := range nonces.Nonces {
-					// No need to validate blockHeight boundaries - we accept submissions until this block.
-					sdkCtx.Logger().Debug("ABCI EndBlocker", "blockHeight", blockHeight, "closing worker window for topic", "topicId", topicId, "nonce", nonce)
-					err = allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
-					if err != nil {
-						sdkCtx.Logger().Info("Error closing worker nonce", "error", err)
-					}
-				}
-			}
-		}
-		err = am.keeper.DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
+	if len(workerWindowsToClose.TopicIds) == 0 {
+		return nil
+	}
+	for _, topicId := range workerWindowsToClose.TopicIds {
+		sdkCtx.Logger().Info("ABCI EndBlocker: Worker close cadence met for topic", "topicId", topicId)
+
+		// Check if there is an unfulfilled nonce
+		nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId)
 		if err != nil {
-			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
+			return errors.WrapWithFields(err, "failed: get unfulfilled worker nonces for topic", "topic_id", topicId)
+		} else if len(nonces.Nonces) == 0 {
+			// No nonces to fulfill
+			continue
+		}
+
+		topic, err := am.keeper.GetTopic(sdkCtx, topicId)
+		if err != nil {
+			return errors.WrapWithFields(err, "failed: fetch topic", "topic_id", topicId)
+		}
+
+		for _, nonce := range nonces.Nonces {
+			// No need to validate blockHeight boundaries - we accept submissions until this block.
+			sdkCtx.Logger().Debug("ABCI EndBlocker: closing worker window for topic", "topic_id", topicId, "nonce", nonce)
+			err = allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
+			if err != nil {
+				return errors.WrapWithFields(err, "failed: close worker nonce", "topic_id", topicId)
+			}
 		}
 	}
 
+	err = am.keeper.DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
+	if err != nil {
+		return errors.Wrapf(err, "failed: delete worker window blockheight")
+	}
 	return nil
 }
