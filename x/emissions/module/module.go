@@ -204,6 +204,7 @@ func (am AppModule) EndBlock(ctx context.Context) (err error) {
 	if err != nil {
 		err = errors.WithFields(err, "height", sdkCtx.BlockHeight())
 		logger.Error("EndBlocker failed", errors.Fields(err)...)
+		logger.Error("EndBlocker failed stacktrace: %+v", err)
 		return errors.Wrap(err, "EndBlocker failed")
 	}
 	return nil

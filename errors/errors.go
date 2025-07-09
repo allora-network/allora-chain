@@ -1,8 +1,7 @@
 package errors
 
 import (
-	"errors"
-	"fmt"
+	"github.com/pkg/errors"
 
 	cerrors "cosmossdk.io/errors"
 )
@@ -11,12 +10,14 @@ type Error = cerrors.Error
 
 var NewCosmos = cerrors.New
 var New = errors.New
-var Errorf = fmt.Errorf
+var WithStack = errors.WithStack
+var Errorf = errors.Errorf
 var Register = cerrors.Register
 var RegisterWithGRPCCode = cerrors.RegisterWithGRPCCode
 var Wrap = cerrors.Wrap
 var Wrapf = cerrors.Wrapf
 var IsOf = cerrors.IsOf
+var Is = errors.Is
 var Recover = cerrors.Recover
 var WithType = cerrors.WithType
 var ABCIError = cerrors.ABCIError
@@ -43,15 +44,25 @@ func WithFields(err error, fields ...any) error {
 	}
 }
 
+func Annotate(err *error, fields ...any) {
+	if *err == nil {
+		return
+	}
+	*err = errors.WithStack(*err)
+	if len(fields) > 0 {
+		*err = WithFields(*err, fields...)
+	}
+}
+
 func Fields(err error) []any {
 	var fields []any
 	for {
-		var errf ErrorWithFields
+		errf := &ErrorWithFields{}
 		if !errors.As(err, &errf) {
 			break
 		}
-		for k, v := range errf.fields {
-			fields = append(fields, k, v)
+		for _, x := range errf.fields {
+			fields = append(fields, x)
 		}
 		err = errf.parent
 	}

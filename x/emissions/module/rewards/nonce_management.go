@@ -23,6 +23,7 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 			err = allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
 			if err != nil {
 				ctx.Logger().Error("Error closing reputer nonce", "error", err)
+				return err
 			}
 		}
 	}
@@ -31,21 +32,20 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 
 // Prune reputer and worker nonces
 func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.Topic, block BlockHeight) error {
-	var maxUnfulfilledReputerRequests uint64
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		ctx.Logger().Warn("Error getting max retries to fulfil nonces for worker requests (using default)", "error", err)
 		return err
-	} else {
-		maxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
 	}
+
 	// Adding one to cover for one extra epochLength
-	reputerPruningBlock := block - (int64(maxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag) //nolint:gosec // G115: integer overflow conversion uint64 -> int64 (gosec)
+	reputerPruningBlock := block - (int64(moduleParams.MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag) //nolint:gosec // G115: integer overflow conversion uint64 -> int64 (gosec)
 	if reputerPruningBlock > 0 {
 		ctx.Logger().Debug("Pruning reputer nonces before block", "reputerPruningBlock", reputerPruningBlock, "topicId", topic.Id, "block", block)
 		err = k.PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)
 		if err != nil {
 			ctx.Logger().Warn("Error pruning reputer nonces", "error", err)
+			return err
 		}
 
 		// Reputer nonces need to check worker nonces from one epoch before
@@ -56,8 +56,9 @@ func PruneReputerAndWorkerNonces(ctx sdk.Context, k keeper.Keeper, topic types.T
 			err = k.PruneWorkerNonces(ctx, topic.Id, workerPruningBlock)
 			if err != nil {
 				ctx.Logger().Warn("Error pruning worker nonces", "error", err)
+				return err
 			}
 		}
 	}
-	return err
+	return nil
 }

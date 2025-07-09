@@ -255,6 +255,7 @@ func NewAlloraApp(
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err
 	}
+	app.Logger().Info("BRYNSK")
 
 	return app, nil
 }

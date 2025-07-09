@@ -14,6 +14,8 @@ import (
 
 // Closes an open worker nonce.
 func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonce types.Nonce) (err error) {
+	defer errors.Annotate(&err, "topic", topic.Id, "nonce", nonce.BlockHeight)
+
 	blockHeight := ctx.BlockHeight()
 
 	// Check if the nonce is unfulfilled
@@ -36,13 +38,11 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
 		return errors.Wrap(err, "failed: fetch active inferrers for topic")
-	} else if len(activeInfererAddresses) == 0 {
-		return errors.Wrap(types.ErrNoQualifiedInferers, "no qualified inferrers")
 	}
 
 	// Insert set of active activeInferences for this topic/block and return a map
 	// of the inferers with active inferers to be used in the forecasts processing
-	activeInfererAddressesMap, activeInferences, err := closeActiveInferencesSet(
+	activeInfererAddressesMap, activeInferences, err := insertActiveInferences(
 		ctx,
 		k,
 		topic.Id,
@@ -61,7 +61,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 
 	// Insert set of active forecasts for this topic/block and return a map
 	// of the forecasters with active forecasts to be used in the forecasts processing
-	activeForecasts, err := closeActiveForecastsSet(
+	activeForecasts, err := insertActiveForecasts(
 		ctx,
 		k,
 		topic.Id,
@@ -73,22 +73,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return errors.Wrap(err, "failed: close active forecast set for topic")
 	}
 
-	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
-	if err != nil {
-		return errors.Wrap(err, "failed: add reputer nonce for topic")
-	}
-
-	err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
-	if err != nil {
-		return errors.Wrap(err, "failed: set worker topic last commit")
-	}
-
-	// Once inferences are closed, update the network inferences outlier metrics
-	err = k.UpdateNetworkInferencesOutlierMetrics(ctx, topic.Id, nonce.BlockHeight)
-	if err != nil {
-		return errors.Wrap(err, "failed: update network inferences outlier metrics")
-	}
-
+	// Now that inferences are closed, update the network inferences outlier metrics
 	// Computes and stores both regular and outlier-resistant network inferences
 	err = ProcessAndStoreNetworkInferences(k, ctx, topic.Id, nonce.BlockHeight, activeInferences, activeForecasts)
 	if err != nil {
@@ -110,9 +95,24 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return errors.Wrap(err, "failed: reset workers individual submissions for topic")
 	}
 
+	if len(activeInfererAddresses) > 0 {
+		// This should only happen when there are inferences for this nonce
+		err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
+		if err != nil {
+			return errors.Wrap(err, "failed: set worker topic last commit")
+		}
+
+		// Now that the inference/forecast phase is complete, we open the corresponding reputer nonce
+		err = k.AddReputerNonce(ctx, topic.Id, &nonce)
+		if err != nil {
+			return errors.Wrap(err, "failed: add reputer nonce for topic")
+		}
+
+		types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
+	}
+
 	ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
 
-	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
 
@@ -126,6 +126,15 @@ func ProcessAndStoreNetworkInferences(
 	activeInferences *types.Inferences,
 	activeForecasts *types.Forecasts,
 ) error {
+	if activeInferences == nil || len(activeInferences.Inferences) == 0 {
+		return nil
+	}
+
+	err := k.UpdateNetworkInferencesOutlierMetrics(ctx, topicId, blockHeight)
+	if err != nil {
+		return errors.Wrap(err, "failed: update network inferences outlier metrics")
+	}
+
 	// Calculate regular network inferences
 	networkInferencesResult, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
@@ -183,7 +192,7 @@ func ProcessAndStoreNetworkInferences(
 }
 
 // Returns a map of active inferer addresses to their latest inference and the inferences themselves
-func closeActiveInferencesSet(
+func insertActiveInferences(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
@@ -221,7 +230,7 @@ func closeActiveInferencesSet(
 // insert forecasts from top forecasters
 // check forecast elements to ensure they are forecasts made about
 // the active list of inferers.
-func closeActiveForecastsSet(
+func insertActiveForecasts(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,

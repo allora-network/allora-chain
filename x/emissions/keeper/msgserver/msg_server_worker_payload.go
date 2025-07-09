@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/errors"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
@@ -95,8 +96,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 			return nil, errorsmod.Wrapf(types.ErrNoValidInferences, "Inference not found")
 		}
 		if inference.TopicId != wdb.TopicId {
-			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId,
-				"inferer not using the same topic as bundle")
+			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "inferer not using the same topic as bundle")
 		}
 
 		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
@@ -120,7 +120,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		for _, el := range forecast.ForecastElements {
 			score, err := ms.k.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
 			if err != nil {
-				continue
+				return nil, errors.WrapWithFields(err, "failed to get inferer score ema", "topic_id", forecast.TopicId, "inferer", el.Inferer)
 			}
 			latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
 		}
@@ -148,8 +148,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 			forecast.ForecastElements = acceptedForecastElements
 			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
 			if err != nil {
-				return nil, errorsmod.Wrapf(err,
-					"Error appending forecast")
+				return nil, errorsmod.Wrapf(err, "Error appending forecast")
 			}
 		}
 	}

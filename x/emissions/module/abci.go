@@ -7,13 +7,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/errors"
-	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	emistypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func EndBlocker(ctx context.Context, am AppModule) (err error) {
-	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
+	defer telemetry.ModuleMeasureSince(emistypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
+	defer errors.Annotate(&err)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------")
@@ -99,7 +100,7 @@ func EndBlocker(ctx context.Context, am AppModule) (err error) {
 		for _, nonce := range nonces.Nonces {
 			// No need to validate blockHeight boundaries - we accept submissions until this block.
 			sdkCtx.Logger().Debug("ABCI EndBlocker: closing worker window for topic", "topic_id", topicId, "nonce", nonce)
-			err = allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
+			err = actorutils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
 			if err != nil {
 				return errors.WrapWithFields(err, "failed: close worker nonce", "topic_id", topicId)
 			}
