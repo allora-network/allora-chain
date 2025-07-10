@@ -44,18 +44,17 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	return ModuleOutputs{SchedulerKeeper: k, Module: m}
 }
 
-func InvokeRegisterTaskSpec(keeper *keeper.Keeper, perModTaskSpecs map[string]types.TaskSpecs) error {
-	if keeper == nil || perModTaskSpecs == nil {
+func InvokeRegisterTaskSpec(keeper *keeper.Keeper, perModTaskTypes map[string]types.TaskTypes) error {
+	if keeper == nil || perModTaskTypes == nil {
 		return nil
 	}
 
-	for _, specs := range perModTaskSpecs {
-		for _, spec := range specs {
-			if err := keeper.RegisterTaskSpec(spec); err != nil {
-				return err
-			}
+	allTaskTypes := make([]types.TaskType, 0)
+	for _, taskTypes := range perModTaskTypes {
+		for _, taskType := range taskTypes {
+			allTaskTypes = append(allTaskTypes, taskType)
 		}
 	}
 
-	return nil
+	return keeper.RegisterTaskTypes(allTaskTypes)
 }
