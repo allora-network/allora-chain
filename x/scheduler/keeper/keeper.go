@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"cosmossdk.io/core/store"
@@ -16,8 +17,8 @@ type Keeper struct {
 	storeService store.KVStoreService
 	cdc          codec.BinaryCodec
 
-	taskSpecsByName map[string]types.TaskSpec
-	taskSpecsOrder  []string
+	taskTypesByName map[string]types.TaskType
+	taskTypesOrder  []string
 }
 
 // NewKeeper returns a new keeper by codec and storeKey inputs.
@@ -25,33 +26,73 @@ func NewKeeper(storeService store.KVStoreService, cdc codec.BinaryCodec) Keeper 
 	k := Keeper{
 		storeService:    storeService,
 		cdc:             cdc,
-		taskSpecsByName: make(map[string]types.TaskSpec),
-		taskSpecsOrder:  nil,
+		taskTypesByName: make(map[string]types.TaskType),
+		taskTypesOrder:  nil,
 	}
 
 	return k
 }
 
-func (k *Keeper) RegisterTaskSpec(spec types.TaskSpec) error {
-	if _, ok := k.taskSpecsByName[spec.Name]; ok {
-		return fmt.Errorf("task type already registered: %s", spec.Name)
+// RegisterTaskTypes registers the provided task types, this must be called once at startup to configure the handlers.
+func (k *Keeper) RegisterTaskTypes(taskTypes types.TaskTypes) error {
+	taskNames := make([]string, 0, len(taskTypes))
+	for _, taskType := range taskTypes {
+		if taskType.Name == "" {
+			return fmt.Errorf("task spec name cannot be empty")
+		}
+
+		if _, exists := k.taskTypesByName[taskType.Name]; exists {
+			return fmt.Errorf("duplicated task spec: '%s'", taskType.Name)
+		}
+
+		if taskType.TaskHandler == nil {
+			return fmt.Errorf("task spec '%s' has no task handler defined", taskType.Name)
+		}
+
+		k.taskTypesByName[taskType.Name] = taskType
+		taskNames = append(taskNames, taskType.Name)
 	}
 
-	k.taskSpecsByName[spec.Name] = spec
-
-	for i, name := range k.taskSpecsOrder {
-		if spec.Priority < k.taskSpecsByName[name].Priority {
-			k.taskSpecsOrder = append(k.taskSpecsOrder[:i], append([]string{spec.Name}, k.taskSpecsOrder[i:]...)...)
+	sort.Strings(taskNames)
+	added := make(map[string]struct{}, len(taskNames))
+	visited := make(map[string]struct{}, len(taskNames))
+	var addRec func(string) error
+	addRec = func(name string) error {
+		spec := k.taskTypesByName[name]
+		if _, ok := visited[name]; ok {
+			return fmt.Errorf("task spec circular dependency over %s", spec.Name)
+		}
+		if _, ok := added[name]; ok {
 			return nil
 		}
+		visited[name] = struct{}{}
+
+		for _, dep := range spec.DependsOn {
+			if _, ok := k.taskTypesByName[dep]; !ok {
+				return fmt.Errorf("unexisting dependency '%s' on task spec '%s'", dep, spec.Name)
+			}
+
+			if err := addRec(dep); err != nil {
+				return err
+			}
+		}
+
+		delete(visited, name)
+		added[name] = struct{}{}
+		k.taskTypesOrder = append(k.taskTypesOrder, name)
+		return nil
 	}
 
-	k.taskSpecsOrder = append(k.taskSpecsOrder, spec.Name)
+	for _, name := range taskNames {
+		if err := addRec(name); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, at time.Time) error {
-	spec, ok := k.taskSpecsByName[typename]
+	spec, ok := k.taskTypesByName[typename]
 	if !ok {
 		return fmt.Errorf("task type not registered: %s", typename)
 	}
