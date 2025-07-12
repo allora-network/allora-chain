@@ -577,7 +577,7 @@ func validateMaxSerializedMsgLength(i int64) error {
 // should be a number on the order of 525,960
 func ValidateBlocksPerMonth(i uint64) error {
 	if i == 0 {
-		return fmt.Errorf("blocks per month must be positive: %d", i)
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
