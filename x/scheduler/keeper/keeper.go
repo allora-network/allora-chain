@@ -112,21 +112,52 @@ func (k *Keeper) RegisterTaskTypes(taskTypes types.TaskTypes) error {
 }
 
 func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, at time.Time) error {
-	spec, ok := k.taskTypesByName[typename]
-	if !ok {
-		return fmt.Errorf("task type not registered: %s", typename)
-	}
-
-	if err := spec.ValidateArgs(args); err != nil {
-		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
-	}
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if sdkCtx.BlockTime().After(at) {
 		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, at)
 	}
 
-	// TODO: Implement
+	taskType, ok := k.taskTypesByName[typename]
+	if !ok {
+		return fmt.Errorf("task type not registered: %s", typename)
+	}
+	if err := taskType.ValidateArgs(args); err != nil {
+		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
+	}
+
+	exists, err := k.tasks.Has(ctx, id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("task with ID %s already exists", id)
+	}
+
+	var argsAny *codectypes.Any
+	if args != nil {
+		argsAny, err = codectypes.NewAnyWithValue(args)
+		if err != nil {
+			return fmt.Errorf("failed to pack args for task %s: %w", typename, err)
+		}
+	}
+
+	if err := k.tasks.Set(ctx, id, types.Task{
+		Id:        id,
+		Typename:  typename,
+		Args:      argsAny,
+		NextRunAt: at,
+		RunCount:  0,
+	}); err != nil {
+		return fmt.Errorf("failed to set task %s: %w", id, err)
+	}
+
+	if err := k.tasksByType.Set(ctx, collections.Join(typename, id)); err != nil {
+		return fmt.Errorf("failed to add task %s to tasks by type: %w", id, err)
+	}
+
+	if err := k.tasksSchedule.Set(ctx, collections.Join3(typename, at, id)); err != nil {
+		return fmt.Errorf("failed to add task %s to tasks by type: %w", id, err)
+	}
 
 	return nil
 }
