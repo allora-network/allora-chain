@@ -293,7 +293,7 @@ func (k *Keeper) scheduleTask(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if sdkCtx.BlockTime().After(startAt) {
-		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, at)
+		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, startAt)
 	}
 
 	var argsAny *codectypes.Any
@@ -312,10 +312,6 @@ func (k *Keeper) scheduleTask(
 		Interval:  every,
 		RunCount:  0,
 	}); err != nil {
-		return err
-	}
-
-	if err := k.tasksByType.Set(ctx, collections.Join(typename, id)); err != nil {
 		return err
 	}
 
