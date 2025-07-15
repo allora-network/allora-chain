@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -264,4 +265,59 @@ func (k *Keeper) GetDueTasksAtIter(
 		EndInclusive(ub)
 
 	return k.tasksSchedule.Iterate(ctx, ranger)
+}
+
+func (k *Keeper) scheduleTask(
+	ctx context.Context,
+	typename string,
+	id types.TaskID,
+	args proto.Message,
+	startAt time.Time,
+	every *time.Duration,
+) error {
+	taskType, ok := k.taskTypesByName[typename]
+	if !ok {
+		return fmt.Errorf("task type not registered: %s", typename)
+	}
+	if err := taskType.ValidateArgs(args); err != nil {
+		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
+	}
+
+	exists, err := k.tasks.Has(ctx, id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("task with ID %s already exists", id)
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockTime().After(startAt) {
+		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, at)
+	}
+
+	var argsAny *codectypes.Any
+	if args != nil {
+		argsAny, err = codectypes.NewAnyWithValue(args)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := k.tasks.Set(ctx, id, types.Task{
+		Id:        id,
+		Typename:  typename,
+		Args:      argsAny,
+		NextRunAt: startAt,
+		Interval:  every,
+		RunCount:  0,
+	}); err != nil {
+		return err
+	}
+
+	if err := k.tasksByType.Set(ctx, collections.Join(typename, id)); err != nil {
+		return err
+	}
+
+	return k.tasksSchedule.Set(ctx, collections.Join3(typename, startAt, id))
 }
