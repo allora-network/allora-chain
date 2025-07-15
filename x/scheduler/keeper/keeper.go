@@ -6,9 +6,11 @@ import (
 	"sort"
 	"time"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
 	"github.com/allora-network/allora-chain/x/scheduler/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 )
@@ -16,20 +18,38 @@ import (
 type Keeper struct {
 	storeService store.KVStoreService
 	cdc          codec.BinaryCodec
+	schema       collections.Schema
 
 	taskTypesByName map[string]types.TaskType
 	taskTypesOrder  []string
+
+	tasks         collections.Map[types.TaskID, types.Task]
+	tasksByType   collections.KeySet[collections.Pair[string, types.TaskID]]
+	tasksSchedule collections.KeySet[collections.Triple[string, time.Time, types.TaskID]]
 }
 
 // NewKeeper returns a new keeper by codec and storeKey inputs.
 func NewKeeper(storeService store.KVStoreService, cdc codec.BinaryCodec) Keeper {
+	sb := collections.NewSchemaBuilder(storeService)
+
 	k := Keeper{
-		storeService:    storeService,
-		cdc:             cdc,
+		storeService: storeService,
+		cdc:          cdc,
+
 		taskTypesByName: make(map[string]types.TaskType),
 		taskTypesOrder:  nil,
+
+		tasks:         collections.NewMap(sb, types.TasksKeyPrefix, "tasks", types.TaskIDKey, codec.CollValue[types.Task](cdc)),
+		tasksByType:   collections.NewKeySet(sb, types.TasksByTypeKeyPrefix, "tasks_by_type", collections.PairKeyCodec(collections.StringKey, types.TaskIDKey)),
+		tasksSchedule: collections.NewKeySet(sb, types.TasksSchedulePrefix, "tasks_schedule", collections.TripleKeyCodec(collections.StringKey, sdk.TimeKey, types.TaskIDKey)),
 	}
 
+	schema, err := sb.Build()
+	if err != nil {
+		panic(err)
+	}
+
+	k.schema = schema
 	return k
 }
 
@@ -53,7 +73,6 @@ func (k *Keeper) RegisterTaskTypes(taskTypes types.TaskTypes) error {
 		taskNames = append(taskNames, taskType.Name)
 	}
 
-	sort.Strings(taskNames)
 	added := make(map[string]struct{}, len(taskNames))
 	visited := make(map[string]struct{}, len(taskNames))
 	var addRec func(string) error
@@ -83,6 +102,7 @@ func (k *Keeper) RegisterTaskTypes(taskTypes types.TaskTypes) error {
 		return nil
 	}
 
+	sort.Strings(taskNames)
 	for _, name := range taskNames {
 		if err := addRec(name); err != nil {
 			return err
