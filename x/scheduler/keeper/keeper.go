@@ -111,67 +111,23 @@ func (k *Keeper) RegisterTaskTypes(taskTypes types.TaskTypes) error {
 	return nil
 }
 
+// ScheduleTask schedules a task of the provided type to run at the specified time.
 func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, at time.Time) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if sdkCtx.BlockTime().After(at) {
-		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, at)
-	}
-
-	taskType, ok := k.taskTypesByName[typename]
-	if !ok {
-		return fmt.Errorf("task type not registered: %s", typename)
-	}
-	if err := taskType.ValidateArgs(args); err != nil {
-		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
-	}
-
-	exists, err := k.tasks.Has(ctx, id)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return fmt.Errorf("task with ID %s already exists", id)
-	}
-
-	var argsAny *codectypes.Any
-	if args != nil {
-		argsAny, err = codectypes.NewAnyWithValue(args)
-		if err != nil {
-			return fmt.Errorf("failed to pack args for task %s: %w", typename, err)
-		}
-	}
-
-	if err := k.tasks.Set(ctx, id, types.Task{
-		Id:        id,
-		Typename:  typename,
-		Args:      argsAny,
-		NextRunAt: at,
-		RunCount:  0,
-	}); err != nil {
-		return fmt.Errorf("failed to set task %s: %w", id, err)
-	}
-
-	if err := k.tasksByType.Set(ctx, collections.Join(typename, id)); err != nil {
-		return fmt.Errorf("failed to add task %s to tasks by type: %w", id, err)
-	}
-
-	if err := k.tasksSchedule.Set(ctx, collections.Join3(typename, at, id)); err != nil {
-		return fmt.Errorf("failed to add task %s to tasks by type: %w", id, err)
-	}
-
-	return nil
+	return k.scheduleTask(ctx, typename, id, args, at, nil)
 }
 
+// SchedulePeriodicTask schedules a task of the provided type to run every given interval, starting at the specified time.
 func (k *Keeper) SchedulePeriodicTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, startAt time.Time, every time.Duration) error {
-	// TODO: Implement
-	return nil
+	return k.scheduleTask(ctx, typename, id, args, startAt, &every)
 }
 
+// PausePeriodicTask pauses a periodic task, preventing it from running until resumed.
 func (k *Keeper) PausePeriodicTask(ctx context.Context, taskID types.TaskID) error {
 	// TODO: Implement
 	return nil
 }
 
+// ResumePeriodicTask resumes a paused periodic task, allowing it to run again.
 func (k *Keeper) ResumePeriodicTask(ctx context.Context, taskID types.TaskID) error {
 	// TODO: Implement
 	return nil
@@ -192,4 +148,59 @@ func (k *Keeper) GetDueTasksAtIter(
 		EndInclusive(ub)
 
 	return k.tasksSchedule.Iterate(ctx, ranger)
+}
+
+func (k *Keeper) scheduleTask(
+	ctx context.Context,
+	typename string,
+	id types.TaskID,
+	args proto.Message,
+	startAt time.Time,
+	every *time.Duration,
+) error {
+	taskType, ok := k.taskTypesByName[typename]
+	if !ok {
+		return fmt.Errorf("task type not registered: %s", typename)
+	}
+	if err := taskType.ValidateArgs(args); err != nil {
+		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
+	}
+
+	exists, err := k.tasks.Has(ctx, id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("task with ID %s already exists", id)
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockTime().After(startAt) {
+		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, at)
+	}
+
+	var argsAny *codectypes.Any
+	if args != nil {
+		argsAny, err = codectypes.NewAnyWithValue(args)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := k.tasks.Set(ctx, id, types.Task{
+		Id:        id,
+		Typename:  typename,
+		Args:      argsAny,
+		NextRunAt: startAt,
+		Interval:  every,
+		RunCount:  0,
+	}); err != nil {
+		return err
+	}
+
+	if err := k.tasksByType.Set(ctx, collections.Join(typename, id)); err != nil {
+		return err
+	}
+
+	return k.tasksSchedule.Set(ctx, collections.Join3(typename, startAt, id))
 }
