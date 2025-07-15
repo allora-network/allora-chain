@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/collections/indexes"
 	"cosmossdk.io/core/store"
 	"github.com/allora-network/allora-chain/x/scheduler/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -14,6 +15,28 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 )
+
+func NewTasksIndexes(sb *collections.SchemaBuilder) TasksIndexes {
+	return TasksIndexes{
+		ByType: indexes.NewMulti(
+			sb, types.TasksByTypeKeyPrefix, "tasks_by_type", collections.StringKey, types.TaskIDKey,
+			func(_ types.TaskID, t types.Task) (string, error) {
+				return t.Typename, nil
+			},
+		),
+	}
+}
+
+type TasksIndexes struct {
+	// ByType indexes tasks by their type.
+	ByType *indexes.Multi[string, types.TaskID, types.Task]
+}
+
+func (i TasksIndexes) IndexesList() []collections.Index[types.TaskID, types.Task] {
+	return []collections.Index[types.TaskID, types.Task]{
+		i.ByType,
+	}
+}
 
 type Keeper struct {
 	storeService store.KVStoreService
@@ -23,8 +46,7 @@ type Keeper struct {
 	taskTypesByName map[string]types.TaskType
 	taskTypesOrder  []string
 
-	tasks         collections.Map[types.TaskID, types.Task]
-	tasksByType   collections.KeySet[collections.Pair[string, types.TaskID]]
+	tasks         *collections.IndexedMap[types.TaskID, types.Task, TasksIndexes]
 	tasksSchedule collections.KeySet[collections.Triple[string, time.Time, types.TaskID]]
 }
 
@@ -39,8 +61,7 @@ func NewKeeper(storeService store.KVStoreService, cdc codec.BinaryCodec) Keeper 
 		taskTypesByName: make(map[string]types.TaskType),
 		taskTypesOrder:  nil,
 
-		tasks:         collections.NewMap(sb, types.TasksKeyPrefix, "tasks", types.TaskIDKey, codec.CollValue[types.Task](cdc)),
-		tasksByType:   collections.NewKeySet(sb, types.TasksByTypeKeyPrefix, "tasks_by_type", collections.PairKeyCodec(collections.StringKey, types.TaskIDKey)),
+		tasks:         collections.NewIndexedMap(sb, types.TasksKeyPrefix, "tasks", types.TaskIDKey, codec.CollValue[types.Task](cdc), NewTasksIndexes(sb)),
 		tasksSchedule: collections.NewKeySet(sb, types.TasksSchedulePrefix, "tasks_schedule", collections.TripleKeyCodec(collections.StringKey, sdk.TimeKey, types.TaskIDKey)),
 	}
 
@@ -176,7 +197,7 @@ func (k *Keeper) scheduleTask(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if sdkCtx.BlockTime().After(startAt) {
-		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, at)
+		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, startAt)
 	}
 
 	var argsAny *codectypes.Any
@@ -195,10 +216,6 @@ func (k *Keeper) scheduleTask(
 		Interval:  every,
 		RunCount:  0,
 	}); err != nil {
-		return err
-	}
-
-	if err := k.tasksByType.Set(ctx, collections.Join(typename, id)); err != nil {
 		return err
 	}
 
