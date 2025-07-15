@@ -3,6 +3,10 @@ package schedulerv1
 
 import (
 	fmt "fmt"
+	io "io"
+	reflect "reflect"
+	sync "sync"
+
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -11,9 +15,6 @@ import (
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	io "io"
-	reflect "reflect"
-	sync "sync"
 )
 
 var (
