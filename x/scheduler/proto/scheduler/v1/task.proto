@@ -1,0 +1,34 @@
+syntax = "proto3";
+package scheduler.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/scheduler/types";
+
+message Task {
+  option (gogoproto.equal) = true;
+
+  // id is the unique identifier for the task.
+  string id = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "TaskID"];
+
+  // typename is the type of the task, which determines how it is executed.
+  string typename = 2;
+
+  // args is the arguments for the task. The format depends on the task type.
+  google.protobuf.Any args = 3;
+
+  // next_run_at is the timestamp of the next scheduled run for the task. If empty, the task is not scheduled (i.e. it's paused).
+  google.protobuf.Timestamp next_run_at = 4 [(gogoproto.stdtime) = true];
+
+  // interval is the duration between task runs. If empty, the task runs only once.
+  google.protobuf.Duration interval = 5 [(gogoproto.stdduration) = true];
+
+  // last_run_at is the timestamp of the last time the task was run. If the task has never run, this is empty.
+  google.protobuf.Timestamp last_run_at = 6 [(gogoproto.stdtime) = true];
+
+  // run_count is the number of times the task has been run.
+  uint64 run_count = 7;
+}
