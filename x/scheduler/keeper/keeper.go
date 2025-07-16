@@ -11,7 +11,6 @@ import (
 	"cosmossdk.io/core/store"
 	"github.com/allora-network/allora-chain/x/scheduler/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
 )
@@ -43,8 +42,8 @@ type Keeper struct {
 	cdc          codec.BinaryCodec
 	schema       collections.Schema
 
-	taskTypesByName map[string]types.TaskType
-	taskTypesOrder  []string
+	handlersByTypename map[string]types.TaskHandler
+	handlersOrder      []string
 
 	tasks         *collections.IndexedMap[types.TaskID, types.Task, TasksIndexes]
 	tasksSchedule collections.KeySet[collections.Triple[string, time.Time, types.TaskID]]
@@ -58,8 +57,8 @@ func NewKeeper(storeService store.KVStoreService, cdc codec.BinaryCodec) Keeper 
 		storeService: storeService,
 		cdc:          cdc,
 
-		taskTypesByName: make(map[string]types.TaskType),
-		taskTypesOrder:  nil,
+		handlersByTypename: make(map[string]types.TaskHandler),
+		handlersOrder:      nil,
 
 		tasks:         collections.NewIndexedMap(sb, types.TasksKeyPrefix, "tasks", types.TaskIDKey, codec.CollValue[types.Task](cdc), NewTasksIndexes(sb)),
 		tasksSchedule: collections.NewKeySet(sb, types.TasksSchedulePrefix, "tasks_schedule", collections.TripleKeyCodec(collections.StringKey, sdk.TimeKey, types.TaskIDKey)),
@@ -74,42 +73,39 @@ func NewKeeper(storeService store.KVStoreService, cdc codec.BinaryCodec) Keeper 
 	return k
 }
 
-// RegisterTaskTypes registers the provided task types, this must be called once at startup to configure the handlers.
-func (k *Keeper) RegisterTaskTypes(taskTypes types.TaskTypes) error {
-	taskNames := make([]string, 0, len(taskTypes))
-	for _, taskType := range taskTypes {
-		if taskType.Name == "" {
-			return fmt.Errorf("task spec name cannot be empty")
+// RegisterTaskHandlers registers the provided task handlers, this must be called once at startup to configure the handlers.
+func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
+	typenames := make([]string, 0, len(taskHandlers))
+	for _, taskHandler := range taskHandlers {
+		typename := taskHandler.Typename()
+		if typename == "" {
+			return fmt.Errorf("task handler typename cannot be empty")
 		}
 
-		if _, exists := k.taskTypesByName[taskType.Name]; exists {
-			return fmt.Errorf("duplicated task spec: '%s'", taskType.Name)
+		if _, exists := k.handlersByTypename[typename]; exists {
+			return fmt.Errorf("duplicated task handler: '%s'", typename)
 		}
 
-		if taskType.TaskHandler == nil {
-			return fmt.Errorf("task spec '%s' has no task handler defined", taskType.Name)
-		}
-
-		k.taskTypesByName[taskType.Name] = taskType
-		taskNames = append(taskNames, taskType.Name)
+		k.handlersByTypename[typename] = taskHandler
+		typenames = append(typenames, typename)
 	}
 
-	added := make(map[string]struct{}, len(taskNames))
-	visited := make(map[string]struct{}, len(taskNames))
+	added := make(map[string]struct{}, len(typenames))
+	visited := make(map[string]struct{}, len(typenames))
 	var addRec func(string) error
-	addRec = func(name string) error {
-		spec := k.taskTypesByName[name]
-		if _, ok := visited[name]; ok {
-			return fmt.Errorf("task spec circular dependency over %s", spec.Name)
+	addRec = func(typename string) error {
+		handler := k.handlersByTypename[typename]
+		if _, ok := visited[typename]; ok {
+			return fmt.Errorf("task handler circular dependency over %s", handler.Typename())
 		}
-		if _, ok := added[name]; ok {
+		if _, ok := added[typename]; ok {
 			return nil
 		}
-		visited[name] = struct{}{}
+		visited[typename] = struct{}{}
 
-		for _, dep := range spec.DependsOn {
-			if _, ok := k.taskTypesByName[dep]; !ok {
-				return fmt.Errorf("unexisting dependency '%s' on task spec '%s'", dep, spec.Name)
+		for _, dep := range handler.DependsOn() {
+			if _, ok := k.handlersByTypename[dep]; !ok {
+				return fmt.Errorf("unexisting dependency '%s' on task spec '%s'", dep, handler.Typename())
 			}
 
 			if err := addRec(dep); err != nil {
@@ -117,14 +113,14 @@ func (k *Keeper) RegisterTaskTypes(taskTypes types.TaskTypes) error {
 			}
 		}
 
-		delete(visited, name)
-		added[name] = struct{}{}
-		k.taskTypesOrder = append(k.taskTypesOrder, name)
+		delete(visited, typename)
+		added[typename] = struct{}{}
+		k.handlersOrder = append(k.handlersOrder, typename)
 		return nil
 	}
 
-	sort.Strings(taskNames)
-	for _, name := range taskNames {
+	sort.Strings(typenames)
+	for _, name := range typenames {
 		if err := addRec(name); err != nil {
 			return err
 		}
@@ -154,7 +150,7 @@ func (k *Keeper) ResumePeriodicTask(ctx context.Context, taskID types.TaskID) er
 	return nil
 }
 
-// GetDueTasksAtIter retrieves an iterator over the task of the specified type that are due at the provided time.
+// GetDueTasksAtIter retrieves an iterator over the tasks of the specified type that are due at the provided time.
 // TODO: Test that!
 func (k *Keeper) GetDueTasksAtIter(
 	ctx context.Context,
@@ -179,11 +175,12 @@ func (k *Keeper) scheduleTask(
 	startAt time.Time,
 	every *time.Duration,
 ) error {
-	taskType, ok := k.taskTypesByName[typename]
+	handler, ok := k.handlersByTypename[typename]
 	if !ok {
 		return fmt.Errorf("task type not registered: %s", typename)
 	}
-	if err := taskType.ValidateArgs(args); err != nil {
+	packedArgs, err := handler.PackArgs(args)
+	if err != nil {
 		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
 	}
 
@@ -200,20 +197,13 @@ func (k *Keeper) scheduleTask(
 		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, startAt)
 	}
 
-	var argsAny *codectypes.Any
-	if args != nil {
-		argsAny, err = codectypes.NewAnyWithValue(args)
-		if err != nil {
-			return err
-		}
-	}
-
 	if err := k.tasks.Set(ctx, id, types.Task{
 		Id:        id,
 		Typename:  typename,
-		Args:      argsAny,
+		Args:      packedArgs,
 		NextRunAt: startAt,
 		Interval:  every,
+		LastRunAt: nil,
 		RunCount:  0,
 	}); err != nil {
 		return err
