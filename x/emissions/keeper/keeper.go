@@ -40,11 +40,10 @@ type Keeper struct {
 
 	// / TYPES
 
-	schema          collections.Schema
-	params          collections.Item[types.Params]
-	authKeeper      AccountKeeper
-	bankKeeper      BankKeeper
-	schedulerKeeper SchedulerKeeper
+	schema     collections.Schema
+	params     collections.Item[types.Params]
+	authKeeper AccountKeeper
+	bankKeeper BankKeeper
 
 	// / TOPIC
 
@@ -288,7 +287,6 @@ func NewKeeper(
 	storeService coreStore.KVStoreService,
 	ak AccountKeeper,
 	bk BankKeeper,
-	sk SchedulerKeeper,
 	feeCollectorName string,
 ) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
@@ -301,7 +299,6 @@ func NewKeeper(
 		params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                               ak,
 		bankKeeper:                               bk,
-		schedulerKeeper:                          sk,
 		totalStake:                               collections.NewItem(sb, types.TotalStakeKey, "total_stake", sdk.IntValue),
 		topicStake:                               collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, sdk.IntValue),
 		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),

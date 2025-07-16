@@ -10,7 +10,6 @@ import (
 
 	modulev1 "github.com/allora-network/allora-chain/x/emissions/api/emissions/module/v1"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
@@ -34,12 +33,11 @@ func init() {
 type ModuleInputs struct {
 	depinject.In
 
-	Cdc             codec.Codec
-	StoreService    store.KVStoreService
-	AddressCodec    address.Codec
-	AccountKeeper   keeper.AccountKeeper
-	BankKeeper      keeper.BankKeeper
-	SchedulerKeeper keeper.SchedulerKeeper
+	Cdc           codec.Codec
+	StoreService  store.KVStoreService
+	AddressCodec  address.Codec
+	AccountKeeper keeper.AccountKeeper
+	BankKeeper    keeper.BankKeeper
 
 	Config *modulev1.Module
 }
@@ -47,9 +45,8 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	Module    appmodule.AppModule
-	Keeper    keeper.Keeper
-	TaskSpecs schedulertypes.TaskSpecs
+	Module appmodule.AppModule
+	Keeper keeper.Keeper
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -64,10 +61,9 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.StoreService,
 		in.AccountKeeper,
 		in.BankKeeper,
-		in.SchedulerKeeper,
 		feeCollectorName,
 	)
 	m := NewAppModule(in.Cdc, k)
 
-	return ModuleOutputs{Module: m, Keeper: k, TaskSpecs: k.TaskSpecs(), Out: depinject.Out{}}
+	return ModuleOutputs{Module: m, Keeper: k, Out: depinject.Out{}}
 }
