@@ -150,13 +150,13 @@ func (k *Keeper) ResumePeriodicTask(ctx context.Context, taskID types.TaskID) er
 	return nil
 }
 
-// GetDueTasksAtIter retrieves an iterator over the tasks of the specified type that are due at the provided time.
+// GetDueTasksAt retrieves the tasks of the specified type that are due at the provided time.
 // TODO: Test that!
-func (k *Keeper) GetDueTasksAtIter(
+func (k *Keeper) GetDueTasksAt(
 	ctx context.Context,
 	typename string,
 	at time.Time,
-) (collections.KeySetIterator[collections.Triple[string, time.Time, types.TaskID]], error) {
+) ([]types.TaskID, error) {
 	lb := collections.TriplePrefix[string, time.Time, types.TaskID](typename)
 	ub := collections.TripleSuperPrefix[string, time.Time, types.TaskID](typename, at)
 
@@ -164,7 +164,11 @@ func (k *Keeper) GetDueTasksAtIter(
 		StartInclusive(lb).
 		EndInclusive(ub)
 
-	return k.tasksSchedule.Iterate(ctx, ranger)
+	tasks := make([]types.TaskID, 0)
+	return tasks, k.tasksSchedule.Walk(ctx, ranger, func(key collections.Triple[string, time.Time, types.TaskID]) (bool, error) {
+		tasks = append(tasks, key.K3())
+		return false, nil
+	})
 }
 
 func (k *Keeper) scheduleTask(
