@@ -6,13 +6,10 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/gogoproto/proto"
 )
-
-// TaskID denotes a unique identifier for a scheduled task, only one task with a given ID can be scheduled at a time,
-// but an identifier may be reused later one.
-type TaskID string
 
 // ArbitrageAction defines the possible actions that can be taken by the task handler during the arbitrage step.
 type ArbitrageAction int
@@ -45,11 +42,11 @@ type TaskHandler interface {
 
 	// Arbitrate is called once prior to the execution of tasks that are to be invoked at this time. Its purpose is to
 	// determine the action to take for each task invocation: If no action is taken for a task, it'll be executed.
-	Arbitrate(ctx context.Context, tasks []Task) ([]ArbitrageDecision, error)
+	Arbitrate(ctx context.Context, cdc codec.Codec, tasks []Task) ([]ArbitrageDecision, error)
 
 	// Run is called to execute the task with the provided arguments. The runCount is incremented each time the task is
 	// executed (i.e., it's always 1 for non-periodic tasks).
-	Run(ctx context.Context, id TaskID, args *codectypes.Any, runCount uint64) error
+	Run(ctx context.Context, cdc codec.Codec, id TaskID, args *codectypes.Any, runCount uint64) error
 }
 
 // Invocation represents a scheduled task invocation.
@@ -90,11 +87,19 @@ func NewTaskHandler[T proto.Message](
 		}
 	}
 
-	var zeroT T
+	var zeroArgs T
+	if any(zeroArgs) != nil {
+		typ := reflect.TypeOf(zeroArgs)
+		if typ.Kind() != reflect.Ptr {
+			// Should never happen
+			panic("Task args must be a pointer type")
+		}
+	}
+
 	return taskHandler[T]{
 		name:        name,
 		dependsOn:   dependsOn,
-		argsType:    zeroT,
+		zeroArgs:    zeroArgs,
 		arbitrateFn: arbitrateFn,
 		runFn:       runFn,
 	}
@@ -131,7 +136,7 @@ func NewNoArgsTaskHandler(
 type taskHandler[T proto.Message] struct {
 	name        string
 	dependsOn   []string
-	argsType    T
+	zeroArgs    T
 	arbitrateFn func(ctx context.Context, tasks []Invocation) ([]ArbitrageDecision, error)
 	runFn       func(ctx context.Context, id TaskID, args T, runCount uint64) error
 }
@@ -145,42 +150,44 @@ func (t taskHandler[T]) DependsOn() []string {
 }
 
 func (t taskHandler[T]) PackArgs(args proto.Message) (*codectypes.Any, error) {
-	if args == nil && t.argsType == nil {
+	if args == nil && any(t.zeroArgs) == nil {
 		return nil, nil
 	}
 
-	if reflect.TypeOf(args) != reflect.TypeOf(t.argsType) {
+	if reflect.TypeOf(args) != reflect.TypeOf(t.zeroArgs) {
 		return nil, fmt.Errorf("task spec args type mismatch")
 	}
 
 	return codectypes.NewAnyWithValue(args)
 }
 
-func (t taskHandler[T]) UnpackArgs(packedArgs *codectypes.Any) (T, error) {
+func (t taskHandler[T]) UnpackArgs(cdc codec.Codec, packedArgs *codectypes.Any) (T, error) {
 	var zeroArgs T
 	if packedArgs == nil {
-		if t.argsType == nil {
+		if any(t.zeroArgs) == nil {
 			return zeroArgs, nil
 		}
-		return zeroArgs, fmt.Errorf("task spec '%s' expects arguments of type '%T', but got nil", t.name, t.argsType)
+		return zeroArgs, fmt.Errorf("task spec '%s' expects arguments of type '%T', but got nil", t.name, t.zeroArgs)
 	}
 
-	if t.argsType == nil {
+	if any(t.zeroArgs) == nil {
 		return zeroArgs, fmt.Errorf("task spec '%s' does not expect any arguments, but got '%T'", t.name, packedArgs.GetCachedValue())
 	}
 
-	args, ok := packedArgs.GetCachedValue().(T)
+	typ := reflect.TypeOf(zeroArgs)
+	val := reflect.New(typ.Elem())
+	args, ok := val.Interface().(T)
 	if !ok {
-		return zeroArgs, fmt.Errorf("task spec '%s' expects arguments of type '%T', but got '%T'", t.name, t.argsType, packedArgs.GetCachedValue())
+		return zeroArgs, fmt.Errorf("failed to cast to T")
 	}
 
-	return args, nil
+	return args, cdc.Unmarshal(packedArgs.Value, args)
 }
 
-func (t taskHandler[T]) Arbitrate(ctx context.Context, tasks []Task) ([]ArbitrageDecision, error) {
+func (t taskHandler[T]) Arbitrate(ctx context.Context, cdc codec.Codec, tasks []Task) ([]ArbitrageDecision, error) {
 	invocations := make([]Invocation, len(tasks))
 	for i, task := range tasks {
-		args, err := t.UnpackArgs(task.Args)
+		args, err := t.UnpackArgs(cdc, task.Args)
 		if err != nil {
 			return nil, err
 		}
@@ -193,8 +200,8 @@ func (t taskHandler[T]) Arbitrate(ctx context.Context, tasks []Task) ([]Arbitrag
 	return t.arbitrateFn(ctx, invocations)
 }
 
-func (t taskHandler[T]) Run(ctx context.Context, id TaskID, packedArgs *codectypes.Any, runCount uint64) error {
-	args, err := t.UnpackArgs(packedArgs)
+func (t taskHandler[T]) Run(ctx context.Context, cdc codec.Codec, id TaskID, packedArgs *codectypes.Any, runCount uint64) error {
+	args, err := t.UnpackArgs(cdc, packedArgs)
 	if err != nil {
 		return err
 	}
