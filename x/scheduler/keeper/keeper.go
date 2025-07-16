@@ -271,6 +271,10 @@ func (k *Keeper) GetDueTasksAt(
 	})
 }
 
+func (k *Keeper) GetTask(ctx context.Context, id types.TaskID) (types.Task, error) {
+	return k.tasks.Get(ctx, id)
+}
+
 func (k *Keeper) scheduleTask(
 	ctx context.Context,
 	typename string,
@@ -283,6 +287,7 @@ func (k *Keeper) scheduleTask(
 	if !ok {
 		return fmt.Errorf("task type not registered: %s", typename)
 	}
+
 	packedArgs, err := handler.PackArgs(args)
 	if err != nil {
 		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
