@@ -2,12 +2,9 @@ package keeper
 
 import (
 	"context"
-	"time"
 
 	"cosmossdk.io/core/address"
-	"github.com/allora-network/allora-chain/x/scheduler/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/gogoproto/proto"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -32,8 +29,4 @@ type BankKeeper interface {
 	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
 	BlockedAddr(addr sdk.AccAddress) bool
-}
-
-type SchedulerKeeper interface {
-	ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, at time.Time) error
 }
