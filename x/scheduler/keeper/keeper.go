@@ -275,11 +275,12 @@ func (k *Keeper) scheduleTask(
 	startAt time.Time,
 	every *time.Duration,
 ) error {
-	taskType, ok := k.taskTypesByName[typename]
+	handler, ok := k.handlersByTypename[typename]
 	if !ok {
 		return fmt.Errorf("task type not registered: %s", typename)
 	}
-	if err := taskType.ValidateArgs(args); err != nil {
+	packedArgs, err := handler.PackArgs(args)
+	if err != nil {
 		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
 	}
 
@@ -296,20 +297,13 @@ func (k *Keeper) scheduleTask(
 		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, startAt)
 	}
 
-	var argsAny *codectypes.Any
-	if args != nil {
-		argsAny, err = codectypes.NewAnyWithValue(args)
-		if err != nil {
-			return err
-		}
-	}
-
 	if err := k.tasks.Set(ctx, id, types.Task{
 		Id:        id,
 		Typename:  typename,
-		Args:      argsAny,
+		Args:      packedArgs,
 		NextRunAt: startAt,
 		Interval:  every,
+		LastRunAt: nil,
 		RunCount:  0,
 	}); err != nil {
 		return err
