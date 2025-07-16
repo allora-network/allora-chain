@@ -19,7 +19,7 @@ func (am AppModule) IsOnePerModuleType() {}
 func init() {
 	appconfig.RegisterModule(&modulev1.Module{},
 		appconfig.Provide(ProvideModule),
-		appconfig.Invoke(InvokeRegisterTaskSpec),
+		appconfig.Invoke(InvokeRegisterTaskHandler),
 	)
 }
 
@@ -44,17 +44,17 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	return ModuleOutputs{SchedulerKeeper: k, Module: m}
 }
 
-func InvokeRegisterTaskSpec(keeper *keeper.Keeper, perModTaskTypes map[string]types.TaskTypes) error {
-	if keeper == nil || perModTaskTypes == nil {
+func InvokeRegisterTaskHandler(keeper *keeper.Keeper, perModTaskHandlers map[string]types.TaskHandlers) error {
+	if keeper == nil || perModTaskHandlers == nil {
 		return nil
 	}
 
-	allTaskTypes := make([]types.TaskType, 0)
-	for _, taskTypes := range perModTaskTypes {
-		for _, taskType := range taskTypes {
-			allTaskTypes = append(allTaskTypes, taskType)
+	allTaskHandlers := make([]types.TaskHandler, 0)
+	for _, taskHandlers := range perModTaskHandlers {
+		for _, taskHandler := range taskHandlers {
+			allTaskHandlers = append(allTaskHandlers, taskHandler)
 		}
 	}
 
-	return keeper.RegisterTaskTypes(allTaskTypes)
+	return keeper.RegisterTaskHandlers(allTaskHandlers)
 }
