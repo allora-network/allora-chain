@@ -37,20 +37,16 @@ const (
 **3. Implement the task type in `x/my_module/keeper/tasks.go`:**
 
 ```go
-func (k *Keeper) TaskTypes() schedulertypes.TaskTypes {
-    return schedulertypes.TaskTypes{
-        {
-            Name:     types.TaskMyTask,
-            DepondsOn: nil,
-            ArgsType: (*types.MyTaskArgs)(nil),
-            TaskHandler: schedulertypes.NewTaskHandlerFromFuncs(
-                nil,
-                func (ctx context.Context, _ schedulertypes.TaskID, args proto.Message, _ uint64) error {
-                    myTaskArgs := args.(*types.MyTaskArgs)
-                    return nil
-                },
-            ),
-		},
+func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
+    return schedulertypes.TaskHandlers{
+        schedulertypes.NewTaskHandler[*types.MyTaskArgs](
+            types.TaskMyTask, // Task name
+            nil,              // Dependencies, if any
+            nil,              // Arbitrage func
+            func(ctx context.Context, id schedulertypes.TaskID, args *types.MyTaskArgs, runCount uint64) error {
+                return nil // Run func
+            },
+        ),
     }
 }
 ```
@@ -64,7 +60,7 @@ type ModuleOutputs struct {
 
 	Module    appmodule.AppModule
 	Keeper    keeper.Keeper
-	TaskTypes schedulertypes.TaskTypes
+    TaskHandlers schedulertypes.TaskHandlers
 }
 ```
 
@@ -74,6 +70,6 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	k := keeper.NewKeeper(...)
 	m := NewAppModule(...)
 
-	return ModuleOutputs{Module: m, Keeper: k, TaskTypes: k.TaskTypes(), Out: depinject.Out{}}
+	return ModuleOutputs{Module: m, Keeper: k, TaskHandlers: k.TaskHandlers(), Out: depinject.Out{}}
 }
 ```
