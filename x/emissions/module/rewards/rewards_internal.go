@@ -594,12 +594,15 @@ func GetAllReputersOutput(
 		i++
 	}
 
-	// Check nonzero coefficients
-	coeffSum, err := alloraMath.SumDecSlice(coefficients)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "GetAllReputersOutput, err summing new coefficients")
+	// Check if all coefficients are zero
+	allZero := true
+	for _, coeff := range coefficients {
+		if !coeff.Equal(alloraMath.ZeroDec()) {
+			allZero = false
+			break
+		}
 	}
-	if coeffSum.Equal(alloraMath.ZeroDec()) {
+	if allZero {
 		// set all coefficients to Epsilon:
 		for i := range coefficients {
 			coefficients[i] = params.EpsilonSafeDiv
