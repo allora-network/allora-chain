@@ -2,13 +2,13 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"time"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/collections/indexes"
 	"cosmossdk.io/core/store"
+	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/scheduler/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -79,11 +79,11 @@ func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
 	for _, taskHandler := range taskHandlers {
 		typename := taskHandler.Typename()
 		if typename == "" {
-			return fmt.Errorf("task handler typename cannot be empty")
+			return errors.Wrap(types.ErrInvalidTaskHandler, "task handler typename cannot be empty")
 		}
 
 		if _, exists := k.handlersByTypename[typename]; exists {
-			return fmt.Errorf("duplicated task handler: '%s'", typename)
+			return errors.Wrapf(types.ErrInvalidTaskHandler, "duplicate task handler: '%s'", typename)
 		}
 
 		k.handlersByTypename[typename] = taskHandler
@@ -96,7 +96,7 @@ func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
 	addRec = func(typename string) error {
 		handler := k.handlersByTypename[typename]
 		if _, ok := visited[typename]; ok {
-			return fmt.Errorf("task handler circular dependency over %s", handler.Typename())
+			return errors.Wrapf(types.ErrInvalidTaskHandler, "task handler circular dependency over '%s'", handler.Typename())
 		}
 		if _, ok := added[typename]; ok {
 			return nil
@@ -105,7 +105,7 @@ func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
 
 		for _, dep := range handler.DependsOn() {
 			if _, ok := k.handlersByTypename[dep]; !ok {
-				return fmt.Errorf("unexisting dependency '%s' on task spec '%s'", dep, handler.Typename())
+				return errors.Wrapf(types.ErrInvalidTaskHandler, "unexisting dependency '%s' on task handler '%s'", dep, handler.Typename())
 			}
 
 			if err := addRec(dep); err != nil {
@@ -184,12 +184,12 @@ func (k *Keeper) scheduleTask(
 ) error {
 	handler, ok := k.handlersByTypename[typename]
 	if !ok {
-		return fmt.Errorf("task type not registered: %s", typename)
+		return errors.Wrapf(types.ErrInvalidTask, "task '%s' handler not registered: '%s'", id, typename)
 	}
 
 	packedArgs, err := handler.PackArgs(args)
 	if err != nil {
-		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
+		return err
 	}
 
 	exists, err := k.tasks.Has(ctx, id)
@@ -197,12 +197,12 @@ func (k *Keeper) scheduleTask(
 		return err
 	}
 	if exists {
-		return fmt.Errorf("task with ID %s already exists", id)
+		return errors.Wrapf(types.ErrInvalidTask, "task '%s' already exists", id)
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if sdkCtx.BlockTime().After(startAt) {
-		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, startAt)
+		return errors.Wrapf(types.ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", id, startAt)
 	}
 
 	if err := k.tasks.Set(ctx, id, types.Task{
