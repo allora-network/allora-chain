@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/gogoproto/proto"
@@ -92,7 +93,7 @@ func NewTaskHandler[T proto.Message](
 		typ := reflect.TypeOf(zeroArgs)
 		if typ.Kind() != reflect.Ptr {
 			// Should never happen
-			panic("Task args must be a pointer type")
+			panic("task args must be a pointer type")
 		}
 	}
 
@@ -155,7 +156,7 @@ func (t taskHandler[T]) PackArgs(args proto.Message) (*codectypes.Any, error) {
 	}
 
 	if reflect.TypeOf(args) != reflect.TypeOf(t.zeroArgs) {
-		return nil, fmt.Errorf("task spec args type mismatch")
+		return nil, errors.Wrapf(ErrInvalidTaskArguments, "could not pack task '%s' arguments", t.name)
 	}
 
 	return codectypes.NewAnyWithValue(args)
@@ -167,11 +168,11 @@ func (t taskHandler[T]) UnpackArgs(cdc codec.Codec, packedArgs *codectypes.Any) 
 		if packedArgs == nil {
 			return zeroArgs, nil
 		}
-		return zeroArgs, fmt.Errorf("task type '%s' does not expect any arguments, but got '%s'", t.name, packedArgs.TypeUrl)
+		return zeroArgs, errors.Wrapf(ErrInvalidTaskArguments, "could not unpack task '%s' arguments", t.name)
 	}
 
 	if packedArgs == nil {
-		return zeroArgs, fmt.Errorf("task type '%s' expects arguments of type '%T', but got nil", t.name, t.zeroArgs)
+		return zeroArgs, errors.Wrapf(ErrInvalidTaskArguments, "could not unpack task '%s' arguments", t.name)
 	}
 
 	typ := reflect.TypeOf(zeroArgs)
@@ -179,7 +180,7 @@ func (t taskHandler[T]) UnpackArgs(cdc codec.Codec, packedArgs *codectypes.Any) 
 	args, ok := val.Interface().(T)
 	if !ok {
 		// This should never happen.
-		return zeroArgs, fmt.Errorf("failed to cast to T")
+		return zeroArgs, fmt.Errorf("failed to cast new task args")
 	}
 
 	return args, cdc.Unmarshal(packedArgs.Value, args)
