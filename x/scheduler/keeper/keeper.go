@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 	"sort"
 	"time"
 
@@ -285,12 +284,12 @@ func (k *Keeper) scheduleTask(
 ) error {
 	handler, ok := k.handlersByTypename[typename]
 	if !ok {
-		return fmt.Errorf("task type not registered: %s", typename)
+		return errors.Wrapf(types.ErrInvalidTask, "task '%s' handler not registered: '%s'", id, typename)
 	}
 
 	packedArgs, err := handler.PackArgs(args)
 	if err != nil {
-		return fmt.Errorf("invalid args for task type %s: %w", typename, err)
+		return err
 	}
 
 	exists, err := k.tasks.Has(ctx, id)
@@ -298,12 +297,12 @@ func (k *Keeper) scheduleTask(
 		return err
 	}
 	if exists {
-		return fmt.Errorf("task with ID %s already exists", id)
+		return errors.Wrapf(types.ErrInvalidTask, "task '%s' already exists", id)
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if sdkCtx.BlockTime().After(startAt) {
-		return fmt.Errorf("cannot schedule task %s for a time in the past: %s", typename, startAt)
+		return errors.Wrapf(types.ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", id, startAt)
 	}
 
 	if err := k.tasks.Set(ctx, id, types.Task{
