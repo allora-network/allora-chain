@@ -77,6 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+[#846](https://github.com/allora-network/allora-chain/pull/846) Use v5 in mint module autocli txs
+
 ### Security
 
 ### API Breaking Changes
