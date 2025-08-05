@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// A tx function that accepts a individual inference and forecast and possibly returns an error
+// A tx function that accepts an individual inference and forecast and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 // Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
 // registered worker and none from any unregistered actor.

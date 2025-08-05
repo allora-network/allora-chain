@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// A tx function that accepts a individual loss and possibly returns an error
+// A tx function that accepts an individual loss and possibly returns an error
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 

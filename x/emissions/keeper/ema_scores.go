@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Calculates and saves the EMA scores for a active set worker and topic.
+// Calculates and saves the EMA scores for an active set worker and topic.
 // By assuming worker is in active set, we know to calculate the EMA with a new, passed-in score.
 func (k *Keeper) CalcAndSaveInfererScoreEmaForActiveSet(
 	ctx context.Context,
@@ -44,7 +44,7 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaForActiveSet(
 	return emaScore, nil
 }
 
-// Calculates and saves the EMA scores for a active set worker and topic.
+// Calculates and saves the EMA scores for an active set worker and topic.
 // By assuming worker is in active set, we know to calculate the EMA with a new, passed-in score.
 func (k *Keeper) CalcAndSaveForecasterScoreEmaForActiveSet(
 	ctx context.Context,
