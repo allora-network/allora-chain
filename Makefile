@@ -103,6 +103,21 @@ lint:
 	@go run ./linter/check-defer-close .
 	@go run ./linter/fuzz-transitions
 
+.PHONY: generate_protobufs
+generate_protobufs:
+	rm -rf ./proto
+	buf dep update ./x/emissions/proto
+	buf dep update ./x/mint/proto
+	buf generate
+
+.PHONY: generate_openapi_schema
+generate_openapi_schema:
+	rm -rf ./openapi
+	buf dep update ./x/emissions/proto
+	buf dep update ./x/mint/proto
+	buf generate --template buf.gen.openapi.yaml
+	npx swagger2openapi -o openapi/allora.openapi.yaml openapi/allora.swagger.json
+
 build-maprange-linter:
 	@echo "--> Buiding maprange linter"
 	cd linter/maprange && go build -o bin/maprange.so -buildmode=plugin maprange.go

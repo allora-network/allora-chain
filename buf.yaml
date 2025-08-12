@@ -1,6 +1,9 @@
-version: v1
+version: v2
+modules:
+  - path: x/emissions/proto
+  - path: x/mint/proto
 deps:
-  - buf.build/cosmos/cosmos-sdk # pin the Cosmos SDK version
+  - buf.build/cosmos/cosmos-sdk
   - buf.build/cosmos/cosmos-proto
   - buf.build/cosmos/gogo-proto
   - buf.build/googleapis/googleapis
@@ -15,7 +18,6 @@ lint:
     - COMMENT_MESSAGE
     - COMMENT_ONEOF
     - COMMENT_RPC
-  allow_comment_ignores: false
   ignore_only:
     RPC_REQUEST_STANDARD_NAME:
       - mint/v1beta1/tx.proto
@@ -25,7 +27,6 @@ lint:
       - mint/v1beta1/query.proto
       - mint/v1beta1/tx.proto
 
-breaking:
-  except:
-    - EXTENSION_NO_DELETE
-    - FIELD_SAME_DEFAULT
+
+
+

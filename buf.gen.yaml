@@ -1,0 +1,37 @@
+version: v2
+inputs:
+  - directory: x/emissions/proto
+    exclude_paths:
+      - x/emissions/proto/emissions/v1
+      - x/emissions/proto/emissions/v2
+  - directory: x/mint/proto
+
+plugins:
+  - local: protoc-gen-go-pulsar
+    out: proto/
+    opt:
+      - paths=source_relative
+      - Mcosmos/app/v1alpha1/module.proto=cosmossdk.io/api/cosmos/app/v1alpha1
+      - Mcosmos/base/v1beta1/coin.proto=cosmossdk.io/api/cosmos/base/v1beta1
+      - Mcosmos/base/query/v1beta1/pagination.proto=cosmossdk.io/api/cosmos/base/query/v1beta1
+      - Mmint/module/v1/module.proto=github.com/allora-network/allora-chain/x/mint
+      - Memissions/module/v1/module.proto=github.com/allora-network/allora-chain/x/emissions
+
+  - remote: buf.build/grpc/go
+    out: proto/
+    opt:
+      - paths=source_relative
+      - Mcosmos/app/v1alpha1/module.proto=cosmossdk.io/api/cosmos/app/v1alpha1
+      - Mmint/module/v1/module.proto=github.com/allora-network/allora-chain/x/mint
+      - Memissions/module/v1/module.proto=github.com/allora-network/allora-chain/x/emissions
+
+  # - remote: buf.build/cosmos/orm
+  #   out: proto/
+  #   opt: paths=source_relative,Mcosmos/app/v1alpha1/module.proto=cosmossdk.io/api/cosmos/app/v1alpha1
+
+  # - remote: buf.build/grpc-ecosystem/gateway
+  #   out: proto
+  #   opt:
+  #     - logtostderr=true
+  #     - Mmint/module/v1/module.proto=github.com/allora-network/allora-chain/x/mint
+  #     - Memissions/module/v1/module.proto=github.com/allora-network/allora-chain/x/emissions

@@ -56,3 +56,6 @@ allora.log
 
 **/__debug*
 
+.mise.toml
+openapi/
+./proto/

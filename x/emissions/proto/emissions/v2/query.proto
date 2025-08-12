@@ -163,11 +163,6 @@ service Query {
     option (google.api.http).get = "/emissions/v2/network_inferences/{topic_id}";
   }
 
-  rpc GetLatestAvailableNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v2/network_inferences/{topic_id}";
-  }
-
   rpc IsWorkerNonceUnfulfilled(QueryIsWorkerNonceUnfulfilledRequest) returns (QueryIsWorkerNonceUnfulfilledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v2/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
@@ -210,11 +205,6 @@ service Query {
   }
 
   rpc GetTopicLastWorkerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v2/topic_last_commit/{topic_id}";
-  }
-
-  rpc GetTopicLastReputerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v2/topic_last_commit/{topic_id}";
   }

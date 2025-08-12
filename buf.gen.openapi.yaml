@@ -1,0 +1,13 @@
+version: v2
+plugins:
+  # use this if you don't want to install it locally. remove `strategy: all`.
+  # - remote: buf.build/grpc-ecosystem/openapiv2:v2.27.1
+  - local: protoc-gen-openapiv2
+    strategy: all
+    out: openapi
+    opt:
+      - allow_merge=true
+      - merge_file_name=allora
+      - generate_unbound_methods=true
+      - Memissions/module/v1/module.proto=github.com/allora-network/allora-chain/x/emissions
+      - Mmint/module/v1/module.proto=github.com/allora-network/allora-chain/x/mint
