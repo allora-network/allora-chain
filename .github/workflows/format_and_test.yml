@@ -7,7 +7,7 @@ jobs:
     name: "Go Format Check"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Check code formatting using gofmt
       uses: Jerome1337/gofmt-action@v1.0.5
       with:
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - uses: actions/setup-go@v5
       with:
@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 25
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - uses: actions/setup-go@v5
       with:
