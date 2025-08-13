@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -92,5 +93,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	}
 
 	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
+
+	types.EmitNewCreateNewTopicEvent(ctx, &topic)
 	return &types.CreateNewTopicResponse{TopicId: topicId}, err
 }

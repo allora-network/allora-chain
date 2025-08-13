@@ -3,7 +3,12 @@ package emissions.v9;
 
 import "emissions/v3/nonce.proto";
 import "emissions/v3/reputer.proto";
+import "emissions/v3/worker.proto";
+import "emissions/v3/topic.proto";
+import "emissions/v8/params.proto";
 import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
@@ -60,6 +65,322 @@ message EventNetworkInferences {
   uint64 topic_id = 1;
   int64 block_height = 2;
   emissions.v3.ValueBundle value_bundle = 3;
+}
+
+message EventInsertWorkerPayload {
+  uint64 topic_id = 1;
+  emissions.v3.WorkerDataBundle worker_data_bundle = 2;
+}
+
+message EventCreateNewTopic {
+  emissions.v3.Topic topic = 1;
+}
+
+message EventAddTopicFeeRevenue {
+  uint64 topic_id = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string topic_fee_revenue = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message EventAddReputerStake {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string topic_stake = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message EventRemoveReputerStake {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 block_removal_started = 4;
+  int64 block_removal_completed = 5;
+}
+
+message EventCancelRemoveReputerStake {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 block_removal_started = 4;
+  int64 block_removal_completed = 5;
+}
+
+message EventAddDelegateStake {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string topic_stake = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message EventRemoveDelegateStake {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 block_removal_started = 5;
+  int64 block_removal_completed = 6;
+}
+
+message EventCancelRemoveDelegateStake {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 block_removal_started = 5;
+  int64 block_removal_completed = 6;
+}
+
+message EventRewardDelegateStake {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventInsertReputerPayload {
+  uint64 topic_id = 1;
+  emissions.v3.ReputerValueBundle reputer_value_bundle = 2;
+}
+
+message EventReputerRegistered {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string owner = 3;
+}
+
+message EventWorkerRegistered {
+  uint64 topic_id = 1;
+  string worker = 2;
+  string owner = 3;
+}
+
+message EventReputerUnregistered {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message EventWorkerUnregistered {
+  uint64 topic_id = 1;
+  string worker = 2;
+}
+
+message EventFundTopic {
+  uint64 topic_id = 1;
+  string funder = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message EventParamsSet {
+  emissions.v8.Params params = 1;
+}
+
+message EventWhitelistAdminAdded {
+  string admin = 1;
+}
+
+message EventWhitelistAdminRemoved {
+  string admin = 1;
+}
+
+message EventGlobalWhitelistAdded {
+  string address = 1;
+}
+
+message EventGlobalWhitelistRemoved {
+  string address = 1;
+}
+
+message EventGlobalWorkerWhitelistAdded {
+  string address = 1;
+}
+
+message EventGlobalWorkerWhitelistRemoved {
+  string address = 1;
+}
+
+message EventGlobalReputerWhitelistAdded {
+  string address = 1;
+}
+
+message EventGlobalReputerWhitelistRemoved {
+  string address = 1;
+}
+
+message EventGlobalAdminWhitelistAdded {
+  string address = 1;
+}
+
+message EventGlobalAdminWhitelistRemoved {
+  string address = 1;
+}
+
+message EventGlobalWorkerWhitelistBulkAdded {
+  repeated string addresses = 1;
+}
+
+message EventGlobalWorkerWhitelistBulkRemoved {
+  repeated string addresses = 1;
+}
+
+message EventGlobalReputerWhitelistBulkAdded {
+  repeated string addresses = 1;
+}
+
+message EventGlobalReputerWhitelistBulkRemoved {
+  repeated string addresses = 1;
+}
+
+message EventGlobalAdminWhitelistBulkAdded {
+  repeated string addresses = 1;
+}
+
+message EventGlobalAdminWhitelistBulkRemoved {
+  repeated string addresses = 1;
+}
+
+message EventTopicWorkerWhitelistEnabled {
+  uint64 topic_id = 1;
+}
+
+message EventTopicWorkerWhitelistDisabled {
+  uint64 topic_id = 1;
+}
+
+message EventTopicReputerWhitelistEnabled {
+  uint64 topic_id = 1;
+}
+
+message EventTopicReputerWhitelistDisabled {
+  uint64 topic_id = 1;
+}
+
+message EventTopicCreatorWhitelistAdded {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicCreatorWhitelistRemoved {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicWorkerWhitelistAdded {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicWorkerWhitelistRemoved {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicReputerWhitelistAdded {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicReputerWhitelistRemoved {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicAdminWhitelistAdded {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicAdminWhitelistRemoved {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message EventTopicAdminWhitelistBulkAdded {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+}
+
+message EventTopicAdminWhitelistBulkRemoved {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+}
+
+message EventTopicWorkerWhitelistBulkAdded {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+}
+
+message EventTopicWorkerWhitelistBulkRemoved {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+}
+
+message EventTopicReputerWhitelistBulkAdded {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+}
+
+message EventTopicReputerWhitelistBulkRemoved {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
 }
 
 message EventForecastTaskScoreSet {

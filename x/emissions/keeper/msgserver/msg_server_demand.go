@@ -5,12 +5,14 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
-	"github.com/allora-network/allora-chain/x/emissions/metrics"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// FundTopic adds funds to a topic.
 func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) (_ *types.FundTopicResponse, err error) {
 	defer metrics.RecordMetrics("FundTopic", time.Now(), &err)
 
@@ -31,5 +33,10 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) 
 	}
 
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, msg.Amount)
+	if err != nil {
+		return nil, err
+	}
+
+	types.EmitNewFundTopicEvent(ctx, msg.TopicId, msg.Sender, msg.Amount)
 	return &types.FundTopicResponse{}, err
 }

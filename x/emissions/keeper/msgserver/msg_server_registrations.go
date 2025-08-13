@@ -6,13 +6,14 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Registers a new network participant to the network for the first time for worker or reputer
+// Register registers a new network participant to the network for the first time for worker or reputer
 func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_ *types.RegisterResponse, err error) {
 	defer metrics.RecordMetrics("Register", time.Now(), &err)
 
@@ -66,11 +67,13 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		if err != nil {
 			return nil, err
 		}
+		types.EmitNewReputerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	} else {
 		err = ms.k.InsertWorker(ctx, msg.TopicId, msg.Sender, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
+		types.EmitNewWorkerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	}
 
 	return &types.RegisterResponse{
@@ -79,7 +82,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 	}, nil
 }
 
-// Remove registration from a topic for worker or reputer
+// RemoveRegistration removes registration from a topic for worker or reputer
 func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveRegistrationRequest) (_ *types.RemoveRegistrationResponse, err error) {
 	defer metrics.RecordMetrics("RemoveRegistration", time.Now(), &err)
 
@@ -112,6 +115,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 		if err != nil {
 			return nil, err
 		}
+		types.EmitNewReputerUnregisteredEvent(ctx, msg.TopicId, msg.Sender)
 	} else {
 		isRegisteredInTopic, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 		if err != nil {
@@ -127,6 +131,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 		if err != nil {
 			return nil, err
 		}
+		types.EmitNewWorkerUnregisteredEvent(ctx, msg.TopicId, msg.Sender)
 	}
 
 	// Return a successful response
@@ -136,6 +141,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 	}, nil
 }
 
+// CheckBalanceForRegistration checks if the account has enough balance to register
 func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string) (success bool, fee sdk.Coin, err error) {
 	defer metrics.RecordMetrics("CheckBalanceForRegistration", time.Now(), &err)
 

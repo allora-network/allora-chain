@@ -1,11 +1,13 @@
 package types
 
 import (
+	"cosmossdk.io/math"
+	"github.com/cosmos/gogoproto/proto"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
-/// Scores
+// Scores
 
 // Assumes length of `scores` is at least 1
 func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
@@ -42,6 +44,324 @@ func NewNetworkInferencesEventBase(topicId TopicId, blockHeight BlockHeight, net
 	}
 }
 
+func NewInsertWorkerPayloadEventBase(topicId TopicId, bundle *WorkerDataBundle) proto.Message {
+	return &EventInsertWorkerPayload{
+		TopicId:          topicId,
+		WorkerDataBundle: bundle,
+	}
+}
+
+func NewCreateNewTopicEventBase(topic *Topic) proto.Message {
+	return &EventCreateNewTopic{
+		Topic: topic,
+	}
+}
+
+func NewAddTopicFeeRevenueEventBase(topicId TopicId, amount, topicFeeRevenue math.Int) proto.Message {
+	return &EventAddTopicFeeRevenue{
+		TopicId:         topicId,
+		Amount:          amount,
+		TopicFeeRevenue: topicFeeRevenue,
+	}
+}
+
+func NewAddReputerStakeEventBase(topicId TopicId, reputer string, amount, topicStake math.Int) proto.Message {
+	return &EventAddReputerStake{
+		TopicId:    topicId,
+		Reputer:    reputer,
+		Amount:     amount,
+		TopicStake: topicStake,
+	}
+}
+
+func NewRemoveReputerStakeEventBase(removal StakeRemovalInfo) proto.Message {
+	return &EventRemoveReputerStake{
+		TopicId:               removal.TopicId,
+		Reputer:               removal.Reputer,
+		Amount:                removal.Amount,
+		BlockRemovalStarted:   removal.BlockRemovalStarted,
+		BlockRemovalCompleted: removal.BlockRemovalCompleted,
+	}
+}
+
+func NewCancelRemoveReputerStakeEventBase(removal StakeRemovalInfo) proto.Message {
+	return &EventCancelRemoveReputerStake{
+		TopicId:               removal.TopicId,
+		Reputer:               removal.Reputer,
+		Amount:                removal.Amount,
+		BlockRemovalStarted:   removal.BlockRemovalStarted,
+		BlockRemovalCompleted: removal.BlockRemovalCompleted,
+	}
+}
+
+func NewAddDelegateStakeEventBase(topicId TopicId, reputer, delegator string, amount, topicStake math.Int) proto.Message {
+	return &EventAddDelegateStake{
+		TopicId:    topicId,
+		Reputer:    reputer,
+		Delegator:  delegator,
+		Amount:     amount,
+		TopicStake: topicStake,
+	}
+}
+
+func NewRemoveDelegateStakeEventBase(removal DelegateStakeRemovalInfo) proto.Message {
+	return &EventRemoveDelegateStake{
+		TopicId:               removal.TopicId,
+		Reputer:               removal.Reputer,
+		Delegator:             removal.Delegator,
+		Amount:                removal.Amount,
+		BlockRemovalStarted:   removal.BlockRemovalStarted,
+		BlockRemovalCompleted: removal.BlockRemovalCompleted,
+	}
+}
+
+func NewCancelRemoveDelegateStakeEventBase(removal DelegateStakeRemovalInfo) proto.Message {
+	return &EventCancelRemoveDelegateStake{
+		TopicId:               removal.TopicId,
+		Reputer:               removal.Reputer,
+		Delegator:             removal.Delegator,
+		Amount:                removal.Amount,
+		BlockRemovalStarted:   removal.BlockRemovalStarted,
+		BlockRemovalCompleted: removal.BlockRemovalCompleted,
+	}
+}
+
+func NewRewardDelegateStakeEventBase(topicId TopicId, reputer, delegator string, amount alloraMath.Dec) proto.Message {
+	return &EventRewardDelegateStake{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+		Amount:    amount,
+	}
+}
+
+func NewInsertReputerPayloadEventBase(topicId TopicId, bundle *ReputerValueBundle) proto.Message {
+	return &EventInsertReputerPayload{
+		TopicId:            topicId,
+		ReputerValueBundle: bundle,
+	}
+}
+
+func NewReputerRegisteredEventBase(topicId TopicId, reputer, owner string) proto.Message {
+	return &EventReputerRegistered{
+		TopicId: topicId,
+		Reputer: reputer,
+		Owner:   owner,
+	}
+}
+
+func NewWorkerRegisteredEventBase(topicId TopicId, worker, owner string) proto.Message {
+	return &EventWorkerRegistered{
+		TopicId: topicId,
+		Worker:  worker,
+		Owner:   owner,
+	}
+}
+
+func NewReputerUnregisteredEventBase(topicId TopicId, reputer string) proto.Message {
+	return &EventReputerUnregistered{
+		TopicId: topicId,
+		Reputer: reputer,
+	}
+}
+
+func NewWorkerUnregisteredEventBase(topicId TopicId, worker string) proto.Message {
+	return &EventWorkerUnregistered{
+		TopicId: topicId,
+		Worker:  worker,
+	}
+}
+
+func NewFundTopicEventBase(topicId TopicId, funder string, amount math.Int) proto.Message {
+	return &EventFundTopic{
+		TopicId: topicId,
+		Funder:  funder,
+		Amount:  amount,
+	}
+}
+
+func NewParamsSetEventBase(params Params) proto.Message {
+	return &EventParamsSet{
+		Params: &params,
+	}
+}
+
+func NewWhitelistAdminAddedEventBase(admin string) proto.Message {
+	return &EventWhitelistAdminAdded{
+		Admin: admin,
+	}
+}
+
+func NewWhitelistAdminRemovedEventBase(admin string) proto.Message {
+	return &EventWhitelistAdminRemoved{
+		Admin: admin,
+	}
+}
+
+func NewGlobalWhitelistAddedEventBase(address string) proto.Message {
+	return &EventGlobalWhitelistAdded{
+		Address: address,
+	}
+}
+
+func NewGlobalWhitelistRemovedEventBase(address string) proto.Message {
+	return &EventGlobalWhitelistRemoved{
+		Address: address,
+	}
+}
+
+func NewGlobalWorkerWhitelistAddedEventBase(worker string) proto.Message {
+	return &EventGlobalWorkerWhitelistAdded{
+		Address: worker,
+	}
+}
+
+func NewGlobalWorkerWhitelistRemovedEventBase(worker string) proto.Message {
+	return &EventGlobalWorkerWhitelistRemoved{
+		Address: worker,
+	}
+}
+
+func NewGlobalReputerWhitelistAddedEventBase(reputer string) proto.Message {
+	return &EventGlobalReputerWhitelistAdded{
+		Address: reputer,
+	}
+}
+
+func NewGlobalReputerWhitelistRemovedEventBase(reputer string) proto.Message {
+	return &EventGlobalReputerWhitelistRemoved{
+		Address: reputer,
+	}
+}
+
+func NewGlobalAdminWhitelistAddedEventBase(admin string) proto.Message {
+	return &EventGlobalAdminWhitelistAdded{
+		Address: admin,
+	}
+}
+
+func NewGlobalAdminWhitelistRemovedEventBase(admin string) proto.Message {
+	return &EventGlobalAdminWhitelistRemoved{
+		Address: admin,
+	}
+}
+
+func NewGlobalWorkerWhitelistBulkAddedEventBase(addresses []string) proto.Message {
+	return &EventGlobalWorkerWhitelistBulkAdded{
+		Addresses: addresses,
+	}
+}
+
+func NewGlobalWorkerWhitelistBulkRemovedEventBase(addresses []string) proto.Message {
+	return &EventGlobalWorkerWhitelistBulkRemoved{
+		Addresses: addresses,
+	}
+}
+
+func NewGlobalReputerWhitelistBulkAddedEventBase(addresses []string) proto.Message {
+	return &EventGlobalReputerWhitelistBulkAdded{
+		Addresses: addresses,
+	}
+}
+
+func NewGlobalReputerWhitelistBulkRemovedEventBase(addresses []string) proto.Message {
+	return &EventGlobalReputerWhitelistBulkRemoved{
+		Addresses: addresses,
+	}
+}
+
+func NewTopicWorkerWhitelistBulkAddedEventBase(topicId TopicId, addresses []string) proto.Message {
+	return &EventTopicWorkerWhitelistBulkAdded{
+		TopicId:   topicId,
+		Addresses: addresses,
+	}
+}
+
+func NewTopicWorkerWhitelistBulkRemovedEventBase(topicId TopicId, addresses []string) proto.Message {
+	return &EventTopicWorkerWhitelistBulkRemoved{
+		TopicId:   topicId,
+		Addresses: addresses,
+	}
+}
+
+func NewTopicReputerWhitelistBulkAddedEventBase(topicId TopicId, addresses []string) proto.Message {
+	return &EventTopicReputerWhitelistBulkAdded{
+		TopicId:   topicId,
+		Addresses: addresses,
+	}
+}
+
+func NewTopicReputerWhitelistBulkRemovedEventBase(topicId TopicId, addresses []string) proto.Message {
+	return &EventTopicReputerWhitelistBulkRemoved{
+		TopicId:   topicId,
+		Addresses: addresses,
+	}
+}
+
+func NewTopicWorkerWhitelistEnabledEventBase(topicId TopicId) proto.Message {
+	return &EventTopicWorkerWhitelistEnabled{
+		TopicId: topicId,
+	}
+}
+
+func NewTopicWorkerWhitelistDisabledEventBase(topicId TopicId) proto.Message {
+	return &EventTopicWorkerWhitelistDisabled{
+		TopicId: topicId,
+	}
+}
+
+func NewTopicReputerWhitelistEnabledEventBase(topicId TopicId) proto.Message {
+	return &EventTopicReputerWhitelistEnabled{
+		TopicId: topicId,
+	}
+}
+
+func NewTopicReputerWhitelistDisabledEventBase(topicId TopicId) proto.Message {
+	return &EventTopicReputerWhitelistDisabled{
+		TopicId: topicId,
+	}
+}
+
+func NewTopicCreatorWhitelistAddedEventBase(address string) proto.Message {
+	return &EventTopicCreatorWhitelistAdded{
+		Address: address,
+	}
+}
+
+func NewTopicCreatorWhitelistRemovedEventBase(address string) proto.Message {
+	return &EventTopicCreatorWhitelistRemoved{
+		Address: address,
+	}
+}
+
+func NewTopicWorkerWhitelistAddedEventBase(topicId TopicId, address string) proto.Message {
+	return &EventTopicWorkerWhitelistAdded{
+		TopicId: topicId,
+		Address: address,
+	}
+}
+
+func NewTopicWorkerWhitelistRemovedEventBase(topicId TopicId, address string) proto.Message {
+	return &EventTopicWorkerWhitelistRemoved{
+		TopicId: topicId,
+		Address: address,
+	}
+}
+
+func NewTopicReputerWhitelistAddedEventBase(topicId TopicId, address string) proto.Message {
+	return &EventTopicReputerWhitelistAdded{
+		TopicId: topicId,
+		Address: address,
+	}
+}
+
+func NewTopicReputerWhitelistRemovedEventBase(topicId TopicId, address string) proto.Message {
+	return &EventTopicReputerWhitelistRemoved{
+		TopicId: topicId,
+		Address: address,
+	}
+}
+
 func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) proto.Message {
 	return &EventForecastTaskScoreSet{
 		TopicId: topicId,
@@ -71,7 +391,7 @@ func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations m
 	}
 }
 
-/// Rewards
+// Rewards
 
 // Assumes length of `rewards` is at least 1
 func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx BlockHeight, rewards []TaskReward) proto.Message {
@@ -104,7 +424,7 @@ func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.M
 	}
 }
 
-/// Commits
+// Commits
 
 func NewWorkerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, nonce *Nonce) proto.Message {
 	return &EventWorkerLastCommitSet{
@@ -122,7 +442,7 @@ func NewReputerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, 
 	}
 }
 
-/// Listening Coefficients
+// Listening Coefficients
 
 func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, addresses []string, actorType ActorType, coefficients []alloraMath.Dec) proto.Message {
 	return &EventListeningCoefficientsSet{
@@ -134,7 +454,7 @@ func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, add
 	}
 }
 
-/// Regrets
+// Regrets
 
 func NewInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventInfererNetworkRegretSet{
@@ -206,7 +526,7 @@ func NewForecasterWeightSetEventBase(topicId uint64, blockHeight int64, address 
 	}
 }
 
-/// Previous Percentage Reward
+// Previous Percentage Reward
 
 func NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight int64, percentage alloraMath.Dec) proto.Message {
 	return &EventPreviousPercentageRewardToStakedReputersSet{
@@ -215,7 +535,7 @@ func NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight int64, 
 	}
 }
 
-// / Pruning
+// Pruning
 func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Message {
 	return &EventPruneRecords{
 		BlockHeight: blockHeight,

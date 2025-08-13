@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
+
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -32,7 +34,12 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhi
 	}
 
 	// Add the address to the whitelist
-	return &types.AddToWhitelistAdminResponse{}, ms.k.AddWhitelistAdmin(ctx, msg.Address)
+	if err = ms.k.AddWhitelistAdmin(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error adding whitelist admin")
+	}
+
+	types.EmitNewWhitelistAdminAddedEvent(ctx, msg.Address)
+	return &types.AddToWhitelistAdminResponse{}, nil
 }
 
 func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest) (_ *types.RemoveFromWhitelistAdminResponse, err error) {
@@ -59,7 +66,12 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Rem
 	}
 
 	// Remove the address from the whitelist
-	return &types.RemoveFromWhitelistAdminResponse{}, ms.k.RemoveWhitelistAdmin(ctx, msg.Address)
+	if err = ms.k.RemoveWhitelistAdmin(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error removing whitelist admin")
+	}
+
+	types.EmitNewWhitelistAdminRemovedEvent(ctx, msg.Address)
+	return &types.RemoveFromWhitelistAdminResponse{}, nil
 }
 
 func (ms msgServer) AddToGlobalWhitelist(ctx context.Context, msg *types.AddToGlobalWhitelistRequest) (_ *types.AddToGlobalWhitelistResponse, err error) {
@@ -86,7 +98,12 @@ func (ms msgServer) AddToGlobalWhitelist(ctx context.Context, msg *types.AddToGl
 	}
 
 	// Add the address to the whitelist
-	return &types.AddToGlobalWhitelistResponse{}, ms.k.AddToGlobalWhitelist(ctx, msg.Address)
+	if err = ms.k.AddToGlobalWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error adding to global whitelist")
+	}
+
+	types.EmitNewGlobalWhitelistAddedEvent(ctx, msg.Address)
+	return &types.AddToGlobalWhitelistResponse{}, nil
 }
 
 func (ms msgServer) RemoveFromGlobalWhitelist(ctx context.Context, msg *types.RemoveFromGlobalWhitelistRequest) (_ *types.RemoveFromGlobalWhitelistResponse, err error) {
@@ -113,7 +130,12 @@ func (ms msgServer) RemoveFromGlobalWhitelist(ctx context.Context, msg *types.Re
 	}
 
 	// Remove the address from the whitelist
-	return &types.RemoveFromGlobalWhitelistResponse{}, ms.k.RemoveFromGlobalWhitelist(ctx, msg.Address)
+	if err = ms.k.RemoveFromGlobalWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error removing from global whitelist")
+	}
+
+	types.EmitNewGlobalWhitelistRemovedEvent(ctx, msg.Address)
+	return &types.RemoveFromGlobalWhitelistResponse{}, nil
 }
 
 func (ms msgServer) AddToGlobalWorkerWhitelist(ctx context.Context, msg *types.AddToGlobalWorkerWhitelistRequest) (_ *types.AddToGlobalWorkerWhitelistResponse, err error) {
@@ -140,7 +162,12 @@ func (ms msgServer) AddToGlobalWorkerWhitelist(ctx context.Context, msg *types.A
 	}
 
 	// Add the address to the whitelist
-	return &types.AddToGlobalWorkerWhitelistResponse{}, ms.k.AddToGlobalWorkerWhitelist(ctx, msg.Address)
+	if err = ms.k.AddToGlobalWorkerWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error adding to global worker whitelist")
+	}
+
+	types.EmitNewGlobalWorkerWhitelistAddedEvent(ctx, msg.Address)
+	return &types.AddToGlobalWorkerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) RemoveFromGlobalWorkerWhitelist(ctx context.Context, msg *types.RemoveFromGlobalWorkerWhitelistRequest) (_ *types.RemoveFromGlobalWorkerWhitelistResponse, err error) {
@@ -167,7 +194,12 @@ func (ms msgServer) RemoveFromGlobalWorkerWhitelist(ctx context.Context, msg *ty
 	}
 
 	// Remove the address from the whitelist
-	return &types.RemoveFromGlobalWorkerWhitelistResponse{}, ms.k.RemoveFromGlobalWorkerWhitelist(ctx, msg.Address)
+	if err = ms.k.RemoveFromGlobalWorkerWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error removing from global worker whitelist")
+	}
+
+	types.EmitNewGlobalWorkerWhitelistRemovedEvent(ctx, msg.Address)
+	return &types.RemoveFromGlobalWorkerWhitelistResponse{}, err
 }
 
 func (ms msgServer) AddToGlobalReputerWhitelist(ctx context.Context, msg *types.AddToGlobalReputerWhitelistRequest) (_ *types.AddToGlobalReputerWhitelistResponse, err error) {
@@ -194,7 +226,12 @@ func (ms msgServer) AddToGlobalReputerWhitelist(ctx context.Context, msg *types.
 	}
 
 	// Add the address to the whitelist
-	return &types.AddToGlobalReputerWhitelistResponse{}, ms.k.AddToGlobalReputerWhitelist(ctx, msg.Address)
+	if err = ms.k.AddToGlobalReputerWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error adding to global reputer whitelist")
+	}
+
+	types.EmitNewGlobalReputerWhitelistAddedEvent(ctx, msg.Address)
+	return &types.AddToGlobalReputerWhitelistResponse{}, err
 }
 
 func (ms msgServer) RemoveFromGlobalReputerWhitelist(ctx context.Context, msg *types.RemoveFromGlobalReputerWhitelistRequest) (_ *types.RemoveFromGlobalReputerWhitelistResponse, err error) {
@@ -221,7 +258,12 @@ func (ms msgServer) RemoveFromGlobalReputerWhitelist(ctx context.Context, msg *t
 	}
 
 	// Remove the address from the whitelist
-	return &types.RemoveFromGlobalReputerWhitelistResponse{}, ms.k.RemoveFromGlobalReputerWhitelist(ctx, msg.Address)
+	if err = ms.k.RemoveFromGlobalReputerWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error removing from global reputer whitelist")
+	}
+
+	types.EmitNewGlobalReputerWhitelistRemovedEvent(ctx, msg.Address)
+	return &types.RemoveFromGlobalReputerWhitelistResponse{}, err
 }
 
 func (ms msgServer) AddToGlobalAdminWhitelist(ctx context.Context, msg *types.AddToGlobalAdminWhitelistRequest) (_ *types.AddToGlobalAdminWhitelistResponse, err error) {
@@ -248,7 +290,12 @@ func (ms msgServer) AddToGlobalAdminWhitelist(ctx context.Context, msg *types.Ad
 	}
 
 	// Add the address to the whitelist
-	return &types.AddToGlobalAdminWhitelistResponse{}, ms.k.AddToGlobalAdminWhitelist(ctx, msg.Address)
+	if err = ms.k.AddToGlobalAdminWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error adding to global admin whitelist")
+	}
+
+	types.EmitNewGlobalAdminWhitelistAddedEvent(ctx, msg.Address)
+	return &types.AddToGlobalAdminWhitelistResponse{}, err
 }
 
 func (ms msgServer) RemoveFromGlobalAdminWhitelist(ctx context.Context, msg *types.RemoveFromGlobalAdminWhitelistRequest) (_ *types.RemoveFromGlobalAdminWhitelistResponse, err error) {
@@ -275,7 +322,12 @@ func (ms msgServer) RemoveFromGlobalAdminWhitelist(ctx context.Context, msg *typ
 	}
 
 	// Remove the address from the whitelist
-	return &types.RemoveFromGlobalAdminWhitelistResponse{}, ms.k.RemoveFromGlobalAdminWhitelist(ctx, msg.Address)
+	if err = ms.k.RemoveFromGlobalAdminWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "error removing from global admin whitelist")
+	}
+
+	types.EmitNewGlobalAdminWhitelistRemovedEvent(ctx, msg.Address)
+	return &types.RemoveFromGlobalAdminWhitelistResponse{}, err
 }
 
 func (ms msgServer) BulkAddToGlobalWorkerWhitelist(ctx context.Context, msg *types.BulkAddToGlobalWorkerWhitelistRequest) (_ *types.BulkAddToGlobalWorkerWhitelistResponse, err error) {
@@ -311,6 +363,7 @@ func (ms msgServer) BulkAddToGlobalWorkerWhitelist(ctx context.Context, msg *typ
 		}
 	}
 
+	types.EmitNewGlobalWorkerWhitelistBulkAddedEvent(ctx, msg.Addresses)
 	return &types.BulkAddToGlobalWorkerWhitelistResponse{}, nil
 }
 
@@ -347,6 +400,7 @@ func (ms msgServer) BulkRemoveFromGlobalWorkerWhitelist(ctx context.Context, msg
 		}
 	}
 
+	types.EmitNewGlobalWorkerWhitelistBulkRemovedEvent(ctx, msg.Addresses)
 	return &types.BulkRemoveFromGlobalWorkerWhitelistResponse{}, nil
 }
 
@@ -383,6 +437,7 @@ func (ms msgServer) BulkAddToGlobalReputerWhitelist(ctx context.Context, msg *ty
 		}
 	}
 
+	types.EmitNewGlobalReputerWhitelistBulkAddedEvent(ctx, msg.Addresses)
 	return &types.BulkAddToGlobalReputerWhitelistResponse{}, nil
 }
 
@@ -419,6 +474,7 @@ func (ms msgServer) BulkRemoveFromGlobalReputerWhitelist(ctx context.Context, ms
 		}
 	}
 
+	types.EmitNewGlobalReputerWhitelistBulkRemovedEvent(ctx, msg.Addresses)
 	return &types.BulkRemoveFromGlobalReputerWhitelistResponse{}, nil
 }
 
@@ -466,6 +522,7 @@ func (ms msgServer) BulkAddToTopicWorkerWhitelist(ctx context.Context, msg *type
 		}
 	}
 
+	types.EmitNewTopicWorkerWhitelistBulkAddedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkAddToTopicWorkerWhitelistResponse{}, nil
 }
 
@@ -513,6 +570,7 @@ func (ms msgServer) BulkRemoveFromTopicWorkerWhitelist(ctx context.Context, msg 
 		}
 	}
 
+	types.EmitNewTopicWorkerWhitelistBulkRemovedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkRemoveFromTopicWorkerWhitelistResponse{}, nil
 }
 
@@ -560,6 +618,7 @@ func (ms msgServer) BulkAddToTopicReputerWhitelist(ctx context.Context, msg *typ
 		}
 	}
 
+	types.EmitNewTopicReputerWhitelistBulkAddedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkAddToTopicReputerWhitelistResponse{}, nil
 }
 
@@ -607,6 +666,7 @@ func (ms msgServer) BulkRemoveFromTopicReputerWhitelist(ctx context.Context, msg
 		}
 	}
 
+	types.EmitNewTopicReputerWhitelistBulkRemovedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkRemoveFromTopicReputerWhitelistResponse{}, nil
 }
 
@@ -626,7 +686,12 @@ func (ms msgServer) EnableTopicWorkerWhitelist(ctx context.Context, msg *types.E
 		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
 	}
 
-	return &types.EnableTopicWorkerWhitelistResponse{}, ms.k.EnableTopicWorkerWhitelist(ctx, msg.TopicId)
+	if err = ms.k.EnableTopicWorkerWhitelist(ctx, msg.TopicId); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to enable topic worker whitelist")
+	}
+
+	types.EmitNewTopicWorkerWhitelistEnabledEvent(ctx, msg.TopicId)
+	return &types.EnableTopicWorkerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) DisableTopicWorkerWhitelist(ctx context.Context, msg *types.DisableTopicWorkerWhitelistRequest) (_ *types.DisableTopicWorkerWhitelistResponse, err error) {
@@ -645,7 +710,12 @@ func (ms msgServer) DisableTopicWorkerWhitelist(ctx context.Context, msg *types.
 		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
 	}
 
-	return &types.DisableTopicWorkerWhitelistResponse{}, ms.k.DisableTopicWorkerWhitelist(ctx, msg.TopicId)
+	if err = ms.k.DisableTopicWorkerWhitelist(ctx, msg.TopicId); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to disable topic worker whitelist")
+	}
+
+	types.EmitNewTopicWorkerWhitelistDisabledEvent(ctx, msg.TopicId)
+	return &types.DisableTopicWorkerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) EnableTopicReputerWhitelist(ctx context.Context, msg *types.EnableTopicReputerWhitelistRequest) (_ *types.EnableTopicReputerWhitelistResponse, err error) {
@@ -664,7 +734,12 @@ func (ms msgServer) EnableTopicReputerWhitelist(ctx context.Context, msg *types.
 		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
 	}
 
-	return &types.EnableTopicReputerWhitelistResponse{}, ms.k.EnableTopicReputerWhitelist(ctx, msg.TopicId)
+	if err = ms.k.EnableTopicReputerWhitelist(ctx, msg.TopicId); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to enable topic reputer whitelist")
+	}
+
+	types.EmitNewTopicReputerWhitelistEnabledEvent(ctx, msg.TopicId)
+	return &types.EnableTopicReputerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) DisableTopicReputerWhitelist(ctx context.Context, msg *types.DisableTopicReputerWhitelistRequest) (_ *types.DisableTopicReputerWhitelistResponse, err error) {
@@ -683,7 +758,12 @@ func (ms msgServer) DisableTopicReputerWhitelist(ctx context.Context, msg *types
 		return nil, types.ErrNotPermittedToUpdateTopicWhitelist
 	}
 
-	return &types.DisableTopicReputerWhitelistResponse{}, ms.k.DisableTopicReputerWhitelist(ctx, msg.TopicId)
+	if err = ms.k.DisableTopicReputerWhitelist(ctx, msg.TopicId); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to disable topic reputer whitelist")
+	}
+
+	types.EmitNewTopicReputerWhitelistDisabledEvent(ctx, msg.TopicId)
+	return &types.DisableTopicReputerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) AddToTopicCreatorWhitelist(ctx context.Context, msg *types.AddToTopicCreatorWhitelistRequest) (_ *types.AddToTopicCreatorWhitelistResponse, err error) {
@@ -708,7 +788,12 @@ func (ms msgServer) AddToTopicCreatorWhitelist(ctx context.Context, msg *types.A
 		return nil, types.ErrNotPermittedToUpdateTopicCreatorWhitelist
 	}
 
-	return &types.AddToTopicCreatorWhitelistResponse{}, ms.k.AddToTopicCreatorWhitelist(ctx, msg.Address)
+	if err = ms.k.AddToTopicCreatorWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to add to topic whitelist")
+	}
+
+	types.EmitNewTopicCreatorWhitelistAddedEvent(ctx, msg.Address)
+	return &types.AddToTopicCreatorWhitelistResponse{}, nil
 }
 
 func (ms msgServer) RemoveFromTopicCreatorWhitelist(ctx context.Context, msg *types.RemoveFromTopicCreatorWhitelistRequest) (_ *types.RemoveFromTopicCreatorWhitelistResponse, err error) {
@@ -733,7 +818,12 @@ func (ms msgServer) RemoveFromTopicCreatorWhitelist(ctx context.Context, msg *ty
 		return nil, types.ErrNotPermittedToUpdateTopicCreatorWhitelist
 	}
 
-	return &types.RemoveFromTopicCreatorWhitelistResponse{}, ms.k.RemoveFromTopicCreatorWhitelist(ctx, msg.Address)
+	if err = ms.k.RemoveFromTopicCreatorWhitelist(ctx, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to remove from topic whitelist")
+	}
+
+	types.EmitNewTopicCreatorWhitelistRemovedEvent(ctx, msg.Address)
+	return &types.RemoveFromTopicCreatorWhitelistResponse{}, nil
 }
 
 func (ms msgServer) AddToTopicWorkerWhitelist(ctx context.Context, msg *types.AddToTopicWorkerWhitelistRequest) (_ *types.AddToTopicWorkerWhitelistResponse, err error) {
@@ -758,7 +848,12 @@ func (ms msgServer) AddToTopicWorkerWhitelist(ctx context.Context, msg *types.Ad
 		return nil, types.ErrNotPermittedToUpdateTopicWorkerWhitelist
 	}
 
-	return &types.AddToTopicWorkerWhitelistResponse{}, ms.k.AddToTopicWorkerWhitelist(ctx, msg.TopicId, msg.Address)
+	if err = ms.k.AddToTopicWorkerWhitelist(ctx, msg.TopicId, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to add to topic whitelist")
+	}
+
+	types.EmitNewTopicWorkerWhitelistAddedEvent(ctx, msg.TopicId, msg.Address)
+	return &types.AddToTopicWorkerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) RemoveFromTopicWorkerWhitelist(ctx context.Context, msg *types.RemoveFromTopicWorkerWhitelistRequest) (_ *types.RemoveFromTopicWorkerWhitelistResponse, err error) {
@@ -783,7 +878,12 @@ func (ms msgServer) RemoveFromTopicWorkerWhitelist(ctx context.Context, msg *typ
 		return nil, types.ErrNotPermittedToUpdateTopicWorkerWhitelist
 	}
 
-	return &types.RemoveFromTopicWorkerWhitelistResponse{}, ms.k.RemoveFromTopicWorkerWhitelist(ctx, msg.TopicId, msg.Address)
+	if err = ms.k.RemoveFromTopicWorkerWhitelist(ctx, msg.TopicId, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to remove from topic whitelist")
+	}
+
+	types.EmitNewTopicWorkerWhitelistRemovedEvent(ctx, msg.TopicId, msg.Address)
+	return &types.RemoveFromTopicWorkerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) AddToTopicReputerWhitelist(ctx context.Context, msg *types.AddToTopicReputerWhitelistRequest) (_ *types.AddToTopicReputerWhitelistResponse, err error) {
@@ -808,7 +908,12 @@ func (ms msgServer) AddToTopicReputerWhitelist(ctx context.Context, msg *types.A
 		return nil, types.ErrNotPermittedToUpdateTopicReputerWhitelist
 	}
 
-	return &types.AddToTopicReputerWhitelistResponse{}, ms.k.AddToTopicReputerWhitelist(ctx, msg.TopicId, msg.Address)
+	if err = ms.k.AddToTopicReputerWhitelist(ctx, msg.TopicId, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to add to topic whitelist")
+	}
+
+	types.EmitNewTopicReputerWhitelistAddedEvent(ctx, msg.TopicId, msg.Address)
+	return &types.AddToTopicReputerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) RemoveFromTopicReputerWhitelist(ctx context.Context, msg *types.RemoveFromTopicReputerWhitelistRequest) (_ *types.RemoveFromTopicReputerWhitelistResponse, err error) {
@@ -833,5 +938,11 @@ func (ms msgServer) RemoveFromTopicReputerWhitelist(ctx context.Context, msg *ty
 		return nil, types.ErrNotPermittedToUpdateTopicReputerWhitelist
 	}
 
-	return &types.RemoveFromTopicReputerWhitelistResponse{}, ms.k.RemoveFromTopicReputerWhitelist(ctx, msg.TopicId, msg.Address)
+	if err = ms.k.RemoveFromTopicReputerWhitelist(ctx, msg.TopicId, msg.Address); err != nil {
+		return nil, errorsmod.Wrap(err, "unable to remove from topic whitelist")
+	}
+
+	types.EmitNewTopicReputerWhitelistRemovedEvent(ctx, msg.TopicId, msg.Address)
+
+	return &types.RemoveFromTopicReputerWhitelistResponse{}, nil
 }
