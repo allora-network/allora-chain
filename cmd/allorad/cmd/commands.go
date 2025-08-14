@@ -28,6 +28,11 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 )
 
+const (
+	// FlagOverrideRecommendedConfig allows overriding recommended configuration settings.
+	FlagOverrideRecommendedConfig = "insecure-override-recommended-config"
+)
+
 func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager module.BasicManager) {
 	// Seal the config to prevent further modifications
 	cfg := sdk.GetConfig()
@@ -42,7 +47,35 @@ func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager 
 		NewInPlaceTestnetCmd(addModuleInitFlags),
 	)
 
-	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, func(startCmd *cobra.Command) {})
+	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, func(startCmd *cobra.Command) {
+		startCmd.Flags().Bool(FlagOverrideRecommendedConfig, false, "Override some recommended settings by using values provided in the config.toml and app.toml")
+	})
+
+	// update the start cmd to include config enforcement logic
+	for _, cmd := range rootCmd.Commands() {
+		if cmd.Name() == "start" {
+			runStart := cmd.RunE
+
+			cmd.RunE = func(cmd *cobra.Command, args []string) error {
+				serverCtx := server.GetServerContextFromCmd(cmd)
+
+				if serverCtx.Viper.GetBool(FlagOverrideRecommendedConfig) {
+					serverCtx.Logger.Warn("Overriding recommended settings with value provided in config.toml and app.toml")
+				} else {
+					// enforce the recommended settings
+					if err := overrideCometConfig(serverCtx.Config); err != nil {
+						return errors.New("failed to enforce comet settings: " + err.Error())
+					}
+
+					overrideViperConfig(serverCtx.Viper)
+				}
+
+				// run the original start cmd logic
+				return runStart(cmd, args)
+			}
+			break
+		}
+	}
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
