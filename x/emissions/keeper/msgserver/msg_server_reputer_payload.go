@@ -7,6 +7,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
@@ -86,7 +87,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	if err := ms.validateValueBundle(ctx, msg.ReputerValueBundle.ValueBundle, topicId, nonce.ReputerNonce.BlockHeight); err != nil {
-		return nil, err
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 
 	// Check that the reputer enough stake in the topic
