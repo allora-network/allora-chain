@@ -50,7 +50,7 @@ allorad start
 ```
 
 When you run a node you have 2 options:
- - Run node and a Head, main advantage is - you can use the head for your workers and reputers
+ - Run node and a Head, the main advantage is - you can use the head for your workers and reputers
  - Run only a node, in this case you will use Allora's heads.
 
 ## Run a Fork of Testnet/Mainnet State
@@ -77,7 +77,7 @@ allorad in-place-testnet devnet allovaloper<comet address> --home $HOME/.allorad
 ## Run a node with script
 `scripts/l1_node.sh`, you will see the log in the output of the script.
 
-*NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
+*NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper key storage, and follow secrets management best practices.
 
 ## Run a node
 
@@ -129,7 +129,7 @@ After the node is running you can exec RPC calls to it.
 For instance, check its status:
 `curl -so- http://localhost:26657/status | jq .`
 
-With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up` you can check if the node syncing or not.
+With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up` you can check if the node is syncing or not.
 
 ## Run a validator
 
