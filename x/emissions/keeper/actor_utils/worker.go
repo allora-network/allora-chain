@@ -95,6 +95,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
+	// Emit event for active inferers set for topic nonce
+	types.EmitActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
+
 	// Get all active forecasters for this topic
 	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
@@ -114,6 +117,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	if err != nil {
 		return err
 	}
+
+	// Emit event for active forecasters set for topic nonce
+	types.EmitActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
 
 	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {

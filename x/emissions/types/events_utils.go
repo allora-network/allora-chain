@@ -542,3 +542,76 @@ func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Messa
 		TopicId:     topicId,
 	}
 }
+
+// Stake removal
+func NewReputerStakeRemovalCompletedEventBase(topicId TopicId, blockHeight BlockHeight, reputer string, amount math.Int) proto.Message {
+	return &EventReputerStakeRemovalCompleted{
+		TopicId:     topicId,
+		Reputer:     reputer,
+		Amount:      amount,
+		BlockHeight: blockHeight,
+	}
+}
+
+func NewDelegateStakeRemovalCompletedEventBase(topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount math.Int) proto.Message {
+	return &EventDelegateStakeRemovalCompleted{
+		TopicId:     topicId,
+		Reputer:     reputer,
+		Delegator:   delegator,
+		Amount:      amount,
+		BlockHeight: blockHeight,
+	}
+}
+
+func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec, blockHeight int64) proto.Message {
+	return &EventDelegateRewardShareUpdated{
+		TopicId:        topicId,
+		Reputer:        reputer,
+		RewardPerShare: rewardPerShare,
+		BlockHeight:    blockHeight,
+	}
+}
+
+func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int, blockHeight int64) proto.Message {
+	return &EventDelegateRewardDistributed{
+		TopicId:     topicId,
+		Reputer:     reputer,
+		Amount:      amount,
+		BlockHeight: blockHeight,
+	}
+}
+
+func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+	return &EventActiveReputersSet{
+		TopicId:          topicId,
+		Addresses:        addresses,
+		NonceBlockHeight: nonceBlockHeight,
+		BlockHeight:      blockHeight,
+	}
+}
+
+func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+	return &EventActiveInferersSet{
+		TopicId:          topicId,
+		Addresses:        addresses,
+		NonceBlockHeight: nonceBlockHeight,
+		BlockHeight:      blockHeight,
+	}
+}
+
+func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+	return &EventActiveForecastersSet{
+		TopicId:          topicId,
+		Addresses:        addresses,
+		NonceBlockHeight: nonceBlockHeight,
+		BlockHeight:      blockHeight,
+	}
+}
+
+func NewActiveTopicsAtBlockSetEventBase(targetBlockHeight int64, topicIds []uint64, blockHeight int64) proto.Message {
+	return &EventActiveTopicsAtBlockSet{
+		TargetBlockHeight: targetBlockHeight,
+		TopicIds:          topicIds,
+		BlockHeight:       blockHeight,
+	}
+}

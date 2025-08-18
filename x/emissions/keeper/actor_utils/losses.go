@@ -164,6 +164,9 @@ func CloseReputerNonce(
 		return err
 	}
 
+	// Emit event for active reputers set for topic nonce
+	types.EmitActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeReputerAddresses)
+
 	// Check that all network bundles correspond to the nonce requested before calling CalcNetworkLosses.
 	// In case of a mismatch, we should remove that
 

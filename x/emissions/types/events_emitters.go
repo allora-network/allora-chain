@@ -3,11 +3,10 @@ package types
 import (
 	"context"
 
-	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Scores
@@ -84,7 +83,7 @@ func EmitNewCreateNewTopicEvent(ctx context.Context, topic *Topic) {
 	}
 }
 
-func EmitNewAddTopicFeeRevenueEvent(ctx context.Context, topicId TopicId, amount, feeRevenue math.Int) {
+func EmitNewAddTopicFeeRevenueEvent(ctx context.Context, topicId TopicId, amount, feeRevenue cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.ADD_TOPIC_FEE_REVENUE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewAddTopicFeeRevenueEventBase(topicId, amount, feeRevenue))
@@ -93,7 +92,7 @@ func EmitNewAddTopicFeeRevenueEvent(ctx context.Context, topicId TopicId, amount
 	}
 }
 
-func EmitNewAddReputerStakeEvent(ctx context.Context, topicId TopicId, reputer string, amount, topicStake math.Int) {
+func EmitNewAddReputerStakeEvent(ctx context.Context, topicId TopicId, reputer string, amount, topicStake cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.ADD_REPUTER_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewAddReputerStakeEventBase(topicId, reputer, amount, topicStake))
@@ -120,7 +119,7 @@ func EmitNewCancelRemoveReputerStakeEvent(ctx context.Context, removal StakeRemo
 	}
 }
 
-func EmitNewAddDelegateStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount, topicStake math.Int) {
+func EmitNewAddDelegateStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount, topicStake cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.ADD_DELEGATE_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewAddDelegateStakeEventBase(topicId, reputer, delegator, amount, topicStake))
@@ -201,7 +200,7 @@ func EmitNewWorkerUnregisteredEvent(ctx context.Context, topicId TopicId, worker
 	}
 }
 
-func EmitNewFundTopicEvent(ctx context.Context, topicId TopicId, funder string, amount math.Int) {
+func EmitNewFundTopicEvent(ctx context.Context, topicId TopicId, funder string, amount cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.FUND_TOPIC_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewFundTopicEventBase(topicId, funder, amount))
@@ -563,7 +562,87 @@ func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*al
 	}
 }
 
-// Commits
+/// Stake removal processing events
+
+func EmitReputerStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, reputer string, amount cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.REPUTER_STAKE_REMOVAL_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerStakeRemovalCompletedEventBase(topicId, blockHeight, reputer, amount))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting ReputerStakeRemovalCompletedEvent", "error", err)
+	}
+}
+
+func EmitDelegateStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.DELEGATE_STAKE_REMOVAL_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateStakeRemovalCompletedEventBase(topicId, blockHeight, delegator, reputer, amount))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting DelegateStakeRemovalCompletedEvent", "error", err)
+	}
+}
+
+// Delegate rewards share updated event
+
+func EmitDelegateRewardShareUpdatedEvent(ctx context.Context, topicId TopicId, reputer string, rewardPerShare alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.DELEGATE_REWARD_SHARE_UPDATED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardShareUpdatedEventBase(topicId, reputer, rewardPerShare, sdkCtx.BlockHeight()))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting DelegateRewardShareUpdatedEvent", "error", err)
+	}
+}
+
+// Delegate rewards distributed event
+
+func EmitDelegateRewardDistributedEvent(ctx context.Context, topicId TopicId, reputer string, amount cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.DELEGATE_REWARD_DISTRIBUTED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardDistributedEventBase(topicId, reputer, amount, sdkCtx.BlockHeight()))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting DelegateRewardDistributedEvent", "error", err)
+	}
+}
+
+// Active actors set events
+
+func EmitActiveReputersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses []string) {
+	metrics.IncrProducerEventCount(metrics.ACTIVE_REPUTERS_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveReputersSetEventBase(topicId, nonceBlockHeight, addresses, sdkCtx.BlockHeight()))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting ActiveReputersSetEvent", "error", err)
+	}
+}
+
+func EmitActiveInferersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses []string) {
+	metrics.IncrProducerEventCount(metrics.ACTIVE_INFERERS_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveInferersSetEventBase(topicId, nonceBlockHeight, addresses, sdkCtx.BlockHeight()))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting ActiveInferersSetEvent", "error", err)
+	}
+}
+
+func EmitActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses []string) {
+	metrics.IncrProducerEventCount(metrics.ACTIVE_FORECASTERS_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveForecastersSetEventBase(topicId, nonceBlockHeight, addresses, sdkCtx.BlockHeight()))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting ActiveForecastersSetEvent", "error", err)
+	}
+}
+
+func EmitActiveTopicsAtBlockSetEvent(ctx context.Context, targetBlockHeight BlockHeight, topicIds []TopicId) {
+	metrics.IncrProducerEventCount(metrics.ACTIVE_TOPICS_AT_BLOCK_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveTopicsAtBlockSetEventBase(targetBlockHeight, topicIds, sdkCtx.BlockHeight()))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting ActiveTopicsAtBlockSetEvent", "error", err)
+	}
+}
+
+/// Commits
 
 func EmitNewWorkerLastCommitSetEvent(ctx context.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
 	metrics.IncrProducerEventCount(metrics.WORKER_LAST_COMMIT_EVENT)

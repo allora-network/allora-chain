@@ -3256,6 +3256,7 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 }
 
 // wrapper for set operation around activeTopics
+// TODO: Evaluate removing this KV store (activeTopics) - not being used
 func (k *Keeper) SetActiveTopics(ctx context.Context, topicId TopicId) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -3273,7 +3274,14 @@ func (k *Keeper) SetBlockToActiveTopics(ctx context.Context, block BlockHeight, 
 			return errorsmod.Wrap(err, "topic id validation failed")
 		}
 	}
-	return k.blockToActiveTopics.Set(ctx, block, topicIds)
+	err := k.blockToActiveTopics.Set(ctx, block, topicIds)
+	if err != nil {
+		return err
+	}
+
+	// Emit event for active topics at block set
+	types.EmitActiveTopicsAtBlockSetEvent(ctx, block, topicIds.TopicIds)
+	return nil
 }
 
 // wrapper for set operation around topicToNextPossibleChurningBlock
