@@ -10,17 +10,70 @@ import (
 )
 
 var (
-	recommendedAppSettings   = map[string]interface{}{}
-	recommendedCometSettings = map[string]interface{}{
-		"consensus.timeout_propose":         time.Second * 5,
-		"consensus.timeout_propose_delta":   time.Millisecond * 500,
-		"consensus.timeout_prevote":         time.Second * 3,
-		"consensus.timeout_prevote_delta":   time.Millisecond * 500,
-		"consensus.timeout_precommit":       time.Second * 3,
-		"consensus.timeout_precommit_delta": time.Millisecond * 500,
-		"consensus.timeout_commit":          time.Second * 5,
+	recommendedAppSettings   settings
+	recommendedCometSettings = settings{
+		{
+			section: "consensus",
+			key:     "timeout_propose",
+			value:   time.Second * 5,
+		}, {
+			section: "consensus",
+			key:     "timeout_propose_delta",
+			value:   time.Millisecond * 500,
+		}, {
+			section: "consensus",
+			key:     "timeout_prevote",
+			value:   time.Second * 3,
+		}, {
+			section: "consensus",
+			key:     "timeout_prevote_delta",
+			value:   time.Millisecond * 500,
+		}, {
+			section: "consensus",
+			key:     "timeout_precommit",
+			value:   time.Second * 3,
+		}, {
+			section: "consensus",
+			key:     "timeout_precommit_delta",
+			value:   time.Millisecond * 500,
+		}, {
+			section: "consensus",
+			key:     "timeout_commit",
+			value:   time.Second * 5,
+		},
 	}
 )
+
+type settings []setting
+
+func (s settings) setInMap(cfg map[string]interface{}) {
+	for _, setting := range s {
+		setting.setInMap(cfg)
+	}
+}
+
+func (s settings) setInViper(v *viper.Viper) {
+	for _, setting := range s {
+		setting.setInViper(v)
+	}
+}
+
+type setting struct {
+	section string
+	key     string
+	value   interface{}
+}
+
+func (s setting) setInMap(cfg map[string]interface{}) {
+	if _, ok := cfg[s.section]; !ok {
+		cfg[s.section] = make(map[string]interface{})
+	}
+	cfg[s.section].(map[string]interface{})[s.key] = s.value
+}
+
+func (s setting) setInViper(v *viper.Viper) {
+	v.Set(s.section+"."+s.key, s.value)
+}
 
 func mustGetDefaultConfigs() (*serverconfig.Config, *cmtcfg.Config) {
 	srvCfg := serverconfig.DefaultConfig()
@@ -37,13 +90,8 @@ func mustGetDefaultConfigs() (*serverconfig.Config, *cmtcfg.Config) {
 }
 
 func overrideViperConfig(v *viper.Viper) {
-	for key, value := range recommendedAppSettings {
-		v.Set(key, value)
-	}
-
-	for key, value := range recommendedCometSettings {
-		v.Set(key, value)
-	}
+	recommendedAppSettings.setInViper(v)
+	recommendedCometSettings.setInViper(v)
 }
 
 func overrideConfigs(srvCfg *serverconfig.Config, cmtCfg *cmtcfg.Config) error {
@@ -55,22 +103,20 @@ func overrideConfigs(srvCfg *serverconfig.Config, cmtCfg *cmtcfg.Config) error {
 }
 
 func overrideCometConfig(cmtCfg *cmtcfg.Config) error {
-	return overrideStructSettings(cmtCfg, recommendedCometSettings)
+	return overrideStructConfig(cmtCfg, recommendedCometSettings)
 }
 
 func overrideAppConfig(srvCfg *serverconfig.Config) error {
-	return overrideStructSettings(srvCfg, recommendedAppSettings)
+	return overrideStructConfig(srvCfg, recommendedAppSettings)
 }
 
-func overrideStructSettings(config interface{}, enforcedSettings map[string]interface{}) error {
+func overrideStructConfig(config interface{}, enforcedSettings settings) error {
 	var cfg map[string]interface{}
-	if err := mapstructure.Decode(config, cfg); err != nil {
+	if err := mapstructure.Decode(config, &cfg); err != nil {
 		return err
 	}
 
-	for key, value := range enforcedSettings {
-		cfg[key] = value
-	}
+	enforcedSettings.setInMap(cfg)
 
 	return mapstructure.Decode(cfg, config)
 }
