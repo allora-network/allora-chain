@@ -124,14 +124,14 @@ func ProvideClientContext(
 	legacyAmino *codec.LegacyAmino,
 ) client.Context {
 	clientCtx := client.Context{}. // nolint: exhaustruct // dependency code don't want to change the way it works
-		WithCodec(appCodec).
-		WithInterfaceRegistry(interfaceRegistry).
-		WithTxConfig(txConfig).
-		WithLegacyAmino(legacyAmino).
-		WithInput(os.Stdin).
-		WithAccountRetriever(types.AccountRetriever{}).
-		WithHomeDir(app.DefaultNodeHome).
-		WithViper("ALLORA") // env variable prefix
+					WithCodec(appCodec).
+					WithInterfaceRegistry(interfaceRegistry).
+					WithTxConfig(txConfig).
+					WithLegacyAmino(legacyAmino).
+					WithInput(os.Stdin).
+					WithAccountRetriever(types.AccountRetriever{}).
+					WithHomeDir(app.DefaultNodeHome).
+					WithViper("ALLORA") // env variable prefix
 
 	// Read the config again to overwrite the default values with the values from the config file
 	clientCtx, _ = config.ReadFromClientConfig(clientCtx)
