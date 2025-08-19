@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"time"
 
 	cmtcfg "github.com/cometbft/cometbft/config"
@@ -46,10 +47,13 @@ var (
 
 type settings []setting
 
-func (s settings) setInMap(cfg map[string]interface{}) {
+func (s settings) setInMap(cfg map[string]interface{}) error {
 	for _, setting := range s {
-		setting.setInMap(cfg)
+		if err := setting.setInMap(cfg); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (s settings) setInViper(v *viper.Viper) {
@@ -64,11 +68,17 @@ type setting struct {
 	value   interface{}
 }
 
-func (s setting) setInMap(cfg map[string]interface{}) {
+func (s setting) setInMap(cfg map[string]interface{}) error {
 	if _, ok := cfg[s.section]; !ok {
 		cfg[s.section] = make(map[string]interface{})
 	}
-	cfg[s.section].(map[string]interface{})[s.key] = s.value
+	cfgSection, ok := cfg[s.section].(map[string]interface{})
+	if !ok {
+		return errors.New("section '" + s.section + "' is not a map[string]interface{}")
+	}
+
+	cfgSection[s.key] = s.value
+	return nil
 }
 
 func (s setting) setInViper(v *viper.Viper) {
@@ -116,7 +126,9 @@ func overrideStructConfig(config interface{}, enforcedSettings settings) error {
 		return err
 	}
 
-	enforcedSettings.setInMap(cfg)
+	if err := enforcedSettings.setInMap(cfg); err != nil {
+		return err
+	}
 
 	return mapstructure.Decode(cfg, config)
 }
