@@ -30,7 +30,7 @@ import (
 
 const (
 	// FlagOverrideRecommendedConfig allows overriding recommended configuration settings.
-	FlagOverrideRecommendedConfig = "insecure-override-recommended-config"
+	FlagOverrideRecommendedConfig = "unsafe-override-recommended-settings"
 )
 
 func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager module.BasicManager) {
@@ -48,7 +48,7 @@ func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager 
 	)
 
 	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, func(startCmd *cobra.Command) {
-		startCmd.Flags().Bool(FlagOverrideRecommendedConfig, false, "Override some recommended settings by using values provided in the config.toml and app.toml")
+		startCmd.Flags().Bool(FlagOverrideRecommendedConfig, false, "Allow to override recommended settings by using values provided in the config.toml and app.toml configuration files")
 	})
 
 	// update the start cmd to include config enforcement logic
