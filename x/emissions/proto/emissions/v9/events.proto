@@ -92,50 +92,7 @@ message EventAddTopicFeeRevenue {
   ];
 }
 
-message EventAddReputerStake {
-  uint64 topic_id = 1;
-  string reputer = 2;
-  string amount = 3 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  string topic_stake = 4 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
-message EventRemoveReputerStake {
-  uint64 topic_id = 1;
-  string reputer = 2;
-  string amount = 3 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  int64 block_removal_started = 4;
-  int64 block_removal_completed = 5;
-}
-
-message EventCancelRemoveReputerStake {
-  uint64 topic_id = 1;
-  string reputer = 2;
-  string amount = 3 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  int64 block_removal_started = 4;
-  int64 block_removal_completed = 5;
-}
-
-message EventAddDelegateStake {
+message EventAddStake {
   uint64 topic_id = 1;
   string reputer = 2;
   string delegator = 3;
@@ -145,15 +102,9 @@ message EventAddDelegateStake {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  string topic_stake = 5 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
 }
 
-message EventRemoveDelegateStake {
+message EventRemoveStake {
   uint64 topic_id = 1;
   string reputer = 2;
   string delegator = 3;
@@ -163,22 +114,6 @@ message EventRemoveDelegateStake {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  int64 block_removal_started = 5;
-  int64 block_removal_completed = 6;
-}
-
-message EventCancelRemoveDelegateStake {
-  uint64 topic_id = 1;
-  string reputer = 2;
-  string delegator = 3;
-  string amount = 4 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  int64 block_removal_started = 5;
-  int64 block_removal_completed = 6;
 }
 
 message EventRewardDelegateStake {
@@ -289,14 +224,6 @@ message EventGlobalReputerWhitelistBulkRemoved {
   repeated string addresses = 1;
 }
 
-message EventGlobalAdminWhitelistBulkAdded {
-  repeated string addresses = 1;
-}
-
-message EventGlobalAdminWhitelistBulkRemoved {
-  repeated string addresses = 1;
-}
-
 message EventTopicWorkerWhitelistEnabled {
   uint64 topic_id = 1;
 }
@@ -341,26 +268,6 @@ message EventTopicReputerWhitelistAdded {
 message EventTopicReputerWhitelistRemoved {
   uint64 topic_id = 1;
   string address = 2;
-}
-
-message EventTopicAdminWhitelistAdded {
-  uint64 topic_id = 1;
-  string address = 2;
-}
-
-message EventTopicAdminWhitelistRemoved {
-  uint64 topic_id = 1;
-  string address = 2;
-}
-
-message EventTopicAdminWhitelistBulkAdded {
-  uint64 topic_id = 1;
-  repeated string addresses = 2;
-}
-
-message EventTopicAdminWhitelistBulkRemoved {
-  uint64 topic_id = 1;
-  repeated string addresses = 2;
 }
 
 message EventTopicWorkerWhitelistBulkAdded {

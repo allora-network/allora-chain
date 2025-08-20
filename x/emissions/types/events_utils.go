@@ -65,64 +65,21 @@ func NewAddTopicFeeRevenueEventBase(topicId TopicId, amount, topicFeeRevenue mat
 	}
 }
 
-func NewAddReputerStakeEventBase(topicId TopicId, reputer string, amount, topicStake math.Int) proto.Message {
-	return &EventAddReputerStake{
-		TopicId:    topicId,
-		Reputer:    reputer,
-		Amount:     amount,
-		TopicStake: topicStake,
+func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount math.Int) proto.Message {
+	return &EventAddStake{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+		Amount:    amount,
 	}
 }
 
-func NewRemoveReputerStakeEventBase(removal StakeRemovalInfo) proto.Message {
-	return &EventRemoveReputerStake{
-		TopicId:               removal.TopicId,
-		Reputer:               removal.Reputer,
-		Amount:                removal.Amount,
-		BlockRemovalStarted:   removal.BlockRemovalStarted,
-		BlockRemovalCompleted: removal.BlockRemovalCompleted,
-	}
-}
-
-func NewCancelRemoveReputerStakeEventBase(removal StakeRemovalInfo) proto.Message {
-	return &EventCancelRemoveReputerStake{
-		TopicId:               removal.TopicId,
-		Reputer:               removal.Reputer,
-		Amount:                removal.Amount,
-		BlockRemovalStarted:   removal.BlockRemovalStarted,
-		BlockRemovalCompleted: removal.BlockRemovalCompleted,
-	}
-}
-
-func NewAddDelegateStakeEventBase(topicId TopicId, reputer, delegator string, amount, topicStake math.Int) proto.Message {
-	return &EventAddDelegateStake{
-		TopicId:    topicId,
-		Reputer:    reputer,
-		Delegator:  delegator,
-		Amount:     amount,
-		TopicStake: topicStake,
-	}
-}
-
-func NewRemoveDelegateStakeEventBase(removal DelegateStakeRemovalInfo) proto.Message {
-	return &EventRemoveDelegateStake{
-		TopicId:               removal.TopicId,
-		Reputer:               removal.Reputer,
-		Delegator:             removal.Delegator,
-		Amount:                removal.Amount,
-		BlockRemovalStarted:   removal.BlockRemovalStarted,
-		BlockRemovalCompleted: removal.BlockRemovalCompleted,
-	}
-}
-
-func NewCancelRemoveDelegateStakeEventBase(removal DelegateStakeRemovalInfo) proto.Message {
-	return &EventCancelRemoveDelegateStake{
-		TopicId:               removal.TopicId,
-		Reputer:               removal.Reputer,
-		Delegator:             removal.Delegator,
-		Amount:                removal.Amount,
-		BlockRemovalStarted:   removal.BlockRemovalStarted,
-		BlockRemovalCompleted: removal.BlockRemovalCompleted,
+func NewRemoveStakeEventBase(topicId uint64, reputer, delegator string, amount math.Int) proto.Message {
+	return &EventRemoveStake{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+		Amount:    amount,
 	}
 }
 

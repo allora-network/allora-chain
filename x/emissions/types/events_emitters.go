@@ -93,57 +93,21 @@ func EmitNewAddTopicFeeRevenueEvent(ctx context.Context, topicId TopicId, amount
 	}
 }
 
-func EmitNewAddReputerStakeEvent(ctx context.Context, topicId TopicId, reputer string, amount, topicStake math.Int) {
-	metrics.IncrProducerEventCount(metrics.ADD_REPUTER_STAKE_EVENT)
+func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount math.Int) {
+	metrics.IncrProducerEventCount(metrics.ADD_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewAddReputerStakeEventBase(topicId, reputer, amount, topicStake))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewAddStakeEventBase(topicId, reputer, delegator, amount))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewAddReputerStakeEvent", "error", err)
 	}
 }
 
-func EmitNewRemoveReputerStakeEvent(ctx context.Context, removal StakeRemovalInfo) {
-	metrics.IncrProducerEventCount(metrics.REMOVE_REPUTER_STAKE_EVENT)
+func EmitNewRemoveStakeEvent(ctx context.Context, topicId uint64, reputer, delegator string, amount math.Int) {
+	metrics.IncrProducerEventCount(metrics.REMOVE_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveReputerStakeEventBase(removal))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeEventBase(topicId, reputer, delegator, amount))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewRemoveReputerStakeEvent", "error", err)
-	}
-}
-
-func EmitNewCancelRemoveReputerStakeEvent(ctx context.Context, removal StakeRemovalInfo) {
-	metrics.IncrProducerEventCount(metrics.CANCEL_REMOVE_REPUTER_STAKE_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewCancelRemoveReputerStakeEventBase(removal))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewCancelRemoveReputerStakeEvent", "error", err)
-	}
-}
-
-func EmitNewAddDelegateStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount, topicStake math.Int) {
-	metrics.IncrProducerEventCount(metrics.ADD_DELEGATE_STAKE_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewAddDelegateStakeEventBase(topicId, reputer, delegator, amount, topicStake))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewAddDelegateStakeEvent", "error", err)
-	}
-}
-
-func EmitNewRemoveDelegateStakeEvent(ctx context.Context, removal DelegateStakeRemovalInfo) {
-	metrics.IncrProducerEventCount(metrics.REMOVE_DELEGATE_STAKE_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveDelegateStakeEventBase(removal))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewRemoveDelegateStakeEvent", "error", err)
-	}
-}
-
-func EmitNewCancelRemoveDelegateStakeEvent(ctx context.Context, removal DelegateStakeRemovalInfo) {
-	metrics.IncrProducerEventCount(metrics.CANCEL_REMOVE_DELEGATE_STAKE_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewCancelRemoveDelegateStakeEventBase(removal))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewCancelRemoveDelegateStakeEvent", "error", err)
 	}
 }
 

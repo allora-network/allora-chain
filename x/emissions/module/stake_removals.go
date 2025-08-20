@@ -5,10 +5,11 @@ import (
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	chainParams "github.com/allora-network/allora-chain/app/params"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type EmissionsKeeper interface {
@@ -102,6 +103,13 @@ func RemoveStakes(
 		// if there were no errors up to this point, then the removal should be safe to do,
 		// and therefore we can write the cache to the main state
 		write()
+		emissionstypes.EmitNewRemoveStakeEvent(
+			sdkCtx,
+			stakeRemoval.TopicId,
+			stakeRemoval.Reputer,
+			"",
+			stakeRemoval.Amount,
+		)
 	}
 
 	return nil
@@ -161,6 +169,14 @@ func RemoveDelegateStakes(
 		}
 
 		write()
+
+		emissionstypes.EmitNewRemoveStakeEvent(
+			sdkCtx,
+			stakeRemoval.TopicId,
+			stakeRemoval.Reputer,
+			stakeRemoval.Delegator,
+			stakeRemoval.Amount,
+		)
 	}
 
 	return nil
