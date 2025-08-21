@@ -237,6 +237,7 @@ func EmitNewGlobalReputerWhitelistAddedEvent(ctx context.Context, address string
 	}
 }
 
+
 func EmitNewGlobalReputerWhitelistRemovedEvent(ctx context.Context, address string) {
 	metrics.IncrProducerEventCount(metrics.GLOBAL_REPUTER_WHITELIST_REMOVED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -264,7 +265,14 @@ func EmitNewGlobalAdminWhitelistRemovedEvent(ctx context.Context, address string
 	}
 }
 
-func EmitNewForecastTaskUtilityScoreSetEvent(ctx context.Context, topicId TopicId, score alloraMath.Dec) {
+func EmitNewOutlierResistantNetworkInferencesEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
+	err := ctx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(topicId, blockHeight, networkInferences))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
+	}
+}
+
+func EmitNewForecastTaskUtilityScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.FORECAST_TASK_SCORE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score))

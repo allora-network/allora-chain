@@ -313,6 +313,14 @@ func NewTopicReputerWhitelistRemovedEventBase(topicId TopicId, address string) p
 	}
 }
 
+func NewOutlierResistantNetworkInferencesEventBase(topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) proto.Message {
+	return &EventOutlierResistantNetworkInferences{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		ValueBundle: &networkInferences,
+	}
+}
+
 func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) proto.Message {
 	return &EventForecastTaskScoreSet{
 		TopicId: topicId,

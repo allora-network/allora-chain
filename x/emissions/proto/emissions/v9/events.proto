@@ -287,6 +287,12 @@ message EventTopicReputerWhitelistRemoved {
   string address = 2;
 }
 
+message EventOutlierResistantNetworkInferences {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.ValueBundle value_bundle = 3;
+}
+
 message EventForecastTaskScoreSet {
   uint64 topic_id = 1;
   string score = 2 [

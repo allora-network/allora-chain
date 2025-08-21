@@ -67,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* [#823](https://github.com/allora-network/allora-chain/pull/823) Pruning metric and event 
+* [#823](https://github.com/allora-network/allora-chain/pull/823) Pruning metric and event
+* [#834](https://github.com/allora-network/allora-chain/pull/834) Add outlier resistant network inferences event
 
 ### Changed
 
@@ -79,6 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+* [#849](https://github.com/allora-network/allora-chain/pull/849) Fix [GHSA-p22h-3m2v-cmgh](https://github.com/cosmos/cosmos-sdk/security/advisories/GHSA-p22h-3m2v-cmgh) `x/distribution` issue
+
 ### API Breaking Changes
 
 #### Removed
@@ -87,6 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
+# [Released]
 
 # v0.12.1
 
