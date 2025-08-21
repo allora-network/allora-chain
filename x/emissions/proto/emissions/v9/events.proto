@@ -56,55 +56,89 @@ message EventRewardsSettled {
 }
 
 message EventNetworkLossSet {
-  uint64 topic_id = 1;
-  int64 block_height = 2;
-  emissions.v3.ValueBundle value_bundle = 3;
+  EventValueBundle value_bundle = 2;
 }
 
 message EventNetworkInferences {
-  uint64 topic_id = 1;
-  int64 block_height = 2;
-  emissions.v3.ValueBundle value_bundle = 3;
+  EventValueBundle value_bundle = 2;
 }
 
-message EventInsertWorkerPayload {
+message EventValueBundle {
+  option (gogoproto.equal) = true;
+
   uint64 topic_id = 1;
-  emissions.v3.WorkerDataBundle worker_data_bundle = 2;
+  int64 reputer_nonce = 2;
+  string reputer = 3;
+  bytes extra_data = 4;
+  string combined_value = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string naive_value = 6 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  repeated string inferer_addresses = 7;
+  repeated string forecaster_addresses = 8;
+
+  repeated string inferer_values = 9 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string forecaster_values = 10 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string one_out_inferer_values = 11 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string one_out_forecaster_values = 12 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string one_in_forecaster_values = 13 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated EventOneOutInfForcVals one_out_inferer_forecaster_values = 14;
+}
+
+message EventOneOutInfForcVals {
+  string forecaster = 1;
+  repeated string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventInsertInfererPayload {
+  option (gogoproto.equal) = true;
+  string inferer = 1;
+  int64 nonce = 2;
+  uint64 topic_id = 3;
+  string value = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  bytes extra_data = 5;
+}
+
+message EventInsertForecasterPayload {
+  option (gogoproto.equal) = true;
+  string forecaster = 1;
+  int64 nonce = 2;
+  uint64 topic_id = 3;
+  repeated emissions.v3.ForecastElement forecast_elements = 4;
+  bytes extra_data = 5;
 }
 
 message EventCreateNewTopic {
   emissions.v3.Topic topic = 1;
 }
 
-message EventAddTopicFeeRevenue {
-  uint64 topic_id = 1;
-  string amount = 2 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  string topic_fee_revenue = 3 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
 message EventAddStake {
-  uint64 topic_id = 1;
-  string reputer = 2;
-  string delegator = 3;
-  string amount = 4 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
-message EventRemoveStake {
   uint64 topic_id = 1;
   string reputer = 2;
   string delegator = 3;
@@ -127,8 +161,7 @@ message EventRewardDelegateStake {
 }
 
 message EventInsertReputerPayload {
-  uint64 topic_id = 1;
-  emissions.v3.ReputerValueBundle reputer_value_bundle = 2;
+  EventValueBundle reputer_value_bundle = 2;
 }
 
 message EventReputerRegistered {
@@ -208,22 +241,6 @@ message EventGlobalAdminWhitelistRemoved {
   string address = 1;
 }
 
-message EventGlobalWorkerWhitelistBulkAdded {
-  repeated string addresses = 1;
-}
-
-message EventGlobalWorkerWhitelistBulkRemoved {
-  repeated string addresses = 1;
-}
-
-message EventGlobalReputerWhitelistBulkAdded {
-  repeated string addresses = 1;
-}
-
-message EventGlobalReputerWhitelistBulkRemoved {
-  repeated string addresses = 1;
-}
-
 message EventTopicWorkerWhitelistEnabled {
   uint64 topic_id = 1;
 }
@@ -268,26 +285,6 @@ message EventTopicReputerWhitelistAdded {
 message EventTopicReputerWhitelistRemoved {
   uint64 topic_id = 1;
   string address = 2;
-}
-
-message EventTopicWorkerWhitelistBulkAdded {
-  uint64 topic_id = 1;
-  repeated string addresses = 2;
-}
-
-message EventTopicWorkerWhitelistBulkRemoved {
-  uint64 topic_id = 1;
-  repeated string addresses = 2;
-}
-
-message EventTopicReputerWhitelistBulkAdded {
-  uint64 topic_id = 1;
-  repeated string addresses = 2;
-}
-
-message EventTopicReputerWhitelistBulkRemoved {
-  uint64 topic_id = 1;
-  repeated string addresses = 2;
 }
 
 message EventForecastTaskScoreSet {

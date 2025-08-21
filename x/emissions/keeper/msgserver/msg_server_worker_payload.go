@@ -104,6 +104,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
+
+		types.EmitNewInsertInfererPayloadEvent(ctx, wdb)
 	}
 
 	// Process Forecasts
@@ -153,8 +155,9 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 					"Error appending forecast")
 			}
 		}
+
+		types.EmitNewInsertForecasterPayloadEvent(ctx, wdb)
 	}
 
-	types.EmitNewInsertWorkerPayloadEvent(ctx, topicId, wdb)
 	return &types.InsertWorkerPayloadResponse{}, nil
 }

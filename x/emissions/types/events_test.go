@@ -403,7 +403,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 		OneOutInfererForecasterValues: nil,
 	}
 
-	types.EmitNewNetworkLossSetEvent(ctx, topicId, blockHeight, loss)
+	types.EmitNewNetworkLossSetEvent(ctx, loss)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -412,19 +412,10 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Equal(t, "emissions.v9.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 3)
-
-	var result types.ValueBundle
+	require.Len(t, attributes, 1)
 	val, exists := event.GetAttribute(AttributeKeyValueBundle)
 	require.True(t, exists)
-	_ = json.Unmarshal([]byte(val.GetValue()), &result)
-	require.Equal(t, loss.CombinedValue, result.CombinedValue)
-	require.Equal(t, loss.NaiveValue, result.NaiveValue)
-	require.Equal(t, loss.InfererValues, result.InfererValues)
-	require.Equal(t, loss.ForecasterValues, result.ForecasterValues)
-	require.Equal(t, loss.OneOutInfererValues, result.OneOutInfererValues)
-	require.Equal(t, loss.OneOutForecasterValues, result.OneOutForecasterValues)
-	require.Equal(t, loss.OneInForecasterValues, result.OneInForecasterValues)
+	assertEventValueBundle(t, val.GetValue(), loss)
 }
 
 func TestEmitNewNetworkInferencesEvent(t *testing.T) {
@@ -446,7 +437,7 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 		OneOutInfererForecasterValues: nil,
 	}
 
-	types.EmitNewNetworkInferencesEvent(ctx, topicId, blockHeight, networkInferences)
+	types.EmitNewNetworkInferencesEvent(ctx, networkInferences)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -455,19 +446,38 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	require.Equal(t, "emissions.v9.EventNetworkInferences", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 3)
+	require.Len(t, attributes, 1)
 
-	var result types.ValueBundle
 	val, exists := event.GetAttribute(AttributeKeyValueBundle)
 	require.True(t, exists)
-	_ = json.Unmarshal([]byte(val.GetValue()), &result)
-	require.Equal(t, networkInferences.CombinedValue, result.CombinedValue)
-	require.Equal(t, networkInferences.NaiveValue, result.NaiveValue)
-	require.Equal(t, networkInferences.InfererValues, result.InfererValues)
-	require.Equal(t, networkInferences.ForecasterValues, result.ForecasterValues)
-	require.Equal(t, networkInferences.OneOutInfererValues, result.OneOutInfererValues)
-	require.Equal(t, networkInferences.OneOutForecasterValues, result.OneOutForecasterValues)
-	require.Equal(t, networkInferences.OneInForecasterValues, result.OneInForecasterValues)
+	assertEventValueBundle(t, val.GetValue(), networkInferences)
+}
+
+func assertEventValueBundle(t *testing.T, val string, bundle types.ValueBundle) {
+	var result types.EventValueBundle
+	_ = json.Unmarshal([]byte(val), &result)
+	require.Equal(t, bundle.CombinedValue, result.CombinedValue)
+	require.Equal(t, bundle.NaiveValue, result.NaiveValue)
+	require.Equal(t, len(bundle.InfererValues), len(result.InfererValues))
+	for i := range bundle.InfererValues {
+		require.Equal(t, bundle.InfererValues[i].Value, result.InfererValues[i])
+	}
+	require.Equal(t, len(bundle.ForecasterValues), len(result.ForecasterValues))
+	for i := range bundle.ForecasterValues {
+		require.Equal(t, bundle.ForecasterValues[i].Value, result.ForecasterValues[i])
+	}
+	require.Equal(t, len(bundle.OneOutInfererValues), len(result.OneOutInfererValues))
+	for i := range bundle.OneOutInfererValues {
+		require.Equal(t, bundle.OneOutInfererValues[i].Value, result.OneOutInfererValues[i])
+	}
+	require.Equal(t, len(bundle.OneOutForecasterValues), len(result.OneOutForecasterValues))
+	for i := range bundle.OneOutForecasterValues {
+		require.Equal(t, bundle.OneOutForecasterValues[i].Value, result.OneOutForecasterValues[i])
+	}
+	require.Equal(t, len(bundle.OneInForecasterValues), len(result.OneInForecasterValues))
+	for i := range bundle.OneInForecasterValues {
+		require.Equal(t, bundle.OneInForecasterValues[i].Value, result.OneInForecasterValues[i])
+	}
 }
 
 func TestEmitNewForecastTaskSetEvent(t *testing.T) {

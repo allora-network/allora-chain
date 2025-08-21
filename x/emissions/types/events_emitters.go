@@ -48,30 +48,39 @@ func EmitNewReputerScoresSetEvent(ctx context.Context, scores []Score) {
 	}
 }
 
-func EmitNewNetworkLossSetEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, lossBundle ValueBundle) {
+func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(topicId, blockHeight, lossBundle))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(&lossBundle))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
 	}
 }
 
-func EmitNewNetworkInferencesEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
+func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(topicId, blockHeight, networkInferences))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(&networkInferences))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
 	}
 }
 
-func EmitNewInsertWorkerPayloadEvent(ctx context.Context, topicId TopicId, bundle *WorkerDataBundle) {
-	metrics.IncrProducerEventCount(metrics.INSERT_WORKER_PAYLOAD_EVENT)
+func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
+	metrics.IncrProducerEventCount(metrics.INSERT_INFERER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertWorkerPayloadEventBase(topicId, bundle))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertInfererPayloadEventBase(bundle))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewWorkerPayloadEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewForecasterPayloadEvent", "error", err)
+	}
+}
+
+func EmitNewInsertForecasterPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
+	metrics.IncrProducerEventCount(metrics.INSERT_FORECASTER_PAYLOAD_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertForecasterPayloadEventBase(bundle))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewInfererPayloadEvent", "error", err)
 	}
 }
 
@@ -84,30 +93,12 @@ func EmitNewCreateNewTopicEvent(ctx context.Context, topic *Topic) {
 	}
 }
 
-func EmitNewAddTopicFeeRevenueEvent(ctx context.Context, topicId TopicId, amount, feeRevenue math.Int) {
-	metrics.IncrProducerEventCount(metrics.ADD_TOPIC_FEE_REVENUE_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewAddTopicFeeRevenueEventBase(topicId, amount, feeRevenue))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewAddTopicFeeRevenueEvent", "error", err)
-	}
-}
-
 func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount math.Int) {
 	metrics.IncrProducerEventCount(metrics.ADD_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewAddStakeEventBase(topicId, reputer, delegator, amount))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewAddReputerStakeEvent", "error", err)
-	}
-}
-
-func EmitNewRemoveStakeEvent(ctx context.Context, topicId uint64, reputer, delegator string, amount math.Int) {
-	metrics.IncrProducerEventCount(metrics.REMOVE_STAKE_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeEventBase(topicId, reputer, delegator, amount))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewRemoveReputerStakeEvent", "error", err)
 	}
 }
 
@@ -120,10 +111,10 @@ func EmitNewRewardDelegateStakeEvent(ctx context.Context, topicId TopicId, reput
 	}
 }
 
-func EmitNewInsertReputerPayloadEvent(ctx context.Context, topicId TopicId, bundle *ReputerValueBundle) {
+func EmitNewInsertReputerPayloadEvent(ctx context.Context, bundle *ReputerValueBundle) {
 	metrics.IncrProducerEventCount(metrics.INSERT_REPUTER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertReputerPayloadEventBase(topicId, bundle))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertReputerPayloadEventBase(bundle))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewInsertReputerPayloadEvent", "error", err)
 	}
@@ -273,108 +264,12 @@ func EmitNewGlobalAdminWhitelistRemovedEvent(ctx context.Context, address string
 	}
 }
 
-func EmitNewGlobalWorkerWhitelistBulkAddedEvent(ctx context.Context, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.GLOBAL_WORKER_WHITELIST_BULK_ADDED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewGlobalWorkerWhitelistBulkAddedEventBase(addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewGlobalWorkerWhitelistBulkAddedEvent", "error", err)
-	}
-}
-
-func EmitNewGlobalWorkerWhitelistBulkRemovedEvent(ctx context.Context, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.GLOBAL_WORKER_WHITELIST_BULK_REMOVED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewGlobalWorkerWhitelistBulkRemovedEventBase(addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewGlobalWorkerWhitelistBulkRemovedEvent", "error", err)
-	}
-}
-
 func EmitNewForecastTaskUtilityScoreSetEvent(ctx context.Context, topicId TopicId, score alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.FORECAST_TASK_SCORE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewForecastTaskUtilityScoreSetEvent", "error", err)
-	}
-}
-
-func EmitNewGlobalReputerWhitelistBulkAddedEvent(ctx context.Context, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.GLOBAL_REPUTER_WHITELIST_BULK_ADDED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewGlobalReputerWhitelistBulkAddedEventBase(addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewGlobalReputerWhitelistBulkAddedEvent", "error", err)
-	}
-}
-
-func EmitNewGlobalReputerWhitelistBulkRemovedEvent(ctx context.Context, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.GLOBAL_REPUTER_WHITELIST_BULK_REMOVED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewGlobalReputerWhitelistBulkRemovedEventBase(addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewGlobalReputerWhitelistBulkRemovedEvent", "error", err)
-	}
-}
-
-func EmitNewTopicWorkerWhitelistBulkAddedEvent(ctx context.Context, topicId TopicId, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.TOPIC_WORKER_WHITELIST_BULK_ADDED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWorkerWhitelistBulkAddedEventBase(topicId, addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewTopicWorkerWhitelistBulkAddedEvent", "error", err)
-	}
-}
-
-func EmitNewTopicWorkerWhitelistBulkRemovedEvent(ctx context.Context, topicId TopicId, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.TOPIC_WORKER_WHITELIST_BULK_REMOVED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWorkerWhitelistBulkRemovedEventBase(topicId, addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewTopicWorkerWhitelistBulkRemovedEvent", "error", err)
-	}
-}
-
-func EmitNewTopicReputerWhitelistBulkAddedEvent(ctx context.Context, topicId TopicId, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.TOPIC_REPUTER_WHITELIST_BULK_ADDED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicReputerWhitelistBulkAddedEventBase(topicId, addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewTopicReputerWhitelistBulkAddedEvent", "error", err)
-	}
-}
-
-func EmitNewTopicReputerWhitelistBulkRemovedEvent(ctx context.Context, topicId TopicId, addresses []string) {
-	if len(addresses) == 0 {
-		return
-	}
-	metrics.IncrProducerEventCount(metrics.TOPIC_REPUTER_WHITELIST_BULK_REMOVED_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicReputerWhitelistBulkRemovedEventBase(topicId, addresses))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewTopicReputerWhitelistBulkRemovedEvent", "error", err)
 	}
 }
 

@@ -3335,7 +3335,6 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 		return errorsmod.Wrap(err, "error setting topic fee revenue")
 	}
 
-	types.EmitNewAddTopicFeeRevenueEvent(ctx, topicId, amount, topicFeeRevenue)
 	return nil
 }
 

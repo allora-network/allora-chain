@@ -8,12 +8,13 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // REPUTER NONCES CLOSING
@@ -142,7 +143,7 @@ func CloseReputerNonce(
 			continue // Skip this reputer
 		}
 
-		/// Filtering done now, now write what we must for inclusion
+		// / Filtering done now, now write what we must for inclusion
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
@@ -179,7 +180,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	types.EmitNewNetworkLossSetEvent(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
+	types.EmitNewNetworkLossSetEvent(ctx, networkLossBundle)
 
 	regrets, err := synth.GetCalcSetNetworkRegrets(
 		synth.GetCalcSetNetworkRegretsArgs{
