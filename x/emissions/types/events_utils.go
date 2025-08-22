@@ -1,6 +1,8 @@
 package types
 
 import (
+	"encoding/json"
+
 	"cosmossdk.io/math"
 	"github.com/cosmos/gogoproto/proto"
 
@@ -28,16 +30,12 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 	}
 }
 
-func NewNetworkLossSetEventBase(lossValueBundle *ValueBundle) proto.Message {
-	return &EventNetworkLossSet{
-		ValueBundle: valueBundleToEventValueBundleBase(lossValueBundle),
-	}
+func (m *EventOneOutInfForcVals) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.Value)
 }
 
-func NewNetworkInferencesEventBase(networkInferences *ValueBundle) proto.Message {
-	return &EventNetworkInferences{
-		ValueBundle: valueBundleToEventValueBundleBase(networkInferences),
-	}
+func (m *EventOneOutInfForcVals) UnmarshalJSON(b []byte) error {
+	return json.Unmarshal(b, &m.Value)
 }
 
 func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
@@ -51,11 +49,18 @@ func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
 }
 
 func NewInsertForecasterPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
+	infererAddresses := make([]string, 0, len(bundle.InferenceForecastsBundle.Forecast.ForecastElements))
+	infererValues := make([]alloraMath.Dec, 0, len(bundle.InferenceForecastsBundle.Forecast.ForecastElements))
+	for _, infVal := range bundle.InferenceForecastsBundle.Forecast.ForecastElements {
+		infererAddresses = append(infererAddresses, infVal.Inferer)
+		infererValues = append(infererValues, infVal.Value)
+	}
 	return &EventInsertForecasterPayload{
 		Forecaster:       bundle.Worker,
 		Nonce:            bundle.Nonce.BlockHeight,
 		TopicId:          bundle.TopicId,
-		ForecastElements: bundle.InferenceForecastsBundle.Forecast.ForecastElements,
+		InfererAddresses: infererAddresses,
+		InfererValues:    infererValues,
 		ExtraData:        bundle.InferenceForecastsBundle.Forecast.ExtraData,
 	}
 }
@@ -123,8 +128,7 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 			ooInfererValues = append(ooInfererValues, ooiVal.Value)
 		}
 		oneOutInfererForecasterValues = append(oneOutInfererForecasterValues, &EventOneOutInfForcVals{
-			Forecaster: ooifVal.Forecaster,
-			Value:      ooInfererValues,
+			Value: ooInfererValues,
 		})
 	}
 	return &EventValueBundle{
@@ -502,17 +506,14 @@ func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Messa
 	}
 }
 
-func (e *EventOneOutInfForcVals) Equal(ei *EventOneOutInfForcVals) bool {
+func (m *EventOneOutInfForcVals) Equal(ei *EventOneOutInfForcVals) bool {
 	if ei == nil {
 		return false
 	}
-	if e.Forecaster != ei.Forecaster {
+	if len(m.Value) != len(ei.Value) {
 		return false
 	}
-	if len(e.Value) != len(ei.Value) {
-		return false
-	}
-	for i, eVal := range e.Value {
+	for i, eVal := range m.Value {
 		if !eVal.Equal(ei.Value[i]) {
 			return false
 		}

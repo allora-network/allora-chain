@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"encoding/json"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -48,22 +49,40 @@ func EmitNewReputerScoresSetEvent(ctx context.Context, scores []Score) {
 	}
 }
 
+// EmitNewNetworkLossSetEvent emits a network loss event using the classic attribute event path so that
+// the field `one_out_inferer_forecaster_values` can be emitted as a two-dimensional array
 func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(&lossBundle))
+	vb := valueBundleToEventValueBundleBase(&lossBundle)
+	jb, err := json.Marshal(vb)
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
+		return
 	}
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent("emissions.v9.EventNetworkLossSet",
+			sdk.NewAttribute("value_bundle", string(jb)),
+		),
+	)
 }
 
+// EmitNewNetworkInferencesEvent emits a network loss event using the classic attribute event path so that
+// the field `one_out_inferer_forecaster_values` can be emitted as a two-dimensional array
 func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(&networkInferences))
+	vb := valueBundleToEventValueBundleBase(&networkInferences)
+	jb, err := json.Marshal(vb)
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewNetworkInferencesEvent", "error", err)
+		return
 	}
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent("emissions.v9.EventNetworkInferences",
+			sdk.NewAttribute("value_bundle", string(jb)),
+		),
+	)
 }
 
 func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
@@ -236,7 +255,6 @@ func EmitNewGlobalReputerWhitelistAddedEvent(ctx context.Context, address string
 		sdkCtx.Logger().Warn("Error emitting NewGlobalReputerWhitelistAddedEvent", "error", err)
 	}
 }
-
 
 func EmitNewGlobalReputerWhitelistRemovedEvent(ctx context.Context, address string) {
 	metrics.IncrProducerEventCount(metrics.GLOBAL_REPUTER_WHITELIST_REMOVED_EVENT)
