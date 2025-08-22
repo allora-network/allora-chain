@@ -106,8 +106,7 @@ message EventValueBundle {
 }
 
 message EventOneOutInfForcVals {
-  string forecaster = 1;
-  repeated string value = 2 [
+  repeated string value = 1 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
