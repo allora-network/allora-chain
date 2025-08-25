@@ -503,13 +503,13 @@ func EmitNewTopicReputerWhitelistRemovedEvent(ctx context.Context, topicId Topic
 	}
 }
 
-func EmitNewActorEMAScoresSetEvent(ctx context.Context, actorType ActorType, scores []Score, activations map[string]bool) {
+func EmitNewActorEMAScoresSetEvent(ctx context.Context, actorType ActorType, nonceBlockHeight BlockHeight, scores []Score, activations map[string]bool) {
 	if len(scores) < 1 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.WORKER_EMA_SCORE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewEMAScoresSetEventBase(actorType, scores, activations))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewEMAScoresSetEventBase(actorType, nonceBlockHeight, scores, activations))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewActorEMAScoresSetEvent", "error", err)
 	}
@@ -639,6 +639,88 @@ func EmitActiveTopicsAtBlockSetEvent(ctx context.Context, targetBlockHeight Bloc
 	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveTopicsAtBlockSetEventBase(targetBlockHeight, topicIds, sdkCtx.BlockHeight()))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting ActiveTopicsAtBlockSetEvent", "error", err)
+	}
+}
+
+func EmitNetworkInferenceInfererWeightSetEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, address string, weight alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCE_INFERER_WEIGHT_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceInfererWeightSetEventBase(topicId, blockHeight, address, weight))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NetworkInferenceInfererWeightSetEvent", "error", err)
+	}
+}
+
+func EmitNetworkInferenceForecasterWeightSetEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, address string, weight alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCE_FORECASTER_WEIGHT_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceForecasterWeightSetEventBase(topicId, blockHeight, address, weight))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NetworkInferenceForecasterWeightSetEvent", "error", err)
+	}
+}
+
+func EmitNetworkInferenceInfererRegretUsedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, address string, regret alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCE_INFERER_REGRET_USED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceInfererRegretUsedEventBase(topicId, blockHeight, address, regret))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NetworkInferenceInfererRegretUsedEvent", "error", err)
+	}
+}
+
+func EmitNetworkInferenceForecasterRegretUsedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, address string, regret alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCE_FORECASTER_REGRET_USED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceForecasterRegretUsedEventBase(topicId, blockHeight, address, regret))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NetworkInferenceForecasterRegretUsedEvent", "error", err)
+	}
+}
+
+func EmitTopicWeightUpdatedEvent(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_WEIGHT_UPDATED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWeightUpdatedEventBase(topicId, newWeight))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting TopicWeightUpdatedEvent", "error", err)
+	}
+}
+
+// Submission window events
+func EmitWorkerSubmissionWindowOpenedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, windowStartBlock BlockHeight, windowEndBlock BlockHeight) {
+	metrics.IncrProducerEventCount(metrics.WORKER_SUBMISSION_WINDOW_OPENED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewWorkerSubmissionWindowOpenedEventBase(topicId, nonceBlockHeight, windowStartBlock, windowEndBlock))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting WorkerSubmissionWindowOpenedEvent", "error", err)
+	}
+}
+
+func EmitWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight) {
+	metrics.IncrProducerEventCount(metrics.WORKER_SUBMISSION_WINDOW_CLOSED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewWorkerSubmissionWindowClosedEventBase(topicId, nonceBlockHeight))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting WorkerSubmissionWindowClosedEvent", "error", err)
+	}
+}
+
+func EmitReputerSubmissionWindowOpenedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, windowStartBlock BlockHeight, windowEndBlock BlockHeight) {
+	metrics.IncrProducerEventCount(metrics.REPUTER_SUBMISSION_WINDOW_OPENED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerSubmissionWindowOpenedEventBase(topicId, nonceBlockHeight, windowStartBlock, windowEndBlock))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting ReputerSubmissionWindowOpenedEvent", "error", err)
+	}
+}
+
+func EmitReputerSubmissionWindowClosedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight) {
+	metrics.IncrProducerEventCount(metrics.REPUTER_SUBMISSION_WINDOW_CLOSED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerSubmissionWindowClosedEventBase(topicId, nonceBlockHeight))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting ReputerSubmissionWindowClosedEvent", "error", err)
 	}
 }
 

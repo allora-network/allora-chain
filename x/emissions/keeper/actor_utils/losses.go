@@ -99,6 +99,9 @@ func CloseReputerNonce(
 		}
 
 		ctx.Logger().Info("Closed reputer nonce", "topicId", topic.Id, "nonce", nonce)
+
+		// Emit reputer submission window closed event
+		types.EmitReputerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
 	}()
 
 	params, err := k.GetParams(ctx)

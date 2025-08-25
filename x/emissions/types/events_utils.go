@@ -370,9 +370,8 @@ func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) pro
 }
 
 // Assumes length of `scores` is at least 1
-func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations map[string]bool) proto.Message {
+func NewEMAScoresSetEventBase(actorType ActorType, nonceBlockHeight BlockHeight, scores []Score, activations map[string]bool) proto.Message {
 	topicId := scores[0].TopicId
-	blockHeight := scores[0].BlockHeight
 	activeArr := make([]bool, len(scores))
 	addresses := make([]string, len(scores))
 	scoreValues := make([]alloraMath.Dec, len(scores))
@@ -384,7 +383,7 @@ func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations m
 	return &EventEMAScoresSet{
 		ActorType: actorType,
 		TopicId:   topicId,
-		Nonce:     blockHeight,
+		Nonce:     nonceBlockHeight,
 		Addresses: addresses,
 		Scores:    scoreValues,
 		IsActive:  activeArr,
@@ -586,7 +585,6 @@ func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addr
 		TopicId:          topicId,
 		Addresses:        addresses,
 		NonceBlockHeight: nonceBlockHeight,
-		BlockHeight:      blockHeight,
 	}
 }
 
@@ -595,7 +593,6 @@ func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addr
 		TopicId:          topicId,
 		Addresses:        addresses,
 		NonceBlockHeight: nonceBlockHeight,
-		BlockHeight:      blockHeight,
 	}
 }
 
@@ -604,7 +601,6 @@ func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, a
 		TopicId:          topicId,
 		Addresses:        addresses,
 		NonceBlockHeight: nonceBlockHeight,
-		BlockHeight:      blockHeight,
 	}
 }
 
@@ -612,6 +608,81 @@ func NewActiveTopicsAtBlockSetEventBase(targetBlockHeight int64, topicIds []uint
 	return &EventActiveTopicsAtBlockSet{
 		TargetBlockHeight: targetBlockHeight,
 		TopicIds:          topicIds,
-		BlockHeight:       blockHeight,
+	}
+}
+
+func NewNetworkInferenceInfererWeightSetEventBase(topicId TopicId, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceInfererWeightSet{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Address:          address,
+		Weight:           weight,
+	}
+}
+
+func NewNetworkInferenceForecasterWeightSetEventBase(topicId TopicId, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceForecasterWeightSet{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Address:          address,
+		Weight:           weight,
+	}
+}
+
+func NewNetworkInferenceInfererRegretUsedEventBase(topicId TopicId, blockHeight int64, address string, regret alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceInfererRegretUsed{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Address:          address,
+		Regret:           regret,
+	}
+}
+
+func NewNetworkInferenceForecasterRegretUsedEventBase(topicId TopicId, blockHeight int64, address string, regret alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceForecasterRegretUsed{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Address:          address,
+		Regret:           regret,
+	}
+}
+
+func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec) proto.Message {
+	return &EventTopicWeightUpdated{
+		TopicId:   topicId,
+		NewWeight: newWeight,
+	}
+}
+
+// Submission window events
+func NewWorkerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowStartBlock int64, windowEndBlock int64) proto.Message {
+	return &EventWorkerSubmissionWindowOpened{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		WindowStartBlock: windowStartBlock,
+		WindowEndBlock:   windowEndBlock,
+	}
+}
+
+func NewWorkerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight int64) proto.Message {
+	return &EventWorkerSubmissionWindowClosed{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+	}
+}
+
+func NewReputerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowStartBlock int64, windowEndBlock int64) proto.Message {
+	return &EventReputerSubmissionWindowOpened{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		WindowStartBlock: windowStartBlock,
+		WindowEndBlock:   windowEndBlock,
+	}
+}
+
+func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight int64) proto.Message {
+	return &EventReputerSubmissionWindowClosed{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
 	}
 }

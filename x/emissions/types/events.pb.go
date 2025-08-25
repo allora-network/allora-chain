@@ -4101,7 +4101,6 @@ type EventActiveReputersSet struct {
 	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
 	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	BlockHeight      int64    `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 }
 
 func (m *EventActiveReputersSet) Reset()         { *m = EventActiveReputersSet{} }
@@ -4158,18 +4157,10 @@ func (m *EventActiveReputersSet) GetNonceBlockHeight() int64 {
 	return 0
 }
 
-func (m *EventActiveReputersSet) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
 type EventActiveInferersSet struct {
 	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
 	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	BlockHeight      int64    `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 }
 
 func (m *EventActiveInferersSet) Reset()         { *m = EventActiveInferersSet{} }
@@ -4226,18 +4217,10 @@ func (m *EventActiveInferersSet) GetNonceBlockHeight() int64 {
 	return 0
 }
 
-func (m *EventActiveInferersSet) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
 type EventActiveForecastersSet struct {
 	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
 	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	BlockHeight      int64    `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 }
 
 func (m *EventActiveForecastersSet) Reset()         { *m = EventActiveForecastersSet{} }
@@ -4294,17 +4277,9 @@ func (m *EventActiveForecastersSet) GetNonceBlockHeight() int64 {
 	return 0
 }
 
-func (m *EventActiveForecastersSet) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
 type EventActiveTopicsAtBlockSet struct {
 	TargetBlockHeight int64    `protobuf:"varint,1,opt,name=target_block_height,json=targetBlockHeight,proto3" json:"target_block_height,omitempty"`
 	TopicIds          []uint64 `protobuf:"varint,2,rep,packed,name=topic_ids,json=topicIds,proto3" json:"topic_ids,omitempty"`
-	BlockHeight       int64    `protobuf:"varint,3,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 }
 
 func (m *EventActiveTopicsAtBlockSet) Reset()         { *m = EventActiveTopicsAtBlockSet{} }
@@ -4354,9 +4329,539 @@ func (m *EventActiveTopicsAtBlockSet) GetTopicIds() []uint64 {
 	return nil
 }
 
-func (m *EventActiveTopicsAtBlockSet) GetBlockHeight() int64 {
+type EventNetworkInferenceInfererWeightSet struct {
+	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Address          string                                          `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Weight           github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=weight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weight"`
+}
+
+func (m *EventNetworkInferenceInfererWeightSet) Reset()         { *m = EventNetworkInferenceInfererWeightSet{} }
+func (m *EventNetworkInferenceInfererWeightSet) String() string { return proto.CompactTextString(m) }
+func (*EventNetworkInferenceInfererWeightSet) ProtoMessage()    {}
+func (*EventNetworkInferenceInfererWeightSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{79}
+}
+func (m *EventNetworkInferenceInfererWeightSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceInfererWeightSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceInfererWeightSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceInfererWeightSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceInfererWeightSet.Merge(m, src)
+}
+func (m *EventNetworkInferenceInfererWeightSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceInfererWeightSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceInfererWeightSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceInfererWeightSet proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceInfererWeightSet) GetTopicId() uint64 {
 	if m != nil {
-		return m.BlockHeight
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererWeightSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererWeightSet) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventNetworkInferenceForecasterWeightSet struct {
+	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Address          string                                          `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Weight           github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=weight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weight"`
+}
+
+func (m *EventNetworkInferenceForecasterWeightSet) Reset() {
+	*m = EventNetworkInferenceForecasterWeightSet{}
+}
+func (m *EventNetworkInferenceForecasterWeightSet) String() string { return proto.CompactTextString(m) }
+func (*EventNetworkInferenceForecasterWeightSet) ProtoMessage()    {}
+func (*EventNetworkInferenceForecasterWeightSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{80}
+}
+func (m *EventNetworkInferenceForecasterWeightSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceForecasterWeightSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceForecasterWeightSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceForecasterWeightSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceForecasterWeightSet.Merge(m, src)
+}
+func (m *EventNetworkInferenceForecasterWeightSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceForecasterWeightSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceForecasterWeightSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceForecasterWeightSet proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceForecasterWeightSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterWeightSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterWeightSet) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventNetworkInferenceInfererRegretUsed struct {
+	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Address          string                                          `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Regret           github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=regret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regret"`
+}
+
+func (m *EventNetworkInferenceInfererRegretUsed) Reset() {
+	*m = EventNetworkInferenceInfererRegretUsed{}
+}
+func (m *EventNetworkInferenceInfererRegretUsed) String() string { return proto.CompactTextString(m) }
+func (*EventNetworkInferenceInfererRegretUsed) ProtoMessage()    {}
+func (*EventNetworkInferenceInfererRegretUsed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{81}
+}
+func (m *EventNetworkInferenceInfererRegretUsed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceInfererRegretUsed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceInfererRegretUsed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceInfererRegretUsed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceInfererRegretUsed.Merge(m, src)
+}
+func (m *EventNetworkInferenceInfererRegretUsed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceInfererRegretUsed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceInfererRegretUsed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceInfererRegretUsed proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceInfererRegretUsed) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererRegretUsed) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererRegretUsed) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventNetworkInferenceForecasterRegretUsed struct {
+	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Address          string                                          `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Regret           github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=regret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regret"`
+}
+
+func (m *EventNetworkInferenceForecasterRegretUsed) Reset() {
+	*m = EventNetworkInferenceForecasterRegretUsed{}
+}
+func (m *EventNetworkInferenceForecasterRegretUsed) String() string {
+	return proto.CompactTextString(m)
+}
+func (*EventNetworkInferenceForecasterRegretUsed) ProtoMessage() {}
+func (*EventNetworkInferenceForecasterRegretUsed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{82}
+}
+func (m *EventNetworkInferenceForecasterRegretUsed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceForecasterRegretUsed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceForecasterRegretUsed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceForecasterRegretUsed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceForecasterRegretUsed.Merge(m, src)
+}
+func (m *EventNetworkInferenceForecasterRegretUsed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceForecasterRegretUsed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceForecasterRegretUsed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceForecasterRegretUsed proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceForecasterRegretUsed) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterRegretUsed) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterRegretUsed) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventTopicWeightUpdated struct {
+	TopicId   uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NewWeight github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=new_weight,json=newWeight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"new_weight"`
+}
+
+func (m *EventTopicWeightUpdated) Reset()         { *m = EventTopicWeightUpdated{} }
+func (m *EventTopicWeightUpdated) String() string { return proto.CompactTextString(m) }
+func (*EventTopicWeightUpdated) ProtoMessage()    {}
+func (*EventTopicWeightUpdated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{83}
+}
+func (m *EventTopicWeightUpdated) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicWeightUpdated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicWeightUpdated.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicWeightUpdated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicWeightUpdated.Merge(m, src)
+}
+func (m *EventTopicWeightUpdated) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicWeightUpdated) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicWeightUpdated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicWeightUpdated proto.InternalMessageInfo
+
+func (m *EventTopicWeightUpdated) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type EventWorkerSubmissionWindowOpened struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	WindowStartBlock int64  `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
+	WindowEndBlock   int64  `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+}
+
+func (m *EventWorkerSubmissionWindowOpened) Reset()         { *m = EventWorkerSubmissionWindowOpened{} }
+func (m *EventWorkerSubmissionWindowOpened) String() string { return proto.CompactTextString(m) }
+func (*EventWorkerSubmissionWindowOpened) ProtoMessage()    {}
+func (*EventWorkerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{84}
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWorkerSubmissionWindowOpened.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWorkerSubmissionWindowOpened.Merge(m, src)
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWorkerSubmissionWindowOpened.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWorkerSubmissionWindowOpened proto.InternalMessageInfo
+
+func (m *EventWorkerSubmissionWindowOpened) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventWorkerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventWorkerSubmissionWindowOpened) GetWindowStartBlock() int64 {
+	if m != nil {
+		return m.WindowStartBlock
+	}
+	return 0
+}
+
+func (m *EventWorkerSubmissionWindowOpened) GetWindowEndBlock() int64 {
+	if m != nil {
+		return m.WindowEndBlock
+	}
+	return 0
+}
+
+type EventWorkerSubmissionWindowClosed struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (m *EventWorkerSubmissionWindowClosed) Reset()         { *m = EventWorkerSubmissionWindowClosed{} }
+func (m *EventWorkerSubmissionWindowClosed) String() string { return proto.CompactTextString(m) }
+func (*EventWorkerSubmissionWindowClosed) ProtoMessage()    {}
+func (*EventWorkerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{85}
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWorkerSubmissionWindowClosed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWorkerSubmissionWindowClosed.Merge(m, src)
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWorkerSubmissionWindowClosed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWorkerSubmissionWindowClosed proto.InternalMessageInfo
+
+func (m *EventWorkerSubmissionWindowClosed) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventWorkerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventReputerSubmissionWindowOpened struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	WindowStartBlock int64  `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
+	WindowEndBlock   int64  `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+}
+
+func (m *EventReputerSubmissionWindowOpened) Reset()         { *m = EventReputerSubmissionWindowOpened{} }
+func (m *EventReputerSubmissionWindowOpened) String() string { return proto.CompactTextString(m) }
+func (*EventReputerSubmissionWindowOpened) ProtoMessage()    {}
+func (*EventReputerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{86}
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventReputerSubmissionWindowOpened.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReputerSubmissionWindowOpened.Merge(m, src)
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReputerSubmissionWindowOpened.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventReputerSubmissionWindowOpened proto.InternalMessageInfo
+
+func (m *EventReputerSubmissionWindowOpened) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventReputerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventReputerSubmissionWindowOpened) GetWindowStartBlock() int64 {
+	if m != nil {
+		return m.WindowStartBlock
+	}
+	return 0
+}
+
+func (m *EventReputerSubmissionWindowOpened) GetWindowEndBlock() int64 {
+	if m != nil {
+		return m.WindowEndBlock
+	}
+	return 0
+}
+
+type EventReputerSubmissionWindowClosed struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (m *EventReputerSubmissionWindowClosed) Reset()         { *m = EventReputerSubmissionWindowClosed{} }
+func (m *EventReputerSubmissionWindowClosed) String() string { return proto.CompactTextString(m) }
+func (*EventReputerSubmissionWindowClosed) ProtoMessage()    {}
+func (*EventReputerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{87}
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventReputerSubmissionWindowClosed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReputerSubmissionWindowClosed.Merge(m, src)
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReputerSubmissionWindowClosed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventReputerSubmissionWindowClosed proto.InternalMessageInfo
+
+func (m *EventReputerSubmissionWindowClosed) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventReputerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
 	}
 	return 0
 }
@@ -4442,141 +4947,161 @@ func init() {
 	proto.RegisterType((*EventActiveInferersSet)(nil), "emissions.v9.EventActiveInferersSet")
 	proto.RegisterType((*EventActiveForecastersSet)(nil), "emissions.v9.EventActiveForecastersSet")
 	proto.RegisterType((*EventActiveTopicsAtBlockSet)(nil), "emissions.v9.EventActiveTopicsAtBlockSet")
+	proto.RegisterType((*EventNetworkInferenceInfererWeightSet)(nil), "emissions.v9.EventNetworkInferenceInfererWeightSet")
+	proto.RegisterType((*EventNetworkInferenceForecasterWeightSet)(nil), "emissions.v9.EventNetworkInferenceForecasterWeightSet")
+	proto.RegisterType((*EventNetworkInferenceInfererRegretUsed)(nil), "emissions.v9.EventNetworkInferenceInfererRegretUsed")
+	proto.RegisterType((*EventNetworkInferenceForecasterRegretUsed)(nil), "emissions.v9.EventNetworkInferenceForecasterRegretUsed")
+	proto.RegisterType((*EventTopicWeightUpdated)(nil), "emissions.v9.EventTopicWeightUpdated")
+	proto.RegisterType((*EventWorkerSubmissionWindowOpened)(nil), "emissions.v9.EventWorkerSubmissionWindowOpened")
+	proto.RegisterType((*EventWorkerSubmissionWindowClosed)(nil), "emissions.v9.EventWorkerSubmissionWindowClosed")
+	proto.RegisterType((*EventReputerSubmissionWindowOpened)(nil), "emissions.v9.EventReputerSubmissionWindowOpened")
+	proto.RegisterType((*EventReputerSubmissionWindowClosed)(nil), "emissions.v9.EventReputerSubmissionWindowClosed")
 }
 
 func init() { proto.RegisterFile("emissions/v9/events.proto", fileDescriptor_2d7671ca936dd333) }
 
 var fileDescriptor_2d7671ca936dd333 = []byte{
-	// 2059 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x5a, 0xdd, 0x6f, 0x1b, 0xc7,
-	0x11, 0xd7, 0x91, 0x22, 0x6d, 0xad, 0x5c, 0x47, 0x3e, 0x4b, 0x36, 0xa5, 0xb8, 0xb4, 0xb2, 0x6d,
-	0x03, 0x25, 0x48, 0x48, 0x43, 0x46, 0x13, 0xa7, 0x4d, 0xdc, 0x52, 0x12, 0xd5, 0x10, 0x50, 0x24,
-	0xf9, 0x44, 0x45, 0xfd, 0x48, 0x7b, 0x59, 0xdd, 0x8d, 0xa8, 0x83, 0xc8, 0x5b, 0x62, 0x6f, 0x49,
-	0xd9, 0xcf, 0x4d, 0x3f, 0x10, 0x20, 0x40, 0x0a, 0xf4, 0x2f, 0xe8, 0x07, 0x90, 0xa2, 0x40, 0xd1,
-	0x87, 0x3e, 0x17, 0x45, 0x8b, 0x02, 0x79, 0x29, 0x60, 0xe4, 0xa9, 0x28, 0x82, 0xa0, 0xb0, 0x0b,
-	0xb4, 0xff, 0x40, 0xdf, 0x8b, 0xdb, 0x0f, 0xe9, 0x8e, 0x22, 0x29, 0x86, 0xc7, 0xd8, 0x72, 0xdb,
-	0x17, 0x41, 0x7b, 0xbb, 0xf3, 0x9b, 0xdf, 0xcc, 0xee, 0xce, 0xce, 0xec, 0x12, 0xcd, 0x42, 0xc3,
-	0x0b, 0x02, 0x8f, 0xfa, 0x41, 0xb1, 0xfd, 0x4a, 0x11, 0xda, 0xe0, 0xf3, 0xa0, 0xd0, 0x64, 0x94,
-	0x53, 0xf3, 0xc2, 0x51, 0x57, 0xa1, 0xfd, 0xca, 0x5c, 0x2e, 0x32, 0xf0, 0x66, 0xd1, 0xa7, 0xbe,
-	0x03, 0x72, 0xdc, 0xdc, 0x5c, 0xac, 0x87, 0x41, 0xb3, 0xc5, 0x81, 0xa9, 0xbe, 0xd9, 0x58, 0xdf,
-	0x21, 0x65, 0x07, 0x47, 0x5d, 0x71, 0x40, 0x4e, 0x9b, 0x9e, 0xd3, 0x45, 0xe8, 0x56, 0xb1, 0x49,
-	0x18, 0x69, 0x28, 0x4e, 0x73, 0xd3, 0x35, 0x5a, 0xa3, 0xe2, 0xdf, 0x62, 0xf8, 0x9f, 0xfa, 0x7a,
-	0x89, 0x34, 0x3c, 0x9f, 0x16, 0xc5, 0x5f, 0x8d, 0xe1, 0xd0, 0xa0, 0x41, 0x03, 0x5b, 0x8e, 0x95,
-	0x0d, 0xd9, 0x85, 0xff, 0x6d, 0xa0, 0x8b, 0xe5, 0xd0, 0xd0, 0x2d, 0x87, 0x32, 0x08, 0xb6, 0x80,
-	0x9b, 0x2f, 0x21, 0x44, 0x1c, 0x4e, 0x99, 0xcd, 0xef, 0x35, 0x21, 0x67, 0xcc, 0x1b, 0x0b, 0x17,
-	0x17, 0xaf, 0x16, 0xa2, 0xf6, 0x17, 0x4a, 0x61, 0x7f, 0xf5, 0x5e, 0x13, 0xac, 0x09, 0xa2, 0xff,
-	0x35, 0x67, 0xd1, 0x79, 0x41, 0xdc, 0xf6, 0xdc, 0x5c, 0x6a, 0xde, 0x58, 0x18, 0xb7, 0xce, 0x89,
-	0x76, 0xc5, 0x35, 0x9f, 0x41, 0x17, 0x76, 0xeb, 0xd4, 0x39, 0xb0, 0xf7, 0xc1, 0xab, 0xed, 0xf3,
-	0x5c, 0x7a, 0xde, 0x58, 0x48, 0x5b, 0x93, 0xe2, 0xdb, 0xeb, 0xe2, 0x93, 0x79, 0x0d, 0x4d, 0x10,
-	0xd7, 0x65, 0x10, 0x04, 0x10, 0xe4, 0xc6, 0xe7, 0xd3, 0x0b, 0x13, 0xd6, 0xf1, 0x07, 0x73, 0x03,
-	0x65, 0x03, 0x41, 0x30, 0x97, 0x09, 0xbb, 0x96, 0x5e, 0xfe, 0xf0, 0x93, 0xeb, 0x63, 0x7f, 0xfb,
-	0xe4, 0x7a, 0xb1, 0xe6, 0xf1, 0xfd, 0xd6, 0x6e, 0xc1, 0xa1, 0x8d, 0x22, 0xa9, 0xd7, 0x29, 0x23,
-	0x2f, 0xfa, 0xc0, 0x43, 0xd7, 0xea, 0xa6, 0xb3, 0x4f, 0x3c, 0xbf, 0xd8, 0x20, 0x7c, 0xbf, 0xb0,
-	0x02, 0x8e, 0xa5, 0x60, 0xf0, 0x2f, 0x52, 0xe8, 0xb2, 0xb0, 0xdb, 0x82, 0x43, 0xc2, 0xdc, 0xd0,
-	0x70, 0x5e, 0x07, 0xf7, 0x4c, 0x1a, 0x7f, 0x07, 0x9d, 0x63, 0x92, 0x65, 0x52, 0xeb, 0x35, 0x8e,
-	0xf9, 0x2c, 0x7a, 0x2a, 0xca, 0xc9, 0xe6, 0x77, 0x73, 0x59, 0x41, 0xeb, 0x73, 0x11, 0x5a, 0xd5,
-	0xbb, 0xf8, 0x27, 0x86, 0x72, 0xd3, 0xba, 0xc4, 0x5d, 0xa3, 0x81, 0x58, 0x23, 0x51, 0x73, 0x8d,
-	0xfe, 0xe6, 0xa6, 0x4e, 0x9a, 0xfb, 0x2a, 0xba, 0xd0, 0x26, 0xf5, 0x16, 0xd8, 0xbb, 0x2d, 0xdf,
-	0xad, 0x83, 0xf0, 0xc8, 0xe4, 0xe2, 0x6c, 0xd4, 0xcd, 0x37, 0x0b, 0x6f, 0x86, 0x23, 0x96, 0xc4,
-	0x00, 0x6b, 0xb2, 0x7d, 0xdc, 0xc0, 0x3f, 0x35, 0xd0, 0x95, 0x28, 0xa7, 0x8a, 0xbf, 0x07, 0x0c,
-	0x7c, 0x07, 0x82, 0xc7, 0x4a, 0xeb, 0xfb, 0x06, 0xca, 0x09, 0x5a, 0x15, 0x3f, 0x00, 0xc6, 0x77,
-	0xc4, 0xf6, 0xde, 0x24, 0xf7, 0xea, 0x94, 0xb8, 0xfd, 0x88, 0xad, 0x21, 0x53, 0x86, 0x02, 0xdb,
-	0x25, 0x9c, 0x68, 0xdd, 0x29, 0xa1, 0x3b, 0x1f, 0xd7, 0x2d, 0x31, 0x57, 0x08, 0x27, 0x8a, 0xc0,
-	0xd4, 0x61, 0xc7, 0x17, 0xfc, 0x75, 0x35, 0x5f, 0xcb, 0x0c, 0x08, 0x87, 0x75, 0x38, 0xac, 0x86,
-	0x6a, 0xcc, 0xe7, 0x50, 0x46, 0xe8, 0x13, 0xca, 0x27, 0x17, 0x2f, 0xc7, 0x71, 0xc5, 0x18, 0x4b,
-	0x8e, 0xc0, 0x1f, 0x1b, 0xe8, 0xaa, 0x80, 0x28, 0xb9, 0xae, 0xe8, 0x58, 0x05, 0xb0, 0xc2, 0x58,
-	0xd8, 0x82, 0x7e, 0x66, 0xbc, 0x8e, 0xb2, 0xa4, 0x41, 0x5b, 0xbe, 0xf4, 0xec, 0xc4, 0xd2, 0x0d,
-	0xb5, 0x46, 0x67, 0x64, 0xb8, 0x09, 0xdc, 0x83, 0x82, 0x47, 0xe5, 0x4a, 0xac, 0xf8, 0xfc, 0xa3,
-	0xdf, 0xbd, 0x88, 0x54, 0x1c, 0xaa, 0xf8, 0xfc, 0x83, 0x7f, 0xfe, 0xf6, 0x79, 0xc3, 0x52, 0xf2,
-	0xe6, 0x5b, 0xe8, 0x92, 0x54, 0xb2, 0x07, 0x60, 0x33, 0xa9, 0x59, 0xcc, 0xc5, 0x30, 0xa0, 0x4f,
-	0xf1, 0xb8, 0x09, 0xf8, 0x5f, 0x06, 0x9a, 0xd6, 0xe6, 0x59, 0x32, 0x3c, 0x6f, 0x71, 0x72, 0xd0,
-	0xd7, 0xb6, 0x5c, 0xb8, 0x01, 0xc5, 0x50, 0x69, 0x9c, 0xa5, 0x9b, 0x11, 0xab, 0xd3, 0x09, 0xad,
-	0xbe, 0x83, 0x26, 0xa5, 0xfa, 0x20, 0x64, 0x93, 0x1b, 0x1f, 0x12, 0x0e, 0x09, 0x10, 0x61, 0x11,
-	0x7e, 0x27, 0xa5, 0x66, 0xd2, 0x82, 0x06, 0x6d, 0xc3, 0x59, 0xb2, 0x76, 0x11, 0xcd, 0xc8, 0xdd,
-	0xc8, 0x42, 0x6a, 0xa4, 0x1e, 0x5a, 0xcd, 0x38, 0xb8, 0xc2, 0xee, 0xb4, 0x75, 0x59, 0x74, 0x5a,
-	0xb2, 0x6f, 0x4b, 0x76, 0x99, 0x2f, 0xa1, 0xab, 0x71, 0x19, 0x87, 0x36, 0x9a, 0x75, 0x08, 0xa5,
-	0x32, 0x42, 0x6a, 0x26, 0x2a, 0xb5, 0xac, 0x3b, 0xf1, 0xbb, 0x29, 0xf4, 0x79, 0xb9, 0x27, 0x88,
-	0xef, 0x40, 0xfd, 0x7f, 0xdb, 0x19, 0x3f, 0x4a, 0xa1, 0x19, 0xbd, 0xfc, 0x57, 0xa0, 0x0e, 0x35,
-	0xc2, 0x21, 0x81, 0x13, 0xae, 0xa1, 0x09, 0x57, 0xa2, 0x50, 0x26, 0xfd, 0x60, 0x1d, 0x7f, 0x88,
-	0xb8, 0x68, 0x7c, 0xb4, 0xbb, 0x23, 0x33, 0x82, 0xdd, 0xf1, 0xf3, 0x94, 0x8a, 0xd7, 0x72, 0x41,
-	0x3c, 0x41, 0xce, 0xe8, 0xb9, 0x5e, 0x32, 0x43, 0xad, 0x97, 0x6c, 0xbf, 0xf5, 0xf2, 0xab, 0x14,
-	0xca, 0x9f, 0xd8, 0x3c, 0xff, 0xf7, 0x55, 0x57, 0x5f, 0xfd, 0xde, 0x38, 0x5a, 0x51, 0x61, 0x96,
-	0xf5, 0x99, 0x7b, 0x69, 0xa3, 0xc3, 0x4b, 0xc3, 0x27, 0xc5, 0x12, 0x06, 0xbf, 0x6b, 0xa0, 0xd9,
-	0x48, 0x0a, 0xa3, 0x62, 0xe4, 0x00, 0x39, 0x8c, 0x85, 0xa6, 0x15, 0x65, 0x3b, 0x96, 0x41, 0xc9,
-	0x2c, 0x66, 0x3e, 0x9e, 0x6d, 0x28, 0xd8, 0x68, 0x22, 0x65, 0xb2, 0x13, 0xdf, 0xb0, 0xa3, 0xb2,
-	0x3c, 0x35, 0xdc, 0x82, 0x9a, 0x17, 0x70, 0x60, 0xe0, 0x0e, 0xe7, 0xca, 0x69, 0x94, 0xa1, 0x87,
-	0x3e, 0x68, 0x37, 0xca, 0x06, 0x7e, 0x5b, 0x45, 0x43, 0x99, 0x59, 0x0d, 0xa6, 0xe3, 0x0a, 0xca,
-	0xca, 0xb4, 0x4b, 0xa9, 0x50, 0xad, 0x1e, 0x1a, 0x36, 0x8e, 0xd6, 0x84, 0xe0, 0xb1, 0xed, 0xb3,
-	0x64, 0x86, 0xe0, 0x35, 0x75, 0xa8, 0x4b, 0xca, 0x83, 0xe2, 0xf5, 0x20, 0x8d, 0xdf, 0xd3, 0xf5,
-	0xdf, 0x6a, 0xcb, 0x97, 0xe9, 0xde, 0x29, 0x28, 0x7b, 0x2d, 0xdf, 0x3d, 0x46, 0x91, 0xad, 0xd1,
-	0x9d, 0x85, 0xf8, 0xb6, 0xa2, 0xb3, 0x29, 0x0a, 0xdd, 0xb0, 0xd4, 0x78, 0x01, 0x65, 0x65, 0xd5,
-	0xab, 0x72, 0xd7, 0xe9, 0xe8, 0x6a, 0xba, 0x55, 0x90, 0x03, 0x2d, 0x35, 0x06, 0xdf, 0x50, 0xee,
-	0xde, 0xd9, 0xf7, 0x38, 0xd4, 0xbd, 0x80, 0x97, 0xdc, 0x86, 0xe7, 0x97, 0x5c, 0x17, 0xdc, 0x70,
-	0x82, 0x48, 0xd8, 0x12, 0x40, 0x13, 0x96, 0x6c, 0xe0, 0x45, 0x34, 0xd7, 0x45, 0x42, 0x06, 0xba,
-	0x5e, 0x32, 0x5f, 0x56, 0xfb, 0xe4, 0x1b, 0x75, 0xba, 0x4b, 0xea, 0x11, 0xc9, 0x50, 0x4d, 0x0e,
-	0x9d, 0x53, 0xb5, 0x9b, 0x12, 0xd2, 0x4d, 0xfc, 0x32, 0x7a, 0xba, 0x9b, 0x98, 0xd6, 0xd5, 0x5b,
-	0xf0, 0xab, 0xe8, 0x7a, 0x54, 0x50, 0x4c, 0xdd, 0xc0, 0x5a, 0x5f, 0x43, 0xcf, 0xf4, 0x16, 0x3e,
-	0x5d, 0xf7, 0xab, 0x68, 0x3e, 0x22, 0xae, 0x96, 0xf1, 0xc0, 0xca, 0x6f, 0x23, 0xdc, 0x47, 0xfa,
-	0x74, 0xed, 0x5f, 0x51, 0xc7, 0x8f, 0x94, 0x17, 0x53, 0x33, 0xb0, 0xee, 0x38, 0xf3, 0xb8, 0xec,
-	0xe9, 0x9a, 0x97, 0xd1, 0x17, 0x7a, 0xbb, 0x6d, 0xa9, 0x55, 0x3f, 0x90, 0xea, 0x63, 0xa5, 0xbb,
-	0xd1, 0x51, 0xba, 0xe3, 0x32, 0xfa, 0x52, 0x7f, 0x10, 0xcd, 0xa3, 0x3f, 0xcc, 0x0a, 0xfa, 0x62,
-	0x1f, 0x2f, 0x0e, 0x4a, 0x66, 0x15, 0x3d, 0x7b, 0x0a, 0xca, 0x60, 0x6c, 0x96, 0x62, 0x73, 0x1a,
-	0xf7, 0xeb, 0xa0, 0x5c, 0xe2, 0x16, 0x9d, 0xc4, 0x18, 0x8c, 0xc9, 0x6b, 0x6a, 0x86, 0x45, 0xe0,
-	0xea, 0xf0, 0x6e, 0xd9, 0x27, 0xbb, 0xf5, 0xbe, 0x41, 0x11, 0xdf, 0x56, 0x3b, 0xa3, 0x9b, 0xf8,
-	0x8a, 0x17, 0x7c, 0x3a, 0xf9, 0x4e, 0x7f, 0x0e, 0xa0, 0xff, 0x6b, 0xca, 0x91, 0x5d, 0xe5, 0x07,
-	0x21, 0xf0, 0xa6, 0x8a, 0x0b, 0x02, 0x40, 0x94, 0xfc, 0xb4, 0x73, 0x6b, 0xf6, 0x3f, 0x63, 0xf4,
-	0xda, 0x4f, 0xc5, 0xd7, 0xfe, 0x37, 0xa3, 0x86, 0x75, 0xe2, 0xea, 0xa9, 0x19, 0x0a, 0x79, 0x5b,
-	0xed, 0xe7, 0x6e, 0x2e, 0x4f, 0x40, 0x78, 0xa7, 0xcf, 0x42, 0x48, 0xc4, 0x37, 0xe6, 0xe1, 0xee,
-	0xc1, 0x2f, 0xb9, 0x87, 0x7b, 0x85, 0xc5, 0xa1, 0x90, 0xab, 0xaa, 0xda, 0x15, 0xc8, 0xdd, 0x02,
-	0x66, 0x72, 0x3f, 0x74, 0x0f, 0xa5, 0x43, 0xe1, 0xbe, 0x15, 0xf5, 0x43, 0xaf, 0x50, 0xd2, 0x07,
-	0x39, 0x16, 0x1f, 0x52, 0x9d, 0xf1, 0xe1, 0x7b, 0x2a, 0x86, 0xf7, 0x40, 0x1f, 0x80, 0x79, 0x7f,
-	0xfc, 0xef, 0x46, 0x37, 0x70, 0xcf, 0x23, 0x62, 0x68, 0x78, 0x5b, 0x05, 0xc9, 0x5e, 0xf0, 0x89,
-	0xf9, 0xc7, 0xfc, 0xd3, 0xfb, 0x58, 0x19, 0x1a, 0xff, 0x6d, 0x75, 0xfc, 0xf5, 0xc4, 0x4f, 0x6c,
-	0xc1, 0x0f, 0x74, 0xc9, 0xb2, 0x4a, 0x19, 0x38, 0x24, 0xe0, 0x55, 0x12, 0x1c, 0x88, 0xb7, 0x8c,
-	0x53, 0xae, 0xa9, 0xdf, 0x40, 0x19, 0xf1, 0x14, 0xa0, 0xae, 0x2b, 0x87, 0xae, 0x9d, 0x24, 0xca,
-	0xf1, 0xed, 0xaf, 0x9c, 0xa6, 0x35, 0x12, 0xf0, 0x65, 0xda, 0x68, 0x78, 0x3c, 0xf9, 0x6d, 0xf9,
-	0x73, 0x28, 0x23, 0x5e, 0x98, 0xd4, 0x7d, 0x74, 0xc7, 0xdd, 0xed, 0x7a, 0xd8, 0x65, 0xc9, 0x11,
-	0xf8, 0x1d, 0xed, 0x0d, 0xe5, 0xeb, 0xc7, 0x44, 0xe3, 0x87, 0xfa, 0x8e, 0x55, 0xcd, 0xbb, 0x7e,
-	0x61, 0x31, 0x9f, 0x46, 0x13, 0x9a, 0x81, 0x3c, 0xcd, 0xc7, 0xad, 0xf3, 0x8a, 0x42, 0xec, 0x99,
-	0x23, 0x35, 0x9a, 0x67, 0x0e, 0xfc, 0xe3, 0x14, 0xba, 0x24, 0x88, 0x94, 0xdf, 0x28, 0x7d, 0xa6,
-	0x0f, 0x5c, 0xd3, 0x51, 0xe7, 0xa4, 0x95, 0x1f, 0x1e, 0xf1, 0x9b, 0x56, 0xe8, 0x5d, 0x2f, 0xb0,
-	0x89, 0xc3, 0xbd, 0x36, 0xe4, 0xb2, 0xf3, 0xe9, 0x85, 0xf3, 0xd6, 0x79, 0x2f, 0x28, 0x89, 0x36,
-	0x7e, 0x5f, 0xdf, 0x82, 0xae, 0x85, 0xd5, 0xa2, 0xef, 0xf9, 0xb5, 0x65, 0x0a, 0x7b, 0x7b, 0x9e,
-	0xe3, 0x81, 0xcf, 0xcf, 0xec, 0xbb, 0xdf, 0x77, 0xd0, 0x05, 0x27, 0x42, 0x33, 0xa9, 0xa7, 0x62,
-	0x60, 0xf8, 0x2f, 0x06, 0xba, 0xa6, 0xae, 0x3b, 0xf6, 0x80, 0x01, 0x53, 0xef, 0x49, 0x16, 0xd4,
-	0x18, 0x8c, 0x60, 0xc3, 0xc4, 0x2c, 0x4b, 0x77, 0x7d, 0xd4, 0x0b, 0x15, 0x29, 0xab, 0x13, 0xad,
-	0x76, 0x81, 0x83, 0xef, 0x1b, 0xea, 0x90, 0xd6, 0xb1, 0xf0, 0xc9, 0x37, 0xe9, 0x23, 0x43, 0xe5,
-	0x07, 0xeb, 0xc4, 0x6b, 0xc3, 0x7f, 0xc9, 0x3c, 0xfd, 0xda, 0x50, 0x57, 0x0e, 0x22, 0x3c, 0x56,
-	0x7c, 0x8f, 0x7b, 0x61, 0x39, 0x36, 0x1a, 0x6b, 0x36, 0x50, 0x56, 0xea, 0x51, 0x57, 0x31, 0xc3,
-	0x47, 0x15, 0x09, 0x83, 0x1f, 0xea, 0x5d, 0x12, 0x65, 0x5b, 0x6e, 0x90, 0xa3, 0x43, 0xf6, 0xf1,
-	0xc4, 0x8d, 0xa3, 0xf3, 0x7b, 0x7c, 0x24, 0xe7, 0xf7, 0x07, 0x86, 0xba, 0x09, 0x54, 0xf3, 0xc0,
-	0xdd, 0x75, 0xca, 0x1a, 0xc9, 0xa7, 0xe3, 0x0e, 0x3a, 0x17, 0x70, 0xd7, 0xa7, 0xac, 0x91, 0x74,
-	0x3e, 0x34, 0x0e, 0xfe, 0x83, 0xa6, 0xaa, 0xb6, 0xc3, 0x8e, 0xd0, 0x94, 0x9c, 0x6a, 0x24, 0x49,
-	0x4f, 0xc7, 0x92, 0xf4, 0x70, 0x4d, 0x1d, 0x4a, 0xb1, 0xa4, 0x17, 0xcd, 0x12, 0x06, 0xff, 0x49,
-	0x67, 0x4b, 0xc7, 0x91, 0xea, 0x09, 0xb4, 0xe2, 0x37, 0x06, 0xba, 0x21, 0x2f, 0x2b, 0x19, 0xb4,
-	0x3d, 0xda, 0x0a, 0x36, 0x81, 0x39, 0xe0, 0x73, 0x52, 0x03, 0x99, 0xf3, 0x54, 0xa9, 0xb8, 0xfb,
-	0xd7, 0xef, 0xcc, 0xe2, 0x94, 0xed, 0x34, 0xc1, 0x38, 0x69, 0xc2, 0x0e, 0x42, 0xcd, 0x23, 0xa4,
-	0xa4, 0xf9, 0x69, 0x04, 0x0a, 0xdf, 0x51, 0xd9, 0xd0, 0x26, 0x6b, 0xf9, 0x60, 0x81, 0x43, 0x99,
-	0x1b, 0x0c, 0x42, 0xa8, 0xf7, 0x4e, 0xc5, 0x7f, 0xd6, 0x01, 0x3a, 0xfa, 0xa0, 0xda, 0xf9, 0x32,
-	0xf2, 0xb8, 0x1f, 0x58, 0x3b, 0x4d, 0x1c, 0x3f, 0x61, 0x22, 0xfe, 0x87, 0xa1, 0x4a, 0xb9, 0xd8,
-	0xab, 0xcd, 0x68, 0x0c, 0x79, 0x54, 0x6f, 0x5d, 0x9d, 0x66, 0x66, 0x4e, 0x9a, 0xf9, 0xb1, 0x4e,
-	0x11, 0xb4, 0x99, 0x72, 0xa1, 0x6e, 0xed, 0x13, 0x06, 0xdb, 0x4d, 0x97, 0x0c, 0x6d, 0x23, 0x41,
-	0x53, 0x32, 0xe9, 0xb6, 0x9b, 0xc0, 0xec, 0x20, 0xc4, 0x4b, 0x1a, 0xf0, 0x2e, 0x4a, 0xc0, 0x4d,
-	0x60, 0x82, 0xde, 0x20, 0xb3, 0xf8, 0x47, 0x43, 0x5d, 0x2f, 0xc5, 0xcd, 0x5b, 0xf1, 0x02, 0xce,
-	0xbc, 0xdd, 0xd6, 0x93, 0xb1, 0x14, 0x7f, 0xa6, 0x7f, 0xdf, 0x24, 0x33, 0xf7, 0x68, 0xf0, 0x18,
-	0xb6, 0x4c, 0x36, 0x5f, 0x40, 0xa6, 0x28, 0x49, 0xec, 0x2e, 0xc7, 0xea, 0x94, 0xe8, 0x59, 0x8a,
-	0xec, 0xf7, 0x4f, 0x4f, 0x52, 0x1d, 0x45, 0x67, 0x8c, 0xe4, 0x2f, 0x75, 0x39, 0x2c, 0x49, 0x1e,
-	0x1f, 0x36, 0x67, 0x8c, 0xe7, 0x7b, 0x86, 0x7a, 0x18, 0x92, 0x3c, 0x45, 0xa2, 0x15, 0x94, 0xb8,
-	0x40, 0x09, 0x99, 0x16, 0xd0, 0x65, 0x4e, 0x58, 0x0d, 0xb8, 0xdd, 0x25, 0x52, 0x5f, 0x92, 0x5d,
-	0x51, 0x95, 0xb1, 0x32, 0x3b, 0xd5, 0x51, 0x66, 0x9f, 0x9e, 0x5b, 0x3d, 0xbf, 0x8b, 0x26, 0x8e,
-	0x32, 0x36, 0x13, 0xa3, 0x7c, 0x69, 0xb9, 0xba, 0x61, 0xd9, 0xd5, 0x6f, 0x6d, 0x96, 0xed, 0xca,
-	0xfa, 0x6a, 0xd9, 0x2a, 0x5b, 0xf6, 0xf6, 0xfa, 0xd6, 0x66, 0x79, 0xb9, 0xb2, 0x5a, 0x29, 0xaf,
-	0x4c, 0x8d, 0x99, 0xb3, 0x68, 0x26, 0x32, 0x66, 0x75, 0xc3, 0x2a, 0x2f, 0x97, 0xb6, 0xaa, 0x65,
-	0x6b, 0xca, 0x30, 0xaf, 0x20, 0x33, 0xd2, 0x65, 0x95, 0x37, 0xb7, 0xc3, 0xef, 0xa9, 0x25, 0xeb,
-	0xc3, 0x07, 0x79, 0xe3, 0xfe, 0x83, 0xbc, 0xf1, 0xf7, 0x07, 0x79, 0xe3, 0xfd, 0x87, 0xf9, 0xb1,
-	0xfb, 0x0f, 0xf3, 0x63, 0x7f, 0x7d, 0x98, 0x1f, 0xfb, 0xf6, 0xad, 0x01, 0x03, 0xc5, 0xdd, 0xe2,
-	0xf1, 0x4f, 0x63, 0xc3, 0xd4, 0x33, 0xd8, 0xcd, 0x8a, 0xdf, 0xb4, 0xde, 0xfc, 0x4f, 0x00, 0x00,
-	0x00, 0xff, 0xff, 0x04, 0x3c, 0x98, 0xa1, 0xc8, 0x2b, 0x00, 0x00,
+	// 2230 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x5b, 0xdf, 0x6f, 0x1b, 0x49,
+	0x1d, 0xef, 0x3a, 0xb1, 0x5b, 0x4f, 0x4a, 0x2f, 0xdd, 0x26, 0xad, 0x93, 0x2b, 0x6e, 0x6e, 0x80,
+	0x53, 0x7a, 0xea, 0xd9, 0x55, 0x2a, 0xee, 0x7a, 0x70, 0x57, 0x70, 0x1c, 0x87, 0xb3, 0x94, 0x4b,
+	0xd2, 0x8d, 0xd3, 0xf0, 0xe3, 0x60, 0x6f, 0xbc, 0x3b, 0x71, 0x96, 0xac, 0x77, 0xac, 0xd9, 0xb1,
+	0xdd, 0x3e, 0x21, 0xc1, 0xf1, 0x43, 0x27, 0x90, 0x0e, 0x89, 0xff, 0x00, 0x1e, 0x0e, 0x21, 0x21,
+	0x1e, 0x78, 0x46, 0x88, 0x1f, 0xd2, 0xbd, 0x20, 0x55, 0xf7, 0x84, 0xa0, 0x2a, 0xa8, 0x45, 0x82,
+	0x7f, 0x80, 0x77, 0xb4, 0xf3, 0x23, 0xde, 0x75, 0x6c, 0xc7, 0xf5, 0xfa, 0xd2, 0x06, 0x78, 0xa9,
+	0x32, 0x3b, 0x33, 0x9f, 0xef, 0xe7, 0xf3, 0x9d, 0x99, 0xef, 0x7c, 0x67, 0xc6, 0x05, 0x73, 0xb8,
+	0xee, 0xf8, 0xbe, 0x43, 0x3c, 0x3f, 0xdf, 0x7a, 0x2d, 0x8f, 0x5b, 0xd8, 0x63, 0x7e, 0xae, 0x41,
+	0x09, 0x23, 0xfa, 0xd9, 0x83, 0xaa, 0x5c, 0xeb, 0xb5, 0xf9, 0x4c, 0xa8, 0xe1, 0x8d, 0xbc, 0x47,
+	0x3c, 0x0b, 0x8b, 0x76, 0xf3, 0xf3, 0x91, 0x1a, 0x8a, 0x1b, 0x4d, 0x86, 0xa9, 0xac, 0x9b, 0x8b,
+	0xd4, 0xb5, 0x09, 0xdd, 0x3f, 0xa8, 0x8a, 0x02, 0x32, 0xd2, 0x70, 0xac, 0x1e, 0x9d, 0x6e, 0xe6,
+	0x1b, 0x88, 0xa2, 0xba, 0xe4, 0x34, 0x3f, 0x53, 0x23, 0x35, 0xc2, 0xff, 0xcc, 0x07, 0x7f, 0xc9,
+	0xaf, 0xe7, 0x51, 0xdd, 0xf1, 0x48, 0x9e, 0xff, 0xab, 0x30, 0x2c, 0xe2, 0xd7, 0x89, 0x6f, 0x8a,
+	0xb6, 0xa2, 0x20, 0xaa, 0xe0, 0xbf, 0x35, 0x70, 0xae, 0x14, 0x08, 0xdd, 0xb2, 0x08, 0xc5, 0xfe,
+	0x16, 0x66, 0xfa, 0x2b, 0x00, 0x20, 0x8b, 0x11, 0x6a, 0xb2, 0x7b, 0x0d, 0x9c, 0xd1, 0x16, 0xb4,
+	0xc5, 0x73, 0x4b, 0x97, 0x72, 0x61, 0xfd, 0xb9, 0x42, 0x50, 0x5f, 0xb9, 0xd7, 0xc0, 0x46, 0x1a,
+	0xa9, 0x3f, 0xf5, 0x39, 0x70, 0x86, 0x13, 0x37, 0x1d, 0x3b, 0x93, 0x58, 0xd0, 0x16, 0x27, 0x8d,
+	0xd3, 0xbc, 0x5c, 0xb6, 0xf5, 0x17, 0xc0, 0xd9, 0xaa, 0x4b, 0xac, 0x7d, 0x73, 0x0f, 0x3b, 0xb5,
+	0x3d, 0x96, 0x99, 0x58, 0xd0, 0x16, 0x27, 0x8c, 0x29, 0xfe, 0xed, 0x4d, 0xfe, 0x49, 0xbf, 0x0c,
+	0xd2, 0xc8, 0xb6, 0x29, 0xf6, 0x7d, 0xec, 0x67, 0x26, 0x17, 0x26, 0x16, 0xd3, 0x46, 0xe7, 0x83,
+	0xbe, 0x01, 0x52, 0x3e, 0x27, 0x98, 0x49, 0x06, 0x55, 0xcb, 0xaf, 0x7e, 0xf8, 0xf0, 0xca, 0xa9,
+	0xbf, 0x3c, 0xbc, 0x92, 0xaf, 0x39, 0x6c, 0xaf, 0x59, 0xcd, 0x59, 0xa4, 0x9e, 0x47, 0xae, 0x4b,
+	0x28, 0x7a, 0xd9, 0xc3, 0x2c, 0x70, 0xad, 0x2a, 0x5a, 0x7b, 0xc8, 0xf1, 0xf2, 0x75, 0xc4, 0xf6,
+	0x72, 0x2b, 0xd8, 0x32, 0x24, 0x0c, 0xfc, 0x59, 0x02, 0x5c, 0xe0, 0xba, 0x0d, 0xdc, 0x46, 0xd4,
+	0x0e, 0x84, 0x33, 0x17, 0xdb, 0xcf, 0xa4, 0xf8, 0xdb, 0xe0, 0x34, 0x15, 0x2c, 0xe3, 0xaa, 0x57,
+	0x38, 0xfa, 0x8b, 0xe0, 0xb9, 0x30, 0x27, 0x93, 0xdd, 0xcd, 0xa4, 0x38, 0xad, 0x4f, 0x84, 0x68,
+	0x55, 0xee, 0xc2, 0x1f, 0x6b, 0xd2, 0x4d, 0xeb, 0x02, 0x77, 0x8d, 0xf8, 0x7c, 0x8e, 0x84, 0xe5,
+	0x6a, 0x83, 0xe5, 0x26, 0x0e, 0xcb, 0x7d, 0x1d, 0x9c, 0x6d, 0x21, 0xb7, 0x89, 0xcd, 0x6a, 0xd3,
+	0xb3, 0x5d, 0xcc, 0x3d, 0x32, 0xb5, 0x34, 0x17, 0x76, 0xf3, 0x8d, 0xdc, 0x9d, 0xa0, 0xc5, 0x32,
+	0x6f, 0x60, 0x4c, 0xb5, 0x3a, 0x05, 0xf8, 0x13, 0x0d, 0x5c, 0x0c, 0x73, 0x2a, 0x7b, 0xbb, 0x98,
+	0x62, 0xcf, 0xc2, 0xfe, 0x53, 0xa5, 0xf5, 0x1d, 0x0d, 0x64, 0x38, 0xad, 0xb2, 0xe7, 0x63, 0xca,
+	0x76, 0xf8, 0xf2, 0xde, 0x44, 0xf7, 0x5c, 0x82, 0xec, 0x41, 0xc4, 0xd6, 0x80, 0x2e, 0x42, 0x81,
+	0x69, 0x23, 0x86, 0x94, 0xed, 0x04, 0xb7, 0x9d, 0x8d, 0xda, 0x16, 0x98, 0x2b, 0x88, 0x21, 0x49,
+	0x60, 0xba, 0xdd, 0xf5, 0x05, 0x7e, 0x51, 0x8e, 0x57, 0x91, 0x62, 0xc4, 0xf0, 0x3a, 0x6e, 0x57,
+	0x02, 0x33, 0xfa, 0x55, 0x90, 0xe4, 0xf6, 0xb8, 0xf1, 0xa9, 0xa5, 0x0b, 0x51, 0x5c, 0xde, 0xc6,
+	0x10, 0x2d, 0xe0, 0x03, 0x0d, 0x5c, 0xe2, 0x10, 0x05, 0xdb, 0xe6, 0x15, 0xab, 0x18, 0x1b, 0x41,
+	0x2c, 0x6c, 0xe2, 0x41, 0x32, 0xde, 0x04, 0x29, 0x54, 0x27, 0x4d, 0x4f, 0x78, 0x36, 0xbd, 0x7c,
+	0x5d, 0xce, 0xd1, 0x59, 0x11, 0x6e, 0x7c, 0x7b, 0x3f, 0xe7, 0x10, 0x31, 0x13, 0xcb, 0x1e, 0xfb,
+	0xe8, 0xd7, 0x2f, 0x03, 0x19, 0x87, 0xca, 0x1e, 0xfb, 0xe0, 0x9f, 0xbf, 0x7a, 0x49, 0x33, 0x64,
+	0x7f, 0xfd, 0x6d, 0x70, 0x5e, 0x18, 0xd9, 0xc5, 0xd8, 0xa4, 0xc2, 0x32, 0x1f, 0x8b, 0x51, 0x40,
+	0x9f, 0x63, 0x51, 0x09, 0xf0, 0x5f, 0x1a, 0x98, 0x51, 0xf2, 0x0c, 0x11, 0x9e, 0xb7, 0x18, 0xda,
+	0x1f, 0xa8, 0x2d, 0x13, 0x2c, 0x40, 0xde, 0x54, 0x88, 0x33, 0x54, 0x31, 0xa4, 0x7a, 0x22, 0xa6,
+	0xea, 0xdb, 0x60, 0x4a, 0x98, 0xf7, 0x03, 0x36, 0x99, 0xc9, 0x11, 0xe1, 0x00, 0x07, 0xe1, 0x8a,
+	0xe0, 0xbb, 0x09, 0x39, 0x92, 0x06, 0xae, 0x93, 0x16, 0x7e, 0x96, 0xd4, 0x2e, 0x81, 0x59, 0xb1,
+	0x1a, 0x69, 0x40, 0x0d, 0xb9, 0x81, 0x6a, 0xca, 0xb0, 0xcd, 0x75, 0x4f, 0x18, 0x17, 0x78, 0xa5,
+	0x21, 0xea, 0xb6, 0x44, 0x95, 0xfe, 0x0a, 0xb8, 0x14, 0xed, 0x63, 0x91, 0x7a, 0xc3, 0xc5, 0x41,
+	0xaf, 0x24, 0xef, 0x35, 0x1b, 0xee, 0x55, 0x54, 0x95, 0xf0, 0xbd, 0x04, 0xf8, 0xa4, 0x58, 0x13,
+	0xc8, 0xb3, 0xb0, 0xfb, 0xbf, 0xed, 0x8c, 0xef, 0x27, 0xc0, 0xac, 0x9a, 0xfe, 0x2b, 0xd8, 0xc5,
+	0x35, 0xc4, 0x70, 0x0c, 0x27, 0x5c, 0x06, 0x69, 0x5b, 0xa0, 0x10, 0x2a, 0xfc, 0x60, 0x74, 0x3e,
+	0x84, 0x5c, 0x34, 0x39, 0xde, 0xd5, 0x91, 0x1c, 0xc3, 0xea, 0xf8, 0x69, 0x42, 0xc6, 0x6b, 0x31,
+	0x21, 0x4e, 0x90, 0x33, 0xfa, 0xce, 0x97, 0xe4, 0x48, 0xf3, 0x25, 0x35, 0x68, 0xbe, 0xfc, 0x3c,
+	0x01, 0xb2, 0x87, 0x16, 0xcf, 0xff, 0x7d, 0xd5, 0xd3, 0x57, 0xbf, 0xd1, 0x0e, 0x66, 0x54, 0x90,
+	0x65, 0x7d, 0xec, 0x5e, 0xda, 0xe8, 0xf2, 0xd2, 0xe8, 0x49, 0xb1, 0x80, 0x81, 0xef, 0x69, 0x60,
+	0x2e, 0x94, 0xc2, 0xc8, 0x18, 0x39, 0x44, 0x0e, 0x63, 0x80, 0x19, 0x49, 0xd9, 0x8c, 0x64, 0x50,
+	0x22, 0x8b, 0x59, 0x88, 0x66, 0x1b, 0x12, 0x36, 0x9c, 0x48, 0xe9, 0xf4, 0xd0, 0x37, 0x68, 0xc9,
+	0x2c, 0x4f, 0x36, 0x37, 0x70, 0xcd, 0xf1, 0x19, 0xa6, 0xd8, 0x1e, 0xcd, 0x95, 0x33, 0x20, 0x49,
+	0xda, 0x1e, 0x56, 0x6e, 0x14, 0x05, 0xf8, 0x8e, 0x8c, 0x86, 0x22, 0xb3, 0x1a, 0xce, 0xc6, 0x45,
+	0x90, 0x12, 0x69, 0x97, 0x34, 0x21, 0x4b, 0x7d, 0x2c, 0x6c, 0x1c, 0xcc, 0x09, 0xce, 0x63, 0xdb,
+	0xa3, 0xf1, 0x84, 0xc0, 0x35, 0xb9, 0xa9, 0x0b, 0xca, 0xc3, 0xe2, 0xf5, 0x21, 0x0d, 0x7f, 0xa4,
+	0xce, 0x7f, 0xab, 0x4d, 0x4f, 0xa4, 0x7b, 0x47, 0xa0, 0xec, 0x36, 0x3d, 0xbb, 0x83, 0x22, 0x4a,
+	0xe3, 0xdb, 0x0b, 0xe1, 0x2d, 0x49, 0x67, 0x93, 0x1f, 0x74, 0x83, 0xa3, 0xc6, 0x35, 0x90, 0x12,
+	0xa7, 0x5e, 0x99, 0xbb, 0xce, 0x84, 0x67, 0xd3, 0xcd, 0x9c, 0x68, 0x68, 0xc8, 0x36, 0xf0, 0xba,
+	0x74, 0xf7, 0xce, 0x9e, 0xc3, 0xb0, 0xeb, 0xf8, 0xac, 0x60, 0xd7, 0x1d, 0xaf, 0x60, 0xdb, 0xd8,
+	0x0e, 0x06, 0x08, 0x05, 0x25, 0x0e, 0x94, 0x36, 0x44, 0x01, 0x2e, 0x81, 0xf9, 0x1e, 0x3d, 0x44,
+	0xa0, 0xeb, 0xd7, 0xe7, 0xb3, 0x72, 0x9d, 0x7c, 0xc9, 0x25, 0x55, 0xe4, 0x86, 0x7a, 0x06, 0x66,
+	0x32, 0xe0, 0xb4, 0x3c, 0xbb, 0xc9, 0x4e, 0xaa, 0x08, 0x5f, 0x05, 0xcf, 0xf7, 0xea, 0xa6, 0x6c,
+	0xf5, 0xef, 0xf8, 0x79, 0x70, 0x25, 0xdc, 0x91, 0x0f, 0xdd, 0xd0, 0x56, 0xdf, 0x00, 0x2f, 0xf4,
+	0xef, 0x7c, 0xb4, 0xed, 0xd7, 0xc1, 0x42, 0xa8, 0xbb, 0x9c, 0xc6, 0x43, 0x1b, 0xbf, 0x05, 0xe0,
+	0x80, 0xde, 0x47, 0x5b, 0xff, 0x9c, 0xdc, 0x7e, 0x44, 0x7f, 0x3e, 0x34, 0x43, 0xdb, 0x8e, 0x32,
+	0x8f, 0xf6, 0x3d, 0xda, 0x72, 0x11, 0x7c, 0xaa, 0xbf, 0xdb, 0x96, 0x9b, 0xee, 0xbe, 0x30, 0x1f,
+	0x39, 0xba, 0x6b, 0x5d, 0x47, 0x77, 0x58, 0x02, 0x9f, 0x19, 0x0c, 0xa2, 0x78, 0x0c, 0x86, 0x59,
+	0x01, 0x9f, 0x1e, 0xe0, 0xc5, 0x61, 0xc9, 0xac, 0x82, 0x17, 0x8f, 0x40, 0x19, 0x8e, 0xcd, 0x72,
+	0x64, 0x4c, 0xa3, 0x7e, 0x1d, 0x96, 0x4b, 0x54, 0xd1, 0x61, 0x8c, 0xe1, 0x98, 0xbc, 0x21, 0x47,
+	0x98, 0x07, 0xae, 0x2e, 0xef, 0x96, 0x3c, 0x54, 0x75, 0x07, 0x06, 0x45, 0x78, 0x4b, 0xae, 0x8c,
+	0x5e, 0xdd, 0x57, 0x1c, 0xff, 0xc9, 0xfa, 0x77, 0xfb, 0x73, 0x08, 0xfb, 0x5f, 0x90, 0x8e, 0xec,
+	0xd9, 0x7f, 0x18, 0x02, 0x77, 0x64, 0x5c, 0xe0, 0x00, 0xfc, 0xc8, 0x4f, 0xba, 0x97, 0xe6, 0xe0,
+	0x3d, 0x46, 0xcd, 0xfd, 0x44, 0x74, 0xee, 0x7f, 0x39, 0x2c, 0xac, 0x1b, 0x57, 0x0d, 0xcd, 0x48,
+	0xc8, 0xdb, 0x72, 0x3d, 0xf7, 0x72, 0x79, 0x0c, 0xc2, 0x3b, 0x03, 0x26, 0x42, 0x2c, 0xbe, 0x11,
+	0x0f, 0xf7, 0x0e, 0x7e, 0xf1, 0x3d, 0xdc, 0x2f, 0x2c, 0x8e, 0x84, 0x5c, 0x91, 0xa7, 0x5d, 0x8e,
+	0xdc, 0x2b, 0x60, 0xc6, 0xf7, 0x43, 0xef, 0x50, 0x3a, 0x12, 0xee, 0xdb, 0x61, 0x3f, 0xf4, 0x0b,
+	0x25, 0x03, 0x90, 0x23, 0xf1, 0x21, 0xd1, 0x1d, 0x1f, 0xbe, 0x21, 0x63, 0x78, 0x1f, 0xf4, 0x21,
+	0x98, 0x0f, 0xc6, 0xff, 0x7a, 0x78, 0x01, 0xf7, 0xdd, 0x22, 0x46, 0x86, 0x37, 0x65, 0x90, 0xec,
+	0x07, 0x1f, 0x9b, 0x7f, 0xc4, 0x3f, 0xfd, 0xb7, 0x95, 0x91, 0xf1, 0xdf, 0x91, 0xdb, 0x5f, 0x5f,
+	0xfc, 0xd8, 0x0a, 0xbe, 0xab, 0x8e, 0x2c, 0xab, 0x84, 0x62, 0x0b, 0xf9, 0xac, 0x82, 0xfc, 0x7d,
+	0xfe, 0x96, 0x71, 0xc4, 0x35, 0xf5, 0x5b, 0x20, 0xc9, 0x9f, 0x02, 0xe4, 0x75, 0xe5, 0xc8, 0x67,
+	0x27, 0x81, 0xd2, 0xb9, 0xfd, 0x15, 0xc3, 0xb4, 0x86, 0x7c, 0x56, 0x24, 0xf5, 0xba, 0xc3, 0xe2,
+	0xdf, 0x96, 0x5f, 0x05, 0x49, 0xfe, 0xc2, 0x24, 0xef, 0xa3, 0xbb, 0xee, 0x6e, 0xd7, 0x83, 0x2a,
+	0x43, 0xb4, 0x80, 0xef, 0x2a, 0x6f, 0x48, 0x5f, 0x3f, 0x25, 0x1a, 0xdf, 0x53, 0x77, 0xac, 0x72,
+	0xdc, 0xd5, 0x0b, 0x8b, 0xfe, 0x3c, 0x48, 0x2b, 0x06, 0x62, 0x37, 0x9f, 0x34, 0xce, 0x48, 0x0a,
+	0x91, 0x67, 0x8e, 0xc4, 0x78, 0x9e, 0x39, 0xe0, 0x0f, 0x12, 0xe0, 0x3c, 0x27, 0x52, 0x7a, 0xab,
+	0xf0, 0xb1, 0x3e, 0x70, 0xcd, 0x84, 0x9d, 0x33, 0x21, 0xfd, 0x70, 0xcc, 0x6f, 0x5a, 0x81, 0x77,
+	0x1d, 0xdf, 0x44, 0x16, 0x73, 0x5a, 0x38, 0x93, 0x5a, 0x98, 0x58, 0x3c, 0x63, 0x9c, 0x71, 0xfc,
+	0x02, 0x2f, 0xc3, 0xf7, 0xd5, 0x2d, 0xe8, 0x5a, 0x70, 0x5a, 0xf4, 0x1c, 0xaf, 0x56, 0x24, 0x78,
+	0x77, 0xd7, 0xb1, 0x1c, 0xec, 0xb1, 0x67, 0xf6, 0xdd, 0xef, 0x6b, 0xe0, 0xac, 0x15, 0xa2, 0x19,
+	0xd7, 0x53, 0x11, 0x30, 0xf8, 0x27, 0x0d, 0x5c, 0x96, 0xd7, 0x1d, 0xbb, 0x98, 0x62, 0x2a, 0xdf,
+	0x93, 0x0c, 0x5c, 0xa3, 0x78, 0x0c, 0x0b, 0x26, 0xa2, 0x6c, 0xa2, 0xe7, 0xa3, 0x5e, 0x60, 0x48,
+	0xaa, 0x8e, 0x35, 0xdb, 0x39, 0x0e, 0xbc, 0xaf, 0xc9, 0x4d, 0x5a, 0xc5, 0xc2, 0x93, 0x2f, 0xe9,
+	0x23, 0x4d, 0xe6, 0x07, 0xeb, 0xc8, 0x69, 0xe1, 0xff, 0x92, 0x71, 0xfa, 0x85, 0x26, 0xaf, 0x1c,
+	0x78, 0x78, 0x2c, 0x7b, 0x0e, 0x73, 0x82, 0xe3, 0xd8, 0x78, 0xd4, 0x6c, 0x80, 0x94, 0xb0, 0x23,
+	0xaf, 0x62, 0x46, 0x8f, 0x2a, 0x02, 0x06, 0x3e, 0x56, 0xab, 0x24, 0xcc, 0xb6, 0x54, 0x47, 0x07,
+	0x9b, 0xec, 0xd3, 0x89, 0x1b, 0x07, 0xfb, 0xf7, 0xe4, 0x58, 0xf6, 0xef, 0x0f, 0x34, 0x79, 0x13,
+	0x28, 0xc7, 0x81, 0xd9, 0xeb, 0x84, 0xd6, 0xe3, 0x0f, 0xc7, 0x6d, 0x70, 0xda, 0x67, 0xb6, 0x47,
+	0x68, 0x3d, 0xee, 0x78, 0x28, 0x1c, 0xf8, 0x5b, 0x45, 0x55, 0x2e, 0x87, 0x1d, 0x6e, 0x29, 0x3e,
+	0xd5, 0x50, 0x92, 0x3e, 0x11, 0x49, 0xd2, 0x83, 0x39, 0xd5, 0x16, 0xdd, 0xe2, 0x5e, 0x34, 0x0b,
+	0x18, 0xf8, 0x7b, 0x95, 0x2d, 0x75, 0x22, 0xd5, 0x09, 0x54, 0xf1, 0x4b, 0x0d, 0x5c, 0x17, 0x97,
+	0x95, 0x14, 0xb7, 0x1c, 0xd2, 0xf4, 0x37, 0x31, 0xb5, 0xb0, 0xc7, 0x50, 0x0d, 0x8b, 0x9c, 0xa7,
+	0x42, 0xf8, 0xdd, 0xbf, 0x7a, 0x67, 0xe6, 0xbb, 0x6c, 0xb7, 0x04, 0xed, 0xb0, 0x84, 0x1d, 0x00,
+	0x1a, 0x07, 0x48, 0x71, 0xf3, 0xd3, 0x10, 0x14, 0xbc, 0x2d, 0xb3, 0xa1, 0x4d, 0xda, 0xf4, 0xb0,
+	0x81, 0x2d, 0x42, 0x6d, 0x7f, 0x18, 0x42, 0xfd, 0x57, 0x2a, 0xfc, 0xa3, 0x0a, 0xd0, 0xe1, 0x07,
+	0xd5, 0xee, 0x97, 0x91, 0xa7, 0xfd, 0xc0, 0xda, 0x2d, 0x71, 0xf2, 0x90, 0x44, 0xf8, 0x0f, 0x4d,
+	0x1e, 0xe5, 0x22, 0xaf, 0x36, 0xe3, 0x11, 0x72, 0x5c, 0x6f, 0x5d, 0xdd, 0x32, 0x93, 0x87, 0x65,
+	0x3e, 0x50, 0x29, 0x82, 0x92, 0x29, 0x26, 0xea, 0xd6, 0x1e, 0xa2, 0x78, 0xbb, 0x61, 0xa3, 0x91,
+	0x35, 0x22, 0x30, 0x2d, 0x92, 0x6e, 0xb3, 0x81, 0xa9, 0xe9, 0x07, 0x78, 0x71, 0x03, 0xde, 0x39,
+	0x01, 0xb8, 0x89, 0x29, 0xa7, 0x37, 0xcc, 0x28, 0xfe, 0x4e, 0x93, 0xd7, 0x4b, 0x51, 0x79, 0x2b,
+	0x8e, 0xcf, 0xa8, 0x53, 0x6d, 0x9e, 0x8c, 0xa9, 0xf8, 0x2d, 0xf9, 0xf0, 0x25, 0x12, 0xf7, 0x70,
+	0xec, 0x18, 0xf5, 0x94, 0xac, 0x5f, 0x03, 0x3a, 0x3f, 0x91, 0x98, 0x3d, 0x76, 0xd5, 0x69, 0x5e,
+	0xb3, 0xdc, 0x97, 0x80, 0xdc, 0x65, 0x8e, 0x93, 0xc0, 0xb7, 0xd5, 0x31, 0x56, 0x30, 0xe8, 0x6c,
+	0x12, 0xc7, 0x49, 0xe2, 0x9b, 0xf2, 0xb1, 0x46, 0x70, 0xe0, 0xc9, 0x8f, 0x5f, 0x60, 0xbc, 0x45,
+	0xc0, 0x22, 0x07, 0x2e, 0x30, 0x44, 0x6b, 0x98, 0x99, 0x3d, 0xa2, 0xe7, 0x79, 0x51, 0x15, 0x82,
+	0x8b, 0x1e, 0x7d, 0x13, 0xd1, 0xa3, 0x2f, 0xfc, 0xab, 0x26, 0x2f, 0x4a, 0xba, 0x7f, 0xd2, 0xf6,
+	0x24, 0x5b, 0x7c, 0x6f, 0x79, 0x89, 0xde, 0xf2, 0x8e, 0x73, 0x9f, 0x7c, 0xa8, 0x81, 0xc5, 0x9e,
+	0xea, 0x9e, 0x70, 0xf7, 0x7f, 0x66, 0x05, 0x3e, 0xd0, 0xe4, 0xcb, 0x4a, 0x9f, 0xe1, 0x13, 0x39,
+	0xe5, 0xb6, 0x3f, 0x38, 0xfc, 0x8c, 0x51, 0x9e, 0x3c, 0x01, 0x4c, 0x8e, 0xe7, 0x04, 0xf0, 0x37,
+	0x0d, 0x5c, 0x3d, 0x62, 0xfc, 0x4e, 0xb8, 0xc2, 0x1f, 0xaa, 0xdf, 0x3c, 0x8a, 0x9b, 0x56, 0x6e,
+	0x7f, 0x88, 0xed, 0xf0, 0x0e, 0x00, 0x1e, 0x6e, 0x9b, 0xed, 0x8e, 0x8e, 0x18, 0x5c, 0xd2, 0x1e,
+	0x6e, 0x0b, 0xcb, 0xf0, 0x0f, 0x2a, 0xa9, 0x12, 0x97, 0x89, 0x5b, 0xcd, 0xaa, 0x3c, 0x4c, 0xed,
+	0x38, 0x9e, 0x4d, 0xda, 0x1b, 0x0d, 0xec, 0x8d, 0xd3, 0xd1, 0xd7, 0x80, 0xde, 0xe6, 0xc0, 0xe2,
+	0xc7, 0x31, 0xa2, 0x93, 0x8a, 0x8b, 0xa2, 0x86, 0xff, 0x34, 0x86, 0xf7, 0xd1, 0x17, 0x81, 0xfc,
+	0x66, 0x62, 0xcf, 0x96, 0x6d, 0xc5, 0x2e, 0x76, 0x4e, 0x7c, 0x2f, 0x79, 0x36, 0x6f, 0x09, 0xdd,
+	0x81, 0x2a, 0x8a, 0x2e, 0x19, 0xe7, 0x74, 0x09, 0x32, 0x51, 0x18, 0xc9, 0x44, 0x4f, 0xa8, 0xd7,
+	0xea, 0x83, 0x65, 0x8c, 0xd9, 0x6d, 0x2f, 0x55, 0x41, 0xfa, 0xe0, 0x74, 0xae, 0x43, 0x90, 0x2d,
+	0x14, 0x2b, 0x1b, 0x86, 0x59, 0xf9, 0xca, 0x66, 0xc9, 0x2c, 0xaf, 0xaf, 0x96, 0x8c, 0x92, 0x61,
+	0x6e, 0xaf, 0x6f, 0x6d, 0x96, 0x8a, 0xe5, 0xd5, 0x72, 0x69, 0x65, 0xfa, 0x94, 0x3e, 0x07, 0x66,
+	0x43, 0x6d, 0x56, 0x37, 0x8c, 0x52, 0xb1, 0xb0, 0x55, 0x29, 0x19, 0xd3, 0x9a, 0x7e, 0x11, 0xe8,
+	0xa1, 0x2a, 0xa3, 0xb4, 0xb9, 0x1d, 0x7c, 0x4f, 0x2c, 0x1b, 0x1f, 0x3e, 0xca, 0x6a, 0xf7, 0x1f,
+	0x65, 0xb5, 0xbf, 0x3f, 0xca, 0x6a, 0xef, 0x3f, 0xce, 0x9e, 0xba, 0xff, 0x38, 0x7b, 0xea, 0xcf,
+	0x8f, 0xb3, 0xa7, 0xbe, 0x7a, 0x73, 0xc8, 0x55, 0x72, 0x37, 0xdf, 0xf9, 0x6f, 0x10, 0xec, 0x5e,
+	0x03, 0xfb, 0xd5, 0x14, 0xff, 0xff, 0x0b, 0x37, 0xfe, 0x13, 0x00, 0x00, 0xff, 0xff, 0x16, 0x0a,
+	0x1f, 0x6a, 0xb4, 0x31, 0x00, 0x00,
 }
 
 func (m *EventScoresSet) Marshal() (dAtA []byte, err error) {
@@ -7720,11 +8245,6 @@ func (m *EventActiveReputersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	_ = i
 	var l int
 	_ = l
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x20
-	}
 	if m.NonceBlockHeight != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
 		i--
@@ -7767,11 +8287,6 @@ func (m *EventActiveInferersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	_ = i
 	var l int
 	_ = l
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x20
-	}
 	if m.NonceBlockHeight != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
 		i--
@@ -7814,11 +8329,6 @@ func (m *EventActiveForecastersSet) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	_ = i
 	var l int
 	_ = l
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x20
-	}
 	if m.NonceBlockHeight != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
 		i--
@@ -7861,11 +8371,6 @@ func (m *EventActiveTopicsAtBlockSet) MarshalToSizedBuffer(dAtA []byte) (int, er
 	_ = i
 	var l int
 	_ = l
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x18
-	}
 	if len(m.TopicIds) > 0 {
 		dAtA12 := make([]byte, len(m.TopicIds)*10)
 		var j11 int
@@ -7886,6 +8391,396 @@ func (m *EventActiveTopicsAtBlockSet) MarshalToSizedBuffer(dAtA []byte) (int, er
 	}
 	if m.TargetBlockHeight != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.TargetBlockHeight))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceInfererWeightSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceInfererWeightSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceInfererWeightSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Weight.Size()
+		i -= size
+		if _, err := m.Weight.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceForecasterWeightSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceForecasterWeightSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceForecasterWeightSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Weight.Size()
+		i -= size
+		if _, err := m.Weight.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceInfererRegretUsed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceInfererRegretUsed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceInfererRegretUsed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Regret.Size()
+		i -= size
+		if _, err := m.Regret.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceForecasterRegretUsed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceForecasterRegretUsed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceForecasterRegretUsed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Regret.Size()
+		i -= size
+		if _, err := m.Regret.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicWeightUpdated) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicWeightUpdated) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicWeightUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.NewWeight.Size()
+		i -= size
+		if _, err := m.NewWeight.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWorkerSubmissionWindowOpened) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWorkerSubmissionWindowOpened) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWorkerSubmissionWindowOpened) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.WindowEndBlock != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.WindowEndBlock))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.WindowStartBlock != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.WindowStartBlock))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWorkerSubmissionWindowClosed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWorkerSubmissionWindowClosed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWorkerSubmissionWindowClosed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventReputerSubmissionWindowOpened) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventReputerSubmissionWindowOpened) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventReputerSubmissionWindowOpened) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.WindowEndBlock != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.WindowEndBlock))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.WindowStartBlock != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.WindowStartBlock))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventReputerSubmissionWindowClosed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventReputerSubmissionWindowClosed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventReputerSubmissionWindowClosed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -9291,9 +10186,6 @@ func (m *EventActiveReputersSet) Size() (n int) {
 	if m.NonceBlockHeight != 0 {
 		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
 	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
-	}
 	return n
 }
 
@@ -9314,9 +10206,6 @@ func (m *EventActiveInferersSet) Size() (n int) {
 	}
 	if m.NonceBlockHeight != 0 {
 		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
 	}
 	return n
 }
@@ -9339,9 +10228,6 @@ func (m *EventActiveForecastersSet) Size() (n int) {
 	if m.NonceBlockHeight != 0 {
 		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
 	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
-	}
 	return n
 }
 
@@ -9361,8 +10247,175 @@ func (m *EventActiveTopicsAtBlockSet) Size() (n int) {
 		}
 		n += 1 + sovEvents(uint64(l)) + l
 	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
+	return n
+}
+
+func (m *EventNetworkInferenceInfererWeightSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Weight.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventNetworkInferenceForecasterWeightSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Weight.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventNetworkInferenceInfererRegretUsed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Regret.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventNetworkInferenceForecasterRegretUsed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Regret.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventTopicWeightUpdated) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = m.NewWeight.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventWorkerSubmissionWindowOpened) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if m.WindowStartBlock != 0 {
+		n += 1 + sovEvents(uint64(m.WindowStartBlock))
+	}
+	if m.WindowEndBlock != 0 {
+		n += 1 + sovEvents(uint64(m.WindowEndBlock))
+	}
+	return n
+}
+
+func (m *EventWorkerSubmissionWindowClosed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	return n
+}
+
+func (m *EventReputerSubmissionWindowOpened) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if m.WindowStartBlock != 0 {
+		n += 1 + sovEvents(uint64(m.WindowStartBlock))
+	}
+	if m.WindowEndBlock != 0 {
+		n += 1 + sovEvents(uint64(m.WindowEndBlock))
+	}
+	return n
+}
+
+func (m *EventReputerSubmissionWindowClosed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
 	}
 	return n
 }
@@ -18439,25 +19492,6 @@ func (m *EventActiveReputersSet) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipEvents(dAtA[iNdEx:])
@@ -18578,25 +19612,6 @@ func (m *EventActiveInferersSet) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipEvents(dAtA[iNdEx:])
@@ -18713,25 +19728,6 @@ func (m *EventActiveForecastersSet) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.NonceBlockHeight |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -18881,11 +19877,61 @@ func (m *EventActiveTopicsAtBlockSet) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicIds", wireType)
 			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
 			}
-			m.BlockHeight = 0
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceInfererWeightSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererWeightSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererWeightSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -18895,7 +19941,1085 @@ func (m *EventActiveTopicsAtBlockSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Weight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceForecasterWeightSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterWeightSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterWeightSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Weight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceInfererRegretUsed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererRegretUsed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererRegretUsed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Regret.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceForecasterRegretUsed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterRegretUsed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterRegretUsed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Regret.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicWeightUpdated) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicWeightUpdated: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicWeightUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewWeight", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.NewWeight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWorkerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowOpened: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowOpened: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WindowStartBlock", wireType)
+			}
+			m.WindowStartBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WindowStartBlock |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WindowEndBlock", wireType)
+			}
+			m.WindowEndBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WindowEndBlock |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWorkerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowClosed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventReputerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowOpened: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowOpened: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WindowStartBlock", wireType)
+			}
+			m.WindowStartBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WindowStartBlock |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WindowEndBlock", wireType)
+			}
+			m.WindowEndBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WindowEndBlock |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventReputerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowClosed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

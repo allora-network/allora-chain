@@ -236,6 +236,9 @@ func GetCalcNetworkInferenceArgs(
 
 		logger.Debug("Inferer has regret", "inferer", inferer, "regret", regret.Value)
 		infererToRegret[inferer] = &regret.Value
+
+		// Emit event for inferer regret used in network inference calculation
+		emissions.EmitNetworkInferenceInfererRegretUsedEvent(ctx, topicId, inferenceBlockHeight, inferer, regret.Value)
 	}
 
 	forecasterToRegret := make(map[string]*alloraMath.Dec)
@@ -247,6 +250,9 @@ func GetCalcNetworkInferenceArgs(
 
 		logger.Debug("Forecaster has regret", "forecaster", forecaster, "regret", regret.Value)
 		forecasterToRegret[forecaster] = &regret.Value
+
+		// Emit event for forecaster regret used in network inference calculation
+		emissions.EmitNetworkInferenceForecasterRegretUsedEvent(ctx, topicId, inferenceBlockHeight, forecaster, regret.Value)
 	}
 
 	// Get the latest regret stdnorm from the keeper. If zero, it will recalculate with provided data.

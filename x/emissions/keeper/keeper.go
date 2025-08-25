@@ -3078,13 +3078,23 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	if err := types.ValidateDec(weight); err != nil {
 		return errorsmod.Wrap(err, "weight validation failed")
 	}
+
 	// First update total because it uses previous weight value
 	err := k.UpdateTotalSumPreviousTopicWeights(ctx, topicId, weight)
 	if err != nil {
 		return errorsmod.Wrap(err, "error updating total sum of previous topic weights")
 	}
+
 	// Then update the previous weight
-	return k.previousTopicWeight.Set(ctx, topicId, weight)
+	err = k.previousTopicWeight.Set(ctx, topicId, weight)
+	if err != nil {
+		return err
+	}
+
+	// Emit topic weight updated event
+	types.EmitTopicWeightUpdatedEvent(ctx, topicId, weight)
+
+	return nil
 }
 
 // Getter and setter for lastMedianInferences
