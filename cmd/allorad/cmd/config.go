@@ -87,7 +87,6 @@ func (s setting) setInViper(v *viper.Viper) {
 
 func mustGetDefaultConfigs() (*serverconfig.Config, *cmtcfg.Config) {
 	srvCfg := serverconfig.DefaultConfig()
-	srvCfg.MinGasPrices = "10uallo"
 
 	cmtCfg := cmtcfg.DefaultConfig()
 	cmtCfg.LogLevel = "*:error,p2p:info,state:info"
