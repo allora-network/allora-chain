@@ -260,13 +260,11 @@ message EventTopicReputerWhitelistDisabled {
 }
 
 message EventTopicCreatorWhitelistAdded {
-  uint64 topic_id = 1;
-  string address = 2;
+  string address = 1;
 }
 
 message EventTopicCreatorWhitelistRemoved {
-  uint64 topic_id = 1;
-  string address = 2;
+  string address = 1;
 }
 
 message EventTopicWorkerWhitelistAdded {

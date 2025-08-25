@@ -474,6 +474,7 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 }
 
 func assertEventValueBundle(t *testing.T, val string, bundle types.ValueBundle) {
+	t.Helper()
 	var result types.EventValueBundle
 	_ = json.Unmarshal([]byte(val), &result)
 	require.Equal(t, bundle.CombinedValue, result.CombinedValue)
