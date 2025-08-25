@@ -472,7 +472,15 @@ func (s *TestSuite) GetReputerValuesFromIndexes(reputerIndexes, workerIndexes []
 			if values[i].WorkerValues == nil {
 				values[i].WorkerValues = make(map[string]string)
 			}
+			if values[i].ForecasterValues == nil {
+				values[i].ForecasterValues = make(map[string]string)
+			}
+			if values[i].OneOutInfValues == nil {
+				values[i].OneOutInfValues = make(map[string]string)
+			}
 			values[i].WorkerValues[addrs[wrkIdx%len(addrs)]] = value[j%len(value)]
+			values[i].ForecasterValues[addrs[wrkIdx%len(addrs)]] = value[j%len(value)]
+			values[i].OneOutInfValues[addrs[wrkIdx%len(addrs)]] = value[j%len(value)]
 			values[i].CombinedValue = value[repIdx%len(value)]
 		}
 	}
@@ -484,7 +492,7 @@ type TestWorkerValue struct {
 	Value string
 }
 
-func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, workerIndexes []int, workerValues []TestWorkerValue) []*types.InputWorkerDataBundle {
+func (s *TestSuite) GenerateWorkerDataBundles(nonce int64, topicId uint64, workerIndexes []int, workerValues []TestWorkerValue) []*types.InputWorkerDataBundle {
 	lwv := len(workerValues)
 	hasWorkerValues := lwv > 0
 	if hasWorkerValues && len(workerIndexes) != lwv {
@@ -681,23 +689,23 @@ func buildInputValueBundle(
 	buildWorkerBundleValues := buildLossBundleValues[*types.WorkerAttributedValue, *types.InputWorkerAttributedValue]
 	buildWithheldBundleValues := buildLossBundleValues[*types.WithheldWorkerAttributedValue, *types.InputWithheldWorkerAttributedValue]
 
+	// Build the individual components first
+	forecasterValues := buildWorkerBundleValues(networkInferences.ForecasterValues, reputerValue, "forecaster", useTestValues)
+	oneOutInfererValues := buildWithheldBundleValues(networkInferences.OneOutInfererValues, reputerValue, "oneOutWorker", useTestValues)
+
 	//nolint:exhaustruct
 	return &types.InputValueBundle{
-		TopicId:                topicId,
-		ReputerRequestNonce:    &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
-		Reputer:                reputerAddr,
-		CombinedValue:          combinedVal,
-		NaiveValue:             combinedVal,
-		InfererValues:          buildWorkerBundleValues(networkInferences.InfererValues, reputerValue, "worker", useTestValues),
-		ForecasterValues:       buildWorkerBundleValues(networkInferences.ForecasterValues, reputerValue, "forecaster", useTestValues),
-		OneOutInfererValues:    buildWithheldBundleValues(networkInferences.OneOutInfererValues, reputerValue, "oneOutWorker", useTestValues),
-		OneOutForecasterValues: buildWithheldBundleValues(networkInferences.OneOutForecasterValues, reputerValue, "forecaster", useTestValues),
-		OneInForecasterValues:  buildWorkerBundleValues(networkInferences.OneInForecasterValues, reputerValue, "forecaster", useTestValues),
-		OneOutInfererForecasterValues: fn.Map(networkInferences.OneOutInfererForecasterValues, func(inf *types.OneOutInfererForecasterValues) *types.InputOneOutInfererForecasterValues {
-			return &types.InputOneOutInfererForecasterValues{
-				Forecaster:          inf.Forecaster,
-				OneOutInfererValues: buildWithheldBundleValues(inf.OneOutInfererValues, reputerValue, "oneOutWorker", useTestValues)}
-		}),
+		TopicId:                       topicId,
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
+		Reputer:                       reputerAddr,
+		CombinedValue:                 combinedVal,
+		NaiveValue:                    combinedVal,
+		InfererValues:                 buildWorkerBundleValues(networkInferences.InfererValues, reputerValue, "worker", useTestValues),
+		ForecasterValues:              forecasterValues,
+		OneOutInfererValues:           oneOutInfererValues,
+		OneOutForecasterValues:        buildWithheldBundleValues(networkInferences.OneOutForecasterValues, reputerValue, "forecaster", useTestValues),
+		OneInForecasterValues:         buildWorkerBundleValues(networkInferences.OneInForecasterValues, reputerValue, "forecaster", useTestValues),
+		OneOutInfererForecasterValues: buildOneOutInfererForecasterValues(networkInferences.OneOutInfererForecasterValues, forecasterValues, oneOutInfererValues, reputerValue, useTestValues),
 	}
 }
 
@@ -741,6 +749,35 @@ func getValueMap(reputerValue TestReputerValue, valueType string) map[string]str
 			return reputerValue.OneOutInfValues
 		}
 		return reputerValue.WorkerValues
+	}
+	return nil
+}
+
+func buildOneOutInfererForecasterValues(
+	baseValues []*types.OneOutInfererForecasterValues,
+	forecasterValues []*types.InputWorkerAttributedValue,
+	oneOutInfererValues []*types.InputWithheldWorkerAttributedValue,
+	reputerValue TestReputerValue,
+	useTestValues bool,
+) []*types.InputOneOutInfererForecasterValues {
+	if len(baseValues) > 0 {
+		buildWithheldBundleValues := buildLossBundleValues[*types.WithheldWorkerAttributedValue, *types.InputWithheldWorkerAttributedValue]
+		return fn.Map(baseValues, func(inf *types.OneOutInfererForecasterValues) *types.InputOneOutInfererForecasterValues {
+			return &types.InputOneOutInfererForecasterValues{
+				Forecaster:          inf.Forecaster,
+				OneOutInfererValues: buildWithheldBundleValues(inf.OneOutInfererValues, reputerValue, "oneOutWorker", useTestValues),
+			}
+		})
+	}
+	if useTestValues && len(forecasterValues) > 0 {
+		var result []*types.InputOneOutInfererForecasterValues
+		for _, forecaster := range forecasterValues {
+			result = append(result, &types.InputOneOutInfererForecasterValues{
+				Forecaster:          forecaster.Worker,
+				OneOutInfererValues: oneOutInfererValues,
+			})
+		}
+		return result
 	}
 	return nil
 }
@@ -960,7 +997,7 @@ func (s *TestSuite) SetupInferences(topicID uint64, nonce int64, workerIndexes [
 	if len(workerIndexes) == 0 {
 		return types.Nonce{} //nolint:exhaustruct
 	}
-	inferenceBundles := generateWorkerDataBundles(s, nonce, topicID, workerIndexes, workerValues)
+	inferenceBundles := s.GenerateWorkerDataBundles(nonce, topicID, workerIndexes, workerValues)
 	for _, payload := range inferenceBundles {
 		_, err := s.emissionsMsgServer.InsertWorkerPayload(s.Ctx(), &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
@@ -1093,10 +1130,11 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	s.Require().NoError(err)
 
 	if len(reputerNonces.Nonces) > 0 {
-		reputerTxBlockHeight := reputerNonces.Nonces[0].ReputerNonce.BlockHeight + topic.GroundTruthLag + 1
+		reputerNonce := reputerNonces.Nonces[0].ReputerNonce.BlockHeight
+		reputerTxBlockHeight := reputerNonce + topic.GroundTruthLag + 1
 		s.T().Logf("Moving nonce to insert loss bundles from reputers for TopicId: %d, Next block: %v, Nonce: %v", p.topicID, reputerTxBlockHeight, nonce)
 		s.WithBlockHeight(reputerTxBlockHeight)
-		err = s.InsertReputerLossBundle(topic.GetId(), reputerNonces.Nonces[0].ReputerNonce.BlockHeight, reputerIndexes, options...)
+		err = s.InsertReputerLossBundle(topic.GetId(), reputerNonce, reputerIndexes, options...)
 		s.Require().NoError(err)
 	}
 

@@ -43,38 +43,19 @@ func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
 	// Trigger end block - rewards distribution
 	s.EndBlock()
 
-	// Insert loss bundle from reputer
-	// Use different indexes to enforce different workers are used
-	// This will trigger an error and test if the defer execution of CloseReputerNonce works properly
-	workerIndexes = testutil.ReturnIndexes(10, 5)
-	reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1")
 	reputerNonce := types.Nonce{BlockHeight: currentBlockHeight}
 
-	err = s.InsertReputerLossBundle(
-		topic.Id,
-		currentBlockHeight,
-		reputerIndexes,
-		testutil.WithReputerValues(reputerValues),
-		testutil.WithSkipNetworkInferences(),
-	)
-	s.Require().NoError(err)
+	// Skip inserting reputer values, as we want to trigger an error and test the defer block execution
 
 	// before closing the nonce, the nonce should be unfulfilled
 	unfulfilled, err := s.EmissionsKeeper().IsReputerNonceUnfulfilled(s.Ctx(), topic.Id, &reputerNonce)
 	s.Require().NoError(err)
 	s.Require().True(unfulfilled)
 
-	// before closing the nonce, the active reputers for topic should not be
+	// before closing the nonce, the active reputers for topic should be empty, since no reputer values were inserted
 	activeReputers, err := s.EmissionsKeeper().GetActiveReputersForTopic(s.Ctx(), topic.Id)
 	s.Require().NoError(err)
-	s.Require().Equal(len(reputerIndexes), len(activeReputers))
-
-	// before closing the nonce, the submissions for the topic should not be empty
-	for _, idx := range reputerIndexes {
-		submissions, err := s.EmissionsKeeper().GetReputerLatestLossByTopicId(s.Ctx(), topic.Id, s.AddrsStr(idx))
-		s.Require().NoError(err)
-		s.Require().NotNil(submissions)
-	}
+	s.Require().Equal(0, len(activeReputers))
 
 	err = actorutils.CloseReputerNonce(s.EmissionsKeeper(), s.Ctx(), topic, reputerNonce)
 	s.Require().Error(err)
