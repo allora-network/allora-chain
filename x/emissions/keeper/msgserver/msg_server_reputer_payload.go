@@ -101,6 +101,6 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	types.EmitNewInsertReputerPayloadEvent(ctx, topicId, rvb)
+	types.EmitNewInsertReputerPayloadEvent(ctx, rvb)
 	return &types.InsertReputerPayloadResponse{}, nil
 }

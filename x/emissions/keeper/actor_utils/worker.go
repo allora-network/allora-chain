@@ -4,10 +4,11 @@ import (
 	"sort"
 
 	errorsmod "cosmossdk.io/errors"
-	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // WORKER NONCES CLOSING
@@ -188,7 +189,7 @@ func ProcessAndStoreNetworkInferences(
 		return errorsmod.Wrap(err, "failed to insert network inference")
 	}
 
-	types.EmitNewNetworkInferencesEvent(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences)
+	types.EmitNewNetworkInferencesEvent(ctx, *networkInferencesResult.NetworkInferences)
 
 	// Emit network inference weight events for inferers
 	for inferer, weight := range networkInferencesResult.InfererToWeight {
@@ -229,6 +230,8 @@ func ProcessAndStoreNetworkInferences(
 	if err := k.InsertOutlierResistantNetworkInferences(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
 		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
 	}
+
+	types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences)
 
 	return nil
 }
@@ -321,7 +324,7 @@ func closeActiveForecastsSet(
 			forecast.ForecastElements = acceptedForecastElements
 		}
 
-		/// Now do filters on each forecaster
+		// / Now do filters on each forecaster
 		// Ensure that we only have one forecast per forecaster. If not, we just take the first one
 		if _, ok := forecastsByForecaster[forecast.Forecaster]; !ok {
 			activeForecasts = append(activeForecasts, &forecast)

@@ -389,21 +389,31 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	topicId := uint64(1)
 	blockHeight := int64(10)
 	loss := types.ValueBundle{
-		TopicId:                       topicId,
-		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
-		Reputer:                       "",
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.MustNewDecFromString("10"),
-		NaiveValue:                    alloraMath.MustNewDecFromString("20"),
-		InfererValues:                 []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		ForecasterValues:              []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneInForecasterValues:         []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererForecasterValues: nil,
+		TopicId:                topicId,
+		ReputerRequestNonce:    &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
+		Reputer:                "TestReputer",
+		ExtraData:              nil,
+		CombinedValue:          alloraMath.MustNewDecFromString("10"),
+		NaiveValue:             alloraMath.MustNewDecFromString("20"),
+		InfererValues:          []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+			{
+				Forecaster: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+					{
+						Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+						Value:  alloraMath.MustNewDecFromString("0.0112"),
+					},
+				},
+			},
+		},
 	}
 
-	types.EmitNewNetworkLossSetEvent(ctx, topicId, blockHeight, loss)
+	types.EmitNewNetworkLossSetEvent(ctx, loss)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -412,19 +422,10 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Equal(t, "emissions.v9.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 3)
-
-	var result types.ValueBundle
+	require.Len(t, attributes, 1)
 	val, exists := event.GetAttribute(AttributeKeyValueBundle)
 	require.True(t, exists)
-	_ = json.Unmarshal([]byte(val.GetValue()), &result)
-	require.Equal(t, loss.CombinedValue, result.CombinedValue)
-	require.Equal(t, loss.NaiveValue, result.NaiveValue)
-	require.Equal(t, loss.InfererValues, result.InfererValues)
-	require.Equal(t, loss.ForecasterValues, result.ForecasterValues)
-	require.Equal(t, loss.OneOutInfererValues, result.OneOutInfererValues)
-	require.Equal(t, loss.OneOutForecasterValues, result.OneOutForecasterValues)
-	require.Equal(t, loss.OneInForecasterValues, result.OneInForecasterValues)
+	assertEventValueBundle(t, val.GetValue(), loss)
 }
 
 func TestEmitNewNetworkInferencesEvent(t *testing.T) {
@@ -432,21 +433,31 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	topicId := uint64(1)
 	blockHeight := int64(10)
 	networkInferences := types.ValueBundle{
-		TopicId:                       topicId,
-		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
-		Reputer:                       "",
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.MustNewDecFromString("10"),
-		NaiveValue:                    alloraMath.MustNewDecFromString("20"),
-		InfererValues:                 []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		ForecasterValues:              []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneInForecasterValues:         []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererForecasterValues: nil,
+		TopicId:                topicId,
+		ReputerRequestNonce:    &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
+		Reputer:                "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+		ExtraData:              nil,
+		CombinedValue:          alloraMath.MustNewDecFromString("10"),
+		NaiveValue:             alloraMath.MustNewDecFromString("20"),
+		InfererValues:          []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+			{
+				Forecaster: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+					{
+						Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+						Value:  alloraMath.MustNewDecFromString("0.0112"),
+					},
+				},
+			},
+		},
 	}
 
-	types.EmitNewNetworkInferencesEvent(ctx, topicId, blockHeight, networkInferences)
+	types.EmitNewNetworkInferencesEvent(ctx, networkInferences)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -455,19 +466,38 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	require.Equal(t, "emissions.v9.EventNetworkInferences", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 3)
+	require.Len(t, attributes, 1)
 
-	var result types.ValueBundle
 	val, exists := event.GetAttribute(AttributeKeyValueBundle)
 	require.True(t, exists)
-	_ = json.Unmarshal([]byte(val.GetValue()), &result)
-	require.Equal(t, networkInferences.CombinedValue, result.CombinedValue)
-	require.Equal(t, networkInferences.NaiveValue, result.NaiveValue)
-	require.Equal(t, networkInferences.InfererValues, result.InfererValues)
-	require.Equal(t, networkInferences.ForecasterValues, result.ForecasterValues)
-	require.Equal(t, networkInferences.OneOutInfererValues, result.OneOutInfererValues)
-	require.Equal(t, networkInferences.OneOutForecasterValues, result.OneOutForecasterValues)
-	require.Equal(t, networkInferences.OneInForecasterValues, result.OneInForecasterValues)
+	assertEventValueBundle(t, val.GetValue(), networkInferences)
+}
+
+func assertEventValueBundle(t *testing.T, val string, bundle types.ValueBundle) {
+	var result types.EventValueBundle
+	_ = json.Unmarshal([]byte(val), &result)
+	require.Equal(t, bundle.CombinedValue, result.CombinedValue)
+	require.Equal(t, bundle.NaiveValue, result.NaiveValue)
+	require.Equal(t, len(bundle.InfererValues), len(result.InfererValues))
+	for i := range bundle.InfererValues {
+		require.Equal(t, bundle.InfererValues[i].Value, result.InfererValues[i])
+	}
+	require.Equal(t, len(bundle.ForecasterValues), len(result.ForecasterValues))
+	for i := range bundle.ForecasterValues {
+		require.Equal(t, bundle.ForecasterValues[i].Value, result.ForecasterValues[i])
+	}
+	require.Equal(t, len(bundle.OneOutInfererValues), len(result.OneOutInfererValues))
+	for i := range bundle.OneOutInfererValues {
+		require.Equal(t, bundle.OneOutInfererValues[i].Value, result.OneOutInfererValues[i])
+	}
+	require.Equal(t, len(bundle.OneOutForecasterValues), len(result.OneOutForecasterValues))
+	for i := range bundle.OneOutForecasterValues {
+		require.Equal(t, bundle.OneOutForecasterValues[i].Value, result.OneOutForecasterValues[i])
+	}
+	require.Equal(t, len(bundle.OneInForecasterValues), len(result.OneInForecasterValues))
+	for i := range bundle.OneInForecasterValues {
+		require.Equal(t, bundle.OneInForecasterValues[i].Value, result.OneInForecasterValues[i])
+	}
 }
 
 func TestEmitNewForecastTaskSetEvent(t *testing.T) {

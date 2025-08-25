@@ -5,10 +5,11 @@ import (
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	chainParams "github.com/allora-network/allora-chain/app/params"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type EmissionsKeeper interface {

@@ -357,13 +357,12 @@ func (ms msgServer) BulkAddToGlobalWorkerWhitelist(ctx context.Context, msg *typ
 	}
 
 	for _, address := range msg.Addresses {
-		err := ms.k.AddToGlobalWorkerWhitelist(ctx, address)
-		if err != nil {
+		if err = ms.k.AddToGlobalWorkerWhitelist(ctx, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewGlobalWorkerWhitelistAddedEvent(ctx, address)
 	}
 
-	types.EmitNewGlobalWorkerWhitelistBulkAddedEvent(ctx, msg.Addresses)
 	return &types.BulkAddToGlobalWorkerWhitelistResponse{}, nil
 }
 
@@ -394,13 +393,12 @@ func (ms msgServer) BulkRemoveFromGlobalWorkerWhitelist(ctx context.Context, msg
 	}
 
 	for _, address := range msg.Addresses {
-		err := ms.k.RemoveFromGlobalWorkerWhitelist(ctx, address)
-		if err != nil {
+		if err = ms.k.RemoveFromGlobalWorkerWhitelist(ctx, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewGlobalWorkerWhitelistRemovedEvent(ctx, address)
 	}
 
-	types.EmitNewGlobalWorkerWhitelistBulkRemovedEvent(ctx, msg.Addresses)
 	return &types.BulkRemoveFromGlobalWorkerWhitelistResponse{}, nil
 }
 
@@ -431,13 +429,12 @@ func (ms msgServer) BulkAddToGlobalReputerWhitelist(ctx context.Context, msg *ty
 	}
 
 	for _, address := range msg.Addresses {
-		err := ms.k.AddToGlobalReputerWhitelist(ctx, address)
-		if err != nil {
+		if err = ms.k.AddToGlobalReputerWhitelist(ctx, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewGlobalReputerWhitelistAddedEvent(ctx, address)
 	}
 
-	types.EmitNewGlobalReputerWhitelistBulkAddedEvent(ctx, msg.Addresses)
 	return &types.BulkAddToGlobalReputerWhitelistResponse{}, nil
 }
 
@@ -468,13 +465,12 @@ func (ms msgServer) BulkRemoveFromGlobalReputerWhitelist(ctx context.Context, ms
 	}
 
 	for _, address := range msg.Addresses {
-		err := ms.k.RemoveFromGlobalReputerWhitelist(ctx, address)
-		if err != nil {
+		if err = ms.k.RemoveFromGlobalReputerWhitelist(ctx, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewGlobalReputerWhitelistRemovedEvent(ctx, address)
 	}
 
-	types.EmitNewGlobalReputerWhitelistBulkRemovedEvent(ctx, msg.Addresses)
 	return &types.BulkRemoveFromGlobalReputerWhitelistResponse{}, nil
 }
 
@@ -516,13 +512,12 @@ func (ms msgServer) BulkAddToTopicWorkerWhitelist(ctx context.Context, msg *type
 		// The main benefits of bulk operations are defeated if we do too much in-loop compute, and we validate addresses in layer below anyway
 		// => no need to validate address here.
 
-		err := ms.k.AddToTopicWorkerWhitelist(ctx, msg.TopicId, address)
-		if err != nil {
+		if err = ms.k.AddToTopicWorkerWhitelist(ctx, msg.TopicId, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewTopicWorkerWhitelistAddedEvent(ctx, msg.TopicId, address)
 	}
 
-	types.EmitNewTopicWorkerWhitelistBulkAddedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkAddToTopicWorkerWhitelistResponse{}, nil
 }
 
@@ -564,13 +559,12 @@ func (ms msgServer) BulkRemoveFromTopicWorkerWhitelist(ctx context.Context, msg 
 		// The main benefits of bulk operations are defeated if we do too much in-loop compute, and we validate addresses in layer below anyway
 		// => no need to validate address here.
 
-		err := ms.k.RemoveFromTopicWorkerWhitelist(ctx, msg.TopicId, address)
-		if err != nil {
+		if err = ms.k.RemoveFromTopicWorkerWhitelist(ctx, msg.TopicId, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewTopicWorkerWhitelistRemovedEvent(ctx, msg.TopicId, address)
 	}
 
-	types.EmitNewTopicWorkerWhitelistBulkRemovedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkRemoveFromTopicWorkerWhitelistResponse{}, nil
 }
 
@@ -612,13 +606,12 @@ func (ms msgServer) BulkAddToTopicReputerWhitelist(ctx context.Context, msg *typ
 		// The main benefits of bulk operations are defeated if we do too much in-loop compute, and we validate addresses in layer below anyway
 		// => no need to validate address here.
 
-		err := ms.k.AddToTopicReputerWhitelist(ctx, msg.TopicId, address)
-		if err != nil {
+		if err = ms.k.AddToTopicReputerWhitelist(ctx, msg.TopicId, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewTopicReputerWhitelistAddedEvent(ctx, msg.TopicId, address)
 	}
 
-	types.EmitNewTopicReputerWhitelistBulkAddedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkAddToTopicReputerWhitelistResponse{}, nil
 }
 
@@ -660,13 +653,12 @@ func (ms msgServer) BulkRemoveFromTopicReputerWhitelist(ctx context.Context, msg
 		// The main benefits of bulk operations are defeated if we do too much in-loop compute, and we validate addresses in layer below anyway
 		// => no need to validate address here.
 
-		err := ms.k.RemoveFromTopicReputerWhitelist(ctx, msg.TopicId, address)
-		if err != nil {
+		if err = ms.k.RemoveFromTopicReputerWhitelist(ctx, msg.TopicId, address); err != nil {
 			return nil, err
 		}
+		types.EmitNewTopicReputerWhitelistRemovedEvent(ctx, msg.TopicId, address)
 	}
 
-	types.EmitNewTopicReputerWhitelistBulkRemovedEvent(ctx, msg.TopicId, msg.Addresses)
 	return &types.BulkRemoveFromTopicReputerWhitelistResponse{}, nil
 }
 
