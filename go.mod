@@ -1,6 +1,6 @@
 module github.com/allora-network/allora-chain
 
-go 1.22.11
+go 1.23
 
 toolchain go1.23.5
 
@@ -79,6 +79,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816 // indirect
 	github.com/bits-and-blooms/bitset v1.8.0 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/brynbellomy/go-utils v0.0.0-20250619205733-b48d6fb76e36
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

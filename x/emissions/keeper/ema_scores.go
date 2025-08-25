@@ -3,10 +3,11 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Calculates and saves the EMA scores for a active set worker and topic.
@@ -16,7 +17,9 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaForActiveSet(
 	topic types.Topic,
 	worker ActorId,
 	newScore types.Score,
-) (types.Score, error) {
+) (_ types.Score, err error) {
+	defer errors.Annotate(&err, "topic", topic.Id, "worker", worker, "newScore", newScore)
+
 	previousScore, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
 	if err != nil {
 		return types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
@@ -51,7 +54,9 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaForActiveSet(
 	topic types.Topic,
 	worker ActorId,
 	newScore types.Score,
-) (types.Score, error) {
+) (_ types.Score, err error) {
+	defer errors.Annotate(&err, "topic", topic.Id, "worker", worker, "newScore", newScore)
+
 	previousScore, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
 	if err != nil {
 		return types.Score{}, errors.Wrapf(err, "Error getting forecaster score ema")
@@ -86,7 +91,9 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaForActiveSet(
 	topic types.Topic,
 	reputer ActorId,
 	newScore types.Score,
-) (types.Score, error) {
+) (_ types.Score, err error) {
+	defer errors.Annotate(&err, "topic", topic.Id, "reputer", reputer, "newScore", newScore)
+
 	previousScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
 	if err != nil {
 		return types.Score{}, errors.Wrapf(err, "Error getting reputer score ema")
@@ -122,7 +129,9 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	topic types.Topic,
 	block types.BlockHeight,
 	previousInfererScore types.Score,
-) error {
+) (err error) {
+	defer errors.Annotate(&err, "topic", topic.Id, "height", block, "previousInfererScore", previousInfererScore)
+
 	previousTopicQuantileInfererScoreEma, err := k.GetPreviousTopicQuantileInfererScoreEma(ctx, topic.Id)
 	if err != nil {
 		return err
@@ -162,7 +171,9 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	topic types.Topic,
 	block types.BlockHeight,
 	previousForecasterScore types.Score,
-) error {
+) (err error) {
+	defer errors.Annotate(&err, "topic", topic.Id, "height", block, "previousForecasterScore", previousForecasterScore)
+
 	previousTopicQuantileForecasterScoreEma, err := k.GetPreviousTopicQuantileForecasterScoreEma(ctx, topic.Id)
 	if err != nil {
 		return err

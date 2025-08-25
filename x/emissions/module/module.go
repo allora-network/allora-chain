@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/core/appmodule"
+	"github.com/allora-network/allora-chain/errors"
 	v2 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v2"
 	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
 	v4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
@@ -189,19 +190,22 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // EndBlock returns the end blocker for the emissions module.
-func (am AppModule) EndBlock(ctx context.Context) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	defer func() {
-		if r := recover(); r != nil {
-			err := fmt.Errorf("error: %v", r)
-			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
-		}
-	}()
+func (am AppModule) EndBlock(ctx context.Context) (err error) {
+	defer errors.Recover(&err)
 
-	err := EndBlocker(ctx, am)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	logger := sdkCtx.Logger().With(
+		"abci_step", "EndBlock",
+		"height", sdkCtx.BlockHeight(),
+	)
+	sdkCtx = sdkCtx.WithLogger(logger)
+
+	err = EndBlocker(ctx, am)
 	if err != nil {
-		sdkCtx := sdk.UnwrapSDKContext(ctx)
-		sdkCtx.Logger().Error("EndBlocker error! ", err)
+		err = errors.WithFields(err, "height", sdkCtx.BlockHeight())
+		logger.Error("EndBlocker failed", errors.Fields(err)...)
+		logger.Error("EndBlocker failed stacktrace: %+v", err)
+		return errors.Wrap(err, "EndBlocker failed")
 	}
-	return err
+	return nil
 }

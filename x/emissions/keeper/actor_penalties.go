@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // ApplyLivenessPenaltyToInferer penalises an inferer for missing previous epochs. It only returns the updated EMA score.
@@ -74,7 +76,9 @@ func ApplyLivenessPenaltyToActor(
 	topic types.Topic,
 	nonceBlockHeight types.BlockHeight,
 	emaScore types.Score,
-) (types.Score, error) {
+) (_ types.Score, err error) {
+	defer errors.Annotate(&err, "topic", topic.Id, "height", nonceBlockHeight, "emaScore", emaScore)
+
 	missedEpochs := missedEpochsFn(topic, emaScore.BlockHeight)
 	// No missed epochs == no penalty
 	if missedEpochs == 0 {
@@ -137,6 +141,5 @@ func countContiguousMissedEpochs(prevEpochStart, epochLength, lastSubmittedNonce
 	if lastSubmittedNonce >= prevEpochStart {
 		return 0
 	}
-
 	return (prevEpochStart-1-lastSubmittedNonce)/epochLength + 1
 }

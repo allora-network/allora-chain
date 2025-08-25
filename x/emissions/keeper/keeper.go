@@ -6,25 +6,26 @@ import (
 	"fmt"
 	"strings"
 
-	errorsmod "cosmossdk.io/errors"
-	"github.com/pkg/errors"
-
-	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils/fn"
-
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	coreStore "cosmossdk.io/core/store"
-	"github.com/allora-network/allora-chain/x/emissions/types"
-	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
+
+	// "github.com/brynbellomy/go-utils/fn"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/errors"
+	alloraMath "github.com/allora-network/allora-chain/math"
+
+	"github.com/allora-network/allora-chain/utils/fn"
+	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 )
 
 type TopicId = uint64
-type LibP2pKey = string
 type ActorId = string
 type BlockHeight = int64
 type Reputer = string
@@ -549,78 +550,84 @@ func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId
 
 // GetWorkerWindowTopicIds returns the TopicIds for a given BlockHeight.
 // If no TopicIds are found for the BlockHeight, it returns an empty slice.
-func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.TopicIds {
+func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) (_ types.TopicIds, err error) {
+	defer errors.Annotate(&err, "height", height)
+
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
-	if err != nil {
-		return types.TopicIds{TopicIds: []TopicId{}}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.TopicIds{TopicIds: []TopicId{}}, nil
+	} else if err != nil {
+		return types.TopicIds{}, err
 	}
-	return topicIds
+	return topicIds, nil
 }
 
 // AddWorkerWindowTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
 // If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
-func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicId TopicId) error {
+func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicId TopicId) (err error) {
+	defer errors.Annotate(&err, "height", height, "topic", topicId)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
-		return errorsmod.Wrap(err, "error validating topic id")
+		return errors.Wrap(err, "error validating topic id")
 	}
 	if err := types.ValidateBlockHeight(height); err != nil {
-		return errorsmod.Wrap(err, "error validating block height")
+		return errors.Wrap(err, "error validating block height")
 	}
-	var topicIds types.TopicIds
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
 	if err != nil {
-		topicIds = types.TopicIds{
-			TopicIds: []types.TopicId{},
-		}
+		return errors.Wrap(err, "error getting open worker windows for height")
 	}
 	topicIds.TopicIds = append(topicIds.TopicIds, topicId)
 	err = k.openWorkerWindows.Set(ctx, height, topicIds)
-	return errorsmod.Wrap(err, "error setting open worker windows")
+	return errors.Wrap(err, "error setting open worker windows")
 }
 
-func (k *Keeper) DeleteWorkerWindowBlockHeight(ctx sdk.Context, height BlockHeight) error {
+func (k *Keeper) DeleteWorkerWindowBlockHeight(ctx sdk.Context, height BlockHeight) (err error) {
+	defer errors.Annotate(&err, "height", height)
 	return k.openWorkerWindows.Remove(ctx, height)
 }
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
-func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (_ bool, err error) {
+	defer errors.Annotate(&err, "topic", topicId, "nonce", nonce.BlockHeight)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return false, errorsmod.Wrap(err, "error validating topic id")
 	}
 	if err := nonce.Validate(); err != nil {
 		return false, errorsmod.Wrap(err, "error validating nonce")
 	}
+
 	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
 		return false, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
-	// Check if the nonce is present in the unfulfilled nonces
-	for i, n := range unfulfilledNonces.Nonces {
-		if n.BlockHeight == nonce.BlockHeight {
-			// Remove the nonce from the unfulfilled nonces
-			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
-			if err := unfulfilledNonces.Validate(); err != nil {
-				return false, errorsmod.Wrap(err, "error validating unfulfilled nonces")
-			}
-			err := k.unfulfilledWorkerNonces.Set(ctx, topicId, unfulfilledNonces)
-			if err != nil {
-				return false, errorsmod.Wrap(err, "error setting unfulfilled worker nonces")
-			}
-			return true, nil
-		}
-	}
+	// Remove the nonce from the unfulfilled nonces
+	filtered := fn.FilterFn(unfulfilledNonces.Nonces, func(n *types.Nonce) bool {
+		return n != nil && n.BlockHeight != nonce.BlockHeight
+	})
+	found := len(filtered) == len(unfulfilledNonces.Nonces)
+	unfulfilledNonces.Nonces = filtered
 
-	// If the nonce is not present in the unfulfilled nonces
-	return false, nil
+	if err := unfulfilledNonces.Validate(); err != nil {
+		return false, errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
+	}
+	err = k.unfulfilledWorkerNonces.Set(ctx, topicId, unfulfilledNonces)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "error setting unfulfilled worker nonces")
+	}
+	return found, nil
 }
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
-func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (_ bool, err error) {
+	defer errors.Annotate(&err, "topic", topicId, "nonce", nonce)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return false, errorsmod.Wrap(err, "error validating topic id")
 	}
@@ -632,28 +639,27 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 		return false, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 
-	// Check if the nonce is present in the unfulfilled nonces
-	for i, n := range unfulfilledNonces.Nonces {
-		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
-			// Remove the nonce from the unfulfilled nonces
-			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
-			if err := unfulfilledNonces.Validate(); err != nil {
-				return false, errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
-			}
-			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
-			if err != nil {
-				return false, errorsmod.Wrap(err, "error setting unfulfilled reputer nonces")
-			}
-			return true, nil
-		}
-	}
+	// Remove the nonce from the unfulfilled nonces
+	filtered := fn.FilterFn(unfulfilledNonces.Nonces, func(n *types.ReputerRequestNonce) bool {
+		return n != nil && n.ReputerNonce.BlockHeight != nonce.BlockHeight
+	})
+	found := len(filtered) == len(unfulfilledNonces.Nonces)
+	unfulfilledNonces.Nonces = filtered
 
-	// If the nonce is not present in the unfulfilled nonces
-	return false, nil
+	if err := unfulfilledNonces.Validate(); err != nil {
+		return false, errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
+	}
+	err = k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "error setting unfulfilled reputer nonces")
+	}
+	return found, nil
 }
 
 // True if nonce is unfulfilled, false otherwise.
 func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, nonce *types.Nonce) (isUnfulfilled bool, err error) {
+	defer errors.Annotate(&err, "topic", topicId, "nonce", nonce)
+
 	// Get the latest unfulfilled nonces
 	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
@@ -661,20 +667,14 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
-	for _, n := range unfulfilledNonces.Nonces {
-		if n == nil {
-			continue
-		}
-		if n.BlockHeight == nonce.BlockHeight {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	_, found := fn.Find(unfulfilledNonces.Nonces, func(n *types.Nonce) bool { return n != nil && n.BlockHeight == nonce.BlockHeight })
+	return found, nil
 }
 
 // True if nonce is unfulfilled, false otherwise.
 func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId, nonce *types.Nonce) (isUnfulfilled bool, err error) {
+	defer errors.Annotate(&err, "topic", topicId, "nonce", nonce)
+
 	// Get the latest unfulfilled nonces
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
@@ -682,21 +682,17 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
-	for _, n := range unfulfilledNonces.Nonces {
-		if n == nil {
-			continue
-		}
-		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	_, found := fn.Find(unfulfilledNonces.Nonces, func(n *types.ReputerRequestNonce) bool {
+		return n != nil && n.ReputerNonce.BlockHeight == nonce.BlockHeight
+	})
+	return found, nil
 }
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "nonce", nonce)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
@@ -709,10 +705,9 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
-	for _, n := range nonces.Nonces {
-		if n.BlockHeight == nonce.BlockHeight {
-			return nil
-		}
+	_, found := fn.Find(nonces.Nonces, func(n *types.Nonce) bool { return n != nil && n.BlockHeight == nonce.BlockHeight })
+	if found {
+		return nil
 	}
 	nonces.Nonces = append([]*types.Nonce{nonce}, nonces.Nonces...)
 
@@ -720,15 +715,8 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting module params")
 	}
-	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledWorkerRequests
 
-	lenNonces := uint64(len(nonces.Nonces))
-	if lenNonces > maxUnfulfilledRequests {
-		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
-		if diff > 0 {
-			nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
-		}
-	}
+	nonces.Nonces = fn.Trim(nonces.Nonces, moduleParams.MaxUnfulfilledWorkerRequests)
 
 	if err := nonces.Validate(); err != nil {
 		return errorsmod.Wrap(err, "error validating unfulfilled worker nonces")
@@ -738,7 +726,9 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "nonce", nonce)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
@@ -754,37 +744,31 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
-	// nor that the `associatedWorkerNonce` is already associated with a worker request
-	for _, n := range nonces.Nonces {
-		// Do nothing if nonce is already in the list
-		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
-			return nil
-		}
+	_, found := fn.Find(nonces.Nonces, func(n *types.ReputerRequestNonce) bool {
+		return n != nil && n.ReputerNonce.BlockHeight == nonce.BlockHeight
+	})
+	if found {
+		return nil
 	}
-	reputerRequestNonce := &types.ReputerRequestNonce{
-		ReputerNonce: nonce,
-	}
+	reputerRequestNonce := &types.ReputerRequestNonce{ReputerNonce: nonce}
 	nonces.Nonces = append([]*types.ReputerRequestNonce{reputerRequestNonce}, nonces.Nonces...)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting module params")
 	}
-	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledReputerRequests
-	lenNonces := uint64(len(nonces.Nonces))
-	if lenNonces > maxUnfulfilledRequests {
-		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
-		if diff > 0 {
-			nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
-		}
-	}
+
+	nonces.Nonces = fn.Trim(nonces.Nonces, moduleParams.MaxUnfulfilledReputerRequests)
+
 	if err := nonces.Validate(); err != nil {
 		return errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
 	}
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
 }
 
-func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
+func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (_ types.Nonces, err error) {
+	defer errors.Annotate(&err, "topic", topicId)
+
 	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		return types.Nonces{Nonces: []*types.Nonce{}}, nil
@@ -794,7 +778,9 @@ func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId
 	return nonces, nil
 }
 
-func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.ReputerRequestNonces, error) {
+func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (_ types.ReputerRequestNonces, err error) {
+	defer errors.Annotate(&err, "topic", topicId)
+
 	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, nil
@@ -804,18 +790,22 @@ func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicI
 	return nonces, nil
 }
 
-func (k *Keeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) error {
+func (k *Keeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (err error) {
+	defer errors.Annotate(&err, "topic", topicId)
 	return k.unfulfilledWorkerNonces.Remove(ctx, topicId)
 }
 
-func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) error {
+func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (err error) {
+	defer errors.Annotate(&err, "topic", topicId)
 	return k.unfulfilledReputerNonces.Remove(ctx, topicId)
 }
 
 /// INCLUSIONS
 
 // Get the count of inferer inclusions in topic active set
-func (k *Keeper) GetCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) (uint64, error) {
+func (k *Keeper) GetCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) (_ uint64, err error) {
+	defer errors.Annotate(&err, "topic", topicId, "inferer", inferer)
+
 	key := collections.Join(topicId, inferer)
 	count, err := k.countInfererInclusionsInTopicActiveSet.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -827,7 +817,9 @@ func (k *Keeper) GetCountInfererInclusionsInTopic(ctx context.Context, topicId T
 }
 
 // Get the count of inferer inclusions in topic active set
-func (k *Keeper) IncrementCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) error {
+func (k *Keeper) IncrementCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "inferer", inferer)
+
 	key := collections.Join(topicId, inferer)
 	count, err := k.GetCountInfererInclusionsInTopic(ctx, topicId, inferer)
 	if err != nil {
@@ -838,7 +830,9 @@ func (k *Keeper) IncrementCountInfererInclusionsInTopic(ctx context.Context, top
 }
 
 // Get the count of forecaster inclusions in topic active set
-func (k *Keeper) GetCountForecasterInclusionsInTopic(ctx context.Context, topicId TopicId, forecaster ActorId) (uint64, error) {
+func (k *Keeper) GetCountForecasterInclusionsInTopic(ctx context.Context, topicId TopicId, forecaster ActorId) (_ uint64, err error) {
+	defer errors.Annotate(&err, "topic", topicId, "forecaster", forecaster)
+
 	key := collections.Join(topicId, forecaster)
 	count, err := k.countForecasterInclusionsInTopicActiveSet.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -850,7 +844,9 @@ func (k *Keeper) GetCountForecasterInclusionsInTopic(ctx context.Context, topicI
 }
 
 // Increase the count of forecaster inclusions in topic active set
-func (k *Keeper) IncrementCountForecasterInclusionsInTopic(ctx context.Context, topicId TopicId, forecaster ActorId) error {
+func (k *Keeper) IncrementCountForecasterInclusionsInTopic(ctx context.Context, topicId TopicId, forecaster ActorId) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "forecaster", forecaster)
+
 	key := collections.Join(topicId, forecaster)
 	count, err := k.GetCountForecasterInclusionsInTopic(ctx, topicId, forecaster)
 	if err != nil {
@@ -862,7 +858,9 @@ func (k *Keeper) IncrementCountForecasterInclusionsInTopic(ctx context.Context, 
 
 /// REGRETS
 
-func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "worker", worker, "regret", regret)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
@@ -879,28 +877,30 @@ func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 // Returns the regret of a inferer from comparing loss of inferer relative to loss of other inferers
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetInfererNetworkRegret(
-	ctx context.Context, topicId TopicId, worker ActorId) (
-	regret types.TimestampedValue, noPrior bool, err error) {
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (
+	regret types.TimestampedValue,
+	noPrior bool,
+	err error,
+) {
+	defer errors.Annotate(&err, "topic", topicId, "worker", worker)
+
 	key := collections.Join(topicId, worker)
 	regret, err = k.latestInfererNetworkRegrets.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       alloraMath.ZeroDec(),
-			}, false, errorsmod.Wrap(err, "error getting topic")
+			err = errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, err
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return types.TimestampedValue{BlockHeight: 0, Value: topic.InitialRegret}, true, nil
+
 	} else if err != nil {
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       alloraMath.ZeroDec(),
-		}, false, errorsmod.Wrap(err, "error getting inferer network regret")
+		err = errorsmod.Wrap(err, "error getting inferer network regret")
+		return types.TimestampedValue{BlockHeight: 0, Value: alloraMath.ZeroDec()}, false, err
 	}
 	return regret, false, nil
 }
@@ -910,7 +910,9 @@ func (k *Keeper) SetForecasterNetworkRegret(
 	topicId TopicId,
 	worker ActorId,
 	regret types.TimestampedValue,
-) error {
+) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "worker", worker, "regret", regret)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
@@ -927,8 +929,16 @@ func (k *Keeper) SetForecasterNetworkRegret(
 // Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetForecasterNetworkRegret(
-	ctx context.Context, topicId TopicId, worker ActorId) (
-	regret types.TimestampedValue, noPrior bool, err error) {
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (
+	regret types.TimestampedValue,
+	noPrior bool,
+	err error,
+) {
+	defer errors.Annotate(&err, "topic", topicId, "worker", worker)
+
 	key := collections.Join(topicId, worker)
 	regret, err = k.latestForecasterNetworkRegrets.Get(ctx, key)
 
@@ -937,10 +947,8 @@ func (k *Keeper) GetForecasterNetworkRegret(
 		if err != nil {
 			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return types.TimestampedValue{BlockHeight: 0, Value: topic.InitialRegret}, true, nil
+
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting forecaster network regret")
 	}
@@ -974,8 +982,17 @@ func (k *Keeper) SetOneInForecasterNetworkRegret(
 // Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetOneInForecasterNetworkRegret(
-	ctx context.Context, topicId TopicId, oneInForecaster ActorId, inferer ActorId) (
-	regret types.TimestampedValue, noPrior bool, err error) {
+	ctx context.Context,
+	topicId TopicId,
+	oneInForecaster ActorId,
+	inferer ActorId,
+) (
+	regret types.TimestampedValue,
+	noPrior bool,
+	err error,
+) {
+	defer errors.Annotate(&err, "topic", topicId, "oneInForecaster", oneInForecaster, "inferer", inferer)
+
 	key := collections.Join3(topicId, oneInForecaster, inferer)
 	regret, err = k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -983,10 +1000,8 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(
 		if err != nil {
 			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return types.TimestampedValue{BlockHeight: 0, Value: topic.InitialRegret}, true, nil
+
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one in forecaster network regret")
 	}
@@ -998,7 +1013,9 @@ func (k *Keeper) SetNaiveInfererNetworkRegret(
 	topicId TopicId,
 	inferer ActorId,
 	regret types.TimestampedValue,
-) error {
+) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "inferer", inferer, "regret", regret)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
@@ -1012,8 +1029,17 @@ func (k *Keeper) SetNaiveInfererNetworkRegret(
 	return k.latestNaiveInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId) (
-	regret types.TimestampedValue, noPrior bool, err error) {
+func (k *Keeper) GetNaiveInfererNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	inferer ActorId,
+) (
+	regret types.TimestampedValue,
+	noPrior bool,
+	err error,
+) {
+	defer errors.Annotate(&err, "topic", topicId, "inferer", inferer)
+
 	key := collections.Join(topicId, inferer)
 	regret, err = k.latestNaiveInfererNetworkRegrets.Get(ctx, key)
 
@@ -1022,10 +1048,8 @@ func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId Topic
 		if err != nil {
 			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       topic.InitialRegret,
-		}, true, nil
+		return types.TimestampedValue{BlockHeight: 0, Value: topic.InitialRegret}, true, nil
+
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting naive inferer network regret")
 	}
@@ -1038,7 +1062,9 @@ func (k *Keeper) SetOneOutInfererInfererNetworkRegret(
 	oneOutInferer ActorId,
 	inferer ActorId,
 	regret types.TimestampedValue,
-) error {
+) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "oneOutInferer", oneOutInferer, "inferer", inferer, "regret", regret)
+
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}

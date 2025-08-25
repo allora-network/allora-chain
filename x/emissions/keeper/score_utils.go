@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"github.com/allora-network/allora-chain/errors"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -32,11 +33,13 @@ func UpdateLowestScoreFromReputerAddresses(
 	topicId TopicId,
 	reputerAddresses []string,
 	addedReputer string,
-	removedReputerAddress string,
-) error {
+	removedReputer string,
+) (err error) {
+	defer errors.Annotate(&err, "topic", topicId, "reputers", reputerAddresses, "addedReputer", addedReputer, "removedReputer", removedReputer)
+
 	// Remove reputer from the list
 	for i, address := range reputerAddresses {
-		if address == removedReputerAddress {
+		if address == removedReputer {
 			reputerAddresses = append(reputerAddresses[:i], reputerAddresses[i+1:]...)
 			break
 		}
@@ -77,7 +80,6 @@ func UpdateLowestScoreFromInfererAddresses(
 	if err != nil {
 		return err
 	}
-
 	return k.SetLowestInfererScoreEma(ctx, topicId, lowScore)
 }
 
