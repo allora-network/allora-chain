@@ -521,8 +521,8 @@ func (m *EventOneOutInfForcVals) Equal(ei *EventOneOutInfForcVals) bool {
 }
 
 // Stake removal
-func NewReputerStakeRemovalCompletedEventBase(topicId TopicId, blockHeight BlockHeight, reputer string, amount math.Int) proto.Message {
-	return &EventReputerStakeRemovalCompleted{
+func NewRemoveStakeCompletedEventBase(topicId TopicId, blockHeight BlockHeight, reputer string, amount math.Int) proto.Message {
+	return &EventRemoveStakeCompleted{
 		TopicId:     topicId,
 		Reputer:     reputer,
 		Amount:      amount,
@@ -530,8 +530,8 @@ func NewReputerStakeRemovalCompletedEventBase(topicId TopicId, blockHeight Block
 	}
 }
 
-func NewDelegateStakeRemovalCompletedEventBase(topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount math.Int) proto.Message {
-	return &EventDelegateStakeRemovalCompleted{
+func NewRemoveDelegateStakeCompletedEventBase(topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount math.Int) proto.Message {
+	return &EventRemoveDelegateStakeCompleted{
 		TopicId:     topicId,
 		Reputer:     reputer,
 		Delegator:   delegator,
@@ -607,21 +607,21 @@ func NewNetworkInferenceForecasterWeightSetEventBase(topicId TopicId, blockHeigh
 	}
 }
 
-func NewNetworkInferenceInfererRegretUsedEventBase(topicId TopicId, blockHeight int64, address string, regret alloraMath.Dec) proto.Message {
-	return &EventNetworkInferenceInfererRegretUsed{
+func NewNetworkInferenceInfererRegretsUsedSetEventBase(topicId TopicId, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceInfererRegretsUsedSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
-		Address:          address,
-		Regret:           regret,
+		Addresses:        addresses,
+		Regrets:          regrets,
 	}
 }
 
-func NewNetworkInferenceForecasterRegretUsedEventBase(topicId TopicId, blockHeight int64, address string, regret alloraMath.Dec) proto.Message {
-	return &EventNetworkInferenceForecasterRegretUsed{
+func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceForecasterRegretsUsedSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
-		Address:          address,
-		Regret:           regret,
+		Addresses:        addresses,
+		Regrets:          regrets,
 	}
 }
 

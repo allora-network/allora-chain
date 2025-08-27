@@ -29817,31 +29817,31 @@ func (x *fastReflection_EventPruneRecords) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_EventReputerStakeRemovalCompleted              protoreflect.MessageDescriptor
-	fd_EventReputerStakeRemovalCompleted_topic_id     protoreflect.FieldDescriptor
-	fd_EventReputerStakeRemovalCompleted_reputer      protoreflect.FieldDescriptor
-	fd_EventReputerStakeRemovalCompleted_amount       protoreflect.FieldDescriptor
-	fd_EventReputerStakeRemovalCompleted_block_height protoreflect.FieldDescriptor
+	md_EventRemoveStakeCompleted              protoreflect.MessageDescriptor
+	fd_EventRemoveStakeCompleted_topic_id     protoreflect.FieldDescriptor
+	fd_EventRemoveStakeCompleted_reputer      protoreflect.FieldDescriptor
+	fd_EventRemoveStakeCompleted_amount       protoreflect.FieldDescriptor
+	fd_EventRemoveStakeCompleted_block_height protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_events_proto_init()
-	md_EventReputerStakeRemovalCompleted = File_emissions_v9_events_proto.Messages().ByName("EventReputerStakeRemovalCompleted")
-	fd_EventReputerStakeRemovalCompleted_topic_id = md_EventReputerStakeRemovalCompleted.Fields().ByName("topic_id")
-	fd_EventReputerStakeRemovalCompleted_reputer = md_EventReputerStakeRemovalCompleted.Fields().ByName("reputer")
-	fd_EventReputerStakeRemovalCompleted_amount = md_EventReputerStakeRemovalCompleted.Fields().ByName("amount")
-	fd_EventReputerStakeRemovalCompleted_block_height = md_EventReputerStakeRemovalCompleted.Fields().ByName("block_height")
+	md_EventRemoveStakeCompleted = File_emissions_v9_events_proto.Messages().ByName("EventRemoveStakeCompleted")
+	fd_EventRemoveStakeCompleted_topic_id = md_EventRemoveStakeCompleted.Fields().ByName("topic_id")
+	fd_EventRemoveStakeCompleted_reputer = md_EventRemoveStakeCompleted.Fields().ByName("reputer")
+	fd_EventRemoveStakeCompleted_amount = md_EventRemoveStakeCompleted.Fields().ByName("amount")
+	fd_EventRemoveStakeCompleted_block_height = md_EventRemoveStakeCompleted.Fields().ByName("block_height")
 }
 
-var _ protoreflect.Message = (*fastReflection_EventReputerStakeRemovalCompleted)(nil)
+var _ protoreflect.Message = (*fastReflection_EventRemoveStakeCompleted)(nil)
 
-type fastReflection_EventReputerStakeRemovalCompleted EventReputerStakeRemovalCompleted
+type fastReflection_EventRemoveStakeCompleted EventRemoveStakeCompleted
 
-func (x *EventReputerStakeRemovalCompleted) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_EventReputerStakeRemovalCompleted)(x)
+func (x *EventRemoveStakeCompleted) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventRemoveStakeCompleted)(x)
 }
 
-func (x *EventReputerStakeRemovalCompleted) slowProtoReflect() protoreflect.Message {
+func (x *EventRemoveStakeCompleted) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_events_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -29853,43 +29853,43 @@ func (x *EventReputerStakeRemovalCompleted) slowProtoReflect() protoreflect.Mess
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_EventReputerStakeRemovalCompleted_messageType fastReflection_EventReputerStakeRemovalCompleted_messageType
-var _ protoreflect.MessageType = fastReflection_EventReputerStakeRemovalCompleted_messageType{}
+var _fastReflection_EventRemoveStakeCompleted_messageType fastReflection_EventRemoveStakeCompleted_messageType
+var _ protoreflect.MessageType = fastReflection_EventRemoveStakeCompleted_messageType{}
 
-type fastReflection_EventReputerStakeRemovalCompleted_messageType struct{}
+type fastReflection_EventRemoveStakeCompleted_messageType struct{}
 
-func (x fastReflection_EventReputerStakeRemovalCompleted_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_EventReputerStakeRemovalCompleted)(nil)
+func (x fastReflection_EventRemoveStakeCompleted_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventRemoveStakeCompleted)(nil)
 }
-func (x fastReflection_EventReputerStakeRemovalCompleted_messageType) New() protoreflect.Message {
-	return new(fastReflection_EventReputerStakeRemovalCompleted)
+func (x fastReflection_EventRemoveStakeCompleted_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventRemoveStakeCompleted)
 }
-func (x fastReflection_EventReputerStakeRemovalCompleted_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventReputerStakeRemovalCompleted
+func (x fastReflection_EventRemoveStakeCompleted_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventRemoveStakeCompleted
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventReputerStakeRemovalCompleted
+func (x *fastReflection_EventRemoveStakeCompleted) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventRemoveStakeCompleted
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Type() protoreflect.MessageType {
-	return _fastReflection_EventReputerStakeRemovalCompleted_messageType
+func (x *fastReflection_EventRemoveStakeCompleted) Type() protoreflect.MessageType {
+	return _fastReflection_EventRemoveStakeCompleted_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) New() protoreflect.Message {
-	return new(fastReflection_EventReputerStakeRemovalCompleted)
+func (x *fastReflection_EventRemoveStakeCompleted) New() protoreflect.Message {
+	return new(fastReflection_EventRemoveStakeCompleted)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Interface() protoreflect.ProtoMessage {
-	return (*EventReputerStakeRemovalCompleted)(x)
+func (x *fastReflection_EventRemoveStakeCompleted) Interface() protoreflect.ProtoMessage {
+	return (*EventRemoveStakeCompleted)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -29897,28 +29897,28 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) Interface() protorefl
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_EventRemoveStakeCompleted) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventReputerStakeRemovalCompleted_topic_id, value) {
+		if !f(fd_EventRemoveStakeCompleted_topic_id, value) {
 			return
 		}
 	}
 	if x.Reputer != "" {
 		value := protoreflect.ValueOfString(x.Reputer)
-		if !f(fd_EventReputerStakeRemovalCompleted_reputer, value) {
+		if !f(fd_EventRemoveStakeCompleted_reputer, value) {
 			return
 		}
 	}
 	if x.Amount != "" {
 		value := protoreflect.ValueOfString(x.Amount)
-		if !f(fd_EventReputerStakeRemovalCompleted_amount, value) {
+		if !f(fd_EventRemoveStakeCompleted_amount, value) {
 			return
 		}
 	}
 	if x.BlockHeight != int64(0) {
 		value := protoreflect.ValueOfInt64(x.BlockHeight)
-		if !f(fd_EventReputerStakeRemovalCompleted_block_height, value) {
+		if !f(fd_EventRemoveStakeCompleted_block_height, value) {
 			return
 		}
 	}
@@ -29935,21 +29935,21 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) Range(f func(protoref
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_EventRemoveStakeCompleted) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.EventReputerStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveStakeCompleted.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v9.EventReputerStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveStakeCompleted.reputer":
 		return x.Reputer != ""
-	case "emissions.v9.EventReputerStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveStakeCompleted.amount":
 		return x.Amount != ""
-	case "emissions.v9.EventReputerStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveStakeCompleted.block_height":
 		return x.BlockHeight != int64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventReputerStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -29959,21 +29959,21 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) Has(fd protoreflect.F
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_EventRemoveStakeCompleted) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.EventReputerStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveStakeCompleted.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v9.EventReputerStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveStakeCompleted.reputer":
 		x.Reputer = ""
-	case "emissions.v9.EventReputerStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveStakeCompleted.amount":
 		x.Amount = ""
-	case "emissions.v9.EventReputerStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveStakeCompleted.block_height":
 		x.BlockHeight = int64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventReputerStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -29983,25 +29983,25 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) Clear(fd protoreflect
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventRemoveStakeCompleted) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.EventReputerStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveStakeCompleted.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v9.EventReputerStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveStakeCompleted.reputer":
 		value := x.Reputer
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.EventReputerStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveStakeCompleted.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.EventReputerStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveStakeCompleted.block_height":
 		value := x.BlockHeight
 		return protoreflect.ValueOfInt64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventReputerStakeRemovalCompleted does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveStakeCompleted does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -30015,21 +30015,21 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) Get(descriptor protor
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_EventRemoveStakeCompleted) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.EventReputerStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveStakeCompleted.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v9.EventReputerStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveStakeCompleted.reputer":
 		x.Reputer = value.Interface().(string)
-	case "emissions.v9.EventReputerStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveStakeCompleted.amount":
 		x.Amount = value.Interface().(string)
-	case "emissions.v9.EventReputerStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveStakeCompleted.block_height":
 		x.BlockHeight = value.Int()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventReputerStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -30043,52 +30043,52 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) Set(fd protoreflect.F
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventRemoveStakeCompleted) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventReputerStakeRemovalCompleted.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.EventReputerStakeRemovalCompleted is not mutable"))
-	case "emissions.v9.EventReputerStakeRemovalCompleted.reputer":
-		panic(fmt.Errorf("field reputer of message emissions.v9.EventReputerStakeRemovalCompleted is not mutable"))
-	case "emissions.v9.EventReputerStakeRemovalCompleted.amount":
-		panic(fmt.Errorf("field amount of message emissions.v9.EventReputerStakeRemovalCompleted is not mutable"))
-	case "emissions.v9.EventReputerStakeRemovalCompleted.block_height":
-		panic(fmt.Errorf("field block_height of message emissions.v9.EventReputerStakeRemovalCompleted is not mutable"))
+	case "emissions.v9.EventRemoveStakeCompleted.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventRemoveStakeCompleted is not mutable"))
+	case "emissions.v9.EventRemoveStakeCompleted.reputer":
+		panic(fmt.Errorf("field reputer of message emissions.v9.EventRemoveStakeCompleted is not mutable"))
+	case "emissions.v9.EventRemoveStakeCompleted.amount":
+		panic(fmt.Errorf("field amount of message emissions.v9.EventRemoveStakeCompleted is not mutable"))
+	case "emissions.v9.EventRemoveStakeCompleted.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v9.EventRemoveStakeCompleted is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventReputerStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventRemoveStakeCompleted) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventReputerStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveStakeCompleted.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v9.EventReputerStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveStakeCompleted.reputer":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.EventReputerStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveStakeCompleted.amount":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.EventReputerStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveStakeCompleted.block_height":
 		return protoreflect.ValueOfInt64(int64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventReputerStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_EventRemoveStakeCompleted) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventReputerStakeRemovalCompleted", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventRemoveStakeCompleted", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -30096,7 +30096,7 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) WhichOneof(d protoref
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_EventRemoveStakeCompleted) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -30107,7 +30107,7 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) GetUnknown() protoref
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_EventRemoveStakeCompleted) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -30119,7 +30119,7 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) SetUnknown(fields pro
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) IsValid() bool {
+func (x *fastReflection_EventRemoveStakeCompleted) IsValid() bool {
 	return x != nil
 }
 
@@ -30129,9 +30129,9 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_EventReputerStakeRemovalCompleted) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_EventRemoveStakeCompleted) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*EventReputerStakeRemovalCompleted)
+		x := input.Message.Interface().(*EventRemoveStakeCompleted)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -30167,7 +30167,7 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) ProtoMethods() *proto
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*EventReputerStakeRemovalCompleted)
+		x := input.Message.Interface().(*EventRemoveStakeCompleted)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -30221,7 +30221,7 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) ProtoMethods() *proto
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*EventReputerStakeRemovalCompleted)
+		x := input.Message.Interface().(*EventRemoveStakeCompleted)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -30253,10 +30253,10 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) ProtoMethods() *proto
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventReputerStakeRemovalCompleted: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventRemoveStakeCompleted: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventReputerStakeRemovalCompleted: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventRemoveStakeCompleted: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -30397,33 +30397,33 @@ func (x *fastReflection_EventReputerStakeRemovalCompleted) ProtoMethods() *proto
 }
 
 var (
-	md_EventDelegateStakeRemovalCompleted              protoreflect.MessageDescriptor
-	fd_EventDelegateStakeRemovalCompleted_topic_id     protoreflect.FieldDescriptor
-	fd_EventDelegateStakeRemovalCompleted_reputer      protoreflect.FieldDescriptor
-	fd_EventDelegateStakeRemovalCompleted_delegator    protoreflect.FieldDescriptor
-	fd_EventDelegateStakeRemovalCompleted_amount       protoreflect.FieldDescriptor
-	fd_EventDelegateStakeRemovalCompleted_block_height protoreflect.FieldDescriptor
+	md_EventRemoveDelegateStakeCompleted              protoreflect.MessageDescriptor
+	fd_EventRemoveDelegateStakeCompleted_topic_id     protoreflect.FieldDescriptor
+	fd_EventRemoveDelegateStakeCompleted_reputer      protoreflect.FieldDescriptor
+	fd_EventRemoveDelegateStakeCompleted_delegator    protoreflect.FieldDescriptor
+	fd_EventRemoveDelegateStakeCompleted_amount       protoreflect.FieldDescriptor
+	fd_EventRemoveDelegateStakeCompleted_block_height protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_events_proto_init()
-	md_EventDelegateStakeRemovalCompleted = File_emissions_v9_events_proto.Messages().ByName("EventDelegateStakeRemovalCompleted")
-	fd_EventDelegateStakeRemovalCompleted_topic_id = md_EventDelegateStakeRemovalCompleted.Fields().ByName("topic_id")
-	fd_EventDelegateStakeRemovalCompleted_reputer = md_EventDelegateStakeRemovalCompleted.Fields().ByName("reputer")
-	fd_EventDelegateStakeRemovalCompleted_delegator = md_EventDelegateStakeRemovalCompleted.Fields().ByName("delegator")
-	fd_EventDelegateStakeRemovalCompleted_amount = md_EventDelegateStakeRemovalCompleted.Fields().ByName("amount")
-	fd_EventDelegateStakeRemovalCompleted_block_height = md_EventDelegateStakeRemovalCompleted.Fields().ByName("block_height")
+	md_EventRemoveDelegateStakeCompleted = File_emissions_v9_events_proto.Messages().ByName("EventRemoveDelegateStakeCompleted")
+	fd_EventRemoveDelegateStakeCompleted_topic_id = md_EventRemoveDelegateStakeCompleted.Fields().ByName("topic_id")
+	fd_EventRemoveDelegateStakeCompleted_reputer = md_EventRemoveDelegateStakeCompleted.Fields().ByName("reputer")
+	fd_EventRemoveDelegateStakeCompleted_delegator = md_EventRemoveDelegateStakeCompleted.Fields().ByName("delegator")
+	fd_EventRemoveDelegateStakeCompleted_amount = md_EventRemoveDelegateStakeCompleted.Fields().ByName("amount")
+	fd_EventRemoveDelegateStakeCompleted_block_height = md_EventRemoveDelegateStakeCompleted.Fields().ByName("block_height")
 }
 
-var _ protoreflect.Message = (*fastReflection_EventDelegateStakeRemovalCompleted)(nil)
+var _ protoreflect.Message = (*fastReflection_EventRemoveDelegateStakeCompleted)(nil)
 
-type fastReflection_EventDelegateStakeRemovalCompleted EventDelegateStakeRemovalCompleted
+type fastReflection_EventRemoveDelegateStakeCompleted EventRemoveDelegateStakeCompleted
 
-func (x *EventDelegateStakeRemovalCompleted) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_EventDelegateStakeRemovalCompleted)(x)
+func (x *EventRemoveDelegateStakeCompleted) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventRemoveDelegateStakeCompleted)(x)
 }
 
-func (x *EventDelegateStakeRemovalCompleted) slowProtoReflect() protoreflect.Message {
+func (x *EventRemoveDelegateStakeCompleted) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_events_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -30435,43 +30435,43 @@ func (x *EventDelegateStakeRemovalCompleted) slowProtoReflect() protoreflect.Mes
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_EventDelegateStakeRemovalCompleted_messageType fastReflection_EventDelegateStakeRemovalCompleted_messageType
-var _ protoreflect.MessageType = fastReflection_EventDelegateStakeRemovalCompleted_messageType{}
+var _fastReflection_EventRemoveDelegateStakeCompleted_messageType fastReflection_EventRemoveDelegateStakeCompleted_messageType
+var _ protoreflect.MessageType = fastReflection_EventRemoveDelegateStakeCompleted_messageType{}
 
-type fastReflection_EventDelegateStakeRemovalCompleted_messageType struct{}
+type fastReflection_EventRemoveDelegateStakeCompleted_messageType struct{}
 
-func (x fastReflection_EventDelegateStakeRemovalCompleted_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_EventDelegateStakeRemovalCompleted)(nil)
+func (x fastReflection_EventRemoveDelegateStakeCompleted_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventRemoveDelegateStakeCompleted)(nil)
 }
-func (x fastReflection_EventDelegateStakeRemovalCompleted_messageType) New() protoreflect.Message {
-	return new(fastReflection_EventDelegateStakeRemovalCompleted)
+func (x fastReflection_EventRemoveDelegateStakeCompleted_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventRemoveDelegateStakeCompleted)
 }
-func (x fastReflection_EventDelegateStakeRemovalCompleted_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventDelegateStakeRemovalCompleted
+func (x fastReflection_EventRemoveDelegateStakeCompleted_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventRemoveDelegateStakeCompleted
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventDelegateStakeRemovalCompleted
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventRemoveDelegateStakeCompleted
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Type() protoreflect.MessageType {
-	return _fastReflection_EventDelegateStakeRemovalCompleted_messageType
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Type() protoreflect.MessageType {
+	return _fastReflection_EventRemoveDelegateStakeCompleted_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) New() protoreflect.Message {
-	return new(fastReflection_EventDelegateStakeRemovalCompleted)
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) New() protoreflect.Message {
+	return new(fastReflection_EventRemoveDelegateStakeCompleted)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Interface() protoreflect.ProtoMessage {
-	return (*EventDelegateStakeRemovalCompleted)(x)
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Interface() protoreflect.ProtoMessage {
+	return (*EventRemoveDelegateStakeCompleted)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -30479,34 +30479,34 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) Interface() protoref
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventDelegateStakeRemovalCompleted_topic_id, value) {
+		if !f(fd_EventRemoveDelegateStakeCompleted_topic_id, value) {
 			return
 		}
 	}
 	if x.Reputer != "" {
 		value := protoreflect.ValueOfString(x.Reputer)
-		if !f(fd_EventDelegateStakeRemovalCompleted_reputer, value) {
+		if !f(fd_EventRemoveDelegateStakeCompleted_reputer, value) {
 			return
 		}
 	}
 	if x.Delegator != "" {
 		value := protoreflect.ValueOfString(x.Delegator)
-		if !f(fd_EventDelegateStakeRemovalCompleted_delegator, value) {
+		if !f(fd_EventRemoveDelegateStakeCompleted_delegator, value) {
 			return
 		}
 	}
 	if x.Amount != "" {
 		value := protoreflect.ValueOfString(x.Amount)
-		if !f(fd_EventDelegateStakeRemovalCompleted_amount, value) {
+		if !f(fd_EventRemoveDelegateStakeCompleted_amount, value) {
 			return
 		}
 	}
 	if x.BlockHeight != int64(0) {
 		value := protoreflect.ValueOfInt64(x.BlockHeight)
-		if !f(fd_EventDelegateStakeRemovalCompleted_block_height, value) {
+		if !f(fd_EventRemoveDelegateStakeCompleted_block_height, value) {
 			return
 		}
 	}
@@ -30523,23 +30523,23 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) Range(f func(protore
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.reputer":
 		return x.Reputer != ""
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.delegator":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.delegator":
 		return x.Delegator != ""
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.amount":
 		return x.Amount != ""
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.block_height":
 		return x.BlockHeight != int64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveDelegateStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventDelegateStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveDelegateStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -30549,23 +30549,23 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) Has(fd protoreflect.
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.reputer":
 		x.Reputer = ""
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.delegator":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.delegator":
 		x.Delegator = ""
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.amount":
 		x.Amount = ""
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.block_height":
 		x.BlockHeight = int64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveDelegateStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventDelegateStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveDelegateStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -30575,28 +30575,28 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) Clear(fd protoreflec
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.reputer":
 		value := x.Reputer
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.delegator":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.delegator":
 		value := x.Delegator
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.block_height":
 		value := x.BlockHeight
 		return protoreflect.ValueOfInt64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveDelegateStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventDelegateStakeRemovalCompleted does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveDelegateStakeCompleted does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -30610,23 +30610,23 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) Get(descriptor proto
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.reputer":
 		x.Reputer = value.Interface().(string)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.delegator":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.delegator":
 		x.Delegator = value.Interface().(string)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.amount":
 		x.Amount = value.Interface().(string)
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.block_height":
 		x.BlockHeight = value.Int()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveDelegateStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventDelegateStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveDelegateStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -30640,56 +30640,56 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) Set(fd protoreflect.
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.EventDelegateStakeRemovalCompleted is not mutable"))
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.reputer":
-		panic(fmt.Errorf("field reputer of message emissions.v9.EventDelegateStakeRemovalCompleted is not mutable"))
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.delegator":
-		panic(fmt.Errorf("field delegator of message emissions.v9.EventDelegateStakeRemovalCompleted is not mutable"))
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.amount":
-		panic(fmt.Errorf("field amount of message emissions.v9.EventDelegateStakeRemovalCompleted is not mutable"))
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.block_height":
-		panic(fmt.Errorf("field block_height of message emissions.v9.EventDelegateStakeRemovalCompleted is not mutable"))
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventRemoveDelegateStakeCompleted is not mutable"))
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.reputer":
+		panic(fmt.Errorf("field reputer of message emissions.v9.EventRemoveDelegateStakeCompleted is not mutable"))
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.delegator":
+		panic(fmt.Errorf("field delegator of message emissions.v9.EventRemoveDelegateStakeCompleted is not mutable"))
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.amount":
+		panic(fmt.Errorf("field amount of message emissions.v9.EventRemoveDelegateStakeCompleted is not mutable"))
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v9.EventRemoveDelegateStakeCompleted is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveDelegateStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventDelegateStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveDelegateStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.topic_id":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.reputer":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.reputer":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.delegator":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.delegator":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.amount":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.amount":
 		return protoreflect.ValueOfString("")
-	case "emissions.v9.EventDelegateStakeRemovalCompleted.block_height":
+	case "emissions.v9.EventRemoveDelegateStakeCompleted.block_height":
 		return protoreflect.ValueOfInt64(int64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateStakeRemovalCompleted"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventRemoveDelegateStakeCompleted"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventDelegateStakeRemovalCompleted does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventRemoveDelegateStakeCompleted does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventDelegateStakeRemovalCompleted", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventRemoveDelegateStakeCompleted", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -30697,7 +30697,7 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) WhichOneof(d protore
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -30708,7 +30708,7 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) GetUnknown() protore
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -30720,7 +30720,7 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) SetUnknown(fields pr
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) IsValid() bool {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) IsValid() bool {
 	return x != nil
 }
 
@@ -30730,9 +30730,9 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_EventDelegateStakeRemovalCompleted) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_EventRemoveDelegateStakeCompleted) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*EventDelegateStakeRemovalCompleted)
+		x := input.Message.Interface().(*EventRemoveDelegateStakeCompleted)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -30772,7 +30772,7 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) ProtoMethods() *prot
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*EventDelegateStakeRemovalCompleted)
+		x := input.Message.Interface().(*EventRemoveDelegateStakeCompleted)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -30833,7 +30833,7 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) ProtoMethods() *prot
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*EventDelegateStakeRemovalCompleted)
+		x := input.Message.Interface().(*EventRemoveDelegateStakeCompleted)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -30865,10 +30865,10 @@ func (x *fastReflection_EventDelegateStakeRemovalCompleted) ProtoMethods() *prot
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventDelegateStakeRemovalCompleted: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventRemoveDelegateStakeCompleted: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventDelegateStakeRemovalCompleted: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventRemoveDelegateStakeCompleted: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -35672,32 +35672,124 @@ func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) ProtoMethods()
 	}
 }
 
+var _ protoreflect.List = (*_EventNetworkInferenceInfererRegretsUsedSet_3_list)(nil)
+
+type _EventNetworkInferenceInfererRegretsUsedSet_3_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceInfererRegretsUsedSet at list field Addresses as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_EventNetworkInferenceInfererRegretsUsedSet_4_list)(nil)
+
+type _EventNetworkInferenceInfererRegretsUsedSet_4_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceInfererRegretsUsedSet at list field Regrets as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
-	md_EventNetworkInferenceInfererRegretUsed                    protoreflect.MessageDescriptor
-	fd_EventNetworkInferenceInfererRegretUsed_topic_id           protoreflect.FieldDescriptor
-	fd_EventNetworkInferenceInfererRegretUsed_nonce_block_height protoreflect.FieldDescriptor
-	fd_EventNetworkInferenceInfererRegretUsed_address            protoreflect.FieldDescriptor
-	fd_EventNetworkInferenceInfererRegretUsed_regret             protoreflect.FieldDescriptor
+	md_EventNetworkInferenceInfererRegretsUsedSet                    protoreflect.MessageDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_addresses          protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_regrets            protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_events_proto_init()
-	md_EventNetworkInferenceInfererRegretUsed = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceInfererRegretUsed")
-	fd_EventNetworkInferenceInfererRegretUsed_topic_id = md_EventNetworkInferenceInfererRegretUsed.Fields().ByName("topic_id")
-	fd_EventNetworkInferenceInfererRegretUsed_nonce_block_height = md_EventNetworkInferenceInfererRegretUsed.Fields().ByName("nonce_block_height")
-	fd_EventNetworkInferenceInfererRegretUsed_address = md_EventNetworkInferenceInfererRegretUsed.Fields().ByName("address")
-	fd_EventNetworkInferenceInfererRegretUsed_regret = md_EventNetworkInferenceInfererRegretUsed.Fields().ByName("regret")
+	md_EventNetworkInferenceInfererRegretsUsedSet = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceInfererRegretsUsedSet")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_topic_id = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("topic_id")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_nonce_block_height = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("nonce_block_height")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_addresses = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("addresses")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_regrets = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("regrets")
 }
 
-var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceInfererRegretUsed)(nil)
+var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceInfererRegretsUsedSet)(nil)
 
-type fastReflection_EventNetworkInferenceInfererRegretUsed EventNetworkInferenceInfererRegretUsed
+type fastReflection_EventNetworkInferenceInfererRegretsUsedSet EventNetworkInferenceInfererRegretsUsedSet
 
-func (x *EventNetworkInferenceInfererRegretUsed) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_EventNetworkInferenceInfererRegretUsed)(x)
+func (x *EventNetworkInferenceInfererRegretsUsedSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceInfererRegretsUsedSet)(x)
 }
 
-func (x *EventNetworkInferenceInfererRegretUsed) slowProtoReflect() protoreflect.Message {
+func (x *EventNetworkInferenceInfererRegretsUsedSet) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_events_proto_msgTypes[65]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -35709,43 +35801,43 @@ func (x *EventNetworkInferenceInfererRegretUsed) slowProtoReflect() protoreflect
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_EventNetworkInferenceInfererRegretUsed_messageType fastReflection_EventNetworkInferenceInfererRegretUsed_messageType
-var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceInfererRegretUsed_messageType{}
+var _fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType{}
 
-type fastReflection_EventNetworkInferenceInfererRegretUsed_messageType struct{}
+type fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType struct{}
 
-func (x fastReflection_EventNetworkInferenceInfererRegretUsed_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_EventNetworkInferenceInfererRegretUsed)(nil)
+func (x fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceInfererRegretsUsedSet)(nil)
 }
-func (x fastReflection_EventNetworkInferenceInfererRegretUsed_messageType) New() protoreflect.Message {
-	return new(fastReflection_EventNetworkInferenceInfererRegretUsed)
+func (x fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceInfererRegretsUsedSet)
 }
-func (x fastReflection_EventNetworkInferenceInfererRegretUsed_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventNetworkInferenceInfererRegretUsed
+func (x fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceInfererRegretsUsedSet
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventNetworkInferenceInfererRegretUsed
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceInfererRegretsUsedSet
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Type() protoreflect.MessageType {
-	return _fastReflection_EventNetworkInferenceInfererRegretUsed_messageType
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) New() protoreflect.Message {
-	return new(fastReflection_EventNetworkInferenceInfererRegretUsed)
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceInfererRegretsUsedSet)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Interface() protoreflect.ProtoMessage {
-	return (*EventNetworkInferenceInfererRegretUsed)(x)
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Interface() protoreflect.ProtoMessage {
+	return (*EventNetworkInferenceInfererRegretsUsedSet)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -35753,28 +35845,28 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Interface() prot
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventNetworkInferenceInfererRegretUsed_topic_id, value) {
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_topic_id, value) {
 			return
 		}
 	}
 	if x.NonceBlockHeight != int64(0) {
 		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
-		if !f(fd_EventNetworkInferenceInfererRegretUsed_nonce_block_height, value) {
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_nonce_block_height, value) {
 			return
 		}
 	}
-	if x.Address != "" {
-		value := protoreflect.ValueOfString(x.Address)
-		if !f(fd_EventNetworkInferenceInfererRegretUsed_address, value) {
+	if len(x.Addresses) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &x.Addresses})
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_addresses, value) {
 			return
 		}
 	}
-	if x.Regret != "" {
-		value := protoreflect.ValueOfString(x.Regret)
-		if !f(fd_EventNetworkInferenceInfererRegretUsed_regret, value) {
+	if len(x.Regrets) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &x.Regrets})
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_regrets, value) {
 			return
 		}
 	}
@@ -35791,21 +35883,21 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Range(f func(pro
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
 		return x.NonceBlockHeight != int64(0)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.address":
-		return x.Address != ""
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.regret":
-		return x.Regret != ""
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		return len(x.Addresses) != 0
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		return len(x.Regrets) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -35815,21 +35907,21 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Has(fd protorefl
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
 		x.NonceBlockHeight = int64(0)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.address":
-		x.Address = ""
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.regret":
-		x.Regret = ""
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		x.Addresses = nil
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		x.Regrets = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -35839,25 +35931,31 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Clear(fd protore
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
 		value := x.NonceBlockHeight
 		return protoreflect.ValueOfInt64(value)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.address":
-		value := x.Address
-		return protoreflect.ValueOfString(value)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.regret":
-		value := x.Regret
-		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		if len(x.Addresses) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_3_list{})
+		}
+		listValue := &_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		if len(x.Regrets) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_4_list{})
+		}
+		listValue := &_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretUsed does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -35871,21 +35969,25 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Get(descriptor p
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
 		x.NonceBlockHeight = value.Int()
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.address":
-		x.Address = value.Interface().(string)
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.regret":
-		x.Regret = value.Interface().(string)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceInfererRegretsUsedSet_3_list)
+		x.Addresses = *clv.list
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceInfererRegretsUsedSet_4_list)
+		x.Regrets = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -35899,52 +36001,62 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Set(fd protorefl
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceInfererRegretUsed is not mutable"))
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.nonce_block_height":
-		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceInfererRegretUsed is not mutable"))
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.address":
-		panic(fmt.Errorf("field address of message emissions.v9.EventNetworkInferenceInfererRegretUsed is not mutable"))
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.regret":
-		panic(fmt.Errorf("field regret of message emissions.v9.EventNetworkInferenceInfererRegretUsed is not mutable"))
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		if x.Addresses == nil {
+			x.Addresses = []string{}
+		}
+		value := &_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		if x.Regrets == nil {
+			x.Regrets = []string{}
+		}
+		value := &_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
 		return protoreflect.ValueOfInt64(int64(0))
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.address":
-		return protoreflect.ValueOfString("")
-	case "emissions.v9.EventNetworkInferenceInfererRegretUsed.regret":
-		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &list})
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceInfererRegretUsed", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceInfererRegretsUsedSet", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -35952,7 +36064,7 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) WhichOneof(d pro
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -35963,7 +36075,7 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) GetUnknown() pro
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -35975,7 +36087,7 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) SetUnknown(field
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) IsValid() bool {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) IsValid() bool {
 	return x != nil
 }
 
@@ -35985,9 +36097,9 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretUsed)
+		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretsUsedSet)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -36005,13 +36117,17 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 		if x.NonceBlockHeight != 0 {
 			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
 		}
-		l = len(x.Address)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
+		if len(x.Addresses) > 0 {
+			for _, s := range x.Addresses {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
 		}
-		l = len(x.Regret)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
+		if len(x.Regrets) > 0 {
+			for _, s := range x.Regrets {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -36023,7 +36139,7 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretUsed)
+		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretsUsedSet)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -36042,19 +36158,23 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.Regret) > 0 {
-			i -= len(x.Regret)
-			copy(dAtA[i:], x.Regret)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Regret)))
-			i--
-			dAtA[i] = 0x22
+		if len(x.Regrets) > 0 {
+			for iNdEx := len(x.Regrets) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Regrets[iNdEx])
+				copy(dAtA[i:], x.Regrets[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Regrets[iNdEx])))
+				i--
+				dAtA[i] = 0x22
+			}
 		}
-		if len(x.Address) > 0 {
-			i -= len(x.Address)
-			copy(dAtA[i:], x.Address)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
-			i--
-			dAtA[i] = 0x1a
+		if len(x.Addresses) > 0 {
+			for iNdEx := len(x.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Addresses[iNdEx])
+				copy(dAtA[i:], x.Addresses[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Addresses[iNdEx])))
+				i--
+				dAtA[i] = 0x1a
+			}
 		}
 		if x.NonceBlockHeight != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
@@ -36077,7 +36197,7 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretUsed)
+		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretsUsedSet)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -36109,10 +36229,10 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererRegretUsed: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererRegretsUsedSet: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererRegretUsed: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererRegretsUsedSet: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -36155,7 +36275,7 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 				}
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -36183,11 +36303,11 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Address = string(dAtA[iNdEx:postIndex])
+				x.Addresses = append(x.Addresses, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
 			case 4:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Regrets", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -36215,7 +36335,7 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Regret = string(dAtA[iNdEx:postIndex])
+				x.Regrets = append(x.Regrets, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -36252,32 +36372,124 @@ func (x *fastReflection_EventNetworkInferenceInfererRegretUsed) ProtoMethods() *
 	}
 }
 
+var _ protoreflect.List = (*_EventNetworkInferenceForecasterRegretsUsedSet_3_list)(nil)
+
+type _EventNetworkInferenceForecasterRegretsUsedSet_3_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceForecasterRegretsUsedSet at list field Addresses as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_EventNetworkInferenceForecasterRegretsUsedSet_4_list)(nil)
+
+type _EventNetworkInferenceForecasterRegretsUsedSet_4_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceForecasterRegretsUsedSet at list field Regrets as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
-	md_EventNetworkInferenceForecasterRegretUsed                    protoreflect.MessageDescriptor
-	fd_EventNetworkInferenceForecasterRegretUsed_topic_id           protoreflect.FieldDescriptor
-	fd_EventNetworkInferenceForecasterRegretUsed_nonce_block_height protoreflect.FieldDescriptor
-	fd_EventNetworkInferenceForecasterRegretUsed_address            protoreflect.FieldDescriptor
-	fd_EventNetworkInferenceForecasterRegretUsed_regret             protoreflect.FieldDescriptor
+	md_EventNetworkInferenceForecasterRegretsUsedSet                    protoreflect.MessageDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_addresses          protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_regrets            protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_events_proto_init()
-	md_EventNetworkInferenceForecasterRegretUsed = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceForecasterRegretUsed")
-	fd_EventNetworkInferenceForecasterRegretUsed_topic_id = md_EventNetworkInferenceForecasterRegretUsed.Fields().ByName("topic_id")
-	fd_EventNetworkInferenceForecasterRegretUsed_nonce_block_height = md_EventNetworkInferenceForecasterRegretUsed.Fields().ByName("nonce_block_height")
-	fd_EventNetworkInferenceForecasterRegretUsed_address = md_EventNetworkInferenceForecasterRegretUsed.Fields().ByName("address")
-	fd_EventNetworkInferenceForecasterRegretUsed_regret = md_EventNetworkInferenceForecasterRegretUsed.Fields().ByName("regret")
+	md_EventNetworkInferenceForecasterRegretsUsedSet = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceForecasterRegretsUsedSet")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_topic_id = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("topic_id")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_nonce_block_height = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("nonce_block_height")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_addresses = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("addresses")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_regrets = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("regrets")
 }
 
-var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceForecasterRegretUsed)(nil)
+var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)(nil)
 
-type fastReflection_EventNetworkInferenceForecasterRegretUsed EventNetworkInferenceForecasterRegretUsed
+type fastReflection_EventNetworkInferenceForecasterRegretsUsedSet EventNetworkInferenceForecasterRegretsUsedSet
 
-func (x *EventNetworkInferenceForecasterRegretUsed) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_EventNetworkInferenceForecasterRegretUsed)(x)
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)(x)
 }
 
-func (x *EventNetworkInferenceForecasterRegretUsed) slowProtoReflect() protoreflect.Message {
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v9_events_proto_msgTypes[66]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -36289,43 +36501,43 @@ func (x *EventNetworkInferenceForecasterRegretUsed) slowProtoReflect() protorefl
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType
-var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType{}
+var _fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType{}
 
-type fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType struct{}
+type fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType struct{}
 
-func (x fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_EventNetworkInferenceForecasterRegretUsed)(nil)
+func (x fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)(nil)
 }
-func (x fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType) New() protoreflect.Message {
-	return new(fastReflection_EventNetworkInferenceForecasterRegretUsed)
+func (x fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)
 }
-func (x fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventNetworkInferenceForecasterRegretUsed
+func (x fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceForecasterRegretsUsedSet
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Descriptor() protoreflect.MessageDescriptor {
-	return md_EventNetworkInferenceForecasterRegretUsed
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceForecasterRegretsUsedSet
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Type() protoreflect.MessageType {
-	return _fastReflection_EventNetworkInferenceForecasterRegretUsed_messageType
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) New() protoreflect.Message {
-	return new(fastReflection_EventNetworkInferenceForecasterRegretUsed)
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Interface() protoreflect.ProtoMessage {
-	return (*EventNetworkInferenceForecasterRegretUsed)(x)
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Interface() protoreflect.ProtoMessage {
+	return (*EventNetworkInferenceForecasterRegretsUsedSet)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -36333,28 +36545,28 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Interface() p
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventNetworkInferenceForecasterRegretUsed_topic_id, value) {
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_topic_id, value) {
 			return
 		}
 	}
 	if x.NonceBlockHeight != int64(0) {
 		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
-		if !f(fd_EventNetworkInferenceForecasterRegretUsed_nonce_block_height, value) {
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_nonce_block_height, value) {
 			return
 		}
 	}
-	if x.Address != "" {
-		value := protoreflect.ValueOfString(x.Address)
-		if !f(fd_EventNetworkInferenceForecasterRegretUsed_address, value) {
+	if len(x.Addresses) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &x.Addresses})
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_addresses, value) {
 			return
 		}
 	}
-	if x.Regret != "" {
-		value := protoreflect.ValueOfString(x.Regret)
-		if !f(fd_EventNetworkInferenceForecasterRegretUsed_regret, value) {
+	if len(x.Regrets) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &x.Regrets})
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_regrets, value) {
 			return
 		}
 	}
@@ -36371,21 +36583,21 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Range(f func(
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
 		return x.NonceBlockHeight != int64(0)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.address":
-		return x.Address != ""
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.regret":
-		return x.Regret != ""
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		return len(x.Addresses) != 0
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		return len(x.Regrets) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -36395,21 +36607,21 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Has(fd protor
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
 		x.NonceBlockHeight = int64(0)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.address":
-		x.Address = ""
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.regret":
-		x.Regret = ""
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		x.Addresses = nil
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		x.Regrets = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -36419,25 +36631,31 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Clear(fd prot
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
 		value := x.NonceBlockHeight
 		return protoreflect.ValueOfInt64(value)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.address":
-		value := x.Address
-		return protoreflect.ValueOfString(value)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.regret":
-		value := x.Regret
-		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		if len(x.Addresses) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_3_list{})
+		}
+		listValue := &_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		if len(x.Regrets) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_4_list{})
+		}
+		listValue := &_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretUsed does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -36451,21 +36669,25 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Get(descripto
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
 		x.NonceBlockHeight = value.Int()
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.address":
-		x.Address = value.Interface().(string)
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.regret":
-		x.Regret = value.Interface().(string)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceForecasterRegretsUsedSet_3_list)
+		x.Addresses = *clv.list
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceForecasterRegretsUsedSet_4_list)
+		x.Regrets = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -36479,52 +36701,62 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Set(fd protor
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceForecasterRegretUsed is not mutable"))
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.nonce_block_height":
-		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceForecasterRegretUsed is not mutable"))
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.address":
-		panic(fmt.Errorf("field address of message emissions.v9.EventNetworkInferenceForecasterRegretUsed is not mutable"))
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.regret":
-		panic(fmt.Errorf("field regret of message emissions.v9.EventNetworkInferenceForecasterRegretUsed is not mutable"))
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		if x.Addresses == nil {
+			x.Addresses = []string{}
+		}
+		value := &_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		if x.Regrets == nil {
+			x.Regrets = []string{}
+		}
+		value := &_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.topic_id":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.nonce_block_height":
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
 		return protoreflect.ValueOfInt64(int64(0))
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.address":
-		return protoreflect.ValueOfString("")
-	case "emissions.v9.EventNetworkInferenceForecasterRegretUsed.regret":
-		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &list})
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretUsed"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
 		}
-		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretUsed does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceForecasterRegretUsed", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -36532,7 +36764,7 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) WhichOneof(d 
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -36543,7 +36775,7 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) GetUnknown() 
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -36555,7 +36787,7 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) SetUnknown(fi
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) IsValid() bool {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) IsValid() bool {
 	return x != nil
 }
 
@@ -36565,9 +36797,9 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) IsValid() boo
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretUsed)
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretsUsedSet)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -36585,13 +36817,17 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 		if x.NonceBlockHeight != 0 {
 			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
 		}
-		l = len(x.Address)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
+		if len(x.Addresses) > 0 {
+			for _, s := range x.Addresses {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
 		}
-		l = len(x.Regret)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
+		if len(x.Regrets) > 0 {
+			for _, s := range x.Regrets {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -36603,7 +36839,7 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretUsed)
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretsUsedSet)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -36622,19 +36858,23 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.Regret) > 0 {
-			i -= len(x.Regret)
-			copy(dAtA[i:], x.Regret)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Regret)))
-			i--
-			dAtA[i] = 0x22
+		if len(x.Regrets) > 0 {
+			for iNdEx := len(x.Regrets) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Regrets[iNdEx])
+				copy(dAtA[i:], x.Regrets[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Regrets[iNdEx])))
+				i--
+				dAtA[i] = 0x22
+			}
 		}
-		if len(x.Address) > 0 {
-			i -= len(x.Address)
-			copy(dAtA[i:], x.Address)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
-			i--
-			dAtA[i] = 0x1a
+		if len(x.Addresses) > 0 {
+			for iNdEx := len(x.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Addresses[iNdEx])
+				copy(dAtA[i:], x.Addresses[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Addresses[iNdEx])))
+				i--
+				dAtA[i] = 0x1a
+			}
 		}
 		if x.NonceBlockHeight != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
@@ -36657,7 +36897,7 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretUsed)
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretsUsedSet)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -36689,10 +36929,10 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterRegretUsed: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterRegretsUsedSet: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterRegretUsed: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterRegretsUsedSet: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -36735,7 +36975,7 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 				}
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -36763,11 +37003,11 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Address = string(dAtA[iNdEx:postIndex])
+				x.Addresses = append(x.Addresses, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
 			case 4:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Regrets", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -36795,7 +37035,7 @@ func (x *fastReflection_EventNetworkInferenceForecasterRegretUsed) ProtoMethods(
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Regret = string(dAtA[iNdEx:postIndex])
+				x.Regrets = append(x.Regrets, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -42008,7 +42248,7 @@ func (x *EventPruneRecords) GetTopicId() uint64 {
 }
 
 // Stake removal processing events
-type EventReputerStakeRemovalCompleted struct {
+type EventRemoveStakeCompleted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -42019,8 +42259,8 @@ type EventReputerStakeRemovalCompleted struct {
 	BlockHeight int64  `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 }
 
-func (x *EventReputerStakeRemovalCompleted) Reset() {
-	*x = EventReputerStakeRemovalCompleted{}
+func (x *EventRemoveStakeCompleted) Reset() {
+	*x = EventRemoveStakeCompleted{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_events_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -42028,46 +42268,46 @@ func (x *EventReputerStakeRemovalCompleted) Reset() {
 	}
 }
 
-func (x *EventReputerStakeRemovalCompleted) String() string {
+func (x *EventRemoveStakeCompleted) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EventReputerStakeRemovalCompleted) ProtoMessage() {}
+func (*EventRemoveStakeCompleted) ProtoMessage() {}
 
-// Deprecated: Use EventReputerStakeRemovalCompleted.ProtoReflect.Descriptor instead.
-func (*EventReputerStakeRemovalCompleted) Descriptor() ([]byte, []int) {
+// Deprecated: Use EventRemoveStakeCompleted.ProtoReflect.Descriptor instead.
+func (*EventRemoveStakeCompleted) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{55}
 }
 
-func (x *EventReputerStakeRemovalCompleted) GetTopicId() uint64 {
+func (x *EventRemoveStakeCompleted) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *EventReputerStakeRemovalCompleted) GetReputer() string {
+func (x *EventRemoveStakeCompleted) GetReputer() string {
 	if x != nil {
 		return x.Reputer
 	}
 	return ""
 }
 
-func (x *EventReputerStakeRemovalCompleted) GetAmount() string {
+func (x *EventRemoveStakeCompleted) GetAmount() string {
 	if x != nil {
 		return x.Amount
 	}
 	return ""
 }
 
-func (x *EventReputerStakeRemovalCompleted) GetBlockHeight() int64 {
+func (x *EventRemoveStakeCompleted) GetBlockHeight() int64 {
 	if x != nil {
 		return x.BlockHeight
 	}
 	return 0
 }
 
-type EventDelegateStakeRemovalCompleted struct {
+type EventRemoveDelegateStakeCompleted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -42079,8 +42319,8 @@ type EventDelegateStakeRemovalCompleted struct {
 	BlockHeight int64  `protobuf:"varint,5,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 }
 
-func (x *EventDelegateStakeRemovalCompleted) Reset() {
-	*x = EventDelegateStakeRemovalCompleted{}
+func (x *EventRemoveDelegateStakeCompleted) Reset() {
+	*x = EventRemoveDelegateStakeCompleted{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_events_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -42088,46 +42328,46 @@ func (x *EventDelegateStakeRemovalCompleted) Reset() {
 	}
 }
 
-func (x *EventDelegateStakeRemovalCompleted) String() string {
+func (x *EventRemoveDelegateStakeCompleted) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EventDelegateStakeRemovalCompleted) ProtoMessage() {}
+func (*EventRemoveDelegateStakeCompleted) ProtoMessage() {}
 
-// Deprecated: Use EventDelegateStakeRemovalCompleted.ProtoReflect.Descriptor instead.
-func (*EventDelegateStakeRemovalCompleted) Descriptor() ([]byte, []int) {
+// Deprecated: Use EventRemoveDelegateStakeCompleted.ProtoReflect.Descriptor instead.
+func (*EventRemoveDelegateStakeCompleted) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{56}
 }
 
-func (x *EventDelegateStakeRemovalCompleted) GetTopicId() uint64 {
+func (x *EventRemoveDelegateStakeCompleted) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *EventDelegateStakeRemovalCompleted) GetReputer() string {
+func (x *EventRemoveDelegateStakeCompleted) GetReputer() string {
 	if x != nil {
 		return x.Reputer
 	}
 	return ""
 }
 
-func (x *EventDelegateStakeRemovalCompleted) GetDelegator() string {
+func (x *EventRemoveDelegateStakeCompleted) GetDelegator() string {
 	if x != nil {
 		return x.Delegator
 	}
 	return ""
 }
 
-func (x *EventDelegateStakeRemovalCompleted) GetAmount() string {
+func (x *EventRemoveDelegateStakeCompleted) GetAmount() string {
 	if x != nil {
 		return x.Amount
 	}
 	return ""
 }
 
-func (x *EventDelegateStakeRemovalCompleted) GetBlockHeight() int64 {
+func (x *EventRemoveDelegateStakeCompleted) GetBlockHeight() int64 {
 	if x != nil {
 		return x.BlockHeight
 	}
@@ -42566,19 +42806,19 @@ func (x *EventNetworkInferenceForecasterWeightSet) GetWeight() string {
 	return ""
 }
 
-type EventNetworkInferenceInfererRegretUsed struct {
+type EventNetworkInferenceInfererRegretsUsedSet struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Address          string `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	Regret           string `protobuf:"bytes,4,opt,name=regret,proto3" json:"regret,omitempty"`
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets          []string `protobuf:"bytes,4,rep,name=regrets,proto3" json:"regrets,omitempty"`
 }
 
-func (x *EventNetworkInferenceInfererRegretUsed) Reset() {
-	*x = EventNetworkInferenceInfererRegretUsed{}
+func (x *EventNetworkInferenceInfererRegretsUsedSet) Reset() {
+	*x = EventNetworkInferenceInfererRegretsUsedSet{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_events_proto_msgTypes[65]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -42586,58 +42826,58 @@ func (x *EventNetworkInferenceInfererRegretUsed) Reset() {
 	}
 }
 
-func (x *EventNetworkInferenceInfererRegretUsed) String() string {
+func (x *EventNetworkInferenceInfererRegretsUsedSet) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EventNetworkInferenceInfererRegretUsed) ProtoMessage() {}
+func (*EventNetworkInferenceInfererRegretsUsedSet) ProtoMessage() {}
 
-// Deprecated: Use EventNetworkInferenceInfererRegretUsed.ProtoReflect.Descriptor instead.
-func (*EventNetworkInferenceInfererRegretUsed) Descriptor() ([]byte, []int) {
+// Deprecated: Use EventNetworkInferenceInfererRegretsUsedSet.ProtoReflect.Descriptor instead.
+func (*EventNetworkInferenceInfererRegretsUsedSet) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{65}
 }
 
-func (x *EventNetworkInferenceInfererRegretUsed) GetTopicId() uint64 {
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *EventNetworkInferenceInfererRegretUsed) GetNonceBlockHeight() int64 {
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetNonceBlockHeight() int64 {
 	if x != nil {
 		return x.NonceBlockHeight
 	}
 	return 0
 }
 
-func (x *EventNetworkInferenceInfererRegretUsed) GetAddress() string {
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetAddresses() []string {
 	if x != nil {
-		return x.Address
+		return x.Addresses
 	}
-	return ""
+	return nil
 }
 
-func (x *EventNetworkInferenceInfererRegretUsed) GetRegret() string {
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetRegrets() []string {
 	if x != nil {
-		return x.Regret
+		return x.Regrets
 	}
-	return ""
+	return nil
 }
 
-type EventNetworkInferenceForecasterRegretUsed struct {
+type EventNetworkInferenceForecasterRegretsUsedSet struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Address          string `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	Regret           string `protobuf:"bytes,4,opt,name=regret,proto3" json:"regret,omitempty"`
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets          []string `protobuf:"bytes,4,rep,name=regrets,proto3" json:"regrets,omitempty"`
 }
 
-func (x *EventNetworkInferenceForecasterRegretUsed) Reset() {
-	*x = EventNetworkInferenceForecasterRegretUsed{}
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) Reset() {
+	*x = EventNetworkInferenceForecasterRegretsUsedSet{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v9_events_proto_msgTypes[66]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -42645,43 +42885,43 @@ func (x *EventNetworkInferenceForecasterRegretUsed) Reset() {
 	}
 }
 
-func (x *EventNetworkInferenceForecasterRegretUsed) String() string {
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EventNetworkInferenceForecasterRegretUsed) ProtoMessage() {}
+func (*EventNetworkInferenceForecasterRegretsUsedSet) ProtoMessage() {}
 
-// Deprecated: Use EventNetworkInferenceForecasterRegretUsed.ProtoReflect.Descriptor instead.
-func (*EventNetworkInferenceForecasterRegretUsed) Descriptor() ([]byte, []int) {
+// Deprecated: Use EventNetworkInferenceForecasterRegretsUsedSet.ProtoReflect.Descriptor instead.
+func (*EventNetworkInferenceForecasterRegretsUsedSet) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{66}
 }
 
-func (x *EventNetworkInferenceForecasterRegretUsed) GetTopicId() uint64 {
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *EventNetworkInferenceForecasterRegretUsed) GetNonceBlockHeight() int64 {
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetNonceBlockHeight() int64 {
 	if x != nil {
 		return x.NonceBlockHeight
 	}
 	return 0
 }
 
-func (x *EventNetworkInferenceForecasterRegretUsed) GetAddress() string {
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetAddresses() []string {
 	if x != nil {
-		return x.Address
+		return x.Addresses
 	}
-	return ""
+	return nil
 }
 
-func (x *EventNetworkInferenceForecasterRegretUsed) GetRegret() string {
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetRegrets() []string {
 	if x != nil {
-		return x.Regret
+		return x.Regrets
 	}
-	return ""
+	return nil
 }
 
 type EventTopicWeightUpdated struct {
@@ -42936,18 +43176,18 @@ var File_emissions_v9_events_proto protoreflect.FileDescriptor
 var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x0a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x65,
 	0x76, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0c, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76,
-	0x33, 0x2f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
-	0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f,
-	0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e,
-	0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf5, 0x01, 0x0a, 0x0e, 0x45, 0x76, 0x65,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
+	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f,
+	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
+	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf5, 0x01, 0x0a, 0x0e, 0x45, 0x76, 0x65,
 	0x6e, 0x74, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x53, 0x65, 0x74, 0x12, 0x36, 0x0a, 0x0a, 0x61,
 	0x63, 0x74, 0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32,
 	0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x41,
@@ -43445,214 +43685,215 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b,
 	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74,
 	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
-	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0xc5, 0x01, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74,
-	0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x61, 0x6c, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0xbd, 0x01, 0x0a, 0x19, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x43, 0x6f, 0x6d, 0x70, 0x6c,
+	0x65, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
+	0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda,
+	0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
+	0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xe3, 0x01, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x53, 0x74,
+	0x61, 0x6b, 0x65, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08,
 	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
 	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74,
 	0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65,
-	0x72, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74,
-	0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7,
-	0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62,
-	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xe4,
-	0x01, 0x0a, 0x22, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x43, 0x6f, 0x6d, 0x70,
-	0x6c, 0x65, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
-	0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x1c, 0x0a, 0x09, 0x64, 0x65,
-	0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x64,
-	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
-	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
-	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xdc, 0x01, 0x0a, 0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x44,
-	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x53, 0x68, 0x61,
-	0x72, 0x65, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x61,
-	0x0a, 0x10, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x73, 0x68, 0x61,
-	0x72, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
-	0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65,
-	0x63, 0x52, 0x0e, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x50, 0x65, 0x72, 0x53, 0x68, 0x61, 0x72,
-	0x65, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
-	0x69, 0x67, 0x68, 0x74, 0x22, 0xc2, 0x01, 0x0a, 0x1e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x44, 0x65,
-	0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x44, 0x69, 0x73, 0x74,
-	0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x06,
-	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde,
-	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
-	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06,
-	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
-	0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c,
-	0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x7f, 0x0a, 0x16, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73,
-	0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c,
-	0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x2c, 0x0a, 0x12,
-	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42,
-	0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x7f, 0x0a, 0x16, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72,
-	0x73, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
-	0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x2c, 0x0a,
-	0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
-	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x82, 0x01, 0x0a, 0x19,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63,
-	0x61, 0x73, 0x74, 0x65, 0x72, 0x73, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65,
-	0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x65, 0x73, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10,
-	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x22, 0x6a, 0x0a, 0x1b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x54,
-	0x6f, 0x70, 0x69, 0x63, 0x73, 0x41, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x65, 0x74, 0x12,
-	0x2e, 0x0a, 0x13, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
-	0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x11, 0x74, 0x61,
-	0x72, 0x67, 0x65, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
-	0x1b, 0x0a, 0x09, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x04, 0x52, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x73, 0x22, 0xdb, 0x01, 0x0a,
-	0x25, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x57, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e,
-	0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
-	0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f, 0x0a, 0x06, 0x77, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
-	0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xde, 0x01, 0x0a, 0x28, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x57, 0x65,
-	0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10,
-	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f, 0x0a, 0x06, 0x77, 0x65,
-	0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00,
-	0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
-	0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xdc, 0x01, 0x0a, 0x26,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65,
-	0x72, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x52, 0x65, 0x67, 0x72,
-	0x65, 0x74, 0x55, 0x73, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e,
-	0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
-	0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f, 0x0a, 0x06, 0x72, 0x65, 0x67,
-	0x72, 0x65, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
-	0x65, 0x63, 0x52, 0x06, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x22, 0xdf, 0x01, 0x0a, 0x29, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65,
-	0x67, 0x72, 0x65, 0x74, 0x55, 0x73, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f,
-	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x72, 0x12, 0x1c, 0x0a, 0x09, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x12,
+	0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
+	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4,
+	0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a,
+	0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f,
+	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xdc, 0x01, 0x0a,
+	0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x52, 0x65,
+	0x77, 0x61, 0x72, 0x64, 0x53, 0x68, 0x61, 0x72, 0x65, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64,
+	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72,
+	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65,
+	0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x61, 0x0a, 0x10, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f,
+	0x70, 0x65, 0x72, 0x5f, 0x73, 0x68, 0x61, 0x72, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0e, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64,
+	0x50, 0x65, 0x72, 0x53, 0x68, 0x61, 0x72, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xc2, 0x01, 0x0a, 0x1e,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x52, 0x65, 0x77,
+	0x61, 0x72, 0x64, 0x44, 0x69, 0x73, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x12, 0x19,
+	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70,
+	0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75,
+	0x74, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49,
+	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a,
+	0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x22, 0x7f, 0x0a, 0x16, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x52,
+	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x65, 0x73, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f,
+	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52,
 	0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f, 0x0a, 0x06, 0x72,
-	0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f,
-	0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68,
-	0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x22, 0x8c, 0x01, 0x0a,
-	0x17, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x57, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x12, 0x56, 0x0a, 0x0a, 0x6e, 0x65, 0x77, 0x5f, 0x77, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
-	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
-	0x52, 0x09, 0x6e, 0x65, 0x77, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xc4, 0x01, 0x0a, 0x21,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x4f, 0x70, 0x65, 0x6e, 0x65,
-	0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12,
-	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42,
-	0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x2c, 0x0a, 0x12, 0x77, 0x69,
-	0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74,
-	0x61, 0x72, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x28, 0x0a, 0x10, 0x77, 0x69, 0x6e, 0x64,
-	0x6f, 0x77, 0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x03, 0x52, 0x0e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f,
-	0x63, 0x6b, 0x22, 0x6c, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65,
-	0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f,
-	0x77, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10,
-	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x22, 0xc5, 0x01, 0x0a, 0x22, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65,
-	0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f,
-	0x77, 0x4f, 0x70, 0x65, 0x6e, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10,
-	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x12, 0x2c, 0x0a, 0x12, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74,
-	0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x77, 0x69,
-	0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x28,
-	0x0a, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f,
-	0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77,
-	0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x22, 0x6d, 0x0a, 0x22, 0x45, 0x76, 0x65, 0x6e,
-	0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x19,
+	0x74, 0x22, 0x7f, 0x0a, 0x16, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65,
+	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x73, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x65, 0x73, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c,
+	0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x22, 0x82, 0x01, 0x0a, 0x19, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x63, 0x74, 0x69,
+	0x76, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x73, 0x53, 0x65, 0x74,
+	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x61,
+	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09,
+	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e,
+	0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63,
+	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x6a, 0x0a, 0x1b, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x41, 0x74, 0x42, 0x6c,
+	0x6f, 0x63, 0x6b, 0x53, 0x65, 0x74, 0x12, 0x2e, 0x0a, 0x13, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
+	0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x11, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
+	0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
+	0x69, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x04, 0x52, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x49, 0x64, 0x73, 0x22, 0xdb, 0x01, 0x0a, 0x25, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x72, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63,
+	0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
+	0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x12, 0x4f, 0x0a, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x22, 0xde, 0x01, 0x0a, 0x28, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63,
+	0x61, 0x73, 0x74, 0x65, 0x72, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19,
 	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e,
 	0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18,
 	0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63,
-	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x2a, 0x62, 0x0a, 0x09, 0x41, 0x63, 0x74, 0x6f, 0x72,
-	0x54, 0x79, 0x70, 0x65, 0x12, 0x22, 0x0a, 0x1e, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59,
-	0x50, 0x45, 0x5f, 0x49, 0x4e, 0x46, 0x45, 0x52, 0x45, 0x52, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45,
-	0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x19, 0x0a, 0x15, 0x41, 0x43, 0x54, 0x4f,
-	0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x46, 0x4f, 0x52, 0x45, 0x43, 0x41, 0x53, 0x54, 0x45,
-	0x52, 0x10, 0x01, 0x12, 0x16, 0x0a, 0x12, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50,
-	0x45, 0x5f, 0x52, 0x45, 0x50, 0x55, 0x54, 0x45, 0x52, 0x10, 0x02, 0x42, 0xc1, 0x01, 0x0a, 0x10,
-	0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39,
-	0x42, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
-	0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2f, 0x76, 0x39, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x39,
-	0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x56, 0x39, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x5c, 0x56, 0x39, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x5c, 0x56, 0x39, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
-	0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x39, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x12, 0x4f, 0x0a, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x22, 0xe6, 0x01, 0x0a, 0x2a, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x72, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x55, 0x73, 0x65, 0x64, 0x53, 0x65,
+	0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12,
+	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42,
+	0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61,
+	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72,
+	0x65, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda,
+	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
+	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
+	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
+	0x65, 0x63, 0x52, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0xe9, 0x01, 0x0a, 0x2d,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x52,
+	0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x55, 0x73, 0x65, 0x64, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63,
+	0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
+	0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x18,
+	0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
+	0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07,
+	0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0x8c, 0x01, 0x0a, 0x17, 0x45, 0x76, 0x65, 0x6e,
+	0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x56,
+	0x0a, 0x0a, 0x6e, 0x65, 0x77, 0x5f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x09, 0x6e, 0x65, 0x77,
+	0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xc4, 0x01, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x4f, 0x70, 0x65, 0x6e, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08,
+	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
+	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
+	0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x2c, 0x0a, 0x12, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f,
+	0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x6c,
+	0x6f, 0x63, 0x6b, 0x12, 0x28, 0x0a, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x65, 0x6e,
+	0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x77,
+	0x69, 0x6e, 0x64, 0x6f, 0x77, 0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x22, 0x6c, 0x0a,
+	0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x43, 0x6c, 0x6f, 0x73,
+	0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a,
+	0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
+	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xc5, 0x01, 0x0a, 0x22,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x4f, 0x70, 0x65, 0x6e,
+	0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a,
+	0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
+	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x2c, 0x0a, 0x12, 0x77,
+	0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53,
+	0x74, 0x61, 0x72, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x28, 0x0a, 0x10, 0x77, 0x69, 0x6e,
+	0x64, 0x6f, 0x77, 0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x0e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x45, 0x6e, 0x64, 0x42, 0x6c,
+	0x6f, 0x63, 0x6b, 0x22, 0x6d, 0x0a, 0x22, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x70, 0x75,
+	0x74, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e,
+	0x64, 0x6f, 0x77, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c,
+	0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x2a, 0x62, 0x0a, 0x09, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12,
+	0x22, 0x0a, 0x1e, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x49, 0x4e,
+	0x46, 0x45, 0x52, 0x45, 0x52, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45,
+	0x44, 0x10, 0x00, 0x12, 0x19, 0x0a, 0x15, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50,
+	0x45, 0x5f, 0x46, 0x4f, 0x52, 0x45, 0x43, 0x41, 0x53, 0x54, 0x45, 0x52, 0x10, 0x01, 0x12, 0x16,
+	0x0a, 0x12, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x52, 0x45, 0x50,
+	0x55, 0x54, 0x45, 0x52, 0x10, 0x02, 0x42, 0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x42, 0x0b, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x3b,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x39, 0xa2, 0x02, 0x03, 0x45, 0x58,
+	0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x39,
+	0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x39, 0xe2,
+	0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x39, 0x5c, 0x47,
+	0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x39, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -43726,8 +43967,8 @@ var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(*EventForecasterWeightSet)(nil),                         // 53: emissions.v9.EventForecasterWeightSet
 	(*EventPreviousPercentageRewardToStakedReputersSet)(nil), // 54: emissions.v9.EventPreviousPercentageRewardToStakedReputersSet
 	(*EventPruneRecords)(nil),                                // 55: emissions.v9.EventPruneRecords
-	(*EventReputerStakeRemovalCompleted)(nil),                // 56: emissions.v9.EventReputerStakeRemovalCompleted
-	(*EventDelegateStakeRemovalCompleted)(nil),               // 57: emissions.v9.EventDelegateStakeRemovalCompleted
+	(*EventRemoveStakeCompleted)(nil),                        // 56: emissions.v9.EventRemoveStakeCompleted
+	(*EventRemoveDelegateStakeCompleted)(nil),                // 57: emissions.v9.EventRemoveDelegateStakeCompleted
 	(*EventDelegateRewardShareUpdated)(nil),                  // 58: emissions.v9.EventDelegateRewardShareUpdated
 	(*EventDelegateRewardDistributed)(nil),                   // 59: emissions.v9.EventDelegateRewardDistributed
 	(*EventActiveReputersSet)(nil),                           // 60: emissions.v9.EventActiveReputersSet
@@ -43736,8 +43977,8 @@ var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(*EventActiveTopicsAtBlockSet)(nil),                      // 63: emissions.v9.EventActiveTopicsAtBlockSet
 	(*EventNetworkInferenceInfererWeightSet)(nil),            // 64: emissions.v9.EventNetworkInferenceInfererWeightSet
 	(*EventNetworkInferenceForecasterWeightSet)(nil),         // 65: emissions.v9.EventNetworkInferenceForecasterWeightSet
-	(*EventNetworkInferenceInfererRegretUsed)(nil),           // 66: emissions.v9.EventNetworkInferenceInfererRegretUsed
-	(*EventNetworkInferenceForecasterRegretUsed)(nil),        // 67: emissions.v9.EventNetworkInferenceForecasterRegretUsed
+	(*EventNetworkInferenceInfererRegretsUsedSet)(nil),       // 66: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet
+	(*EventNetworkInferenceForecasterRegretsUsedSet)(nil),    // 67: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet
 	(*EventTopicWeightUpdated)(nil),                          // 68: emissions.v9.EventTopicWeightUpdated
 	(*EventWorkerSubmissionWindowOpened)(nil),                // 69: emissions.v9.EventWorkerSubmissionWindowOpened
 	(*EventWorkerSubmissionWindowClosed)(nil),                // 70: emissions.v9.EventWorkerSubmissionWindowClosed
@@ -44437,7 +44678,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerStakeRemovalCompleted); i {
+			switch v := v.(*EventRemoveStakeCompleted); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -44449,7 +44690,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventDelegateStakeRemovalCompleted); i {
+			switch v := v.(*EventRemoveDelegateStakeCompleted); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -44557,7 +44798,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventNetworkInferenceInfererRegretUsed); i {
+			switch v := v.(*EventNetworkInferenceInfererRegretsUsedSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -44569,7 +44810,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventNetworkInferenceForecasterRegretUsed); i {
+			switch v := v.(*EventNetworkInferenceForecasterRegretsUsedSet); i {
 			case 0:
 				return &v.state
 			case 1:

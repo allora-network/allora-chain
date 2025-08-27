@@ -99,9 +99,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	// Emit event for active inferers set for topic nonce
-	types.EmitActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
-
 	// Get all active forecasters for this topic
 	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
@@ -122,22 +119,10 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	// Emit event for active forecasters set for topic nonce
-	types.EmitActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
-
 	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
-
-	// Emit reputer submission window opened event
-	extraLag := topic.GroundTruthLag % topic.EpochLength
-	if extraLag != 0 {
-		extraLag = topic.EpochLength - extraLag
-	}
-	windowStartBlock := nonce.BlockHeight + topic.GroundTruthLag
-	windowEndBlock := nonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
-	types.EmitReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.BlockHeight, windowStartBlock, windowEndBlock)
 
 	err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
@@ -156,6 +141,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
+	types.EmitActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
+	types.EmitActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }

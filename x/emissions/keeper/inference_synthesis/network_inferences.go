@@ -228,6 +228,8 @@ func GetCalcNetworkInferenceArgs(
 	logger := Logger(ctx)
 
 	infererToRegret := make(map[string]*alloraMath.Dec)
+	infererAddresses := make([]string, 0, len(sortedInferers))
+	infererRegrets := make([]alloraMath.Dec, 0, len(sortedInferers))
 	for _, inferer := range sortedInferers {
 		regret, _, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
 		if err != nil {
@@ -237,11 +239,14 @@ func GetCalcNetworkInferenceArgs(
 		logger.Debug("Inferer has regret", "inferer", inferer, "regret", regret.Value)
 		infererToRegret[inferer] = &regret.Value
 
-		// Emit event for inferer regret used in network inference calculation
-		emissions.EmitNetworkInferenceInfererRegretUsedEvent(ctx, topicId, inferenceBlockHeight, inferer, regret.Value)
+		// Collect for set event emission
+		infererAddresses = append(infererAddresses, inferer)
+		infererRegrets = append(infererRegrets, regret.Value)
 	}
 
 	forecasterToRegret := make(map[string]*alloraMath.Dec)
+	forecasterAddresses := make([]string, 0, len(sortedForecasters))
+	forecasterRegrets := make([]alloraMath.Dec, 0, len(sortedForecasters))
 	for _, forecaster := range sortedForecasters {
 		regret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
 		if err != nil {
@@ -251,8 +256,9 @@ func GetCalcNetworkInferenceArgs(
 		logger.Debug("Forecaster has regret", "forecaster", forecaster, "regret", regret.Value)
 		forecasterToRegret[forecaster] = &regret.Value
 
-		// Emit event for forecaster regret used in network inference calculation
-		emissions.EmitNetworkInferenceForecasterRegretUsedEvent(ctx, topicId, inferenceBlockHeight, forecaster, regret.Value)
+		// Collect for set event emission
+		forecasterAddresses = append(forecasterAddresses, forecaster)
+		forecasterRegrets = append(forecasterRegrets, regret.Value)
 	}
 
 	// Get the latest regret stdnorm from the keeper. If zero, it will recalculate with provided data.
@@ -318,6 +324,14 @@ func GetCalcNetworkInferenceArgs(
 				calcArgs.ForecasterToForecastImpliedInference[forecaster] = forecastImpliedInference
 			}
 		}
+	}
+
+	// Emit set events for regrets used in network inference calculation
+	if len(infererAddresses) > 0 {
+		emissions.EmitNetworkInferenceInfererRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, infererAddresses, infererRegrets)
+	}
+	if len(forecasterAddresses) > 0 {
+		emissions.EmitNetworkInferenceForecasterRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, forecasterAddresses, forecasterRegrets)
 	}
 
 	return calcArgs, nil

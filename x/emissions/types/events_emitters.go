@@ -449,21 +449,21 @@ func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*al
 
 /// Stake removal processing events
 
-func EmitReputerStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, reputer string, amount cosmosMath.Int) {
+func EmitRemoveStakeCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, reputer string, amount cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.REPUTER_STAKE_REMOVAL_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerStakeRemovalCompletedEventBase(topicId, blockHeight, reputer, amount))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeCompletedEventBase(topicId, blockHeight, reputer, amount))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting ReputerStakeRemovalCompletedEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting RemoveStakeCompletedEvent", "error", err)
 	}
 }
 
-func EmitDelegateStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount cosmosMath.Int) {
+func EmitRemoveDelegateStakeCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.DELEGATE_STAKE_REMOVAL_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateStakeRemovalCompletedEventBase(topicId, blockHeight, delegator, reputer, amount))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveDelegateStakeCompletedEventBase(topicId, blockHeight, delegator, reputer, amount))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting DelegateStakeRemovalCompletedEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting RemoveDelegateStakeCompletedEvent", "error", err)
 	}
 }
 
@@ -545,21 +545,27 @@ func EmitNetworkInferenceForecasterWeightSetEvent(ctx context.Context, topicId T
 	}
 }
 
-func EmitNetworkInferenceInfererRegretUsedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, address string, regret alloraMath.Dec) {
+func EmitNetworkInferenceInfererRegretsUsedSetEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, addresses []string, regrets []alloraMath.Dec) {
+	if len(addresses) == 0 || len(regrets) == 0 {
+		return
+	}
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCE_INFERER_REGRET_USED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceInfererRegretUsedEventBase(topicId, blockHeight, address, regret))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceInfererRegretsUsedSetEventBase(topicId, blockHeight, addresses, regrets))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NetworkInferenceInfererRegretUsedEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NetworkInferenceInfererRegretsUsedSetEvent", "error", err)
 	}
 }
 
-func EmitNetworkInferenceForecasterRegretUsedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, address string, regret alloraMath.Dec) {
+func EmitNetworkInferenceForecasterRegretsUsedSetEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, addresses []string, regrets []alloraMath.Dec) {
+	if len(addresses) == 0 || len(regrets) == 0 {
+		return
+	}
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCE_FORECASTER_REGRET_USED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceForecasterRegretUsedEventBase(topicId, blockHeight, address, regret))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId, blockHeight, addresses, regrets))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NetworkInferenceForecasterRegretUsedEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NetworkInferenceForecasterRegretsUsedSetEvent", "error", err)
 	}
 }
 
