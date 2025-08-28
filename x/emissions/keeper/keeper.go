@@ -3288,9 +3288,6 @@ func (k *Keeper) SetBlockToActiveTopics(ctx context.Context, block BlockHeight, 
 	if err != nil {
 		return err
 	}
-
-	// Emit event for active topics at block set
-	types.EmitActiveTopicsAtBlockSetEvent(ctx, block, topicIds.TopicIds)
 	return nil
 }
 

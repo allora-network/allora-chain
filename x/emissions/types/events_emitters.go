@@ -518,12 +518,12 @@ func EmitActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonceBl
 	}
 }
 
-func EmitActiveTopicsAtBlockSetEvent(ctx context.Context, targetBlockHeight BlockHeight, topicIds []TopicId) {
-	metrics.IncrProducerEventCount(metrics.ACTIVE_TOPICS_AT_BLOCK_SET_EVENT)
+func EmitTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_STATUS_CHANGED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveTopicsAtBlockSetEventBase(targetBlockHeight, topicIds, sdkCtx.BlockHeight()))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicStatusChangedEventBase(topicId, isActive))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting ActiveTopicsAtBlockSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting TopicStatusChangedEvent", "error", err)
 	}
 }
 

@@ -501,9 +501,9 @@ message EventActiveForecastersSet {
   int64 nonce_block_height = 3;
 }
 
-message EventActiveTopicsAtBlockSet {
-  int64 target_block_height = 1;
-  repeated uint64 topic_ids = 2;
+message EventTopicStatusChanged {
+  uint64 topic_id = 1;
+  bool is_active = 2;
 }
 
 message EventNetworkInferenceInfererWeightSet {

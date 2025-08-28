@@ -582,10 +582,10 @@ func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, a
 	}
 }
 
-func NewActiveTopicsAtBlockSetEventBase(targetBlockHeight int64, topicIds []uint64, blockHeight int64) proto.Message {
-	return &EventActiveTopicsAtBlockSet{
-		TargetBlockHeight: targetBlockHeight,
-		TopicIds:          topicIds,
+func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool) proto.Message {
+	return &EventTopicStatusChanged{
+		TopicId:  topicId,
+		IsActive: isActive,
 	}
 }
 

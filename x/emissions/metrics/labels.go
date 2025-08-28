@@ -16,7 +16,7 @@ const (
 	ACTIVE_REPUTERS_SET_EVENT                               = "active_reputers_set_event"
 	ACTIVE_INFERERS_SET_EVENT                               = "active_inferers_set_event"
 	ACTIVE_FORECASTERS_SET_EVENT                            = "active_forecasters_set_event"
-	ACTIVE_TOPICS_AT_BLOCK_SET_EVENT                        = "active_topics_at_block_set_event"
+	TOPIC_STATUS_CHANGED_EVENT                              = "topic_status_changed_event"
 	NETWORK_INFERENCE_INFERER_WEIGHT_SET_EVENT              = "network_inference_inferer_weight_set_event"
 	NETWORK_INFERENCE_FORECASTER_WEIGHT_SET_EVENT           = "network_inference_forecaster_weight_set_event"
 	NETWORK_INFERENCE_INFERER_REGRET_USED_EVENT             = "network_inference_inferer_regret_used_event"
