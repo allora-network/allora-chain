@@ -569,10 +569,10 @@ func EmitNetworkInferenceForecasterRegretsUsedSetEvent(ctx context.Context, topi
 	}
 }
 
-func EmitTopicWeightUpdatedEvent(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec) {
+func EmitTopicWeightUpdatedEvent(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec, topicStake cosmosMath.Int, topicFeeRevenue cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_WEIGHT_UPDATED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWeightUpdatedEventBase(topicId, newWeight))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWeightUpdatedEventBase(topicId, newWeight, topicStake, topicFeeRevenue))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting TopicWeightUpdatedEvent", "error", err)
 	}

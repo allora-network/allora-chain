@@ -33,7 +33,7 @@ func activateTopicIfWeightAtLeastGlobalMin(
 			return errors.Wrapf(err, "error getting topic")
 		}
 
-		newTopicWeight, _, err := ms.k.GetCurrentTopicWeight(
+		newTopicWeight, _, _, err := ms.k.GetCurrentTopicWeight(
 			ctx,
 			topicId,
 			topic.EpochLength,

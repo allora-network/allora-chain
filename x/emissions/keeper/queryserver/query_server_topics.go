@@ -35,7 +35,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) 
 		return nil, errors.Wrapf(err, "error getting params")
 	}
 
-	currentTopicWeight, currentTopicRevenue, err := qs.k.GetCurrentTopicWeight(
+	currentTopicWeight, currentTopicRevenue, currentTopicStake, err := qs.k.GetCurrentTopicWeight(
 		ctx,
 		req.TopicId,
 		topic.EpochLength,
@@ -52,6 +52,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) 
 		Topic:            &topic,
 		Weight:           currentTopicWeight.String(),
 		EffectiveRevenue: currentTopicRevenue.String(),
+		TopicStake:       currentTopicStake.String(),
 	}, nil
 }
 

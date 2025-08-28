@@ -3091,9 +3091,6 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 		return err
 	}
 
-	// Emit topic weight updated event
-	types.EmitTopicWeightUpdatedEvent(ctx, topicId, weight)
-
 	return nil
 }
 
@@ -4739,7 +4736,7 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 	}
 
 	// Calculate the new weight based on updated stake
-	newWeight, _, err := k.GetCurrentTopicWeight(
+	newWeight, topicFeeRevenue, topicStake, err := k.GetCurrentTopicWeight(
 		ctx,
 		topicId,
 		topic.EpochLength,
@@ -4756,6 +4753,9 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 	if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
 		return errorsmod.Wrapf(err, "Setting previous topic weight failed")
 	}
+
+	// Emit topic weight updated event
+	types.EmitTopicWeightUpdatedEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
 
 	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
 

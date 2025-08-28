@@ -625,10 +625,12 @@ func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, block
 	}
 }
 
-func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec) proto.Message {
+func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
 	return &EventTopicWeightUpdated{
-		TopicId:   topicId,
-		NewWeight: newWeight,
+		TopicId:         topicId,
+		NewWeight:       newWeight,
+		TopicStake:      topicStake,
+		TopicFeeRevenue: topicFeeRevenue,
 	}
 }
 
