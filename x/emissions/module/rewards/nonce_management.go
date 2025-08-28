@@ -15,6 +15,11 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 		return err
 	}
 	for _, nonce := range nonces.Nonces {
+		if block >= nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag {
+            windowStartBlock := block
+            windowEndBlock := block + topic.EpochLength  
+            types.EmitReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowStartBlock, windowEndBlock)
+        }
 		// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
 		// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
 		closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
