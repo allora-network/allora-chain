@@ -16,13 +16,14 @@ import (
 type ArbitrageAction int
 
 const (
-	// ArbitrageActionSkip means the task shall not be executed.
-	ArbitrageActionSkip ArbitrageAction = iota
+	// ArbitrageActionCancel means the task shall not be executed.
+	ArbitrageActionCancel ArbitrageAction = iota
 
-	// ArbitrageActionPostpone means the task shall execution shall be delayed at the provided time.
-	ArbitrageActionPostpone
+	// ArbitrageActionPostponeAt means the task shall execution shall be delayed at the provided time, if any (i.e. if
+	// none provided it's postponed next block).
+	ArbitrageActionPostponeAt
 
-	// ArbitrageActionPause for a periodic task only, it means the task shall not be executed paused.
+	// ArbitrageActionPause for a periodic task only, it means the task shall not be executed, and put in pause.
 	ArbitrageActionPause
 )
 
@@ -65,7 +66,7 @@ type ArbitrageDecision struct {
 	Action ArbitrageAction
 
 	// PostponeAt defines the time at which the task should be postponed if the action is ArbitrageActionPostpone.
-	PostponeAt *time.Duration
+	PostponeAt *time.Time
 }
 
 func NewTaskHandler[T proto.Message](
