@@ -39,7 +39,7 @@ func (i TasksIndexes) IndexesList() []collections.Index[types.TaskID, types.Task
 
 type Keeper struct {
 	storeService store.KVStoreService
-	cdc          codec.BinaryCodec
+	cdc          codec.Codec
 	schema       collections.Schema
 
 	handlersByTypename map[string]types.TaskHandler
@@ -50,7 +50,7 @@ type Keeper struct {
 }
 
 // NewKeeper returns a new keeper by codec and storeKey inputs.
-func NewKeeper(storeService store.KVStoreService, cdc codec.BinaryCodec) Keeper {
+func NewKeeper(storeService store.KVStoreService, cdc codec.Codec) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
 
 	k := Keeper{
@@ -136,6 +136,20 @@ func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.Tas
 // SchedulePeriodicTask schedules a task of the provided type to run every given interval, starting at the specified time.
 func (k *Keeper) SchedulePeriodicTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, startAt time.Time, every time.Duration) error {
 	return k.scheduleTask(ctx, typename, id, args, startAt, &every)
+}
+
+// CancelTask cancels a scheduled task, removing it from the schedule.
+func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
+	task, err := k.tasks.Get(ctx, taskID)
+	if err != nil {
+		return err
+	}
+
+	if err := k.tasks.Remove(ctx, taskID); err != nil {
+		return err
+	}
+
+	return k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, task.NextRunAt, taskID))
 }
 
 // PausePeriodicTask pauses a periodic task, preventing it from running until resumed.
