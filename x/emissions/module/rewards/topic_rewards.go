@@ -102,9 +102,8 @@ func UpdateNoncesOfActiveTopics(
 		}
 
 		// Emit worker submission window opened event
-		windowStartBlock := nextNonce.BlockHeight
 		windowEndBlock := nextNonce.BlockHeight + topic.WorkerSubmissionWindow
-		types.EmitWorkerSubmissionWindowOpenedEvent(ctx, topic.Id, nextNonce.BlockHeight, windowStartBlock, windowEndBlock)
+		types.EmitWorkerSubmissionWindowOpenedEvent(ctx, topic.Id, nextNonce.BlockHeight, windowEndBlock)
 
 		err = PruneReputerAndWorkerNonces(ctx, k, topic, block)
 		if err != nil {

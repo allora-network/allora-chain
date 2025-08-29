@@ -579,10 +579,10 @@ func EmitTopicWeightUpdatedEvent(ctx context.Context, topicId TopicId, newWeight
 }
 
 // Submission window events
-func EmitWorkerSubmissionWindowOpenedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, windowStartBlock BlockHeight, windowEndBlock BlockHeight) {
+func EmitWorkerSubmissionWindowOpenedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, windowEndBlock BlockHeight) {
 	metrics.IncrProducerEventCount(metrics.WORKER_SUBMISSION_WINDOW_OPENED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewWorkerSubmissionWindowOpenedEventBase(topicId, nonceBlockHeight, windowStartBlock, windowEndBlock))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewWorkerSubmissionWindowOpenedEventBase(topicId, nonceBlockHeight, windowEndBlock))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting WorkerSubmissionWindowOpenedEvent", "error", err)
 	}
@@ -597,10 +597,10 @@ func EmitWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId TopicId,
 	}
 }
 
-func EmitReputerSubmissionWindowOpenedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, windowStartBlock BlockHeight, windowEndBlock BlockHeight) {
+func EmitReputerSubmissionWindowOpenedEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, windowEndBlock BlockHeight) {
 	metrics.IncrProducerEventCount(metrics.REPUTER_SUBMISSION_WINDOW_OPENED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerSubmissionWindowOpenedEventBase(topicId, nonceBlockHeight, windowStartBlock, windowEndBlock))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerSubmissionWindowOpenedEventBase(topicId, nonceBlockHeight, windowEndBlock))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting ReputerSubmissionWindowOpenedEvent", "error", err)
 	}

@@ -635,11 +635,10 @@ func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, t
 }
 
 // Submission window events
-func NewWorkerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowStartBlock int64, windowEndBlock int64) proto.Message {
+func NewWorkerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowEndBlock int64) proto.Message {
 	return &EventWorkerSubmissionWindowOpened{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
-		WindowStartBlock: windowStartBlock,
 		WindowEndBlock:   windowEndBlock,
 	}
 }
@@ -651,11 +650,10 @@ func NewWorkerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight 
 	}
 }
 
-func NewReputerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowStartBlock int64, windowEndBlock int64) proto.Message {
+func NewReputerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowEndBlock int64) proto.Message {
 	return &EventReputerSubmissionWindowOpened{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
-		WindowStartBlock: windowStartBlock,
 		WindowEndBlock:   windowEndBlock,
 	}
 }

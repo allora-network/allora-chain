@@ -569,8 +569,7 @@ message EventTopicWeightUpdated {
 message EventWorkerSubmissionWindowOpened {
   uint64 topic_id = 1;
   int64 nonce_block_height = 2;
-  int64 window_start_block = 3;
-  int64 window_end_block = 4;
+  int64 window_end_block = 3;
 }
 
 message EventWorkerSubmissionWindowClosed {
@@ -581,8 +580,7 @@ message EventWorkerSubmissionWindowClosed {
 message EventReputerSubmissionWindowOpened {
   uint64 topic_id = 1;
   int64 nonce_block_height = 2;
-  int64 window_start_block = 3;
-  int64 window_end_block = 4;
+  int64 window_end_block = 3;
 }
 
 message EventReputerSubmissionWindowClosed {
