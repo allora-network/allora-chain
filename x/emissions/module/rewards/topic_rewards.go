@@ -152,12 +152,6 @@ func GetAndUpdateActiveTopicWeights(
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
 
-	// Capture the previous active set before making any changes
-	previousActiveSet := make(map[TopicId]bool)
-	for _, topicId := range topicids.TopicIds {
-		previousActiveSet[topicId] = true
-	}
-
 	// Apply the function on all sorted topics
 	for _, topicId := range topicids.TopicIds {
 		topic, err := k.GetTopic(ctx, topicId)
@@ -219,33 +213,6 @@ func GetAndUpdateActiveTopicWeights(
 		sumWeight, err = sumWeight.Add(weight)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to add weight to sum")
-		}
-	}
-
-	// Capture the new active set after all decisions have been made
-	newTopicIds, err := k.GetActiveTopicIdsAtBlock(ctx, block)
-	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get active topics after updates")
-	}
-	newActiveSet := make(map[TopicId]bool)
-	for _, topicId := range newTopicIds.TopicIds {
-		newActiveSet[topicId] = true
-	}
-
-	// Emit events only for topics that actually changed status
-	// Find topics that were deactivated (in previous set but not in new set)
-	for topicId := range previousActiveSet {
-		if !newActiveSet[topicId] {
-			types.EmitTopicStatusChangedEvent(ctx, topicId, false)
-			ctx.Logger().Debug("Topic deactivated", "topicId", topicId)
-		}
-	}
-
-	// Find topics that were activated (in new set but not in previous set)
-	for topicId := range newActiveSet {
-		if !previousActiveSet[topicId] {
-			types.EmitTopicStatusChangedEvent(ctx, topicId, true)
-			ctx.Logger().Debug("Topic activated", "topicId", topicId)
 		}
 	}
 
