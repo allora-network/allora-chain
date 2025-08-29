@@ -309,7 +309,7 @@ func (k *Keeper) scheduleTask(
 		Id:        id,
 		Typename:  typename,
 		Args:      packedArgs,
-		NextRunAt: startAt,
+		NextRunAt: &startAt,
 		Interval:  every,
 		LastRunAt: nil,
 		RunCount:  0,
