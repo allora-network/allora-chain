@@ -9,6 +9,47 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func (k *Keeper) BeginBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	for _, taskType := range k.handlersOrder {
+		handler := k.handlersByTypename[taskType]
+		taskIDs, err := k.GetDueTasksAt(ctx, taskType, sdkCtx.BlockTime())
+		if err != nil {
+			return err
+		}
+
+		tasks := make([]types.Task, 0, len(taskIDs))
+		for _, id := range taskIDs {
+			task, err := k.tasks.Get(ctx, id)
+			if err != nil {
+				return err
+			}
+			tasks = append(tasks, task)
+		}
+
+		decisions, err := handler.Arbitrate(ctx, k.cdc, tasks)
+		if err != nil {
+			return errors.Wrapf(types.ErrTaskArbitrage, "arbitrate func failed for type '%s': %s", taskType, err)
+		}
+
+		for _, task := range tasks {
+			if decision, ok := decisions[task.Id]; ok {
+				if err := k.applyArbitrageDecision(ctx, task.Id, decision); err != nil {
+					return errors.Wrapf(types.ErrTaskArbitrage, "could not apply arbitrage decision for task '%s' of type '%s': %s", task.Id, taskType, err)
+				}
+				continue
+			}
+
+			if err := k.runTask(ctx, task, handler); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (k *Keeper) applyArbitrageDecision(ctx context.Context, task types.TaskID, decision types.ArbitrageDecision) (err error) {
 	switch decision.Action {
 	case types.ArbitrageActionCancel:
