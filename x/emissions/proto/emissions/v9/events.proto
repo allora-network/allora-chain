@@ -436,19 +436,7 @@ message EventPruneRecords {
 }
 
 // Stake removal processing events
-message EventRemoveStakeCompleted {
-  uint64 topic_id = 1;
-  string reputer = 2;
-  string amount = 3 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  int64 block_height = 4;
-}
-
-message EventRemoveDelegateStakeCompleted {
+message EventStakeRemovalCompleted {
   uint64 topic_id = 1;
   string reputer = 2;
   string delegator = 3;
@@ -458,7 +446,6 @@ message EventRemoveDelegateStakeCompleted {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  int64 block_height = 5;
 }
 
 message EventDelegateRewardShareUpdated {

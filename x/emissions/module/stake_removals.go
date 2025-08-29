@@ -105,11 +105,11 @@ func RemoveStakes(
 		write()
 
 		// Emit event indicating a reputer stake removal has been processed
-		emissionstypes.EmitRemoveStakeCompletedEvent(
+		emissionstypes.EmitStakeRemovalCompletedEvent(
 			sdkCtx,
 			stakeRemoval.TopicId,
-			stakeRemoval.BlockRemovalCompleted,
 			stakeRemoval.Reputer,
+			"",
 			stakeRemoval.Amount,
 		)
 	}
@@ -173,12 +173,11 @@ func RemoveDelegateStakes(
 		write()
 
 		// Emit event indicating a delegate stake removal has been processed
-		emissionstypes.EmitRemoveDelegateStakeCompletedEvent(
+		emissionstypes.EmitStakeRemovalCompletedEvent(
 			sdkCtx,
 			stakeRemoval.TopicId,
-			stakeRemoval.BlockRemovalCompleted,
-			stakeRemoval.Delegator,
 			stakeRemoval.Reputer,
+			stakeRemoval.Delegator, // Populated delegator indicates delegate stake removal
 			stakeRemoval.Amount,
 		)
 	}

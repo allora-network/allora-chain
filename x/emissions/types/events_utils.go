@@ -521,22 +521,12 @@ func (m *EventOneOutInfForcVals) Equal(ei *EventOneOutInfForcVals) bool {
 }
 
 // Stake removal
-func NewRemoveStakeCompletedEventBase(topicId TopicId, blockHeight BlockHeight, reputer string, amount math.Int) proto.Message {
-	return &EventRemoveStakeCompleted{
-		TopicId:     topicId,
-		Reputer:     reputer,
-		Amount:      amount,
-		BlockHeight: blockHeight,
-	}
-}
-
-func NewRemoveDelegateStakeCompletedEventBase(topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount math.Int) proto.Message {
-	return &EventRemoveDelegateStakeCompleted{
-		TopicId:     topicId,
-		Reputer:     reputer,
-		Delegator:   delegator,
-		Amount:      amount,
-		BlockHeight: blockHeight,
+func NewStakeRemovalCompletedEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
+	return &EventStakeRemovalCompleted{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+		Amount:    amount,
 	}
 }
 

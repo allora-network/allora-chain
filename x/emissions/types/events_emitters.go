@@ -449,21 +449,16 @@ func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*al
 
 /// Stake removal processing events
 
-func EmitRemoveStakeCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, reputer string, amount cosmosMath.Int) {
-	metrics.IncrProducerEventCount(metrics.REPUTER_STAKE_REMOVAL_EVENT)
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeCompletedEventBase(topicId, blockHeight, reputer, amount))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting RemoveStakeCompletedEvent", "error", err)
+func EmitStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount cosmosMath.Int) {
+	if delegator == "" {
+		metrics.IncrProducerEventCount(metrics.REPUTER_STAKE_REMOVAL_EVENT)
+	} else {
+		metrics.IncrProducerEventCount(metrics.DELEGATE_STAKE_REMOVAL_EVENT)
 	}
-}
-
-func EmitRemoveDelegateStakeCompletedEvent(ctx context.Context, topicId TopicId, blockHeight BlockHeight, delegator string, reputer string, amount cosmosMath.Int) {
-	metrics.IncrProducerEventCount(metrics.DELEGATE_STAKE_REMOVAL_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveDelegateStakeCompletedEventBase(topicId, blockHeight, delegator, reputer, amount))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewStakeRemovalCompletedEventBase(topicId, reputer, delegator, amount))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting RemoveDelegateStakeCompletedEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting StakeRemovalCompletedEvent", "error", err)
 	}
 }
 
