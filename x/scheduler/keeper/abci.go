@@ -9,6 +9,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// BeginBlock processes due tasks at the beginning of each block.
+// It iterates through registered task handlers in their predefined order.
+// For each task type, it retrieves tasks that are due to run at the current block time.
+// It then invokes the handler's Arbitrate method to determine if any arbitrage actions are needed.
+// If no arbitrage action is taken, it proceeds to execute the task using the handler's Run method.
 func (k *Keeper) BeginBlock(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -75,18 +80,19 @@ func (k *Keeper) runTask(ctx context.Context, task types.Task, handler types.Tas
 
 	// if the task is periodic, update its last run time and next run time, and reschedule it.
 	if task.Interval != nil {
-		if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, task.NextRunAt, task.Id)); err != nil {
+		if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id)); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
 
 		runTime := sdkCtx.BlockTime()
+		nextRunTime := runTime.Add(*task.Interval)
 		task.LastRunAt = &runTime
-		task.NextRunAt = runTime.Add(*task.Interval)
+		task.NextRunAt = &nextRunTime
 		if err := k.tasks.Set(ctx, task.Id, task); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
 
-		if err := k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, task.NextRunAt, task.Id)); err != nil {
+		if err := k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id)); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
 	} else {
