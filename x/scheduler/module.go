@@ -17,9 +17,9 @@ import (
 )
 
 var (
-	_ module.HasGenesis       = AppModule{}
-	_ appmodule.AppModule     = AppModule{}
-	_ appmodule.HasEndBlocker = AppModule{}
+	_ module.HasGenesis         = AppModule{}
+	_ appmodule.AppModule       = AppModule{}
+	_ appmodule.HasBeginBlocker = AppModule{}
 )
 
 const ConsensusVersion = 1
@@ -78,7 +78,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // ConsensusVersion implements HasConsensusVersion
 func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
-// EndBlock executes all ABCI EndBlock logic respective to the scheduler module.
-func (am AppModule) EndBlock(ctx context.Context) error {
-	return nil
+// BeginBlock executes all ABCI BeginBlock logic respective to the scheduler module.
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	return am.keeper.BeginBlock(ctx)
 }
