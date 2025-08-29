@@ -207,9 +207,17 @@ func (k *Keeper) PausePeriodicTask(ctx context.Context, id types.TaskID) error {
 }
 
 // ResumePeriodicTask resumes a paused periodic task, allowing it to run again.
-func (k *Keeper) ResumePeriodicTask(ctx context.Context, taskID types.TaskID) error {
-	// TODO: Implement
-	return nil
+func (k *Keeper) ResumePeriodicTask(ctx context.Context, id types.TaskID, startAt time.Time) error {
+	task, err := k.tasks.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if task.Interval == nil {
+		return errors.Wrapf(types.ErrInvalidTask, "cannot resume non-periodic task '%s'", id)
+	}
+
+	return k.RescheduleTaskAt(ctx, id, startAt)
 }
 
 // GetDueTasksAt retrieves the tasks of the specified type that are due at the provided time.
