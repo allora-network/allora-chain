@@ -152,6 +152,30 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 	return k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, task.NextRunAt, taskID))
 }
 
+// RescheduleTaskAt reschedules an already scheduled task to run at a new specified time.
+func (k *Keeper) RescheduleTaskAt(ctx context.Context, id types.TaskID, at time.Time) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.BlockTime().After(at) {
+		return errors.Wrapf(types.ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", id, at)
+	}
+
+	task, err := k.tasks.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, task.NextRunAt, id)); err != nil {
+		return err
+	}
+
+	task.NextRunAt = at
+	if err := k.tasks.Set(ctx, id, task); err != nil {
+		return err
+	}
+
+	return k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, task.NextRunAt, id))
+}
+
 // PausePeriodicTask pauses a periodic task, preventing it from running until resumed.
 func (k *Keeper) PausePeriodicTask(ctx context.Context, taskID types.TaskID) error {
 	// TODO: Implement
