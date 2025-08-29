@@ -183,9 +183,27 @@ func (k *Keeper) RescheduleTaskAt(ctx context.Context, id types.TaskID, at time.
 }
 
 // PausePeriodicTask pauses a periodic task, preventing it from running until resumed.
-func (k *Keeper) PausePeriodicTask(ctx context.Context, taskID types.TaskID) error {
-	// TODO: Implement
-	return nil
+func (k *Keeper) PausePeriodicTask(ctx context.Context, id types.TaskID) error {
+	task, err := k.tasks.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if task.Interval == nil {
+		return errors.Wrapf(types.ErrInvalidTask, "cannot pause non-periodic task '%s'", id)
+	}
+
+	// already paused
+	if task.NextRunAt == nil {
+		return nil
+	}
+
+	if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, id)); err != nil {
+		return err
+	}
+
+	task.NextRunAt = nil
+	return k.tasks.Set(ctx, id, task)
 }
 
 // ResumePeriodicTask resumes a paused periodic task, allowing it to run again.
