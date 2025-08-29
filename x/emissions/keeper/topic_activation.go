@@ -161,9 +161,6 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 		return errors.Wrap(err, "failed to remove topic from previous topic weights")
 	}
 
-	// Emit topic deactivation event
-	types.EmitTopicStatusChangedEvent(ctx, topicId, false)
-
 	return nil
 }
 
@@ -256,9 +253,6 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	if err != nil {
 		return err
 	}
-
-	// Emit topic activation event
-	types.EmitTopicStatusChangedEvent(ctx, topicId, true)
 
 	return nil
 }
