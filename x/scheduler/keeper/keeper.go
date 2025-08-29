@@ -149,7 +149,11 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 		return err
 	}
 
-	return k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, task.NextRunAt, taskID))
+	if task.NextRunAt != nil {
+		return k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, taskID))
+	}
+
+	return nil
 }
 
 // RescheduleTaskAt reschedules an already scheduled task to run at a new specified time.
@@ -164,16 +168,18 @@ func (k *Keeper) RescheduleTaskAt(ctx context.Context, id types.TaskID, at time.
 		return err
 	}
 
-	if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, task.NextRunAt, id)); err != nil {
-		return err
+	if task.NextRunAt != nil {
+		if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, id)); err != nil {
+			return err
+		}
 	}
 
-	task.NextRunAt = at
+	task.NextRunAt = &at
 	if err := k.tasks.Set(ctx, id, task); err != nil {
 		return err
 	}
 
-	return k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, task.NextRunAt, id))
+	return k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, *task.NextRunAt, id))
 }
 
 // PausePeriodicTask pauses a periodic task, preventing it from running until resumed.
@@ -247,7 +253,7 @@ func (k *Keeper) scheduleTask(
 		Id:        id,
 		Typename:  typename,
 		Args:      packedArgs,
-		NextRunAt: startAt,
+		NextRunAt: &startAt,
 		Interval:  every,
 		LastRunAt: nil,
 		RunCount:  0,
