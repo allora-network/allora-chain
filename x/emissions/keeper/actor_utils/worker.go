@@ -6,6 +6,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -74,7 +75,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
 
 		// Emit worker submission window closed event
-		types.EmitWorkerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
+		types.EmitNewWorkerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
 	}()
 
 	// Get all active inferers for this topic
@@ -141,8 +142,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	types.EmitActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
-	types.EmitActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
+	types.EmitNewActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
+	types.EmitNewActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
@@ -178,14 +179,25 @@ func ProcessAndStoreNetworkInferences(
 
 	types.EmitNewNetworkInferencesEvent(ctx, *networkInferencesResult.NetworkInferences)
 
-	// Emit network inference weight events for inferers
-	for inferer, weight := range networkInferencesResult.InfererToWeight {
-		types.EmitNetworkInferenceInfererWeightSetEvent(ctx, topicId, blockHeight, inferer, weight)
+	// Emit packed network inference weight events
+	if len(networkInferencesResult.InfererToWeight) > 0 {
+		infererAddresses := make([]string, 0, len(networkInferencesResult.InfererToWeight))
+		infererWeights := make([]alloraMath.Dec, 0, len(networkInferencesResult.InfererToWeight))
+		for inferer, weight := range networkInferencesResult.InfererToWeight {
+			infererAddresses = append(infererAddresses, inferer)
+			infererWeights = append(infererWeights, weight)
+		}
+		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, blockHeight, infererAddresses, infererWeights)
 	}
 
-	// Emit network inference weight events for forecasters
-	for forecaster, weight := range networkInferencesResult.ForecasterToWeight {
-		types.EmitNetworkInferenceForecasterWeightSetEvent(ctx, topicId, blockHeight, forecaster, weight)
+	if len(networkInferencesResult.ForecasterToWeight) > 0 {
+		forecasterAddresses := make([]string, 0, len(networkInferencesResult.ForecasterToWeight))
+		forecasterWeights := make([]alloraMath.Dec, 0, len(networkInferencesResult.ForecasterToWeight))
+		for forecaster, weight := range networkInferencesResult.ForecasterToWeight {
+			forecasterAddresses = append(forecasterAddresses, forecaster)
+			forecasterWeights = append(forecasterWeights, weight)
+		}
+		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, blockHeight, forecasterAddresses, forecasterWeights)
 	}
 
 	// Get outlier resistant inferences

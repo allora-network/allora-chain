@@ -325,10 +325,11 @@ func NewOutlierResistantNetworkInferencesEventBase(topicId TopicId, blockHeight 
 	}
 }
 
-func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) proto.Message {
+func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec, nonce int64) proto.Message {
 	return &EventForecastTaskScoreSet{
-		TopicId: topicId,
-		Score:   score,
+		TopicId:          topicId,
+		Score:            score,
+		NonceBlockHeight: nonce,
 	}
 }
 
@@ -470,21 +471,21 @@ func NewRegretStdNormSetEventBase(topicId uint64, blockHeight int64, stdNorm all
 	}
 }
 
-func NewInfererWeightSetEventBase(topicId uint64, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
-	return &EventInfererWeightSet{
+func NewInfererWeightsSetEventBase(topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
+	return &EventInfererWeightsSet{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Address:     address,
-		Weight:      weight,
+		Addresses:   addresses,
+		Weights:     weights,
 	}
 }
 
-func NewForecasterWeightSetEventBase(topicId uint64, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
-	return &EventForecasterWeightSet{
+func NewForecasterWeightsSetEventBase(topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
+	return &EventForecasterWeightsSet{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Address:     address,
-		Weight:      weight,
+		Addresses:   addresses,
+		Weights:     weights,
 	}
 }
 
@@ -579,21 +580,21 @@ func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool) proto.Messag
 	}
 }
 
-func NewNetworkInferenceInfererWeightSetEventBase(topicId TopicId, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
-	return &EventNetworkInferenceInfererWeightSet{
+func NewNetworkInferenceInfererWeightsSetEventBase(topicId TopicId, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceInfererWeightsSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
-		Address:          address,
-		Weight:           weight,
+		Addresses:        addresses,
+		Weights:          weights,
 	}
 }
 
-func NewNetworkInferenceForecasterWeightSetEventBase(topicId TopicId, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
-	return &EventNetworkInferenceForecasterWeightSet{
+func NewNetworkInferenceForecasterWeightsSetEventBase(topicId TopicId, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceForecasterWeightsSet{
 		TopicId:          topicId,
 		NonceBlockHeight: blockHeight,
-		Address:          address,
-		Weight:           weight,
+		Addresses:        addresses,
+		Weights:          weights,
 	}
 }
 
@@ -621,6 +622,15 @@ func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, t
 		NewWeight:       newWeight,
 		TopicStake:      topicStake,
 		TopicFeeRevenue: topicFeeRevenue,
+	}
+}
+
+func NewTopicFeeRevenueDrippedEventBase(topicId TopicId, oldRevenue math.Int, newRevenue math.Int, dripAmount math.Int) proto.Message {
+	return &EventTopicFeeRevenueDripped{
+		TopicId:    topicId,
+		OldRevenue: oldRevenue,
+		NewRevenue: newRevenue,
+		DripAmount: dripAmount,
 	}
 }
 

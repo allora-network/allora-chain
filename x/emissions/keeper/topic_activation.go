@@ -162,7 +162,7 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 	}
 
 	// Emit topic deactivation event
-	types.EmitTopicStatusChangedEvent(ctx, topicId, false)
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false)
 
 	return nil
 }
@@ -258,7 +258,7 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	}
 
 	// Emit topic activation event
-	types.EmitTopicStatusChangedEvent(ctx, topicId, true)
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, true)
 
 	return nil
 }

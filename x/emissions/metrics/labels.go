@@ -3,7 +3,7 @@ package metrics
 const (
 	INFERER_SCORE_EVENT                                     = "inferer_score_event"
 	FORECASTER_SCORE_EVENT                                  = "forecaster_score_event"
-	REPUTER_SOCRE_EVENT                                     = "reputer_score_event"
+	REPUTER_SCORE_EVENT                                     = "reputer_score_event"
 	NETWORK_LOSS_EVENT                                      = "network_loss_event"
 	NETWORK_INFERENCES_EVENT                                = "network_inferences_event"
 	INSERT_INFERER_PAYLOAD_EVENT                            = "insert_inferer_payload_event"
@@ -22,6 +22,7 @@ const (
 	NETWORK_INFERENCE_INFERER_REGRET_USED_EVENT             = "network_inference_inferer_regret_used_event"
 	NETWORK_INFERENCE_FORECASTER_REGRET_USED_EVENT          = "network_inference_forecaster_regret_used_event"
 	TOPIC_WEIGHT_UPDATED_EVENT                              = "topic_weight_updated_event"
+	TOPIC_FEE_REVENUE_DRIPPED_EVENT                         = "topic_fee_revenue_dripped_event"
 	WORKER_SUBMISSION_WINDOW_OPENED_EVENT                   = "worker_submission_window_opened_event"
 	WORKER_SUBMISSION_WINDOW_CLOSED_EVENT                   = "worker_submission_window_closed_event"
 	REPUTER_SUBMISSION_WINDOW_OPENED_EVENT                  = "reputer_submission_window_opened_event"
