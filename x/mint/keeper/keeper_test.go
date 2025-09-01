@@ -130,7 +130,7 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo() {
 	s.bankKeeper.EXPECT().GetBalance(testCtx, ecosystemAddr, "stake").Return(sdk.NewCoin("stake", ecosystemBalance)).AnyTimes()
 
 	// Mock emissions keeper GetParams call
-	emissionsParams := emissionstypes.Params{
+	emissionsParams := emissionstypes.Params{ // nolint:exhaustruct // we don't need to test all the fields
 		BlocksPerMonth: blocksPerMonth,
 	}
 	s.emissionsKeeper.EXPECT().GetParams(testCtx).Return(emissionsParams, nil).AnyTimes()
@@ -226,7 +226,7 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo_FirstMonth() {
 	s.bankKeeper.EXPECT().GetBalance(testCtx, ecosystemAddr, "stake").Return(sdk.NewCoin("stake", ecosystemBalance)).AnyTimes()
 
 	// Mock emissions keeper GetParams call
-	emissionsParams := emissionstypes.Params{
+	emissionsParams := emissionstypes.Params{ // nolint:exhaustruct // we don't need to test all the fields
 		BlocksPerMonth: blocksPerMonth,
 	}
 	s.emissionsKeeper.EXPECT().GetParams(testCtx).Return(emissionsParams, nil).AnyTimes()
@@ -279,7 +279,7 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo_ErrorCases() {
 	s.bankKeeper.EXPECT().GetBalance(s.ctx, ecosystemAddr, "stake").Return(sdk.NewCoin("stake", math.NewIntFromUint64(1000000))).AnyTimes()
 
 	// Mock emissions keeper calls
-	emissionsParams := emissionstypes.Params{
+	emissionsParams := emissionstypes.Params{ // nolint:exhaustruct // we don't need to test all the fields
 		BlocksPerMonth: 432000,
 	}
 	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(emissionsParams, nil).AnyTimes()
