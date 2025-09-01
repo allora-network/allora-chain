@@ -3443,6 +3443,14 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topic types.Topic, blocksP
 		if err = types.ValidateSdkIntRepresentingMonetaryValue(newTopicFeeRevenue); err != nil {
 			return errorsmod.Wrap(err, "error validating new topic fee revenue")
 		}
+
+		// Emit event using the calculated dripPerEpoch
+		dripAmountInt, err := dripPerEpoch.SdkIntTrim()
+		if err != nil {
+			ctx.Logger().Warn("Error converting drip per epoch to sdk int to emit topic fee revenue dripped event", "error", err)
+		}
+		types.EmitNewTopicFeeRevenueDrippedEvent(ctx, topic.Id, topicFeeRevenue, newTopicFeeRevenue, dripAmountInt)
+
 		return k.topicFeeRevenue.Set(ctx, topic.Id, newTopicFeeRevenue)
 	}
 	return nil
@@ -4058,7 +4066,7 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 
 // Iterate through topic state and prune records that are no longer needed
 func (k *Keeper) PruneRecordsAfterRewards(ctx sdk.Context, topicId TopicId, blockHeight int64) error {
-	defer types.EmitPruneRecordsEvent(ctx, blockHeight, topicId)
+	defer types.EmitNewPruneRecordsEvent(ctx, blockHeight, topicId)
 	// Delete records until the blockHeight
 	blockRange := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
@@ -4755,7 +4763,7 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 	}
 
 	// Emit topic weight updated event
-	types.EmitTopicWeightUpdatedEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
+	types.EmitNewTopicWeightUpdatedEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
 
 	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
 

@@ -497,7 +497,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
 	}
-	types.EmitNewForecastTaskUtilityScoreSetEvent(args.Ctx, args.TopicId, forecastingTaskUtilityScore)
+	types.EmitNewForecastTaskUtilityScoreSetEvent(args.Ctx, args.TopicId, forecastingTaskUtilityScore, args.BlockHeight)
 
 	// Set updated forecaster score ratio
 	err = args.K.SetPreviousForecasterScoreRatio(args.Ctx, args.TopicId, updatedForecasterScoreRatio)

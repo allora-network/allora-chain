@@ -102,7 +102,7 @@ func CloseReputerNonce(
 		ctx.Logger().Info("Closed reputer nonce", "topicId", topic.Id, "nonce", nonce)
 
 		// Emit reputer submission window closed event
-		types.EmitReputerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
+		types.EmitNewReputerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
 	}()
 
 	params, err := k.GetParams(ctx)
@@ -169,7 +169,7 @@ func CloseReputerNonce(
 	}
 
 	// Emit event for active reputers set for topic nonce
-	types.EmitActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeReputerAddresses)
+	types.EmitNewActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeReputerAddresses)
 
 	// Check that all network bundles correspond to the nonce requested before calling CalcNetworkLosses.
 	// In case of a mismatch, we should remove that
@@ -270,12 +270,22 @@ func CloseReputerNonce(
 
 	// Emit events: the regret stdnorm set event
 	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
-	for _, inferer := range inferers {
-		types.EmitNewInfererWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, inferer, newWeights.Inferers[inferer])
+	if len(inferers) > 0 {
+		infererWeights := make([]alloraMath.Dec, len(inferers))
+		for i, inferer := range inferers {
+			infererWeights[i] = newWeights.Inferers[inferer]
+		}
+		types.EmitNewInfererWeightsSetEvent(ctx, topic.Id, nonce.BlockHeight, inferers, infererWeights)
 	}
-	for _, forecaster := range forecasters {
-		types.EmitNewForecasterWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, forecaster, newWeights.Forecasters[forecaster])
+
+	if len(forecasters) > 0 {
+		forecasterWeights := make([]alloraMath.Dec, len(forecasters))
+		for i, forecaster := range forecasters {
+			forecasterWeights[i] = newWeights.Forecasters[forecaster]
+		}
+		types.EmitNewForecasterWeightsSetEvent(ctx, topic.Id, nonce.BlockHeight, forecasters, forecasterWeights)
 	}
+
 	// -- end of regrets_stdnorm and weights multistep process
 
 	err = k.SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)

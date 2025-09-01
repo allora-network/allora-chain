@@ -328,10 +328,10 @@ func GetCalcNetworkInferenceArgs(
 
 	// Emit set events for regrets used in network inference calculation
 	if len(infererAddresses) > 0 {
-		emissions.EmitNetworkInferenceInfererRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, infererAddresses, infererRegrets)
+		emissions.EmitNewNetworkInferenceInfererRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, infererAddresses, infererRegrets)
 	}
 	if len(forecasterAddresses) > 0 {
-		emissions.EmitNetworkInferenceForecasterRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, forecasterAddresses, forecasterRegrets)
+		emissions.EmitNewNetworkInferenceForecasterRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, forecasterAddresses, forecasterRegrets)
 	}
 
 	return calcArgs, nil
