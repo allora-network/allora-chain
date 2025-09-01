@@ -3553,7 +3553,7 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
 	s.Require().NoError(err)
 
 	// Get initial weight and set it
-	initialWeight, _, err := k.GetCurrentTopicWeight(
+	initialWeight, _, _, err := k.GetCurrentTopicWeight(
 		ctx,
 		topicId,
 		epochLength,
@@ -3634,7 +3634,7 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
 
 	// Calculate and set initial weights for both topics
 	for id := range map[uint64]struct{}{topicId1: {}, topicId2: {}} {
-		weight, _, err := k.GetCurrentTopicWeight(
+		weight, _, _, err := k.GetCurrentTopicWeight(
 			ctx,
 			id,
 			epochLength, // epochLength
@@ -5665,7 +5665,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().NoError(err)
 
 	// Calculate and set initial weight
-	initialWeight, _, err := k.GetCurrentTopicWeight(
+	initialWeight, _, _, err := k.GetCurrentTopicWeight(
 		ctx,
 		topicId,
 		epochLength,

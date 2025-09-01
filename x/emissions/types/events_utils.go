@@ -333,9 +333,8 @@ func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) pro
 }
 
 // Assumes length of `scores` is at least 1
-func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations map[string]bool) proto.Message {
+func NewEMAScoresSetEventBase(actorType ActorType, nonceBlockHeight BlockHeight, scores []Score, activations map[string]bool) proto.Message {
 	topicId := scores[0].TopicId
-	blockHeight := scores[0].BlockHeight
 	activeArr := make([]bool, len(scores))
 	addresses := make([]string, len(scores))
 	scoreValues := make([]alloraMath.Dec, len(scores))
@@ -347,7 +346,7 @@ func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations m
 	return &EventEMAScoresSet{
 		ActorType: actorType,
 		TopicId:   topicId,
-		Nonce:     blockHeight,
+		Nonce:     nonceBlockHeight,
 		Addresses: addresses,
 		Scores:    scoreValues,
 		IsActive:  activeArr,
@@ -519,4 +518,139 @@ func (m *EventOneOutInfForcVals) Equal(ei *EventOneOutInfForcVals) bool {
 		}
 	}
 	return true
+}
+
+// Stake removal
+func NewStakeRemovalCompletedEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
+	return &EventStakeRemovalCompleted{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+		Amount:    amount,
+	}
+}
+
+func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec, blockHeight int64) proto.Message {
+	return &EventDelegateRewardShareUpdated{
+		TopicId:        topicId,
+		Reputer:        reputer,
+		RewardPerShare: rewardPerShare,
+		BlockHeight:    blockHeight,
+	}
+}
+
+func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int, blockHeight int64) proto.Message {
+	return &EventDelegateRewardDistributed{
+		TopicId:     topicId,
+		Reputer:     reputer,
+		Amount:      amount,
+		BlockHeight: blockHeight,
+	}
+}
+
+func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+	return &EventActiveReputersSet{
+		TopicId:          topicId,
+		Addresses:        addresses,
+		NonceBlockHeight: nonceBlockHeight,
+	}
+}
+
+func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+	return &EventActiveInferersSet{
+		TopicId:          topicId,
+		Addresses:        addresses,
+		NonceBlockHeight: nonceBlockHeight,
+	}
+}
+
+func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+	return &EventActiveForecastersSet{
+		TopicId:          topicId,
+		Addresses:        addresses,
+		NonceBlockHeight: nonceBlockHeight,
+	}
+}
+
+func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool) proto.Message {
+	return &EventTopicStatusChanged{
+		TopicId:  topicId,
+		IsActive: isActive,
+	}
+}
+
+func NewNetworkInferenceInfererWeightSetEventBase(topicId TopicId, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceInfererWeightSet{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Address:          address,
+		Weight:           weight,
+	}
+}
+
+func NewNetworkInferenceForecasterWeightSetEventBase(topicId TopicId, blockHeight int64, address string, weight alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceForecasterWeightSet{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Address:          address,
+		Weight:           weight,
+	}
+}
+
+func NewNetworkInferenceInfererRegretsUsedSetEventBase(topicId TopicId, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceInfererRegretsUsedSet{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Addresses:        addresses,
+		Regrets:          regrets,
+	}
+}
+
+func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
+	return &EventNetworkInferenceForecasterRegretsUsedSet{
+		TopicId:          topicId,
+		NonceBlockHeight: blockHeight,
+		Addresses:        addresses,
+		Regrets:          regrets,
+	}
+}
+
+func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
+	return &EventTopicWeightUpdated{
+		TopicId:         topicId,
+		NewWeight:       newWeight,
+		TopicStake:      topicStake,
+		TopicFeeRevenue: topicFeeRevenue,
+	}
+}
+
+// Submission window events
+func NewWorkerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowEndBlock int64) proto.Message {
+	return &EventWorkerSubmissionWindowOpened{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		WindowEndBlock:   windowEndBlock,
+	}
+}
+
+func NewWorkerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight int64) proto.Message {
+	return &EventWorkerSubmissionWindowClosed{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+	}
+}
+
+func NewReputerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowEndBlock int64) proto.Message {
+	return &EventReputerSubmissionWindowOpened{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		WindowEndBlock:   windowEndBlock,
+	}
+}
+
+func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight int64) proto.Message {
+	return &EventReputerSubmissionWindowClosed{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+	}
 }

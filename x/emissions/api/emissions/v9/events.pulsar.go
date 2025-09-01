@@ -16949,15 +16949,13 @@ func (x *fastReflection_EventTopicReputerWhitelistDisabled) ProtoMethods() *prot
 }
 
 var (
-	md_EventTopicCreatorWhitelistAdded          protoreflect.MessageDescriptor
-	fd_EventTopicCreatorWhitelistAdded_topic_id protoreflect.FieldDescriptor
-	fd_EventTopicCreatorWhitelistAdded_address  protoreflect.FieldDescriptor
+	md_EventTopicCreatorWhitelistAdded         protoreflect.MessageDescriptor
+	fd_EventTopicCreatorWhitelistAdded_address protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_events_proto_init()
 	md_EventTopicCreatorWhitelistAdded = File_emissions_v9_events_proto.Messages().ByName("EventTopicCreatorWhitelistAdded")
-	fd_EventTopicCreatorWhitelistAdded_topic_id = md_EventTopicCreatorWhitelistAdded.Fields().ByName("topic_id")
 	fd_EventTopicCreatorWhitelistAdded_address = md_EventTopicCreatorWhitelistAdded.Fields().ByName("address")
 }
 
@@ -17026,12 +17024,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) Interface() protoreflec
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_EventTopicCreatorWhitelistAdded) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TopicId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventTopicCreatorWhitelistAdded_topic_id, value) {
-			return
-		}
-	}
 	if x.Address != "" {
 		value := protoreflect.ValueOfString(x.Address)
 		if !f(fd_EventTopicCreatorWhitelistAdded_address, value) {
@@ -17053,8 +17045,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) Range(f func(protorefle
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_EventTopicCreatorWhitelistAdded) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistAdded.topic_id":
-		return x.TopicId != uint64(0)
 	case "emissions.v9.EventTopicCreatorWhitelistAdded.address":
 		return x.Address != ""
 	default:
@@ -17073,8 +17063,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) Has(fd protoreflect.Fie
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicCreatorWhitelistAdded) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistAdded.topic_id":
-		x.TopicId = uint64(0)
 	case "emissions.v9.EventTopicCreatorWhitelistAdded.address":
 		x.Address = ""
 	default:
@@ -17093,9 +17081,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) Clear(fd protoreflect.F
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_EventTopicCreatorWhitelistAdded) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistAdded.topic_id":
-		value := x.TopicId
-		return protoreflect.ValueOfUint64(value)
 	case "emissions.v9.EventTopicCreatorWhitelistAdded.address":
 		value := x.Address
 		return protoreflect.ValueOfString(value)
@@ -17119,8 +17104,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) Get(descriptor protoref
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicCreatorWhitelistAdded) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistAdded.topic_id":
-		x.TopicId = value.Uint()
 	case "emissions.v9.EventTopicCreatorWhitelistAdded.address":
 		x.Address = value.Interface().(string)
 	default:
@@ -17143,8 +17126,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) Set(fd protoreflect.Fie
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicCreatorWhitelistAdded) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistAdded.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.EventTopicCreatorWhitelistAdded is not mutable"))
 	case "emissions.v9.EventTopicCreatorWhitelistAdded.address":
 		panic(fmt.Errorf("field address of message emissions.v9.EventTopicCreatorWhitelistAdded is not mutable"))
 	default:
@@ -17160,8 +17141,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) Mutable(fd protoreflect
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_EventTopicCreatorWhitelistAdded) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistAdded.topic_id":
-		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v9.EventTopicCreatorWhitelistAdded.address":
 		return protoreflect.ValueOfString("")
 	default:
@@ -17233,9 +17212,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) ProtoMethods() *protoif
 		var n int
 		var l int
 		_ = l
-		if x.TopicId != 0 {
-			n += 1 + runtime.Sov(uint64(x.TopicId))
-		}
 		l = len(x.Address)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
@@ -17274,12 +17250,7 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) ProtoMethods() *protoif
 			copy(dAtA[i:], x.Address)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
 			i--
-			dAtA[i] = 0x12
-		}
-		if x.TopicId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
-			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -17331,25 +17302,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) ProtoMethods() *protoif
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-				}
-				x.TopicId = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.TopicId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
 				}
@@ -17417,15 +17369,13 @@ func (x *fastReflection_EventTopicCreatorWhitelistAdded) ProtoMethods() *protoif
 }
 
 var (
-	md_EventTopicCreatorWhitelistRemoved          protoreflect.MessageDescriptor
-	fd_EventTopicCreatorWhitelistRemoved_topic_id protoreflect.FieldDescriptor
-	fd_EventTopicCreatorWhitelistRemoved_address  protoreflect.FieldDescriptor
+	md_EventTopicCreatorWhitelistRemoved         protoreflect.MessageDescriptor
+	fd_EventTopicCreatorWhitelistRemoved_address protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_events_proto_init()
 	md_EventTopicCreatorWhitelistRemoved = File_emissions_v9_events_proto.Messages().ByName("EventTopicCreatorWhitelistRemoved")
-	fd_EventTopicCreatorWhitelistRemoved_topic_id = md_EventTopicCreatorWhitelistRemoved.Fields().ByName("topic_id")
 	fd_EventTopicCreatorWhitelistRemoved_address = md_EventTopicCreatorWhitelistRemoved.Fields().ByName("address")
 }
 
@@ -17494,12 +17444,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Interface() protorefl
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TopicId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventTopicCreatorWhitelistRemoved_topic_id, value) {
-			return
-		}
-	}
 	if x.Address != "" {
 		value := protoreflect.ValueOfString(x.Address)
 		if !f(fd_EventTopicCreatorWhitelistRemoved_address, value) {
@@ -17521,8 +17465,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Range(f func(protoref
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistRemoved.topic_id":
-		return x.TopicId != uint64(0)
 	case "emissions.v9.EventTopicCreatorWhitelistRemoved.address":
 		return x.Address != ""
 	default:
@@ -17541,8 +17483,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Has(fd protoreflect.F
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistRemoved.topic_id":
-		x.TopicId = uint64(0)
 	case "emissions.v9.EventTopicCreatorWhitelistRemoved.address":
 		x.Address = ""
 	default:
@@ -17561,9 +17501,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Clear(fd protoreflect
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistRemoved.topic_id":
-		value := x.TopicId
-		return protoreflect.ValueOfUint64(value)
 	case "emissions.v9.EventTopicCreatorWhitelistRemoved.address":
 		value := x.Address
 		return protoreflect.ValueOfString(value)
@@ -17587,8 +17524,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Get(descriptor protor
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistRemoved.topic_id":
-		x.TopicId = value.Uint()
 	case "emissions.v9.EventTopicCreatorWhitelistRemoved.address":
 		x.Address = value.Interface().(string)
 	default:
@@ -17611,8 +17546,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Set(fd protoreflect.F
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistRemoved.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.EventTopicCreatorWhitelistRemoved is not mutable"))
 	case "emissions.v9.EventTopicCreatorWhitelistRemoved.address":
 		panic(fmt.Errorf("field address of message emissions.v9.EventTopicCreatorWhitelistRemoved is not mutable"))
 	default:
@@ -17628,8 +17561,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) Mutable(fd protorefle
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_EventTopicCreatorWhitelistRemoved) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicCreatorWhitelistRemoved.topic_id":
-		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v9.EventTopicCreatorWhitelistRemoved.address":
 		return protoreflect.ValueOfString("")
 	default:
@@ -17701,9 +17632,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) ProtoMethods() *proto
 		var n int
 		var l int
 		_ = l
-		if x.TopicId != 0 {
-			n += 1 + runtime.Sov(uint64(x.TopicId))
-		}
 		l = len(x.Address)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
@@ -17742,12 +17670,7 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) ProtoMethods() *proto
 			copy(dAtA[i:], x.Address)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
 			i--
-			dAtA[i] = 0x12
-		}
-		if x.TopicId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
-			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -17799,25 +17722,6 @@ func (x *fastReflection_EventTopicCreatorWhitelistRemoved) ProtoMethods() *proto
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-				}
-				x.TopicId = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.TopicId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
 				}
@@ -29912,6 +29816,9008 @@ func (x *fastReflection_EventPruneRecords) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var (
+	md_EventStakeRemovalCompleted           protoreflect.MessageDescriptor
+	fd_EventStakeRemovalCompleted_topic_id  protoreflect.FieldDescriptor
+	fd_EventStakeRemovalCompleted_reputer   protoreflect.FieldDescriptor
+	fd_EventStakeRemovalCompleted_delegator protoreflect.FieldDescriptor
+	fd_EventStakeRemovalCompleted_amount    protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventStakeRemovalCompleted = File_emissions_v9_events_proto.Messages().ByName("EventStakeRemovalCompleted")
+	fd_EventStakeRemovalCompleted_topic_id = md_EventStakeRemovalCompleted.Fields().ByName("topic_id")
+	fd_EventStakeRemovalCompleted_reputer = md_EventStakeRemovalCompleted.Fields().ByName("reputer")
+	fd_EventStakeRemovalCompleted_delegator = md_EventStakeRemovalCompleted.Fields().ByName("delegator")
+	fd_EventStakeRemovalCompleted_amount = md_EventStakeRemovalCompleted.Fields().ByName("amount")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventStakeRemovalCompleted)(nil)
+
+type fastReflection_EventStakeRemovalCompleted EventStakeRemovalCompleted
+
+func (x *EventStakeRemovalCompleted) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventStakeRemovalCompleted)(x)
+}
+
+func (x *EventStakeRemovalCompleted) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[55]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventStakeRemovalCompleted_messageType fastReflection_EventStakeRemovalCompleted_messageType
+var _ protoreflect.MessageType = fastReflection_EventStakeRemovalCompleted_messageType{}
+
+type fastReflection_EventStakeRemovalCompleted_messageType struct{}
+
+func (x fastReflection_EventStakeRemovalCompleted_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventStakeRemovalCompleted)(nil)
+}
+func (x fastReflection_EventStakeRemovalCompleted_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventStakeRemovalCompleted)
+}
+func (x fastReflection_EventStakeRemovalCompleted_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventStakeRemovalCompleted
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventStakeRemovalCompleted) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventStakeRemovalCompleted
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventStakeRemovalCompleted) Type() protoreflect.MessageType {
+	return _fastReflection_EventStakeRemovalCompleted_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventStakeRemovalCompleted) New() protoreflect.Message {
+	return new(fastReflection_EventStakeRemovalCompleted)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventStakeRemovalCompleted) Interface() protoreflect.ProtoMessage {
+	return (*EventStakeRemovalCompleted)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventStakeRemovalCompleted) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventStakeRemovalCompleted_topic_id, value) {
+			return
+		}
+	}
+	if x.Reputer != "" {
+		value := protoreflect.ValueOfString(x.Reputer)
+		if !f(fd_EventStakeRemovalCompleted_reputer, value) {
+			return
+		}
+	}
+	if x.Delegator != "" {
+		value := protoreflect.ValueOfString(x.Delegator)
+		if !f(fd_EventStakeRemovalCompleted_delegator, value) {
+			return
+		}
+	}
+	if x.Amount != "" {
+		value := protoreflect.ValueOfString(x.Amount)
+		if !f(fd_EventStakeRemovalCompleted_amount, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventStakeRemovalCompleted) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventStakeRemovalCompleted.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventStakeRemovalCompleted.reputer":
+		return x.Reputer != ""
+	case "emissions.v9.EventStakeRemovalCompleted.delegator":
+		return x.Delegator != ""
+	case "emissions.v9.EventStakeRemovalCompleted.amount":
+		return x.Amount != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventStakeRemovalCompleted"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventStakeRemovalCompleted does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventStakeRemovalCompleted) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventStakeRemovalCompleted.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventStakeRemovalCompleted.reputer":
+		x.Reputer = ""
+	case "emissions.v9.EventStakeRemovalCompleted.delegator":
+		x.Delegator = ""
+	case "emissions.v9.EventStakeRemovalCompleted.amount":
+		x.Amount = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventStakeRemovalCompleted"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventStakeRemovalCompleted does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventStakeRemovalCompleted) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventStakeRemovalCompleted.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventStakeRemovalCompleted.reputer":
+		value := x.Reputer
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventStakeRemovalCompleted.delegator":
+		value := x.Delegator
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventStakeRemovalCompleted.amount":
+		value := x.Amount
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventStakeRemovalCompleted"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventStakeRemovalCompleted does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventStakeRemovalCompleted) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventStakeRemovalCompleted.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventStakeRemovalCompleted.reputer":
+		x.Reputer = value.Interface().(string)
+	case "emissions.v9.EventStakeRemovalCompleted.delegator":
+		x.Delegator = value.Interface().(string)
+	case "emissions.v9.EventStakeRemovalCompleted.amount":
+		x.Amount = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventStakeRemovalCompleted"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventStakeRemovalCompleted does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventStakeRemovalCompleted) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventStakeRemovalCompleted.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventStakeRemovalCompleted is not mutable"))
+	case "emissions.v9.EventStakeRemovalCompleted.reputer":
+		panic(fmt.Errorf("field reputer of message emissions.v9.EventStakeRemovalCompleted is not mutable"))
+	case "emissions.v9.EventStakeRemovalCompleted.delegator":
+		panic(fmt.Errorf("field delegator of message emissions.v9.EventStakeRemovalCompleted is not mutable"))
+	case "emissions.v9.EventStakeRemovalCompleted.amount":
+		panic(fmt.Errorf("field amount of message emissions.v9.EventStakeRemovalCompleted is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventStakeRemovalCompleted"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventStakeRemovalCompleted does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventStakeRemovalCompleted) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventStakeRemovalCompleted.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventStakeRemovalCompleted.reputer":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventStakeRemovalCompleted.delegator":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventStakeRemovalCompleted.amount":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventStakeRemovalCompleted"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventStakeRemovalCompleted does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventStakeRemovalCompleted) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventStakeRemovalCompleted", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventStakeRemovalCompleted) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventStakeRemovalCompleted) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventStakeRemovalCompleted) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventStakeRemovalCompleted) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventStakeRemovalCompleted)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		l = len(x.Reputer)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Delegator)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Amount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventStakeRemovalCompleted)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Amount) > 0 {
+			i -= len(x.Amount)
+			copy(dAtA[i:], x.Amount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.Delegator) > 0 {
+			i -= len(x.Delegator)
+			copy(dAtA[i:], x.Delegator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Delegator)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.Reputer) > 0 {
+			i -= len(x.Reputer)
+			copy(dAtA[i:], x.Reputer)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Reputer)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventStakeRemovalCompleted)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventStakeRemovalCompleted: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventStakeRemovalCompleted: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Reputer = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Delegator = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Amount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventDelegateRewardShareUpdated                  protoreflect.MessageDescriptor
+	fd_EventDelegateRewardShareUpdated_topic_id         protoreflect.FieldDescriptor
+	fd_EventDelegateRewardShareUpdated_reputer          protoreflect.FieldDescriptor
+	fd_EventDelegateRewardShareUpdated_reward_per_share protoreflect.FieldDescriptor
+	fd_EventDelegateRewardShareUpdated_block_height     protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventDelegateRewardShareUpdated = File_emissions_v9_events_proto.Messages().ByName("EventDelegateRewardShareUpdated")
+	fd_EventDelegateRewardShareUpdated_topic_id = md_EventDelegateRewardShareUpdated.Fields().ByName("topic_id")
+	fd_EventDelegateRewardShareUpdated_reputer = md_EventDelegateRewardShareUpdated.Fields().ByName("reputer")
+	fd_EventDelegateRewardShareUpdated_reward_per_share = md_EventDelegateRewardShareUpdated.Fields().ByName("reward_per_share")
+	fd_EventDelegateRewardShareUpdated_block_height = md_EventDelegateRewardShareUpdated.Fields().ByName("block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventDelegateRewardShareUpdated)(nil)
+
+type fastReflection_EventDelegateRewardShareUpdated EventDelegateRewardShareUpdated
+
+func (x *EventDelegateRewardShareUpdated) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventDelegateRewardShareUpdated)(x)
+}
+
+func (x *EventDelegateRewardShareUpdated) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[56]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventDelegateRewardShareUpdated_messageType fastReflection_EventDelegateRewardShareUpdated_messageType
+var _ protoreflect.MessageType = fastReflection_EventDelegateRewardShareUpdated_messageType{}
+
+type fastReflection_EventDelegateRewardShareUpdated_messageType struct{}
+
+func (x fastReflection_EventDelegateRewardShareUpdated_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventDelegateRewardShareUpdated)(nil)
+}
+func (x fastReflection_EventDelegateRewardShareUpdated_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventDelegateRewardShareUpdated)
+}
+func (x fastReflection_EventDelegateRewardShareUpdated_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventDelegateRewardShareUpdated
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventDelegateRewardShareUpdated
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Type() protoreflect.MessageType {
+	return _fastReflection_EventDelegateRewardShareUpdated_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventDelegateRewardShareUpdated) New() protoreflect.Message {
+	return new(fastReflection_EventDelegateRewardShareUpdated)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Interface() protoreflect.ProtoMessage {
+	return (*EventDelegateRewardShareUpdated)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventDelegateRewardShareUpdated_topic_id, value) {
+			return
+		}
+	}
+	if x.Reputer != "" {
+		value := protoreflect.ValueOfString(x.Reputer)
+		if !f(fd_EventDelegateRewardShareUpdated_reputer, value) {
+			return
+		}
+	}
+	if x.RewardPerShare != "" {
+		value := protoreflect.ValueOfString(x.RewardPerShare)
+		if !f(fd_EventDelegateRewardShareUpdated_reward_per_share, value) {
+			return
+		}
+	}
+	if x.BlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockHeight)
+		if !f(fd_EventDelegateRewardShareUpdated_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardShareUpdated.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventDelegateRewardShareUpdated.reputer":
+		return x.Reputer != ""
+	case "emissions.v9.EventDelegateRewardShareUpdated.reward_per_share":
+		return x.RewardPerShare != ""
+	case "emissions.v9.EventDelegateRewardShareUpdated.block_height":
+		return x.BlockHeight != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardShareUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardShareUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardShareUpdated.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventDelegateRewardShareUpdated.reputer":
+		x.Reputer = ""
+	case "emissions.v9.EventDelegateRewardShareUpdated.reward_per_share":
+		x.RewardPerShare = ""
+	case "emissions.v9.EventDelegateRewardShareUpdated.block_height":
+		x.BlockHeight = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardShareUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardShareUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventDelegateRewardShareUpdated.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventDelegateRewardShareUpdated.reputer":
+		value := x.Reputer
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventDelegateRewardShareUpdated.reward_per_share":
+		value := x.RewardPerShare
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventDelegateRewardShareUpdated.block_height":
+		value := x.BlockHeight
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardShareUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardShareUpdated does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardShareUpdated.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventDelegateRewardShareUpdated.reputer":
+		x.Reputer = value.Interface().(string)
+	case "emissions.v9.EventDelegateRewardShareUpdated.reward_per_share":
+		x.RewardPerShare = value.Interface().(string)
+	case "emissions.v9.EventDelegateRewardShareUpdated.block_height":
+		x.BlockHeight = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardShareUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardShareUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardShareUpdated) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardShareUpdated.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventDelegateRewardShareUpdated is not mutable"))
+	case "emissions.v9.EventDelegateRewardShareUpdated.reputer":
+		panic(fmt.Errorf("field reputer of message emissions.v9.EventDelegateRewardShareUpdated is not mutable"))
+	case "emissions.v9.EventDelegateRewardShareUpdated.reward_per_share":
+		panic(fmt.Errorf("field reward_per_share of message emissions.v9.EventDelegateRewardShareUpdated is not mutable"))
+	case "emissions.v9.EventDelegateRewardShareUpdated.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v9.EventDelegateRewardShareUpdated is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardShareUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardShareUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventDelegateRewardShareUpdated) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardShareUpdated.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventDelegateRewardShareUpdated.reputer":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventDelegateRewardShareUpdated.reward_per_share":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventDelegateRewardShareUpdated.block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardShareUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardShareUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventDelegateRewardShareUpdated) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventDelegateRewardShareUpdated", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventDelegateRewardShareUpdated) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardShareUpdated) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventDelegateRewardShareUpdated) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventDelegateRewardShareUpdated) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventDelegateRewardShareUpdated)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		l = len(x.Reputer)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.RewardPerShare)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.BlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventDelegateRewardShareUpdated)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.BlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeight))
+			i--
+			dAtA[i] = 0x20
+		}
+		if len(x.RewardPerShare) > 0 {
+			i -= len(x.RewardPerShare)
+			copy(dAtA[i:], x.RewardPerShare)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.RewardPerShare)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.Reputer) > 0 {
+			i -= len(x.Reputer)
+			copy(dAtA[i:], x.Reputer)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Reputer)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventDelegateRewardShareUpdated)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventDelegateRewardShareUpdated: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventDelegateRewardShareUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Reputer = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RewardPerShare", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.RewardPerShare = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+				}
+				x.BlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventDelegateRewardDistributed              protoreflect.MessageDescriptor
+	fd_EventDelegateRewardDistributed_topic_id     protoreflect.FieldDescriptor
+	fd_EventDelegateRewardDistributed_reputer      protoreflect.FieldDescriptor
+	fd_EventDelegateRewardDistributed_amount       protoreflect.FieldDescriptor
+	fd_EventDelegateRewardDistributed_block_height protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventDelegateRewardDistributed = File_emissions_v9_events_proto.Messages().ByName("EventDelegateRewardDistributed")
+	fd_EventDelegateRewardDistributed_topic_id = md_EventDelegateRewardDistributed.Fields().ByName("topic_id")
+	fd_EventDelegateRewardDistributed_reputer = md_EventDelegateRewardDistributed.Fields().ByName("reputer")
+	fd_EventDelegateRewardDistributed_amount = md_EventDelegateRewardDistributed.Fields().ByName("amount")
+	fd_EventDelegateRewardDistributed_block_height = md_EventDelegateRewardDistributed.Fields().ByName("block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventDelegateRewardDistributed)(nil)
+
+type fastReflection_EventDelegateRewardDistributed EventDelegateRewardDistributed
+
+func (x *EventDelegateRewardDistributed) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventDelegateRewardDistributed)(x)
+}
+
+func (x *EventDelegateRewardDistributed) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[57]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventDelegateRewardDistributed_messageType fastReflection_EventDelegateRewardDistributed_messageType
+var _ protoreflect.MessageType = fastReflection_EventDelegateRewardDistributed_messageType{}
+
+type fastReflection_EventDelegateRewardDistributed_messageType struct{}
+
+func (x fastReflection_EventDelegateRewardDistributed_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventDelegateRewardDistributed)(nil)
+}
+func (x fastReflection_EventDelegateRewardDistributed_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventDelegateRewardDistributed)
+}
+func (x fastReflection_EventDelegateRewardDistributed_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventDelegateRewardDistributed
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventDelegateRewardDistributed) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventDelegateRewardDistributed
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventDelegateRewardDistributed) Type() protoreflect.MessageType {
+	return _fastReflection_EventDelegateRewardDistributed_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventDelegateRewardDistributed) New() protoreflect.Message {
+	return new(fastReflection_EventDelegateRewardDistributed)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventDelegateRewardDistributed) Interface() protoreflect.ProtoMessage {
+	return (*EventDelegateRewardDistributed)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventDelegateRewardDistributed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventDelegateRewardDistributed_topic_id, value) {
+			return
+		}
+	}
+	if x.Reputer != "" {
+		value := protoreflect.ValueOfString(x.Reputer)
+		if !f(fd_EventDelegateRewardDistributed_reputer, value) {
+			return
+		}
+	}
+	if x.Amount != "" {
+		value := protoreflect.ValueOfString(x.Amount)
+		if !f(fd_EventDelegateRewardDistributed_amount, value) {
+			return
+		}
+	}
+	if x.BlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockHeight)
+		if !f(fd_EventDelegateRewardDistributed_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventDelegateRewardDistributed) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardDistributed.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventDelegateRewardDistributed.reputer":
+		return x.Reputer != ""
+	case "emissions.v9.EventDelegateRewardDistributed.amount":
+		return x.Amount != ""
+	case "emissions.v9.EventDelegateRewardDistributed.block_height":
+		return x.BlockHeight != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardDistributed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardDistributed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardDistributed) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardDistributed.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventDelegateRewardDistributed.reputer":
+		x.Reputer = ""
+	case "emissions.v9.EventDelegateRewardDistributed.amount":
+		x.Amount = ""
+	case "emissions.v9.EventDelegateRewardDistributed.block_height":
+		x.BlockHeight = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardDistributed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardDistributed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventDelegateRewardDistributed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventDelegateRewardDistributed.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventDelegateRewardDistributed.reputer":
+		value := x.Reputer
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventDelegateRewardDistributed.amount":
+		value := x.Amount
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventDelegateRewardDistributed.block_height":
+		value := x.BlockHeight
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardDistributed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardDistributed does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardDistributed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardDistributed.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventDelegateRewardDistributed.reputer":
+		x.Reputer = value.Interface().(string)
+	case "emissions.v9.EventDelegateRewardDistributed.amount":
+		x.Amount = value.Interface().(string)
+	case "emissions.v9.EventDelegateRewardDistributed.block_height":
+		x.BlockHeight = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardDistributed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardDistributed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardDistributed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardDistributed.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventDelegateRewardDistributed is not mutable"))
+	case "emissions.v9.EventDelegateRewardDistributed.reputer":
+		panic(fmt.Errorf("field reputer of message emissions.v9.EventDelegateRewardDistributed is not mutable"))
+	case "emissions.v9.EventDelegateRewardDistributed.amount":
+		panic(fmt.Errorf("field amount of message emissions.v9.EventDelegateRewardDistributed is not mutable"))
+	case "emissions.v9.EventDelegateRewardDistributed.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v9.EventDelegateRewardDistributed is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardDistributed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardDistributed does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventDelegateRewardDistributed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventDelegateRewardDistributed.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventDelegateRewardDistributed.reputer":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventDelegateRewardDistributed.amount":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventDelegateRewardDistributed.block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventDelegateRewardDistributed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventDelegateRewardDistributed does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventDelegateRewardDistributed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventDelegateRewardDistributed", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventDelegateRewardDistributed) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventDelegateRewardDistributed) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventDelegateRewardDistributed) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventDelegateRewardDistributed) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventDelegateRewardDistributed)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		l = len(x.Reputer)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Amount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.BlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventDelegateRewardDistributed)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.BlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeight))
+			i--
+			dAtA[i] = 0x20
+		}
+		if len(x.Amount) > 0 {
+			i -= len(x.Amount)
+			copy(dAtA[i:], x.Amount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.Reputer) > 0 {
+			i -= len(x.Reputer)
+			copy(dAtA[i:], x.Reputer)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Reputer)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventDelegateRewardDistributed)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventDelegateRewardDistributed: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventDelegateRewardDistributed: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Reputer = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Amount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+				}
+				x.BlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var _ protoreflect.List = (*_EventActiveReputersSet_2_list)(nil)
+
+type _EventActiveReputersSet_2_list struct {
+	list *[]string
+}
+
+func (x *_EventActiveReputersSet_2_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventActiveReputersSet_2_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventActiveReputersSet_2_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventActiveReputersSet_2_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventActiveReputersSet_2_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventActiveReputersSet at list field Addresses as it is not of Message kind"))
+}
+
+func (x *_EventActiveReputersSet_2_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventActiveReputersSet_2_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventActiveReputersSet_2_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_EventActiveReputersSet                    protoreflect.MessageDescriptor
+	fd_EventActiveReputersSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventActiveReputersSet_addresses          protoreflect.FieldDescriptor
+	fd_EventActiveReputersSet_nonce_block_height protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventActiveReputersSet = File_emissions_v9_events_proto.Messages().ByName("EventActiveReputersSet")
+	fd_EventActiveReputersSet_topic_id = md_EventActiveReputersSet.Fields().ByName("topic_id")
+	fd_EventActiveReputersSet_addresses = md_EventActiveReputersSet.Fields().ByName("addresses")
+	fd_EventActiveReputersSet_nonce_block_height = md_EventActiveReputersSet.Fields().ByName("nonce_block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventActiveReputersSet)(nil)
+
+type fastReflection_EventActiveReputersSet EventActiveReputersSet
+
+func (x *EventActiveReputersSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventActiveReputersSet)(x)
+}
+
+func (x *EventActiveReputersSet) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[58]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventActiveReputersSet_messageType fastReflection_EventActiveReputersSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventActiveReputersSet_messageType{}
+
+type fastReflection_EventActiveReputersSet_messageType struct{}
+
+func (x fastReflection_EventActiveReputersSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventActiveReputersSet)(nil)
+}
+func (x fastReflection_EventActiveReputersSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventActiveReputersSet)
+}
+func (x fastReflection_EventActiveReputersSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventActiveReputersSet
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventActiveReputersSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventActiveReputersSet
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventActiveReputersSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventActiveReputersSet_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventActiveReputersSet) New() protoreflect.Message {
+	return new(fastReflection_EventActiveReputersSet)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventActiveReputersSet) Interface() protoreflect.ProtoMessage {
+	return (*EventActiveReputersSet)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventActiveReputersSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventActiveReputersSet_topic_id, value) {
+			return
+		}
+	}
+	if len(x.Addresses) != 0 {
+		value := protoreflect.ValueOfList(&_EventActiveReputersSet_2_list{list: &x.Addresses})
+		if !f(fd_EventActiveReputersSet_addresses, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventActiveReputersSet_nonce_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventActiveReputersSet) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveReputersSet.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventActiveReputersSet.addresses":
+		return len(x.Addresses) != 0
+	case "emissions.v9.EventActiveReputersSet.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveReputersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveReputersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveReputersSet) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveReputersSet.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventActiveReputersSet.addresses":
+		x.Addresses = nil
+	case "emissions.v9.EventActiveReputersSet.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveReputersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveReputersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventActiveReputersSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventActiveReputersSet.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventActiveReputersSet.addresses":
+		if len(x.Addresses) == 0 {
+			return protoreflect.ValueOfList(&_EventActiveReputersSet_2_list{})
+		}
+		listValue := &_EventActiveReputersSet_2_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.EventActiveReputersSet.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveReputersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveReputersSet does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveReputersSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveReputersSet.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventActiveReputersSet.addresses":
+		lv := value.List()
+		clv := lv.(*_EventActiveReputersSet_2_list)
+		x.Addresses = *clv.list
+	case "emissions.v9.EventActiveReputersSet.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveReputersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveReputersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveReputersSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveReputersSet.addresses":
+		if x.Addresses == nil {
+			x.Addresses = []string{}
+		}
+		value := &_EventActiveReputersSet_2_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventActiveReputersSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventActiveReputersSet is not mutable"))
+	case "emissions.v9.EventActiveReputersSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventActiveReputersSet is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveReputersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveReputersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventActiveReputersSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveReputersSet.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventActiveReputersSet.addresses":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventActiveReputersSet_2_list{list: &list})
+	case "emissions.v9.EventActiveReputersSet.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveReputersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveReputersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventActiveReputersSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventActiveReputersSet", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventActiveReputersSet) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveReputersSet) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventActiveReputersSet) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventActiveReputersSet) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventActiveReputersSet)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if len(x.Addresses) > 0 {
+			for _, s := range x.Addresses {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventActiveReputersSet)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.Addresses) > 0 {
+			for iNdEx := len(x.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Addresses[iNdEx])
+				copy(dAtA[i:], x.Addresses[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Addresses[iNdEx])))
+				i--
+				dAtA[i] = 0x12
+			}
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventActiveReputersSet)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventActiveReputersSet: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventActiveReputersSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Addresses = append(x.Addresses, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var _ protoreflect.List = (*_EventActiveInferersSet_2_list)(nil)
+
+type _EventActiveInferersSet_2_list struct {
+	list *[]string
+}
+
+func (x *_EventActiveInferersSet_2_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventActiveInferersSet_2_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventActiveInferersSet_2_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventActiveInferersSet_2_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventActiveInferersSet_2_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventActiveInferersSet at list field Addresses as it is not of Message kind"))
+}
+
+func (x *_EventActiveInferersSet_2_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventActiveInferersSet_2_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventActiveInferersSet_2_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_EventActiveInferersSet                    protoreflect.MessageDescriptor
+	fd_EventActiveInferersSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventActiveInferersSet_addresses          protoreflect.FieldDescriptor
+	fd_EventActiveInferersSet_nonce_block_height protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventActiveInferersSet = File_emissions_v9_events_proto.Messages().ByName("EventActiveInferersSet")
+	fd_EventActiveInferersSet_topic_id = md_EventActiveInferersSet.Fields().ByName("topic_id")
+	fd_EventActiveInferersSet_addresses = md_EventActiveInferersSet.Fields().ByName("addresses")
+	fd_EventActiveInferersSet_nonce_block_height = md_EventActiveInferersSet.Fields().ByName("nonce_block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventActiveInferersSet)(nil)
+
+type fastReflection_EventActiveInferersSet EventActiveInferersSet
+
+func (x *EventActiveInferersSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventActiveInferersSet)(x)
+}
+
+func (x *EventActiveInferersSet) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[59]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventActiveInferersSet_messageType fastReflection_EventActiveInferersSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventActiveInferersSet_messageType{}
+
+type fastReflection_EventActiveInferersSet_messageType struct{}
+
+func (x fastReflection_EventActiveInferersSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventActiveInferersSet)(nil)
+}
+func (x fastReflection_EventActiveInferersSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventActiveInferersSet)
+}
+func (x fastReflection_EventActiveInferersSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventActiveInferersSet
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventActiveInferersSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventActiveInferersSet
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventActiveInferersSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventActiveInferersSet_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventActiveInferersSet) New() protoreflect.Message {
+	return new(fastReflection_EventActiveInferersSet)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventActiveInferersSet) Interface() protoreflect.ProtoMessage {
+	return (*EventActiveInferersSet)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventActiveInferersSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventActiveInferersSet_topic_id, value) {
+			return
+		}
+	}
+	if len(x.Addresses) != 0 {
+		value := protoreflect.ValueOfList(&_EventActiveInferersSet_2_list{list: &x.Addresses})
+		if !f(fd_EventActiveInferersSet_addresses, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventActiveInferersSet_nonce_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventActiveInferersSet) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveInferersSet.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventActiveInferersSet.addresses":
+		return len(x.Addresses) != 0
+	case "emissions.v9.EventActiveInferersSet.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveInferersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveInferersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveInferersSet) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveInferersSet.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventActiveInferersSet.addresses":
+		x.Addresses = nil
+	case "emissions.v9.EventActiveInferersSet.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveInferersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveInferersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventActiveInferersSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventActiveInferersSet.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventActiveInferersSet.addresses":
+		if len(x.Addresses) == 0 {
+			return protoreflect.ValueOfList(&_EventActiveInferersSet_2_list{})
+		}
+		listValue := &_EventActiveInferersSet_2_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.EventActiveInferersSet.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveInferersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveInferersSet does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveInferersSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveInferersSet.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventActiveInferersSet.addresses":
+		lv := value.List()
+		clv := lv.(*_EventActiveInferersSet_2_list)
+		x.Addresses = *clv.list
+	case "emissions.v9.EventActiveInferersSet.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveInferersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveInferersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveInferersSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveInferersSet.addresses":
+		if x.Addresses == nil {
+			x.Addresses = []string{}
+		}
+		value := &_EventActiveInferersSet_2_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventActiveInferersSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventActiveInferersSet is not mutable"))
+	case "emissions.v9.EventActiveInferersSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventActiveInferersSet is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveInferersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveInferersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventActiveInferersSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveInferersSet.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventActiveInferersSet.addresses":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventActiveInferersSet_2_list{list: &list})
+	case "emissions.v9.EventActiveInferersSet.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveInferersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveInferersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventActiveInferersSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventActiveInferersSet", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventActiveInferersSet) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveInferersSet) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventActiveInferersSet) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventActiveInferersSet) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventActiveInferersSet)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if len(x.Addresses) > 0 {
+			for _, s := range x.Addresses {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventActiveInferersSet)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.Addresses) > 0 {
+			for iNdEx := len(x.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Addresses[iNdEx])
+				copy(dAtA[i:], x.Addresses[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Addresses[iNdEx])))
+				i--
+				dAtA[i] = 0x12
+			}
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventActiveInferersSet)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventActiveInferersSet: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventActiveInferersSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Addresses = append(x.Addresses, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var _ protoreflect.List = (*_EventActiveForecastersSet_2_list)(nil)
+
+type _EventActiveForecastersSet_2_list struct {
+	list *[]string
+}
+
+func (x *_EventActiveForecastersSet_2_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventActiveForecastersSet_2_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventActiveForecastersSet_2_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventActiveForecastersSet_2_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventActiveForecastersSet_2_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventActiveForecastersSet at list field Addresses as it is not of Message kind"))
+}
+
+func (x *_EventActiveForecastersSet_2_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventActiveForecastersSet_2_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventActiveForecastersSet_2_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_EventActiveForecastersSet                    protoreflect.MessageDescriptor
+	fd_EventActiveForecastersSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventActiveForecastersSet_addresses          protoreflect.FieldDescriptor
+	fd_EventActiveForecastersSet_nonce_block_height protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventActiveForecastersSet = File_emissions_v9_events_proto.Messages().ByName("EventActiveForecastersSet")
+	fd_EventActiveForecastersSet_topic_id = md_EventActiveForecastersSet.Fields().ByName("topic_id")
+	fd_EventActiveForecastersSet_addresses = md_EventActiveForecastersSet.Fields().ByName("addresses")
+	fd_EventActiveForecastersSet_nonce_block_height = md_EventActiveForecastersSet.Fields().ByName("nonce_block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventActiveForecastersSet)(nil)
+
+type fastReflection_EventActiveForecastersSet EventActiveForecastersSet
+
+func (x *EventActiveForecastersSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventActiveForecastersSet)(x)
+}
+
+func (x *EventActiveForecastersSet) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[60]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventActiveForecastersSet_messageType fastReflection_EventActiveForecastersSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventActiveForecastersSet_messageType{}
+
+type fastReflection_EventActiveForecastersSet_messageType struct{}
+
+func (x fastReflection_EventActiveForecastersSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventActiveForecastersSet)(nil)
+}
+func (x fastReflection_EventActiveForecastersSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventActiveForecastersSet)
+}
+func (x fastReflection_EventActiveForecastersSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventActiveForecastersSet
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventActiveForecastersSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventActiveForecastersSet
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventActiveForecastersSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventActiveForecastersSet_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventActiveForecastersSet) New() protoreflect.Message {
+	return new(fastReflection_EventActiveForecastersSet)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventActiveForecastersSet) Interface() protoreflect.ProtoMessage {
+	return (*EventActiveForecastersSet)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventActiveForecastersSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventActiveForecastersSet_topic_id, value) {
+			return
+		}
+	}
+	if len(x.Addresses) != 0 {
+		value := protoreflect.ValueOfList(&_EventActiveForecastersSet_2_list{list: &x.Addresses})
+		if !f(fd_EventActiveForecastersSet_addresses, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventActiveForecastersSet_nonce_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventActiveForecastersSet) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveForecastersSet.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventActiveForecastersSet.addresses":
+		return len(x.Addresses) != 0
+	case "emissions.v9.EventActiveForecastersSet.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveForecastersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveForecastersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveForecastersSet) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveForecastersSet.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventActiveForecastersSet.addresses":
+		x.Addresses = nil
+	case "emissions.v9.EventActiveForecastersSet.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveForecastersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveForecastersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventActiveForecastersSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventActiveForecastersSet.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventActiveForecastersSet.addresses":
+		if len(x.Addresses) == 0 {
+			return protoreflect.ValueOfList(&_EventActiveForecastersSet_2_list{})
+		}
+		listValue := &_EventActiveForecastersSet_2_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.EventActiveForecastersSet.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveForecastersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveForecastersSet does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveForecastersSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveForecastersSet.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventActiveForecastersSet.addresses":
+		lv := value.List()
+		clv := lv.(*_EventActiveForecastersSet_2_list)
+		x.Addresses = *clv.list
+	case "emissions.v9.EventActiveForecastersSet.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveForecastersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveForecastersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveForecastersSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveForecastersSet.addresses":
+		if x.Addresses == nil {
+			x.Addresses = []string{}
+		}
+		value := &_EventActiveForecastersSet_2_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventActiveForecastersSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventActiveForecastersSet is not mutable"))
+	case "emissions.v9.EventActiveForecastersSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventActiveForecastersSet is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveForecastersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveForecastersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventActiveForecastersSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventActiveForecastersSet.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventActiveForecastersSet.addresses":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventActiveForecastersSet_2_list{list: &list})
+	case "emissions.v9.EventActiveForecastersSet.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventActiveForecastersSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventActiveForecastersSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventActiveForecastersSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventActiveForecastersSet", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventActiveForecastersSet) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventActiveForecastersSet) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventActiveForecastersSet) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventActiveForecastersSet) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventActiveForecastersSet)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if len(x.Addresses) > 0 {
+			for _, s := range x.Addresses {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventActiveForecastersSet)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x18
+		}
+		if len(x.Addresses) > 0 {
+			for iNdEx := len(x.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Addresses[iNdEx])
+				copy(dAtA[i:], x.Addresses[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Addresses[iNdEx])))
+				i--
+				dAtA[i] = 0x12
+			}
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventActiveForecastersSet)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventActiveForecastersSet: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventActiveForecastersSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Addresses = append(x.Addresses, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventTopicStatusChanged           protoreflect.MessageDescriptor
+	fd_EventTopicStatusChanged_topic_id  protoreflect.FieldDescriptor
+	fd_EventTopicStatusChanged_is_active protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventTopicStatusChanged = File_emissions_v9_events_proto.Messages().ByName("EventTopicStatusChanged")
+	fd_EventTopicStatusChanged_topic_id = md_EventTopicStatusChanged.Fields().ByName("topic_id")
+	fd_EventTopicStatusChanged_is_active = md_EventTopicStatusChanged.Fields().ByName("is_active")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventTopicStatusChanged)(nil)
+
+type fastReflection_EventTopicStatusChanged EventTopicStatusChanged
+
+func (x *EventTopicStatusChanged) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTopicStatusChanged)(x)
+}
+
+func (x *EventTopicStatusChanged) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[61]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventTopicStatusChanged_messageType fastReflection_EventTopicStatusChanged_messageType
+var _ protoreflect.MessageType = fastReflection_EventTopicStatusChanged_messageType{}
+
+type fastReflection_EventTopicStatusChanged_messageType struct{}
+
+func (x fastReflection_EventTopicStatusChanged_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTopicStatusChanged)(nil)
+}
+func (x fastReflection_EventTopicStatusChanged_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTopicStatusChanged)
+}
+func (x fastReflection_EventTopicStatusChanged_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicStatusChanged
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventTopicStatusChanged) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicStatusChanged
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventTopicStatusChanged) Type() protoreflect.MessageType {
+	return _fastReflection_EventTopicStatusChanged_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventTopicStatusChanged) New() protoreflect.Message {
+	return new(fastReflection_EventTopicStatusChanged)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventTopicStatusChanged) Interface() protoreflect.ProtoMessage {
+	return (*EventTopicStatusChanged)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventTopicStatusChanged) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventTopicStatusChanged_topic_id, value) {
+			return
+		}
+	}
+	if x.IsActive != false {
+		value := protoreflect.ValueOfBool(x.IsActive)
+		if !f(fd_EventTopicStatusChanged_is_active, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventTopicStatusChanged) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicStatusChanged.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventTopicStatusChanged.is_active":
+		return x.IsActive != false
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicStatusChanged"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicStatusChanged does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicStatusChanged) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicStatusChanged.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventTopicStatusChanged.is_active":
+		x.IsActive = false
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicStatusChanged"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicStatusChanged does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventTopicStatusChanged) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventTopicStatusChanged.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventTopicStatusChanged.is_active":
+		value := x.IsActive
+		return protoreflect.ValueOfBool(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicStatusChanged"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicStatusChanged does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicStatusChanged) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicStatusChanged.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventTopicStatusChanged.is_active":
+		x.IsActive = value.Bool()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicStatusChanged"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicStatusChanged does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicStatusChanged) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicStatusChanged.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventTopicStatusChanged is not mutable"))
+	case "emissions.v9.EventTopicStatusChanged.is_active":
+		panic(fmt.Errorf("field is_active of message emissions.v9.EventTopicStatusChanged is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicStatusChanged"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicStatusChanged does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventTopicStatusChanged) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicStatusChanged.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventTopicStatusChanged.is_active":
+		return protoreflect.ValueOfBool(false)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicStatusChanged"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicStatusChanged does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventTopicStatusChanged) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventTopicStatusChanged", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventTopicStatusChanged) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicStatusChanged) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventTopicStatusChanged) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventTopicStatusChanged) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventTopicStatusChanged)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.IsActive {
+			n += 2
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicStatusChanged)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.IsActive {
+			i--
+			if x.IsActive {
+				dAtA[i] = 1
+			} else {
+				dAtA[i] = 0
+			}
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicStatusChanged)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicStatusChanged: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicStatusChanged: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field IsActive", wireType)
+				}
+				var v int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				x.IsActive = bool(v != 0)
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventNetworkInferenceInfererWeightSet                    protoreflect.MessageDescriptor
+	fd_EventNetworkInferenceInfererWeightSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererWeightSet_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererWeightSet_address            protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererWeightSet_weight             protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventNetworkInferenceInfererWeightSet = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceInfererWeightSet")
+	fd_EventNetworkInferenceInfererWeightSet_topic_id = md_EventNetworkInferenceInfererWeightSet.Fields().ByName("topic_id")
+	fd_EventNetworkInferenceInfererWeightSet_nonce_block_height = md_EventNetworkInferenceInfererWeightSet.Fields().ByName("nonce_block_height")
+	fd_EventNetworkInferenceInfererWeightSet_address = md_EventNetworkInferenceInfererWeightSet.Fields().ByName("address")
+	fd_EventNetworkInferenceInfererWeightSet_weight = md_EventNetworkInferenceInfererWeightSet.Fields().ByName("weight")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceInfererWeightSet)(nil)
+
+type fastReflection_EventNetworkInferenceInfererWeightSet EventNetworkInferenceInfererWeightSet
+
+func (x *EventNetworkInferenceInfererWeightSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceInfererWeightSet)(x)
+}
+
+func (x *EventNetworkInferenceInfererWeightSet) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[62]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventNetworkInferenceInfererWeightSet_messageType fastReflection_EventNetworkInferenceInfererWeightSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceInfererWeightSet_messageType{}
+
+type fastReflection_EventNetworkInferenceInfererWeightSet_messageType struct{}
+
+func (x fastReflection_EventNetworkInferenceInfererWeightSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceInfererWeightSet)(nil)
+}
+func (x fastReflection_EventNetworkInferenceInfererWeightSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceInfererWeightSet)
+}
+func (x fastReflection_EventNetworkInferenceInfererWeightSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceInfererWeightSet
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceInfererWeightSet
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventNetworkInferenceInfererWeightSet_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceInfererWeightSet)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Interface() protoreflect.ProtoMessage {
+	return (*EventNetworkInferenceInfererWeightSet)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventNetworkInferenceInfererWeightSet_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventNetworkInferenceInfererWeightSet_nonce_block_height, value) {
+			return
+		}
+	}
+	if x.Address != "" {
+		value := protoreflect.ValueOfString(x.Address)
+		if !f(fd_EventNetworkInferenceInfererWeightSet_address, value) {
+			return
+		}
+	}
+	if x.Weight != "" {
+		value := protoreflect.ValueOfString(x.Weight)
+		if !f(fd_EventNetworkInferenceInfererWeightSet_weight, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.address":
+		return x.Address != ""
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.weight":
+		return x.Weight != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.address":
+		x.Address = ""
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.weight":
+		x.Weight = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.address":
+		value := x.Address
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.weight":
+		value := x.Weight
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererWeightSet does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.address":
+		x.Address = value.Interface().(string)
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.weight":
+		x.Weight = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceInfererWeightSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceInfererWeightSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.address":
+		panic(fmt.Errorf("field address of message emissions.v9.EventNetworkInferenceInfererWeightSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.weight":
+		panic(fmt.Errorf("field weight of message emissions.v9.EventNetworkInferenceInfererWeightSet is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.address":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventNetworkInferenceInfererWeightSet.weight":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceInfererWeightSet", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventNetworkInferenceInfererWeightSet) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventNetworkInferenceInfererWeightSet)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		l = len(x.Address)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Weight)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceInfererWeightSet)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Weight) > 0 {
+			i -= len(x.Weight)
+			copy(dAtA[i:], x.Weight)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Weight)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.Address) > 0 {
+			i -= len(x.Address)
+			copy(dAtA[i:], x.Address)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceInfererWeightSet)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererWeightSet: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererWeightSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Address = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Weight = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventNetworkInferenceForecasterWeightSet                    protoreflect.MessageDescriptor
+	fd_EventNetworkInferenceForecasterWeightSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterWeightSet_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterWeightSet_address            protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterWeightSet_weight             protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventNetworkInferenceForecasterWeightSet = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceForecasterWeightSet")
+	fd_EventNetworkInferenceForecasterWeightSet_topic_id = md_EventNetworkInferenceForecasterWeightSet.Fields().ByName("topic_id")
+	fd_EventNetworkInferenceForecasterWeightSet_nonce_block_height = md_EventNetworkInferenceForecasterWeightSet.Fields().ByName("nonce_block_height")
+	fd_EventNetworkInferenceForecasterWeightSet_address = md_EventNetworkInferenceForecasterWeightSet.Fields().ByName("address")
+	fd_EventNetworkInferenceForecasterWeightSet_weight = md_EventNetworkInferenceForecasterWeightSet.Fields().ByName("weight")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceForecasterWeightSet)(nil)
+
+type fastReflection_EventNetworkInferenceForecasterWeightSet EventNetworkInferenceForecasterWeightSet
+
+func (x *EventNetworkInferenceForecasterWeightSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceForecasterWeightSet)(x)
+}
+
+func (x *EventNetworkInferenceForecasterWeightSet) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[63]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventNetworkInferenceForecasterWeightSet_messageType fastReflection_EventNetworkInferenceForecasterWeightSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceForecasterWeightSet_messageType{}
+
+type fastReflection_EventNetworkInferenceForecasterWeightSet_messageType struct{}
+
+func (x fastReflection_EventNetworkInferenceForecasterWeightSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceForecasterWeightSet)(nil)
+}
+func (x fastReflection_EventNetworkInferenceForecasterWeightSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceForecasterWeightSet)
+}
+func (x fastReflection_EventNetworkInferenceForecasterWeightSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceForecasterWeightSet
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceForecasterWeightSet
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventNetworkInferenceForecasterWeightSet_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceForecasterWeightSet)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Interface() protoreflect.ProtoMessage {
+	return (*EventNetworkInferenceForecasterWeightSet)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventNetworkInferenceForecasterWeightSet_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventNetworkInferenceForecasterWeightSet_nonce_block_height, value) {
+			return
+		}
+	}
+	if x.Address != "" {
+		value := protoreflect.ValueOfString(x.Address)
+		if !f(fd_EventNetworkInferenceForecasterWeightSet_address, value) {
+			return
+		}
+	}
+	if x.Weight != "" {
+		value := protoreflect.ValueOfString(x.Weight)
+		if !f(fd_EventNetworkInferenceForecasterWeightSet_weight, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.address":
+		return x.Address != ""
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.weight":
+		return x.Weight != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.address":
+		x.Address = ""
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.weight":
+		x.Weight = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.address":
+		value := x.Address
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.weight":
+		value := x.Weight
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterWeightSet does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.address":
+		x.Address = value.Interface().(string)
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.weight":
+		x.Weight = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceForecasterWeightSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceForecasterWeightSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.address":
+		panic(fmt.Errorf("field address of message emissions.v9.EventNetworkInferenceForecasterWeightSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.weight":
+		panic(fmt.Errorf("field weight of message emissions.v9.EventNetworkInferenceForecasterWeightSet is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.address":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventNetworkInferenceForecasterWeightSet.weight":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterWeightSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterWeightSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceForecasterWeightSet", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventNetworkInferenceForecasterWeightSet) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterWeightSet)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		l = len(x.Address)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Weight)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterWeightSet)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Weight) > 0 {
+			i -= len(x.Weight)
+			copy(dAtA[i:], x.Weight)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Weight)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.Address) > 0 {
+			i -= len(x.Address)
+			copy(dAtA[i:], x.Address)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterWeightSet)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterWeightSet: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterWeightSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Address = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Weight = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var _ protoreflect.List = (*_EventNetworkInferenceInfererRegretsUsedSet_3_list)(nil)
+
+type _EventNetworkInferenceInfererRegretsUsedSet_3_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceInfererRegretsUsedSet at list field Addresses as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_3_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_EventNetworkInferenceInfererRegretsUsedSet_4_list)(nil)
+
+type _EventNetworkInferenceInfererRegretsUsedSet_4_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceInfererRegretsUsedSet at list field Regrets as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceInfererRegretsUsedSet_4_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_EventNetworkInferenceInfererRegretsUsedSet                    protoreflect.MessageDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_addresses          protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceInfererRegretsUsedSet_regrets            protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventNetworkInferenceInfererRegretsUsedSet = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceInfererRegretsUsedSet")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_topic_id = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("topic_id")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_nonce_block_height = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("nonce_block_height")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_addresses = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("addresses")
+	fd_EventNetworkInferenceInfererRegretsUsedSet_regrets = md_EventNetworkInferenceInfererRegretsUsedSet.Fields().ByName("regrets")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceInfererRegretsUsedSet)(nil)
+
+type fastReflection_EventNetworkInferenceInfererRegretsUsedSet EventNetworkInferenceInfererRegretsUsedSet
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceInfererRegretsUsedSet)(x)
+}
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[64]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType{}
+
+type fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType struct{}
+
+func (x fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceInfererRegretsUsedSet)(nil)
+}
+func (x fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceInfererRegretsUsedSet)
+}
+func (x fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceInfererRegretsUsedSet
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceInfererRegretsUsedSet
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventNetworkInferenceInfererRegretsUsedSet_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceInfererRegretsUsedSet)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Interface() protoreflect.ProtoMessage {
+	return (*EventNetworkInferenceInfererRegretsUsedSet)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_nonce_block_height, value) {
+			return
+		}
+	}
+	if len(x.Addresses) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &x.Addresses})
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_addresses, value) {
+			return
+		}
+	}
+	if len(x.Regrets) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &x.Regrets})
+		if !f(fd_EventNetworkInferenceInfererRegretsUsedSet_regrets, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		return len(x.Addresses) != 0
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		return len(x.Regrets) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		x.Addresses = nil
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		x.Regrets = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		if len(x.Addresses) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_3_list{})
+		}
+		listValue := &_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		if len(x.Regrets) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_4_list{})
+		}
+		listValue := &_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(listValue)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceInfererRegretsUsedSet_3_list)
+		x.Addresses = *clv.list
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceInfererRegretsUsedSet_4_list)
+		x.Regrets = *clv.list
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		if x.Addresses == nil {
+			x.Addresses = []string{}
+		}
+		value := &_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		if x.Regrets == nil {
+			x.Regrets = []string{}
+		}
+		value := &_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.addresses":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_3_list{list: &list})
+	case "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet.regrets":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceInfererRegretsUsedSet_4_list{list: &list})
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceInfererRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceInfererRegretsUsedSet", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventNetworkInferenceInfererRegretsUsedSet) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretsUsedSet)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if len(x.Addresses) > 0 {
+			for _, s := range x.Addresses {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.Regrets) > 0 {
+			for _, s := range x.Regrets {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretsUsedSet)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Regrets) > 0 {
+			for iNdEx := len(x.Regrets) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Regrets[iNdEx])
+				copy(dAtA[i:], x.Regrets[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Regrets[iNdEx])))
+				i--
+				dAtA[i] = 0x22
+			}
+		}
+		if len(x.Addresses) > 0 {
+			for iNdEx := len(x.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Addresses[iNdEx])
+				copy(dAtA[i:], x.Addresses[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Addresses[iNdEx])))
+				i--
+				dAtA[i] = 0x1a
+			}
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceInfererRegretsUsedSet)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererRegretsUsedSet: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceInfererRegretsUsedSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Addresses = append(x.Addresses, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Regrets", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Regrets = append(x.Regrets, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var _ protoreflect.List = (*_EventNetworkInferenceForecasterRegretsUsedSet_3_list)(nil)
+
+type _EventNetworkInferenceForecasterRegretsUsedSet_3_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceForecasterRegretsUsedSet at list field Addresses as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_3_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_EventNetworkInferenceForecasterRegretsUsedSet_4_list)(nil)
+
+type _EventNetworkInferenceForecasterRegretsUsedSet_4_list struct {
+	list *[]string
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message EventNetworkInferenceForecasterRegretsUsedSet at list field Regrets as it is not of Message kind"))
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_EventNetworkInferenceForecasterRegretsUsedSet_4_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_EventNetworkInferenceForecasterRegretsUsedSet                    protoreflect.MessageDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_topic_id           protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_addresses          protoreflect.FieldDescriptor
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_regrets            protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventNetworkInferenceForecasterRegretsUsedSet = File_emissions_v9_events_proto.Messages().ByName("EventNetworkInferenceForecasterRegretsUsedSet")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_topic_id = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("topic_id")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_nonce_block_height = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("nonce_block_height")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_addresses = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("addresses")
+	fd_EventNetworkInferenceForecasterRegretsUsedSet_regrets = md_EventNetworkInferenceForecasterRegretsUsedSet.Fields().ByName("regrets")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)(nil)
+
+type fastReflection_EventNetworkInferenceForecasterRegretsUsedSet EventNetworkInferenceForecasterRegretsUsedSet
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)(x)
+}
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[65]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType
+var _ protoreflect.MessageType = fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType{}
+
+type fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType struct{}
+
+func (x fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)(nil)
+}
+func (x fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)
+}
+func (x fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceForecasterRegretsUsedSet
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventNetworkInferenceForecasterRegretsUsedSet
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Type() protoreflect.MessageType {
+	return _fastReflection_EventNetworkInferenceForecasterRegretsUsedSet_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) New() protoreflect.Message {
+	return new(fastReflection_EventNetworkInferenceForecasterRegretsUsedSet)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Interface() protoreflect.ProtoMessage {
+	return (*EventNetworkInferenceForecasterRegretsUsedSet)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_nonce_block_height, value) {
+			return
+		}
+	}
+	if len(x.Addresses) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &x.Addresses})
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_addresses, value) {
+			return
+		}
+	}
+	if len(x.Regrets) != 0 {
+		value := protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &x.Regrets})
+		if !f(fd_EventNetworkInferenceForecasterRegretsUsedSet_regrets, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		return len(x.Addresses) != 0
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		return len(x.Regrets) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		x.Addresses = nil
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		x.Regrets = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		if len(x.Addresses) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_3_list{})
+		}
+		listValue := &_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		if len(x.Regrets) == 0 {
+			return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_4_list{})
+		}
+		listValue := &_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(listValue)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceForecasterRegretsUsedSet_3_list)
+		x.Addresses = *clv.list
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		lv := value.List()
+		clv := lv.(*_EventNetworkInferenceForecasterRegretsUsedSet_4_list)
+		x.Regrets = *clv.list
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		if x.Addresses == nil {
+			x.Addresses = []string{}
+		}
+		value := &_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &x.Addresses}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		if x.Regrets == nil {
+			x.Regrets = []string{}
+		}
+		value := &_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &x.Regrets}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet is not mutable"))
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.addresses":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_3_list{list: &list})
+	case "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet.regrets":
+		list := []string{}
+		return protoreflect.ValueOfList(&_EventNetworkInferenceForecasterRegretsUsedSet_4_list{list: &list})
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventNetworkInferenceForecasterRegretsUsedSet) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretsUsedSet)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if len(x.Addresses) > 0 {
+			for _, s := range x.Addresses {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.Regrets) > 0 {
+			for _, s := range x.Regrets {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretsUsedSet)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Regrets) > 0 {
+			for iNdEx := len(x.Regrets) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Regrets[iNdEx])
+				copy(dAtA[i:], x.Regrets[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Regrets[iNdEx])))
+				i--
+				dAtA[i] = 0x22
+			}
+		}
+		if len(x.Addresses) > 0 {
+			for iNdEx := len(x.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Addresses[iNdEx])
+				copy(dAtA[i:], x.Addresses[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Addresses[iNdEx])))
+				i--
+				dAtA[i] = 0x1a
+			}
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventNetworkInferenceForecasterRegretsUsedSet)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterRegretsUsedSet: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventNetworkInferenceForecasterRegretsUsedSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Addresses = append(x.Addresses, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Regrets", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Regrets = append(x.Regrets, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventTopicWeightUpdated                   protoreflect.MessageDescriptor
+	fd_EventTopicWeightUpdated_topic_id          protoreflect.FieldDescriptor
+	fd_EventTopicWeightUpdated_new_weight        protoreflect.FieldDescriptor
+	fd_EventTopicWeightUpdated_topic_stake       protoreflect.FieldDescriptor
+	fd_EventTopicWeightUpdated_topic_fee_revenue protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventTopicWeightUpdated = File_emissions_v9_events_proto.Messages().ByName("EventTopicWeightUpdated")
+	fd_EventTopicWeightUpdated_topic_id = md_EventTopicWeightUpdated.Fields().ByName("topic_id")
+	fd_EventTopicWeightUpdated_new_weight = md_EventTopicWeightUpdated.Fields().ByName("new_weight")
+	fd_EventTopicWeightUpdated_topic_stake = md_EventTopicWeightUpdated.Fields().ByName("topic_stake")
+	fd_EventTopicWeightUpdated_topic_fee_revenue = md_EventTopicWeightUpdated.Fields().ByName("topic_fee_revenue")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventTopicWeightUpdated)(nil)
+
+type fastReflection_EventTopicWeightUpdated EventTopicWeightUpdated
+
+func (x *EventTopicWeightUpdated) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTopicWeightUpdated)(x)
+}
+
+func (x *EventTopicWeightUpdated) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[66]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventTopicWeightUpdated_messageType fastReflection_EventTopicWeightUpdated_messageType
+var _ protoreflect.MessageType = fastReflection_EventTopicWeightUpdated_messageType{}
+
+type fastReflection_EventTopicWeightUpdated_messageType struct{}
+
+func (x fastReflection_EventTopicWeightUpdated_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTopicWeightUpdated)(nil)
+}
+func (x fastReflection_EventTopicWeightUpdated_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTopicWeightUpdated)
+}
+func (x fastReflection_EventTopicWeightUpdated_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicWeightUpdated
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventTopicWeightUpdated) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicWeightUpdated
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventTopicWeightUpdated) Type() protoreflect.MessageType {
+	return _fastReflection_EventTopicWeightUpdated_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventTopicWeightUpdated) New() protoreflect.Message {
+	return new(fastReflection_EventTopicWeightUpdated)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventTopicWeightUpdated) Interface() protoreflect.ProtoMessage {
+	return (*EventTopicWeightUpdated)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventTopicWeightUpdated) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventTopicWeightUpdated_topic_id, value) {
+			return
+		}
+	}
+	if x.NewWeight != "" {
+		value := protoreflect.ValueOfString(x.NewWeight)
+		if !f(fd_EventTopicWeightUpdated_new_weight, value) {
+			return
+		}
+	}
+	if x.TopicStake != "" {
+		value := protoreflect.ValueOfString(x.TopicStake)
+		if !f(fd_EventTopicWeightUpdated_topic_stake, value) {
+			return
+		}
+	}
+	if x.TopicFeeRevenue != "" {
+		value := protoreflect.ValueOfString(x.TopicFeeRevenue)
+		if !f(fd_EventTopicWeightUpdated_topic_fee_revenue, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventTopicWeightUpdated) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicWeightUpdated.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventTopicWeightUpdated.new_weight":
+		return x.NewWeight != ""
+	case "emissions.v9.EventTopicWeightUpdated.topic_stake":
+		return x.TopicStake != ""
+	case "emissions.v9.EventTopicWeightUpdated.topic_fee_revenue":
+		return x.TopicFeeRevenue != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicWeightUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicWeightUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdated) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicWeightUpdated.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventTopicWeightUpdated.new_weight":
+		x.NewWeight = ""
+	case "emissions.v9.EventTopicWeightUpdated.topic_stake":
+		x.TopicStake = ""
+	case "emissions.v9.EventTopicWeightUpdated.topic_fee_revenue":
+		x.TopicFeeRevenue = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicWeightUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicWeightUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventTopicWeightUpdated) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventTopicWeightUpdated.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventTopicWeightUpdated.new_weight":
+		value := x.NewWeight
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventTopicWeightUpdated.topic_stake":
+		value := x.TopicStake
+		return protoreflect.ValueOfString(value)
+	case "emissions.v9.EventTopicWeightUpdated.topic_fee_revenue":
+		value := x.TopicFeeRevenue
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicWeightUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicWeightUpdated does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdated) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicWeightUpdated.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventTopicWeightUpdated.new_weight":
+		x.NewWeight = value.Interface().(string)
+	case "emissions.v9.EventTopicWeightUpdated.topic_stake":
+		x.TopicStake = value.Interface().(string)
+	case "emissions.v9.EventTopicWeightUpdated.topic_fee_revenue":
+		x.TopicFeeRevenue = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicWeightUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicWeightUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdated) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicWeightUpdated.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventTopicWeightUpdated is not mutable"))
+	case "emissions.v9.EventTopicWeightUpdated.new_weight":
+		panic(fmt.Errorf("field new_weight of message emissions.v9.EventTopicWeightUpdated is not mutable"))
+	case "emissions.v9.EventTopicWeightUpdated.topic_stake":
+		panic(fmt.Errorf("field topic_stake of message emissions.v9.EventTopicWeightUpdated is not mutable"))
+	case "emissions.v9.EventTopicWeightUpdated.topic_fee_revenue":
+		panic(fmt.Errorf("field topic_fee_revenue of message emissions.v9.EventTopicWeightUpdated is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicWeightUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicWeightUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventTopicWeightUpdated) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicWeightUpdated.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventTopicWeightUpdated.new_weight":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventTopicWeightUpdated.topic_stake":
+		return protoreflect.ValueOfString("")
+	case "emissions.v9.EventTopicWeightUpdated.topic_fee_revenue":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicWeightUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicWeightUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventTopicWeightUpdated) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventTopicWeightUpdated", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventTopicWeightUpdated) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdated) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventTopicWeightUpdated) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventTopicWeightUpdated) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventTopicWeightUpdated)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		l = len(x.NewWeight)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TopicStake)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TopicFeeRevenue)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicWeightUpdated)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.TopicFeeRevenue) > 0 {
+			i -= len(x.TopicFeeRevenue)
+			copy(dAtA[i:], x.TopicFeeRevenue)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TopicFeeRevenue)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.TopicStake) > 0 {
+			i -= len(x.TopicStake)
+			copy(dAtA[i:], x.TopicStake)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TopicStake)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.NewWeight) > 0 {
+			i -= len(x.NewWeight)
+			copy(dAtA[i:], x.NewWeight)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NewWeight)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicWeightUpdated)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicWeightUpdated: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicWeightUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewWeight", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NewWeight = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicStake", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TopicStake = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicFeeRevenue", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TopicFeeRevenue = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventWorkerSubmissionWindowOpened                    protoreflect.MessageDescriptor
+	fd_EventWorkerSubmissionWindowOpened_topic_id           protoreflect.FieldDescriptor
+	fd_EventWorkerSubmissionWindowOpened_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventWorkerSubmissionWindowOpened_window_end_block   protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventWorkerSubmissionWindowOpened = File_emissions_v9_events_proto.Messages().ByName("EventWorkerSubmissionWindowOpened")
+	fd_EventWorkerSubmissionWindowOpened_topic_id = md_EventWorkerSubmissionWindowOpened.Fields().ByName("topic_id")
+	fd_EventWorkerSubmissionWindowOpened_nonce_block_height = md_EventWorkerSubmissionWindowOpened.Fields().ByName("nonce_block_height")
+	fd_EventWorkerSubmissionWindowOpened_window_end_block = md_EventWorkerSubmissionWindowOpened.Fields().ByName("window_end_block")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventWorkerSubmissionWindowOpened)(nil)
+
+type fastReflection_EventWorkerSubmissionWindowOpened EventWorkerSubmissionWindowOpened
+
+func (x *EventWorkerSubmissionWindowOpened) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventWorkerSubmissionWindowOpened)(x)
+}
+
+func (x *EventWorkerSubmissionWindowOpened) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[67]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventWorkerSubmissionWindowOpened_messageType fastReflection_EventWorkerSubmissionWindowOpened_messageType
+var _ protoreflect.MessageType = fastReflection_EventWorkerSubmissionWindowOpened_messageType{}
+
+type fastReflection_EventWorkerSubmissionWindowOpened_messageType struct{}
+
+func (x fastReflection_EventWorkerSubmissionWindowOpened_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventWorkerSubmissionWindowOpened)(nil)
+}
+func (x fastReflection_EventWorkerSubmissionWindowOpened_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventWorkerSubmissionWindowOpened)
+}
+func (x fastReflection_EventWorkerSubmissionWindowOpened_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventWorkerSubmissionWindowOpened
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventWorkerSubmissionWindowOpened
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Type() protoreflect.MessageType {
+	return _fastReflection_EventWorkerSubmissionWindowOpened_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) New() protoreflect.Message {
+	return new(fastReflection_EventWorkerSubmissionWindowOpened)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Interface() protoreflect.ProtoMessage {
+	return (*EventWorkerSubmissionWindowOpened)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventWorkerSubmissionWindowOpened_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventWorkerSubmissionWindowOpened_nonce_block_height, value) {
+			return
+		}
+	}
+	if x.WindowEndBlock != int64(0) {
+		value := protoreflect.ValueOfInt64(x.WindowEndBlock)
+		if !f(fd_EventWorkerSubmissionWindowOpened_window_end_block, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.window_end_block":
+		return x.WindowEndBlock != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.window_end_block":
+		x.WindowEndBlock = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.window_end_block":
+		value := x.WindowEndBlock
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowOpened does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.window_end_block":
+		x.WindowEndBlock = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventWorkerSubmissionWindowOpened is not mutable"))
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventWorkerSubmissionWindowOpened is not mutable"))
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.window_end_block":
+		panic(fmt.Errorf("field window_end_block of message emissions.v9.EventWorkerSubmissionWindowOpened is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v9.EventWorkerSubmissionWindowOpened.window_end_block":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventWorkerSubmissionWindowOpened", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventWorkerSubmissionWindowOpened) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventWorkerSubmissionWindowOpened)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if x.WindowEndBlock != 0 {
+			n += 1 + runtime.Sov(uint64(x.WindowEndBlock))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventWorkerSubmissionWindowOpened)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.WindowEndBlock != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.WindowEndBlock))
+			i--
+			dAtA[i] = 0x18
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventWorkerSubmissionWindowOpened)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventWorkerSubmissionWindowOpened: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventWorkerSubmissionWindowOpened: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field WindowEndBlock", wireType)
+				}
+				x.WindowEndBlock = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.WindowEndBlock |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventWorkerSubmissionWindowClosed                    protoreflect.MessageDescriptor
+	fd_EventWorkerSubmissionWindowClosed_topic_id           protoreflect.FieldDescriptor
+	fd_EventWorkerSubmissionWindowClosed_nonce_block_height protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventWorkerSubmissionWindowClosed = File_emissions_v9_events_proto.Messages().ByName("EventWorkerSubmissionWindowClosed")
+	fd_EventWorkerSubmissionWindowClosed_topic_id = md_EventWorkerSubmissionWindowClosed.Fields().ByName("topic_id")
+	fd_EventWorkerSubmissionWindowClosed_nonce_block_height = md_EventWorkerSubmissionWindowClosed.Fields().ByName("nonce_block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventWorkerSubmissionWindowClosed)(nil)
+
+type fastReflection_EventWorkerSubmissionWindowClosed EventWorkerSubmissionWindowClosed
+
+func (x *EventWorkerSubmissionWindowClosed) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventWorkerSubmissionWindowClosed)(x)
+}
+
+func (x *EventWorkerSubmissionWindowClosed) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[68]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventWorkerSubmissionWindowClosed_messageType fastReflection_EventWorkerSubmissionWindowClosed_messageType
+var _ protoreflect.MessageType = fastReflection_EventWorkerSubmissionWindowClosed_messageType{}
+
+type fastReflection_EventWorkerSubmissionWindowClosed_messageType struct{}
+
+func (x fastReflection_EventWorkerSubmissionWindowClosed_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventWorkerSubmissionWindowClosed)(nil)
+}
+func (x fastReflection_EventWorkerSubmissionWindowClosed_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventWorkerSubmissionWindowClosed)
+}
+func (x fastReflection_EventWorkerSubmissionWindowClosed_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventWorkerSubmissionWindowClosed
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventWorkerSubmissionWindowClosed
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Type() protoreflect.MessageType {
+	return _fastReflection_EventWorkerSubmissionWindowClosed_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) New() protoreflect.Message {
+	return new(fastReflection_EventWorkerSubmissionWindowClosed)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Interface() protoreflect.ProtoMessage {
+	return (*EventWorkerSubmissionWindowClosed)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventWorkerSubmissionWindowClosed_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventWorkerSubmissionWindowClosed_nonce_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowClosed does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventWorkerSubmissionWindowClosed is not mutable"))
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventWorkerSubmissionWindowClosed is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventWorkerSubmissionWindowClosed.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventWorkerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventWorkerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventWorkerSubmissionWindowClosed", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventWorkerSubmissionWindowClosed) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventWorkerSubmissionWindowClosed)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventWorkerSubmissionWindowClosed)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventWorkerSubmissionWindowClosed)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventWorkerSubmissionWindowClosed: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventWorkerSubmissionWindowClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventReputerSubmissionWindowOpened                    protoreflect.MessageDescriptor
+	fd_EventReputerSubmissionWindowOpened_topic_id           protoreflect.FieldDescriptor
+	fd_EventReputerSubmissionWindowOpened_nonce_block_height protoreflect.FieldDescriptor
+	fd_EventReputerSubmissionWindowOpened_window_end_block   protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventReputerSubmissionWindowOpened = File_emissions_v9_events_proto.Messages().ByName("EventReputerSubmissionWindowOpened")
+	fd_EventReputerSubmissionWindowOpened_topic_id = md_EventReputerSubmissionWindowOpened.Fields().ByName("topic_id")
+	fd_EventReputerSubmissionWindowOpened_nonce_block_height = md_EventReputerSubmissionWindowOpened.Fields().ByName("nonce_block_height")
+	fd_EventReputerSubmissionWindowOpened_window_end_block = md_EventReputerSubmissionWindowOpened.Fields().ByName("window_end_block")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventReputerSubmissionWindowOpened)(nil)
+
+type fastReflection_EventReputerSubmissionWindowOpened EventReputerSubmissionWindowOpened
+
+func (x *EventReputerSubmissionWindowOpened) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventReputerSubmissionWindowOpened)(x)
+}
+
+func (x *EventReputerSubmissionWindowOpened) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[69]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventReputerSubmissionWindowOpened_messageType fastReflection_EventReputerSubmissionWindowOpened_messageType
+var _ protoreflect.MessageType = fastReflection_EventReputerSubmissionWindowOpened_messageType{}
+
+type fastReflection_EventReputerSubmissionWindowOpened_messageType struct{}
+
+func (x fastReflection_EventReputerSubmissionWindowOpened_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventReputerSubmissionWindowOpened)(nil)
+}
+func (x fastReflection_EventReputerSubmissionWindowOpened_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventReputerSubmissionWindowOpened)
+}
+func (x fastReflection_EventReputerSubmissionWindowOpened_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventReputerSubmissionWindowOpened
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventReputerSubmissionWindowOpened
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Type() protoreflect.MessageType {
+	return _fastReflection_EventReputerSubmissionWindowOpened_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) New() protoreflect.Message {
+	return new(fastReflection_EventReputerSubmissionWindowOpened)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Interface() protoreflect.ProtoMessage {
+	return (*EventReputerSubmissionWindowOpened)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventReputerSubmissionWindowOpened_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventReputerSubmissionWindowOpened_nonce_block_height, value) {
+			return
+		}
+	}
+	if x.WindowEndBlock != int64(0) {
+		value := protoreflect.ValueOfInt64(x.WindowEndBlock)
+		if !f(fd_EventReputerSubmissionWindowOpened_window_end_block, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowOpened.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventReputerSubmissionWindowOpened.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	case "emissions.v9.EventReputerSubmissionWindowOpened.window_end_block":
+		return x.WindowEndBlock != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowOpened.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventReputerSubmissionWindowOpened.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	case "emissions.v9.EventReputerSubmissionWindowOpened.window_end_block":
+		x.WindowEndBlock = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowOpened.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventReputerSubmissionWindowOpened.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v9.EventReputerSubmissionWindowOpened.window_end_block":
+		value := x.WindowEndBlock
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowOpened does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowOpened.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventReputerSubmissionWindowOpened.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	case "emissions.v9.EventReputerSubmissionWindowOpened.window_end_block":
+		x.WindowEndBlock = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowOpened.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventReputerSubmissionWindowOpened is not mutable"))
+	case "emissions.v9.EventReputerSubmissionWindowOpened.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventReputerSubmissionWindowOpened is not mutable"))
+	case "emissions.v9.EventReputerSubmissionWindowOpened.window_end_block":
+		panic(fmt.Errorf("field window_end_block of message emissions.v9.EventReputerSubmissionWindowOpened is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowOpened.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventReputerSubmissionWindowOpened.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v9.EventReputerSubmissionWindowOpened.window_end_block":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowOpened"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowOpened does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventReputerSubmissionWindowOpened", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventReputerSubmissionWindowOpened) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventReputerSubmissionWindowOpened)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if x.WindowEndBlock != 0 {
+			n += 1 + runtime.Sov(uint64(x.WindowEndBlock))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventReputerSubmissionWindowOpened)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.WindowEndBlock != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.WindowEndBlock))
+			i--
+			dAtA[i] = 0x18
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventReputerSubmissionWindowOpened)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventReputerSubmissionWindowOpened: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventReputerSubmissionWindowOpened: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field WindowEndBlock", wireType)
+				}
+				x.WindowEndBlock = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.WindowEndBlock |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_EventReputerSubmissionWindowClosed                    protoreflect.MessageDescriptor
+	fd_EventReputerSubmissionWindowClosed_topic_id           protoreflect.FieldDescriptor
+	fd_EventReputerSubmissionWindowClosed_nonce_block_height protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventReputerSubmissionWindowClosed = File_emissions_v9_events_proto.Messages().ByName("EventReputerSubmissionWindowClosed")
+	fd_EventReputerSubmissionWindowClosed_topic_id = md_EventReputerSubmissionWindowClosed.Fields().ByName("topic_id")
+	fd_EventReputerSubmissionWindowClosed_nonce_block_height = md_EventReputerSubmissionWindowClosed.Fields().ByName("nonce_block_height")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventReputerSubmissionWindowClosed)(nil)
+
+type fastReflection_EventReputerSubmissionWindowClosed EventReputerSubmissionWindowClosed
+
+func (x *EventReputerSubmissionWindowClosed) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventReputerSubmissionWindowClosed)(x)
+}
+
+func (x *EventReputerSubmissionWindowClosed) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[70]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventReputerSubmissionWindowClosed_messageType fastReflection_EventReputerSubmissionWindowClosed_messageType
+var _ protoreflect.MessageType = fastReflection_EventReputerSubmissionWindowClosed_messageType{}
+
+type fastReflection_EventReputerSubmissionWindowClosed_messageType struct{}
+
+func (x fastReflection_EventReputerSubmissionWindowClosed_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventReputerSubmissionWindowClosed)(nil)
+}
+func (x fastReflection_EventReputerSubmissionWindowClosed_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventReputerSubmissionWindowClosed)
+}
+func (x fastReflection_EventReputerSubmissionWindowClosed_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventReputerSubmissionWindowClosed
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventReputerSubmissionWindowClosed
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Type() protoreflect.MessageType {
+	return _fastReflection_EventReputerSubmissionWindowClosed_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) New() protoreflect.Message {
+	return new(fastReflection_EventReputerSubmissionWindowClosed)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Interface() protoreflect.ProtoMessage {
+	return (*EventReputerSubmissionWindowClosed)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventReputerSubmissionWindowClosed_topic_id, value) {
+			return
+		}
+	}
+	if x.NonceBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.NonceBlockHeight)
+		if !f(fd_EventReputerSubmissionWindowClosed_nonce_block_height, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowClosed.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v9.EventReputerSubmissionWindowClosed.nonce_block_height":
+		return x.NonceBlockHeight != int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowClosed.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v9.EventReputerSubmissionWindowClosed.nonce_block_height":
+		x.NonceBlockHeight = int64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowClosed.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventReputerSubmissionWindowClosed.nonce_block_height":
+		value := x.NonceBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowClosed does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowClosed.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v9.EventReputerSubmissionWindowClosed.nonce_block_height":
+		x.NonceBlockHeight = value.Int()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowClosed.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventReputerSubmissionWindowClosed is not mutable"))
+	case "emissions.v9.EventReputerSubmissionWindowClosed.nonce_block_height":
+		panic(fmt.Errorf("field nonce_block_height of message emissions.v9.EventReputerSubmissionWindowClosed is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventReputerSubmissionWindowClosed.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventReputerSubmissionWindowClosed.nonce_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventReputerSubmissionWindowClosed"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventReputerSubmissionWindowClosed does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventReputerSubmissionWindowClosed", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventReputerSubmissionWindowClosed) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventReputerSubmissionWindowClosed)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.NonceBlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.NonceBlockHeight))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventReputerSubmissionWindowClosed)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.NonceBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NonceBlockHeight))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventReputerSubmissionWindowClosed)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventReputerSubmissionWindowClosed: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventReputerSubmissionWindowClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				}
+				x.NonceBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.NonceBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -31459,8 +40365,7 @@ type EventTopicCreatorWhitelistAdded struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 }
 
 func (x *EventTopicCreatorWhitelistAdded) Reset() {
@@ -31483,13 +40388,6 @@ func (*EventTopicCreatorWhitelistAdded) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{32}
 }
 
-func (x *EventTopicCreatorWhitelistAdded) GetTopicId() uint64 {
-	if x != nil {
-		return x.TopicId
-	}
-	return 0
-}
-
 func (x *EventTopicCreatorWhitelistAdded) GetAddress() string {
 	if x != nil {
 		return x.Address
@@ -31502,8 +40400,7 @@ type EventTopicCreatorWhitelistRemoved struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 }
 
 func (x *EventTopicCreatorWhitelistRemoved) Reset() {
@@ -31524,13 +40421,6 @@ func (*EventTopicCreatorWhitelistRemoved) ProtoMessage() {}
 // Deprecated: Use EventTopicCreatorWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventTopicCreatorWhitelistRemoved) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{33}
-}
-
-func (x *EventTopicCreatorWhitelistRemoved) GetTopicId() uint64 {
-	if x != nil {
-		return x.TopicId
-	}
-	return 0
 }
 
 func (x *EventTopicCreatorWhitelistRemoved) GetAddress() string {
@@ -32635,23 +41525,880 @@ func (x *EventPruneRecords) GetTopicId() uint64 {
 	return 0
 }
 
+// Stake removal processing events
+type EventStakeRemovalCompleted struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId   uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer   string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Delegator string `protobuf:"bytes,3,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Amount    string `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (x *EventStakeRemovalCompleted) Reset() {
+	*x = EventStakeRemovalCompleted{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[55]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventStakeRemovalCompleted) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventStakeRemovalCompleted) ProtoMessage() {}
+
+// Deprecated: Use EventStakeRemovalCompleted.ProtoReflect.Descriptor instead.
+func (*EventStakeRemovalCompleted) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *EventStakeRemovalCompleted) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventStakeRemovalCompleted) GetReputer() string {
+	if x != nil {
+		return x.Reputer
+	}
+	return ""
+}
+
+func (x *EventStakeRemovalCompleted) GetDelegator() string {
+	if x != nil {
+		return x.Delegator
+	}
+	return ""
+}
+
+func (x *EventStakeRemovalCompleted) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+type EventDelegateRewardShareUpdated struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId        uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer        string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	RewardPerShare string `protobuf:"bytes,3,opt,name=reward_per_share,json=rewardPerShare,proto3" json:"reward_per_share,omitempty"`
+	BlockHeight    int64  `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (x *EventDelegateRewardShareUpdated) Reset() {
+	*x = EventDelegateRewardShareUpdated{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[56]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventDelegateRewardShareUpdated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventDelegateRewardShareUpdated) ProtoMessage() {}
+
+// Deprecated: Use EventDelegateRewardShareUpdated.ProtoReflect.Descriptor instead.
+func (*EventDelegateRewardShareUpdated) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *EventDelegateRewardShareUpdated) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventDelegateRewardShareUpdated) GetReputer() string {
+	if x != nil {
+		return x.Reputer
+	}
+	return ""
+}
+
+func (x *EventDelegateRewardShareUpdated) GetRewardPerShare() string {
+	if x != nil {
+		return x.RewardPerShare
+	}
+	return ""
+}
+
+func (x *EventDelegateRewardShareUpdated) GetBlockHeight() int64 {
+	if x != nil {
+		return x.BlockHeight
+	}
+	return 0
+}
+
+type EventDelegateRewardDistributed struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer     string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Amount      string `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	BlockHeight int64  `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (x *EventDelegateRewardDistributed) Reset() {
+	*x = EventDelegateRewardDistributed{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[57]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventDelegateRewardDistributed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventDelegateRewardDistributed) ProtoMessage() {}
+
+// Deprecated: Use EventDelegateRewardDistributed.ProtoReflect.Descriptor instead.
+func (*EventDelegateRewardDistributed) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *EventDelegateRewardDistributed) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventDelegateRewardDistributed) GetReputer() string {
+	if x != nil {
+		return x.Reputer
+	}
+	return ""
+}
+
+func (x *EventDelegateRewardDistributed) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+func (x *EventDelegateRewardDistributed) GetBlockHeight() int64 {
+	if x != nil {
+		return x.BlockHeight
+	}
+	return 0
+}
+
+type EventActiveReputersSet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (x *EventActiveReputersSet) Reset() {
+	*x = EventActiveReputersSet{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[58]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventActiveReputersSet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventActiveReputersSet) ProtoMessage() {}
+
+// Deprecated: Use EventActiveReputersSet.ProtoReflect.Descriptor instead.
+func (*EventActiveReputersSet) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{58}
+}
+
+func (x *EventActiveReputersSet) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventActiveReputersSet) GetAddresses() []string {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
+func (x *EventActiveReputersSet) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventActiveInferersSet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (x *EventActiveInferersSet) Reset() {
+	*x = EventActiveInferersSet{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[59]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventActiveInferersSet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventActiveInferersSet) ProtoMessage() {}
+
+// Deprecated: Use EventActiveInferersSet.ProtoReflect.Descriptor instead.
+func (*EventActiveInferersSet) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{59}
+}
+
+func (x *EventActiveInferersSet) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventActiveInferersSet) GetAddresses() []string {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
+func (x *EventActiveInferersSet) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventActiveForecastersSet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (x *EventActiveForecastersSet) Reset() {
+	*x = EventActiveForecastersSet{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[60]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventActiveForecastersSet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventActiveForecastersSet) ProtoMessage() {}
+
+// Deprecated: Use EventActiveForecastersSet.ProtoReflect.Descriptor instead.
+func (*EventActiveForecastersSet) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{60}
+}
+
+func (x *EventActiveForecastersSet) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventActiveForecastersSet) GetAddresses() []string {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
+func (x *EventActiveForecastersSet) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventTopicStatusChanged struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId  uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	IsActive bool   `protobuf:"varint,2,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+}
+
+func (x *EventTopicStatusChanged) Reset() {
+	*x = EventTopicStatusChanged{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[61]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventTopicStatusChanged) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventTopicStatusChanged) ProtoMessage() {}
+
+// Deprecated: Use EventTopicStatusChanged.ProtoReflect.Descriptor instead.
+func (*EventTopicStatusChanged) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{61}
+}
+
+func (x *EventTopicStatusChanged) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventTopicStatusChanged) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
+type EventNetworkInferenceInfererWeightSet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Address          string `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Weight           string `protobuf:"bytes,4,opt,name=weight,proto3" json:"weight,omitempty"`
+}
+
+func (x *EventNetworkInferenceInfererWeightSet) Reset() {
+	*x = EventNetworkInferenceInfererWeightSet{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[62]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventNetworkInferenceInfererWeightSet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventNetworkInferenceInfererWeightSet) ProtoMessage() {}
+
+// Deprecated: Use EventNetworkInferenceInfererWeightSet.ProtoReflect.Descriptor instead.
+func (*EventNetworkInferenceInfererWeightSet) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *EventNetworkInferenceInfererWeightSet) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceInfererWeightSet) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceInfererWeightSet) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *EventNetworkInferenceInfererWeightSet) GetWeight() string {
+	if x != nil {
+		return x.Weight
+	}
+	return ""
+}
+
+type EventNetworkInferenceForecasterWeightSet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Address          string `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Weight           string `protobuf:"bytes,4,opt,name=weight,proto3" json:"weight,omitempty"`
+}
+
+func (x *EventNetworkInferenceForecasterWeightSet) Reset() {
+	*x = EventNetworkInferenceForecasterWeightSet{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[63]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventNetworkInferenceForecasterWeightSet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventNetworkInferenceForecasterWeightSet) ProtoMessage() {}
+
+// Deprecated: Use EventNetworkInferenceForecasterWeightSet.ProtoReflect.Descriptor instead.
+func (*EventNetworkInferenceForecasterWeightSet) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *EventNetworkInferenceForecasterWeightSet) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceForecasterWeightSet) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceForecasterWeightSet) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *EventNetworkInferenceForecasterWeightSet) GetWeight() string {
+	if x != nil {
+		return x.Weight
+	}
+	return ""
+}
+
+type EventNetworkInferenceInfererRegretsUsedSet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets          []string `protobuf:"bytes,4,rep,name=regrets,proto3" json:"regrets,omitempty"`
+}
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) Reset() {
+	*x = EventNetworkInferenceInfererRegretsUsedSet{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[64]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventNetworkInferenceInfererRegretsUsedSet) ProtoMessage() {}
+
+// Deprecated: Use EventNetworkInferenceInfererRegretsUsedSet.ProtoReflect.Descriptor instead.
+func (*EventNetworkInferenceInfererRegretsUsedSet) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{64}
+}
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetAddresses() []string {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
+func (x *EventNetworkInferenceInfererRegretsUsedSet) GetRegrets() []string {
+	if x != nil {
+		return x.Regrets
+	}
+	return nil
+}
+
+type EventNetworkInferenceForecasterRegretsUsedSet struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets          []string `protobuf:"bytes,4,rep,name=regrets,proto3" json:"regrets,omitempty"`
+}
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) Reset() {
+	*x = EventNetworkInferenceForecasterRegretsUsedSet{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[65]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventNetworkInferenceForecasterRegretsUsedSet) ProtoMessage() {}
+
+// Deprecated: Use EventNetworkInferenceForecasterRegretsUsedSet.ProtoReflect.Descriptor instead.
+func (*EventNetworkInferenceForecasterRegretsUsedSet) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{65}
+}
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetAddresses() []string {
+	if x != nil {
+		return x.Addresses
+	}
+	return nil
+}
+
+func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetRegrets() []string {
+	if x != nil {
+		return x.Regrets
+	}
+	return nil
+}
+
+type EventTopicWeightUpdated struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId         uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NewWeight       string `protobuf:"bytes,2,opt,name=new_weight,json=newWeight,proto3" json:"new_weight,omitempty"`
+	TopicStake      string `protobuf:"bytes,3,opt,name=topic_stake,json=topicStake,proto3" json:"topic_stake,omitempty"`
+	TopicFeeRevenue string `protobuf:"bytes,4,opt,name=topic_fee_revenue,json=topicFeeRevenue,proto3" json:"topic_fee_revenue,omitempty"`
+}
+
+func (x *EventTopicWeightUpdated) Reset() {
+	*x = EventTopicWeightUpdated{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[66]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventTopicWeightUpdated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventTopicWeightUpdated) ProtoMessage() {}
+
+// Deprecated: Use EventTopicWeightUpdated.ProtoReflect.Descriptor instead.
+func (*EventTopicWeightUpdated) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{66}
+}
+
+func (x *EventTopicWeightUpdated) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventTopicWeightUpdated) GetNewWeight() string {
+	if x != nil {
+		return x.NewWeight
+	}
+	return ""
+}
+
+func (x *EventTopicWeightUpdated) GetTopicStake() string {
+	if x != nil {
+		return x.TopicStake
+	}
+	return ""
+}
+
+func (x *EventTopicWeightUpdated) GetTopicFeeRevenue() string {
+	if x != nil {
+		return x.TopicFeeRevenue
+	}
+	return ""
+}
+
+type EventWorkerSubmissionWindowOpened struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	WindowEndBlock   int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+}
+
+func (x *EventWorkerSubmissionWindowOpened) Reset() {
+	*x = EventWorkerSubmissionWindowOpened{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[67]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventWorkerSubmissionWindowOpened) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventWorkerSubmissionWindowOpened) ProtoMessage() {}
+
+// Deprecated: Use EventWorkerSubmissionWindowOpened.ProtoReflect.Descriptor instead.
+func (*EventWorkerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{67}
+}
+
+func (x *EventWorkerSubmissionWindowOpened) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventWorkerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+func (x *EventWorkerSubmissionWindowOpened) GetWindowEndBlock() int64 {
+	if x != nil {
+		return x.WindowEndBlock
+	}
+	return 0
+}
+
+type EventWorkerSubmissionWindowClosed struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (x *EventWorkerSubmissionWindowClosed) Reset() {
+	*x = EventWorkerSubmissionWindowClosed{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[68]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventWorkerSubmissionWindowClosed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventWorkerSubmissionWindowClosed) ProtoMessage() {}
+
+// Deprecated: Use EventWorkerSubmissionWindowClosed.ProtoReflect.Descriptor instead.
+func (*EventWorkerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{68}
+}
+
+func (x *EventWorkerSubmissionWindowClosed) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventWorkerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventReputerSubmissionWindowOpened struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	WindowEndBlock   int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+}
+
+func (x *EventReputerSubmissionWindowOpened) Reset() {
+	*x = EventReputerSubmissionWindowOpened{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[69]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventReputerSubmissionWindowOpened) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventReputerSubmissionWindowOpened) ProtoMessage() {}
+
+// Deprecated: Use EventReputerSubmissionWindowOpened.ProtoReflect.Descriptor instead.
+func (*EventReputerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{69}
+}
+
+func (x *EventReputerSubmissionWindowOpened) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventReputerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
+func (x *EventReputerSubmissionWindowOpened) GetWindowEndBlock() int64 {
+	if x != nil {
+		return x.WindowEndBlock
+	}
+	return 0
+}
+
+type EventReputerSubmissionWindowClosed struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (x *EventReputerSubmissionWindowClosed) Reset() {
+	*x = EventReputerSubmissionWindowClosed{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[70]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventReputerSubmissionWindowClosed) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventReputerSubmissionWindowClosed) ProtoMessage() {}
+
+// Deprecated: Use EventReputerSubmissionWindowClosed.ProtoReflect.Descriptor instead.
+func (*EventReputerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *EventReputerSubmissionWindowClosed) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventReputerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+	if x != nil {
+		return x.NonceBlockHeight
+	}
+	return 0
+}
+
 var File_emissions_v9_events_proto protoreflect.FileDescriptor
 
 var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x0a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x65,
 	0x76, 0x65, 0x6e, 0x74, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0c, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76,
-	0x33, 0x2f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
-	0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f,
-	0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e,
-	0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf5, 0x01, 0x0a, 0x0e, 0x45, 0x76, 0x65,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
+	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f,
+	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
+	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf5, 0x01, 0x0a, 0x0e, 0x45, 0x76, 0x65,
 	0x6e, 0x74, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x53, 0x65, 0x74, 0x12, 0x36, 0x0a, 0x0a, 0x61,
 	0x63, 0x74, 0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32,
 	0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x41,
@@ -32925,194 +42672,203 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x70, 0x75, 0x74, 0x65, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x44, 0x69,
 	0x73, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x64, 0x22, 0x56, 0x0a, 0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43,
+	0x64, 0x22, 0x3b, 0x0a, 0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43,
 	0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41,
-	0x64, 0x64, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
-	0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x58, 0x0a, 0x21, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x57, 0x68,
-	0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x12, 0x19,
-	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x22, 0x55, 0x0a, 0x1e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74,
-	0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
-	0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x57, 0x0a, 0x20, 0x45, 0x76,
-	0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x57, 0x68,
-	0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x12, 0x19,
-	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x22, 0x56, 0x0a, 0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73,
-	0x74, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
-	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x58, 0x0a, 0x21, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72,
-	0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64,
+	0x64, 0x64, 0x65, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x3d,
+	0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61,
+	0x74, 0x6f, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x55, 0x0a,
+	0x1e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x57, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x64, 0x65, 0x64, 0x12,
+	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x22, 0x57, 0x0a, 0x20, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70,
+	0x69, 0x63, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73,
+	0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x56, 0x0a,
+	0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x70, 0x75, 0x74,
+	0x65, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x64, 0x65, 0x64,
 	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61,
 	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0xa4, 0x01, 0x0a, 0x26, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4f,
-	0x75, 0x74, 0x6c, 0x69, 0x65, 0x72, 0x52, 0x65, 0x73, 0x69, 0x73, 0x74, 0x61, 0x6e, 0x74, 0x4e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62,
-	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x3c,
-	0x0a, 0x0c, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x62, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x76, 0x33, 0x2e, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52,
-	0x0b, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x22, 0x85, 0x01, 0x0a,
-	0x19, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x54, 0x61,
-	0x73, 0x6b, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x58, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f,
+	0x70, 0x69, 0x63, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c,
+	0x69, 0x73, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
 	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x4d, 0x0a, 0x05, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x05, 0x73,
-	0x63, 0x6f, 0x72, 0x65, 0x22, 0x83, 0x01, 0x0a, 0x18, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x57, 0x6f,
-	0x72, 0x6b, 0x65, 0x72, 0x4c, 0x61, 0x73, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x53, 0x65,
-	0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c,
-	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
-	0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13,
-	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x4e, 0x6f,
-	0x6e, 0x63, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x22, 0x84, 0x01, 0x0a, 0x19, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x4c, 0x61, 0x73, 0x74, 0x43,
-	0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x76, 0x33, 0x2e, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63,
-	0x65, 0x22, 0x86, 0x01, 0x0a, 0x14, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x53, 0x65, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x08, 0x74,
-	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x77, 0x61, 0x72,
-	0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
-	0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65,
-	0x63, 0x52, 0x07, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x22, 0x88, 0x02, 0x0a, 0x11, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x45, 0x4d, 0x41, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x53, 0x65, 0x74,
-	0x12, 0x36, 0x0a, 0x0a, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0e, 0x32, 0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x76, 0x39, 0x2e, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x61,
-	0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x03, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x4f, 0x0a, 0x06, 0x73, 0x63, 0x6f, 0x72, 0x65,
-	0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
-	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
-	0x52, 0x06, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x12, 0x1b, 0x0a, 0x09, 0x69, 0x73, 0x5f, 0x61,
-	0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x06, 0x20, 0x03, 0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x41,
-	0x63, 0x74, 0x69, 0x76, 0x65, 0x22, 0x90, 0x02, 0x0a, 0x1d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c,
-	0x69, 0x73, 0x74, 0x65, 0x6e, 0x69, 0x6e, 0x67, 0x43, 0x6f, 0x65, 0x66, 0x66, 0x69, 0x63, 0x69,
-	0x65, 0x6e, 0x74, 0x73, 0x53, 0x65, 0x74, 0x12, 0x36, 0x0a, 0x0a, 0x61, 0x63, 0x74, 0x6f, 0x72,
-	0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x17, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x41, 0x63, 0x74, 0x6f, 0x72,
-	0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12,
-	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c,
-	0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03,
-	0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a,
-	0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09,
-	0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x5b, 0x0a, 0x0c, 0x63,
-	0x6f, 0x65, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28,
+	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22,
+	0xa4, 0x01, 0x0a, 0x26, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4f, 0x75, 0x74, 0x6c, 0x69, 0x65, 0x72,
+	0x52, 0x65, 0x73, 0x69, 0x73, 0x74, 0x61, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f,
+	0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x3c, 0x0a, 0x0c, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x5f, 0x62, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x56, 0x61,
+	0x6c, 0x75, 0x65, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52, 0x0b, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x22, 0x85, 0x01, 0x0a, 0x19, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x54, 0x61, 0x73, 0x6b, 0x53, 0x63, 0x6f, 0x72,
+	0x65, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
+	0x4d, 0x0a, 0x05, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x05, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x22, 0x83,
+	0x01, 0x0a, 0x18, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4c, 0x61,
+	0x73, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
+	0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c,
+	0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e,
+	0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x05, 0x6e,
+	0x6f, 0x6e, 0x63, 0x65, 0x22, 0x84, 0x01, 0x0a, 0x19, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65,
+	0x70, 0x75, 0x74, 0x65, 0x72, 0x4c, 0x61, 0x73, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x53,
+	0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a,
+	0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x12, 0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x4e,
+	0x6f, 0x6e, 0x63, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x22, 0x86, 0x01, 0x0a, 0x14,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64,
+	0x73, 0x53, 0x65, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
+	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03,
+	0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07, 0x72, 0x65, 0x77,
+	0x61, 0x72, 0x64, 0x73, 0x22, 0x88, 0x02, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x45, 0x4d,
+	0x41, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x53, 0x65, 0x74, 0x12, 0x36, 0x0a, 0x0a, 0x61, 0x63,
+	0x74, 0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x17,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x41, 0x63,
+	0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79,
+	0x70, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x14, 0x0a,
+	0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x6e, 0x6f,
+	0x6e, 0x63, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73,
+	0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65,
+	0x73, 0x12, 0x4f, 0x0a, 0x06, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28,
 	0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75,
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
-	0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0c, 0x63, 0x6f, 0x65, 0x66,
-	0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x73, 0x22, 0xcd, 0x01, 0x0a, 0x1c, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x73, 0x63, 0x6f, 0x72,
+	0x65, 0x73, 0x12, 0x1b, 0x0a, 0x09, 0x69, 0x73, 0x5f, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18,
+	0x06, 0x20, 0x03, 0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x22,
+	0x90, 0x02, 0x0a, 0x1d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x65, 0x6e, 0x69,
+	0x6e, 0x67, 0x43, 0x6f, 0x65, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x73, 0x53, 0x65,
+	0x74, 0x12, 0x36, 0x0a, 0x0a, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x76, 0x39, 0x2e, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09,
+	0x61, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x5b, 0x0a, 0x0c, 0x63, 0x6f, 0x65, 0x66, 0x66, 0x69, 0x63,
+	0x69, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f,
+	0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x44, 0x65, 0x63, 0x52, 0x0c, 0x63, 0x6f, 0x65, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e,
+	0x74, 0x73, 0x22, 0xcd, 0x01, 0x0a, 0x1c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x72, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74,
+	0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21,
+	0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x03,
+	0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12,
+	0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09,
+	0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65,
+	0x74, 0x73, 0x22, 0xd0, 0x01, 0x0a, 0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65,
+	0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x52, 0x65, 0x67,
+	0x72, 0x65, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
+	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65,
+	0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x65, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x18, 0x04, 0x20,
+	0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68,
+	0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07, 0x72, 0x65,
+	0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0xd2, 0x01, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e,
+	0x61, 0x69, 0x76, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x4e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
+	0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c,
+	0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65,
+	0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c,
+	0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65,
+	0x63, 0x52, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0xab, 0x01, 0x0a, 0x1a, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c,
 	0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65,
 	0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65,
-	0x73, 0x73, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73,
-	0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
-	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
-	0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0xd0, 0x01, 0x0a, 0x1f, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x4e, 0x65, 0x74, 0x77,
-	0x6f, 0x72, 0x6b, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62,
-	0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72,
-	0x65, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
-	0x65, 0x63, 0x52, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0xd2, 0x01, 0x0a, 0x21,
-	0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x61, 0x69, 0x76, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x72, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x53, 0x65,
-	0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x4f, 0x0a, 0x06, 0x72, 0x65, 0x67, 0x72, 0x65,
+	0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
+	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
+	0x52, 0x06, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x22, 0xe3, 0x01, 0x0a, 0x1c, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x45, 0x6d,
+	0x61, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x53, 0x65, 0x74, 0x12, 0x36, 0x0a, 0x0a, 0x61, 0x63, 0x74,
+	0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x17, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x41, 0x63, 0x74,
+	0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70,
+	0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20,
 	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c,
-	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01,
 	0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
-	0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03,
-	0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a,
-	0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37,
+	0x4d, 0x0a, 0x05, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37,
 	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
 	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
 	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
-	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73,
-	0x22, 0xab, 0x01, 0x0a, 0x1a, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x53, 0x65, 0x74, 0x12,
-	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c,
-	0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03,
-	0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x4f, 0x0a,
-	0x06, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8,
-	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61,
-	0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x22, 0xe3,
-	0x01, 0x0a, 0x1c, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x6e, 0x69,
-	0x74, 0x69, 0x61, 0x6c, 0x45, 0x6d, 0x61, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x53, 0x65, 0x74, 0x12,
-	0x36, 0x0a, 0x0a, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0e, 0x32, 0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x76, 0x39, 0x2e, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x61, 0x63,
-	0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x4d, 0x0a, 0x05, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x05, 0x73,
-	0x63, 0x6f, 0x72, 0x65, 0x22, 0xa8, 0x01, 0x0a, 0x15, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65,
-	0x67, 0x72, 0x65, 0x74, 0x53, 0x74, 0x64, 0x4e, 0x6f, 0x72, 0x6d, 0x53, 0x65, 0x74, 0x12, 0x19,
-	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f,
-	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
-	0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x51, 0x0a, 0x07,
-	0x73, 0x74, 0x64, 0x6e, 0x6f, 0x72, 0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8,
-	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61,
-	0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07, 0x73, 0x74, 0x64, 0x6e, 0x6f, 0x72, 0x6d, 0x22,
-	0xc0, 0x01, 0x0a, 0x15, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x05, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x22, 0xa8,
+	0x01, 0x0a, 0x15, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x53, 0x74,
+	0x64, 0x4e, 0x6f, 0x72, 0x6d, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
+	0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x51, 0x0a, 0x07, 0x73, 0x74, 0x64, 0x6e, 0x6f, 0x72,
+	0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
+	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
+	0x52, 0x07, 0x73, 0x74, 0x64, 0x6e, 0x6f, 0x72, 0x6d, 0x22, 0xc0, 0x01, 0x0a, 0x15, 0x45, 0x76,
+	0x65, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21,
+	0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f, 0x0a, 0x06, 0x77,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f,
+	0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xc3, 0x01, 0x0a,
+	0x18, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72,
 	0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65,
@@ -33124,54 +42880,220 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
 	0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x22, 0xc3, 0x01, 0x0a, 0x18, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65,
-	0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12,
-	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c,
-	0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03,
-	0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x18, 0x0a,
-	0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f, 0x0a, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
-	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
-	0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xae, 0x01, 0x0a, 0x30, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x50, 0x72, 0x65, 0x76, 0x69, 0x6f, 0x75, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e,
-	0x74, 0x61, 0x67, 0x65, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x54, 0x6f, 0x53, 0x74, 0x61, 0x6b,
-	0x65, 0x64, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x53, 0x65, 0x74, 0x12, 0x21, 0x0a,
-	0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x12, 0x57, 0x0a, 0x0a, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69,
+	0x68, 0x74, 0x22, 0xae, 0x01, 0x0a, 0x30, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x72, 0x65, 0x76,
+	0x69, 0x6f, 0x75, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x52, 0x65,
+	0x77, 0x61, 0x72, 0x64, 0x54, 0x6f, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x52, 0x65, 0x70, 0x75,
+	0x74, 0x65, 0x72, 0x73, 0x53, 0x65, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
+	0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62,
+	0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x57, 0x0a, 0x0a, 0x70, 0x65,
+	0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0a, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74,
+	0x61, 0x67, 0x65, 0x22, 0x51, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x50, 0x72, 0x75, 0x6e,
+	0x65, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0xb9, 0x01, 0x0a, 0x1a, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x43, 0x6f, 0x6d, 0x70,
+	0x6c, 0x65, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x1c, 0x0a, 0x09, 0x64, 0x65,
+	0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x64,
+	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
+	0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75,
+	0x6e, 0x74, 0x22, 0xdc, 0x01, 0x0a, 0x1f, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x44, 0x65, 0x6c, 0x65,
+	0x67, 0x61, 0x74, 0x65, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x53, 0x68, 0x61, 0x72, 0x65, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
+	0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x61, 0x0a, 0x10, 0x72,
+	0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x73, 0x68, 0x61, 0x72, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
+	0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0e,
+	0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x50, 0x65, 0x72, 0x53, 0x68, 0x61, 0x72, 0x65, 0x12, 0x21,
+	0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x22, 0xc2, 0x01, 0x0a, 0x1e, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x44, 0x65, 0x6c, 0x65, 0x67,
+	0x61, 0x74, 0x65, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x44, 0x69, 0x73, 0x74, 0x72, 0x69, 0x62,
+	0x75, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
+	0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda,
+	0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
+	0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x7f, 0x0a, 0x16, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41,
+	0x63, 0x74, 0x69, 0x76, 0x65, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x53, 0x65, 0x74,
+	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x61,
+	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09,
+	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e,
+	0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63,
+	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x7f, 0x0a, 0x16, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x73, 0x53, 0x65,
+	0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09,
+	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52,
+	0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f,
+	0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f,
+	0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x82, 0x01, 0x0a, 0x19, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74,
+	0x65, 0x72, 0x73, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
+	0x64, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x02,
+	0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x12,
+	0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e,
+	0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x51, 0x0a,
+	0x17, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x53, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x49, 0x64, 0x12, 0x1b, 0x0a, 0x09, 0x69, 0x73, 0x5f, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x69, 0x73, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65,
+	0x22, 0xdb, 0x01, 0x0a, 0x25, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x72, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62,
+	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f, 0x0a,
+	0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61,
+	0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xde,
+	0x01, 0x0a, 0x28, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74,
+	0x65, 0x72, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4f,
+	0x0a, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22,
+	0xe6, 0x01, 0x0a, 0x2a, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72,
+	0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x55, 0x73, 0x65, 0x64, 0x53, 0x65, 0x74, 0x12, 0x19,
+	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e,
+	0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63,
+	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73,
+	0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
+	0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0xe9, 0x01, 0x0a, 0x2d, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x67, 0x72,
+	0x65, 0x74, 0x73, 0x55, 0x73, 0x65, 0x64, 0x53, 0x65, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62,
+	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73,
+	0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x65,
+	0x73, 0x12, 0x51, 0x0a, 0x07, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03,
+	0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07, 0x72, 0x65, 0x67,
+	0x72, 0x65, 0x74, 0x73, 0x22, 0xbd, 0x02, 0x0a, 0x17, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f,
+	0x70, 0x69, 0x63, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64,
+	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x56, 0x0a, 0x0a, 0x6e,
+	0x65, 0x77, 0x5f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x09, 0x6e, 0x65, 0x77, 0x57, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x12, 0x51, 0x0a, 0x0b, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x73, 0x74, 0x61,
+	0x6b, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0a, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x5c, 0x0a, 0x11, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
+	0x66, 0x65, 0x65, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x0f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x46, 0x65, 0x65, 0x52, 0x65, 0x76,
+	0x65, 0x6e, 0x75, 0x65, 0x22, 0x96, 0x01, 0x0a, 0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x57, 0x6f,
+	0x72, 0x6b, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69,
+	0x6e, 0x64, 0x6f, 0x77, 0x4f, 0x70, 0x65, 0x6e, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62,
+	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x12, 0x28, 0x0a, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x65, 0x6e,
+	0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x77,
+	0x69, 0x6e, 0x64, 0x6f, 0x77, 0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x22, 0x6c, 0x0a,
+	0x21, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x43, 0x6c, 0x6f, 0x73,
+	0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a,
+	0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
+	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x97, 0x01, 0x0a, 0x22,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x4f, 0x70, 0x65, 0x6e,
+	0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a,
+	0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
+	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x28, 0x0a, 0x10, 0x77,
+	0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x45, 0x6e, 0x64,
+	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x22, 0x6d, 0x0a, 0x22, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x52, 0x65,
+	0x70, 0x75, 0x74, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57,
+	0x69, 0x6e, 0x64, 0x6f, 0x77, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x12, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x10, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x2a, 0x62, 0x0a, 0x09, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70,
+	0x65, 0x12, 0x22, 0x0a, 0x1e, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f,
+	0x49, 0x4e, 0x46, 0x45, 0x52, 0x45, 0x52, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46,
+	0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x19, 0x0a, 0x15, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54,
+	0x59, 0x50, 0x45, 0x5f, 0x46, 0x4f, 0x52, 0x45, 0x43, 0x41, 0x53, 0x54, 0x45, 0x52, 0x10, 0x01,
+	0x12, 0x16, 0x0a, 0x12, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x52,
+	0x45, 0x50, 0x55, 0x54, 0x45, 0x52, 0x10, 0x02, 0x42, 0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x42, 0x0b, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69,
 	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
 	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0a, 0x70,
-	0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x61, 0x67, 0x65, 0x22, 0x51, 0x0a, 0x11, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x50, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x12, 0x21,
-	0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x2a, 0x62, 0x0a, 0x09,
-	0x41, 0x63, 0x74, 0x6f, 0x72, 0x54, 0x79, 0x70, 0x65, 0x12, 0x22, 0x0a, 0x1e, 0x41, 0x43, 0x54,
-	0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x49, 0x4e, 0x46, 0x45, 0x52, 0x45, 0x52, 0x5f,
-	0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x19, 0x0a,
-	0x15, 0x41, 0x43, 0x54, 0x4f, 0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x46, 0x4f, 0x52, 0x45,
-	0x43, 0x41, 0x53, 0x54, 0x45, 0x52, 0x10, 0x01, 0x12, 0x16, 0x0a, 0x12, 0x41, 0x43, 0x54, 0x4f,
-	0x52, 0x5f, 0x54, 0x59, 0x50, 0x45, 0x5f, 0x52, 0x45, 0x50, 0x55, 0x54, 0x45, 0x52, 0x10, 0x02,
-	0x42, 0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x76, 0x39, 0x42, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f,
-	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x76, 0x39, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x39, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x39, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x39, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
-	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x3a, 0x3a, 0x56, 0x39, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76,
+	0x39, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x39, 0xa2, 0x02, 0x03,
+	0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
+	0x56, 0x39, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56,
+	0x39, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x39,
+	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x39, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -33187,7 +43109,7 @@ func file_emissions_v9_events_proto_rawDescGZIP() []byte {
 }
 
 var file_emissions_v9_events_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_emissions_v9_events_proto_msgTypes = make([]protoimpl.MessageInfo, 55)
+var file_emissions_v9_events_proto_msgTypes = make([]protoimpl.MessageInfo, 71)
 var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(ActorType)(0),                                           // 0: emissions.v9.ActorType
 	(*EventScoresSet)(nil),                                   // 1: emissions.v9.EventScoresSet
@@ -33245,10 +43167,26 @@ var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(*EventForecasterWeightSet)(nil),                         // 53: emissions.v9.EventForecasterWeightSet
 	(*EventPreviousPercentageRewardToStakedReputersSet)(nil), // 54: emissions.v9.EventPreviousPercentageRewardToStakedReputersSet
 	(*EventPruneRecords)(nil),                                // 55: emissions.v9.EventPruneRecords
-	(*v3.Topic)(nil),                                         // 56: emissions.v3.Topic
-	(*v8.Params)(nil),                                        // 57: emissions.v8.Params
-	(*v3.ValueBundle)(nil),                                   // 58: emissions.v3.ValueBundle
-	(*v3.Nonce)(nil),                                         // 59: emissions.v3.Nonce
+	(*EventStakeRemovalCompleted)(nil),                       // 56: emissions.v9.EventStakeRemovalCompleted
+	(*EventDelegateRewardShareUpdated)(nil),                  // 57: emissions.v9.EventDelegateRewardShareUpdated
+	(*EventDelegateRewardDistributed)(nil),                   // 58: emissions.v9.EventDelegateRewardDistributed
+	(*EventActiveReputersSet)(nil),                           // 59: emissions.v9.EventActiveReputersSet
+	(*EventActiveInferersSet)(nil),                           // 60: emissions.v9.EventActiveInferersSet
+	(*EventActiveForecastersSet)(nil),                        // 61: emissions.v9.EventActiveForecastersSet
+	(*EventTopicStatusChanged)(nil),                          // 62: emissions.v9.EventTopicStatusChanged
+	(*EventNetworkInferenceInfererWeightSet)(nil),            // 63: emissions.v9.EventNetworkInferenceInfererWeightSet
+	(*EventNetworkInferenceForecasterWeightSet)(nil),         // 64: emissions.v9.EventNetworkInferenceForecasterWeightSet
+	(*EventNetworkInferenceInfererRegretsUsedSet)(nil),       // 65: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet
+	(*EventNetworkInferenceForecasterRegretsUsedSet)(nil),    // 66: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet
+	(*EventTopicWeightUpdated)(nil),                          // 67: emissions.v9.EventTopicWeightUpdated
+	(*EventWorkerSubmissionWindowOpened)(nil),                // 68: emissions.v9.EventWorkerSubmissionWindowOpened
+	(*EventWorkerSubmissionWindowClosed)(nil),                // 69: emissions.v9.EventWorkerSubmissionWindowClosed
+	(*EventReputerSubmissionWindowOpened)(nil),               // 70: emissions.v9.EventReputerSubmissionWindowOpened
+	(*EventReputerSubmissionWindowClosed)(nil),               // 71: emissions.v9.EventReputerSubmissionWindowClosed
+	(*v3.Topic)(nil),                                         // 72: emissions.v3.Topic
+	(*v8.Params)(nil),                                        // 73: emissions.v8.Params
+	(*v3.ValueBundle)(nil),                                   // 74: emissions.v3.ValueBundle
+	(*v3.Nonce)(nil),                                         // 75: emissions.v3.Nonce
 }
 var file_emissions_v9_events_proto_depIdxs = []int32{
 	0,  // 0: emissions.v9.EventScoresSet.actor_type:type_name -> emissions.v9.ActorType
@@ -33256,12 +43194,12 @@ var file_emissions_v9_events_proto_depIdxs = []int32{
 	5,  // 2: emissions.v9.EventNetworkLossSet.value_bundle:type_name -> emissions.v9.EventValueBundle
 	5,  // 3: emissions.v9.EventNetworkInferences.value_bundle:type_name -> emissions.v9.EventValueBundle
 	6,  // 4: emissions.v9.EventValueBundle.one_out_inferer_forecaster_values:type_name -> emissions.v9.EventOneOutInfForcVals
-	56, // 5: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v3.Topic
+	72, // 5: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v3.Topic
 	5,  // 6: emissions.v9.EventInsertReputerPayload.reputer_value_bundle:type_name -> emissions.v9.EventValueBundle
-	57, // 7: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
-	58, // 8: emissions.v9.EventOutlierResistantNetworkInferences.value_bundle:type_name -> emissions.v3.ValueBundle
-	59, // 9: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
-	59, // 10: emissions.v9.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	73, // 7: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
+	74, // 8: emissions.v9.EventOutlierResistantNetworkInferences.value_bundle:type_name -> emissions.v3.ValueBundle
+	75, // 9: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	75, // 10: emissions.v9.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
 	0,  // 11: emissions.v9.EventEMAScoresSet.actor_type:type_name -> emissions.v9.ActorType
 	0,  // 12: emissions.v9.EventListeningCoefficientsSet.actor_type:type_name -> emissions.v9.ActorType
 	0,  // 13: emissions.v9.EventTopicInitialEmaScoreSet.actor_type:type_name -> emissions.v9.ActorType
@@ -33938,6 +43876,198 @@ func file_emissions_v9_events_proto_init() {
 				return nil
 			}
 		}
+		file_emissions_v9_events_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventStakeRemovalCompleted); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventDelegateRewardShareUpdated); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventDelegateRewardDistributed); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventActiveReputersSet); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventActiveInferersSet); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventActiveForecastersSet); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventTopicStatusChanged); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventNetworkInferenceInfererWeightSet); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventNetworkInferenceForecasterWeightSet); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventNetworkInferenceInfererRegretsUsedSet); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventNetworkInferenceForecasterRegretsUsedSet); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventTopicWeightUpdated); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventWorkerSubmissionWindowOpened); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventWorkerSubmissionWindowClosed); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventReputerSubmissionWindowOpened); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventReputerSubmissionWindowClosed); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -33945,7 +44075,7 @@ func file_emissions_v9_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_v9_events_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   55,
+			NumMessages:   71,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

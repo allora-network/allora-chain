@@ -42,27 +42,27 @@ func (k *Keeper) GetCurrentTopicWeight(
 	stakeImportance alloraMath.Dec,
 	feeImportance alloraMath.Dec,
 	blocksPerMonth uint64,
-) (weight alloraMath.Dec, topicRevenue cosmosMath.Int, err error) {
-	topicStake, err := k.GetTopicStake(ctx, topicId)
+) (weight alloraMath.Dec, topicRevenue cosmosMath.Int, topicStake cosmosMath.Int, err error) {
+	topicStake, err = k.GetTopicStake(ctx, topicId)
 	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic stake")
+		return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic stake")
 	}
 
 	topicStakeDec, err := alloraMath.NewDecFromSdkInt(topicStake)
 	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic stake to dec")
+		return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic stake to dec")
 	}
 
 	// Get and total topic fee revenue
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
+		return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
 	}
 
 	// Calc target weight using fees, epoch length, stake, and params
 	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
 	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic fee revenue to dec")
+		return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic fee revenue to dec")
 	}
 
 	if !topicFeeRevenueDec.Equal(alloraMath.ZeroDec()) {
@@ -73,33 +73,33 @@ func (k *Keeper) GetCurrentTopicWeight(
 			feeImportance,
 		)
 		if err != nil {
-			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get target weight")
+			return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get target weight")
 		}
 
 		// Take EMA of target weight with previous weight
 		previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 		if err != nil {
-			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
+			return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
 		}
 
 		blocksPerWeek, err := alloraMath.CalculateBlocksPerWeek(blocksPerMonth)
 		if err != nil {
-			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate blocks per week")
+			return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate blocks per week")
 		}
 
 		// Calculate alpha
 		topicSmoothedAlpha, err := alloraMath.GetSmoothedAlpha(topicEpochLength, blocksPerWeek, topicRewardAlpha)
 		if err != nil {
-			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get smoothed alpha")
+			return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get smoothed alpha")
 		}
 		weightNew, err := alloraMath.CalcEma(topicSmoothedAlpha, targetWeight, previousTopicWeight, noPrior)
 		if err != nil {
-			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate EMA")
+			return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate EMA")
 		}
-		return weightNew, topicFeeRevenue, nil
+		return weightNew, topicFeeRevenue, topicStake, nil
 	}
 
-	return alloraMath.ZeroDec(), topicFeeRevenue, nil
+	return alloraMath.ZeroDec(), topicFeeRevenue, topicStake, nil
 }
 
 func (k *Keeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.TopicId) (alloraMath.Dec, error) {
@@ -112,7 +112,7 @@ func (k *Keeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.To
 		return alloraMath.ZeroDec(), err
 	}
 
-	newTopicWeight, _, err := k.GetCurrentTopicWeight(
+	newTopicWeight, _, _, err := k.GetCurrentTopicWeight(
 		ctx,
 		topicId,
 		topic.EpochLength,

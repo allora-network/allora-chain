@@ -150,7 +150,7 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 
 	emaScores := []types.Score{emaScore}
 	activeArr := map[string]bool{previousInfererScore.Address: false}
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, block, emaScores, activeArr)
 	return nil
 }
 
@@ -190,7 +190,7 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 
 	emaScores := []types.Score{emaScore}
 	activeArr := map[string]bool{previousForecasterScore.Address: false}
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, block, emaScores, activeArr)
 	return nil
 }
 
@@ -230,6 +230,6 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 
 	emaScores := []types.Score{emaScore}
 	activeArr := map[string]bool{previousReputerScore.Address: false}
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, block, emaScores, activeArr)
 	return nil
 }

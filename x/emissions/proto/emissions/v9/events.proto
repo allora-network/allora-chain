@@ -1,13 +1,13 @@
 syntax = "proto3";
 package emissions.v9;
 
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 import "emissions/v3/nonce.proto";
 import "emissions/v3/reputer.proto";
 import "emissions/v3/topic.proto";
 import "emissions/v8/params.proto";
 import "gogoproto/gogo.proto";
-import "amino/amino.proto";
-import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
@@ -260,13 +260,11 @@ message EventTopicReputerWhitelistDisabled {
 }
 
 message EventTopicCreatorWhitelistAdded {
-  uint64 topic_id = 1;
-  string address = 2;
+  string address = 1;
 }
 
 message EventTopicCreatorWhitelistRemoved {
-  uint64 topic_id = 1;
-  string address = 2;
+  string address = 1;
 }
 
 message EventTopicWorkerWhitelistAdded {
@@ -435,4 +433,144 @@ message EventPreviousPercentageRewardToStakedReputersSet {
 message EventPruneRecords {
   int64 block_height = 1;
   uint64 topic_id = 2;
+}
+
+// Stake removal processing events
+message EventStakeRemovalCompleted {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message EventDelegateRewardShareUpdated {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string reward_per_share = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  int64 block_height = 4;
+}
+
+message EventDelegateRewardDistributed {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 block_height = 4;
+}
+
+message EventActiveReputersSet {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+  int64 nonce_block_height = 3;
+}
+
+message EventActiveInferersSet {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+  int64 nonce_block_height = 3;
+}
+
+message EventActiveForecastersSet {
+  uint64 topic_id = 1;
+  repeated string addresses = 2;
+  int64 nonce_block_height = 3;
+}
+
+message EventTopicStatusChanged {
+  uint64 topic_id = 1;
+  bool is_active = 2;
+}
+
+message EventNetworkInferenceInfererWeightSet {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
+  string address = 3;
+  string weight = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventNetworkInferenceForecasterWeightSet {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
+  string address = 3;
+  string weight = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventNetworkInferenceInfererRegretsUsedSet {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventNetworkInferenceForecasterRegretsUsedSet {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventTopicWeightUpdated {
+  uint64 topic_id = 1;
+  string new_weight = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string topic_stake = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string topic_fee_revenue = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message EventWorkerSubmissionWindowOpened {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
+  int64 window_end_block = 3;
+}
+
+message EventWorkerSubmissionWindowClosed {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
+}
+
+message EventReputerSubmissionWindowOpened {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
+  int64 window_end_block = 3;
+}
+
+message EventReputerSubmissionWindowClosed {
+  uint64 topic_id = 1;
+  int64 nonce_block_height = 2;
 }

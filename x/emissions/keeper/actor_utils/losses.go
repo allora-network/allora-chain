@@ -100,6 +100,9 @@ func CloseReputerNonce(
 		}
 
 		ctx.Logger().Info("Closed reputer nonce", "topicId", topic.Id, "nonce", nonce)
+
+		// Emit reputer submission window closed event
+		types.EmitReputerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
 	}()
 
 	params, err := k.GetParams(ctx)
@@ -164,6 +167,9 @@ func CloseReputerNonce(
 	if err != nil {
 		return err
 	}
+
+	// Emit event for active reputers set for topic nonce
+	types.EmitActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeReputerAddresses)
 
 	// Check that all network bundles correspond to the nonce requested before calling CalcNetworkLosses.
 	// In case of a mismatch, we should remove that

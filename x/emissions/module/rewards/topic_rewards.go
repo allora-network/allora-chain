@@ -101,6 +101,10 @@ func UpdateNoncesOfActiveTopics(
 			continue
 		}
 
+		// Emit worker submission window opened event
+		windowEndBlock := nextNonce.BlockHeight + topic.WorkerSubmissionWindow
+		types.EmitWorkerSubmissionWindowOpenedEvent(ctx, topic.Id, nextNonce.BlockHeight, windowEndBlock)
+
 		err = PruneReputerAndWorkerNonces(ctx, k, topic, block)
 		if err != nil {
 			Logger(ctx).Warn("Error pruning reputer and worker nonces", "error", err)
@@ -155,7 +159,7 @@ func GetAndUpdateActiveTopicWeights(
 			continue
 		}
 		// Calc weight and related data per topic
-		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(
+		weight, topicFeeRevenue, topicStake, err := k.GetCurrentTopicWeight(
 			ctx,
 			topic.Id,
 			topic.EpochLength,
@@ -172,6 +176,8 @@ func GetAndUpdateActiveTopicWeights(
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to set previous topic weight")
 		}
+		// Emit topic weight updated event
+		types.EmitTopicWeightUpdatedEvent(ctx, topic.Id, weight, topicStake, topicFeeRevenue)
 
 		// This revenue will be paid to top active topics of this block (the churnable topics).
 		// This happens regardless of this topic's fate (inactivation or not)

@@ -474,6 +474,7 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 }
 
 func assertEventValueBundle(t *testing.T, val string, bundle types.ValueBundle) {
+	t.Helper()
 	var result types.EventValueBundle
 	_ = json.Unmarshal([]byte(val), &result)
 	require.Equal(t, bundle.CombinedValue, result.CombinedValue)
@@ -604,13 +605,13 @@ func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
 
 	activeArr[emaScores[0].Address] = true
 	activeArr[emaScores[1].Address] = false
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, int64(10), emaScores, activeArr)
 	activeArr[emaScores[0].Address] = false
 	activeArr[emaScores[1].Address] = false
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, int64(10), emaScores, activeArr)
 	activeArr[emaScores[0].Address] = true
 	activeArr[emaScores[1].Address] = true
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, int64(10), emaScores, activeArr)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 3)

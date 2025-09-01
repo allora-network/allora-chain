@@ -72,6 +72,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		}
 
 		ctx.Logger().Info("Closed worker nonce", "topicId", topic.Id, "nonce", nonce)
+
+		// Emit worker submission window closed event
+		types.EmitWorkerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
 	}()
 
 	// Get all active inferers for this topic
@@ -138,6 +141,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
+	types.EmitActiveInferersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeInfererAddresses)
+	types.EmitActiveForecastersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeForecastAddresses)
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	return nil
 }
@@ -172,6 +177,16 @@ func ProcessAndStoreNetworkInferences(
 	}
 
 	types.EmitNewNetworkInferencesEvent(ctx, *networkInferencesResult.NetworkInferences)
+
+	// Emit network inference weight events for inferers
+	for inferer, weight := range networkInferencesResult.InfererToWeight {
+		types.EmitNetworkInferenceInfererWeightSetEvent(ctx, topicId, blockHeight, inferer, weight)
+	}
+
+	// Emit network inference weight events for forecasters
+	for forecaster, weight := range networkInferencesResult.ForecasterToWeight {
+		types.EmitNetworkInferenceForecasterWeightSetEvent(ctx, topicId, blockHeight, forecaster, weight)
+	}
 
 	// Get outlier resistant inferences
 	outlierResistantFilteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
