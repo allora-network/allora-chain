@@ -79,8 +79,7 @@ func (k *Keeper) runTask(ctx context.Context, task types.Task, handler types.Tas
 	}
 
 	// If the task is periodic, update its last run time and next run time, and reschedule it.
-	nextRunTime := task.NextRun(sdkCtx)
-	if nextRunTime != nil {
+	if nextRunTime := task.NextRun(sdkCtx); nextRunTime != nil {
 		if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id)); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
