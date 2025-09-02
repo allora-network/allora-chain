@@ -342,7 +342,7 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	s.Require().NoError(err)
 
 	// Fund and activate topic
-	var currentBlock int64 = 0
+	currentBlock := int64(0)
 	err = keeper.AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 
@@ -504,14 +504,9 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	s.Require().Equal(int64(35), response.WindowStartBlock)                        // 5 + 30
 	s.Require().Equal(int64(65), response.WindowEndBlock)                          // 35 + 10 + 20
 
-	// Add worker nonce for next window calculation
-	workerNonce := &types.Nonce{BlockHeight: 25}
-	err = keeper.AddWorkerNonce(ctx, topicId, workerNonce)
-	s.Require().NoError(err)
-
-	// Next reputer window from worker nonce: [25+30, 25+30+10+20] = [55, 85]
-	expectedNextStart := int64(55)
-	expectedNextEnd := int64(85)
+	// Next window: [20+30, 20+30+10+20] = [50, 80]
+	expectedNextStart := int64(50) // From reputerNonce3 (BlockHeight=20)
+	expectedNextEnd := int64(80)
 
 	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
 	s.Require().NoError(err)

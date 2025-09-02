@@ -298,18 +298,19 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 		response.IsWhitelisted = isWhitelisted
 	}
 
-	// Check if there's an active reputer window - find the most recent one
 	var latestActiveNonce *types.ReputerRequestNonce
+	var earliestFutureNonce *types.ReputerRequestNonce
+
 	for _, nonce := range nonces.Nonces {
 		extraLag := topic.GroundTruthLag % topic.EpochLength
 		if extraLag != 0 {
 			extraLag = topic.EpochLength - extraLag
 		}
 		windowStart := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
-		windowEnd := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
+		windowEnd := windowStart + extraLag + topic.EpochLength
 
 		if currentBlockHeight >= windowStart && currentBlockHeight <= windowEnd {
-			// If this is the first active nonce or it's more recent than the current latest
+			// Current active window: find the most recent active nonce
 			if latestActiveNonce == nil || nonce.ReputerNonce.BlockHeight > latestActiveNonce.ReputerNonce.BlockHeight {
 				latestActiveNonce = nonce
 				response.IsOpen = true
@@ -317,28 +318,29 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 				response.WindowStartBlock = windowStart
 				response.WindowEndBlock = windowEnd
 			}
+		} else if windowStart > currentBlockHeight {
+			// Next future window: find the earliest future nonce
+			if earliestFutureNonce == nil || nonce.ReputerNonce.BlockHeight < earliestFutureNonce.ReputerNonce.BlockHeight {
+				earliestFutureNonce = nonce
+			}
+		}
+
+		// Early exit: if we found both current and next nonce
+		if latestActiveNonce != nil && earliestFutureNonce != nil {
+			break
 		}
 	}
 
-	// For next window timing, we need to check unfulfilled worker nonces
-	// because reputer windows open after worker windows close
-	workerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
-	if err == nil && len(workerNonces.Nonces) > 0 {
-		// Find the earliest worker nonce that could lead to a reputer window
-		for _, workerNonce := range workerNonces.Nonces {
-			extraLag := topic.GroundTruthLag % topic.EpochLength
-			if extraLag != 0 {
-				extraLag = topic.EpochLength - extraLag
-			}
-			nextReputerStart := workerNonce.BlockHeight + topic.GroundTruthLag
-			nextReputerEnd := workerNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
-
-			if nextReputerStart > currentBlockHeight {
-				response.NextWindowStartBlock = nextReputerStart
-				response.NextWindowEndBlock = nextReputerEnd
-				break
-			}
+	// Calculate next window from the earliest future reputer nonce found
+	if earliestFutureNonce != nil {
+		extraLag := topic.GroundTruthLag % topic.EpochLength
+		if extraLag != 0 {
+			extraLag = topic.EpochLength - extraLag
 		}
+		nextReputerStart := earliestFutureNonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
+		nextReputerEnd := nextReputerStart + extraLag + topic.EpochLength
+		response.NextWindowStartBlock = nextReputerStart
+		response.NextWindowEndBlock = nextReputerEnd
 	}
 
 	return response, nil
