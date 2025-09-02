@@ -128,14 +128,36 @@ func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
 	return nil
 }
 
-// ScheduleTask schedules a task of the provided type to run at the specified time.
-func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, at time.Time) error {
-	return k.scheduleTask(ctx, typename, id, args, at, nil)
-}
+// ScheduleTask schedules a task of the provided type to run at the specified scheduling options.
+func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, scheduleOpts ...types.SchedulingOption) error {
+	handler, ok := k.handlersByTypename[typename]
+	if !ok {
+		return errors.Wrapf(types.ErrInvalidTask, "task '%s' handler not registered: '%s'", id, typename)
+	}
 
-// SchedulePeriodicTask schedules a task of the provided type to run every given interval, starting at the specified time.
-func (k *Keeper) SchedulePeriodicTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, startAt time.Time, every time.Duration) error {
-	return k.scheduleTask(ctx, typename, id, args, startAt, &every)
+	packedArgs, err := handler.PackArgs(args)
+	if err != nil {
+		return err
+	}
+
+	exists, err := k.tasks.Has(ctx, id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.Wrapf(types.ErrInvalidTask, "task '%s' already exists", id)
+	}
+
+	task, err := types.NewTask(ctx, id, typename, packedArgs, scheduleOpts...)
+	if err != nil {
+		return err
+	}
+
+	if err := k.tasks.Set(ctx, id, *task); err != nil {
+		return err
+	}
+
+	return k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id))
 }
 
 // CancelTask cancels a scheduled task, removing it from the schedule.
@@ -242,50 +264,4 @@ func (k *Keeper) GetDueTasksAt(
 
 func (k *Keeper) GetTask(ctx context.Context, id types.TaskID) (types.Task, error) {
 	return k.tasks.Get(ctx, id)
-}
-
-func (k *Keeper) scheduleTask(
-	ctx context.Context,
-	typename string,
-	id types.TaskID,
-	args proto.Message,
-	startAt time.Time,
-	every *time.Duration,
-) error {
-	handler, ok := k.handlersByTypename[typename]
-	if !ok {
-		return errors.Wrapf(types.ErrInvalidTask, "task '%s' handler not registered: '%s'", id, typename)
-	}
-
-	packedArgs, err := handler.PackArgs(args)
-	if err != nil {
-		return err
-	}
-
-	exists, err := k.tasks.Has(ctx, id)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return errors.Wrapf(types.ErrInvalidTask, "task '%s' already exists", id)
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if sdkCtx.BlockTime().After(startAt) {
-		return errors.Wrapf(types.ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", id, startAt)
-	}
-
-	if err := k.tasks.Set(ctx, id, types.Task{
-		Id:        id,
-		Typename:  typename,
-		Args:      packedArgs,
-		NextRunAt: &startAt,
-		Interval:  every,
-		LastRunAt: nil,
-		RunCount:  0,
-	}); err != nil {
-		return err
-	}
-
-	return k.tasksSchedule.Set(ctx, collections.Join3(typename, startAt, id))
 }

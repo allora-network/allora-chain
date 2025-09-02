@@ -78,16 +78,16 @@ func (k *Keeper) runTask(ctx context.Context, task types.Task, handler types.Tas
 		return errors.Wrapf(types.ErrTaskExecution, "run func failed for task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 	}
 
-	// if the task is periodic, update its last run time and next run time, and reschedule it.
-	if task.Interval != nil {
+	// If the task is periodic, update its last run time and next run time, and reschedule it.
+	nextRunTime := task.NextRun(sdkCtx)
+	if nextRunTime != nil {
 		if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id)); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
 
 		runTime := sdkCtx.BlockTime()
-		nextRunTime := runTime.Add(*task.Interval)
 		task.LastRunAt = &runTime
-		task.NextRunAt = &nextRunTime
+		task.NextRunAt = nextRunTime
 		if err := k.tasks.Set(ctx, task.Id, task); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
