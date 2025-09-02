@@ -23,7 +23,7 @@ message Task {
   // next_run_at is the timestamp of the next scheduled run for the task. If empty, the task is not scheduled (i.e. it's paused).
   google.protobuf.Timestamp next_run_at = 4 [(gogoproto.stdtime) = true];
 
-  // interval is the duration between task runs. If empty, the task runs only once.
+  // interval is the duration between task runs. If empty, the task runs only once. If set, the task is considered periodic.
   google.protobuf.Duration interval = 5 [(gogoproto.stdduration) = true];
 
   // last_run_at is the timestamp of the last time the task was run. If the task has never run, this is empty.
@@ -31,4 +31,18 @@ message Task {
 
   // run_count is the number of times the task has been run.
   uint64 run_count = 7;
+
+  // scheduling_strategy defines how the next run time is calculated after each execution.
+  SchedulingStrategy scheduling_strategy = 8;
+}
+
+// SchedulingStrategy defines the scheduling behaviour of a task, it is only useful in the context of a periodic task,
+// and affects how the next run time is calculated after each execution.
+enum SchedulingStrategy {
+  // RELATIVE means the next run time is calculated relative to the current time, i.e. next_run_at = now + interval.
+  // This is the default behaviour.
+  RELATIVE = 0;
+
+  // ABSOLUTE means the next run time is calculated relative to the last scheduled run time, i.e. next_run_at = last_run_at + interval.
+  ABSOLUTE = 1;
 }
