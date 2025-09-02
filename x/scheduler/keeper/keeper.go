@@ -239,6 +239,10 @@ func (k *Keeper) ResumePeriodicTask(ctx context.Context, id types.TaskID, startA
 		return errors.Wrapf(types.ErrInvalidTask, "cannot resume non-periodic task '%s'", id)
 	}
 
+	if task.NextRunAt != nil {
+		return errors.Wrapf(types.ErrInvalidTask, "cannot resume non paused periodic task '%s'", id)
+	}
+
 	return k.RescheduleTaskAt(ctx, id, startAt)
 }
 
