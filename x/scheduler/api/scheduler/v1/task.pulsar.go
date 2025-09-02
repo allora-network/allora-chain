@@ -17,14 +17,15 @@ import (
 )
 
 var (
-	md_Task             protoreflect.MessageDescriptor
-	fd_Task_id          protoreflect.FieldDescriptor
-	fd_Task_typename    protoreflect.FieldDescriptor
-	fd_Task_args        protoreflect.FieldDescriptor
-	fd_Task_next_run_at protoreflect.FieldDescriptor
-	fd_Task_interval    protoreflect.FieldDescriptor
-	fd_Task_last_run_at protoreflect.FieldDescriptor
-	fd_Task_run_count   protoreflect.FieldDescriptor
+	md_Task                     protoreflect.MessageDescriptor
+	fd_Task_id                  protoreflect.FieldDescriptor
+	fd_Task_typename            protoreflect.FieldDescriptor
+	fd_Task_args                protoreflect.FieldDescriptor
+	fd_Task_next_run_at         protoreflect.FieldDescriptor
+	fd_Task_interval            protoreflect.FieldDescriptor
+	fd_Task_last_run_at         protoreflect.FieldDescriptor
+	fd_Task_run_count           protoreflect.FieldDescriptor
+	fd_Task_scheduling_strategy protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -37,6 +38,7 @@ func init() {
 	fd_Task_interval = md_Task.Fields().ByName("interval")
 	fd_Task_last_run_at = md_Task.Fields().ByName("last_run_at")
 	fd_Task_run_count = md_Task.Fields().ByName("run_count")
+	fd_Task_scheduling_strategy = md_Task.Fields().ByName("scheduling_strategy")
 }
 
 var _ protoreflect.Message = (*fastReflection_Task)(nil)
@@ -146,6 +148,12 @@ func (x *fastReflection_Task) Range(f func(protoreflect.FieldDescriptor, protore
 			return
 		}
 	}
+	if x.SchedulingStrategy != 0 {
+		value := protoreflect.ValueOfEnum((protoreflect.EnumNumber)(x.SchedulingStrategy))
+		if !f(fd_Task_scheduling_strategy, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -175,6 +183,8 @@ func (x *fastReflection_Task) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.LastRunAt != nil
 	case "scheduler.v1.Task.run_count":
 		return x.RunCount != uint64(0)
+	case "scheduler.v1.Task.scheduling_strategy":
+		return x.SchedulingStrategy != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.Task"))
@@ -205,6 +215,8 @@ func (x *fastReflection_Task) Clear(fd protoreflect.FieldDescriptor) {
 		x.LastRunAt = nil
 	case "scheduler.v1.Task.run_count":
 		x.RunCount = uint64(0)
+	case "scheduler.v1.Task.scheduling_strategy":
+		x.SchedulingStrategy = 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.Task"))
@@ -242,6 +254,9 @@ func (x *fastReflection_Task) Get(descriptor protoreflect.FieldDescriptor) proto
 	case "scheduler.v1.Task.run_count":
 		value := x.RunCount
 		return protoreflect.ValueOfUint64(value)
+	case "scheduler.v1.Task.scheduling_strategy":
+		value := x.SchedulingStrategy
+		return protoreflect.ValueOfEnum((protoreflect.EnumNumber)(value))
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.Task"))
@@ -276,6 +291,8 @@ func (x *fastReflection_Task) Set(fd protoreflect.FieldDescriptor, value protore
 		x.LastRunAt = value.Message().Interface().(*timestamppb.Timestamp)
 	case "scheduler.v1.Task.run_count":
 		x.RunCount = value.Uint()
+	case "scheduler.v1.Task.scheduling_strategy":
+		x.SchedulingStrategy = (SchedulingStrategy)(value.Enum())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.Task"))
@@ -322,6 +339,8 @@ func (x *fastReflection_Task) Mutable(fd protoreflect.FieldDescriptor) protorefl
 		panic(fmt.Errorf("field typename of message scheduler.v1.Task is not mutable"))
 	case "scheduler.v1.Task.run_count":
 		panic(fmt.Errorf("field run_count of message scheduler.v1.Task is not mutable"))
+	case "scheduler.v1.Task.scheduling_strategy":
+		panic(fmt.Errorf("field scheduling_strategy of message scheduler.v1.Task is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.Task"))
@@ -353,6 +372,8 @@ func (x *fastReflection_Task) NewField(fd protoreflect.FieldDescriptor) protoref
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "scheduler.v1.Task.run_count":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "scheduler.v1.Task.scheduling_strategy":
+		return protoreflect.ValueOfEnum(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.Task"))
@@ -449,6 +470,9 @@ func (x *fastReflection_Task) ProtoMethods() *protoiface.Methods {
 		if x.RunCount != 0 {
 			n += 1 + runtime.Sov(uint64(x.RunCount))
 		}
+		if x.SchedulingStrategy != 0 {
+			n += 1 + runtime.Sov(uint64(x.SchedulingStrategy))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -477,6 +501,11 @@ func (x *fastReflection_Task) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.SchedulingStrategy != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.SchedulingStrategy))
+			i--
+			dAtA[i] = 0x40
 		}
 		if x.RunCount != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.RunCount))
@@ -829,6 +858,25 @@ func (x *fastReflection_Task) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 8:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SchedulingStrategy", wireType)
+				}
+				x.SchedulingStrategy = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.SchedulingStrategy |= SchedulingStrategy(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -877,6 +925,57 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// SchedulingStrategy defines the scheduling behaviour of a task, it is only useful in the context of a periodic task,
+// and affects how the next run time is calculated after each execution.
+type SchedulingStrategy int32
+
+const (
+	// RELATIVE means the next run time is calculated relative to the current time, i.e. next_run_at = now + interval.
+	// This is the default behaviour.
+	SchedulingStrategy_RELATIVE SchedulingStrategy = 0
+	// ABSOLUTE means the next run time is calculated relative to the last scheduled run time, i.e. next_run_at = last_run_at + interval.
+	SchedulingStrategy_ABSOLUTE SchedulingStrategy = 1
+)
+
+// Enum value maps for SchedulingStrategy.
+var (
+	SchedulingStrategy_name = map[int32]string{
+		0: "RELATIVE",
+		1: "ABSOLUTE",
+	}
+	SchedulingStrategy_value = map[string]int32{
+		"RELATIVE": 0,
+		"ABSOLUTE": 1,
+	}
+)
+
+func (x SchedulingStrategy) Enum() *SchedulingStrategy {
+	p := new(SchedulingStrategy)
+	*p = x
+	return p
+}
+
+func (x SchedulingStrategy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SchedulingStrategy) Descriptor() protoreflect.EnumDescriptor {
+	return file_scheduler_v1_task_proto_enumTypes[0].Descriptor()
+}
+
+func (SchedulingStrategy) Type() protoreflect.EnumType {
+	return &file_scheduler_v1_task_proto_enumTypes[0]
+}
+
+func (x SchedulingStrategy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SchedulingStrategy.Descriptor instead.
+func (SchedulingStrategy) EnumDescriptor() ([]byte, []int) {
+	return file_scheduler_v1_task_proto_rawDescGZIP(), []int{0}
+}
+
 type Task struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -890,12 +989,14 @@ type Task struct {
 	Args *anypb.Any `protobuf:"bytes,3,opt,name=args,proto3" json:"args,omitempty"`
 	// next_run_at is the timestamp of the next scheduled run for the task. If empty, the task is not scheduled (i.e. it's paused).
 	NextRunAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=next_run_at,json=nextRunAt,proto3" json:"next_run_at,omitempty"`
-	// interval is the duration between task runs. If empty, the task runs only once.
+	// interval is the duration between task runs. If empty, the task runs only once. If set, the task is considered periodic.
 	Interval *durationpb.Duration `protobuf:"bytes,5,opt,name=interval,proto3" json:"interval,omitempty"`
 	// last_run_at is the timestamp of the last time the task was run. If the task has never run, this is empty.
 	LastRunAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=last_run_at,json=lastRunAt,proto3" json:"last_run_at,omitempty"`
 	// run_count is the number of times the task has been run.
 	RunCount uint64 `protobuf:"varint,7,opt,name=run_count,json=runCount,proto3" json:"run_count,omitempty"`
+	// scheduling_strategy defines how the next run time is calculated after each execution.
+	SchedulingStrategy SchedulingStrategy `protobuf:"varint,8,opt,name=scheduling_strategy,json=schedulingStrategy,proto3,enum=scheduler.v1.SchedulingStrategy" json:"scheduling_strategy,omitempty"`
 }
 
 func (x *Task) Reset() {
@@ -967,6 +1068,13 @@ func (x *Task) GetRunCount() uint64 {
 	return 0
 }
 
+func (x *Task) GetSchedulingStrategy() SchedulingStrategy {
+	if x != nil {
+		return x.SchedulingStrategy
+	}
+	return SchedulingStrategy_RELATIVE
+}
+
 var File_scheduler_v1_task_proto protoreflect.FileDescriptor
 
 var file_scheduler_v1_task_proto_rawDesc = []byte{
@@ -979,7 +1087,7 @@ var file_scheduler_v1_task_proto_rawDesc = []byte{
 	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f,
 	0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19,
 	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f,
-	0x61, 0x6e, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd0, 0x02, 0x0a, 0x04, 0x54, 0x61,
+	0x61, 0x6e, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xa3, 0x03, 0x0a, 0x04, 0x54, 0x61,
 	0x73, 0x6b, 0x12, 0x1e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x0e,
 	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x06, 0x54, 0x61, 0x73, 0x6b, 0x49, 0x44, 0x52, 0x02,
 	0x69, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x74, 0x79, 0x70, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
@@ -1000,20 +1108,28 @@ var file_scheduler_v1_task_proto_rawDesc = []byte{
 	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x04, 0x90, 0xdf, 0x1f, 0x01, 0x52, 0x09,
 	0x6c, 0x61, 0x73, 0x74, 0x52, 0x75, 0x6e, 0x41, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x72, 0x75, 0x6e,
 	0x5f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x72, 0x75,
-	0x6e, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x42, 0xbf, 0x01, 0x0a,
-	0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e, 0x76,
-	0x31, 0x42, 0x09, 0x54, 0x61, 0x73, 0x6b, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
-	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c,
-	0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72,
-	0x2f, 0x76, 0x31, 0x3b, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x76, 0x31, 0xa2,
-	0x02, 0x03, 0x53, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65,
-	0x72, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72,
-	0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x5c,
-	0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02,
-	0x0d, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6e, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x51, 0x0a, 0x13, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75,
+	0x6c, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x18, 0x08, 0x20,
+	0x01, 0x28, 0x0e, 0x32, 0x20, 0x2e, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e,
+	0x76, 0x31, 0x2e, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x69, 0x6e, 0x67, 0x53, 0x74, 0x72,
+	0x61, 0x74, 0x65, 0x67, 0x79, 0x52, 0x12, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x69, 0x6e,
+	0x67, 0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x2a,
+	0x30, 0x0a, 0x12, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x69, 0x6e, 0x67, 0x53, 0x74, 0x72,
+	0x61, 0x74, 0x65, 0x67, 0x79, 0x12, 0x0c, 0x0a, 0x08, 0x52, 0x45, 0x4c, 0x41, 0x54, 0x49, 0x56,
+	0x45, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x41, 0x42, 0x53, 0x4f, 0x4c, 0x55, 0x54, 0x45, 0x10,
+	0x01, 0x42, 0xbf, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75,
+	0x6c, 0x65, 0x72, 0x2e, 0x76, 0x31, 0x42, 0x09, 0x54, 0x61, 0x73, 0x6b, 0x50, 0x72, 0x6f, 0x74,
+	0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x73, 0x63,
+	0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x73, 0x63, 0x68, 0x65,
+	0x64, 0x75, 0x6c, 0x65, 0x72, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c,
+	0x65, 0x72, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x53, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x53, 0x63, 0x68,
+	0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x53, 0x63, 0x68, 0x65,
+	0x64, 0x75, 0x6c, 0x65, 0x72, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x53, 0x63, 0x68, 0x65, 0x64,
+	0x75, 0x6c, 0x65, 0x72, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x3a,
+	0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1028,23 +1144,26 @@ func file_scheduler_v1_task_proto_rawDescGZIP() []byte {
 	return file_scheduler_v1_task_proto_rawDescData
 }
 
+var file_scheduler_v1_task_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_scheduler_v1_task_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_scheduler_v1_task_proto_goTypes = []interface{}{
-	(*Task)(nil),                  // 0: scheduler.v1.Task
-	(*anypb.Any)(nil),             // 1: google.protobuf.Any
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),   // 3: google.protobuf.Duration
+	(SchedulingStrategy)(0),       // 0: scheduler.v1.SchedulingStrategy
+	(*Task)(nil),                  // 1: scheduler.v1.Task
+	(*anypb.Any)(nil),             // 2: google.protobuf.Any
+	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),   // 4: google.protobuf.Duration
 }
 var file_scheduler_v1_task_proto_depIdxs = []int32{
-	1, // 0: scheduler.v1.Task.args:type_name -> google.protobuf.Any
-	2, // 1: scheduler.v1.Task.next_run_at:type_name -> google.protobuf.Timestamp
-	3, // 2: scheduler.v1.Task.interval:type_name -> google.protobuf.Duration
-	2, // 3: scheduler.v1.Task.last_run_at:type_name -> google.protobuf.Timestamp
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // 0: scheduler.v1.Task.args:type_name -> google.protobuf.Any
+	3, // 1: scheduler.v1.Task.next_run_at:type_name -> google.protobuf.Timestamp
+	4, // 2: scheduler.v1.Task.interval:type_name -> google.protobuf.Duration
+	3, // 3: scheduler.v1.Task.last_run_at:type_name -> google.protobuf.Timestamp
+	0, // 4: scheduler.v1.Task.scheduling_strategy:type_name -> scheduler.v1.SchedulingStrategy
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_scheduler_v1_task_proto_init() }
@@ -1071,13 +1190,14 @@ func file_scheduler_v1_task_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_scheduler_v1_task_proto_rawDesc,
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_scheduler_v1_task_proto_goTypes,
 		DependencyIndexes: file_scheduler_v1_task_proto_depIdxs,
+		EnumInfos:         file_scheduler_v1_task_proto_enumTypes,
 		MessageInfos:      file_scheduler_v1_task_proto_msgTypes,
 	}.Build()
 	File_scheduler_v1_task_proto = out.File
