@@ -119,12 +119,13 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return errorsmod.Wrap(err, "could not pay allora rewards from ecosystem")
 	}
 	types.EmitNewRewardCurrentBlockEmissionEvent(sdkCtx, blockHeight, alloraRewardsCut)
-	// Emit Emission Info Event
+
 	// Emit EmissionInfo event with current emission data
 	_, eventInfo, err := k.GetEmissionInfo(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "could not get emission info")
 	}
 	types.EmitNewEmissionInfoEvent(sdkCtx, *eventInfo)
+
 	return nil
 }
