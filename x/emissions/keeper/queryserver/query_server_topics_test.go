@@ -263,3 +263,258 @@ func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 	feeRev = response.FeeRevenue
 	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
+
+func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
+	topicId := uint64(1)
+	workerAddress := s.AddrsStr(0)
+
+	// Set params to prevent global whitelist bypass
+	params := types.DefaultParams()
+	params.MaxUnfulfilledReputerRequests = uint64(300)
+	params.GlobalWorkerWhitelistEnabled = true
+	params.GlobalReputerWhitelistEnabled = true
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Create topic
+	topic := s.MockTopic()
+	topic.Id = topicId
+	topic.WorkerSubmissionWindow = 10
+	topic.EpochLength = 20
+	topic.GroundTruthLag = 30
+
+	err = keeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+
+	// Enable worker whitelist for testing
+	err = keeper.EnableTopicWorkerWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Test with no address provided
+	req := &types.GetWorkerSubmissionWindowStatusRequest{
+		TopicId: topicId,
+		Address: "",
+	}
+	response, err := queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err, "Should not error with no address")
+	s.Require().False(response.IsOpen, "Window should not be open with no active nonces")
+	s.Require().False(response.IsRegistered, "Should be false when no address provided")
+	s.Require().False(response.IsWhitelisted, "Should be false when no address provided")
+
+	// Test with invalid address
+	req.Address = "invalid_address"
+	_, err = queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
+	s.Require().Error(err, "Should error with invalid address format")
+
+	// Add worker to global whitelist first so they can be tested
+	err = keeper.AddToGlobalWorkerWhitelist(ctx, workerAddress)
+	s.Require().NoError(err)
+
+	// Test with valid unregistered address
+	req.Address = workerAddress
+	response, err = queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err)
+	s.Require().False(response.IsRegistered)
+	s.Require().True(response.IsWhitelisted) // Can submit via global whitelist
+
+	// Register the worker using MsgServer
+	moduleParams, _ := keeper.GetParams(ctx)
+	s.FundAccount(moduleParams.RegistrationFee.Int64(), s.Addrs(0))
+	registerMsg := &types.RegisterRequest{
+		Sender:    workerAddress,
+		TopicId:   topicId,
+		IsReputer: false,
+		Owner:     workerAddress,
+	}
+	_, err = s.EmissionsMsgServer().Register(ctx, registerMsg)
+	s.Require().NoError(err)
+
+	// Verify registration
+	response, err = queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err)
+	s.Require().True(response.IsRegistered)
+
+	// Add worker to whitelist for deterministic test setup
+	err = keeper.AddToTopicWorkerWhitelist(ctx, topicId, workerAddress)
+	s.Require().NoError(err)
+
+	// Fund and activate topic
+	var currentBlock int64 = 0
+	err = keeper.AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+
+	funderAddr := s.Addrs(2)
+	s.FundTopic(topicId, funderAddr, cosmosMath.NewInt(10000))
+
+	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(isActive)
+
+	err = keeper.UpdateTopicEpochLastEnded(ctx, topicId, int64(0))
+	s.Require().NoError(err)
+
+	// Create multiple overlapping worker nonces to test "latest active nonce" selection
+	// Set current block to have multiple active windows
+	currentBlock = int64(5)
+	s.WithBlockHeight(currentBlock)
+	ctx = s.Ctx()
+
+	// Create multiple nonces with overlapping windows
+	nonce1 := &types.Nonce{BlockHeight: 0}  // Window [0, 10] - includes block 5
+	nonce2 := &types.Nonce{BlockHeight: 2}  // Window [2, 12] - includes block 5 (more recent)
+	nonce3 := &types.Nonce{BlockHeight: 15} // Window [15, 25] - future window
+
+	err = keeper.AddWorkerNonce(ctx, topicId, nonce1)
+	s.Require().NoError(err)
+	err = keeper.AddWorkerNonce(ctx, topicId, nonce2)
+	s.Require().NoError(err)
+	err = keeper.AddWorkerNonce(ctx, topicId, nonce3)
+	s.Require().NoError(err)
+
+	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Len(unfulfilledNonces.Nonces, 3)
+
+	// Test that it returns the LATEST active nonce (nonce2 - most recent that includes current block)
+	response, err = queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err)
+	s.Require().True(response.IsOpen)
+	s.Require().Equal(nonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
+
+	// Verify window calculations for the latest active window
+	expectedWindowStart := nonce2.BlockHeight
+	expectedWindowEnd := nonce2.BlockHeight + topic.WorkerSubmissionWindow
+	s.Require().Equal(expectedWindowStart, response.WindowStartBlock)
+	s.Require().Equal(expectedWindowEnd, response.WindowEndBlock)
+
+	// Verify next window calculations - based on epoch schedule from EpochLastEnded=0
+	// With EpochLastEnded=0 and EpochLength=20, next epoch is at block 20
+	expectedNextStart := int64(20) // Next epoch boundary
+	expectedNextEnd := int64(30)   // expectedNextStart + WorkerSubmissionWindow(10)
+
+	s.Require().Equal(expectedNextStart, response.NextWindowStartBlock)
+	s.Require().Equal(expectedNextEnd, response.NextWindowEndBlock)
+}
+
+func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
+	ctx := s.Ctx()
+	keeper := s.EmissionsKeeper()
+	queryServer := s.EmissionsQueryServer()
+	topicId := uint64(1)
+	reputerAddress := s.AddrsStr(0)
+	var currentBlock int64
+
+	params := types.DefaultParams()
+	params.MaxUnfulfilledReputerRequests = uint64(300)
+	params.GlobalWorkerWhitelistEnabled = true
+	params.GlobalReputerWhitelistEnabled = true
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Create topic
+	topic := s.MockTopic()
+	topic.Id = topicId
+	topic.WorkerSubmissionWindow = 10
+	topic.EpochLength = 20
+	topic.GroundTruthLag = 30
+
+	err = keeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
+
+	// Enable reputer whitelist
+	err = keeper.EnableTopicReputerWhitelist(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Test with no address provided
+	req := &types.GetReputerSubmissionWindowStatusRequest{
+		TopicId: topicId,
+		Address: "",
+	}
+	response, err := queryServer.GetReputerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err, "Should not error with no address")
+	s.Require().False(response.IsOpen, "Window should not be open with no active nonces")
+	s.Require().False(response.IsRegistered, "Should be false when no address provided")
+	s.Require().False(response.IsWhitelisted, "Should be false when no address provided")
+
+	// Test with invalid address
+	req.Address = "invalid_address"
+	_, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
+	s.Require().Error(err, "Should error with invalid address format")
+
+	// Add reputer to global whitelist first so they can be tested
+	err = keeper.AddToGlobalReputerWhitelist(ctx, reputerAddress)
+	s.Require().NoError(err)
+
+	// Test with valid unregistered address
+	req.Address = reputerAddress
+	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err)
+	s.Require().False(response.IsRegistered)
+	s.Require().True(response.IsWhitelisted) // Can submit via global whitelist
+
+	// Register the reputer using MsgServer
+	moduleParams, _ := keeper.GetParams(ctx)
+	s.FundAccount(moduleParams.RegistrationFee.Int64(), s.Addrs(0))
+	registerMsg := &types.RegisterRequest{
+		Sender:    reputerAddress,
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     reputerAddress,
+	}
+	_, err = s.EmissionsMsgServer().Register(ctx, registerMsg)
+	s.Require().NoError(err)
+
+	// Verify registration
+	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err)
+	s.Require().True(response.IsRegistered)
+
+	// Add reputer to whitelist for deterministic test setup
+	err = keeper.AddToTopicReputerWhitelist(ctx, topicId, reputerAddress)
+	s.Require().NoError(err)
+
+	// Create multiple reputer nonces to test "latest active nonce" selection
+	// Reputer windows: [nonce + GroundTruthLag, nonce + GroundTruthLag + extraLag + EpochLength]
+	// extraLag = EpochLength - (GroundTruthLag % EpochLength) = 20 - (30 % 20) = 10
+
+	reputerNonce1 := &types.Nonce{BlockHeight: 0}  // Window [30, 60] (0+30 to 0+30+10+20)
+	reputerNonce2 := &types.Nonce{BlockHeight: 5}  // Window [35, 65] (5+30 to 5+30+10+20)
+	reputerNonce3 := &types.Nonce{BlockHeight: 20} // Window [50, 80] (20+30 to 20+30+10+20)
+
+	err = keeper.AddReputerNonce(ctx, topicId, reputerNonce1)
+	s.Require().NoError(err)
+	err = keeper.AddReputerNonce(ctx, topicId, reputerNonce2)
+	s.Require().NoError(err)
+	err = keeper.AddReputerNonce(ctx, topicId, reputerNonce3)
+	s.Require().NoError(err)
+
+	// Set current block to be within multiple reputer windows
+	currentBlock = int64(40) // Within windows [30,60] and [35,65]
+	s.WithBlockHeight(currentBlock)
+	ctx = s.Ctx()
+
+	// Test that it returns the LATEST active reputer nonce (nonce2 - most recent that includes current block)
+	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err)
+	s.Require().True(response.IsOpen)
+	s.Require().Equal(reputerNonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
+	s.Require().Equal(int64(35), response.WindowStartBlock)                        // 5 + 30
+	s.Require().Equal(int64(65), response.WindowEndBlock)                          // 35 + 10 + 20
+
+	// Add worker nonce for next window calculation
+	workerNonce := &types.Nonce{BlockHeight: 25}
+	err = keeper.AddWorkerNonce(ctx, topicId, workerNonce)
+	s.Require().NoError(err)
+
+	// Next reputer window from worker nonce: [25+30, 25+30+10+20] = [55, 85]
+	expectedNextStart := int64(55)
+	expectedNextEnd := int64(85)
+
+	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedNextStart, response.NextWindowStartBlock)
+	s.Require().Equal(expectedNextEnd, response.NextWindowEndBlock)
+}

@@ -420,21 +420,6 @@ service QueryService {
     option (google.api.http).get = "/emissions/v9/count_forecaster_inclusions_in_topic/{topic_id}/{forecaster}";
   }
 
-  rpc GetActiveReputersForTopic(GetActiveReputersForTopicRequest) returns (GetActiveReputersForTopicResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/active_reputers/{topic_id}";
-  }
-
-  rpc GetActiveForecastersForTopic(GetActiveForecastersForTopicRequest) returns (GetActiveForecastersForTopicResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/active_forecasters/{topic_id}";
-  }
-
-  rpc GetActiveInferersForTopic(GetActiveInferersForTopicRequest) returns (GetActiveInferersForTopicResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/active_inferers/{topic_id}";
-  }
-
   rpc IsWhitelistedGlobalWorker(IsWhitelistedGlobalWorkerRequest) returns (IsWhitelistedGlobalWorkerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v9/is_whitelisted_global_worker/{address}";
@@ -554,6 +539,18 @@ service QueryService {
   rpc GetLatestForecasterWeight(GetLatestForecasterWeightRequest) returns (GetLatestForecasterWeightResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v9/latest_forecaster_weight/{topic_id}/{actor_id}";
+  }
+
+  // Get worker submission window status and timing
+  rpc GetWorkerSubmissionWindowStatus(GetWorkerSubmissionWindowStatusRequest) returns (GetWorkerSubmissionWindowStatusResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v9/worker_submission_window_status/{topic_id}";
+  }
+
+  // Get reputer submission window status and timing
+  rpc GetReputerSubmissionWindowStatus(GetReputerSubmissionWindowStatusRequest) returns (GetReputerSubmissionWindowStatusResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v9/reputer_submission_window_status/{topic_id}";
   }
 }
 
@@ -1529,30 +1526,6 @@ message GetNextChurningBlockByTopicIdResponse {
   int64 block_height = 1;
 }
 
-message GetActiveReputersForTopicRequest {
-  uint64 topic_id = 1;
-}
-
-message GetActiveReputersForTopicResponse {
-  repeated string reputers = 1;
-}
-
-message GetActiveForecastersForTopicRequest {
-  uint64 topic_id = 1;
-}
-
-message GetActiveForecastersForTopicResponse {
-  repeated string forecasters = 1;
-}
-
-message GetActiveInferersForTopicRequest {
-  uint64 topic_id = 1;
-}
-
-message GetActiveInferersForTopicResponse {
-  repeated string inferers = 1;
-}
-
 message GetTopicInitialInfererEmaScoreRequest {
   uint64 topic_id = 1;
 }
@@ -1622,4 +1595,36 @@ message GetLatestForecasterWeightResponse {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+}
+
+message GetWorkerSubmissionWindowStatusRequest {
+  uint64 topic_id = 1;
+  string address = 2; // Optional: worker address to check registration and whitelist status
+}
+
+message GetWorkerSubmissionWindowStatusResponse {
+  bool is_open = 1 [(amino.dont_omitempty) = true];
+  int64 current_nonce_block_height = 2;
+  int64 window_start_block = 3;
+  int64 window_end_block = 4;
+  int64 next_window_start_block = 5;
+  int64 next_window_end_block = 6;
+  bool is_registered = 7 [(amino.dont_omitempty) = true]; // Only filled when address is provided
+  bool is_whitelisted = 8 [(amino.dont_omitempty) = true]; // Only filled when address is provided
+}
+
+message GetReputerSubmissionWindowStatusRequest {
+  uint64 topic_id = 1;
+  string address = 2; // Optional: reputer address to check registration and whitelist status
+}
+
+message GetReputerSubmissionWindowStatusResponse {
+  bool is_open = 1 [(amino.dont_omitempty) = true];
+  int64 current_nonce_block_height = 2;
+  int64 window_start_block = 3;
+  int64 window_end_block = 4;
+  int64 next_window_start_block = 5;
+  int64 next_window_end_block = 6;
+  bool is_registered = 7 [(amino.dont_omitempty) = true]; // Only filled when address is provided
+  bool is_whitelisted = 8 [(amino.dont_omitempty) = true]; // Only filled when address is provided
 }
