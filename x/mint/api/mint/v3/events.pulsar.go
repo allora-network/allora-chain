@@ -2531,6 +2531,2068 @@ func (x *fastReflection_EventParamsSet) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var (
+	md_EventEmissionInfo                                                protoreflect.MessageDescriptor
+	fd_EventEmissionInfo_ecosystem_balance                              protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_previous_block_emission                        protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_ecosystem_mint_supply_remaining                protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_blocks_per_month                               protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_block_height_target_e_i_last_calculated        protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_block_height_target_e_i_next_calculated        protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_network_staked_tokens                          protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_locked_vesting_tokens_total                    protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_locked_vesting_tokens_investors_preseed        protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_locked_vesting_tokens_investors_seed           protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_locked_vesting_tokens_team                     protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_ecosystem_locked                               protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_circulating_supply                             protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_max_supply                                     protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_target_emission_rate_per_unit_staked_token     protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_reputers_percent                               protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_validators_percent                             protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_maximum_monthly_emission_per_unit_staked_token protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_target_reward_emission_per_unit_staked_token   protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_emission_per_unit_staked_token                 protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_emission_per_month                             protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_block_emission                                 protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_validator_cut                                  protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_allora_rewards_cut                             protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_previous_reward_emission_per_unit_staked_token protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_months_already_unlocked                        protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_updated_months_unlocked                        protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_mint_v3_events_proto_init()
+	md_EventEmissionInfo = File_mint_v3_events_proto.Messages().ByName("EventEmissionInfo")
+	fd_EventEmissionInfo_ecosystem_balance = md_EventEmissionInfo.Fields().ByName("ecosystem_balance")
+	fd_EventEmissionInfo_previous_block_emission = md_EventEmissionInfo.Fields().ByName("previous_block_emission")
+	fd_EventEmissionInfo_ecosystem_mint_supply_remaining = md_EventEmissionInfo.Fields().ByName("ecosystem_mint_supply_remaining")
+	fd_EventEmissionInfo_blocks_per_month = md_EventEmissionInfo.Fields().ByName("blocks_per_month")
+	fd_EventEmissionInfo_block_height_target_e_i_last_calculated = md_EventEmissionInfo.Fields().ByName("block_height_target_e_i_last_calculated")
+	fd_EventEmissionInfo_block_height_target_e_i_next_calculated = md_EventEmissionInfo.Fields().ByName("block_height_target_e_i_next_calculated")
+	fd_EventEmissionInfo_network_staked_tokens = md_EventEmissionInfo.Fields().ByName("network_staked_tokens")
+	fd_EventEmissionInfo_locked_vesting_tokens_total = md_EventEmissionInfo.Fields().ByName("locked_vesting_tokens_total")
+	fd_EventEmissionInfo_locked_vesting_tokens_investors_preseed = md_EventEmissionInfo.Fields().ByName("locked_vesting_tokens_investors_preseed")
+	fd_EventEmissionInfo_locked_vesting_tokens_investors_seed = md_EventEmissionInfo.Fields().ByName("locked_vesting_tokens_investors_seed")
+	fd_EventEmissionInfo_locked_vesting_tokens_team = md_EventEmissionInfo.Fields().ByName("locked_vesting_tokens_team")
+	fd_EventEmissionInfo_ecosystem_locked = md_EventEmissionInfo.Fields().ByName("ecosystem_locked")
+	fd_EventEmissionInfo_circulating_supply = md_EventEmissionInfo.Fields().ByName("circulating_supply")
+	fd_EventEmissionInfo_max_supply = md_EventEmissionInfo.Fields().ByName("max_supply")
+	fd_EventEmissionInfo_target_emission_rate_per_unit_staked_token = md_EventEmissionInfo.Fields().ByName("target_emission_rate_per_unit_staked_token")
+	fd_EventEmissionInfo_reputers_percent = md_EventEmissionInfo.Fields().ByName("reputers_percent")
+	fd_EventEmissionInfo_validators_percent = md_EventEmissionInfo.Fields().ByName("validators_percent")
+	fd_EventEmissionInfo_maximum_monthly_emission_per_unit_staked_token = md_EventEmissionInfo.Fields().ByName("maximum_monthly_emission_per_unit_staked_token")
+	fd_EventEmissionInfo_target_reward_emission_per_unit_staked_token = md_EventEmissionInfo.Fields().ByName("target_reward_emission_per_unit_staked_token")
+	fd_EventEmissionInfo_emission_per_unit_staked_token = md_EventEmissionInfo.Fields().ByName("emission_per_unit_staked_token")
+	fd_EventEmissionInfo_emission_per_month = md_EventEmissionInfo.Fields().ByName("emission_per_month")
+	fd_EventEmissionInfo_block_emission = md_EventEmissionInfo.Fields().ByName("block_emission")
+	fd_EventEmissionInfo_validator_cut = md_EventEmissionInfo.Fields().ByName("validator_cut")
+	fd_EventEmissionInfo_allora_rewards_cut = md_EventEmissionInfo.Fields().ByName("allora_rewards_cut")
+	fd_EventEmissionInfo_previous_reward_emission_per_unit_staked_token = md_EventEmissionInfo.Fields().ByName("previous_reward_emission_per_unit_staked_token")
+	fd_EventEmissionInfo_months_already_unlocked = md_EventEmissionInfo.Fields().ByName("months_already_unlocked")
+	fd_EventEmissionInfo_updated_months_unlocked = md_EventEmissionInfo.Fields().ByName("updated_months_unlocked")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventEmissionInfo)(nil)
+
+type fastReflection_EventEmissionInfo EventEmissionInfo
+
+func (x *EventEmissionInfo) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventEmissionInfo)(x)
+}
+
+func (x *EventEmissionInfo) slowProtoReflect() protoreflect.Message {
+	mi := &file_mint_v3_events_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventEmissionInfo_messageType fastReflection_EventEmissionInfo_messageType
+var _ protoreflect.MessageType = fastReflection_EventEmissionInfo_messageType{}
+
+type fastReflection_EventEmissionInfo_messageType struct{}
+
+func (x fastReflection_EventEmissionInfo_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventEmissionInfo)(nil)
+}
+func (x fastReflection_EventEmissionInfo_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventEmissionInfo)
+}
+func (x fastReflection_EventEmissionInfo_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventEmissionInfo
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventEmissionInfo) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventEmissionInfo
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventEmissionInfo) Type() protoreflect.MessageType {
+	return _fastReflection_EventEmissionInfo_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventEmissionInfo) New() protoreflect.Message {
+	return new(fastReflection_EventEmissionInfo)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventEmissionInfo) Interface() protoreflect.ProtoMessage {
+	return (*EventEmissionInfo)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventEmissionInfo) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.EcosystemBalance != "" {
+		value := protoreflect.ValueOfString(x.EcosystemBalance)
+		if !f(fd_EventEmissionInfo_ecosystem_balance, value) {
+			return
+		}
+	}
+	if x.PreviousBlockEmission != "" {
+		value := protoreflect.ValueOfString(x.PreviousBlockEmission)
+		if !f(fd_EventEmissionInfo_previous_block_emission, value) {
+			return
+		}
+	}
+	if x.EcosystemMintSupplyRemaining != "" {
+		value := protoreflect.ValueOfString(x.EcosystemMintSupplyRemaining)
+		if !f(fd_EventEmissionInfo_ecosystem_mint_supply_remaining, value) {
+			return
+		}
+	}
+	if x.BlocksPerMonth != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BlocksPerMonth)
+		if !f(fd_EventEmissionInfo_blocks_per_month, value) {
+			return
+		}
+	}
+	if x.BlockHeightTargetEILastCalculated != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BlockHeightTargetEILastCalculated)
+		if !f(fd_EventEmissionInfo_block_height_target_e_i_last_calculated, value) {
+			return
+		}
+	}
+	if x.BlockHeightTargetEINextCalculated != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BlockHeightTargetEINextCalculated)
+		if !f(fd_EventEmissionInfo_block_height_target_e_i_next_calculated, value) {
+			return
+		}
+	}
+	if x.NetworkStakedTokens != "" {
+		value := protoreflect.ValueOfString(x.NetworkStakedTokens)
+		if !f(fd_EventEmissionInfo_network_staked_tokens, value) {
+			return
+		}
+	}
+	if x.LockedVestingTokensTotal != "" {
+		value := protoreflect.ValueOfString(x.LockedVestingTokensTotal)
+		if !f(fd_EventEmissionInfo_locked_vesting_tokens_total, value) {
+			return
+		}
+	}
+	if x.LockedVestingTokensInvestorsPreseed != "" {
+		value := protoreflect.ValueOfString(x.LockedVestingTokensInvestorsPreseed)
+		if !f(fd_EventEmissionInfo_locked_vesting_tokens_investors_preseed, value) {
+			return
+		}
+	}
+	if x.LockedVestingTokensInvestorsSeed != "" {
+		value := protoreflect.ValueOfString(x.LockedVestingTokensInvestorsSeed)
+		if !f(fd_EventEmissionInfo_locked_vesting_tokens_investors_seed, value) {
+			return
+		}
+	}
+	if x.LockedVestingTokensTeam != "" {
+		value := protoreflect.ValueOfString(x.LockedVestingTokensTeam)
+		if !f(fd_EventEmissionInfo_locked_vesting_tokens_team, value) {
+			return
+		}
+	}
+	if x.EcosystemLocked != "" {
+		value := protoreflect.ValueOfString(x.EcosystemLocked)
+		if !f(fd_EventEmissionInfo_ecosystem_locked, value) {
+			return
+		}
+	}
+	if x.CirculatingSupply != "" {
+		value := protoreflect.ValueOfString(x.CirculatingSupply)
+		if !f(fd_EventEmissionInfo_circulating_supply, value) {
+			return
+		}
+	}
+	if x.MaxSupply != "" {
+		value := protoreflect.ValueOfString(x.MaxSupply)
+		if !f(fd_EventEmissionInfo_max_supply, value) {
+			return
+		}
+	}
+	if x.TargetEmissionRatePerUnitStakedToken != "" {
+		value := protoreflect.ValueOfString(x.TargetEmissionRatePerUnitStakedToken)
+		if !f(fd_EventEmissionInfo_target_emission_rate_per_unit_staked_token, value) {
+			return
+		}
+	}
+	if x.ReputersPercent != "" {
+		value := protoreflect.ValueOfString(x.ReputersPercent)
+		if !f(fd_EventEmissionInfo_reputers_percent, value) {
+			return
+		}
+	}
+	if x.ValidatorsPercent != "" {
+		value := protoreflect.ValueOfString(x.ValidatorsPercent)
+		if !f(fd_EventEmissionInfo_validators_percent, value) {
+			return
+		}
+	}
+	if x.MaximumMonthlyEmissionPerUnitStakedToken != "" {
+		value := protoreflect.ValueOfString(x.MaximumMonthlyEmissionPerUnitStakedToken)
+		if !f(fd_EventEmissionInfo_maximum_monthly_emission_per_unit_staked_token, value) {
+			return
+		}
+	}
+	if x.TargetRewardEmissionPerUnitStakedToken != "" {
+		value := protoreflect.ValueOfString(x.TargetRewardEmissionPerUnitStakedToken)
+		if !f(fd_EventEmissionInfo_target_reward_emission_per_unit_staked_token, value) {
+			return
+		}
+	}
+	if x.EmissionPerUnitStakedToken != "" {
+		value := protoreflect.ValueOfString(x.EmissionPerUnitStakedToken)
+		if !f(fd_EventEmissionInfo_emission_per_unit_staked_token, value) {
+			return
+		}
+	}
+	if x.EmissionPerMonth != "" {
+		value := protoreflect.ValueOfString(x.EmissionPerMonth)
+		if !f(fd_EventEmissionInfo_emission_per_month, value) {
+			return
+		}
+	}
+	if x.BlockEmission != "" {
+		value := protoreflect.ValueOfString(x.BlockEmission)
+		if !f(fd_EventEmissionInfo_block_emission, value) {
+			return
+		}
+	}
+	if x.ValidatorCut != "" {
+		value := protoreflect.ValueOfString(x.ValidatorCut)
+		if !f(fd_EventEmissionInfo_validator_cut, value) {
+			return
+		}
+	}
+	if x.AlloraRewardsCut != "" {
+		value := protoreflect.ValueOfString(x.AlloraRewardsCut)
+		if !f(fd_EventEmissionInfo_allora_rewards_cut, value) {
+			return
+		}
+	}
+	if x.PreviousRewardEmissionPerUnitStakedToken != "" {
+		value := protoreflect.ValueOfString(x.PreviousRewardEmissionPerUnitStakedToken)
+		if !f(fd_EventEmissionInfo_previous_reward_emission_per_unit_staked_token, value) {
+			return
+		}
+	}
+	if x.MonthsAlreadyUnlocked != "" {
+		value := protoreflect.ValueOfString(x.MonthsAlreadyUnlocked)
+		if !f(fd_EventEmissionInfo_months_already_unlocked, value) {
+			return
+		}
+	}
+	if x.UpdatedMonthsUnlocked != "" {
+		value := protoreflect.ValueOfString(x.UpdatedMonthsUnlocked)
+		if !f(fd_EventEmissionInfo_updated_months_unlocked, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventEmissionInfo) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "mint.v3.EventEmissionInfo.ecosystem_balance":
+		return x.EcosystemBalance != ""
+	case "mint.v3.EventEmissionInfo.previous_block_emission":
+		return x.PreviousBlockEmission != ""
+	case "mint.v3.EventEmissionInfo.ecosystem_mint_supply_remaining":
+		return x.EcosystemMintSupplyRemaining != ""
+	case "mint.v3.EventEmissionInfo.blocks_per_month":
+		return x.BlocksPerMonth != uint64(0)
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_last_calculated":
+		return x.BlockHeightTargetEILastCalculated != uint64(0)
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_next_calculated":
+		return x.BlockHeightTargetEINextCalculated != uint64(0)
+	case "mint.v3.EventEmissionInfo.network_staked_tokens":
+		return x.NetworkStakedTokens != ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_total":
+		return x.LockedVestingTokensTotal != ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_preseed":
+		return x.LockedVestingTokensInvestorsPreseed != ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_seed":
+		return x.LockedVestingTokensInvestorsSeed != ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_team":
+		return x.LockedVestingTokensTeam != ""
+	case "mint.v3.EventEmissionInfo.ecosystem_locked":
+		return x.EcosystemLocked != ""
+	case "mint.v3.EventEmissionInfo.circulating_supply":
+		return x.CirculatingSupply != ""
+	case "mint.v3.EventEmissionInfo.max_supply":
+		return x.MaxSupply != ""
+	case "mint.v3.EventEmissionInfo.target_emission_rate_per_unit_staked_token":
+		return x.TargetEmissionRatePerUnitStakedToken != ""
+	case "mint.v3.EventEmissionInfo.reputers_percent":
+		return x.ReputersPercent != ""
+	case "mint.v3.EventEmissionInfo.validators_percent":
+		return x.ValidatorsPercent != ""
+	case "mint.v3.EventEmissionInfo.maximum_monthly_emission_per_unit_staked_token":
+		return x.MaximumMonthlyEmissionPerUnitStakedToken != ""
+	case "mint.v3.EventEmissionInfo.target_reward_emission_per_unit_staked_token":
+		return x.TargetRewardEmissionPerUnitStakedToken != ""
+	case "mint.v3.EventEmissionInfo.emission_per_unit_staked_token":
+		return x.EmissionPerUnitStakedToken != ""
+	case "mint.v3.EventEmissionInfo.emission_per_month":
+		return x.EmissionPerMonth != ""
+	case "mint.v3.EventEmissionInfo.block_emission":
+		return x.BlockEmission != ""
+	case "mint.v3.EventEmissionInfo.validator_cut":
+		return x.ValidatorCut != ""
+	case "mint.v3.EventEmissionInfo.allora_rewards_cut":
+		return x.AlloraRewardsCut != ""
+	case "mint.v3.EventEmissionInfo.previous_reward_emission_per_unit_staked_token":
+		return x.PreviousRewardEmissionPerUnitStakedToken != ""
+	case "mint.v3.EventEmissionInfo.months_already_unlocked":
+		return x.MonthsAlreadyUnlocked != ""
+	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
+		return x.UpdatedMonthsUnlocked != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
+		}
+		panic(fmt.Errorf("message mint.v3.EventEmissionInfo does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventEmissionInfo) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "mint.v3.EventEmissionInfo.ecosystem_balance":
+		x.EcosystemBalance = ""
+	case "mint.v3.EventEmissionInfo.previous_block_emission":
+		x.PreviousBlockEmission = ""
+	case "mint.v3.EventEmissionInfo.ecosystem_mint_supply_remaining":
+		x.EcosystemMintSupplyRemaining = ""
+	case "mint.v3.EventEmissionInfo.blocks_per_month":
+		x.BlocksPerMonth = uint64(0)
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_last_calculated":
+		x.BlockHeightTargetEILastCalculated = uint64(0)
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_next_calculated":
+		x.BlockHeightTargetEINextCalculated = uint64(0)
+	case "mint.v3.EventEmissionInfo.network_staked_tokens":
+		x.NetworkStakedTokens = ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_total":
+		x.LockedVestingTokensTotal = ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_preseed":
+		x.LockedVestingTokensInvestorsPreseed = ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_seed":
+		x.LockedVestingTokensInvestorsSeed = ""
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_team":
+		x.LockedVestingTokensTeam = ""
+	case "mint.v3.EventEmissionInfo.ecosystem_locked":
+		x.EcosystemLocked = ""
+	case "mint.v3.EventEmissionInfo.circulating_supply":
+		x.CirculatingSupply = ""
+	case "mint.v3.EventEmissionInfo.max_supply":
+		x.MaxSupply = ""
+	case "mint.v3.EventEmissionInfo.target_emission_rate_per_unit_staked_token":
+		x.TargetEmissionRatePerUnitStakedToken = ""
+	case "mint.v3.EventEmissionInfo.reputers_percent":
+		x.ReputersPercent = ""
+	case "mint.v3.EventEmissionInfo.validators_percent":
+		x.ValidatorsPercent = ""
+	case "mint.v3.EventEmissionInfo.maximum_monthly_emission_per_unit_staked_token":
+		x.MaximumMonthlyEmissionPerUnitStakedToken = ""
+	case "mint.v3.EventEmissionInfo.target_reward_emission_per_unit_staked_token":
+		x.TargetRewardEmissionPerUnitStakedToken = ""
+	case "mint.v3.EventEmissionInfo.emission_per_unit_staked_token":
+		x.EmissionPerUnitStakedToken = ""
+	case "mint.v3.EventEmissionInfo.emission_per_month":
+		x.EmissionPerMonth = ""
+	case "mint.v3.EventEmissionInfo.block_emission":
+		x.BlockEmission = ""
+	case "mint.v3.EventEmissionInfo.validator_cut":
+		x.ValidatorCut = ""
+	case "mint.v3.EventEmissionInfo.allora_rewards_cut":
+		x.AlloraRewardsCut = ""
+	case "mint.v3.EventEmissionInfo.previous_reward_emission_per_unit_staked_token":
+		x.PreviousRewardEmissionPerUnitStakedToken = ""
+	case "mint.v3.EventEmissionInfo.months_already_unlocked":
+		x.MonthsAlreadyUnlocked = ""
+	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
+		x.UpdatedMonthsUnlocked = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
+		}
+		panic(fmt.Errorf("message mint.v3.EventEmissionInfo does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventEmissionInfo) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "mint.v3.EventEmissionInfo.ecosystem_balance":
+		value := x.EcosystemBalance
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.previous_block_emission":
+		value := x.PreviousBlockEmission
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.ecosystem_mint_supply_remaining":
+		value := x.EcosystemMintSupplyRemaining
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.blocks_per_month":
+		value := x.BlocksPerMonth
+		return protoreflect.ValueOfUint64(value)
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_last_calculated":
+		value := x.BlockHeightTargetEILastCalculated
+		return protoreflect.ValueOfUint64(value)
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_next_calculated":
+		value := x.BlockHeightTargetEINextCalculated
+		return protoreflect.ValueOfUint64(value)
+	case "mint.v3.EventEmissionInfo.network_staked_tokens":
+		value := x.NetworkStakedTokens
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_total":
+		value := x.LockedVestingTokensTotal
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_preseed":
+		value := x.LockedVestingTokensInvestorsPreseed
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_seed":
+		value := x.LockedVestingTokensInvestorsSeed
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_team":
+		value := x.LockedVestingTokensTeam
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.ecosystem_locked":
+		value := x.EcosystemLocked
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.circulating_supply":
+		value := x.CirculatingSupply
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.max_supply":
+		value := x.MaxSupply
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.target_emission_rate_per_unit_staked_token":
+		value := x.TargetEmissionRatePerUnitStakedToken
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.reputers_percent":
+		value := x.ReputersPercent
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.validators_percent":
+		value := x.ValidatorsPercent
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.maximum_monthly_emission_per_unit_staked_token":
+		value := x.MaximumMonthlyEmissionPerUnitStakedToken
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.target_reward_emission_per_unit_staked_token":
+		value := x.TargetRewardEmissionPerUnitStakedToken
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.emission_per_unit_staked_token":
+		value := x.EmissionPerUnitStakedToken
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.emission_per_month":
+		value := x.EmissionPerMonth
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.block_emission":
+		value := x.BlockEmission
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.validator_cut":
+		value := x.ValidatorCut
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.allora_rewards_cut":
+		value := x.AlloraRewardsCut
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.previous_reward_emission_per_unit_staked_token":
+		value := x.PreviousRewardEmissionPerUnitStakedToken
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.months_already_unlocked":
+		value := x.MonthsAlreadyUnlocked
+		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
+		value := x.UpdatedMonthsUnlocked
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
+		}
+		panic(fmt.Errorf("message mint.v3.EventEmissionInfo does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventEmissionInfo) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "mint.v3.EventEmissionInfo.ecosystem_balance":
+		x.EcosystemBalance = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.previous_block_emission":
+		x.PreviousBlockEmission = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.ecosystem_mint_supply_remaining":
+		x.EcosystemMintSupplyRemaining = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.blocks_per_month":
+		x.BlocksPerMonth = value.Uint()
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_last_calculated":
+		x.BlockHeightTargetEILastCalculated = value.Uint()
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_next_calculated":
+		x.BlockHeightTargetEINextCalculated = value.Uint()
+	case "mint.v3.EventEmissionInfo.network_staked_tokens":
+		x.NetworkStakedTokens = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_total":
+		x.LockedVestingTokensTotal = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_preseed":
+		x.LockedVestingTokensInvestorsPreseed = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_seed":
+		x.LockedVestingTokensInvestorsSeed = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_team":
+		x.LockedVestingTokensTeam = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.ecosystem_locked":
+		x.EcosystemLocked = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.circulating_supply":
+		x.CirculatingSupply = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.max_supply":
+		x.MaxSupply = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.target_emission_rate_per_unit_staked_token":
+		x.TargetEmissionRatePerUnitStakedToken = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.reputers_percent":
+		x.ReputersPercent = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.validators_percent":
+		x.ValidatorsPercent = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.maximum_monthly_emission_per_unit_staked_token":
+		x.MaximumMonthlyEmissionPerUnitStakedToken = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.target_reward_emission_per_unit_staked_token":
+		x.TargetRewardEmissionPerUnitStakedToken = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.emission_per_unit_staked_token":
+		x.EmissionPerUnitStakedToken = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.emission_per_month":
+		x.EmissionPerMonth = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.block_emission":
+		x.BlockEmission = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.validator_cut":
+		x.ValidatorCut = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.allora_rewards_cut":
+		x.AlloraRewardsCut = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.previous_reward_emission_per_unit_staked_token":
+		x.PreviousRewardEmissionPerUnitStakedToken = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.months_already_unlocked":
+		x.MonthsAlreadyUnlocked = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
+		x.UpdatedMonthsUnlocked = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
+		}
+		panic(fmt.Errorf("message mint.v3.EventEmissionInfo does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventEmissionInfo) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "mint.v3.EventEmissionInfo.ecosystem_balance":
+		panic(fmt.Errorf("field ecosystem_balance of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.previous_block_emission":
+		panic(fmt.Errorf("field previous_block_emission of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.ecosystem_mint_supply_remaining":
+		panic(fmt.Errorf("field ecosystem_mint_supply_remaining of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.blocks_per_month":
+		panic(fmt.Errorf("field blocks_per_month of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_last_calculated":
+		panic(fmt.Errorf("field block_height_target_e_i_last_calculated of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_next_calculated":
+		panic(fmt.Errorf("field block_height_target_e_i_next_calculated of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.network_staked_tokens":
+		panic(fmt.Errorf("field network_staked_tokens of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_total":
+		panic(fmt.Errorf("field locked_vesting_tokens_total of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_preseed":
+		panic(fmt.Errorf("field locked_vesting_tokens_investors_preseed of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_seed":
+		panic(fmt.Errorf("field locked_vesting_tokens_investors_seed of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_team":
+		panic(fmt.Errorf("field locked_vesting_tokens_team of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.ecosystem_locked":
+		panic(fmt.Errorf("field ecosystem_locked of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.circulating_supply":
+		panic(fmt.Errorf("field circulating_supply of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.max_supply":
+		panic(fmt.Errorf("field max_supply of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.target_emission_rate_per_unit_staked_token":
+		panic(fmt.Errorf("field target_emission_rate_per_unit_staked_token of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.reputers_percent":
+		panic(fmt.Errorf("field reputers_percent of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.validators_percent":
+		panic(fmt.Errorf("field validators_percent of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.maximum_monthly_emission_per_unit_staked_token":
+		panic(fmt.Errorf("field maximum_monthly_emission_per_unit_staked_token of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.target_reward_emission_per_unit_staked_token":
+		panic(fmt.Errorf("field target_reward_emission_per_unit_staked_token of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.emission_per_unit_staked_token":
+		panic(fmt.Errorf("field emission_per_unit_staked_token of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.emission_per_month":
+		panic(fmt.Errorf("field emission_per_month of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.block_emission":
+		panic(fmt.Errorf("field block_emission of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.validator_cut":
+		panic(fmt.Errorf("field validator_cut of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.allora_rewards_cut":
+		panic(fmt.Errorf("field allora_rewards_cut of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.previous_reward_emission_per_unit_staked_token":
+		panic(fmt.Errorf("field previous_reward_emission_per_unit_staked_token of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.months_already_unlocked":
+		panic(fmt.Errorf("field months_already_unlocked of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
+		panic(fmt.Errorf("field updated_months_unlocked of message mint.v3.EventEmissionInfo is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
+		}
+		panic(fmt.Errorf("message mint.v3.EventEmissionInfo does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventEmissionInfo) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "mint.v3.EventEmissionInfo.ecosystem_balance":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.previous_block_emission":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.ecosystem_mint_supply_remaining":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.blocks_per_month":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_last_calculated":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "mint.v3.EventEmissionInfo.block_height_target_e_i_next_calculated":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "mint.v3.EventEmissionInfo.network_staked_tokens":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_total":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_preseed":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_investors_seed":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_team":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.ecosystem_locked":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.circulating_supply":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.max_supply":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.target_emission_rate_per_unit_staked_token":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.reputers_percent":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.validators_percent":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.maximum_monthly_emission_per_unit_staked_token":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.target_reward_emission_per_unit_staked_token":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.emission_per_unit_staked_token":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.emission_per_month":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.block_emission":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.validator_cut":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.allora_rewards_cut":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.previous_reward_emission_per_unit_staked_token":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.months_already_unlocked":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
+		}
+		panic(fmt.Errorf("message mint.v3.EventEmissionInfo does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventEmissionInfo) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in mint.v3.EventEmissionInfo", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventEmissionInfo) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventEmissionInfo) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventEmissionInfo) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventEmissionInfo) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventEmissionInfo)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.EcosystemBalance)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.PreviousBlockEmission)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.EcosystemMintSupplyRemaining)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.BlocksPerMonth != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlocksPerMonth))
+		}
+		if x.BlockHeightTargetEILastCalculated != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeightTargetEILastCalculated))
+		}
+		if x.BlockHeightTargetEINextCalculated != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeightTargetEINextCalculated))
+		}
+		l = len(x.NetworkStakedTokens)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.LockedVestingTokensTotal)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.LockedVestingTokensInvestorsPreseed)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.LockedVestingTokensInvestorsSeed)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.LockedVestingTokensTeam)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.EcosystemLocked)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.CirculatingSupply)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.MaxSupply)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TargetEmissionRatePerUnitStakedToken)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ReputersPercent)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ValidatorsPercent)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.MaximumMonthlyEmissionPerUnitStakedToken)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TargetRewardEmissionPerUnitStakedToken)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.EmissionPerUnitStakedToken)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.EmissionPerMonth)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.BlockEmission)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ValidatorCut)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.AlloraRewardsCut)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.PreviousRewardEmissionPerUnitStakedToken)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.MonthsAlreadyUnlocked)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.UpdatedMonthsUnlocked)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventEmissionInfo)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.UpdatedMonthsUnlocked) > 0 {
+			i -= len(x.UpdatedMonthsUnlocked)
+			copy(dAtA[i:], x.UpdatedMonthsUnlocked)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.UpdatedMonthsUnlocked)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xe2
+		}
+		if len(x.MonthsAlreadyUnlocked) > 0 {
+			i -= len(x.MonthsAlreadyUnlocked)
+			copy(dAtA[i:], x.MonthsAlreadyUnlocked)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MonthsAlreadyUnlocked)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xda
+		}
+		if len(x.PreviousRewardEmissionPerUnitStakedToken) > 0 {
+			i -= len(x.PreviousRewardEmissionPerUnitStakedToken)
+			copy(dAtA[i:], x.PreviousRewardEmissionPerUnitStakedToken)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PreviousRewardEmissionPerUnitStakedToken)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xd2
+		}
+		if len(x.AlloraRewardsCut) > 0 {
+			i -= len(x.AlloraRewardsCut)
+			copy(dAtA[i:], x.AlloraRewardsCut)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AlloraRewardsCut)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xca
+		}
+		if len(x.ValidatorCut) > 0 {
+			i -= len(x.ValidatorCut)
+			copy(dAtA[i:], x.ValidatorCut)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ValidatorCut)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xc2
+		}
+		if len(x.BlockEmission) > 0 {
+			i -= len(x.BlockEmission)
+			copy(dAtA[i:], x.BlockEmission)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BlockEmission)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xba
+		}
+		if len(x.EmissionPerMonth) > 0 {
+			i -= len(x.EmissionPerMonth)
+			copy(dAtA[i:], x.EmissionPerMonth)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EmissionPerMonth)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xb2
+		}
+		if len(x.EmissionPerUnitStakedToken) > 0 {
+			i -= len(x.EmissionPerUnitStakedToken)
+			copy(dAtA[i:], x.EmissionPerUnitStakedToken)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EmissionPerUnitStakedToken)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xaa
+		}
+		if len(x.TargetRewardEmissionPerUnitStakedToken) > 0 {
+			i -= len(x.TargetRewardEmissionPerUnitStakedToken)
+			copy(dAtA[i:], x.TargetRewardEmissionPerUnitStakedToken)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TargetRewardEmissionPerUnitStakedToken)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xa2
+		}
+		if len(x.MaximumMonthlyEmissionPerUnitStakedToken) > 0 {
+			i -= len(x.MaximumMonthlyEmissionPerUnitStakedToken)
+			copy(dAtA[i:], x.MaximumMonthlyEmissionPerUnitStakedToken)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MaximumMonthlyEmissionPerUnitStakedToken)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x9a
+		}
+		if len(x.ValidatorsPercent) > 0 {
+			i -= len(x.ValidatorsPercent)
+			copy(dAtA[i:], x.ValidatorsPercent)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ValidatorsPercent)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x92
+		}
+		if len(x.ReputersPercent) > 0 {
+			i -= len(x.ReputersPercent)
+			copy(dAtA[i:], x.ReputersPercent)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ReputersPercent)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x8a
+		}
+		if len(x.TargetEmissionRatePerUnitStakedToken) > 0 {
+			i -= len(x.TargetEmissionRatePerUnitStakedToken)
+			copy(dAtA[i:], x.TargetEmissionRatePerUnitStakedToken)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TargetEmissionRatePerUnitStakedToken)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x82
+		}
+		if len(x.MaxSupply) > 0 {
+			i -= len(x.MaxSupply)
+			copy(dAtA[i:], x.MaxSupply)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MaxSupply)))
+			i--
+			dAtA[i] = 0x7a
+		}
+		if len(x.CirculatingSupply) > 0 {
+			i -= len(x.CirculatingSupply)
+			copy(dAtA[i:], x.CirculatingSupply)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.CirculatingSupply)))
+			i--
+			dAtA[i] = 0x72
+		}
+		if len(x.EcosystemLocked) > 0 {
+			i -= len(x.EcosystemLocked)
+			copy(dAtA[i:], x.EcosystemLocked)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EcosystemLocked)))
+			i--
+			dAtA[i] = 0x6a
+		}
+		if len(x.LockedVestingTokensTeam) > 0 {
+			i -= len(x.LockedVestingTokensTeam)
+			copy(dAtA[i:], x.LockedVestingTokensTeam)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LockedVestingTokensTeam)))
+			i--
+			dAtA[i] = 0x62
+		}
+		if len(x.LockedVestingTokensInvestorsSeed) > 0 {
+			i -= len(x.LockedVestingTokensInvestorsSeed)
+			copy(dAtA[i:], x.LockedVestingTokensInvestorsSeed)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LockedVestingTokensInvestorsSeed)))
+			i--
+			dAtA[i] = 0x5a
+		}
+		if len(x.LockedVestingTokensInvestorsPreseed) > 0 {
+			i -= len(x.LockedVestingTokensInvestorsPreseed)
+			copy(dAtA[i:], x.LockedVestingTokensInvestorsPreseed)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LockedVestingTokensInvestorsPreseed)))
+			i--
+			dAtA[i] = 0x52
+		}
+		if len(x.LockedVestingTokensTotal) > 0 {
+			i -= len(x.LockedVestingTokensTotal)
+			copy(dAtA[i:], x.LockedVestingTokensTotal)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LockedVestingTokensTotal)))
+			i--
+			dAtA[i] = 0x4a
+		}
+		if len(x.NetworkStakedTokens) > 0 {
+			i -= len(x.NetworkStakedTokens)
+			copy(dAtA[i:], x.NetworkStakedTokens)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NetworkStakedTokens)))
+			i--
+			dAtA[i] = 0x42
+		}
+		if x.BlockHeightTargetEINextCalculated != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeightTargetEINextCalculated))
+			i--
+			dAtA[i] = 0x38
+		}
+		if x.BlockHeightTargetEILastCalculated != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeightTargetEILastCalculated))
+			i--
+			dAtA[i] = 0x30
+		}
+		if x.BlocksPerMonth != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlocksPerMonth))
+			i--
+			dAtA[i] = 0x28
+		}
+		if len(x.EcosystemMintSupplyRemaining) > 0 {
+			i -= len(x.EcosystemMintSupplyRemaining)
+			copy(dAtA[i:], x.EcosystemMintSupplyRemaining)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EcosystemMintSupplyRemaining)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.PreviousBlockEmission) > 0 {
+			i -= len(x.PreviousBlockEmission)
+			copy(dAtA[i:], x.PreviousBlockEmission)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PreviousBlockEmission)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.EcosystemBalance) > 0 {
+			i -= len(x.EcosystemBalance)
+			copy(dAtA[i:], x.EcosystemBalance)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EcosystemBalance)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventEmissionInfo)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventEmissionInfo: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventEmissionInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EcosystemBalance", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EcosystemBalance = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PreviousBlockEmission", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PreviousBlockEmission = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EcosystemMintSupplyRemaining", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EcosystemMintSupplyRemaining = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlocksPerMonth", wireType)
+				}
+				x.BlocksPerMonth = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlocksPerMonth |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 6:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeightTargetEILastCalculated", wireType)
+				}
+				x.BlockHeightTargetEILastCalculated = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockHeightTargetEILastCalculated |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 7:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeightTargetEINextCalculated", wireType)
+				}
+				x.BlockHeightTargetEINextCalculated = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockHeightTargetEINextCalculated |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 8:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NetworkStakedTokens", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NetworkStakedTokens = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 9:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensTotal", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LockedVestingTokensTotal = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 10:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensInvestorsPreseed", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LockedVestingTokensInvestorsPreseed = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 11:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensInvestorsSeed", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LockedVestingTokensInvestorsSeed = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 12:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensTeam", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LockedVestingTokensTeam = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 13:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EcosystemLocked", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EcosystemLocked = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 14:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CirculatingSupply", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.CirculatingSupply = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 15:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxSupply", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MaxSupply = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 16:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TargetEmissionRatePerUnitStakedToken", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TargetEmissionRatePerUnitStakedToken = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 17:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ReputersPercent", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ReputersPercent = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 18:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ValidatorsPercent", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ValidatorsPercent = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 19:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaximumMonthlyEmissionPerUnitStakedToken", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MaximumMonthlyEmissionPerUnitStakedToken = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 20:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TargetRewardEmissionPerUnitStakedToken", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TargetRewardEmissionPerUnitStakedToken = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 21:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EmissionPerUnitStakedToken", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EmissionPerUnitStakedToken = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 22:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EmissionPerMonth", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EmissionPerMonth = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 23:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockEmission", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.BlockEmission = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 24:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ValidatorCut", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ValidatorCut = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 25:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AlloraRewardsCut", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.AlloraRewardsCut = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 26:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PreviousRewardEmissionPerUnitStakedToken", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PreviousRewardEmissionPerUnitStakedToken = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 27:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MonthsAlreadyUnlocked", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MonthsAlreadyUnlocked = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 28:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field UpdatedMonthsUnlocked", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.UpdatedMonthsUnlocked = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -2775,17 +4837,267 @@ func (x *EventParamsSet) GetBlocksPerMonth() uint64 {
 	return 0
 }
 
+type EventEmissionInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	EcosystemBalance                    string `protobuf:"bytes,2,opt,name=ecosystem_balance,json=ecosystemBalance,proto3" json:"ecosystem_balance,omitempty"`
+	PreviousBlockEmission               string `protobuf:"bytes,3,opt,name=previous_block_emission,json=previousBlockEmission,proto3" json:"previous_block_emission,omitempty"`
+	EcosystemMintSupplyRemaining        string `protobuf:"bytes,4,opt,name=ecosystem_mint_supply_remaining,json=ecosystemMintSupplyRemaining,proto3" json:"ecosystem_mint_supply_remaining,omitempty"`
+	BlocksPerMonth                      uint64 `protobuf:"varint,5,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
+	BlockHeightTargetEILastCalculated   uint64 `protobuf:"varint,6,opt,name=block_height_target_e_i_last_calculated,json=blockHeightTargetEILastCalculated,proto3" json:"block_height_target_e_i_last_calculated,omitempty"`
+	BlockHeightTargetEINextCalculated   uint64 `protobuf:"varint,7,opt,name=block_height_target_e_i_next_calculated,json=blockHeightTargetEINextCalculated,proto3" json:"block_height_target_e_i_next_calculated,omitempty"`
+	NetworkStakedTokens                 string `protobuf:"bytes,8,opt,name=network_staked_tokens,json=networkStakedTokens,proto3" json:"network_staked_tokens,omitempty"`
+	LockedVestingTokensTotal            string `protobuf:"bytes,9,opt,name=locked_vesting_tokens_total,json=lockedVestingTokensTotal,proto3" json:"locked_vesting_tokens_total,omitempty"`
+	LockedVestingTokensInvestorsPreseed string `protobuf:"bytes,10,opt,name=locked_vesting_tokens_investors_preseed,json=lockedVestingTokensInvestorsPreseed,proto3" json:"locked_vesting_tokens_investors_preseed,omitempty"`
+	LockedVestingTokensInvestorsSeed    string `protobuf:"bytes,11,opt,name=locked_vesting_tokens_investors_seed,json=lockedVestingTokensInvestorsSeed,proto3" json:"locked_vesting_tokens_investors_seed,omitempty"`
+	LockedVestingTokensTeam             string `protobuf:"bytes,12,opt,name=locked_vesting_tokens_team,json=lockedVestingTokensTeam,proto3" json:"locked_vesting_tokens_team,omitempty"`
+	EcosystemLocked                     string `protobuf:"bytes,13,opt,name=ecosystem_locked,json=ecosystemLocked,proto3" json:"ecosystem_locked,omitempty"`
+	CirculatingSupply                   string `protobuf:"bytes,14,opt,name=circulating_supply,json=circulatingSupply,proto3" json:"circulating_supply,omitempty"`
+	MaxSupply                           string `protobuf:"bytes,15,opt,name=max_supply,json=maxSupply,proto3" json:"max_supply,omitempty"`
+	// cosmossdk.io/math.LegacyDec
+	TargetEmissionRatePerUnitStakedToken string `protobuf:"bytes,16,opt,name=target_emission_rate_per_unit_staked_token,json=targetEmissionRatePerUnitStakedToken,proto3" json:"target_emission_rate_per_unit_staked_token,omitempty"`
+	// cosmossdk.io/math.LegacyDec
+	ReputersPercent string `protobuf:"bytes,17,opt,name=reputers_percent,json=reputersPercent,proto3" json:"reputers_percent,omitempty"`
+	// cosmossdk.io/math.LegacyDec
+	ValidatorsPercent string `protobuf:"bytes,18,opt,name=validators_percent,json=validatorsPercent,proto3" json:"validators_percent,omitempty"`
+	// cosmossdk.io/math.LegacyDec
+	MaximumMonthlyEmissionPerUnitStakedToken string `protobuf:"bytes,19,opt,name=maximum_monthly_emission_per_unit_staked_token,json=maximumMonthlyEmissionPerUnitStakedToken,proto3" json:"maximum_monthly_emission_per_unit_staked_token,omitempty"`
+	// cosmossdk.io/math.LegacyDec
+	TargetRewardEmissionPerUnitStakedToken string `protobuf:"bytes,20,opt,name=target_reward_emission_per_unit_staked_token,json=targetRewardEmissionPerUnitStakedToken,proto3" json:"target_reward_emission_per_unit_staked_token,omitempty"`
+	// cosmossdk.io/math.LegacyDec
+	EmissionPerUnitStakedToken string `protobuf:"bytes,21,opt,name=emission_per_unit_staked_token,json=emissionPerUnitStakedToken,proto3" json:"emission_per_unit_staked_token,omitempty"`
+	EmissionPerMonth           string `protobuf:"bytes,22,opt,name=emission_per_month,json=emissionPerMonth,proto3" json:"emission_per_month,omitempty"`
+	BlockEmission              string `protobuf:"bytes,23,opt,name=block_emission,json=blockEmission,proto3" json:"block_emission,omitempty"`
+	ValidatorCut               string `protobuf:"bytes,24,opt,name=validator_cut,json=validatorCut,proto3" json:"validator_cut,omitempty"`
+	AlloraRewardsCut           string `protobuf:"bytes,25,opt,name=allora_rewards_cut,json=alloraRewardsCut,proto3" json:"allora_rewards_cut,omitempty"`
+	// cosmossdk.io/math.LegacyDec
+	PreviousRewardEmissionPerUnitStakedToken string `protobuf:"bytes,26,opt,name=previous_reward_emission_per_unit_staked_token,json=previousRewardEmissionPerUnitStakedToken,proto3" json:"previous_reward_emission_per_unit_staked_token,omitempty"`
+	MonthsAlreadyUnlocked                    string `protobuf:"bytes,27,opt,name=months_already_unlocked,json=monthsAlreadyUnlocked,proto3" json:"months_already_unlocked,omitempty"`
+	UpdatedMonthsUnlocked                    string `protobuf:"bytes,28,opt,name=updated_months_unlocked,json=updatedMonthsUnlocked,proto3" json:"updated_months_unlocked,omitempty"`
+}
+
+func (x *EventEmissionInfo) Reset() {
+	*x = EventEmissionInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mint_v3_events_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventEmissionInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventEmissionInfo) ProtoMessage() {}
+
+// Deprecated: Use EventEmissionInfo.ProtoReflect.Descriptor instead.
+func (*EventEmissionInfo) Descriptor() ([]byte, []int) {
+	return file_mint_v3_events_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *EventEmissionInfo) GetEcosystemBalance() string {
+	if x != nil {
+		return x.EcosystemBalance
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetPreviousBlockEmission() string {
+	if x != nil {
+		return x.PreviousBlockEmission
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetEcosystemMintSupplyRemaining() string {
+	if x != nil {
+		return x.EcosystemMintSupplyRemaining
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetBlocksPerMonth() uint64 {
+	if x != nil {
+		return x.BlocksPerMonth
+	}
+	return 0
+}
+
+func (x *EventEmissionInfo) GetBlockHeightTargetEILastCalculated() uint64 {
+	if x != nil {
+		return x.BlockHeightTargetEILastCalculated
+	}
+	return 0
+}
+
+func (x *EventEmissionInfo) GetBlockHeightTargetEINextCalculated() uint64 {
+	if x != nil {
+		return x.BlockHeightTargetEINextCalculated
+	}
+	return 0
+}
+
+func (x *EventEmissionInfo) GetNetworkStakedTokens() string {
+	if x != nil {
+		return x.NetworkStakedTokens
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetLockedVestingTokensTotal() string {
+	if x != nil {
+		return x.LockedVestingTokensTotal
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetLockedVestingTokensInvestorsPreseed() string {
+	if x != nil {
+		return x.LockedVestingTokensInvestorsPreseed
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetLockedVestingTokensInvestorsSeed() string {
+	if x != nil {
+		return x.LockedVestingTokensInvestorsSeed
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetLockedVestingTokensTeam() string {
+	if x != nil {
+		return x.LockedVestingTokensTeam
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetEcosystemLocked() string {
+	if x != nil {
+		return x.EcosystemLocked
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetCirculatingSupply() string {
+	if x != nil {
+		return x.CirculatingSupply
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetMaxSupply() string {
+	if x != nil {
+		return x.MaxSupply
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetTargetEmissionRatePerUnitStakedToken() string {
+	if x != nil {
+		return x.TargetEmissionRatePerUnitStakedToken
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetReputersPercent() string {
+	if x != nil {
+		return x.ReputersPercent
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetValidatorsPercent() string {
+	if x != nil {
+		return x.ValidatorsPercent
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetMaximumMonthlyEmissionPerUnitStakedToken() string {
+	if x != nil {
+		return x.MaximumMonthlyEmissionPerUnitStakedToken
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetTargetRewardEmissionPerUnitStakedToken() string {
+	if x != nil {
+		return x.TargetRewardEmissionPerUnitStakedToken
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetEmissionPerUnitStakedToken() string {
+	if x != nil {
+		return x.EmissionPerUnitStakedToken
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetEmissionPerMonth() string {
+	if x != nil {
+		return x.EmissionPerMonth
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetBlockEmission() string {
+	if x != nil {
+		return x.BlockEmission
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetValidatorCut() string {
+	if x != nil {
+		return x.ValidatorCut
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetAlloraRewardsCut() string {
+	if x != nil {
+		return x.AlloraRewardsCut
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetPreviousRewardEmissionPerUnitStakedToken() string {
+	if x != nil {
+		return x.PreviousRewardEmissionPerUnitStakedToken
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetMonthsAlreadyUnlocked() string {
+	if x != nil {
+		return x.MonthsAlreadyUnlocked
+	}
+	return ""
+}
+
+func (x *EventEmissionInfo) GetUpdatedMonthsUnlocked() string {
+	if x != nil {
+		return x.UpdatedMonthsUnlocked
+	}
+	return ""
+}
+
 var File_mint_v3_events_proto protoreflect.FileDescriptor
 
 var file_mint_v3_events_proto_rawDesc = []byte{
 	0x0a, 0x14, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x33, 0x2f, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x73,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x07, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x33, 0x1a,
-	0x13, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x35, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e,
-	0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
-	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb4, 0x02, 0x0a, 0x12, 0x45, 0x76, 0x65,
+	0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67,
+	0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x1a, 0x13, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x35, 0x2f, 0x74, 0x79, 0x70,
+	0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb4, 0x02, 0x0a, 0x12, 0x45, 0x76, 0x65,
 	0x6e, 0x74, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x6f, 0x6d, 0x69, 0x63, 0x73, 0x53, 0x65, 0x74, 0x12,
 	0x60, 0x0a, 0x13, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x5f,
 	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde,
@@ -2852,17 +5164,200 @@ var file_mint_v3_events_proto_rawDesc = []byte{
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x28, 0x0a, 0x10, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73,
 	0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x0e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73, 0x50, 0x65, 0x72, 0x4d, 0x6f, 0x6e, 0x74, 0x68,
-	0x42, 0x99, 0x01, 0x0a, 0x0b, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x33,
-	0x42, 0x0b, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
-	0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61,
-	0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x33, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76,
-	0x33, 0xa2, 0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02, 0x07, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56,
-	0x33, 0xca, 0x02, 0x07, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x33, 0xe2, 0x02, 0x13, 0x4d, 0x69,
-	0x6e, 0x74, 0x5c, 0x56, 0x33, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
-	0x61, 0xea, 0x02, 0x08, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x33, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0xf8, 0x16, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x5d, 0x0a, 0x11, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73,
+	0x74, 0x65, 0x6d, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x10, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x42, 0x61,
+	0x6c, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x68, 0x0a, 0x17, 0x70, 0x72, 0x65, 0x76, 0x69, 0x6f, 0x75,
+	0x73, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x15, 0x70, 0x72, 0x65, 0x76, 0x69, 0x6f,
+	0x75, 0x73, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12,
+	0x77, 0x0a, 0x1f, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x5f, 0x6d, 0x69, 0x6e,
+	0x74, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x5f, 0x72, 0x65, 0x6d, 0x61, 0x69, 0x6e, 0x69,
+	0x6e, 0x67, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1c, 0x65, 0x63, 0x6f, 0x73,
+	0x79, 0x73, 0x74, 0x65, 0x6d, 0x4d, 0x69, 0x6e, 0x74, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x52,
+	0x65, 0x6d, 0x61, 0x69, 0x6e, 0x69, 0x6e, 0x67, 0x12, 0x28, 0x0a, 0x10, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x18, 0x05, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x0e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73, 0x50, 0x65, 0x72, 0x4d, 0x6f, 0x6e,
+	0x74, 0x68, 0x12, 0x52, 0x0a, 0x27, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x65, 0x5f, 0x69, 0x5f, 0x6c, 0x61,
+	0x73, 0x74, 0x5f, 0x63, 0x61, 0x6c, 0x63, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x18, 0x06, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x21, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x45, 0x49, 0x4c, 0x61, 0x73, 0x74, 0x43, 0x61, 0x6c, 0x63,
+	0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x12, 0x52, 0x0a, 0x27, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
+	0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x65, 0x5f,
+	0x69, 0x5f, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x63, 0x61, 0x6c, 0x63, 0x75, 0x6c, 0x61, 0x74, 0x65,
+	0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x21, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x45, 0x49, 0x4e, 0x65, 0x78, 0x74,
+	0x43, 0x61, 0x6c, 0x63, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x12, 0x64, 0x0a, 0x15, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x6b,
+	0x65, 0x6e, 0x73, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda,
+	0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x13, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x73,
+	0x12, 0x6f, 0x0a, 0x1b, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x5f, 0x76, 0x65, 0x73, 0x74, 0x69,
+	0x6e, 0x67, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x5f, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x18,
+	0x09, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49,
+	0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x18, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x56,
+	0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x54, 0x6f, 0x74, 0x61,
+	0x6c, 0x12, 0x86, 0x01, 0x0a, 0x27, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x5f, 0x76, 0x65, 0x73,
+	0x74, 0x69, 0x6e, 0x67, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x5f, 0x69, 0x6e, 0x76, 0x65,
+	0x73, 0x74, 0x6f, 0x72, 0x73, 0x5f, 0x70, 0x72, 0x65, 0x73, 0x65, 0x65, 0x64, 0x18, 0x0a, 0x20,
+	0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49,
+	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x23, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x56, 0x65, 0x73,
+	0x74, 0x69, 0x6e, 0x67, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x49, 0x6e, 0x76, 0x65, 0x73, 0x74,
+	0x6f, 0x72, 0x73, 0x50, 0x72, 0x65, 0x73, 0x65, 0x65, 0x64, 0x12, 0x80, 0x01, 0x0a, 0x24, 0x6c,
+	0x6f, 0x63, 0x6b, 0x65, 0x64, 0x5f, 0x76, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x5f, 0x74, 0x6f,
+	0x6b, 0x65, 0x6e, 0x73, 0x5f, 0x69, 0x6e, 0x76, 0x65, 0x73, 0x74, 0x6f, 0x72, 0x73, 0x5f, 0x73,
+	0x65, 0x65, 0x64, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda,
+	0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x20, 0x6c, 0x6f, 0x63,
+	0x6b, 0x65, 0x64, 0x56, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x73,
+	0x49, 0x6e, 0x76, 0x65, 0x73, 0x74, 0x6f, 0x72, 0x73, 0x53, 0x65, 0x65, 0x64, 0x12, 0x6d, 0x0a,
+	0x1a, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x5f, 0x76, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x5f,
+	0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x5f, 0x74, 0x65, 0x61, 0x6d, 0x18, 0x0c, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x17, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x56, 0x65, 0x73, 0x74, 0x69,
+	0x6e, 0x67, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x54, 0x65, 0x61, 0x6d, 0x12, 0x5b, 0x0a, 0x10,
+	0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x5f, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64,
+	0x18, 0x0d, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0f, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73,
+	0x74, 0x65, 0x6d, 0x4c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x12, 0x5f, 0x0a, 0x12, 0x63, 0x69, 0x72,
+	0x63, 0x75, 0x6c, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x18,
+	0x0e, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49,
+	0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x11, 0x63, 0x69, 0x72, 0x63, 0x75, 0x6c, 0x61,
+	0x74, 0x69, 0x6e, 0x67, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12, 0x4f, 0x0a, 0x0a, 0x6d, 0x61,
+	0x78, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d,
+	0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x09, 0x6d, 0x61, 0x78, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12, 0x90, 0x01, 0x0a, 0x2a,
+	0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f,
+	0x72, 0x61, 0x74, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x5f, 0x73, 0x74,
+	0x61, 0x6b, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x10, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x36, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61,
+	0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x24, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x61, 0x74, 0x65, 0x50, 0x65, 0x72, 0x55,
+	0x6e, 0x69, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x61,
+	0x0a, 0x10, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65,
+	0x6e, 0x74, 0x18, 0x11, 0x20, 0x01, 0x28, 0x09, 0x42, 0x36, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d,
+	0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x0f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e,
+	0x74, 0x12, 0x65, 0x0a, 0x12, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x73, 0x5f,
+	0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x18, 0x12, 0x20, 0x01, 0x28, 0x09, 0x42, 0x36, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44,
+	0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x11, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72,
+	0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x12, 0x98, 0x01, 0x0a, 0x2e, 0x6d, 0x61, 0x78,
+	0x69, 0x6d, 0x75, 0x6d, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x6c, 0x79, 0x5f, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x5f, 0x73,
+	0x74, 0x61, 0x6b, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x13, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x36, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67,
+	0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x28, 0x6d, 0x61, 0x78, 0x69, 0x6d,
+	0x75, 0x6d, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x6c, 0x79, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x50, 0x65, 0x72, 0x55, 0x6e, 0x69, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x54, 0x6f,
+	0x6b, 0x65, 0x6e, 0x12, 0x94, 0x01, 0x0a, 0x2c, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x5f, 0x72,
+	0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x70,
+	0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x5f, 0x74,
+	0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x14, 0x20, 0x01, 0x28, 0x09, 0x42, 0x36, 0xc8, 0xde, 0x1f, 0x00,
+	0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2,
+	0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0,
+	0x2a, 0x01, 0x52, 0x26, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x50, 0x65, 0x72, 0x55, 0x6e, 0x69, 0x74, 0x53,
+	0x74, 0x61, 0x6b, 0x65, 0x64, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x7a, 0x0a, 0x1e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x5f,
+	0x73, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x15, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x36, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65,
+	0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1a, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x50, 0x65, 0x72, 0x55, 0x6e, 0x69, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65,
+	0x64, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x5e, 0x0a, 0x12, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x18, 0x16, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e,
+	0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x10, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x50, 0x65,
+	0x72, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x12, 0x57, 0x0a, 0x0e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x17, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d,
+	0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x0d, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12,
+	0x55, 0x0a, 0x0d, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x5f, 0x63, 0x75, 0x74,
+	0x18, 0x18, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61,
+	0x74, 0x6f, 0x72, 0x43, 0x75, 0x74, 0x12, 0x5e, 0x0a, 0x12, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x5f, 0x63, 0x75, 0x74, 0x18, 0x19, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e,
+	0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x10, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x52, 0x65, 0x77, 0x61,
+	0x72, 0x64, 0x73, 0x43, 0x75, 0x74, 0x12, 0x98, 0x01, 0x0a, 0x2e, 0x70, 0x72, 0x65, 0x76, 0x69,
+	0x6f, 0x75, 0x73, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x5f, 0x73, 0x74, 0x61,
+	0x6b, 0x65, 0x64, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x1a, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x36, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
+	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63,
+	0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44,
+	0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x28, 0x70, 0x72, 0x65, 0x76, 0x69, 0x6f, 0x75,
+	0x73, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x50,
+	0x65, 0x72, 0x55, 0x6e, 0x69, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x54, 0x6f, 0x6b, 0x65,
+	0x6e, 0x12, 0x68, 0x0a, 0x17, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x73, 0x5f, 0x61, 0x6c, 0x72, 0x65,
+	0x61, 0x64, 0x79, 0x5f, 0x75, 0x6e, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x18, 0x1b, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e,
+	0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x15, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x73, 0x41, 0x6c, 0x72, 0x65,
+	0x61, 0x64, 0x79, 0x55, 0x6e, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x12, 0x68, 0x0a, 0x17, 0x75,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x73, 0x5f, 0x75, 0x6e,
+	0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x18, 0x1c, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde,
+	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
+	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x15,
+	0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x73, 0x55, 0x6e, 0x6c,
+	0x6f, 0x63, 0x6b, 0x65, 0x64, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x42, 0x99, 0x01, 0x0a, 0x0b,
+	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x33, 0x42, 0x0b, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x40, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69,
+	0x6e, 0x74, 0x2f, 0x76, 0x33, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x33, 0xa2, 0x02, 0x03, 0x4d,
+	0x58, 0x58, 0xaa, 0x02, 0x07, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x33, 0xca, 0x02, 0x07, 0x4d,
+	0x69, 0x6e, 0x74, 0x5c, 0x56, 0x33, 0xe2, 0x02, 0x13, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x33,
+	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x08, 0x4d,
+	0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x33, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2877,17 +5372,18 @@ func file_mint_v3_events_proto_rawDescGZIP() []byte {
 	return file_mint_v3_events_proto_rawDescData
 }
 
-var file_mint_v3_events_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_mint_v3_events_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_mint_v3_events_proto_goTypes = []interface{}{
 	(*EventTokenomicsSet)(nil),              // 0: mint.v3.EventTokenomicsSet
 	(*EventEcosystemTokenMintSet)(nil),      // 1: mint.v3.EventEcosystemTokenMintSet
 	(*EventRewardCurrentBlockEmission)(nil), // 2: mint.v3.EventRewardCurrentBlockEmission
 	(*EventRecalculateTargetEmission)(nil),  // 3: mint.v3.EventRecalculateTargetEmission
 	(*EventParamsSet)(nil),                  // 4: mint.v3.EventParamsSet
-	(*v5.Params)(nil),                       // 5: mint.v5.Params
+	(*EventEmissionInfo)(nil),               // 5: mint.v3.EventEmissionInfo
+	(*v5.Params)(nil),                       // 6: mint.v5.Params
 }
 var file_mint_v3_events_proto_depIdxs = []int32{
-	5, // 0: mint.v3.EventParamsSet.params:type_name -> mint.v5.Params
+	6, // 0: mint.v3.EventParamsSet.params:type_name -> mint.v5.Params
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -2961,6 +5457,18 @@ func file_mint_v3_events_proto_init() {
 				return nil
 			}
 		}
+		file_mint_v3_events_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventEmissionInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2968,7 +5476,7 @@ func file_mint_v3_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_mint_v3_events_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

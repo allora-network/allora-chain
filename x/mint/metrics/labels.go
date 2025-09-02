@@ -7,4 +7,5 @@ const (
 	REWARD_CURRENT_BLOCK_EMISSION_EVENT = "reward_current_block_emission_event"
 	RECALCULATE_TARGET_EMISSION_EVENT   = "recalculate_target_emission_event"
 	PARAMS_SET_EVENT                    = "params_set_event"
+	EMISSION_INFO_EVENT                 = "emission_info_event"
 )

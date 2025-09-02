@@ -94,3 +94,11 @@ func NewParamsSetEventBase(params Params, blocksPerMonth uint64) proto.Message {
 		BlocksPerMonth: blocksPerMonth,
 	}
 }
+
+func EmitNewEmissionInfoEvent(ctx sdk.Context, eventInfo EventEmissionInfo) {
+	metrics.IncrProducerEventCount(metrics.EMISSION_INFO_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(&eventInfo)
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewEmissionInfoEvent", "error", err)
+	}
+}
