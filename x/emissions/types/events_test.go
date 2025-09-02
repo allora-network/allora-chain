@@ -521,11 +521,24 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	event := events[0]
 	require.Equal(t, "emissions.v9.EventForecastTaskScoreSet", event.Type)
 
-	require.Contains(t, event.Attributes[0].Key, "score")
-	require.Contains(t, event.Attributes[0].Value, "10")
+	// Check that we have the expected number of attributes
+	require.Len(t, event.Attributes, 3)
 
-	require.Contains(t, event.Attributes[1].Key, "topic_id")
-	require.Contains(t, event.Attributes[1].Value, "1")
+	// Create a map to check attributes regardless of order
+	attributes := make(map[string]string)
+	for _, attr := range event.Attributes {
+		attributes[attr.Key] = attr.Value
+	}
+
+	// Verify all expected attributes are present with correct values
+	require.Contains(t, attributes, "topic_id")
+	require.Equal(t, "\"1\"", attributes["topic_id"])
+
+	require.Contains(t, attributes, "score")
+	require.Equal(t, "\"10\"", attributes["score"])
+
+	require.Contains(t, attributes, "nonce_block_height")
+	require.Equal(t, "\"10\"", attributes["nonce_block_height"])
 }
 
 func TestNewLastCommitSetEvent(t *testing.T) {
