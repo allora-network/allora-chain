@@ -130,6 +130,89 @@ func TestNewTask(t *testing.T) {
 	}
 }
 
+func TestNextRun(t *testing.T) {
+	now := time.Now()
+	at := now.Add(-5 * time.Second)
+	nowMinus15Min := now.Add(-15 * time.Minute)
+	interval := 10 * time.Minute
+	ctx := sdk.NewContext(nil, tmproto.Header{Height: 1, Time: now}, false, nil)
+
+	testCases := []struct {
+		name         string
+		task         *Task
+		expectedNext *time.Time
+	}{
+		{
+			name: "non-periodic task should return nil",
+			task: &Task{
+				Id:                 "task1",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			expectedNext: nil,
+		},
+		{
+			name: "periodic task with relative scheduling is based on actual execution time",
+			task: &Task{
+				Id:                 "task2",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           &interval,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			expectedNext: func() *time.Time { t := ctx.BlockTime().Add(10 * time.Minute); return &t }(),
+		},
+		{
+			name: "periodic task with absolute scheduling is based on scheduled execution time",
+			task: &Task{
+				Id:                 "task2",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           &interval,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
+			},
+			expectedNext: func() *time.Time { t := at.Add(10 * time.Minute); return &t }(),
+		},
+		{
+			name: "periodic task with absolute scheduling should not schedule in the past",
+			task: &Task{
+				Id:                 "task2",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          &nowMinus15Min,
+				Interval:           &interval,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
+			},
+			expectedNext: func() *time.Time { t := now.Add(5 * time.Minute); return &t }(),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			nextRun := tc.task.NextRun(ctx)
+			if tc.expectedNext == nil {
+				require.Nil(t, nextRun)
+			} else {
+				require.NotNil(t, nextRun)
+				require.Equal(t, *tc.expectedNext, *nextRun)
+			}
+		})
+	}
+}
+
 func TestScheduleAt(t *testing.T) {
 	now := time.Now()
 	ctx := sdk.NewContext(nil, tmproto.Header{Height: 1, Time: now}, false, nil)
