@@ -229,7 +229,7 @@ func TestTaskHandlerArbitrate(t *testing.T) {
 			name:                              "arbitrate should return underlying fn decisions",
 			arbitrateInput:                    []Task{{Id: "task1", Args: packedArgs1}},
 			arbitrateReturnErr:                nil,
-			arbitrateReturnDecisions:          map[TaskID]ArbitrageDecision{"task1": {Action: ArbitrageActionSkip}},
+			arbitrateReturnDecisions:          map[TaskID]ArbitrageDecision{"task1": {Action: ArbitrageActionCancel}},
 			arbitrateFnShouldBeCalled:         true,
 			arbitrateShouldErr:                false,
 			arbitrateShouldReceiveInvocations: []Invocation[*cosmostypes.Coin]{{TaskID: "task1", Args: args1}},
