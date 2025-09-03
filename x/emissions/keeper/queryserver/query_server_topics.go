@@ -219,21 +219,17 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 		response.IsWhitelisted = isWhitelisted
 	}
 
-	// Check if there's an active worker window - find the most recent one
-	var latestActiveNonce *types.Nonce
+	// Check if there's an active worker window
 	for _, nonce := range nonces.Nonces {
 		windowStart := nonce.BlockHeight
 		windowEnd := nonce.BlockHeight + topic.WorkerSubmissionWindow
 
 		if currentBlockHeight >= windowStart && currentBlockHeight <= windowEnd {
-			// If this is the first active nonce or it's more recent than the current latest
-			if latestActiveNonce == nil || nonce.BlockHeight > latestActiveNonce.BlockHeight {
-				latestActiveNonce = nonce
-				response.IsOpen = true
-				response.CurrentNonceBlockHeight = nonce.BlockHeight
-				response.WindowStartBlock = windowStart
-				response.WindowEndBlock = windowEnd
-			}
+			response.IsOpen = true
+			response.CurrentNonceBlockHeight = nonce.BlockHeight
+			response.WindowStartBlock = windowStart
+			response.WindowEndBlock = windowEnd
+			break
 		}
 	}
 
@@ -306,11 +302,11 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 
 	var latestActiveNonce *types.ReputerRequestNonce
 	var earliestFutureNonce *types.ReputerRequestNonce
-
 	extraLag := topic.GroundTruthLag % topic.EpochLength
 	if extraLag != 0 {
 		extraLag = topic.EpochLength - extraLag
 	}
+
 	for _, nonce := range nonces.Nonces {
 		windowStart := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
 		windowEnd := windowStart + extraLag + topic.EpochLength
