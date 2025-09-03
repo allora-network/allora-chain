@@ -673,30 +673,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
-				{
-					RpcMethod: "GetActiveForecastersForTopic",
-					Use:       "active-forecasters [topic_id]",
-					Short:     "Get active forecasters for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetActiveInferersForTopic",
-					Use:       "active-inferers [topic_id]",
-					Short:     "Get active inferers for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetActiveReputersForTopic",
-					Use:       "active-reputers [topic_id]",
-					Short:     "Get active reputers for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
 				// add inclusion methods
 				{
 					RpcMethod: "GetCountInfererInclusionsInTopic",
@@ -931,6 +907,24 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 							ProtoField: "actor_id",
 							Optional:   false,
 						},
+					},
+				},
+				{
+					RpcMethod: "GetWorkerSubmissionWindowStatus",
+					Use:       "worker-submission-window-status [topic_id] [address]",
+					Short:     "Get worker submission window status including registration, whitelist, and window timing information",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "GetReputerSubmissionWindowStatus",
+					Use:       "reputer-submission-window-status [topic_id] [address]",
+					Short:     "Get reputer submission window status including registration, whitelist, and window timing information",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
 					},
 				},
 			},
