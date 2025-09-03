@@ -241,6 +241,7 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	if err == nil && isActive {
 		response.NextWindowStartBlock = nextChurningBlock
 		response.NextWindowEndBlock = nextChurningBlock + topic.WorkerSubmissionWindow
+		response.IsTopicActive = isActive
 	}
 
 	return response, nil
@@ -342,6 +343,10 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 		response.NextWindowStartBlock = nextReputerStart
 		response.NextWindowEndBlock = nextReputerEnd
 	}
+
+	// Get topic active status from GetNextPossibleChurningBlockByTopicId
+	_, isActive, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
+	response.IsTopicActive = (err == nil && isActive)
 
 	return response, nil
 }

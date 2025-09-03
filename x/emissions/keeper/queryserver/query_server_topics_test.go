@@ -397,6 +397,9 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 
 	s.Require().Equal(expectedNextStart, response.NextWindowStartBlock)
 	s.Require().Equal(expectedNextEnd, response.NextWindowEndBlock)
+
+	// Verify topic is active
+	s.Require().True(response.IsTopicActive)
 }
 
 func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
@@ -475,6 +478,17 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	// Add reputer to whitelist for deterministic test setup
 	err = keeper.AddToTopicReputerWhitelist(ctx, topicId, reputerAddress)
 	s.Require().NoError(err)
+
+	// Fund and activate topic
+	err = keeper.AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+
+	funderAddr := s.Addrs(2)
+	s.FundTopic(topicId, funderAddr, cosmosMath.NewInt(10000))
+
+	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(isActive)
 
 	// Create multiple reputer nonces to test "latest active nonce" selection
 	// Reputer windows: [nonce + GroundTruthLag, nonce + GroundTruthLag + extraLag + EpochLength]

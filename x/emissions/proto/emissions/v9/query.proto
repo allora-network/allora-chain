@@ -1611,6 +1611,7 @@ message GetWorkerSubmissionWindowStatusResponse {
   int64 next_window_end_block = 6;
   bool is_registered = 7 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_whitelisted = 8 [(amino.dont_omitempty) = true]; // Only filled when address is provided
+  bool is_topic_active = 9 [(amino.dont_omitempty) = true];
 }
 
 message GetReputerSubmissionWindowStatusRequest {
@@ -1627,4 +1628,5 @@ message GetReputerSubmissionWindowStatusResponse {
   int64 next_window_end_block = 6;
   bool is_registered = 7 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_whitelisted = 8 [(amino.dont_omitempty) = true]; // Only filled when address is provided
+  bool is_topic_active = 9 [(amino.dont_omitempty) = true];
 }
