@@ -909,6 +909,24 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						},
 					},
 				},
+				{
+					RpcMethod: "GetWorkerSubmissionWindowStatus",
+					Use:       "worker-submission-window-status [topic_id] [address]",
+					Short:     "Get worker submission window status including registration, whitelist, and window timing information",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "GetReputerSubmissionWindowStatus",
+					Use:       "reputer-submission-window-status [topic_id] [address]",
+					Short:     "Get reputer submission window status including registration, whitelist, and window timing information",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
+					},
+				},
 			},
 			SubCommands:          nil,
 			EnhanceCustomCommand: false,
