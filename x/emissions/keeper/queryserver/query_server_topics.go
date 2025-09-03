@@ -194,6 +194,7 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 		NextWindowEndBlock:      0,
 		IsRegistered:            false,
 		IsWhitelisted:           false,
+		IsTopicActive:           false,
 	}
 
 	// Check registration and whitelist status if address is provided
@@ -238,7 +239,10 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 
 	// Calculate next window timing based on topic epoch
 	nextChurningBlock, isActive, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
-	if err == nil && isActive {
+	if err != nil {
+		return nil, errors.Wrapf(err, "error checking topic active status")
+	}
+	if isActive {
 		response.NextWindowStartBlock = nextChurningBlock
 		response.NextWindowEndBlock = nextChurningBlock + topic.WorkerSubmissionWindow
 		response.IsTopicActive = isActive
@@ -275,6 +279,7 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 		NextWindowEndBlock:      0,
 		IsRegistered:            false,
 		IsWhitelisted:           false,
+		IsTopicActive:           false,
 	}
 
 	// Check registration and whitelist status if address is provided
@@ -302,11 +307,11 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	var latestActiveNonce *types.ReputerRequestNonce
 	var earliestFutureNonce *types.ReputerRequestNonce
 
+	extraLag := topic.GroundTruthLag % topic.EpochLength
+	if extraLag != 0 {
+		extraLag = topic.EpochLength - extraLag
+	}
 	for _, nonce := range nonces.Nonces {
-		extraLag := topic.GroundTruthLag % topic.EpochLength
-		if extraLag != 0 {
-			extraLag = topic.EpochLength - extraLag
-		}
 		windowStart := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
 		windowEnd := windowStart + extraLag + topic.EpochLength
 
@@ -334,10 +339,6 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 
 	// Calculate next window from the earliest future reputer nonce found
 	if earliestFutureNonce != nil {
-		extraLag := topic.GroundTruthLag % topic.EpochLength
-		if extraLag != 0 {
-			extraLag = topic.EpochLength - extraLag
-		}
 		nextReputerStart := earliestFutureNonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
 		nextReputerEnd := nextReputerStart + extraLag + topic.EpochLength
 		response.NextWindowStartBlock = nextReputerStart
@@ -346,7 +347,10 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 
 	// Get topic active status from GetNextPossibleChurningBlockByTopicId
 	_, isActive, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
-	response.IsTopicActive = (err == nil && isActive)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error checking topic active status")
+	}
+	response.IsTopicActive = isActive
 
 	return response, nil
 }
