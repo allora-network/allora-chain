@@ -6,6 +6,7 @@ package types
 import (
 	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
+	github_com_allora_network_allora_chain_math "github.com/allora-network/allora-chain/math"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -155,42 +156,271 @@ func (m *EventRewardCurrentBlockEmission) GetBlockHeight() uint64 {
 	return 0
 }
 
+type EventRecalculateTargetEmission struct {
+	EmissionPerUnitStakedToken github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=emission_per_unit_staked_token,json=emissionPerUnitStakedToken,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"emission_per_unit_staked_token"`
+	EmissionPerMonth           cosmossdk_io_math.Int                           `protobuf:"bytes,2,opt,name=emission_per_month,json=emissionPerMonth,proto3,customtype=cosmossdk.io/math.Int" json:"emission_per_month"`
+	BlockEmission              cosmossdk_io_math.Int                           `protobuf:"bytes,3,opt,name=block_emission,json=blockEmission,proto3,customtype=cosmossdk.io/math.Int" json:"block_emission"`
+}
+
+func (m *EventRecalculateTargetEmission) Reset()         { *m = EventRecalculateTargetEmission{} }
+func (m *EventRecalculateTargetEmission) String() string { return proto.CompactTextString(m) }
+func (*EventRecalculateTargetEmission) ProtoMessage()    {}
+func (*EventRecalculateTargetEmission) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c0a9e96a05e246ae, []int{3}
+}
+func (m *EventRecalculateTargetEmission) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRecalculateTargetEmission) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRecalculateTargetEmission.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRecalculateTargetEmission) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRecalculateTargetEmission.Merge(m, src)
+}
+func (m *EventRecalculateTargetEmission) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRecalculateTargetEmission) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRecalculateTargetEmission.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRecalculateTargetEmission proto.InternalMessageInfo
+
+type EventParamsSet struct {
+	Params         *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	BlocksPerMonth uint64  `protobuf:"varint,2,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
+}
+
+func (m *EventParamsSet) Reset()         { *m = EventParamsSet{} }
+func (m *EventParamsSet) String() string { return proto.CompactTextString(m) }
+func (*EventParamsSet) ProtoMessage()    {}
+func (*EventParamsSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c0a9e96a05e246ae, []int{4}
+}
+func (m *EventParamsSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventParamsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventParamsSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventParamsSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventParamsSet.Merge(m, src)
+}
+func (m *EventParamsSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventParamsSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventParamsSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventParamsSet proto.InternalMessageInfo
+
+func (m *EventParamsSet) GetParams() *Params {
+	if m != nil {
+		return m.Params
+	}
+	return nil
+}
+
+func (m *EventParamsSet) GetBlocksPerMonth() uint64 {
+	if m != nil {
+		return m.BlocksPerMonth
+	}
+	return 0
+}
+
+type EventEmissionInfo struct {
+	EcosystemBalance                    cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=ecosystem_balance,json=ecosystemBalance,proto3,customtype=cosmossdk.io/math.Int" json:"ecosystem_balance"`
+	PreviousBlockEmission               cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=previous_block_emission,json=previousBlockEmission,proto3,customtype=cosmossdk.io/math.Int" json:"previous_block_emission"`
+	EcosystemMintSupplyRemaining        cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=ecosystem_mint_supply_remaining,json=ecosystemMintSupplyRemaining,proto3,customtype=cosmossdk.io/math.Int" json:"ecosystem_mint_supply_remaining"`
+	BlocksPerMonth                      uint64                `protobuf:"varint,5,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
+	BlockHeightTargetEILastCalculated   uint64                `protobuf:"varint,6,opt,name=block_height_target_e_i_last_calculated,json=blockHeightTargetEILastCalculated,proto3" json:"block_height_target_e_i_last_calculated,omitempty"`
+	BlockHeightTargetEINextCalculated   uint64                `protobuf:"varint,7,opt,name=block_height_target_e_i_next_calculated,json=blockHeightTargetEINextCalculated,proto3" json:"block_height_target_e_i_next_calculated,omitempty"`
+	NetworkStakedTokens                 cosmossdk_io_math.Int `protobuf:"bytes,8,opt,name=network_staked_tokens,json=networkStakedTokens,proto3,customtype=cosmossdk.io/math.Int" json:"network_staked_tokens"`
+	LockedVestingTokensTotal            cosmossdk_io_math.Int `protobuf:"bytes,9,opt,name=locked_vesting_tokens_total,json=lockedVestingTokensTotal,proto3,customtype=cosmossdk.io/math.Int" json:"locked_vesting_tokens_total"`
+	LockedVestingTokensInvestorsPreseed cosmossdk_io_math.Int `protobuf:"bytes,10,opt,name=locked_vesting_tokens_investors_preseed,json=lockedVestingTokensInvestorsPreseed,proto3,customtype=cosmossdk.io/math.Int" json:"locked_vesting_tokens_investors_preseed"`
+	LockedVestingTokensInvestorsSeed    cosmossdk_io_math.Int `protobuf:"bytes,11,opt,name=locked_vesting_tokens_investors_seed,json=lockedVestingTokensInvestorsSeed,proto3,customtype=cosmossdk.io/math.Int" json:"locked_vesting_tokens_investors_seed"`
+	LockedVestingTokensTeam             cosmossdk_io_math.Int `protobuf:"bytes,12,opt,name=locked_vesting_tokens_team,json=lockedVestingTokensTeam,proto3,customtype=cosmossdk.io/math.Int" json:"locked_vesting_tokens_team"`
+	EcosystemLocked                     cosmossdk_io_math.Int `protobuf:"bytes,13,opt,name=ecosystem_locked,json=ecosystemLocked,proto3,customtype=cosmossdk.io/math.Int" json:"ecosystem_locked"`
+	CirculatingSupply                   cosmossdk_io_math.Int `protobuf:"bytes,14,opt,name=circulating_supply,json=circulatingSupply,proto3,customtype=cosmossdk.io/math.Int" json:"circulating_supply"`
+	MaxSupply                           cosmossdk_io_math.Int `protobuf:"bytes,15,opt,name=max_supply,json=maxSupply,proto3,customtype=cosmossdk.io/math.Int" json:"max_supply"`
+	// cosmossdk.io/math.LegacyDec
+	TargetEmissionRatePerUnitStakedToken cosmossdk_io_math.LegacyDec `protobuf:"bytes,16,opt,name=target_emission_rate_per_unit_staked_token,json=targetEmissionRatePerUnitStakedToken,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"target_emission_rate_per_unit_staked_token"`
+	// cosmossdk.io/math.LegacyDec
+	ReputersPercent cosmossdk_io_math.LegacyDec `protobuf:"bytes,17,opt,name=reputers_percent,json=reputersPercent,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"reputers_percent"`
+	// cosmossdk.io/math.LegacyDec
+	ValidatorsPercent cosmossdk_io_math.LegacyDec `protobuf:"bytes,18,opt,name=validators_percent,json=validatorsPercent,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"validators_percent"`
+	// cosmossdk.io/math.LegacyDec
+	MaximumMonthlyEmissionPerUnitStakedToken cosmossdk_io_math.LegacyDec `protobuf:"bytes,19,opt,name=maximum_monthly_emission_per_unit_staked_token,json=maximumMonthlyEmissionPerUnitStakedToken,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"maximum_monthly_emission_per_unit_staked_token"`
+	// cosmossdk.io/math.LegacyDec
+	TargetRewardEmissionPerUnitStakedToken cosmossdk_io_math.LegacyDec `protobuf:"bytes,20,opt,name=target_reward_emission_per_unit_staked_token,json=targetRewardEmissionPerUnitStakedToken,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"target_reward_emission_per_unit_staked_token"`
+	// cosmossdk.io/math.LegacyDec
+	EmissionPerUnitStakedToken cosmossdk_io_math.LegacyDec `protobuf:"bytes,21,opt,name=emission_per_unit_staked_token,json=emissionPerUnitStakedToken,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"emission_per_unit_staked_token"`
+	EmissionPerMonth           cosmossdk_io_math.Int       `protobuf:"bytes,22,opt,name=emission_per_month,json=emissionPerMonth,proto3,customtype=cosmossdk.io/math.Int" json:"emission_per_month"`
+	BlockEmission              cosmossdk_io_math.Int       `protobuf:"bytes,23,opt,name=block_emission,json=blockEmission,proto3,customtype=cosmossdk.io/math.Int" json:"block_emission"`
+	ValidatorCut               cosmossdk_io_math.Int       `protobuf:"bytes,24,opt,name=validator_cut,json=validatorCut,proto3,customtype=cosmossdk.io/math.Int" json:"validator_cut"`
+	AlloraRewardsCut           cosmossdk_io_math.Int       `protobuf:"bytes,25,opt,name=allora_rewards_cut,json=alloraRewardsCut,proto3,customtype=cosmossdk.io/math.Int" json:"allora_rewards_cut"`
+	// cosmossdk.io/math.LegacyDec
+	PreviousRewardEmissionPerUnitStakedToken cosmossdk_io_math.LegacyDec `protobuf:"bytes,26,opt,name=previous_reward_emission_per_unit_staked_token,json=previousRewardEmissionPerUnitStakedToken,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"previous_reward_emission_per_unit_staked_token"`
+	MonthsAlreadyUnlocked                    cosmossdk_io_math.Int       `protobuf:"bytes,27,opt,name=months_already_unlocked,json=monthsAlreadyUnlocked,proto3,customtype=cosmossdk.io/math.Int" json:"months_already_unlocked"`
+	UpdatedMonthsUnlocked                    cosmossdk_io_math.Int       `protobuf:"bytes,28,opt,name=updated_months_unlocked,json=updatedMonthsUnlocked,proto3,customtype=cosmossdk.io/math.Int" json:"updated_months_unlocked"`
+}
+
+func (m *EventEmissionInfo) Reset()         { *m = EventEmissionInfo{} }
+func (m *EventEmissionInfo) String() string { return proto.CompactTextString(m) }
+func (*EventEmissionInfo) ProtoMessage()    {}
+func (*EventEmissionInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c0a9e96a05e246ae, []int{5}
+}
+func (m *EventEmissionInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventEmissionInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventEmissionInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventEmissionInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventEmissionInfo.Merge(m, src)
+}
+func (m *EventEmissionInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventEmissionInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventEmissionInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventEmissionInfo proto.InternalMessageInfo
+
+func (m *EventEmissionInfo) GetBlocksPerMonth() uint64 {
+	if m != nil {
+		return m.BlocksPerMonth
+	}
+	return 0
+}
+
+func (m *EventEmissionInfo) GetBlockHeightTargetEILastCalculated() uint64 {
+	if m != nil {
+		return m.BlockHeightTargetEILastCalculated
+	}
+	return 0
+}
+
+func (m *EventEmissionInfo) GetBlockHeightTargetEINextCalculated() uint64 {
+	if m != nil {
+		return m.BlockHeightTargetEINextCalculated
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*EventTokenomicsSet)(nil), "mint.v3.EventTokenomicsSet")
 	proto.RegisterType((*EventEcosystemTokenMintSet)(nil), "mint.v3.EventEcosystemTokenMintSet")
 	proto.RegisterType((*EventRewardCurrentBlockEmission)(nil), "mint.v3.EventRewardCurrentBlockEmission")
+	proto.RegisterType((*EventRecalculateTargetEmission)(nil), "mint.v3.EventRecalculateTargetEmission")
+	proto.RegisterType((*EventParamsSet)(nil), "mint.v3.EventParamsSet")
+	proto.RegisterType((*EventEmissionInfo)(nil), "mint.v3.EventEmissionInfo")
 }
 
 func init() { proto.RegisterFile("mint/v3/events.proto", fileDescriptor_c0a9e96a05e246ae) }
 
 var fileDescriptor_c0a9e96a05e246ae = []byte{
-	// 404 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x93, 0xbd, 0x8e, 0xd3, 0x40,
-	0x14, 0x85, 0x3d, 0x0b, 0x02, 0x31, 0xbb, 0x12, 0xac, 0x59, 0xa4, 0x25, 0x85, 0x03, 0xa9, 0x10,
-	0xd2, 0x7a, 0x90, 0xfc, 0x04, 0x04, 0x45, 0x62, 0x8b, 0x34, 0x09, 0x15, 0x14, 0x66, 0x32, 0x19,
-	0xd9, 0x23, 0x7b, 0xe6, 0x5a, 0x9e, 0xeb, 0x84, 0xbc, 0x05, 0x05, 0x0d, 0x6f, 0x40, 0x49, 0x91,
-	0x87, 0x48, 0x19, 0x51, 0x21, 0x8a, 0x08, 0x25, 0x05, 0xaf, 0x81, 0x3c, 0x93, 0xf0, 0xd3, 0xa6,
-	0xd9, 0xc6, 0xf2, 0x3d, 0x57, 0xfa, 0xce, 0xb9, 0x47, 0x36, 0xbd, 0xd0, 0xca, 0x20, 0x9b, 0x25,
-	0x4c, 0xce, 0xa4, 0x41, 0x1b, 0x57, 0x35, 0x20, 0x84, 0x77, 0x5b, 0x35, 0x9e, 0x25, 0x9d, 0x73,
-	0xae, 0x95, 0x01, 0xe6, 0x9e, 0x7e, 0xd7, 0x79, 0x2c, 0xc0, 0x6a, 0xb0, 0xa9, 0x9b, 0x98, 0x1f,
-	0xf6, 0xab, 0x8b, 0x0c, 0x32, 0xf0, 0x7a, 0xfb, 0xe6, 0xd5, 0xde, 0xf2, 0x84, 0x86, 0x83, 0x96,
-	0xfe, 0x06, 0x0a, 0x69, 0x40, 0x2b, 0x61, 0xc7, 0x12, 0xc3, 0xf7, 0xf4, 0xa1, 0x45, 0x5e, 0xc8,
-	0x69, 0x8a, 0xad, 0x9e, 0x72, 0x0d, 0x8d, 0xc1, 0x4b, 0xf2, 0x84, 0x3c, 0xbb, 0xd7, 0x7f, 0xb1,
-	0xda, 0x74, 0x83, 0x1f, 0x9b, 0xee, 0x23, 0xcf, 0xb7, 0xd3, 0x22, 0x56, 0xc0, 0x34, 0xc7, 0x3c,
-	0xbe, 0x36, 0xf8, 0x6d, 0x79, 0x45, 0xf7, 0xc6, 0xd7, 0x06, 0xbf, 0xfc, 0xfa, 0xfa, 0x9c, 0x8c,
-	0xce, 0x3d, 0xcc, 0x79, 0xbc, 0x74, 0xa8, 0x30, 0xa5, 0xa1, 0x50, 0xb5, 0x68, 0x4a, 0x8e, 0xca,
-	0x64, 0xa9, 0x6d, 0xaa, 0xaa, 0x5c, 0x5c, 0x9e, 0x1c, 0x6b, 0xf0, 0x0f, 0x6b, 0xec, 0x50, 0xe1,
-	0x3b, 0xfa, 0x40, 0x6a, 0x65, 0xad, 0x02, 0x63, 0x0f, 0xf9, 0x6f, 0x1d, 0x89, 0xbf, 0xff, 0x87,
-	0xe4, 0xd3, 0xf7, 0x3e, 0x11, 0xda, 0x71, 0xb5, 0x0d, 0x04, 0xd8, 0x85, 0x45, 0xa9, 0xdd, 0x6d,
-	0x43, 0x65, 0xb0, 0xad, 0xef, 0x29, 0x3d, 0x9b, 0x94, 0x20, 0x8a, 0x34, 0x97, 0x2a, 0xcb, 0x7d,
-	0x6f, 0xb7, 0x47, 0xa7, 0x4e, 0x7b, 0xed, 0xa4, 0x70, 0x4c, 0xcf, 0xfe, 0xab, 0xf6, 0xd8, 0xcb,
-	0x4f, 0xf1, 0x6f, 0xa9, 0xbd, 0xcf, 0x84, 0x76, 0x5d, 0xac, 0x91, 0x9c, 0xf3, 0x7a, 0xfa, 0xaa,
-	0xa9, 0x6b, 0x69, 0xb0, 0xdf, 0xda, 0x0e, 0xf6, 0x17, 0xdc, 0x54, 0xb6, 0xfe, 0x70, 0xb5, 0x8d,
-	0xc8, 0x7a, 0x1b, 0x91, 0x9f, 0xdb, 0x88, 0x7c, 0xdc, 0x45, 0xc1, 0x7a, 0x17, 0x05, 0xdf, 0x77,
-	0x51, 0xf0, 0x36, 0xc9, 0x14, 0xe6, 0xcd, 0x24, 0x16, 0xa0, 0x19, 0x2f, 0x4b, 0xa8, 0xf9, 0x95,
-	0x91, 0x38, 0x87, 0xba, 0x38, 0x8c, 0x22, 0xe7, 0xca, 0xb0, 0x0f, 0xcc, 0xfd, 0x0f, 0xb8, 0xa8,
-	0xa4, 0x9d, 0xdc, 0x71, 0xdf, 0x6f, 0xf2, 0x3b, 0x00, 0x00, 0xff, 0xff, 0x89, 0x69, 0x7a, 0x0d,
-	0x24, 0x03, 0x00, 0x00,
+	// 1116 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x97, 0xcf, 0x6f, 0x1b, 0x45,
+	0x14, 0xc7, 0xb3, 0x21, 0xa4, 0xcd, 0xe4, 0x97, 0x3d, 0x49, 0x9a, 0xad, 0x53, 0x39, 0x6d, 0xa8,
+	0x48, 0x54, 0x51, 0x1b, 0x11, 0x15, 0xce, 0xcd, 0x0f, 0x89, 0xa0, 0x04, 0x22, 0x27, 0x01, 0x09,
+	0x04, 0xc3, 0x64, 0xfd, 0xb0, 0x47, 0xd9, 0x99, 0xb1, 0x76, 0x66, 0x1d, 0x1b, 0x2e, 0x9c, 0x38,
+	0xf7, 0xd0, 0x03, 0xfc, 0x07, 0x1c, 0x39, 0xf4, 0x8f, 0xe8, 0xb1, 0xe2, 0x80, 0x10, 0x87, 0x0a,
+	0x25, 0x07, 0xfe, 0x05, 0x8e, 0x68, 0x67, 0x66, 0x1d, 0x1b, 0x9c, 0xb8, 0xac, 0x83, 0xb8, 0x58,
+	0xde, 0xd9, 0xd5, 0xe7, 0xfb, 0x9d, 0x37, 0xef, 0xed, 0x7b, 0x8b, 0xe6, 0x39, 0x13, 0xba, 0xdc,
+	0x5c, 0x2f, 0x43, 0x13, 0x84, 0x56, 0xa5, 0x46, 0x24, 0xb5, 0xc4, 0x37, 0x92, 0xd5, 0x52, 0x73,
+	0xbd, 0x90, 0xa7, 0x9c, 0x09, 0x59, 0x36, 0xbf, 0xf6, 0x5e, 0xe1, 0x76, 0x20, 0x15, 0x97, 0x8a,
+	0x98, 0xab, 0xb2, 0xbd, 0x70, 0xb7, 0xe6, 0x6b, 0xb2, 0x26, 0xed, 0x7a, 0xf2, 0xcf, 0xad, 0xce,
+	0x59, 0x89, 0x47, 0x65, 0xdd, 0x6e, 0x80, 0x7b, 0x74, 0xe5, 0xd9, 0x28, 0xc2, 0xdb, 0x89, 0xe4,
+	0xa1, 0x3c, 0x01, 0x21, 0x39, 0x0b, 0xd4, 0x01, 0x68, 0xfc, 0x25, 0x9a, 0x53, 0x9a, 0x9e, 0x40,
+	0x95, 0xe8, 0x64, 0x9d, 0x50, 0x2e, 0x63, 0xa1, 0x7d, 0xef, 0xae, 0xb7, 0x36, 0xb1, 0xf1, 0xf6,
+	0xf3, 0x97, 0xcb, 0x23, 0xbf, 0xbd, 0x5c, 0x5e, 0xb0, 0xa2, 0xaa, 0x7a, 0x52, 0x62, 0xb2, 0xcc,
+	0xa9, 0xae, 0x97, 0x76, 0x84, 0xfe, 0xf9, 0xd9, 0x43, 0xe4, 0xdc, 0xec, 0x08, 0xfd, 0xe3, 0x1f,
+	0x3f, 0x3d, 0xf0, 0x2a, 0x79, 0x0b, 0x33, 0x1a, 0x8f, 0x0d, 0x0a, 0x13, 0x84, 0x03, 0x16, 0x05,
+	0x71, 0x48, 0x35, 0x13, 0x35, 0xa2, 0xe2, 0x46, 0x23, 0x6c, 0xfb, 0xa3, 0x59, 0x05, 0xba, 0x58,
+	0x07, 0x06, 0x85, 0x3f, 0x43, 0x39, 0xe0, 0x4c, 0x29, 0x26, 0x85, 0x4a, 0xfd, 0xbf, 0x96, 0x11,
+	0x3f, 0xdb, 0x21, 0x59, 0xf7, 0x2b, 0x4f, 0x3d, 0x54, 0x30, 0x61, 0xdb, 0x0e, 0xa4, 0x6a, 0x2b,
+	0x0d, 0xdc, 0xec, 0x6d, 0x8f, 0x09, 0x9d, 0x84, 0xef, 0x1e, 0x9a, 0x3a, 0x0e, 0x65, 0x70, 0x42,
+	0xea, 0xc0, 0x6a, 0x75, 0x1b, 0xb7, 0xb1, 0xca, 0xa4, 0x59, 0x7b, 0xdf, 0x2c, 0xe1, 0x03, 0x34,
+	0xd5, 0x13, 0xda, 0xac, 0x3b, 0x9f, 0xd4, 0x17, 0x41, 0x5d, 0xf9, 0xc1, 0x43, 0xcb, 0xc6, 0x56,
+	0x05, 0x4e, 0x69, 0x54, 0xdd, 0x8c, 0xa3, 0x08, 0x84, 0xde, 0x48, 0x64, 0xb7, 0xdd, 0x0e, 0xfe,
+	0x37, 0x6f, 0xbf, 0x8c, 0xa2, 0xa2, 0xf3, 0x16, 0xd0, 0xd0, 0x1c, 0x16, 0x1c, 0xd2, 0xa8, 0x06,
+	0xba, 0x63, 0xed, 0x1b, 0x54, 0x4c, 0x03, 0x4d, 0x1a, 0x10, 0x91, 0x58, 0x30, 0x4d, 0xba, 0xf3,
+	0xd0, 0x25, 0xe0, 0x7b, 0xce, 0x49, 0xb9, 0xc6, 0x74, 0x3d, 0x3e, 0x2e, 0x05, 0x92, 0x97, 0x69,
+	0x18, 0xca, 0x88, 0x3e, 0x14, 0xa0, 0x4f, 0x65, 0x74, 0x92, 0x5e, 0x06, 0x75, 0xca, 0x84, 0xf5,
+	0xb8, 0x05, 0x41, 0xa5, 0x90, 0xe2, 0xf7, 0x21, 0x3a, 0x12, 0x4c, 0x1f, 0x5c, 0xa4, 0x25, 0xfe,
+	0x02, 0xe1, 0x1e, 0x71, 0x2e, 0x85, 0xae, 0x67, 0xde, 0x7a, 0xae, 0x4b, 0x69, 0x2f, 0x21, 0xe1,
+	0x4f, 0xd0, 0x8c, 0x8d, 0x7b, 0x7a, 0x27, 0x73, 0x36, 0x4e, 0x1f, 0x77, 0x1f, 0xe8, 0x4a, 0x80,
+	0x66, 0x4c, 0x5c, 0xf7, 0x69, 0x44, 0xb9, 0xa9, 0xde, 0x55, 0x34, 0xde, 0x30, 0x17, 0x26, 0x5e,
+	0x93, 0xef, 0xcc, 0x96, 0xec, 0x7b, 0xe4, 0x51, 0xc9, 0x3e, 0x53, 0x71, 0xb7, 0xf1, 0x1a, 0xca,
+	0x19, 0x96, 0xfa, 0xdb, 0x8e, 0xc7, 0x2a, 0xd6, 0xab, 0x4a, 0xdd, 0xaf, 0xfc, 0x79, 0x0b, 0xe5,
+	0x6d, 0xc2, 0x3b, 0xd9, 0x1d, 0xf1, 0x95, 0xc4, 0x9f, 0xa3, 0x3c, 0xa4, 0x05, 0x40, 0x8e, 0x69,
+	0x48, 0x45, 0x00, 0x43, 0x84, 0x2c, 0x45, 0x6d, 0x58, 0x12, 0xae, 0xa3, 0xc5, 0x46, 0x04, 0x4d,
+	0x26, 0x63, 0x45, 0xae, 0x29, 0x76, 0x0b, 0x29, 0xb0, 0xb7, 0x28, 0x4e, 0xd1, 0xf2, 0xc5, 0x46,
+	0x92, 0x60, 0xb9, 0x17, 0x12, 0x89, 0x80, 0x53, 0x26, 0x98, 0xa8, 0xf9, 0x63, 0x19, 0x15, 0xef,
+	0x74, 0xc0, 0xe6, 0xed, 0x60, 0xb0, 0x95, 0x94, 0xda, 0xf7, 0x04, 0x5e, 0xef, 0x77, 0x02, 0xb8,
+	0x82, 0x56, 0xbb, 0xeb, 0x96, 0x68, 0x53, 0x3b, 0x04, 0x08, 0x23, 0x21, 0x55, 0x9a, 0x74, 0x8a,
+	0xaa, 0xea, 0x8f, 0x1b, 0xc0, 0xbd, 0xae, 0x92, 0x76, 0x85, 0xb6, 0xb3, 0x4b, 0x95, 0xde, 0xec,
+	0x3c, 0x78, 0x15, 0x53, 0x40, 0xab, 0x87, 0x79, 0xe3, 0x52, 0xe6, 0x87, 0xd0, 0xea, 0x66, 0x56,
+	0xd1, 0x82, 0x2b, 0xc2, 0x9e, 0xd2, 0x55, 0xfe, 0xcd, 0x8c, 0x01, 0x9c, 0x73, 0xb8, 0xae, 0x62,
+	0x55, 0x58, 0xa2, 0xa5, 0xc4, 0x09, 0x54, 0x49, 0x13, 0x94, 0xe9, 0x20, 0x56, 0x85, 0x68, 0xa9,
+	0x69, 0xe8, 0x4f, 0x64, 0xd4, 0xf2, 0x2d, 0xf4, 0x63, 0xcb, 0xb4, 0x5a, 0x87, 0x09, 0x11, 0x7f,
+	0xe7, 0xa1, 0xd5, 0xfe, 0x8a, 0x4c, 0x24, 0x0b, 0x32, 0x4a, 0x5a, 0x31, 0x28, 0x80, 0xaa, 0x8f,
+	0x32, 0xaa, 0xbf, 0xd1, 0x47, 0x7d, 0x27, 0xa5, 0xef, 0x5b, 0x38, 0xfe, 0xd6, 0x43, 0xf7, 0x07,
+	0x19, 0x31, 0x2e, 0x26, 0x33, 0xba, 0xb8, 0x7b, 0x95, 0x8b, 0x83, 0xc4, 0x02, 0x47, 0x85, 0x4b,
+	0x82, 0x0f, 0x94, 0xfb, 0x53, 0x19, 0x75, 0x17, 0xfb, 0xc5, 0x1e, 0x28, 0x37, 0x9d, 0xbc, 0x53,
+	0x9c, 0xf6, 0x21, 0x7f, 0x3a, 0x73, 0x27, 0x4f, 0x49, 0xbb, 0x06, 0x74, 0xc9, 0x1c, 0x32, 0x73,
+	0x7d, 0x73, 0xc8, 0x47, 0x08, 0x71, 0xda, 0x4a, 0xc1, 0xb3, 0x19, 0xc1, 0x13, 0x9c, 0xb6, 0x1c,
+	0xf0, 0x89, 0x87, 0x1e, 0xa4, 0x85, 0x9a, 0x36, 0xac, 0x88, 0x6a, 0xb8, 0xa4, 0x65, 0xe6, 0x8c,
+	0xe2, 0xbb, 0x4e, 0x71, 0xe9, 0x9f, 0x8a, 0xbb, 0x50, 0xa3, 0x41, 0x7b, 0x0b, 0x82, 0x2e, 0xdd,
+	0x2d, 0x08, 0xac, 0xee, 0x7d, 0xdd, 0xd3, 0xa2, 0x2b, 0x54, 0x43, 0x9f, 0xde, 0x49, 0x51, 0x2e,
+	0x82, 0x46, 0xac, 0x21, 0x32, 0xef, 0xb1, 0x00, 0x84, 0xf6, 0xf3, 0x43, 0xe9, 0xce, 0xa6, 0xbc,
+	0x7d, 0x8b, 0xc3, 0x80, 0x70, 0x93, 0x86, 0xac, 0x4a, 0x6d, 0xa5, 0x39, 0x11, 0x3c, 0x94, 0x48,
+	0xfe, 0x82, 0x98, 0xca, 0x7c, 0xef, 0xa1, 0x12, 0xa7, 0x2d, 0xc6, 0x63, 0x6e, 0xdf, 0xc6, 0x61,
+	0x9b, 0x0c, 0x98, 0x49, 0xe6, 0x86, 0xf2, 0xb0, 0xe6, 0xd4, 0xf6, 0xac, 0xd8, 0xf6, 0xe5, 0x03,
+	0xca, 0x53, 0x0f, 0xbd, 0xe5, 0xce, 0x3d, 0x32, 0xe3, 0xdd, 0x20, 0x63, 0xf3, 0x43, 0x19, 0x7b,
+	0xd3, 0x6a, 0xd9, 0x49, 0xf2, 0x0a, 0x5b, 0x5f, 0x0f, 0x1c, 0xda, 0x16, 0x86, 0xf2, 0xf1, 0xef,
+	0x67, 0xb6, 0x5b, 0xff, 0xe1, 0xcc, 0xb6, 0x78, 0x2d, 0x33, 0x1b, 0x3e, 0x42, 0xd3, 0x9d, 0xdc,
+	0x23, 0x41, 0xac, 0x7d, 0x3f, 0x23, 0x77, 0xaa, 0x83, 0xd9, 0x8c, 0x75, 0x12, 0x0f, 0x3b, 0xf8,
+	0xba, 0x0c, 0x51, 0x86, 0x7d, 0x3b, 0x6b, 0x3c, 0x2c, 0xcb, 0x66, 0x80, 0x4a, 0xf8, 0x49, 0x75,
+	0x74, 0x26, 0xb2, 0x57, 0x4b, 0xc2, 0xc2, 0x70, 0xd5, 0x91, 0xaa, 0x0d, 0x4c, 0xc3, 0x3a, 0x5a,
+	0x34, 0xa7, 0xaf, 0x08, 0x0d, 0x23, 0xa0, 0xd5, 0x36, 0x89, 0x85, 0xeb, 0x15, 0x4b, 0x59, 0x67,
+	0x45, 0x0b, 0x7c, 0x6c, 0x79, 0x47, 0x0e, 0x97, 0x28, 0xc5, 0x8d, 0x6a, 0x32, 0xeb, 0x10, 0xa7,
+	0xd8, 0x51, 0xba, 0x93, 0x55, 0xc9, 0x01, 0x4d, 0xd6, 0xa9, 0x54, 0xe9, 0x83, 0xb1, 0x9b, 0x5e,
+	0x6e, 0x74, 0x63, 0xef, 0xf9, 0x59, 0xd1, 0x7b, 0x71, 0x56, 0xf4, 0x7e, 0x3f, 0x2b, 0x7a, 0x4f,
+	0xce, 0x8b, 0x23, 0x2f, 0xce, 0x8b, 0x23, 0xbf, 0x9e, 0x17, 0x47, 0x3e, 0x5d, 0x7f, 0xc5, 0xef,
+	0x9f, 0x56, 0xd9, 0x7c, 0xfa, 0x9b, 0xef, 0xfe, 0xe3, 0x71, 0xf3, 0xe1, 0xbf, 0xfe, 0x57, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0xb5, 0x72, 0xe3, 0xc2, 0x72, 0x10, 0x00, 0x00,
 }
 
 func (m *EventTokenomicsSet) Marshal() (dAtA []byte, err error) {
@@ -322,6 +552,403 @@ func (m *EventRewardCurrentBlockEmission) MarshalToSizedBuffer(dAtA []byte) (int
 	return len(dAtA) - i, nil
 }
 
+func (m *EventRecalculateTargetEmission) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRecalculateTargetEmission) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRecalculateTargetEmission) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.BlockEmission.Size()
+		i -= size
+		if _, err := m.BlockEmission.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	{
+		size := m.EmissionPerMonth.Size()
+		i -= size
+		if _, err := m.EmissionPerMonth.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	{
+		size := m.EmissionPerUnitStakedToken.Size()
+		i -= size
+		if _, err := m.EmissionPerUnitStakedToken.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *EventParamsSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventParamsSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventParamsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlocksPerMonth != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.BlocksPerMonth))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Params != nil {
+		{
+			size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventEmissionInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventEmissionInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventEmissionInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.UpdatedMonthsUnlocked.Size()
+		i -= size
+		if _, err := m.UpdatedMonthsUnlocked.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xe2
+	{
+		size := m.MonthsAlreadyUnlocked.Size()
+		i -= size
+		if _, err := m.MonthsAlreadyUnlocked.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xda
+	{
+		size := m.PreviousRewardEmissionPerUnitStakedToken.Size()
+		i -= size
+		if _, err := m.PreviousRewardEmissionPerUnitStakedToken.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xd2
+	{
+		size := m.AlloraRewardsCut.Size()
+		i -= size
+		if _, err := m.AlloraRewardsCut.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xca
+	{
+		size := m.ValidatorCut.Size()
+		i -= size
+		if _, err := m.ValidatorCut.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xc2
+	{
+		size := m.BlockEmission.Size()
+		i -= size
+		if _, err := m.BlockEmission.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xba
+	{
+		size := m.EmissionPerMonth.Size()
+		i -= size
+		if _, err := m.EmissionPerMonth.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xb2
+	{
+		size := m.EmissionPerUnitStakedToken.Size()
+		i -= size
+		if _, err := m.EmissionPerUnitStakedToken.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xaa
+	{
+		size := m.TargetRewardEmissionPerUnitStakedToken.Size()
+		i -= size
+		if _, err := m.TargetRewardEmissionPerUnitStakedToken.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xa2
+	{
+		size := m.MaximumMonthlyEmissionPerUnitStakedToken.Size()
+		i -= size
+		if _, err := m.MaximumMonthlyEmissionPerUnitStakedToken.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0x9a
+	{
+		size := m.ValidatorsPercent.Size()
+		i -= size
+		if _, err := m.ValidatorsPercent.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0x92
+	{
+		size := m.ReputersPercent.Size()
+		i -= size
+		if _, err := m.ReputersPercent.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0x8a
+	{
+		size := m.TargetEmissionRatePerUnitStakedToken.Size()
+		i -= size
+		if _, err := m.TargetEmissionRatePerUnitStakedToken.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0x82
+	{
+		size := m.MaxSupply.Size()
+		i -= size
+		if _, err := m.MaxSupply.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x7a
+	{
+		size := m.CirculatingSupply.Size()
+		i -= size
+		if _, err := m.CirculatingSupply.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x72
+	{
+		size := m.EcosystemLocked.Size()
+		i -= size
+		if _, err := m.EcosystemLocked.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x6a
+	{
+		size := m.LockedVestingTokensTeam.Size()
+		i -= size
+		if _, err := m.LockedVestingTokensTeam.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x62
+	{
+		size := m.LockedVestingTokensInvestorsSeed.Size()
+		i -= size
+		if _, err := m.LockedVestingTokensInvestorsSeed.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x5a
+	{
+		size := m.LockedVestingTokensInvestorsPreseed.Size()
+		i -= size
+		if _, err := m.LockedVestingTokensInvestorsPreseed.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x52
+	{
+		size := m.LockedVestingTokensTotal.Size()
+		i -= size
+		if _, err := m.LockedVestingTokensTotal.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x4a
+	{
+		size := m.NetworkStakedTokens.Size()
+		i -= size
+		if _, err := m.NetworkStakedTokens.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x42
+	if m.BlockHeightTargetEINextCalculated != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeightTargetEINextCalculated))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.BlockHeightTargetEILastCalculated != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeightTargetEILastCalculated))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.BlocksPerMonth != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.BlocksPerMonth))
+		i--
+		dAtA[i] = 0x28
+	}
+	{
+		size := m.EcosystemMintSupplyRemaining.Size()
+		i -= size
+		if _, err := m.EcosystemMintSupplyRemaining.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	{
+		size := m.PreviousBlockEmission.Size()
+		i -= size
+		if _, err := m.PreviousBlockEmission.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	{
+		size := m.EcosystemBalance.Size()
+		i -= size
+		if _, err := m.EcosystemBalance.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintEvents(dAtA []byte, offset int, v uint64) int {
 	offset -= sovEvents(v)
 	base := offset
@@ -373,6 +1000,103 @@ func (m *EventRewardCurrentBlockEmission) Size() (n int) {
 	}
 	l = m.TokenAmount.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventRecalculateTargetEmission) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.EmissionPerUnitStakedToken.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.EmissionPerMonth.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.BlockEmission.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventParamsSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Params != nil {
+		l = m.Params.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if m.BlocksPerMonth != 0 {
+		n += 1 + sovEvents(uint64(m.BlocksPerMonth))
+	}
+	return n
+}
+
+func (m *EventEmissionInfo) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.EcosystemBalance.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.PreviousBlockEmission.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.EcosystemMintSupplyRemaining.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	if m.BlocksPerMonth != 0 {
+		n += 1 + sovEvents(uint64(m.BlocksPerMonth))
+	}
+	if m.BlockHeightTargetEILastCalculated != 0 {
+		n += 1 + sovEvents(uint64(m.BlockHeightTargetEILastCalculated))
+	}
+	if m.BlockHeightTargetEINextCalculated != 0 {
+		n += 1 + sovEvents(uint64(m.BlockHeightTargetEINextCalculated))
+	}
+	l = m.NetworkStakedTokens.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.LockedVestingTokensTotal.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.LockedVestingTokensInvestorsPreseed.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.LockedVestingTokensInvestorsSeed.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.LockedVestingTokensTeam.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.EcosystemLocked.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.CirculatingSupply.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.MaxSupply.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.TargetEmissionRatePerUnitStakedToken.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.ReputersPercent.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.ValidatorsPercent.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.MaximumMonthlyEmissionPerUnitStakedToken.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.TargetRewardEmissionPerUnitStakedToken.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.EmissionPerUnitStakedToken.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.EmissionPerMonth.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.BlockEmission.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.ValidatorCut.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.AlloraRewardsCut.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.PreviousRewardEmissionPerUnitStakedToken.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.MonthsAlreadyUnlocked.Size()
+	n += 2 + l + sovEvents(uint64(l))
+	l = m.UpdatedMonthsUnlocked.Size()
+	n += 2 + l + sovEvents(uint64(l))
 	return n
 }
 
@@ -716,6 +1440,1186 @@ func (m *EventRewardCurrentBlockEmission) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.TokenAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRecalculateTargetEmission) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRecalculateTargetEmission: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRecalculateTargetEmission: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmissionPerUnitStakedToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.EmissionPerUnitStakedToken.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmissionPerMonth", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.EmissionPerMonth.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockEmission", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.BlockEmission.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventParamsSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventParamsSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventParamsSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Params == nil {
+				m.Params = &Params{}
+			}
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlocksPerMonth", wireType)
+			}
+			m.BlocksPerMonth = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlocksPerMonth |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventEmissionInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventEmissionInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventEmissionInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EcosystemBalance", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.EcosystemBalance.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PreviousBlockEmission", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.PreviousBlockEmission.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EcosystemMintSupplyRemaining", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.EcosystemMintSupplyRemaining.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlocksPerMonth", wireType)
+			}
+			m.BlocksPerMonth = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlocksPerMonth |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeightTargetEILastCalculated", wireType)
+			}
+			m.BlockHeightTargetEILastCalculated = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeightTargetEILastCalculated |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeightTargetEINextCalculated", wireType)
+			}
+			m.BlockHeightTargetEINextCalculated = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeightTargetEINextCalculated |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NetworkStakedTokens", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.NetworkStakedTokens.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensTotal", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.LockedVestingTokensTotal.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensInvestorsPreseed", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.LockedVestingTokensInvestorsPreseed.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 11:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensInvestorsSeed", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.LockedVestingTokensInvestorsSeed.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 12:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensTeam", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.LockedVestingTokensTeam.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EcosystemLocked", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.EcosystemLocked.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CirculatingSupply", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.CirculatingSupply.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 15:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxSupply", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.MaxSupply.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 16:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TargetEmissionRatePerUnitStakedToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TargetEmissionRatePerUnitStakedToken.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 17:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReputersPercent", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ReputersPercent.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 18:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorsPercent", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ValidatorsPercent.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 19:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaximumMonthlyEmissionPerUnitStakedToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.MaximumMonthlyEmissionPerUnitStakedToken.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 20:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TargetRewardEmissionPerUnitStakedToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TargetRewardEmissionPerUnitStakedToken.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 21:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmissionPerUnitStakedToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.EmissionPerUnitStakedToken.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 22:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmissionPerMonth", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.EmissionPerMonth.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 23:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockEmission", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.BlockEmission.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 24:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorCut", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ValidatorCut.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 25:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AlloraRewardsCut", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.AlloraRewardsCut.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 26:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PreviousRewardEmissionPerUnitStakedToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.PreviousRewardEmissionPerUnitStakedToken.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 27:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MonthsAlreadyUnlocked", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.MonthsAlreadyUnlocked.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 28:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UpdatedMonthsUnlocked", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UpdatedMonthsUnlocked.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

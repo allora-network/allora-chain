@@ -5,8 +5,9 @@ import (
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/allora-network/allora-chain/x/mint/types"
 )
 
 // return the uncirculating supply, i.e. tokens on a vesting schedule
@@ -298,6 +299,8 @@ func RecalculateTargetEmission(
 		"emissionPerMonth", emissionPerMonth.String(),
 		"blockEmission", blockEmission.String(),
 	)
+
+	types.EmitNewRecalculateTargetEmissionEvent(ctx, emissionPerUnitStakedToken, emissionPerMonth, blockEmission)
 	return blockEmission, emissionPerUnitStakedToken, nil
 }
 

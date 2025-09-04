@@ -5,15 +5,16 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// A tx function that accepts a individual inference and forecast and possibly returns an error
-// Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
+// InsertWorkerPayload accepts an individual inference and forecast and possibly returns an error.
+// Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields.
 // Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
 // registered worker and none from any unregistered actor.
 // Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
@@ -103,6 +104,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
+
+		types.EmitNewInsertInfererPayloadEvent(ctx, wdb)
 	}
 
 	// Process Forecasts
@@ -152,6 +155,9 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 					"Error appending forecast")
 			}
 		}
+
+		types.EmitNewInsertForecasterPayloadEvent(ctx, wdb)
 	}
+
 	return &types.InsertWorkerPayloadResponse{}, nil
 }

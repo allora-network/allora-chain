@@ -99,9 +99,6 @@ const (
 	QueryService_GetNextChurningBlockByTopicId_FullMethodName               = "/emissions.v9.QueryService/GetNextChurningBlockByTopicId"
 	QueryService_GetCountInfererInclusionsInTopic_FullMethodName            = "/emissions.v9.QueryService/GetCountInfererInclusionsInTopic"
 	QueryService_GetCountForecasterInclusionsInTopic_FullMethodName         = "/emissions.v9.QueryService/GetCountForecasterInclusionsInTopic"
-	QueryService_GetActiveReputersForTopic_FullMethodName                   = "/emissions.v9.QueryService/GetActiveReputersForTopic"
-	QueryService_GetActiveForecastersForTopic_FullMethodName                = "/emissions.v9.QueryService/GetActiveForecastersForTopic"
-	QueryService_GetActiveInferersForTopic_FullMethodName                   = "/emissions.v9.QueryService/GetActiveInferersForTopic"
 	QueryService_IsWhitelistedGlobalWorker_FullMethodName                   = "/emissions.v9.QueryService/IsWhitelistedGlobalWorker"
 	QueryService_IsWhitelistedGlobalReputer_FullMethodName                  = "/emissions.v9.QueryService/IsWhitelistedGlobalReputer"
 	QueryService_IsWhitelistedGlobalAdmin_FullMethodName                    = "/emissions.v9.QueryService/IsWhitelistedGlobalAdmin"
@@ -125,6 +122,8 @@ const (
 	QueryService_GetLatestRegretStdNorm_FullMethodName                      = "/emissions.v9.QueryService/GetLatestRegretStdNorm"
 	QueryService_GetLatestInfererWeight_FullMethodName                      = "/emissions.v9.QueryService/GetLatestInfererWeight"
 	QueryService_GetLatestForecasterWeight_FullMethodName                   = "/emissions.v9.QueryService/GetLatestForecasterWeight"
+	QueryService_GetWorkerSubmissionWindowStatus_FullMethodName             = "/emissions.v9.QueryService/GetWorkerSubmissionWindowStatus"
+	QueryService_GetReputerSubmissionWindowStatus_FullMethodName            = "/emissions.v9.QueryService/GetReputerSubmissionWindowStatus"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -214,9 +213,6 @@ type QueryServiceClient interface {
 	GetNextChurningBlockByTopicId(ctx context.Context, in *GetNextChurningBlockByTopicIdRequest, opts ...grpc.CallOption) (*GetNextChurningBlockByTopicIdResponse, error)
 	GetCountInfererInclusionsInTopic(ctx context.Context, in *GetCountInfererInclusionsInTopicRequest, opts ...grpc.CallOption) (*GetCountInfererInclusionsInTopicResponse, error)
 	GetCountForecasterInclusionsInTopic(ctx context.Context, in *GetCountForecasterInclusionsInTopicRequest, opts ...grpc.CallOption) (*GetCountForecasterInclusionsInTopicResponse, error)
-	GetActiveReputersForTopic(ctx context.Context, in *GetActiveReputersForTopicRequest, opts ...grpc.CallOption) (*GetActiveReputersForTopicResponse, error)
-	GetActiveForecastersForTopic(ctx context.Context, in *GetActiveForecastersForTopicRequest, opts ...grpc.CallOption) (*GetActiveForecastersForTopicResponse, error)
-	GetActiveInferersForTopic(ctx context.Context, in *GetActiveInferersForTopicRequest, opts ...grpc.CallOption) (*GetActiveInferersForTopicResponse, error)
 	IsWhitelistedGlobalWorker(ctx context.Context, in *IsWhitelistedGlobalWorkerRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalWorkerResponse, error)
 	IsWhitelistedGlobalReputer(ctx context.Context, in *IsWhitelistedGlobalReputerRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalReputerResponse, error)
 	IsWhitelistedGlobalAdmin(ctx context.Context, in *IsWhitelistedGlobalAdminRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalAdminResponse, error)
@@ -246,6 +242,10 @@ type QueryServiceClient interface {
 	GetLatestInfererWeight(ctx context.Context, in *GetLatestInfererWeightRequest, opts ...grpc.CallOption) (*GetLatestInfererWeightResponse, error)
 	// Get latest forecaster weight for a topic and actor
 	GetLatestForecasterWeight(ctx context.Context, in *GetLatestForecasterWeightRequest, opts ...grpc.CallOption) (*GetLatestForecasterWeightResponse, error)
+	// Get worker submission window status and timing
+	GetWorkerSubmissionWindowStatus(ctx context.Context, in *GetWorkerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetWorkerSubmissionWindowStatusResponse, error)
+	// Get reputer submission window status and timing
+	GetReputerSubmissionWindowStatus(ctx context.Context, in *GetReputerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetReputerSubmissionWindowStatusResponse, error)
 }
 
 type queryServiceClient struct {
@@ -1056,36 +1056,6 @@ func (c *queryServiceClient) GetCountForecasterInclusionsInTopic(ctx context.Con
 	return out, nil
 }
 
-func (c *queryServiceClient) GetActiveReputersForTopic(ctx context.Context, in *GetActiveReputersForTopicRequest, opts ...grpc.CallOption) (*GetActiveReputersForTopicResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetActiveReputersForTopicResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetActiveReputersForTopic_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryServiceClient) GetActiveForecastersForTopic(ctx context.Context, in *GetActiveForecastersForTopicRequest, opts ...grpc.CallOption) (*GetActiveForecastersForTopicResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetActiveForecastersForTopicResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetActiveForecastersForTopic_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryServiceClient) GetActiveInferersForTopic(ctx context.Context, in *GetActiveInferersForTopicRequest, opts ...grpc.CallOption) (*GetActiveInferersForTopicResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetActiveInferersForTopicResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetActiveInferersForTopic_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryServiceClient) IsWhitelistedGlobalWorker(ctx context.Context, in *IsWhitelistedGlobalWorkerRequest, opts ...grpc.CallOption) (*IsWhitelistedGlobalWorkerResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(IsWhitelistedGlobalWorkerResponse)
@@ -1316,6 +1286,26 @@ func (c *queryServiceClient) GetLatestForecasterWeight(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *queryServiceClient) GetWorkerSubmissionWindowStatus(ctx context.Context, in *GetWorkerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetWorkerSubmissionWindowStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetWorkerSubmissionWindowStatusResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetWorkerSubmissionWindowStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetReputerSubmissionWindowStatus(ctx context.Context, in *GetReputerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetReputerSubmissionWindowStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetReputerSubmissionWindowStatusResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetReputerSubmissionWindowStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility.
@@ -1403,9 +1393,6 @@ type QueryServiceServer interface {
 	GetNextChurningBlockByTopicId(context.Context, *GetNextChurningBlockByTopicIdRequest) (*GetNextChurningBlockByTopicIdResponse, error)
 	GetCountInfererInclusionsInTopic(context.Context, *GetCountInfererInclusionsInTopicRequest) (*GetCountInfererInclusionsInTopicResponse, error)
 	GetCountForecasterInclusionsInTopic(context.Context, *GetCountForecasterInclusionsInTopicRequest) (*GetCountForecasterInclusionsInTopicResponse, error)
-	GetActiveReputersForTopic(context.Context, *GetActiveReputersForTopicRequest) (*GetActiveReputersForTopicResponse, error)
-	GetActiveForecastersForTopic(context.Context, *GetActiveForecastersForTopicRequest) (*GetActiveForecastersForTopicResponse, error)
-	GetActiveInferersForTopic(context.Context, *GetActiveInferersForTopicRequest) (*GetActiveInferersForTopicResponse, error)
 	IsWhitelistedGlobalWorker(context.Context, *IsWhitelistedGlobalWorkerRequest) (*IsWhitelistedGlobalWorkerResponse, error)
 	IsWhitelistedGlobalReputer(context.Context, *IsWhitelistedGlobalReputerRequest) (*IsWhitelistedGlobalReputerResponse, error)
 	IsWhitelistedGlobalAdmin(context.Context, *IsWhitelistedGlobalAdminRequest) (*IsWhitelistedGlobalAdminResponse, error)
@@ -1435,6 +1422,10 @@ type QueryServiceServer interface {
 	GetLatestInfererWeight(context.Context, *GetLatestInfererWeightRequest) (*GetLatestInfererWeightResponse, error)
 	// Get latest forecaster weight for a topic and actor
 	GetLatestForecasterWeight(context.Context, *GetLatestForecasterWeightRequest) (*GetLatestForecasterWeightResponse, error)
+	// Get worker submission window status and timing
+	GetWorkerSubmissionWindowStatus(context.Context, *GetWorkerSubmissionWindowStatusRequest) (*GetWorkerSubmissionWindowStatusResponse, error)
+	// Get reputer submission window status and timing
+	GetReputerSubmissionWindowStatus(context.Context, *GetReputerSubmissionWindowStatusRequest) (*GetReputerSubmissionWindowStatusResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1685,15 +1676,6 @@ func (UnimplementedQueryServiceServer) GetCountInfererInclusionsInTopic(context.
 func (UnimplementedQueryServiceServer) GetCountForecasterInclusionsInTopic(context.Context, *GetCountForecasterInclusionsInTopicRequest) (*GetCountForecasterInclusionsInTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCountForecasterInclusionsInTopic not implemented")
 }
-func (UnimplementedQueryServiceServer) GetActiveReputersForTopic(context.Context, *GetActiveReputersForTopicRequest) (*GetActiveReputersForTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetActiveReputersForTopic not implemented")
-}
-func (UnimplementedQueryServiceServer) GetActiveForecastersForTopic(context.Context, *GetActiveForecastersForTopicRequest) (*GetActiveForecastersForTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetActiveForecastersForTopic not implemented")
-}
-func (UnimplementedQueryServiceServer) GetActiveInferersForTopic(context.Context, *GetActiveInferersForTopicRequest) (*GetActiveInferersForTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetActiveInferersForTopic not implemented")
-}
 func (UnimplementedQueryServiceServer) IsWhitelistedGlobalWorker(context.Context, *IsWhitelistedGlobalWorkerRequest) (*IsWhitelistedGlobalWorkerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistedGlobalWorker not implemented")
 }
@@ -1762,6 +1744,12 @@ func (UnimplementedQueryServiceServer) GetLatestInfererWeight(context.Context, *
 }
 func (UnimplementedQueryServiceServer) GetLatestForecasterWeight(context.Context, *GetLatestForecasterWeightRequest) (*GetLatestForecasterWeightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestForecasterWeight not implemented")
+}
+func (UnimplementedQueryServiceServer) GetWorkerSubmissionWindowStatus(context.Context, *GetWorkerSubmissionWindowStatusRequest) (*GetWorkerSubmissionWindowStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerSubmissionWindowStatus not implemented")
+}
+func (UnimplementedQueryServiceServer) GetReputerSubmissionWindowStatus(context.Context, *GetReputerSubmissionWindowStatusRequest) (*GetReputerSubmissionWindowStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReputerSubmissionWindowStatus not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 func (UnimplementedQueryServiceServer) testEmbeddedByValue()                      {}
@@ -3224,60 +3212,6 @@ func _QueryService_GetCountForecasterInclusionsInTopic_Handler(srv interface{}, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _QueryService_GetActiveReputersForTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetActiveReputersForTopicRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServiceServer).GetActiveReputersForTopic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: QueryService_GetActiveReputersForTopic_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetActiveReputersForTopic(ctx, req.(*GetActiveReputersForTopicRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _QueryService_GetActiveForecastersForTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetActiveForecastersForTopicRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServiceServer).GetActiveForecastersForTopic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: QueryService_GetActiveForecastersForTopic_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetActiveForecastersForTopic(ctx, req.(*GetActiveForecastersForTopicRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _QueryService_GetActiveInferersForTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetActiveInferersForTopicRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServiceServer).GetActiveInferersForTopic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: QueryService_GetActiveInferersForTopic_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetActiveInferersForTopic(ctx, req.(*GetActiveInferersForTopicRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _QueryService_IsWhitelistedGlobalWorker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IsWhitelistedGlobalWorkerRequest)
 	if err := dec(in); err != nil {
@@ -3692,6 +3626,42 @@ func _QueryService_GetLatestForecasterWeight_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_GetWorkerSubmissionWindowStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkerSubmissionWindowStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetWorkerSubmissionWindowStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetWorkerSubmissionWindowStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetWorkerSubmissionWindowStatus(ctx, req.(*GetWorkerSubmissionWindowStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetReputerSubmissionWindowStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReputerSubmissionWindowStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetReputerSubmissionWindowStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetReputerSubmissionWindowStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetReputerSubmissionWindowStatus(ctx, req.(*GetReputerSubmissionWindowStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4020,18 +3990,6 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _QueryService_GetCountForecasterInclusionsInTopic_Handler,
 		},
 		{
-			MethodName: "GetActiveReputersForTopic",
-			Handler:    _QueryService_GetActiveReputersForTopic_Handler,
-		},
-		{
-			MethodName: "GetActiveForecastersForTopic",
-			Handler:    _QueryService_GetActiveForecastersForTopic_Handler,
-		},
-		{
-			MethodName: "GetActiveInferersForTopic",
-			Handler:    _QueryService_GetActiveInferersForTopic_Handler,
-		},
-		{
 			MethodName: "IsWhitelistedGlobalWorker",
 			Handler:    _QueryService_IsWhitelistedGlobalWorker_Handler,
 		},
@@ -4122,6 +4080,14 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLatestForecasterWeight",
 			Handler:    _QueryService_GetLatestForecasterWeight_Handler,
+		},
+		{
+			MethodName: "GetWorkerSubmissionWindowStatus",
+			Handler:    _QueryService_GetWorkerSubmissionWindowStatus_Handler,
+		},
+		{
+			MethodName: "GetReputerSubmissionWindowStatus",
+			Handler:    _QueryService_GetReputerSubmissionWindowStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

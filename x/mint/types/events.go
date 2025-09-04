@@ -1,10 +1,14 @@
 package types
 
 import (
+	"context"
+
 	"cosmossdk.io/math"
-	metrics "github.com/allora-network/allora-chain/x/mint/metrics"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/mint/metrics"
 )
 
 func EmitNewTokenomicsSetEvent(ctx sdk.Context, stakedTokenAmount, circulatingAmount, emissionsAmount math.Int) {
@@ -50,5 +54,51 @@ func RewardCurrentBlockEmissionEventBase(blockHeight uint64, tokenAmount math.In
 	return &EventRewardCurrentBlockEmission{
 		BlockHeight: blockHeight,
 		TokenAmount: tokenAmount,
+	}
+}
+
+func EmitNewRecalculateTargetEmissionEvent(ctx context.Context, emissionPerUnitStakedToken math.LegacyDec, emissionPerMonth, blockEmission math.Int) {
+	metrics.IncrProducerEventCount(metrics.RECALCULATE_TARGET_EMISSION_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	emissionPerUnitStakedTokenDec, err := alloraMath.NewDecFromSdkLegacyDec(emissionPerUnitStakedToken)
+	if err != nil {
+		sdkCtx.Logger().Warn("Error converting emission per unit staked token to allora dec", "error", err)
+		return
+	}
+	err = sdkCtx.EventManager().EmitTypedEvent(NewRecalculateTargetEmissionEventBase(emissionPerUnitStakedTokenDec, emissionPerMonth, blockEmission))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewRecalculateTargetEmissionEvent", "error", err)
+	}
+}
+
+func NewRecalculateTargetEmissionEventBase(emissionPerUnitStakedToken alloraMath.Dec, emissionPerMonth, blockEmission math.Int) proto.Message {
+	return &EventRecalculateTargetEmission{
+		EmissionPerUnitStakedToken: emissionPerUnitStakedToken,
+		EmissionPerMonth:           emissionPerMonth,
+		BlockEmission:              blockEmission,
+	}
+}
+
+func EmitNewParamsSetEvent(ctx context.Context, params Params, blocksPerMonth uint64) {
+	metrics.IncrProducerEventCount(metrics.PARAMS_SET_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewParamsSetEventBase(params, blocksPerMonth))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewParamsSetEvent", "error", err)
+	}
+}
+
+func NewParamsSetEventBase(params Params, blocksPerMonth uint64) proto.Message {
+	return &EventParamsSet{
+		Params:         &params,
+		BlocksPerMonth: blocksPerMonth,
+	}
+}
+
+func EmitNewEmissionInfoEvent(ctx sdk.Context, eventInfo EventEmissionInfo) {
+	metrics.IncrProducerEventCount(metrics.EMISSION_INFO_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(&eventInfo)
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewEmissionInfoEvent", "error", err)
 	}
 }

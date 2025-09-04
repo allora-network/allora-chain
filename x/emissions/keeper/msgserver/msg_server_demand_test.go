@@ -27,7 +27,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 
 	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err, "GetParams should not return an error")
-	topicWeightBefore, feeRevBefore, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+	topicWeightBefore, feeRevBefore, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic,
 		10800,
@@ -44,7 +44,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	s.Require().NoError(err)
 	s.Require().Equal(true, res, "TopicId is not activated")
 	// check that the topic fee revenue has been updated
-	topicWeightAfter, feeRevAfter, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+	topicWeightAfter, feeRevAfter, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic,
 		10800,
@@ -93,7 +93,7 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	s.Require().NoError(err, "GetParams should not return an error")
 
 	// check that the topic fee revenue has been updated
-	topicWeight, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+	topicWeight, _, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic1,
 		10800,
@@ -104,7 +104,7 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	)
 	s.Require().NoError(err)
 
-	topic2Weight, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+	topic2Weight, _, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic2,
 		10800,
@@ -166,7 +166,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	s.Require().NoError(err, "GetParams should not return an error")
 
 	// Get weights for both topics
-	topicWeight1, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+	topicWeight1, _, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic1,
 		epochLength1,
@@ -177,7 +177,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	)
 	s.Require().NoError(err)
 
-	topicWeight2, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
+	topicWeight2, _, _, err := s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic2,
 		epochLength2,
@@ -197,7 +197,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	s.Require().NoError(err)
 
 	// Recalculate having set previous topic weights
-	topicWeight1, _, err = s.EmissionsKeeper().GetCurrentTopicWeight(
+	topicWeight1, _, _, err = s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic1,
 		epochLength1,
@@ -208,7 +208,7 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	)
 	s.Require().NoError(err)
 
-	topicWeight2, _, err = s.EmissionsKeeper().GetCurrentTopicWeight(
+	topicWeight2, _, _, err = s.EmissionsKeeper().GetCurrentTopicWeight(
 		s.Ctx(),
 		topic2,
 		epochLength2,

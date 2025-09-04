@@ -2,6 +2,19 @@
 
 set -e
 
+# Backup codec.go files WITH their directory structure - dynamically find all v* folders
+echo "Starting backup of codec.go files..."
+mkdir -p codec_backup/api/mint
+for vdir in api/mint/v*; do
+    if [ -f "$vdir/codec.go" ]; then
+        version=$(basename $vdir)
+        mkdir -p "codec_backup/api/mint/$version"
+        cp "$vdir/codec.go" "codec_backup/api/mint/$version/"
+        echo "Backed up: $vdir/codec.go"
+    fi
+done
+echo "Backup complete"
+
 echo "Generating gogo proto code"
 cd proto
 proto_dirs=$(find . -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort -V | uniq)
@@ -26,3 +39,12 @@ rm -rf api && mkdir api
 mv mint ./api
 rm -rf mint/
 rm -rf github.com allora-network
+
+
+# Restore codec.go files with their directory structure
+echo "Restoring codec.go files..."
+cp -r codec_backup/api/* ./api/
+echo "Restored codec.go files"
+echo "Cleaning up backup directory..."
+rm -rf codec_backup
+echo "Done!"

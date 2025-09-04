@@ -5,12 +5,13 @@ import (
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/mint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.MsgServiceServer = msgServiceServer{} //nolint: exhaustruct
+var _ types.MsgServiceServer = msgServiceServer{} // nolint: exhaustruct
 
 // msgServiceServer is a wrapper of Keeper.
 type msgServiceServer struct {
@@ -74,6 +75,7 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 		}
 	}
 
+	types.EmitNewParamsSetEvent(ctx, msg.Params, msg.BlocksPerMonth)
 	return &types.UpdateParamsResponse{}, nil
 }
 

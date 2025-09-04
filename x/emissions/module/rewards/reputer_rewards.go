@@ -213,6 +213,9 @@ func GetRewardForReputerFromTotalReward(
 			if err != nil {
 				return nil, err
 			}
+			// Emit event for delegate reward share updated
+			types.EmitNewDelegateRewardShareUpdatedEvent(ctx, topicId, reputer, newShare)
+
 			err = keeper.SendCoinsFromModuleToModule(
 				ctx,
 				types.AlloraRewardsAccountName,
@@ -222,6 +225,8 @@ func GetRewardForReputerFromTotalReward(
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to send coins to allora pend reward account")
 			}
+			// Emit event for delegate reward distributed
+			types.EmitNewDelegateRewardDistributedEvent(ctx, topicId, reputer, delegatorRewardInt)
 		}
 		// Send remain rewards to reputer
 		// delegatorRewardDec has already been trimmed.
@@ -312,7 +317,7 @@ func HandleMonthlyRewardsReset(sdkCtx sdk.Context, keeper keeper.Keeper) (err er
 	}
 
 	// Emit the event
-	types.EmitPreviousPercentageRewardToStakedReputersSetEvent(sdkCtx, sdkCtx.BlockHeight(), percentageToStakedReputersDec)
+	types.EmitNewPreviousPercentageRewardToStakedReputersSetEvent(sdkCtx, sdkCtx.BlockHeight(), percentageToStakedReputersDec)
 
 	// Reset monthly reputer rewards
 	err = keeper.ResetMonthlyRewards(sdkCtx)

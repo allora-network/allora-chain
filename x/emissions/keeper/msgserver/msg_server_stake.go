@@ -7,14 +7,15 @@ import (
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Function for reputers to call to add stake to an existing stake position.
+// AddStake is used for reputers to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_ *types.AddStakeResponse, err error) {
 	defer metrics.RecordMetrics("AddStake", time.Now(), &err)
 
@@ -122,11 +123,14 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
-	err = ms.k.SetStakeRemoval(ctx, stakeToRemove)
-	return &types.RemoveStakeResponse{}, err
+	if err = ms.k.SetStakeRemoval(ctx, stakeToRemove); err != nil {
+		return nil, errorsmod.Wrap(err, "failed to set stake removal")
+	}
+
+	return &types.RemoveStakeResponse{}, nil
 }
 
-// cancel a request to remove your stake, during the delay window
+// CancelRemoveStake cancels a request to remove your stake, within the delay window
 func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemoveStakeRequest) (_ *types.CancelRemoveStakeResponse, err error) {
 	defer metrics.RecordMetrics("CancelRemoveStake", time.Now(), &err)
 
@@ -156,10 +160,11 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
 	}
-	return &types.CancelRemoveStakeResponse{}, err
+
+	return &types.CancelRemoveStakeResponse{}, nil
 }
 
-// Delegates a stake to a reputer. Sender does not have to be registered to delegate stake.
+// DelegateStake delegates a stake to a reputer. Sender does not have to be registered to delegate stake.
 func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeRequest) (_ *types.DelegateStakeResponse, err error) {
 	defer metrics.RecordMetrics("DelegateStake", time.Now(), &err)
 
@@ -273,11 +278,14 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
-	err = ms.k.SetDelegateStakeRemoval(ctx, stakeToRemove)
-	return &types.RemoveDelegateStakeResponse{}, err
+	if err = ms.k.SetDelegateStakeRemoval(ctx, stakeToRemove); err != nil {
+		return nil, errorsmod.Wrap(err, "failed to set delegate stake removal")
+	}
+
+	return &types.RemoveDelegateStakeResponse{}, nil
 }
 
-// cancel an ongoing stake removal request during the delay period
+// CancelRemoveDelegateStake cancels an ongoing stake removal request within the delay period
 func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.CancelRemoveDelegateStakeRequest) (_ *types.CancelRemoveDelegateStakeResponse, err error) {
 	defer metrics.RecordMetrics("CancelRemoveDelegateStake", time.Now(), &err)
 
@@ -315,9 +323,11 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to delete previous delegate stake removal")
 	}
+
 	return &types.CancelRemoveDelegateStakeResponse{}, err
 }
 
+// RewardDelegateStake rewards a delegator for their stake
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDelegateStakeRequest) (_ *types.RewardDelegateStakeResponse, err error) {
 	defer metrics.RecordMetrics("RewardDelegateStake", time.Now(), &err)
 
@@ -367,5 +377,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 			return nil, err
 		}
 	}
+
+	types.EmitNewRewardDelegateStakeEvent(ctx, msg.TopicId, msg.Reputer, msg.Sender, pendingReward)
 	return &types.RewardDelegateStakeResponse{}, err
 }

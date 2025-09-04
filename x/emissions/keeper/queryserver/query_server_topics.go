@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -35,7 +36,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) 
 		return nil, errors.Wrapf(err, "error getting params")
 	}
 
-	currentTopicWeight, currentTopicRevenue, err := qs.k.GetCurrentTopicWeight(
+	currentTopicWeight, currentTopicRevenue, currentTopicStake, err := qs.k.GetCurrentTopicWeight(
 		ctx,
 		req.TopicId,
 		topic.EpochLength,
@@ -52,6 +53,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) 
 		Topic:            &topic,
 		Weight:           currentTopicWeight.String(),
 		EffectiveRevenue: currentTopicRevenue.String(),
+		TopicStake:       currentTopicStake.String(),
 	}, nil
 }
 
@@ -162,4 +164,189 @@ func (qs queryServer) GetNextChurningBlockByTopicId(ctx context.Context, req *ty
 		return &types.GetNextChurningBlockByTopicIdResponse{BlockHeight: 0}, err
 	}
 	return &types.GetNextChurningBlockByTopicIdResponse{BlockHeight: blockHeight}, nil
+}
+
+func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *types.GetWorkerSubmissionWindowStatusRequest) (_ *types.GetWorkerSubmissionWindowStatusResponse, err error) {
+	defer metrics.RecordMetrics("GetWorkerSubmissionWindowStatus", time.Now(), &err)
+
+	// Get current block height
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentBlockHeight := sdkCtx.BlockHeight()
+
+	// Get topic
+	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting topic")
+	}
+
+	// Get unfulfilled worker nonces to check current window
+	nonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting unfulfilled worker nonces")
+	}
+
+	response := &types.GetWorkerSubmissionWindowStatusResponse{
+		IsOpen:                  false,
+		CurrentNonceBlockHeight: 0,
+		WindowStartBlock:        0,
+		WindowEndBlock:          0,
+		NextWindowStartBlock:    0,
+		NextWindowEndBlock:      0,
+		IsRegistered:            false,
+		IsWhitelisted:           false,
+		IsTopicActive:           false,
+	}
+
+	// Check registration and whitelist status if address is provided
+	if req.Address != "" {
+		// Validate the address
+		if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
+			return nil, errors.Wrapf(err, "invalid address format")
+		}
+
+		// Check if worker is registered in the topic
+		isRegistered, err := qs.k.IsWorkerRegisteredInTopic(ctx, req.TopicId, req.Address)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error checking worker registration")
+		}
+		response.IsRegistered = isRegistered
+
+		// Check if worker can submit payload (whitelist check)
+		isWhitelisted, err := qs.k.CanSubmitWorkerPayload(ctx, req.TopicId, req.Address)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error checking worker whitelist status")
+		}
+		response.IsWhitelisted = isWhitelisted
+	}
+
+	// Check if there's an active worker window
+	for _, nonce := range nonces.Nonces {
+		windowStart := nonce.BlockHeight
+		windowEnd := nonce.BlockHeight + topic.WorkerSubmissionWindow
+
+		if currentBlockHeight >= windowStart && currentBlockHeight <= windowEnd {
+			response.IsOpen = true
+			response.CurrentNonceBlockHeight = nonce.BlockHeight
+			response.WindowStartBlock = windowStart
+			response.WindowEndBlock = windowEnd
+			break
+		}
+	}
+
+	// Calculate next window timing based on topic epoch
+	nextChurningBlock, isActive, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error checking topic active status")
+	}
+	if isActive {
+		response.NextWindowStartBlock = nextChurningBlock
+		response.NextWindowEndBlock = nextChurningBlock + topic.WorkerSubmissionWindow
+		response.IsTopicActive = isActive
+	}
+
+	return response, nil
+}
+
+func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req *types.GetReputerSubmissionWindowStatusRequest) (_ *types.GetReputerSubmissionWindowStatusResponse, err error) {
+	defer metrics.RecordMetrics("GetReputerSubmissionWindowStatus", time.Now(), &err)
+
+	// Get current block height
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentBlockHeight := sdkCtx.BlockHeight()
+
+	// Get topic
+	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting topic")
+	}
+
+	// Get unfulfilled reputer nonces to check current window
+	nonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting unfulfilled reputer nonces")
+	}
+
+	response := &types.GetReputerSubmissionWindowStatusResponse{
+		IsOpen:                  false,
+		CurrentNonceBlockHeight: 0,
+		WindowStartBlock:        0,
+		WindowEndBlock:          0,
+		NextWindowStartBlock:    0,
+		NextWindowEndBlock:      0,
+		IsRegistered:            false,
+		IsWhitelisted:           false,
+		IsTopicActive:           false,
+	}
+
+	// Check registration and whitelist status if address is provided
+	if req.Address != "" {
+		// Validate the address
+		if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
+			return nil, errors.Wrapf(err, "invalid address format")
+		}
+
+		// Check if reputer is registered in the topic
+		isRegistered, err := qs.k.IsReputerRegisteredInTopic(ctx, req.TopicId, req.Address)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error checking reputer registration")
+		}
+		response.IsRegistered = isRegistered
+
+		// Check if reputer can submit payload (whitelist check)
+		isWhitelisted, err := qs.k.CanSubmitReputerPayload(ctx, req.TopicId, req.Address)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error checking reputer whitelist status")
+		}
+		response.IsWhitelisted = isWhitelisted
+	}
+
+	var latestActiveNonce *types.ReputerRequestNonce
+	var earliestFutureNonce *types.ReputerRequestNonce
+	extraLag := topic.GroundTruthLag % topic.EpochLength
+	if extraLag != 0 {
+		extraLag = topic.EpochLength - extraLag
+	}
+
+	for _, nonce := range nonces.Nonces {
+		windowStart := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
+		windowEnd := windowStart + extraLag + topic.EpochLength
+
+		if currentBlockHeight >= windowStart && currentBlockHeight <= windowEnd {
+			// Current active window: find the most recent active nonce
+			if latestActiveNonce == nil || nonce.ReputerNonce.BlockHeight > latestActiveNonce.ReputerNonce.BlockHeight {
+				latestActiveNonce = nonce
+				response.IsOpen = true
+				response.CurrentNonceBlockHeight = nonce.ReputerNonce.BlockHeight
+				response.WindowStartBlock = windowStart
+				response.WindowEndBlock = windowEnd
+			}
+		} else if windowStart > currentBlockHeight {
+			// Next future window: find the earliest future nonce
+			if earliestFutureNonce == nil || nonce.ReputerNonce.BlockHeight < earliestFutureNonce.ReputerNonce.BlockHeight {
+				earliestFutureNonce = nonce
+			}
+		}
+
+		// Early exit: if we found both current and next nonce
+		if latestActiveNonce != nil && earliestFutureNonce != nil {
+			break
+		}
+	}
+
+	// Calculate next window from the earliest future reputer nonce found
+	if earliestFutureNonce != nil {
+		nextReputerStart := earliestFutureNonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
+		nextReputerEnd := nextReputerStart + extraLag + topic.EpochLength
+		response.NextWindowStartBlock = nextReputerStart
+		response.NextWindowEndBlock = nextReputerEnd
+	}
+
+	// Get topic active status from GetNextPossibleChurningBlockByTopicId
+	_, isActive, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error checking topic active status")
+	}
+	response.IsTopicActive = isActive
+
+	return response, nil
 }

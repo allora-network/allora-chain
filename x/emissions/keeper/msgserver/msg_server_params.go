@@ -197,5 +197,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if err != nil {
 		return nil, err
 	}
+
+	types.EmitNewParamsSetEvent(ctx, existingParams)
 	return &types.UpdateParamsResponse{}, nil
 }

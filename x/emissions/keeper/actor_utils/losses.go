@@ -8,12 +8,13 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // REPUTER NONCES CLOSING
@@ -99,6 +100,9 @@ func CloseReputerNonce(
 		}
 
 		ctx.Logger().Info("Closed reputer nonce", "topicId", topic.Id, "nonce", nonce)
+
+		// Emit reputer submission window closed event
+		types.EmitNewReputerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
 	}()
 
 	params, err := k.GetParams(ctx)
@@ -142,7 +146,7 @@ func CloseReputerNonce(
 			continue // Skip this reputer
 		}
 
-		/// Filtering done now, now write what we must for inclusion
+		// / Filtering done now, now write what we must for inclusion
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
@@ -164,6 +168,9 @@ func CloseReputerNonce(
 		return err
 	}
 
+	// Emit event for active reputers set for topic nonce
+	types.EmitNewActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeReputerAddresses)
+
 	// Check that all network bundles correspond to the nonce requested before calling CalcNetworkLosses.
 	// In case of a mismatch, we should remove that
 
@@ -179,7 +186,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	types.EmitNewNetworkLossSetEvent(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
+	types.EmitNewNetworkLossSetEvent(ctx, networkLossBundle)
 
 	regrets, err := synth.GetCalcSetNetworkRegrets(
 		synth.GetCalcSetNetworkRegretsArgs{
@@ -263,12 +270,22 @@ func CloseReputerNonce(
 
 	// Emit events: the regret stdnorm set event
 	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
-	for _, inferer := range inferers {
-		types.EmitNewInfererWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, inferer, newWeights.Inferers[inferer])
+	if len(inferers) > 0 {
+		infererWeights := make([]alloraMath.Dec, len(inferers))
+		for i, inferer := range inferers {
+			infererWeights[i] = newWeights.Inferers[inferer]
+		}
+		types.EmitNewInfererWeightsSetEvent(ctx, topic.Id, nonce.BlockHeight, inferers, infererWeights)
 	}
-	for _, forecaster := range forecasters {
-		types.EmitNewForecasterWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, forecaster, newWeights.Forecasters[forecaster])
+
+	if len(forecasters) > 0 {
+		forecasterWeights := make([]alloraMath.Dec, len(forecasters))
+		for i, forecaster := range forecasters {
+			forecasterWeights[i] = newWeights.Forecasters[forecaster]
+		}
+		types.EmitNewForecasterWeightsSetEvent(ctx, topic.Id, nonce.BlockHeight, forecasters, forecasterWeights)
 	}
+
 	// -- end of regrets_stdnorm and weights multistep process
 
 	err = k.SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)

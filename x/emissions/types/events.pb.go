@@ -4,8 +4,12 @@
 package types
 
 import (
+	bytes "bytes"
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
 	github_com_allora_network_allora_chain_math "github.com/allora-network/allora-chain/math"
+	_ "github.com/cosmos/cosmos-proto"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
@@ -199,9 +203,7 @@ func (m *EventRewardsSettled) GetBlockHeightTx() int64 {
 }
 
 type EventNetworkLossSet struct {
-	TopicId     uint64       `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64        `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	ValueBundle *ValueBundle `protobuf:"bytes,3,opt,name=value_bundle,json=valueBundle,proto3" json:"value_bundle,omitempty"`
+	ValueBundle *EventValueBundle `protobuf:"bytes,2,opt,name=value_bundle,json=valueBundle,proto3" json:"value_bundle,omitempty"`
 }
 
 func (m *EventNetworkLossSet) Reset()         { *m = EventNetworkLossSet{} }
@@ -237,21 +239,7 @@ func (m *EventNetworkLossSet) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EventNetworkLossSet proto.InternalMessageInfo
 
-func (m *EventNetworkLossSet) GetTopicId() uint64 {
-	if m != nil {
-		return m.TopicId
-	}
-	return 0
-}
-
-func (m *EventNetworkLossSet) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *EventNetworkLossSet) GetValueBundle() *ValueBundle {
+func (m *EventNetworkLossSet) GetValueBundle() *EventValueBundle {
 	if m != nil {
 		return m.ValueBundle
 	}
@@ -259,9 +247,7 @@ func (m *EventNetworkLossSet) GetValueBundle() *ValueBundle {
 }
 
 type EventNetworkInferences struct {
-	TopicId     uint64       `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64        `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	ValueBundle *ValueBundle `protobuf:"bytes,3,opt,name=value_bundle,json=valueBundle,proto3" json:"value_bundle,omitempty"`
+	ValueBundle *EventValueBundle `protobuf:"bytes,2,opt,name=value_bundle,json=valueBundle,proto3" json:"value_bundle,omitempty"`
 }
 
 func (m *EventNetworkInferences) Reset()         { *m = EventNetworkInferences{} }
@@ -297,25 +283,1736 @@ func (m *EventNetworkInferences) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EventNetworkInferences proto.InternalMessageInfo
 
-func (m *EventNetworkInferences) GetTopicId() uint64 {
+func (m *EventNetworkInferences) GetValueBundle() *EventValueBundle {
+	if m != nil {
+		return m.ValueBundle
+	}
+	return nil
+}
+
+type EventValueBundle struct {
+	TopicId                       uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	ReputerNonce                  int64                                             `protobuf:"varint,2,opt,name=reputer_nonce,json=reputerNonce,proto3" json:"reputer_nonce,omitempty"`
+	Reputer                       string                                            `protobuf:"bytes,3,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	ExtraData                     []byte                                            `protobuf:"bytes,4,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+	CombinedValue                 github_com_allora_network_allora_chain_math.Dec   `protobuf:"bytes,5,opt,name=combined_value,json=combinedValue,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"combined_value"`
+	NaiveValue                    github_com_allora_network_allora_chain_math.Dec   `protobuf:"bytes,6,opt,name=naive_value,json=naiveValue,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"naive_value"`
+	InfererAddresses              []string                                          `protobuf:"bytes,7,rep,name=inferer_addresses,json=infererAddresses,proto3" json:"inferer_addresses,omitempty"`
+	ForecasterAddresses           []string                                          `protobuf:"bytes,8,rep,name=forecaster_addresses,json=forecasterAddresses,proto3" json:"forecaster_addresses,omitempty"`
+	InfererValues                 []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,9,rep,name=inferer_values,json=infererValues,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"inferer_values"`
+	ForecasterValues              []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,10,rep,name=forecaster_values,json=forecasterValues,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"forecaster_values"`
+	OneOutInfererValues           []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"one_out_inferer_values"`
+	OneOutForecasterValues        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,rep,name=one_out_forecaster_values,json=oneOutForecasterValues,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"one_out_forecaster_values"`
+	OneInForecasterValues         []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,rep,name=one_in_forecaster_values,json=oneInForecasterValues,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"one_in_forecaster_values"`
+	OneOutInfererForecasterValues []*EventOneOutInfForcVals                         `protobuf:"bytes,14,rep,name=one_out_inferer_forecaster_values,json=oneOutInfererForecasterValues,proto3" json:"one_out_inferer_forecaster_values,omitempty"`
+}
+
+func (m *EventValueBundle) Reset()         { *m = EventValueBundle{} }
+func (m *EventValueBundle) String() string { return proto.CompactTextString(m) }
+func (*EventValueBundle) ProtoMessage()    {}
+func (*EventValueBundle) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{4}
+}
+func (m *EventValueBundle) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventValueBundle) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventValueBundle.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventValueBundle) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventValueBundle.Merge(m, src)
+}
+func (m *EventValueBundle) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventValueBundle) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventValueBundle.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventValueBundle proto.InternalMessageInfo
+
+func (m *EventValueBundle) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *EventNetworkInferences) GetBlockHeight() int64 {
+func (m *EventValueBundle) GetReputerNonce() int64 {
 	if m != nil {
-		return m.BlockHeight
+		return m.ReputerNonce
 	}
 	return 0
 }
 
-func (m *EventNetworkInferences) GetValueBundle() *ValueBundle {
+func (m *EventValueBundle) GetReputer() string {
 	if m != nil {
-		return m.ValueBundle
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *EventValueBundle) GetExtraData() []byte {
+	if m != nil {
+		return m.ExtraData
 	}
 	return nil
+}
+
+func (m *EventValueBundle) GetInfererAddresses() []string {
+	if m != nil {
+		return m.InfererAddresses
+	}
+	return nil
+}
+
+func (m *EventValueBundle) GetForecasterAddresses() []string {
+	if m != nil {
+		return m.ForecasterAddresses
+	}
+	return nil
+}
+
+func (m *EventValueBundle) GetOneOutInfererForecasterValues() []*EventOneOutInfForcVals {
+	if m != nil {
+		return m.OneOutInfererForecasterValues
+	}
+	return nil
+}
+
+type EventOneOutInfForcVals struct {
+	Value []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,rep,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"value"`
+}
+
+func (m *EventOneOutInfForcVals) Reset()         { *m = EventOneOutInfForcVals{} }
+func (m *EventOneOutInfForcVals) String() string { return proto.CompactTextString(m) }
+func (*EventOneOutInfForcVals) ProtoMessage()    {}
+func (*EventOneOutInfForcVals) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{5}
+}
+func (m *EventOneOutInfForcVals) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventOneOutInfForcVals) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventOneOutInfForcVals.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventOneOutInfForcVals) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventOneOutInfForcVals.Merge(m, src)
+}
+func (m *EventOneOutInfForcVals) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventOneOutInfForcVals) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventOneOutInfForcVals.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventOneOutInfForcVals proto.InternalMessageInfo
+
+type EventInsertInfererPayload struct {
+	Inferer   string                                          `protobuf:"bytes,1,opt,name=inferer,proto3" json:"inferer,omitempty"`
+	Nonce     int64                                           `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	TopicId   uint64                                          `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Value     github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"value"`
+	ExtraData []byte                                          `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+}
+
+func (m *EventInsertInfererPayload) Reset()         { *m = EventInsertInfererPayload{} }
+func (m *EventInsertInfererPayload) String() string { return proto.CompactTextString(m) }
+func (*EventInsertInfererPayload) ProtoMessage()    {}
+func (*EventInsertInfererPayload) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{6}
+}
+func (m *EventInsertInfererPayload) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventInsertInfererPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventInsertInfererPayload.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventInsertInfererPayload) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventInsertInfererPayload.Merge(m, src)
+}
+func (m *EventInsertInfererPayload) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventInsertInfererPayload) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventInsertInfererPayload.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventInsertInfererPayload proto.InternalMessageInfo
+
+func (m *EventInsertInfererPayload) GetInferer() string {
+	if m != nil {
+		return m.Inferer
+	}
+	return ""
+}
+
+func (m *EventInsertInfererPayload) GetNonce() int64 {
+	if m != nil {
+		return m.Nonce
+	}
+	return 0
+}
+
+func (m *EventInsertInfererPayload) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventInsertInfererPayload) GetExtraData() []byte {
+	if m != nil {
+		return m.ExtraData
+	}
+	return nil
+}
+
+type EventInsertForecasterPayload struct {
+	Forecaster       string                                            `protobuf:"bytes,1,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+	Nonce            int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	TopicId          uint64                                            `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	InfererAddresses []string                                          `protobuf:"bytes,4,rep,name=inferer_addresses,json=infererAddresses,proto3" json:"inferer_addresses,omitempty"`
+	InfererValues    []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=inferer_values,json=infererValues,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"inferer_values"`
+	ExtraData        []byte                                            `protobuf:"bytes,6,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+}
+
+func (m *EventInsertForecasterPayload) Reset()         { *m = EventInsertForecasterPayload{} }
+func (m *EventInsertForecasterPayload) String() string { return proto.CompactTextString(m) }
+func (*EventInsertForecasterPayload) ProtoMessage()    {}
+func (*EventInsertForecasterPayload) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{7}
+}
+func (m *EventInsertForecasterPayload) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventInsertForecasterPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventInsertForecasterPayload.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventInsertForecasterPayload) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventInsertForecasterPayload.Merge(m, src)
+}
+func (m *EventInsertForecasterPayload) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventInsertForecasterPayload) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventInsertForecasterPayload.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventInsertForecasterPayload proto.InternalMessageInfo
+
+func (m *EventInsertForecasterPayload) GetForecaster() string {
+	if m != nil {
+		return m.Forecaster
+	}
+	return ""
+}
+
+func (m *EventInsertForecasterPayload) GetNonce() int64 {
+	if m != nil {
+		return m.Nonce
+	}
+	return 0
+}
+
+func (m *EventInsertForecasterPayload) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventInsertForecasterPayload) GetInfererAddresses() []string {
+	if m != nil {
+		return m.InfererAddresses
+	}
+	return nil
+}
+
+func (m *EventInsertForecasterPayload) GetExtraData() []byte {
+	if m != nil {
+		return m.ExtraData
+	}
+	return nil
+}
+
+type EventCreateNewTopic struct {
+	Topic *Topic `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+}
+
+func (m *EventCreateNewTopic) Reset()         { *m = EventCreateNewTopic{} }
+func (m *EventCreateNewTopic) String() string { return proto.CompactTextString(m) }
+func (*EventCreateNewTopic) ProtoMessage()    {}
+func (*EventCreateNewTopic) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{8}
+}
+func (m *EventCreateNewTopic) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventCreateNewTopic) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventCreateNewTopic.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventCreateNewTopic) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventCreateNewTopic.Merge(m, src)
+}
+func (m *EventCreateNewTopic) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventCreateNewTopic) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventCreateNewTopic.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventCreateNewTopic proto.InternalMessageInfo
+
+func (m *EventCreateNewTopic) GetTopic() *Topic {
+	if m != nil {
+		return m.Topic
+	}
+	return nil
+}
+
+type EventAddStake struct {
+	TopicId   uint64                `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer   string                `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Delegator string                `protobuf:"bytes,3,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Amount    cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`
+}
+
+func (m *EventAddStake) Reset()         { *m = EventAddStake{} }
+func (m *EventAddStake) String() string { return proto.CompactTextString(m) }
+func (*EventAddStake) ProtoMessage()    {}
+func (*EventAddStake) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{9}
+}
+func (m *EventAddStake) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventAddStake) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventAddStake.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventAddStake) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventAddStake.Merge(m, src)
+}
+func (m *EventAddStake) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventAddStake) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventAddStake.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventAddStake proto.InternalMessageInfo
+
+func (m *EventAddStake) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventAddStake) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *EventAddStake) GetDelegator() string {
+	if m != nil {
+		return m.Delegator
+	}
+	return ""
+}
+
+type EventRewardDelegateStake struct {
+	TopicId   uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer   string                                          `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Delegator string                                          `protobuf:"bytes,3,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Amount    github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=amount,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"amount"`
+}
+
+func (m *EventRewardDelegateStake) Reset()         { *m = EventRewardDelegateStake{} }
+func (m *EventRewardDelegateStake) String() string { return proto.CompactTextString(m) }
+func (*EventRewardDelegateStake) ProtoMessage()    {}
+func (*EventRewardDelegateStake) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{10}
+}
+func (m *EventRewardDelegateStake) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRewardDelegateStake) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRewardDelegateStake.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRewardDelegateStake) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRewardDelegateStake.Merge(m, src)
+}
+func (m *EventRewardDelegateStake) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRewardDelegateStake) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRewardDelegateStake.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRewardDelegateStake proto.InternalMessageInfo
+
+func (m *EventRewardDelegateStake) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventRewardDelegateStake) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *EventRewardDelegateStake) GetDelegator() string {
+	if m != nil {
+		return m.Delegator
+	}
+	return ""
+}
+
+type EventInsertReputerPayload struct {
+	ReputerValueBundle *EventValueBundle `protobuf:"bytes,2,opt,name=reputer_value_bundle,json=reputerValueBundle,proto3" json:"reputer_value_bundle,omitempty"`
+}
+
+func (m *EventInsertReputerPayload) Reset()         { *m = EventInsertReputerPayload{} }
+func (m *EventInsertReputerPayload) String() string { return proto.CompactTextString(m) }
+func (*EventInsertReputerPayload) ProtoMessage()    {}
+func (*EventInsertReputerPayload) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{11}
+}
+func (m *EventInsertReputerPayload) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventInsertReputerPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventInsertReputerPayload.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventInsertReputerPayload) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventInsertReputerPayload.Merge(m, src)
+}
+func (m *EventInsertReputerPayload) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventInsertReputerPayload) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventInsertReputerPayload.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventInsertReputerPayload proto.InternalMessageInfo
+
+func (m *EventInsertReputerPayload) GetReputerValueBundle() *EventValueBundle {
+	if m != nil {
+		return m.ReputerValueBundle
+	}
+	return nil
+}
+
+type EventReputerRegistered struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Owner   string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+}
+
+func (m *EventReputerRegistered) Reset()         { *m = EventReputerRegistered{} }
+func (m *EventReputerRegistered) String() string { return proto.CompactTextString(m) }
+func (*EventReputerRegistered) ProtoMessage()    {}
+func (*EventReputerRegistered) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{12}
+}
+func (m *EventReputerRegistered) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventReputerRegistered) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventReputerRegistered.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventReputerRegistered) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReputerRegistered.Merge(m, src)
+}
+func (m *EventReputerRegistered) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventReputerRegistered) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReputerRegistered.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventReputerRegistered proto.InternalMessageInfo
+
+func (m *EventReputerRegistered) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventReputerRegistered) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *EventReputerRegistered) GetOwner() string {
+	if m != nil {
+		return m.Owner
+	}
+	return ""
+}
+
+type EventWorkerRegistered struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Worker  string `protobuf:"bytes,2,opt,name=worker,proto3" json:"worker,omitempty"`
+	Owner   string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+}
+
+func (m *EventWorkerRegistered) Reset()         { *m = EventWorkerRegistered{} }
+func (m *EventWorkerRegistered) String() string { return proto.CompactTextString(m) }
+func (*EventWorkerRegistered) ProtoMessage()    {}
+func (*EventWorkerRegistered) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{13}
+}
+func (m *EventWorkerRegistered) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWorkerRegistered) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWorkerRegistered.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWorkerRegistered) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWorkerRegistered.Merge(m, src)
+}
+func (m *EventWorkerRegistered) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWorkerRegistered) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWorkerRegistered.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWorkerRegistered proto.InternalMessageInfo
+
+func (m *EventWorkerRegistered) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventWorkerRegistered) GetWorker() string {
+	if m != nil {
+		return m.Worker
+	}
+	return ""
+}
+
+func (m *EventWorkerRegistered) GetOwner() string {
+	if m != nil {
+		return m.Owner
+	}
+	return ""
+}
+
+type EventReputerUnregistered struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+}
+
+func (m *EventReputerUnregistered) Reset()         { *m = EventReputerUnregistered{} }
+func (m *EventReputerUnregistered) String() string { return proto.CompactTextString(m) }
+func (*EventReputerUnregistered) ProtoMessage()    {}
+func (*EventReputerUnregistered) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{14}
+}
+func (m *EventReputerUnregistered) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventReputerUnregistered) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventReputerUnregistered.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventReputerUnregistered) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReputerUnregistered.Merge(m, src)
+}
+func (m *EventReputerUnregistered) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventReputerUnregistered) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReputerUnregistered.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventReputerUnregistered proto.InternalMessageInfo
+
+func (m *EventReputerUnregistered) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventReputerUnregistered) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+type EventWorkerUnregistered struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Worker  string `protobuf:"bytes,2,opt,name=worker,proto3" json:"worker,omitempty"`
+}
+
+func (m *EventWorkerUnregistered) Reset()         { *m = EventWorkerUnregistered{} }
+func (m *EventWorkerUnregistered) String() string { return proto.CompactTextString(m) }
+func (*EventWorkerUnregistered) ProtoMessage()    {}
+func (*EventWorkerUnregistered) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{15}
+}
+func (m *EventWorkerUnregistered) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWorkerUnregistered) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWorkerUnregistered.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWorkerUnregistered) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWorkerUnregistered.Merge(m, src)
+}
+func (m *EventWorkerUnregistered) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWorkerUnregistered) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWorkerUnregistered.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWorkerUnregistered proto.InternalMessageInfo
+
+func (m *EventWorkerUnregistered) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventWorkerUnregistered) GetWorker() string {
+	if m != nil {
+		return m.Worker
+	}
+	return ""
+}
+
+type EventFundTopic struct {
+	TopicId uint64                `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Funder  string                `protobuf:"bytes,2,opt,name=funder,proto3" json:"funder,omitempty"`
+	Amount  cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`
+}
+
+func (m *EventFundTopic) Reset()         { *m = EventFundTopic{} }
+func (m *EventFundTopic) String() string { return proto.CompactTextString(m) }
+func (*EventFundTopic) ProtoMessage()    {}
+func (*EventFundTopic) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{16}
+}
+func (m *EventFundTopic) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventFundTopic) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventFundTopic.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventFundTopic) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventFundTopic.Merge(m, src)
+}
+func (m *EventFundTopic) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventFundTopic) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventFundTopic.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventFundTopic proto.InternalMessageInfo
+
+func (m *EventFundTopic) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventFundTopic) GetFunder() string {
+	if m != nil {
+		return m.Funder
+	}
+	return ""
+}
+
+type EventParamsSet struct {
+	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+}
+
+func (m *EventParamsSet) Reset()         { *m = EventParamsSet{} }
+func (m *EventParamsSet) String() string { return proto.CompactTextString(m) }
+func (*EventParamsSet) ProtoMessage()    {}
+func (*EventParamsSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{17}
+}
+func (m *EventParamsSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventParamsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventParamsSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventParamsSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventParamsSet.Merge(m, src)
+}
+func (m *EventParamsSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventParamsSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventParamsSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventParamsSet proto.InternalMessageInfo
+
+func (m *EventParamsSet) GetParams() *Params {
+	if m != nil {
+		return m.Params
+	}
+	return nil
+}
+
+type EventWhitelistAdminAdded struct {
+	Admin string `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
+}
+
+func (m *EventWhitelistAdminAdded) Reset()         { *m = EventWhitelistAdminAdded{} }
+func (m *EventWhitelistAdminAdded) String() string { return proto.CompactTextString(m) }
+func (*EventWhitelistAdminAdded) ProtoMessage()    {}
+func (*EventWhitelistAdminAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{18}
+}
+func (m *EventWhitelistAdminAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWhitelistAdminAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWhitelistAdminAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWhitelistAdminAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWhitelistAdminAdded.Merge(m, src)
+}
+func (m *EventWhitelistAdminAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWhitelistAdminAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWhitelistAdminAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWhitelistAdminAdded proto.InternalMessageInfo
+
+func (m *EventWhitelistAdminAdded) GetAdmin() string {
+	if m != nil {
+		return m.Admin
+	}
+	return ""
+}
+
+type EventWhitelistAdminRemoved struct {
+	Admin string `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
+}
+
+func (m *EventWhitelistAdminRemoved) Reset()         { *m = EventWhitelistAdminRemoved{} }
+func (m *EventWhitelistAdminRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventWhitelistAdminRemoved) ProtoMessage()    {}
+func (*EventWhitelistAdminRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{19}
+}
+func (m *EventWhitelistAdminRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWhitelistAdminRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWhitelistAdminRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWhitelistAdminRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWhitelistAdminRemoved.Merge(m, src)
+}
+func (m *EventWhitelistAdminRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWhitelistAdminRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWhitelistAdminRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWhitelistAdminRemoved proto.InternalMessageInfo
+
+func (m *EventWhitelistAdminRemoved) GetAdmin() string {
+	if m != nil {
+		return m.Admin
+	}
+	return ""
+}
+
+type EventGlobalWhitelistAdded struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalWhitelistAdded) Reset()         { *m = EventGlobalWhitelistAdded{} }
+func (m *EventGlobalWhitelistAdded) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalWhitelistAdded) ProtoMessage()    {}
+func (*EventGlobalWhitelistAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{20}
+}
+func (m *EventGlobalWhitelistAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalWhitelistAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalWhitelistAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalWhitelistAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalWhitelistAdded.Merge(m, src)
+}
+func (m *EventGlobalWhitelistAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalWhitelistAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalWhitelistAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalWhitelistAdded proto.InternalMessageInfo
+
+func (m *EventGlobalWhitelistAdded) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventGlobalWhitelistRemoved struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalWhitelistRemoved) Reset()         { *m = EventGlobalWhitelistRemoved{} }
+func (m *EventGlobalWhitelistRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalWhitelistRemoved) ProtoMessage()    {}
+func (*EventGlobalWhitelistRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{21}
+}
+func (m *EventGlobalWhitelistRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalWhitelistRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalWhitelistRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalWhitelistRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalWhitelistRemoved.Merge(m, src)
+}
+func (m *EventGlobalWhitelistRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalWhitelistRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalWhitelistRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalWhitelistRemoved proto.InternalMessageInfo
+
+func (m *EventGlobalWhitelistRemoved) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventGlobalWorkerWhitelistAdded struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalWorkerWhitelistAdded) Reset()         { *m = EventGlobalWorkerWhitelistAdded{} }
+func (m *EventGlobalWorkerWhitelistAdded) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalWorkerWhitelistAdded) ProtoMessage()    {}
+func (*EventGlobalWorkerWhitelistAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{22}
+}
+func (m *EventGlobalWorkerWhitelistAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalWorkerWhitelistAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalWorkerWhitelistAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalWorkerWhitelistAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalWorkerWhitelistAdded.Merge(m, src)
+}
+func (m *EventGlobalWorkerWhitelistAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalWorkerWhitelistAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalWorkerWhitelistAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalWorkerWhitelistAdded proto.InternalMessageInfo
+
+func (m *EventGlobalWorkerWhitelistAdded) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventGlobalWorkerWhitelistRemoved struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalWorkerWhitelistRemoved) Reset()         { *m = EventGlobalWorkerWhitelistRemoved{} }
+func (m *EventGlobalWorkerWhitelistRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalWorkerWhitelistRemoved) ProtoMessage()    {}
+func (*EventGlobalWorkerWhitelistRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{23}
+}
+func (m *EventGlobalWorkerWhitelistRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalWorkerWhitelistRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalWorkerWhitelistRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalWorkerWhitelistRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalWorkerWhitelistRemoved.Merge(m, src)
+}
+func (m *EventGlobalWorkerWhitelistRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalWorkerWhitelistRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalWorkerWhitelistRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalWorkerWhitelistRemoved proto.InternalMessageInfo
+
+func (m *EventGlobalWorkerWhitelistRemoved) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventGlobalReputerWhitelistAdded struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalReputerWhitelistAdded) Reset()         { *m = EventGlobalReputerWhitelistAdded{} }
+func (m *EventGlobalReputerWhitelistAdded) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalReputerWhitelistAdded) ProtoMessage()    {}
+func (*EventGlobalReputerWhitelistAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{24}
+}
+func (m *EventGlobalReputerWhitelistAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalReputerWhitelistAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalReputerWhitelistAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalReputerWhitelistAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalReputerWhitelistAdded.Merge(m, src)
+}
+func (m *EventGlobalReputerWhitelistAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalReputerWhitelistAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalReputerWhitelistAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalReputerWhitelistAdded proto.InternalMessageInfo
+
+func (m *EventGlobalReputerWhitelistAdded) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventGlobalReputerWhitelistRemoved struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalReputerWhitelistRemoved) Reset()         { *m = EventGlobalReputerWhitelistRemoved{} }
+func (m *EventGlobalReputerWhitelistRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalReputerWhitelistRemoved) ProtoMessage()    {}
+func (*EventGlobalReputerWhitelistRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{25}
+}
+func (m *EventGlobalReputerWhitelistRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalReputerWhitelistRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalReputerWhitelistRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalReputerWhitelistRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalReputerWhitelistRemoved.Merge(m, src)
+}
+func (m *EventGlobalReputerWhitelistRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalReputerWhitelistRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalReputerWhitelistRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalReputerWhitelistRemoved proto.InternalMessageInfo
+
+func (m *EventGlobalReputerWhitelistRemoved) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventGlobalAdminWhitelistAdded struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalAdminWhitelistAdded) Reset()         { *m = EventGlobalAdminWhitelistAdded{} }
+func (m *EventGlobalAdminWhitelistAdded) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalAdminWhitelistAdded) ProtoMessage()    {}
+func (*EventGlobalAdminWhitelistAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{26}
+}
+func (m *EventGlobalAdminWhitelistAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalAdminWhitelistAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalAdminWhitelistAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalAdminWhitelistAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalAdminWhitelistAdded.Merge(m, src)
+}
+func (m *EventGlobalAdminWhitelistAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalAdminWhitelistAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalAdminWhitelistAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalAdminWhitelistAdded proto.InternalMessageInfo
+
+func (m *EventGlobalAdminWhitelistAdded) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventGlobalAdminWhitelistRemoved struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventGlobalAdminWhitelistRemoved) Reset()         { *m = EventGlobalAdminWhitelistRemoved{} }
+func (m *EventGlobalAdminWhitelistRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventGlobalAdminWhitelistRemoved) ProtoMessage()    {}
+func (*EventGlobalAdminWhitelistRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{27}
+}
+func (m *EventGlobalAdminWhitelistRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventGlobalAdminWhitelistRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventGlobalAdminWhitelistRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventGlobalAdminWhitelistRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventGlobalAdminWhitelistRemoved.Merge(m, src)
+}
+func (m *EventGlobalAdminWhitelistRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventGlobalAdminWhitelistRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventGlobalAdminWhitelistRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventGlobalAdminWhitelistRemoved proto.InternalMessageInfo
+
+func (m *EventGlobalAdminWhitelistRemoved) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventTopicWorkerWhitelistEnabled struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *EventTopicWorkerWhitelistEnabled) Reset()         { *m = EventTopicWorkerWhitelistEnabled{} }
+func (m *EventTopicWorkerWhitelistEnabled) String() string { return proto.CompactTextString(m) }
+func (*EventTopicWorkerWhitelistEnabled) ProtoMessage()    {}
+func (*EventTopicWorkerWhitelistEnabled) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{28}
+}
+func (m *EventTopicWorkerWhitelistEnabled) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicWorkerWhitelistEnabled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicWorkerWhitelistEnabled.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicWorkerWhitelistEnabled) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicWorkerWhitelistEnabled.Merge(m, src)
+}
+func (m *EventTopicWorkerWhitelistEnabled) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicWorkerWhitelistEnabled) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicWorkerWhitelistEnabled.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicWorkerWhitelistEnabled proto.InternalMessageInfo
+
+func (m *EventTopicWorkerWhitelistEnabled) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type EventTopicWorkerWhitelistDisabled struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *EventTopicWorkerWhitelistDisabled) Reset()         { *m = EventTopicWorkerWhitelistDisabled{} }
+func (m *EventTopicWorkerWhitelistDisabled) String() string { return proto.CompactTextString(m) }
+func (*EventTopicWorkerWhitelistDisabled) ProtoMessage()    {}
+func (*EventTopicWorkerWhitelistDisabled) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{29}
+}
+func (m *EventTopicWorkerWhitelistDisabled) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicWorkerWhitelistDisabled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicWorkerWhitelistDisabled.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicWorkerWhitelistDisabled) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicWorkerWhitelistDisabled.Merge(m, src)
+}
+func (m *EventTopicWorkerWhitelistDisabled) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicWorkerWhitelistDisabled) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicWorkerWhitelistDisabled.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicWorkerWhitelistDisabled proto.InternalMessageInfo
+
+func (m *EventTopicWorkerWhitelistDisabled) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type EventTopicReputerWhitelistEnabled struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *EventTopicReputerWhitelistEnabled) Reset()         { *m = EventTopicReputerWhitelistEnabled{} }
+func (m *EventTopicReputerWhitelistEnabled) String() string { return proto.CompactTextString(m) }
+func (*EventTopicReputerWhitelistEnabled) ProtoMessage()    {}
+func (*EventTopicReputerWhitelistEnabled) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{30}
+}
+func (m *EventTopicReputerWhitelistEnabled) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicReputerWhitelistEnabled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicReputerWhitelistEnabled.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicReputerWhitelistEnabled) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicReputerWhitelistEnabled.Merge(m, src)
+}
+func (m *EventTopicReputerWhitelistEnabled) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicReputerWhitelistEnabled) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicReputerWhitelistEnabled.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicReputerWhitelistEnabled proto.InternalMessageInfo
+
+func (m *EventTopicReputerWhitelistEnabled) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type EventTopicReputerWhitelistDisabled struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *EventTopicReputerWhitelistDisabled) Reset()         { *m = EventTopicReputerWhitelistDisabled{} }
+func (m *EventTopicReputerWhitelistDisabled) String() string { return proto.CompactTextString(m) }
+func (*EventTopicReputerWhitelistDisabled) ProtoMessage()    {}
+func (*EventTopicReputerWhitelistDisabled) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{31}
+}
+func (m *EventTopicReputerWhitelistDisabled) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicReputerWhitelistDisabled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicReputerWhitelistDisabled.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicReputerWhitelistDisabled) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicReputerWhitelistDisabled.Merge(m, src)
+}
+func (m *EventTopicReputerWhitelistDisabled) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicReputerWhitelistDisabled) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicReputerWhitelistDisabled.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicReputerWhitelistDisabled proto.InternalMessageInfo
+
+func (m *EventTopicReputerWhitelistDisabled) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type EventTopicCreatorWhitelistAdded struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventTopicCreatorWhitelistAdded) Reset()         { *m = EventTopicCreatorWhitelistAdded{} }
+func (m *EventTopicCreatorWhitelistAdded) String() string { return proto.CompactTextString(m) }
+func (*EventTopicCreatorWhitelistAdded) ProtoMessage()    {}
+func (*EventTopicCreatorWhitelistAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{32}
+}
+func (m *EventTopicCreatorWhitelistAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicCreatorWhitelistAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicCreatorWhitelistAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicCreatorWhitelistAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicCreatorWhitelistAdded.Merge(m, src)
+}
+func (m *EventTopicCreatorWhitelistAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicCreatorWhitelistAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicCreatorWhitelistAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicCreatorWhitelistAdded proto.InternalMessageInfo
+
+func (m *EventTopicCreatorWhitelistAdded) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventTopicCreatorWhitelistRemoved struct {
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventTopicCreatorWhitelistRemoved) Reset()         { *m = EventTopicCreatorWhitelistRemoved{} }
+func (m *EventTopicCreatorWhitelistRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventTopicCreatorWhitelistRemoved) ProtoMessage()    {}
+func (*EventTopicCreatorWhitelistRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{33}
+}
+func (m *EventTopicCreatorWhitelistRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicCreatorWhitelistRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicCreatorWhitelistRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicCreatorWhitelistRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicCreatorWhitelistRemoved.Merge(m, src)
+}
+func (m *EventTopicCreatorWhitelistRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicCreatorWhitelistRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicCreatorWhitelistRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicCreatorWhitelistRemoved proto.InternalMessageInfo
+
+func (m *EventTopicCreatorWhitelistRemoved) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventTopicWorkerWhitelistAdded struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventTopicWorkerWhitelistAdded) Reset()         { *m = EventTopicWorkerWhitelistAdded{} }
+func (m *EventTopicWorkerWhitelistAdded) String() string { return proto.CompactTextString(m) }
+func (*EventTopicWorkerWhitelistAdded) ProtoMessage()    {}
+func (*EventTopicWorkerWhitelistAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{34}
+}
+func (m *EventTopicWorkerWhitelistAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicWorkerWhitelistAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicWorkerWhitelistAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicWorkerWhitelistAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicWorkerWhitelistAdded.Merge(m, src)
+}
+func (m *EventTopicWorkerWhitelistAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicWorkerWhitelistAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicWorkerWhitelistAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicWorkerWhitelistAdded proto.InternalMessageInfo
+
+func (m *EventTopicWorkerWhitelistAdded) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventTopicWorkerWhitelistAdded) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventTopicWorkerWhitelistRemoved struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventTopicWorkerWhitelistRemoved) Reset()         { *m = EventTopicWorkerWhitelistRemoved{} }
+func (m *EventTopicWorkerWhitelistRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventTopicWorkerWhitelistRemoved) ProtoMessage()    {}
+func (*EventTopicWorkerWhitelistRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{35}
+}
+func (m *EventTopicWorkerWhitelistRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicWorkerWhitelistRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicWorkerWhitelistRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicWorkerWhitelistRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicWorkerWhitelistRemoved.Merge(m, src)
+}
+func (m *EventTopicWorkerWhitelistRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicWorkerWhitelistRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicWorkerWhitelistRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicWorkerWhitelistRemoved proto.InternalMessageInfo
+
+func (m *EventTopicWorkerWhitelistRemoved) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventTopicWorkerWhitelistRemoved) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventTopicReputerWhitelistAdded struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventTopicReputerWhitelistAdded) Reset()         { *m = EventTopicReputerWhitelistAdded{} }
+func (m *EventTopicReputerWhitelistAdded) String() string { return proto.CompactTextString(m) }
+func (*EventTopicReputerWhitelistAdded) ProtoMessage()    {}
+func (*EventTopicReputerWhitelistAdded) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{36}
+}
+func (m *EventTopicReputerWhitelistAdded) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicReputerWhitelistAdded) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicReputerWhitelistAdded.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicReputerWhitelistAdded) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicReputerWhitelistAdded.Merge(m, src)
+}
+func (m *EventTopicReputerWhitelistAdded) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicReputerWhitelistAdded) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicReputerWhitelistAdded.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicReputerWhitelistAdded proto.InternalMessageInfo
+
+func (m *EventTopicReputerWhitelistAdded) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventTopicReputerWhitelistAdded) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type EventTopicReputerWhitelistRemoved struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *EventTopicReputerWhitelistRemoved) Reset()         { *m = EventTopicReputerWhitelistRemoved{} }
+func (m *EventTopicReputerWhitelistRemoved) String() string { return proto.CompactTextString(m) }
+func (*EventTopicReputerWhitelistRemoved) ProtoMessage()    {}
+func (*EventTopicReputerWhitelistRemoved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{37}
+}
+func (m *EventTopicReputerWhitelistRemoved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicReputerWhitelistRemoved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicReputerWhitelistRemoved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicReputerWhitelistRemoved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicReputerWhitelistRemoved.Merge(m, src)
+}
+func (m *EventTopicReputerWhitelistRemoved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicReputerWhitelistRemoved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicReputerWhitelistRemoved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicReputerWhitelistRemoved proto.InternalMessageInfo
+
+func (m *EventTopicReputerWhitelistRemoved) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventTopicReputerWhitelistRemoved) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
 }
 
 type EventOutlierResistantNetworkInferences struct {
@@ -330,7 +2027,7 @@ func (m *EventOutlierResistantNetworkInferences) Reset() {
 func (m *EventOutlierResistantNetworkInferences) String() string { return proto.CompactTextString(m) }
 func (*EventOutlierResistantNetworkInferences) ProtoMessage()    {}
 func (*EventOutlierResistantNetworkInferences) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{4}
+	return fileDescriptor_2d7671ca936dd333, []int{38}
 }
 func (m *EventOutlierResistantNetworkInferences) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -381,15 +2078,16 @@ func (m *EventOutlierResistantNetworkInferences) GetValueBundle() *ValueBundle {
 }
 
 type EventForecastTaskScoreSet struct {
-	TopicId uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Score   github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
+	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Score            github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
+	NonceBlockHeight int64                                           `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
 }
 
 func (m *EventForecastTaskScoreSet) Reset()         { *m = EventForecastTaskScoreSet{} }
 func (m *EventForecastTaskScoreSet) String() string { return proto.CompactTextString(m) }
 func (*EventForecastTaskScoreSet) ProtoMessage()    {}
 func (*EventForecastTaskScoreSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{5}
+	return fileDescriptor_2d7671ca936dd333, []int{39}
 }
 func (m *EventForecastTaskScoreSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -425,6 +2123,13 @@ func (m *EventForecastTaskScoreSet) GetTopicId() uint64 {
 	return 0
 }
 
+func (m *EventForecastTaskScoreSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
 type EventWorkerLastCommitSet struct {
 	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
@@ -435,7 +2140,7 @@ func (m *EventWorkerLastCommitSet) Reset()         { *m = EventWorkerLastCommitS
 func (m *EventWorkerLastCommitSet) String() string { return proto.CompactTextString(m) }
 func (*EventWorkerLastCommitSet) ProtoMessage()    {}
 func (*EventWorkerLastCommitSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{6}
+	return fileDescriptor_2d7671ca936dd333, []int{40}
 }
 func (m *EventWorkerLastCommitSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -495,7 +2200,7 @@ func (m *EventReputerLastCommitSet) Reset()         { *m = EventReputerLastCommi
 func (m *EventReputerLastCommitSet) String() string { return proto.CompactTextString(m) }
 func (*EventReputerLastCommitSet) ProtoMessage()    {}
 func (*EventReputerLastCommitSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{7}
+	return fileDescriptor_2d7671ca936dd333, []int{41}
 }
 func (m *EventReputerLastCommitSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -554,7 +2259,7 @@ func (m *EventTopicRewardsSet) Reset()         { *m = EventTopicRewardsSet{} }
 func (m *EventTopicRewardsSet) String() string { return proto.CompactTextString(m) }
 func (*EventTopicRewardsSet) ProtoMessage()    {}
 func (*EventTopicRewardsSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{8}
+	return fileDescriptor_2d7671ca936dd333, []int{42}
 }
 func (m *EventTopicRewardsSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -603,7 +2308,7 @@ func (m *EventEMAScoresSet) Reset()         { *m = EventEMAScoresSet{} }
 func (m *EventEMAScoresSet) String() string { return proto.CompactTextString(m) }
 func (*EventEMAScoresSet) ProtoMessage()    {}
 func (*EventEMAScoresSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{9}
+	return fileDescriptor_2d7671ca936dd333, []int{43}
 }
 func (m *EventEMAScoresSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -679,7 +2384,7 @@ func (m *EventListeningCoefficientsSet) Reset()         { *m = EventListeningCoe
 func (m *EventListeningCoefficientsSet) String() string { return proto.CompactTextString(m) }
 func (*EventListeningCoefficientsSet) ProtoMessage()    {}
 func (*EventListeningCoefficientsSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{10}
+	return fileDescriptor_2d7671ca936dd333, []int{44}
 }
 func (m *EventListeningCoefficientsSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -747,7 +2452,7 @@ func (m *EventInfererNetworkRegretSet) Reset()         { *m = EventInfererNetwor
 func (m *EventInfererNetworkRegretSet) String() string { return proto.CompactTextString(m) }
 func (*EventInfererNetworkRegretSet) ProtoMessage()    {}
 func (*EventInfererNetworkRegretSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{11}
+	return fileDescriptor_2d7671ca936dd333, []int{45}
 }
 func (m *EventInfererNetworkRegretSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -808,7 +2513,7 @@ func (m *EventForecasterNetworkRegretSet) Reset()         { *m = EventForecaster
 func (m *EventForecasterNetworkRegretSet) String() string { return proto.CompactTextString(m) }
 func (*EventForecasterNetworkRegretSet) ProtoMessage()    {}
 func (*EventForecasterNetworkRegretSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{12}
+	return fileDescriptor_2d7671ca936dd333, []int{46}
 }
 func (m *EventForecasterNetworkRegretSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -869,7 +2574,7 @@ func (m *EventNaiveInfererNetworkRegretSet) Reset()         { *m = EventNaiveInf
 func (m *EventNaiveInfererNetworkRegretSet) String() string { return proto.CompactTextString(m) }
 func (*EventNaiveInfererNetworkRegretSet) ProtoMessage()    {}
 func (*EventNaiveInfererNetworkRegretSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{13}
+	return fileDescriptor_2d7671ca936dd333, []int{47}
 }
 func (m *EventNaiveInfererNetworkRegretSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -929,7 +2634,7 @@ func (m *EventTopicInitialRegretSet) Reset()         { *m = EventTopicInitialReg
 func (m *EventTopicInitialRegretSet) String() string { return proto.CompactTextString(m) }
 func (*EventTopicInitialRegretSet) ProtoMessage()    {}
 func (*EventTopicInitialRegretSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{14}
+	return fileDescriptor_2d7671ca936dd333, []int{48}
 }
 func (m *EventTopicInitialRegretSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -983,7 +2688,7 @@ func (m *EventTopicInitialEmaScoreSet) Reset()         { *m = EventTopicInitialE
 func (m *EventTopicInitialEmaScoreSet) String() string { return proto.CompactTextString(m) }
 func (*EventTopicInitialEmaScoreSet) ProtoMessage()    {}
 func (*EventTopicInitialEmaScoreSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{15}
+	return fileDescriptor_2d7671ca936dd333, []int{49}
 }
 func (m *EventTopicInitialEmaScoreSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1043,7 +2748,7 @@ func (m *EventRegretStdNormSet) Reset()         { *m = EventRegretStdNormSet{} }
 func (m *EventRegretStdNormSet) String() string { return proto.CompactTextString(m) }
 func (*EventRegretStdNormSet) ProtoMessage()    {}
 func (*EventRegretStdNormSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{16}
+	return fileDescriptor_2d7671ca936dd333, []int{50}
 }
 func (m *EventRegretStdNormSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1086,25 +2791,25 @@ func (m *EventRegretStdNormSet) GetBlockHeight() int64 {
 	return 0
 }
 
-type EventInfererWeightSet struct {
-	TopicId     uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64                                           `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	Address     string                                          `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	Weight      github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=weight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weight"`
+type EventInfererWeightsSet struct {
+	TopicId     uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64                                             `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	Addresses   []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 }
 
-func (m *EventInfererWeightSet) Reset()         { *m = EventInfererWeightSet{} }
-func (m *EventInfererWeightSet) String() string { return proto.CompactTextString(m) }
-func (*EventInfererWeightSet) ProtoMessage()    {}
-func (*EventInfererWeightSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{17}
+func (m *EventInfererWeightsSet) Reset()         { *m = EventInfererWeightsSet{} }
+func (m *EventInfererWeightsSet) String() string { return proto.CompactTextString(m) }
+func (*EventInfererWeightsSet) ProtoMessage()    {}
+func (*EventInfererWeightsSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{51}
 }
-func (m *EventInfererWeightSet) XXX_Unmarshal(b []byte) error {
+func (m *EventInfererWeightsSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventInfererWeightSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventInfererWeightsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventInfererWeightSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventInfererWeightsSet.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -1114,58 +2819,58 @@ func (m *EventInfererWeightSet) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *EventInfererWeightSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventInfererWeightSet.Merge(m, src)
+func (m *EventInfererWeightsSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventInfererWeightsSet.Merge(m, src)
 }
-func (m *EventInfererWeightSet) XXX_Size() int {
+func (m *EventInfererWeightsSet) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventInfererWeightSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventInfererWeightSet.DiscardUnknown(m)
+func (m *EventInfererWeightsSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventInfererWeightsSet.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventInfererWeightSet proto.InternalMessageInfo
+var xxx_messageInfo_EventInfererWeightsSet proto.InternalMessageInfo
 
-func (m *EventInfererWeightSet) GetTopicId() uint64 {
+func (m *EventInfererWeightsSet) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *EventInfererWeightSet) GetBlockHeight() int64 {
+func (m *EventInfererWeightsSet) GetBlockHeight() int64 {
 	if m != nil {
 		return m.BlockHeight
 	}
 	return 0
 }
 
-func (m *EventInfererWeightSet) GetAddress() string {
+func (m *EventInfererWeightsSet) GetAddresses() []string {
 	if m != nil {
-		return m.Address
+		return m.Addresses
 	}
-	return ""
+	return nil
 }
 
-type EventForecasterWeightSet struct {
-	TopicId     uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64                                           `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	Address     string                                          `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	Weight      github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=weight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weight"`
+type EventForecasterWeightsSet struct {
+	TopicId     uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64                                             `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	Addresses   []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 }
 
-func (m *EventForecasterWeightSet) Reset()         { *m = EventForecasterWeightSet{} }
-func (m *EventForecasterWeightSet) String() string { return proto.CompactTextString(m) }
-func (*EventForecasterWeightSet) ProtoMessage()    {}
-func (*EventForecasterWeightSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{18}
+func (m *EventForecasterWeightsSet) Reset()         { *m = EventForecasterWeightsSet{} }
+func (m *EventForecasterWeightsSet) String() string { return proto.CompactTextString(m) }
+func (*EventForecasterWeightsSet) ProtoMessage()    {}
+func (*EventForecasterWeightsSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{52}
 }
-func (m *EventForecasterWeightSet) XXX_Unmarshal(b []byte) error {
+func (m *EventForecasterWeightsSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventForecasterWeightSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventForecasterWeightsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventForecasterWeightSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventForecasterWeightsSet.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -1175,37 +2880,37 @@ func (m *EventForecasterWeightSet) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *EventForecasterWeightSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventForecasterWeightSet.Merge(m, src)
+func (m *EventForecasterWeightsSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventForecasterWeightsSet.Merge(m, src)
 }
-func (m *EventForecasterWeightSet) XXX_Size() int {
+func (m *EventForecasterWeightsSet) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventForecasterWeightSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventForecasterWeightSet.DiscardUnknown(m)
+func (m *EventForecasterWeightsSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventForecasterWeightsSet.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventForecasterWeightSet proto.InternalMessageInfo
+var xxx_messageInfo_EventForecasterWeightsSet proto.InternalMessageInfo
 
-func (m *EventForecasterWeightSet) GetTopicId() uint64 {
+func (m *EventForecasterWeightsSet) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *EventForecasterWeightSet) GetBlockHeight() int64 {
+func (m *EventForecasterWeightsSet) GetBlockHeight() int64 {
 	if m != nil {
 		return m.BlockHeight
 	}
 	return 0
 }
 
-func (m *EventForecasterWeightSet) GetAddress() string {
+func (m *EventForecasterWeightsSet) GetAddresses() []string {
 	if m != nil {
-		return m.Address
+		return m.Addresses
 	}
-	return ""
+	return nil
 }
 
 type EventPreviousPercentageRewardToStakedReputersSet struct {
@@ -1221,7 +2926,7 @@ func (m *EventPreviousPercentageRewardToStakedReputersSet) String() string {
 }
 func (*EventPreviousPercentageRewardToStakedReputersSet) ProtoMessage() {}
 func (*EventPreviousPercentageRewardToStakedReputersSet) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{19}
+	return fileDescriptor_2d7671ca936dd333, []int{53}
 }
 func (m *EventPreviousPercentageRewardToStakedReputersSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1266,7 +2971,7 @@ func (m *EventPruneRecords) Reset()         { *m = EventPruneRecords{} }
 func (m *EventPruneRecords) String() string { return proto.CompactTextString(m) }
 func (*EventPruneRecords) ProtoMessage()    {}
 func (*EventPruneRecords) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2d7671ca936dd333, []int{20}
+	return fileDescriptor_2d7671ca936dd333, []int{54}
 }
 func (m *EventPruneRecords) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1309,12 +3014,1038 @@ func (m *EventPruneRecords) GetTopicId() uint64 {
 	return 0
 }
 
+// Stake removal processing events
+type EventStakeRemovalCompleted struct {
+	TopicId   uint64                `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer   string                `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Delegator string                `protobuf:"bytes,3,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Amount    cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`
+}
+
+func (m *EventStakeRemovalCompleted) Reset()         { *m = EventStakeRemovalCompleted{} }
+func (m *EventStakeRemovalCompleted) String() string { return proto.CompactTextString(m) }
+func (*EventStakeRemovalCompleted) ProtoMessage()    {}
+func (*EventStakeRemovalCompleted) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{55}
+}
+func (m *EventStakeRemovalCompleted) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventStakeRemovalCompleted) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventStakeRemovalCompleted.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventStakeRemovalCompleted) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventStakeRemovalCompleted.Merge(m, src)
+}
+func (m *EventStakeRemovalCompleted) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventStakeRemovalCompleted) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventStakeRemovalCompleted.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventStakeRemovalCompleted proto.InternalMessageInfo
+
+func (m *EventStakeRemovalCompleted) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventStakeRemovalCompleted) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *EventStakeRemovalCompleted) GetDelegator() string {
+	if m != nil {
+		return m.Delegator
+	}
+	return ""
+}
+
+type EventDelegateRewardShareUpdated struct {
+	TopicId        uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer        string                                          `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	RewardPerShare github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=reward_per_share,json=rewardPerShare,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"reward_per_share"`
+	BlockHeight    int64                                           `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *EventDelegateRewardShareUpdated) Reset()         { *m = EventDelegateRewardShareUpdated{} }
+func (m *EventDelegateRewardShareUpdated) String() string { return proto.CompactTextString(m) }
+func (*EventDelegateRewardShareUpdated) ProtoMessage()    {}
+func (*EventDelegateRewardShareUpdated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{56}
+}
+func (m *EventDelegateRewardShareUpdated) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventDelegateRewardShareUpdated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventDelegateRewardShareUpdated.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventDelegateRewardShareUpdated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventDelegateRewardShareUpdated.Merge(m, src)
+}
+func (m *EventDelegateRewardShareUpdated) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventDelegateRewardShareUpdated) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventDelegateRewardShareUpdated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventDelegateRewardShareUpdated proto.InternalMessageInfo
+
+func (m *EventDelegateRewardShareUpdated) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventDelegateRewardShareUpdated) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *EventDelegateRewardShareUpdated) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type EventDelegateRewardDistributed struct {
+	TopicId     uint64                `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer     string                `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Amount      cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`
+	BlockHeight int64                 `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *EventDelegateRewardDistributed) Reset()         { *m = EventDelegateRewardDistributed{} }
+func (m *EventDelegateRewardDistributed) String() string { return proto.CompactTextString(m) }
+func (*EventDelegateRewardDistributed) ProtoMessage()    {}
+func (*EventDelegateRewardDistributed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{57}
+}
+func (m *EventDelegateRewardDistributed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventDelegateRewardDistributed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventDelegateRewardDistributed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventDelegateRewardDistributed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventDelegateRewardDistributed.Merge(m, src)
+}
+func (m *EventDelegateRewardDistributed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventDelegateRewardDistributed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventDelegateRewardDistributed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventDelegateRewardDistributed proto.InternalMessageInfo
+
+func (m *EventDelegateRewardDistributed) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventDelegateRewardDistributed) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *EventDelegateRewardDistributed) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type EventActiveReputersSet struct {
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (m *EventActiveReputersSet) Reset()         { *m = EventActiveReputersSet{} }
+func (m *EventActiveReputersSet) String() string { return proto.CompactTextString(m) }
+func (*EventActiveReputersSet) ProtoMessage()    {}
+func (*EventActiveReputersSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{58}
+}
+func (m *EventActiveReputersSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventActiveReputersSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventActiveReputersSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventActiveReputersSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventActiveReputersSet.Merge(m, src)
+}
+func (m *EventActiveReputersSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventActiveReputersSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventActiveReputersSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventActiveReputersSet proto.InternalMessageInfo
+
+func (m *EventActiveReputersSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventActiveReputersSet) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+func (m *EventActiveReputersSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventActiveInferersSet struct {
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (m *EventActiveInferersSet) Reset()         { *m = EventActiveInferersSet{} }
+func (m *EventActiveInferersSet) String() string { return proto.CompactTextString(m) }
+func (*EventActiveInferersSet) ProtoMessage()    {}
+func (*EventActiveInferersSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{59}
+}
+func (m *EventActiveInferersSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventActiveInferersSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventActiveInferersSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventActiveInferersSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventActiveInferersSet.Merge(m, src)
+}
+func (m *EventActiveInferersSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventActiveInferersSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventActiveInferersSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventActiveInferersSet proto.InternalMessageInfo
+
+func (m *EventActiveInferersSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventActiveInferersSet) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+func (m *EventActiveInferersSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventActiveForecastersSet struct {
+	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (m *EventActiveForecastersSet) Reset()         { *m = EventActiveForecastersSet{} }
+func (m *EventActiveForecastersSet) String() string { return proto.CompactTextString(m) }
+func (*EventActiveForecastersSet) ProtoMessage()    {}
+func (*EventActiveForecastersSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{60}
+}
+func (m *EventActiveForecastersSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventActiveForecastersSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventActiveForecastersSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventActiveForecastersSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventActiveForecastersSet.Merge(m, src)
+}
+func (m *EventActiveForecastersSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventActiveForecastersSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventActiveForecastersSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventActiveForecastersSet proto.InternalMessageInfo
+
+func (m *EventActiveForecastersSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventActiveForecastersSet) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+func (m *EventActiveForecastersSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventTopicStatusChanged struct {
+	TopicId  uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	IsActive bool   `protobuf:"varint,2,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+}
+
+func (m *EventTopicStatusChanged) Reset()         { *m = EventTopicStatusChanged{} }
+func (m *EventTopicStatusChanged) String() string { return proto.CompactTextString(m) }
+func (*EventTopicStatusChanged) ProtoMessage()    {}
+func (*EventTopicStatusChanged) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{61}
+}
+func (m *EventTopicStatusChanged) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicStatusChanged) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicStatusChanged.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicStatusChanged) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicStatusChanged.Merge(m, src)
+}
+func (m *EventTopicStatusChanged) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicStatusChanged) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicStatusChanged.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicStatusChanged proto.InternalMessageInfo
+
+func (m *EventTopicStatusChanged) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventTopicStatusChanged) GetIsActive() bool {
+	if m != nil {
+		return m.IsActive
+	}
+	return false
+}
+
+type EventNetworkInferenceInfererWeightsSet struct {
+	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+}
+
+func (m *EventNetworkInferenceInfererWeightsSet) Reset() {
+	*m = EventNetworkInferenceInfererWeightsSet{}
+}
+func (m *EventNetworkInferenceInfererWeightsSet) String() string { return proto.CompactTextString(m) }
+func (*EventNetworkInferenceInfererWeightsSet) ProtoMessage()    {}
+func (*EventNetworkInferenceInfererWeightsSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{62}
+}
+func (m *EventNetworkInferenceInfererWeightsSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceInfererWeightsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceInfererWeightsSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceInfererWeightsSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceInfererWeightsSet.Merge(m, src)
+}
+func (m *EventNetworkInferenceInfererWeightsSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceInfererWeightsSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceInfererWeightsSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceInfererWeightsSet proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceInfererWeightsSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererWeightsSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererWeightsSet) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+type EventNetworkInferenceForecasterWeightsSet struct {
+	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+}
+
+func (m *EventNetworkInferenceForecasterWeightsSet) Reset() {
+	*m = EventNetworkInferenceForecasterWeightsSet{}
+}
+func (m *EventNetworkInferenceForecasterWeightsSet) String() string {
+	return proto.CompactTextString(m)
+}
+func (*EventNetworkInferenceForecasterWeightsSet) ProtoMessage() {}
+func (*EventNetworkInferenceForecasterWeightsSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{63}
+}
+func (m *EventNetworkInferenceForecasterWeightsSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceForecasterWeightsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceForecasterWeightsSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceForecasterWeightsSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceForecasterWeightsSet.Merge(m, src)
+}
+func (m *EventNetworkInferenceForecasterWeightsSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceForecasterWeightsSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceForecasterWeightsSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceForecasterWeightsSet proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceForecasterWeightsSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterWeightsSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterWeightsSet) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+type EventNetworkInferenceInfererRegretsUsedSet struct {
+	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
+}
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) Reset() {
+	*m = EventNetworkInferenceInfererRegretsUsedSet{}
+}
+func (m *EventNetworkInferenceInfererRegretsUsedSet) String() string {
+	return proto.CompactTextString(m)
+}
+func (*EventNetworkInferenceInfererRegretsUsedSet) ProtoMessage() {}
+func (*EventNetworkInferenceInfererRegretsUsedSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{64}
+}
+func (m *EventNetworkInferenceInfererRegretsUsedSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceInfererRegretsUsedSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceInfererRegretsUsedSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceInfererRegretsUsedSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceInfererRegretsUsedSet.Merge(m, src)
+}
+func (m *EventNetworkInferenceInfererRegretsUsedSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceInfererRegretsUsedSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceInfererRegretsUsedSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceInfererRegretsUsedSet proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+type EventNetworkInferenceForecasterRegretsUsedSet struct {
+	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
+}
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) Reset() {
+	*m = EventNetworkInferenceForecasterRegretsUsedSet{}
+}
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) String() string {
+	return proto.CompactTextString(m)
+}
+func (*EventNetworkInferenceForecasterRegretsUsedSet) ProtoMessage() {}
+func (*EventNetworkInferenceForecasterRegretsUsedSet) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{65}
+}
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventNetworkInferenceForecasterRegretsUsedSet.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventNetworkInferenceForecasterRegretsUsedSet.Merge(m, src)
+}
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventNetworkInferenceForecasterRegretsUsedSet.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventNetworkInferenceForecasterRegretsUsedSet proto.InternalMessageInfo
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+type EventTopicWeightUpdated struct {
+	TopicId         uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NewWeight       github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=new_weight,json=newWeight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"new_weight"`
+	TopicStake      cosmossdk_io_math.Int                           `protobuf:"bytes,3,opt,name=topic_stake,json=topicStake,proto3,customtype=cosmossdk.io/math.Int" json:"topic_stake"`
+	TopicFeeRevenue cosmossdk_io_math.Int                           `protobuf:"bytes,4,opt,name=topic_fee_revenue,json=topicFeeRevenue,proto3,customtype=cosmossdk.io/math.Int" json:"topic_fee_revenue"`
+}
+
+func (m *EventTopicWeightUpdated) Reset()         { *m = EventTopicWeightUpdated{} }
+func (m *EventTopicWeightUpdated) String() string { return proto.CompactTextString(m) }
+func (*EventTopicWeightUpdated) ProtoMessage()    {}
+func (*EventTopicWeightUpdated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{66}
+}
+func (m *EventTopicWeightUpdated) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicWeightUpdated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicWeightUpdated.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicWeightUpdated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicWeightUpdated.Merge(m, src)
+}
+func (m *EventTopicWeightUpdated) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicWeightUpdated) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicWeightUpdated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicWeightUpdated proto.InternalMessageInfo
+
+func (m *EventTopicWeightUpdated) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type EventTopicFeeRevenueDripped struct {
+	TopicId    uint64                `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	OldRevenue cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=old_revenue,json=oldRevenue,proto3,customtype=cosmossdk.io/math.Int" json:"old_revenue"`
+	NewRevenue cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=new_revenue,json=newRevenue,proto3,customtype=cosmossdk.io/math.Int" json:"new_revenue"`
+	DripAmount cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=drip_amount,json=dripAmount,proto3,customtype=cosmossdk.io/math.Int" json:"drip_amount"`
+}
+
+func (m *EventTopicFeeRevenueDripped) Reset()         { *m = EventTopicFeeRevenueDripped{} }
+func (m *EventTopicFeeRevenueDripped) String() string { return proto.CompactTextString(m) }
+func (*EventTopicFeeRevenueDripped) ProtoMessage()    {}
+func (*EventTopicFeeRevenueDripped) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{67}
+}
+func (m *EventTopicFeeRevenueDripped) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventTopicFeeRevenueDripped) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventTopicFeeRevenueDripped.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventTopicFeeRevenueDripped) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicFeeRevenueDripped.Merge(m, src)
+}
+func (m *EventTopicFeeRevenueDripped) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventTopicFeeRevenueDripped) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicFeeRevenueDripped.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventTopicFeeRevenueDripped proto.InternalMessageInfo
+
+func (m *EventTopicFeeRevenueDripped) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type EventWorkerSubmissionWindowOpened struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	WindowEndBlock   int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+}
+
+func (m *EventWorkerSubmissionWindowOpened) Reset()         { *m = EventWorkerSubmissionWindowOpened{} }
+func (m *EventWorkerSubmissionWindowOpened) String() string { return proto.CompactTextString(m) }
+func (*EventWorkerSubmissionWindowOpened) ProtoMessage()    {}
+func (*EventWorkerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{68}
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWorkerSubmissionWindowOpened.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWorkerSubmissionWindowOpened.Merge(m, src)
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWorkerSubmissionWindowOpened) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWorkerSubmissionWindowOpened.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWorkerSubmissionWindowOpened proto.InternalMessageInfo
+
+func (m *EventWorkerSubmissionWindowOpened) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventWorkerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventWorkerSubmissionWindowOpened) GetWindowEndBlock() int64 {
+	if m != nil {
+		return m.WindowEndBlock
+	}
+	return 0
+}
+
+type EventWorkerSubmissionWindowClosed struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (m *EventWorkerSubmissionWindowClosed) Reset()         { *m = EventWorkerSubmissionWindowClosed{} }
+func (m *EventWorkerSubmissionWindowClosed) String() string { return proto.CompactTextString(m) }
+func (*EventWorkerSubmissionWindowClosed) ProtoMessage()    {}
+func (*EventWorkerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{69}
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventWorkerSubmissionWindowClosed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWorkerSubmissionWindowClosed.Merge(m, src)
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventWorkerSubmissionWindowClosed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWorkerSubmissionWindowClosed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventWorkerSubmissionWindowClosed proto.InternalMessageInfo
+
+func (m *EventWorkerSubmissionWindowClosed) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventWorkerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+type EventReputerSubmissionWindowOpened struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	WindowEndBlock   int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+}
+
+func (m *EventReputerSubmissionWindowOpened) Reset()         { *m = EventReputerSubmissionWindowOpened{} }
+func (m *EventReputerSubmissionWindowOpened) String() string { return proto.CompactTextString(m) }
+func (*EventReputerSubmissionWindowOpened) ProtoMessage()    {}
+func (*EventReputerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{70}
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventReputerSubmissionWindowOpened.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReputerSubmissionWindowOpened.Merge(m, src)
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventReputerSubmissionWindowOpened) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReputerSubmissionWindowOpened.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventReputerSubmissionWindowOpened proto.InternalMessageInfo
+
+func (m *EventReputerSubmissionWindowOpened) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventReputerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
+func (m *EventReputerSubmissionWindowOpened) GetWindowEndBlock() int64 {
+	if m != nil {
+		return m.WindowEndBlock
+	}
+	return 0
+}
+
+type EventReputerSubmissionWindowClosed struct {
+	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+}
+
+func (m *EventReputerSubmissionWindowClosed) Reset()         { *m = EventReputerSubmissionWindowClosed{} }
+func (m *EventReputerSubmissionWindowClosed) String() string { return proto.CompactTextString(m) }
+func (*EventReputerSubmissionWindowClosed) ProtoMessage()    {}
+func (*EventReputerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2d7671ca936dd333, []int{71}
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventReputerSubmissionWindowClosed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReputerSubmissionWindowClosed.Merge(m, src)
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventReputerSubmissionWindowClosed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReputerSubmissionWindowClosed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventReputerSubmissionWindowClosed proto.InternalMessageInfo
+
+func (m *EventReputerSubmissionWindowClosed) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *EventReputerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+	if m != nil {
+		return m.NonceBlockHeight
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterEnum("emissions.v9.ActorType", ActorType_name, ActorType_value)
 	proto.RegisterType((*EventScoresSet)(nil), "emissions.v9.EventScoresSet")
 	proto.RegisterType((*EventRewardsSettled)(nil), "emissions.v9.EventRewardsSettled")
 	proto.RegisterType((*EventNetworkLossSet)(nil), "emissions.v9.EventNetworkLossSet")
 	proto.RegisterType((*EventNetworkInferences)(nil), "emissions.v9.EventNetworkInferences")
+	proto.RegisterType((*EventValueBundle)(nil), "emissions.v9.EventValueBundle")
+	proto.RegisterType((*EventOneOutInfForcVals)(nil), "emissions.v9.EventOneOutInfForcVals")
+	proto.RegisterType((*EventInsertInfererPayload)(nil), "emissions.v9.EventInsertInfererPayload")
+	proto.RegisterType((*EventInsertForecasterPayload)(nil), "emissions.v9.EventInsertForecasterPayload")
+	proto.RegisterType((*EventCreateNewTopic)(nil), "emissions.v9.EventCreateNewTopic")
+	proto.RegisterType((*EventAddStake)(nil), "emissions.v9.EventAddStake")
+	proto.RegisterType((*EventRewardDelegateStake)(nil), "emissions.v9.EventRewardDelegateStake")
+	proto.RegisterType((*EventInsertReputerPayload)(nil), "emissions.v9.EventInsertReputerPayload")
+	proto.RegisterType((*EventReputerRegistered)(nil), "emissions.v9.EventReputerRegistered")
+	proto.RegisterType((*EventWorkerRegistered)(nil), "emissions.v9.EventWorkerRegistered")
+	proto.RegisterType((*EventReputerUnregistered)(nil), "emissions.v9.EventReputerUnregistered")
+	proto.RegisterType((*EventWorkerUnregistered)(nil), "emissions.v9.EventWorkerUnregistered")
+	proto.RegisterType((*EventFundTopic)(nil), "emissions.v9.EventFundTopic")
+	proto.RegisterType((*EventParamsSet)(nil), "emissions.v9.EventParamsSet")
+	proto.RegisterType((*EventWhitelistAdminAdded)(nil), "emissions.v9.EventWhitelistAdminAdded")
+	proto.RegisterType((*EventWhitelistAdminRemoved)(nil), "emissions.v9.EventWhitelistAdminRemoved")
+	proto.RegisterType((*EventGlobalWhitelistAdded)(nil), "emissions.v9.EventGlobalWhitelistAdded")
+	proto.RegisterType((*EventGlobalWhitelistRemoved)(nil), "emissions.v9.EventGlobalWhitelistRemoved")
+	proto.RegisterType((*EventGlobalWorkerWhitelistAdded)(nil), "emissions.v9.EventGlobalWorkerWhitelistAdded")
+	proto.RegisterType((*EventGlobalWorkerWhitelistRemoved)(nil), "emissions.v9.EventGlobalWorkerWhitelistRemoved")
+	proto.RegisterType((*EventGlobalReputerWhitelistAdded)(nil), "emissions.v9.EventGlobalReputerWhitelistAdded")
+	proto.RegisterType((*EventGlobalReputerWhitelistRemoved)(nil), "emissions.v9.EventGlobalReputerWhitelistRemoved")
+	proto.RegisterType((*EventGlobalAdminWhitelistAdded)(nil), "emissions.v9.EventGlobalAdminWhitelistAdded")
+	proto.RegisterType((*EventGlobalAdminWhitelistRemoved)(nil), "emissions.v9.EventGlobalAdminWhitelistRemoved")
+	proto.RegisterType((*EventTopicWorkerWhitelistEnabled)(nil), "emissions.v9.EventTopicWorkerWhitelistEnabled")
+	proto.RegisterType((*EventTopicWorkerWhitelistDisabled)(nil), "emissions.v9.EventTopicWorkerWhitelistDisabled")
+	proto.RegisterType((*EventTopicReputerWhitelistEnabled)(nil), "emissions.v9.EventTopicReputerWhitelistEnabled")
+	proto.RegisterType((*EventTopicReputerWhitelistDisabled)(nil), "emissions.v9.EventTopicReputerWhitelistDisabled")
+	proto.RegisterType((*EventTopicCreatorWhitelistAdded)(nil), "emissions.v9.EventTopicCreatorWhitelistAdded")
+	proto.RegisterType((*EventTopicCreatorWhitelistRemoved)(nil), "emissions.v9.EventTopicCreatorWhitelistRemoved")
+	proto.RegisterType((*EventTopicWorkerWhitelistAdded)(nil), "emissions.v9.EventTopicWorkerWhitelistAdded")
+	proto.RegisterType((*EventTopicWorkerWhitelistRemoved)(nil), "emissions.v9.EventTopicWorkerWhitelistRemoved")
+	proto.RegisterType((*EventTopicReputerWhitelistAdded)(nil), "emissions.v9.EventTopicReputerWhitelistAdded")
+	proto.RegisterType((*EventTopicReputerWhitelistRemoved)(nil), "emissions.v9.EventTopicReputerWhitelistRemoved")
 	proto.RegisterType((*EventOutlierResistantNetworkInferences)(nil), "emissions.v9.EventOutlierResistantNetworkInferences")
 	proto.RegisterType((*EventForecastTaskScoreSet)(nil), "emissions.v9.EventForecastTaskScoreSet")
 	proto.RegisterType((*EventWorkerLastCommitSet)(nil), "emissions.v9.EventWorkerLastCommitSet")
@@ -1328,80 +4059,368 @@ func init() {
 	proto.RegisterType((*EventTopicInitialRegretSet)(nil), "emissions.v9.EventTopicInitialRegretSet")
 	proto.RegisterType((*EventTopicInitialEmaScoreSet)(nil), "emissions.v9.EventTopicInitialEmaScoreSet")
 	proto.RegisterType((*EventRegretStdNormSet)(nil), "emissions.v9.EventRegretStdNormSet")
-	proto.RegisterType((*EventInfererWeightSet)(nil), "emissions.v9.EventInfererWeightSet")
-	proto.RegisterType((*EventForecasterWeightSet)(nil), "emissions.v9.EventForecasterWeightSet")
+	proto.RegisterType((*EventInfererWeightsSet)(nil), "emissions.v9.EventInfererWeightsSet")
+	proto.RegisterType((*EventForecasterWeightsSet)(nil), "emissions.v9.EventForecasterWeightsSet")
 	proto.RegisterType((*EventPreviousPercentageRewardToStakedReputersSet)(nil), "emissions.v9.EventPreviousPercentageRewardToStakedReputersSet")
 	proto.RegisterType((*EventPruneRecords)(nil), "emissions.v9.EventPruneRecords")
+	proto.RegisterType((*EventStakeRemovalCompleted)(nil), "emissions.v9.EventStakeRemovalCompleted")
+	proto.RegisterType((*EventDelegateRewardShareUpdated)(nil), "emissions.v9.EventDelegateRewardShareUpdated")
+	proto.RegisterType((*EventDelegateRewardDistributed)(nil), "emissions.v9.EventDelegateRewardDistributed")
+	proto.RegisterType((*EventActiveReputersSet)(nil), "emissions.v9.EventActiveReputersSet")
+	proto.RegisterType((*EventActiveInferersSet)(nil), "emissions.v9.EventActiveInferersSet")
+	proto.RegisterType((*EventActiveForecastersSet)(nil), "emissions.v9.EventActiveForecastersSet")
+	proto.RegisterType((*EventTopicStatusChanged)(nil), "emissions.v9.EventTopicStatusChanged")
+	proto.RegisterType((*EventNetworkInferenceInfererWeightsSet)(nil), "emissions.v9.EventNetworkInferenceInfererWeightsSet")
+	proto.RegisterType((*EventNetworkInferenceForecasterWeightsSet)(nil), "emissions.v9.EventNetworkInferenceForecasterWeightsSet")
+	proto.RegisterType((*EventNetworkInferenceInfererRegretsUsedSet)(nil), "emissions.v9.EventNetworkInferenceInfererRegretsUsedSet")
+	proto.RegisterType((*EventNetworkInferenceForecasterRegretsUsedSet)(nil), "emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet")
+	proto.RegisterType((*EventTopicWeightUpdated)(nil), "emissions.v9.EventTopicWeightUpdated")
+	proto.RegisterType((*EventTopicFeeRevenueDripped)(nil), "emissions.v9.EventTopicFeeRevenueDripped")
+	proto.RegisterType((*EventWorkerSubmissionWindowOpened)(nil), "emissions.v9.EventWorkerSubmissionWindowOpened")
+	proto.RegisterType((*EventWorkerSubmissionWindowClosed)(nil), "emissions.v9.EventWorkerSubmissionWindowClosed")
+	proto.RegisterType((*EventReputerSubmissionWindowOpened)(nil), "emissions.v9.EventReputerSubmissionWindowOpened")
+	proto.RegisterType((*EventReputerSubmissionWindowClosed)(nil), "emissions.v9.EventReputerSubmissionWindowClosed")
 }
 
 func init() { proto.RegisterFile("emissions/v9/events.proto", fileDescriptor_2d7671ca936dd333) }
 
 var fileDescriptor_2d7671ca936dd333 = []byte{
-	// 985 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xdc, 0x58, 0x4d, 0x6f, 0x1b, 0x45,
-	0x18, 0xce, 0xd8, 0xf9, 0xf2, 0x24, 0x94, 0xb2, 0x4d, 0xcb, 0x3a, 0x14, 0xc7, 0xdd, 0x43, 0x65,
-	0x90, 0xb0, 0x51, 0x23, 0x01, 0x95, 0xb8, 0x38, 0xee, 0x46, 0x58, 0x4a, 0x6d, 0x67, 0xec, 0x12,
-	0x01, 0x07, 0x6b, 0xbc, 0xfb, 0xc6, 0x1e, 0xd9, 0xde, 0xb1, 0x66, 0xc6, 0x4e, 0x7a, 0xe6, 0x43,
-	0x1c, 0x8b, 0xc4, 0x4f, 0xe8, 0x01, 0x09, 0x89, 0xdf, 0x80, 0xc4, 0xa5, 0x17, 0xa4, 0x88, 0x13,
-	0xe2, 0x50, 0xa1, 0xe4, 0x37, 0x70, 0x47, 0x3b, 0xbb, 0x6b, 0xaf, 0x29, 0x1f, 0x95, 0x36, 0x90,
-	0x94, 0xdb, 0xce, 0xbc, 0x93, 0x77, 0x9e, 0xe7, 0x99, 0x79, 0x9f, 0x77, 0x62, 0x9c, 0x85, 0x21,
-	0x93, 0x92, 0x71, 0x4f, 0x96, 0x26, 0x77, 0x4b, 0x30, 0x01, 0x4f, 0xc9, 0xe2, 0x48, 0x70, 0xc5,
-	0x8d, 0xf5, 0x69, 0xa8, 0x38, 0xb9, 0xbb, 0x69, 0xc6, 0x16, 0x6e, 0x97, 0x3c, 0xee, 0x39, 0x10,
-	0xac, 0xdb, 0xdc, 0x9c, 0x8b, 0x08, 0x18, 0x8d, 0x15, 0x88, 0x30, 0xb6, 0xd1, 0xe5, 0x5d, 0xae,
-	0x3f, 0x4b, 0xfe, 0x57, 0x30, 0x6b, 0xfd, 0x86, 0xf0, 0x15, 0xdb, 0xdf, 0xaa, 0xe9, 0x70, 0x01,
-	0xb2, 0x09, 0xca, 0x78, 0x07, 0x63, 0xea, 0x28, 0x2e, 0xda, 0xea, 0xe1, 0x08, 0x4c, 0x94, 0x47,
-	0x85, 0x2b, 0x77, 0x5e, 0x2d, 0xc6, 0x11, 0x14, 0xcb, 0x7e, 0xbc, 0xf5, 0x70, 0x04, 0x24, 0x43,
-	0xa3, 0x4f, 0x23, 0x8b, 0x57, 0x15, 0x1f, 0x31, 0xa7, 0xcd, 0x5c, 0x33, 0x95, 0x47, 0x85, 0x45,
-	0xb2, 0xa2, 0xc7, 0x55, 0xd7, 0xb8, 0x85, 0xd7, 0x3b, 0x03, 0xee, 0xf4, 0xdb, 0x3d, 0x60, 0xdd,
-	0x9e, 0x32, 0xd3, 0x79, 0x54, 0x48, 0x93, 0x35, 0x3d, 0xf7, 0x81, 0x9e, 0x32, 0x6e, 0xe2, 0x0c,
-	0x75, 0x5d, 0x01, 0x52, 0x82, 0x34, 0x17, 0xf3, 0xe9, 0x42, 0x86, 0xcc, 0x26, 0x8c, 0x3a, 0x5e,
-	0x96, 0x1a, 0xa0, 0xb9, 0xe4, 0x87, 0x76, 0xde, 0x7d, 0xf2, 0x74, 0x6b, 0xe1, 0x97, 0xa7, 0x5b,
-	0xa5, 0x2e, 0x53, 0xbd, 0x71, 0xa7, 0xe8, 0xf0, 0x61, 0x89, 0x0e, 0x06, 0x5c, 0xd0, 0xb7, 0x3c,
-	0x50, 0x47, 0x5c, 0xf4, 0xa3, 0xa1, 0xd3, 0xa3, 0xcc, 0x2b, 0x0d, 0xa9, 0xea, 0x15, 0xef, 0x81,
-	0x43, 0xc2, 0x34, 0xd6, 0xe3, 0x14, 0xbe, 0xa6, 0x79, 0x13, 0x38, 0xa2, 0xc2, 0xf5, 0x89, 0xab,
-	0x01, 0xb8, 0x97, 0x92, 0xfc, 0x3e, 0x5e, 0x11, 0x01, 0xca, 0xa4, 0xec, 0xa3, 0x3c, 0xc6, 0x6d,
-	0xfc, 0x72, 0x1c, 0x53, 0x5b, 0x1d, 0x9b, 0xcb, 0x1a, 0xd6, 0x4b, 0x31, 0x58, 0xad, 0x63, 0xeb,
-	0x2b, 0x14, 0xca, 0x54, 0x0b, 0xf2, 0xee, 0x71, 0xa9, 0xef, 0x48, 0x9c, 0x2e, 0xfa, 0x7b, 0xba,
-	0xa9, 0x67, 0xe9, 0xbe, 0x8f, 0xd7, 0x27, 0x74, 0x30, 0x86, 0x76, 0x67, 0xec, 0xb9, 0x03, 0xd0,
-	0x8a, 0xac, 0xdd, 0xc9, 0xc6, 0x65, 0xde, 0x2e, 0x7e, 0xe8, 0xaf, 0xd8, 0xd1, 0x0b, 0xc8, 0xda,
-	0x64, 0x36, 0xb0, 0xbe, 0x46, 0xf8, 0x46, 0x1c, 0x53, 0xd5, 0x3b, 0x04, 0x01, 0x9e, 0x03, 0xf2,
-	0x42, 0x61, 0x3d, 0x46, 0xf8, 0xb6, 0x86, 0x55, 0x1f, 0xab, 0x01, 0x03, 0x41, 0x40, 0x32, 0xa9,
-	0xe8, 0x65, 0x83, 0xf9, 0x39, 0xc2, 0x59, 0x0d, 0x73, 0x97, 0x0b, 0x70, 0xa8, 0x54, 0x2d, 0x2a,
-	0xfb, 0xba, 0xf8, 0xff, 0xe1, 0x5c, 0xef, 0xe3, 0x25, 0x5d, 0x3b, 0x1a, 0x52, 0x82, 0x3b, 0x18,
-	0x64, 0xb1, 0x3e, 0x45, 0xd8, 0xd4, 0x38, 0x0e, 0xb8, 0xe8, 0x83, 0xd8, 0xa3, 0x52, 0x55, 0xf8,
-	0x70, 0xc8, 0x54, 0xf2, 0xeb, 0xf5, 0x06, 0x5e, 0xd2, 0xa6, 0x18, 0x2a, 0x73, 0x6d, 0x5e, 0x99,
-	0x9a, 0x1f, 0x22, 0xc1, 0x0a, 0xeb, 0xb3, 0x48, 0x0d, 0x12, 0x78, 0xe5, 0x05, 0xc1, 0xf8, 0x02,
-	0xe1, 0x0d, 0x0d, 0xa3, 0xe5, 0xa7, 0x9f, 0x59, 0x92, 0xf1, 0x1a, 0xce, 0x44, 0x08, 0xa4, 0x89,
-	0xf2, 0xe9, 0xc2, 0x22, 0x59, 0x0d, 0x21, 0xcc, 0xf9, 0x42, 0xea, 0x7c, 0x7c, 0xc1, 0xfa, 0x32,
-	0x85, 0x5f, 0xd1, 0x40, 0xec, 0xfb, 0xe5, 0x7f, 0xb5, 0x23, 0x6c, 0xc4, 0xc5, 0x49, 0x87, 0x3a,
-	0xfc, 0xc7, 0x4d, 0xc0, 0x57, 0x97, 0xc9, 0x36, 0x75, 0x14, 0x9b, 0x80, 0xb9, 0x9c, 0x4f, 0x17,
-	0x56, 0xc9, 0x2a, 0x93, 0x65, 0x3d, 0xb6, 0x1e, 0xa5, 0xf0, 0xeb, 0x5a, 0x8a, 0x3d, 0x26, 0x15,
-	0x78, 0xcc, 0xeb, 0x56, 0x38, 0x1c, 0x1e, 0x32, 0x87, 0xf9, 0x8d, 0xf9, 0xb2, 0x36, 0xca, 0x4f,
-	0xf0, 0xba, 0x13, 0x83, 0x99, 0x54, 0xa9, 0xb9, 0x64, 0xd6, 0x8f, 0x08, 0xdf, 0xd4, 0x92, 0x04,
-	0x5e, 0x26, 0x42, 0x67, 0x23, 0xd0, 0x15, 0x70, 0x0e, 0x05, 0x33, 0xc7, 0x2c, 0xfd, 0xa7, 0x5d,
-	0xd0, 0xdf, 0x28, 0x64, 0x9d, 0xe8, 0xb6, 0xeb, 0x3c, 0xd6, 0x09, 0xc2, 0x5b, 0x73, 0x5e, 0xf8,
-	0xe2, 0x53, 0xfa, 0x09, 0xe1, 0x5b, 0x41, 0x73, 0xa4, 0x6c, 0x02, 0xff, 0x93, 0x73, 0xfa, 0x16,
-	0xe1, 0xcd, 0x99, 0x3d, 0x56, 0x3d, 0xa6, 0x18, 0x1d, 0x9c, 0x17, 0x9b, 0x3a, 0x5e, 0x0e, 0xf6,
-	0xd1, 0xc5, 0x96, 0xc4, 0x55, 0x82, 0x34, 0xd6, 0x59, 0x54, 0x25, 0x71, 0xb4, 0xf6, 0x90, 0x4e,
-	0x9b, 0xec, 0xc5, 0xf8, 0xc6, 0xb4, 0x7f, 0x2f, 0x9e, 0x4b, 0xff, 0xfe, 0x06, 0xe1, 0xeb, 0x61,
-	0xe7, 0xd4, 0xe7, 0xa0, 0xdc, 0x1a, 0x17, 0xc3, 0xe4, 0xc7, 0xb1, 0x8f, 0x57, 0xa4, 0x72, 0x3d,
-	0x2e, 0x86, 0x49, 0xcf, 0x23, 0xca, 0x63, 0x7d, 0x1f, 0x41, 0x0d, 0xcb, 0xe1, 0x40, 0xef, 0x94,
-	0x1c, 0xaa, 0x89, 0x57, 0xc2, 0x6b, 0x1f, 0x40, 0x25, 0xd1, 0xd0, 0xbf, 0x53, 0x47, 0xc1, 0x9f,
-	0x25, 0x14, 0x3b, 0x4c, 0x63, 0xfd, 0x10, 0xbd, 0x96, 0x66, 0x4e, 0xf5, 0x02, 0xb2, 0xf8, 0x0e,
-	0xe1, 0xb7, 0x35, 0x8b, 0x86, 0x80, 0x09, 0xe3, 0x63, 0xd9, 0x00, 0xe1, 0x80, 0xa7, 0x68, 0x17,
-	0x82, 0x37, 0x4f, 0x8b, 0x37, 0x15, 0xed, 0x83, 0x1b, 0xbe, 0xc6, 0x74, 0x97, 0xfd, 0x23, 0x05,
-	0xf4, 0x2c, 0x85, 0x03, 0x8c, 0x47, 0xd3, 0x4c, 0x49, 0xdf, 0xa7, 0xb1, 0x54, 0xd6, 0x7e, 0xf8,
-	0x1a, 0x6a, 0x88, 0xb1, 0x07, 0x04, 0x1c, 0xee, 0xff, 0xef, 0xf4, 0x1c, 0x80, 0xfe, 0xba, 0x52,
-	0xdf, 0xec, 0xe0, 0xcc, 0xb4, 0xb8, 0x0d, 0x0b, 0xe7, 0xca, 0x95, 0x56, 0x9d, 0xb4, 0x5b, 0x1f,
-	0x35, 0xec, 0x76, 0xb5, 0xb6, 0x6b, 0x13, 0x9b, 0xb4, 0x1f, 0xd4, 0x9a, 0x0d, 0xbb, 0x52, 0xdd,
-	0xad, 0xda, 0xf7, 0xae, 0x2e, 0x18, 0x59, 0x7c, 0x3d, 0xb6, 0x66, 0xb7, 0x4e, 0xec, 0x4a, 0xb9,
-	0xd9, 0xb2, 0xc9, 0x55, 0x64, 0xdc, 0xc0, 0x46, 0x2c, 0x44, 0xec, 0xc6, 0x03, 0x7f, 0x3e, 0xb5,
-	0x43, 0x9e, 0x9c, 0xe6, 0xd0, 0xc9, 0x69, 0x0e, 0xfd, 0x7a, 0x9a, 0x43, 0x8f, 0xce, 0x72, 0x0b,
-	0x27, 0x67, 0xb9, 0x85, 0x9f, 0xcf, 0x72, 0x0b, 0x1f, 0xbf, 0xf7, 0x9c, 0x6a, 0x1c, 0x97, 0x66,
-	0xbf, 0x24, 0xf8, 0x2e, 0x25, 0x3b, 0xcb, 0xfa, 0xf7, 0x82, 0xed, 0xdf, 0x03, 0x00, 0x00, 0xff,
-	0xff, 0xac, 0x04, 0x84, 0xe6, 0xa6, 0x10, 0x00, 0x00,
+	// 2311 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xdc, 0x5a, 0xcd, 0x6f, 0x1b, 0xc7,
+	0x15, 0xf7, 0x92, 0x12, 0x2d, 0x3e, 0x7d, 0x44, 0x5e, 0xcb, 0x0a, 0xe5, 0xc4, 0xb4, 0xbc, 0x2d,
+	0x02, 0xd9, 0x8d, 0x45, 0x57, 0x46, 0x1b, 0x27, 0x4d, 0xdc, 0xd2, 0x12, 0xd5, 0x10, 0xb0, 0xf5,
+	0xb1, 0x92, 0x2c, 0xb7, 0x29, 0xb2, 0x1d, 0x72, 0x47, 0xd4, 0x42, 0xcb, 0x19, 0x62, 0x67, 0x48,
+	0xda, 0xa7, 0x02, 0x6d, 0x51, 0xf4, 0x52, 0x20, 0xa7, 0xf6, 0xda, 0x02, 0x39, 0x04, 0x68, 0x51,
+	0xb4, 0x68, 0x7b, 0xe8, 0xa1, 0x3d, 0xf4, 0xd2, 0xa0, 0x40, 0x01, 0x23, 0xa7, 0x22, 0x28, 0x82,
+	0xc2, 0x46, 0xbf, 0xfe, 0x80, 0xde, 0x8b, 0x9d, 0x99, 0x25, 0x77, 0x29, 0x8a, 0xa2, 0xb8, 0x8c,
+	0xe2, 0xe4, 0x62, 0x78, 0x76, 0xe6, 0xfd, 0xde, 0xfb, 0xbd, 0x37, 0xf3, 0xe6, 0xcd, 0x13, 0x61,
+	0x0e, 0x57, 0x1d, 0xc6, 0x1c, 0x4a, 0x58, 0xae, 0xf1, 0x6a, 0x0e, 0x37, 0x30, 0xe1, 0x6c, 0xb1,
+	0xe6, 0x51, 0x4e, 0xf5, 0x89, 0xd6, 0xd4, 0x62, 0xe3, 0xd5, 0x8b, 0xe7, 0x50, 0xd5, 0x21, 0x34,
+	0x27, 0xfe, 0x95, 0x0b, 0x2e, 0xce, 0x95, 0x29, 0xab, 0x52, 0x66, 0x89, 0x51, 0x4e, 0x0e, 0xd4,
+	0x54, 0x26, 0x04, 0x7b, 0x33, 0x47, 0x28, 0x29, 0x63, 0x35, 0x73, 0x31, 0x32, 0xe3, 0xe1, 0x5a,
+	0x9d, 0x63, 0xaf, 0xab, 0x14, 0xa7, 0x35, 0xa7, 0x1c, 0xa8, 0x0a, 0xcd, 0xdc, 0xca, 0xd5, 0x90,
+	0x87, 0xaa, 0x81, 0xaa, 0x99, 0x0a, 0xad, 0x50, 0x69, 0x82, 0xff, 0x3f, 0xf9, 0xd5, 0xf8, 0x9f,
+	0x06, 0x53, 0x05, 0x9f, 0xcd, 0x56, 0x99, 0x7a, 0x98, 0x6d, 0x61, 0xae, 0x7f, 0x19, 0x00, 0x95,
+	0x39, 0xf5, 0x2c, 0xfe, 0xa8, 0x86, 0x33, 0xda, 0xbc, 0xb6, 0x30, 0xb5, 0xf4, 0xfc, 0x62, 0x98,
+	0xe4, 0x62, 0xde, 0x9f, 0xdf, 0x7e, 0x54, 0xc3, 0x66, 0x1a, 0x05, 0xff, 0xd5, 0xe7, 0x60, 0x4c,
+	0x98, 0x62, 0x39, 0x76, 0x26, 0x31, 0xaf, 0x2d, 0x8c, 0x98, 0x67, 0xc5, 0xb8, 0x68, 0xeb, 0x57,
+	0x60, 0xa2, 0xe4, 0xd2, 0xf2, 0x81, 0xb5, 0x8f, 0x9d, 0xca, 0x3e, 0xcf, 0x24, 0xe7, 0xb5, 0x85,
+	0xa4, 0x39, 0x2e, 0xbe, 0xbd, 0x29, 0x3e, 0xe9, 0x2f, 0x42, 0x1a, 0xd9, 0xb6, 0x87, 0x19, 0xc3,
+	0x2c, 0x33, 0x32, 0x9f, 0x5c, 0x48, 0x9b, 0xed, 0x0f, 0xfa, 0x3a, 0xa4, 0x98, 0x30, 0x30, 0x33,
+	0xea, 0x4f, 0xdd, 0x79, 0xe5, 0xfd, 0x8f, 0x2e, 0x9f, 0xf9, 0xf0, 0xa3, 0xcb, 0xb9, 0x8a, 0xc3,
+	0xf7, 0xeb, 0xa5, 0xc5, 0x32, 0xad, 0xe6, 0x90, 0xeb, 0x52, 0x0f, 0x5d, 0x27, 0x98, 0x37, 0xa9,
+	0x77, 0x10, 0x0c, 0xcb, 0xfb, 0xc8, 0x21, 0xb9, 0x2a, 0xe2, 0xfb, 0x8b, 0x2b, 0xb8, 0x6c, 0x2a,
+	0x18, 0xe3, 0xdd, 0x04, 0x9c, 0x17, 0xbc, 0x4d, 0xdc, 0x44, 0x9e, 0xed, 0x13, 0xe7, 0x2e, 0xb6,
+	0x9f, 0x49, 0xf2, 0x9b, 0x70, 0xd6, 0x93, 0x56, 0xc6, 0x65, 0x1f, 0xe0, 0xe8, 0x2f, 0xc1, 0x73,
+	0x61, 0x9b, 0x2c, 0xfe, 0x30, 0x93, 0x12, 0x66, 0x4d, 0x86, 0xcc, 0xda, 0x7e, 0x68, 0x3c, 0x50,
+	0x5e, 0x5a, 0x93, 0xb0, 0x77, 0x29, 0x13, 0x5b, 0x24, 0x0f, 0x13, 0x0d, 0xe4, 0xd6, 0xb1, 0x55,
+	0xaa, 0x13, 0xdb, 0xc5, 0x82, 0xf1, 0xf8, 0x52, 0x36, 0xea, 0x27, 0x21, 0x78, 0xdf, 0x5f, 0x76,
+	0x47, 0xac, 0x32, 0xc7, 0x1b, 0xed, 0x81, 0xf1, 0x16, 0xcc, 0x86, 0x91, 0x8b, 0x64, 0x0f, 0x7b,
+	0x98, 0x94, 0x31, 0x1b, 0x06, 0xf8, 0xef, 0xc6, 0x60, 0xba, 0x73, 0x45, 0x24, 0x44, 0x5a, 0x34,
+	0x44, 0x9f, 0x83, 0x49, 0x75, 0xc2, 0x2c, 0x71, 0x06, 0x85, 0xce, 0xa4, 0x39, 0xa1, 0x3e, 0xae,
+	0xf9, 0xdf, 0xf4, 0x8c, 0x1f, 0x06, 0x31, 0x16, 0x21, 0x4c, 0x9b, 0xc1, 0x50, 0xbf, 0x04, 0x80,
+	0x1f, 0x72, 0x0f, 0x59, 0x36, 0xe2, 0x28, 0x33, 0x32, 0xaf, 0x2d, 0x4c, 0x98, 0x69, 0xf1, 0x65,
+	0x05, 0x71, 0xa4, 0xbf, 0x0d, 0x53, 0x65, 0x5a, 0x2d, 0x39, 0x04, 0xdb, 0x96, 0xb0, 0x32, 0x33,
+	0xea, 0xcb, 0x0f, 0x1e, 0xc6, 0xc9, 0x00, 0x4e, 0xd0, 0xd3, 0x1f, 0xc0, 0x38, 0x41, 0x4e, 0x03,
+	0x2b, 0xf0, 0x54, 0x3c, 0x70, 0x10, 0x58, 0x12, 0xf9, 0x0b, 0x70, 0xce, 0x11, 0x81, 0xf1, 0xac,
+	0xf6, 0xfe, 0x3c, 0x2b, 0xf6, 0xe7, 0xb4, 0x9a, 0xc8, 0xb7, 0xb6, 0xe9, 0x17, 0x61, 0x66, 0x8f,
+	0x7a, 0xb8, 0x8c, 0x18, 0x8f, 0xac, 0x1f, 0x13, 0xeb, 0xcf, 0xb7, 0xe7, 0xda, 0x22, 0x6f, 0xc3,
+	0x54, 0x80, 0x2f, 0x6c, 0x67, 0x99, 0x74, 0xbc, 0x0d, 0x3e, 0xa9, 0xe0, 0x84, 0xf9, 0x4c, 0xb7,
+	0xe1, 0x5c, 0xc8, 0x24, 0xa5, 0x02, 0xe2, 0xa9, 0x98, 0x6e, 0x23, 0x2a, 0x2d, 0x2e, 0xcc, 0x52,
+	0x82, 0x2d, 0x5a, 0xe7, 0x56, 0x07, 0x9b, 0xf1, 0x78, 0xaa, 0xce, 0x53, 0x82, 0xd7, 0xeb, 0xbc,
+	0x18, 0xe1, 0xe4, 0xc1, 0x5c, 0xa0, 0xed, 0x30, 0xb7, 0x89, 0x78, 0x0a, 0x67, 0xa5, 0xc2, 0xd5,
+	0x4e, 0x86, 0x35, 0xc8, 0xf8, 0x3a, 0x1d, 0xd2, 0x45, 0xe5, 0x64, 0x3c, 0x95, 0x17, 0x28, 0xc1,
+	0x45, 0x72, 0x48, 0x23, 0x81, 0x2b, 0x9d, 0x3e, 0x3d, 0xac, 0x7a, 0x6a, 0x3e, 0xb9, 0x30, 0xbe,
+	0xf4, 0xf9, 0x2e, 0x99, 0x61, 0x3d, 0x70, 0xdc, 0x2a, 0xf5, 0xca, 0xf7, 0x91, 0xcb, 0xcc, 0x4b,
+	0x11, 0x5f, 0x76, 0xea, 0x7b, 0x6d, 0xe4, 0x3f, 0x3f, 0xbd, 0xac, 0x19, 0x15, 0x95, 0x94, 0x0e,
+	0x89, 0xeb, 0xf7, 0x60, 0x54, 0x9e, 0x2e, 0x2d, 0x1e, 0x5d, 0x89, 0x62, 0x7c, 0xa8, 0xc1, 0x9c,
+	0xd0, 0x54, 0x24, 0x0c, 0x7b, 0x81, 0x55, 0x1b, 0xe8, 0x91, 0x4b, 0x91, 0xed, 0x67, 0x1a, 0x45,
+	0x5a, 0x24, 0xaa, 0xb4, 0x19, 0x0c, 0xf5, 0x19, 0x18, 0x0d, 0x27, 0x28, 0x39, 0x88, 0x64, 0xb6,
+	0x64, 0x34, 0xb3, 0xb5, 0xec, 0x1e, 0x89, 0x97, 0x15, 0x24, 0x4a, 0x47, 0xa6, 0x1b, 0xed, 0xc8,
+	0x74, 0xca, 0x8b, 0x3f, 0x4b, 0xc0, 0x8b, 0x21, 0x72, 0x6d, 0x5f, 0x07, 0xfc, 0xb2, 0x00, 0xed,
+	0x60, 0x2a, 0x8a, 0xa1, 0x2f, 0x27, 0x67, 0xd9, 0x35, 0x4f, 0x8d, 0x1c, 0x91, 0xa7, 0x0e, 0x27,
+	0x9d, 0xd1, 0xa1, 0x26, 0x9d, 0xa8, 0x8f, 0x52, 0xdd, 0x7d, 0xf4, 0x35, 0x75, 0xb1, 0x2e, 0x7b,
+	0x18, 0x71, 0xbc, 0x86, 0x9b, 0xdb, 0x3e, 0x15, 0xfd, 0x2a, 0x8c, 0x0a, 0x4e, 0xc2, 0x29, 0xe3,
+	0x4b, 0xe7, 0xc3, 0x5b, 0xfb, 0xe6, 0xa2, 0x58, 0x63, 0xca, 0x15, 0xc6, 0x2f, 0x34, 0x98, 0x14,
+	0x10, 0x79, 0xdb, 0xde, 0xe2, 0xe8, 0xa0, 0xe7, 0x05, 0x17, 0xba, 0xbb, 0x12, 0xd1, 0xbb, 0xeb,
+	0x45, 0x48, 0xdb, 0xd8, 0xc5, 0x15, 0xc4, 0x69, 0x70, 0xaf, 0xb5, 0x3f, 0xe8, 0x6f, 0x42, 0x0a,
+	0x55, 0x69, 0x9d, 0x70, 0xb5, 0x7f, 0x6e, 0x28, 0x1f, 0x5d, 0x90, 0x55, 0x2c, 0xb3, 0x0f, 0x16,
+	0x1d, 0x2a, 0x3d, 0x51, 0x24, 0xfc, 0x83, 0xdf, 0x5e, 0x07, 0x55, 0xde, 0x16, 0x09, 0x7f, 0xef,
+	0xdf, 0xbf, 0xba, 0xa6, 0x99, 0x4a, 0xde, 0xf8, 0xa3, 0x06, 0x99, 0x50, 0xc1, 0xb5, 0x22, 0x55,
+	0xe0, 0x8f, 0xcd, 0xf2, 0xf5, 0x0e, 0xcb, 0x07, 0xaf, 0x18, 0x15, 0x81, 0x6a, 0xe4, 0xc4, 0x9a,
+	0xd2, 0x88, 0x60, 0x47, 0x6f, 0xc0, 0x4c, 0x50, 0x40, 0x0c, 0x50, 0xbb, 0xe8, 0x4a, 0x36, 0xf4,
+	0xcd, 0x28, 0xab, 0x54, 0xa4, 0x14, 0x99, 0xb8, 0xe2, 0xf8, 0x67, 0x03, 0xdb, 0x83, 0x39, 0x6b,
+	0x06, 0x46, 0x69, 0x93, 0xb4, 0x4a, 0x17, 0x39, 0x30, 0xbe, 0x0d, 0x17, 0x84, 0x92, 0x5d, 0xea,
+	0x1d, 0xf4, 0xab, 0x63, 0x16, 0x52, 0x4d, 0xb1, 0x5c, 0xa9, 0x50, 0xa3, 0x23, 0x34, 0xac, 0xb7,
+	0xa2, 0x2e, 0xec, 0xd8, 0x21, 0x5e, 0x3c, 0x22, 0xc6, 0x5d, 0x78, 0x3e, 0x64, 0x72, 0xbf, 0x78,
+	0x47, 0x18, 0x6d, 0xfc, 0x28, 0x78, 0xfe, 0xac, 0xd6, 0x89, 0x2d, 0x8f, 0x60, 0x6f, 0x94, 0xbd,
+	0x3a, 0xb1, 0xdb, 0x28, 0x72, 0x14, 0x3a, 0x25, 0xc9, 0x98, 0xa7, 0xe4, 0xb6, 0x32, 0x67, 0x43,
+	0xbc, 0xdc, 0xfc, 0x52, 0xfb, 0x65, 0x48, 0xc9, 0x67, 0x9c, 0x4a, 0x09, 0x33, 0xe1, 0xbd, 0x74,
+	0x6b, 0x51, 0x2e, 0x34, 0xd5, 0x1a, 0xe3, 0x86, 0x72, 0xf7, 0xee, 0xbe, 0xc3, 0xb1, 0xeb, 0x30,
+	0x9e, 0xb7, 0xab, 0x0e, 0xc9, 0xdb, 0x36, 0xb6, 0xfd, 0x00, 0x21, 0x7f, 0xa4, 0x12, 0xae, 0x1c,
+	0x18, 0x4b, 0x70, 0xb1, 0x8b, 0x84, 0x89, 0xab, 0xb4, 0x71, 0xa4, 0xcc, 0x97, 0xd4, 0x51, 0xf8,
+	0xba, 0x4b, 0x4b, 0xc8, 0x0d, 0x49, 0xfa, 0x6a, 0x32, 0x70, 0x56, 0xe5, 0xe0, 0xe0, 0xf2, 0x52,
+	0x43, 0xe3, 0x15, 0x78, 0xa1, 0x9b, 0x58, 0xa0, 0xeb, 0x68, 0xc1, 0xaf, 0xc0, 0xe5, 0xb0, 0xa0,
+	0x08, 0x5d, 0xdf, 0x5a, 0xdf, 0x80, 0x2b, 0x47, 0x0b, 0x1f, 0xaf, 0xfb, 0x75, 0x98, 0x0f, 0x89,
+	0xab, 0x6d, 0xdc, 0xb7, 0xf2, 0xdb, 0x60, 0xf4, 0x90, 0x3e, 0x5e, 0xfb, 0x6b, 0x90, 0x0d, 0xc9,
+	0x8b, 0xd0, 0xf4, 0xad, 0x3b, 0x6a, 0x79, 0x54, 0xf6, 0x78, 0xcd, 0x6f, 0x28, 0x69, 0x71, 0x28,
+	0x3a, 0xbc, 0x56, 0x20, 0xa8, 0xe4, 0xf6, 0x3c, 0x70, 0xc6, 0x6d, 0xe5, 0xf5, 0x6e, 0xe2, 0x2b,
+	0x0e, 0x3b, 0x99, 0x7c, 0xa7, 0xdf, 0xfa, 0xd0, 0xff, 0x55, 0xe5, 0xf8, 0xae, 0xf2, 0xfd, 0x18,
+	0x10, 0xec, 0x39, 0x01, 0x20, 0x6e, 0x69, 0x7a, 0xf2, 0x3d, 0xd7, 0x55, 0xf8, 0x78, 0xdf, 0xef,
+	0xa8, 0xa8, 0x77, 0x73, 0x9e, 0x54, 0xdd, 0x3b, 0x75, 0x06, 0xb0, 0x89, 0x28, 0xec, 0x6e, 0x8f,
+	0x90, 0x06, 0x46, 0x0d, 0x04, 0x7c, 0x3f, 0xec, 0xab, 0xee, 0x47, 0x64, 0x20, 0xdc, 0x07, 0xbd,
+	0x36, 0x41, 0x2c, 0x8b, 0xdf, 0xd5, 0xe0, 0x25, 0x59, 0xe9, 0xd7, 0xb9, 0xeb, 0xf8, 0x57, 0x1f,
+	0x73, 0x18, 0x47, 0xdd, 0xda, 0x11, 0x3d, 0xf0, 0x3b, 0x3b, 0x3b, 0x89, 0xc3, 0x9d, 0x9d, 0xd7,
+	0x3b, 0x9a, 0x19, 0x49, 0x91, 0xc4, 0xe7, 0xa2, 0x75, 0xdd, 0x91, 0x7d, 0x8c, 0xdf, 0x04, 0xcf,
+	0x84, 0xa0, 0x86, 0xde, 0x46, 0xec, 0x40, 0x74, 0xea, 0xfc, 0xab, 0xa1, 0x87, 0x65, 0xf7, 0x60,
+	0x54, 0x34, 0xba, 0x24, 0xef, 0x18, 0x65, 0xbf, 0x40, 0xd1, 0x5f, 0x06, 0x5d, 0xd4, 0xe0, 0x56,
+	0x97, 0x46, 0xd6, 0xb4, 0x98, 0xb9, 0xd3, 0xe6, 0x6c, 0x7c, 0x2f, 0x28, 0xf5, 0xe4, 0x1e, 0xbb,
+	0x8b, 0x18, 0x5f, 0xa6, 0xd5, 0xaa, 0xc3, 0x8f, 0x31, 0xba, 0x0f, 0x77, 0x5e, 0x0d, 0x5e, 0x06,
+	0xc9, 0x6e, 0xf5, 0xb1, 0xe8, 0xd3, 0xa8, 0xe7, 0x82, 0xf1, 0xfd, 0xc0, 0x77, 0x6a, 0xe3, 0x7c,
+	0x42, 0x66, 0xfc, 0x40, 0x83, 0x99, 0xf0, 0x26, 0x0e, 0xba, 0x8d, 0xfa, 0x0b, 0x90, 0x0e, 0x2c,
+	0x60, 0xe2, 0x55, 0x39, 0x62, 0x8e, 0x29, 0x13, 0x22, 0x2d, 0xbf, 0xc4, 0x70, 0x5a, 0x7e, 0xc6,
+	0x0f, 0x13, 0x70, 0x4e, 0x18, 0x52, 0xb8, 0x97, 0xff, 0x58, 0x9b, 0xbd, 0x33, 0x61, 0xe7, 0xb4,
+	0x5e, 0x6f, 0xa7, 0xdb, 0xdf, 0xf5, 0xbd, 0xeb, 0x30, 0x0b, 0x95, 0xb9, 0xd3, 0xc0, 0x99, 0xd4,
+	0x7c, 0x72, 0x61, 0xcc, 0x1c, 0x73, 0x58, 0x5e, 0x8c, 0x8d, 0x77, 0x12, 0x70, 0x49, 0xb8, 0xe2,
+	0xae, 0x5f, 0x3a, 0x12, 0x87, 0x54, 0x96, 0x29, 0xde, 0xdb, 0x73, 0xca, 0x0e, 0x26, 0xfc, 0x99,
+	0xed, 0x81, 0xbf, 0x05, 0x13, 0xe5, 0x90, 0x99, 0x71, 0x3d, 0x15, 0x01, 0x33, 0xfe, 0xaa, 0xb5,
+	0xde, 0xec, 0xe2, 0x2d, 0xab, 0xf2, 0xa0, 0x89, 0x2b, 0x1e, 0x1e, 0xc2, 0x81, 0x89, 0x30, 0x4b,
+	0x76, 0x6d, 0x70, 0xfb, 0x8a, 0x14, 0xeb, 0x58, 0xbb, 0x5d, 0xe0, 0x18, 0x8f, 0x35, 0x75, 0x27,
+	0xb5, 0xbb, 0x0f, 0x9f, 0x76, 0x4a, 0x1f, 0x68, 0xea, 0x3a, 0x5c, 0x43, 0x4e, 0x03, 0x7f, 0x46,
+	0xe2, 0xf4, 0x73, 0x4d, 0xbd, 0x3f, 0x44, 0x7a, 0x2c, 0x12, 0x87, 0x3b, 0x7e, 0x9d, 0x3c, 0x1c,
+	0x36, 0xeb, 0x90, 0x92, 0x7a, 0xd4, 0xbb, 0x6c, 0xf0, 0xac, 0x22, 0x61, 0x8c, 0xa7, 0xc1, 0x29,
+	0x09, 0x5b, 0x5b, 0xa8, 0xa2, 0xd6, 0x95, 0xfc, 0xc9, 0xe4, 0x8d, 0xd6, 0x6d, 0x3f, 0x32, 0x8c,
+	0xdb, 0xde, 0x78, 0x4f, 0x53, 0x6d, 0x01, 0x15, 0x07, 0x6e, 0xaf, 0x51, 0xaf, 0x1a, 0x3f, 0x1c,
+	0x9b, 0x70, 0x96, 0x71, 0x9b, 0x50, 0xaf, 0x1a, 0x37, 0x1e, 0x01, 0x8e, 0xf1, 0x67, 0x4d, 0xb5,
+	0x49, 0xd4, 0x71, 0xd8, 0x15, 0x9a, 0xd8, 0x29, 0x1c, 0x84, 0xa6, 0xd4, 0x14, 0xfb, 0x20, 0x28,
+	0x1c, 0xe3, 0x2f, 0x9d, 0xa5, 0xde, 0xa7, 0x99, 0xcc, 0x2f, 0x35, 0xb8, 0x21, 0xfb, 0x18, 0x1e,
+	0x6e, 0x38, 0xb4, 0xce, 0x36, 0xb0, 0x57, 0xc6, 0x84, 0xa3, 0x0a, 0x96, 0x15, 0xd0, 0x36, 0x15,
+	0x8d, 0x3f, 0x5b, 0xd5, 0x66, 0x82, 0x63, 0x27, 0x11, 0xed, 0x30, 0x91, 0x5d, 0x80, 0x5a, 0x0b,
+	0x29, 0x6e, 0x6d, 0x1b, 0x82, 0x32, 0x36, 0x55, 0x6d, 0xb4, 0xe1, 0xd5, 0x09, 0x36, 0x71, 0x99,
+	0x7a, 0x36, 0xeb, 0xc7, 0xa0, 0xa3, 0xcf, 0xad, 0xf1, 0xfb, 0x20, 0xb3, 0x09, 0xa6, 0xe2, 0xb5,
+	0x82, 0xdc, 0x65, 0x5a, 0xad, 0xb9, 0x98, 0x0f, 0xda, 0xc5, 0x3b, 0xad, 0x66, 0xed, 0xdf, 0x83,
+	0xdb, 0x33, 0x68, 0xd3, 0xca, 0xa8, 0x6d, 0xed, 0x23, 0x0f, 0xef, 0xd4, 0x6c, 0x34, 0x30, 0x01,
+	0x04, 0xd3, 0xb2, 0x1e, 0xb5, 0x6a, 0xd8, 0xb3, 0x98, 0x8f, 0x17, 0x37, 0x17, 0x4c, 0x49, 0xc0,
+	0x0d, 0xec, 0x09, 0xf3, 0x0e, 0x45, 0x6d, 0xe4, 0x50, 0xd4, 0x8c, 0x3f, 0x69, 0xea, 0x81, 0x1d,
+	0xa5, 0xb7, 0xe2, 0x30, 0xee, 0x39, 0xa5, 0xfa, 0xc0, 0xec, 0x86, 0xd6, 0x07, 0xec, 0x87, 0xc4,
+	0x77, 0x54, 0xe6, 0x93, 0x35, 0x6d, 0xf8, 0x20, 0xf5, 0xb0, 0x3d, 0x92, 0x09, 0x12, 0x9d, 0x99,
+	0xe0, 0x64, 0xcf, 0xbc, 0xa8, 0x01, 0x2a, 0x01, 0x9f, 0xa6, 0x01, 0xdf, 0x0d, 0x52, 0xa6, 0xb4,
+	0xa0, 0x9d, 0x38, 0x4f, 0xd3, 0x88, 0x4d, 0xd5, 0x8f, 0x16, 0x15, 0xc1, 0x16, 0x47, 0xbc, 0xce,
+	0x96, 0xf7, 0x11, 0xa9, 0xf4, 0xde, 0x43, 0x91, 0xe7, 0x89, 0xbf, 0x8b, 0xc2, 0xcf, 0x93, 0x27,
+	0x41, 0x73, 0xa2, 0xb3, 0x19, 0x71, 0xa2, 0x4b, 0xae, 0x3b, 0x8d, 0x44, 0x77, 0x1a, 0xa7, 0x7f,
+	0x45, 0xfc, 0x53, 0x83, 0xab, 0x5d, 0x49, 0x9e, 0xf4, 0xfe, 0x7b, 0xc6, 0x79, 0xfe, 0x4b, 0x83,
+	0x6b, 0xbd, 0x82, 0x29, 0x6b, 0x2c, 0xb6, 0xc3, 0xb0, 0x7d, 0xba, 0x44, 0x87, 0x5d, 0xc9, 0xff,
+	0x57, 0x83, 0xeb, 0xc7, 0x04, 0xf4, 0x33, 0xc3, 0xf5, 0x0f, 0x89, 0xf0, 0xa9, 0x97, 0xfb, 0xb4,
+	0x8f, 0x7b, 0xf1, 0x3e, 0x00, 0xc1, 0x4d, 0xab, 0xd9, 0x66, 0x13, 0xc3, 0x98, 0x34, 0xc1, 0xcd,
+	0xdd, 0xa0, 0xb0, 0x1e, 0x97, 0x2a, 0x99, 0x5f, 0x6a, 0x0c, 0x7c, 0xf9, 0x00, 0x57, 0x39, 0xec,
+	0x00, 0xeb, 0xdf, 0x82, 0x73, 0x12, 0x72, 0x0f, 0x63, 0xcb, 0xc3, 0x0d, 0x4c, 0x5a, 0xbf, 0x21,
+	0x38, 0x39, 0xf0, 0x73, 0x02, 0x6a, 0x15, 0x63, 0x53, 0x02, 0x19, 0xbf, 0x4e, 0xa8, 0x3f, 0x05,
+	0x6d, 0x47, 0x27, 0x56, 0x3c, 0xa7, 0x56, 0xeb, 0xed, 0xc3, 0x4d, 0x18, 0xa7, 0xae, 0xdd, 0x32,
+	0x29, 0x31, 0x28, 0x57, 0xea, 0xda, 0x4a, 0xa9, 0x0f, 0xe9, 0x87, 0x25, 0x80, 0x1c, 0xd8, 0x7d,
+	0x04, 0x37, 0x43, 0x90, 0xb6, 0xe7, 0xd4, 0xac, 0x98, 0xf5, 0x18, 0xf8, 0x20, 0x79, 0x59, 0x93,
+	0xfd, 0x38, 0x78, 0xfe, 0xcb, 0xae, 0xea, 0x56, 0xbd, 0xa4, 0x5e, 0x95, 0xbb, 0x0e, 0xb1, 0x69,
+	0x73, 0xbd, 0x86, 0x49, 0x6f, 0xcf, 0x9d, 0xec, 0x4c, 0x2d, 0xc0, 0x74, 0x53, 0x00, 0x5b, 0x98,
+	0xd8, 0x52, 0x44, 0xdd, 0x81, 0x53, 0xf2, 0x7b, 0x81, 0xd8, 0x62, 0xbd, 0xe1, 0xf6, 0xb4, 0x6b,
+	0xd9, 0xa5, 0x6c, 0x88, 0x76, 0x19, 0x3f, 0xd1, 0xd4, 0x5f, 0x76, 0x54, 0xc5, 0xf3, 0xec, 0xf8,
+	0xa1, 0xda, 0xdb, 0xb0, 0x21, 0x3b, 0xe2, 0x5a, 0x09, 0xd2, 0xad, 0x56, 0x82, 0x6e, 0x40, 0x36,
+	0xbf, 0xbc, 0xbd, 0x6e, 0x5a, 0xdb, 0xdf, 0xd8, 0x28, 0x58, 0xc5, 0xb5, 0xd5, 0x82, 0x59, 0x30,
+	0xad, 0x9d, 0xb5, 0xad, 0x8d, 0xc2, 0x72, 0x71, 0xb5, 0x58, 0x58, 0x99, 0x3e, 0xa3, 0xcf, 0xc1,
+	0x85, 0xd0, 0x9a, 0xd5, 0x75, 0xb3, 0xb0, 0x9c, 0xdf, 0xda, 0x2e, 0x98, 0xd3, 0x9a, 0x3e, 0x0b,
+	0x7a, 0x68, 0xca, 0x2c, 0x6c, 0xec, 0xf8, 0xdf, 0x13, 0x77, 0xcc, 0xf7, 0x9f, 0x64, 0xb5, 0xc7,
+	0x4f, 0xb2, 0xda, 0x3f, 0x9e, 0x64, 0xb5, 0x77, 0x9e, 0x66, 0xcf, 0x3c, 0x7e, 0x9a, 0x3d, 0xf3,
+	0xb7, 0xa7, 0xd9, 0x33, 0xdf, 0xbc, 0xd5, 0x67, 0xba, 0x7a, 0x98, 0x6b, 0xff, 0x22, 0x99, 0x3f,
+	0xaa, 0x61, 0x56, 0x4a, 0x89, 0x1f, 0x1e, 0xdf, 0xfc, 0x7f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x7d,
+	0xb1, 0x78, 0x3b, 0x52, 0x2d, 0x00, 0x00,
 }
 
+func (this *EventValueBundle) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*EventValueBundle)
+	if !ok {
+		that2, ok := that.(EventValueBundle)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.TopicId != that1.TopicId {
+		return false
+	}
+	if this.ReputerNonce != that1.ReputerNonce {
+		return false
+	}
+	if this.Reputer != that1.Reputer {
+		return false
+	}
+	if !bytes.Equal(this.ExtraData, that1.ExtraData) {
+		return false
+	}
+	if !this.CombinedValue.Equal(that1.CombinedValue) {
+		return false
+	}
+	if !this.NaiveValue.Equal(that1.NaiveValue) {
+		return false
+	}
+	if len(this.InfererAddresses) != len(that1.InfererAddresses) {
+		return false
+	}
+	for i := range this.InfererAddresses {
+		if this.InfererAddresses[i] != that1.InfererAddresses[i] {
+			return false
+		}
+	}
+	if len(this.ForecasterAddresses) != len(that1.ForecasterAddresses) {
+		return false
+	}
+	for i := range this.ForecasterAddresses {
+		if this.ForecasterAddresses[i] != that1.ForecasterAddresses[i] {
+			return false
+		}
+	}
+	if len(this.InfererValues) != len(that1.InfererValues) {
+		return false
+	}
+	for i := range this.InfererValues {
+		if !this.InfererValues[i].Equal(that1.InfererValues[i]) {
+			return false
+		}
+	}
+	if len(this.ForecasterValues) != len(that1.ForecasterValues) {
+		return false
+	}
+	for i := range this.ForecasterValues {
+		if !this.ForecasterValues[i].Equal(that1.ForecasterValues[i]) {
+			return false
+		}
+	}
+	if len(this.OneOutInfererValues) != len(that1.OneOutInfererValues) {
+		return false
+	}
+	for i := range this.OneOutInfererValues {
+		if !this.OneOutInfererValues[i].Equal(that1.OneOutInfererValues[i]) {
+			return false
+		}
+	}
+	if len(this.OneOutForecasterValues) != len(that1.OneOutForecasterValues) {
+		return false
+	}
+	for i := range this.OneOutForecasterValues {
+		if !this.OneOutForecasterValues[i].Equal(that1.OneOutForecasterValues[i]) {
+			return false
+		}
+	}
+	if len(this.OneInForecasterValues) != len(that1.OneInForecasterValues) {
+		return false
+	}
+	for i := range this.OneInForecasterValues {
+		if !this.OneInForecasterValues[i].Equal(that1.OneInForecasterValues[i]) {
+			return false
+		}
+	}
+	if len(this.OneOutInfererForecasterValues) != len(that1.OneOutInfererForecasterValues) {
+		return false
+	}
+	for i := range this.OneOutInfererForecasterValues {
+		if !this.OneOutInfererForecasterValues[i].Equal(that1.OneOutInfererForecasterValues[i]) {
+			return false
+		}
+	}
+	return true
+}
+func (this *EventInsertInfererPayload) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*EventInsertInfererPayload)
+	if !ok {
+		that2, ok := that.(EventInsertInfererPayload)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Inferer != that1.Inferer {
+		return false
+	}
+	if this.Nonce != that1.Nonce {
+		return false
+	}
+	if this.TopicId != that1.TopicId {
+		return false
+	}
+	if !this.Value.Equal(that1.Value) {
+		return false
+	}
+	if !bytes.Equal(this.ExtraData, that1.ExtraData) {
+		return false
+	}
+	return true
+}
+func (this *EventInsertForecasterPayload) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*EventInsertForecasterPayload)
+	if !ok {
+		that2, ok := that.(EventInsertForecasterPayload)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Forecaster != that1.Forecaster {
+		return false
+	}
+	if this.Nonce != that1.Nonce {
+		return false
+	}
+	if this.TopicId != that1.TopicId {
+		return false
+	}
+	if len(this.InfererAddresses) != len(that1.InfererAddresses) {
+		return false
+	}
+	for i := range this.InfererAddresses {
+		if this.InfererAddresses[i] != that1.InfererAddresses[i] {
+			return false
+		}
+	}
+	if len(this.InfererValues) != len(that1.InfererValues) {
+		return false
+	}
+	for i := range this.InfererValues {
+		if !this.InfererValues[i].Equal(that1.InfererValues[i]) {
+			return false
+		}
+	}
+	if !bytes.Equal(this.ExtraData, that1.ExtraData) {
+		return false
+	}
+	return true
+}
 func (m *EventScoresSet) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1559,17 +4578,7 @@ func (m *EventNetworkLossSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintEvents(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x1a
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.TopicId != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
-		i--
-		dAtA[i] = 0x8
+		dAtA[i] = 0x12
 	}
 	return len(dAtA) - i, nil
 }
@@ -1604,12 +4613,1355 @@ func (m *EventNetworkInferences) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 			i = encodeVarintEvents(dAtA, i, uint64(size))
 		}
 		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventValueBundle) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventValueBundle) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventValueBundle) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.OneOutInfererForecasterValues) > 0 {
+		for iNdEx := len(m.OneOutInfererForecasterValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.OneOutInfererForecasterValues[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x72
+		}
+	}
+	if len(m.OneInForecasterValues) > 0 {
+		for iNdEx := len(m.OneInForecasterValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.OneInForecasterValues[iNdEx].Size()
+				i -= size
+				if _, err := m.OneInForecasterValues[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x6a
+		}
+	}
+	if len(m.OneOutForecasterValues) > 0 {
+		for iNdEx := len(m.OneOutForecasterValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.OneOutForecasterValues[iNdEx].Size()
+				i -= size
+				if _, err := m.OneOutForecasterValues[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x62
+		}
+	}
+	if len(m.OneOutInfererValues) > 0 {
+		for iNdEx := len(m.OneOutInfererValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.OneOutInfererValues[iNdEx].Size()
+				i -= size
+				if _, err := m.OneOutInfererValues[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x5a
+		}
+	}
+	if len(m.ForecasterValues) > 0 {
+		for iNdEx := len(m.ForecasterValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.ForecasterValues[iNdEx].Size()
+				i -= size
+				if _, err := m.ForecasterValues[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x52
+		}
+	}
+	if len(m.InfererValues) > 0 {
+		for iNdEx := len(m.InfererValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.InfererValues[iNdEx].Size()
+				i -= size
+				if _, err := m.InfererValues[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x4a
+		}
+	}
+	if len(m.ForecasterAddresses) > 0 {
+		for iNdEx := len(m.ForecasterAddresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ForecasterAddresses[iNdEx])
+			copy(dAtA[i:], m.ForecasterAddresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.ForecasterAddresses[iNdEx])))
+			i--
+			dAtA[i] = 0x42
+		}
+	}
+	if len(m.InfererAddresses) > 0 {
+		for iNdEx := len(m.InfererAddresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.InfererAddresses[iNdEx])
+			copy(dAtA[i:], m.InfererAddresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.InfererAddresses[iNdEx])))
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	{
+		size := m.NaiveValue.Size()
+		i -= size
+		if _, err := m.NaiveValue.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x32
+	{
+		size := m.CombinedValue.Size()
+		i -= size
+		if _, err := m.CombinedValue.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x2a
+	if len(m.ExtraData) > 0 {
+		i -= len(m.ExtraData)
+		copy(dAtA[i:], m.ExtraData)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ExtraData)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
 		dAtA[i] = 0x1a
 	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
+	if m.ReputerNonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.ReputerNonce))
 		i--
 		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventOneOutInfForcVals) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventOneOutInfForcVals) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventOneOutInfForcVals) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Value) > 0 {
+		for iNdEx := len(m.Value) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.Value[iNdEx].Size()
+				i -= size
+				if _, err := m.Value[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventInsertInfererPayload) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventInsertInfererPayload) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventInsertInfererPayload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ExtraData) > 0 {
+		i -= len(m.ExtraData)
+		copy(dAtA[i:], m.ExtraData)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ExtraData)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	{
+		size := m.Value.Size()
+		i -= size
+		if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Inferer) > 0 {
+		i -= len(m.Inferer)
+		copy(dAtA[i:], m.Inferer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Inferer)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventInsertForecasterPayload) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventInsertForecasterPayload) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventInsertForecasterPayload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ExtraData) > 0 {
+		i -= len(m.ExtraData)
+		copy(dAtA[i:], m.ExtraData)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ExtraData)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.InfererValues) > 0 {
+		for iNdEx := len(m.InfererValues) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.InfererValues[iNdEx].Size()
+				i -= size
+				if _, err := m.InfererValues[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.InfererAddresses) > 0 {
+		for iNdEx := len(m.InfererAddresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.InfererAddresses[iNdEx])
+			copy(dAtA[i:], m.InfererAddresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.InfererAddresses[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Forecaster) > 0 {
+		i -= len(m.Forecaster)
+		copy(dAtA[i:], m.Forecaster)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Forecaster)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventCreateNewTopic) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventCreateNewTopic) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventCreateNewTopic) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Topic != nil {
+		{
+			size, err := m.Topic.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventAddStake) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventAddStake) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventAddStake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventRewardDelegateStake) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRewardDelegateStake) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRewardDelegateStake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventInsertReputerPayload) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventInsertReputerPayload) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventInsertReputerPayload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ReputerValueBundle != nil {
+		{
+			size, err := m.ReputerValueBundle.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventReputerRegistered) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventReputerRegistered) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventReputerRegistered) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Owner) > 0 {
+		i -= len(m.Owner)
+		copy(dAtA[i:], m.Owner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Owner)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWorkerRegistered) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWorkerRegistered) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWorkerRegistered) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Owner) > 0 {
+		i -= len(m.Owner)
+		copy(dAtA[i:], m.Owner)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Owner)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Worker) > 0 {
+		i -= len(m.Worker)
+		copy(dAtA[i:], m.Worker)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Worker)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventReputerUnregistered) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventReputerUnregistered) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventReputerUnregistered) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWorkerUnregistered) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWorkerUnregistered) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWorkerUnregistered) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Worker) > 0 {
+		i -= len(m.Worker)
+		copy(dAtA[i:], m.Worker)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Worker)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventFundTopic) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventFundTopic) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventFundTopic) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if len(m.Funder) > 0 {
+		i -= len(m.Funder)
+		copy(dAtA[i:], m.Funder)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Funder)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventParamsSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventParamsSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventParamsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Params != nil {
+		{
+			size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintEvents(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWhitelistAdminAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWhitelistAdminAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWhitelistAdminAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Admin) > 0 {
+		i -= len(m.Admin)
+		copy(dAtA[i:], m.Admin)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Admin)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWhitelistAdminRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWhitelistAdminRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWhitelistAdminRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Admin) > 0 {
+		i -= len(m.Admin)
+		copy(dAtA[i:], m.Admin)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Admin)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalWhitelistAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalWhitelistAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalWhitelistAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalWhitelistRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalWhitelistRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalWorkerWhitelistAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalWorkerWhitelistAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalWorkerWhitelistAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalWorkerWhitelistRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalWorkerWhitelistRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalWorkerWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalReputerWhitelistAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalReputerWhitelistAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalReputerWhitelistAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalReputerWhitelistRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalReputerWhitelistRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalReputerWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalAdminWhitelistAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalAdminWhitelistAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalAdminWhitelistAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventGlobalAdminWhitelistRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventGlobalAdminWhitelistRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventGlobalAdminWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicWorkerWhitelistEnabled) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicWorkerWhitelistEnabled) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicWorkerWhitelistEnabled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicWorkerWhitelistDisabled) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicWorkerWhitelistDisabled) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicWorkerWhitelistDisabled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicReputerWhitelistEnabled) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicReputerWhitelistEnabled) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicReputerWhitelistEnabled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicReputerWhitelistDisabled) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicReputerWhitelistDisabled) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicReputerWhitelistDisabled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicCreatorWhitelistAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicCreatorWhitelistAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicCreatorWhitelistAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicCreatorWhitelistRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicCreatorWhitelistRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicCreatorWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicWorkerWhitelistAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicWorkerWhitelistAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicWorkerWhitelistAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicWorkerWhitelistRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicWorkerWhitelistRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicWorkerWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicReputerWhitelistAdded) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicReputerWhitelistAdded) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicReputerWhitelistAdded) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicReputerWhitelistRemoved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicReputerWhitelistRemoved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicReputerWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x12
 	}
 	if m.TopicId != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
@@ -1684,6 +6036,11 @@ func (m *EventForecastTaskScoreSet) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	_ = i
 	var l int
 	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x18
+	}
 	{
 		size := m.Score.Size()
 		i -= size
@@ -1827,20 +6184,20 @@ func (m *EventTopicRewardsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.TopicIds) > 0 {
-		dAtA7 := make([]byte, len(m.TopicIds)*10)
-		var j6 int
+		dAtA10 := make([]byte, len(m.TopicIds)*10)
+		var j9 int
 		for _, num := range m.TopicIds {
 			for num >= 1<<7 {
-				dAtA7[j6] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA10[j9] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j6++
+				j9++
 			}
-			dAtA7[j6] = uint8(num)
-			j6++
+			dAtA10[j9] = uint8(num)
+			j9++
 		}
-		i -= j6
-		copy(dAtA[i:], dAtA7[:j6])
-		i = encodeVarintEvents(dAtA, i, uint64(j6))
+		i -= j9
+		copy(dAtA[i:], dAtA10[:j9])
+		i = encodeVarintEvents(dAtA, i, uint64(j9))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -2284,7 +6641,7 @@ func (m *EventRegretStdNormSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *EventInfererWeightSet) Marshal() (dAtA []byte, err error) {
+func (m *EventInfererWeightsSet) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2294,32 +6651,38 @@ func (m *EventInfererWeightSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventInfererWeightSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventInfererWeightsSet) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventInfererWeightSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventInfererWeightsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.Weight.Size()
-		i -= size
-		if _, err := m.Weight.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if len(m.Weights) > 0 {
+		for iNdEx := len(m.Weights) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.Weights[iNdEx].Size()
+				i -= size
+				if _, err := m.Weights[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
 		}
-		i = encodeVarintEvents(dAtA, i, uint64(size))
 	}
-	i--
-	dAtA[i] = 0x22
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x1a
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
 	}
 	if m.BlockHeight != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
@@ -2334,7 +6697,7 @@ func (m *EventInfererWeightSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *EventForecasterWeightSet) Marshal() (dAtA []byte, err error) {
+func (m *EventForecasterWeightsSet) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2344,32 +6707,38 @@ func (m *EventForecasterWeightSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventForecasterWeightSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventForecasterWeightsSet) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventForecasterWeightSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventForecasterWeightsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.Weight.Size()
-		i -= size
-		if _, err := m.Weight.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if len(m.Weights) > 0 {
+		for iNdEx := len(m.Weights) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.Weights[iNdEx].Size()
+				i -= size
+				if _, err := m.Weights[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
 		}
-		i = encodeVarintEvents(dAtA, i, uint64(size))
 	}
-	i--
-	dAtA[i] = 0x22
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintEvents(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x1a
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
 	}
 	if m.BlockHeight != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
@@ -2449,6 +6818,804 @@ func (m *EventPruneRecords) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	if m.BlockHeight != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventStakeRemovalCompleted) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventStakeRemovalCompleted) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventStakeRemovalCompleted) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventDelegateRewardShareUpdated) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventDelegateRewardShareUpdated) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventDelegateRewardShareUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x20
+	}
+	{
+		size := m.RewardPerShare.Size()
+		i -= size
+		if _, err := m.RewardPerShare.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventDelegateRewardDistributed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventDelegateRewardDistributed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventDelegateRewardDistributed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x20
+	}
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventActiveReputersSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventActiveReputersSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventActiveReputersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventActiveInferersSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventActiveInferersSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventActiveInferersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventActiveForecastersSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventActiveForecastersSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventActiveForecastersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicStatusChanged) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicStatusChanged) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicStatusChanged) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.IsActive {
+		i--
+		if m.IsActive {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceInfererWeightsSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceInfererWeightsSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceInfererWeightsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Weights) > 0 {
+		for iNdEx := len(m.Weights) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.Weights[iNdEx].Size()
+				i -= size
+				if _, err := m.Weights[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceForecasterWeightsSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceForecasterWeightsSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceForecasterWeightsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Weights) > 0 {
+		for iNdEx := len(m.Weights) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.Weights[iNdEx].Size()
+				i -= size
+				if _, err := m.Weights[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Regrets) > 0 {
+		for iNdEx := len(m.Regrets) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.Regrets[iNdEx].Size()
+				i -= size
+				if _, err := m.Regrets[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Regrets) > 0 {
+		for iNdEx := len(m.Regrets) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.Regrets[iNdEx].Size()
+				i -= size
+				if _, err := m.Regrets[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicWeightUpdated) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicWeightUpdated) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicWeightUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.TopicFeeRevenue.Size()
+		i -= size
+		if _, err := m.TopicFeeRevenue.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	{
+		size := m.TopicStake.Size()
+		i -= size
+		if _, err := m.TopicStake.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	{
+		size := m.NewWeight.Size()
+		i -= size
+		if _, err := m.NewWeight.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventTopicFeeRevenueDripped) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventTopicFeeRevenueDripped) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventTopicFeeRevenueDripped) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.DripAmount.Size()
+		i -= size
+		if _, err := m.DripAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	{
+		size := m.NewRevenue.Size()
+		i -= size
+		if _, err := m.NewRevenue.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	{
+		size := m.OldRevenue.Size()
+		i -= size
+		if _, err := m.OldRevenue.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintEvents(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x12
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWorkerSubmissionWindowOpened) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWorkerSubmissionWindowOpened) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWorkerSubmissionWindowOpened) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.WindowEndBlock != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.WindowEndBlock))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventWorkerSubmissionWindowClosed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventWorkerSubmissionWindowClosed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventWorkerSubmissionWindowClosed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventReputerSubmissionWindowOpened) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventReputerSubmissionWindowOpened) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventReputerSubmissionWindowOpened) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.WindowEndBlock != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.WindowEndBlock))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventReputerSubmissionWindowClosed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventReputerSubmissionWindowClosed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventReputerSubmissionWindowClosed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NonceBlockHeight != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -2535,12 +7702,6 @@ func (m *EventNetworkLossSet) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if m.TopicId != 0 {
-		n += 1 + sovEvents(uint64(m.TopicId))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
-	}
 	if m.ValueBundle != nil {
 		l = m.ValueBundle.Size()
 		n += 1 + l + sovEvents(uint64(l))
@@ -2554,14 +7715,599 @@ func (m *EventNetworkInferences) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.ValueBundle != nil {
+		l = m.ValueBundle.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventValueBundle) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
+	if m.ReputerNonce != 0 {
+		n += 1 + sovEvents(uint64(m.ReputerNonce))
 	}
-	if m.ValueBundle != nil {
-		l = m.ValueBundle.Size()
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.ExtraData)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.CombinedValue.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.NaiveValue.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	if len(m.InfererAddresses) > 0 {
+		for _, s := range m.InfererAddresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.ForecasterAddresses) > 0 {
+		for _, s := range m.ForecasterAddresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.InfererValues) > 0 {
+		for _, e := range m.InfererValues {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.ForecasterValues) > 0 {
+		for _, e := range m.ForecasterValues {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.OneOutInfererValues) > 0 {
+		for _, e := range m.OneOutInfererValues {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.OneOutForecasterValues) > 0 {
+		for _, e := range m.OneOutForecasterValues {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.OneInForecasterValues) > 0 {
+		for _, e := range m.OneInForecasterValues {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.OneOutInfererForecasterValues) > 0 {
+		for _, e := range m.OneOutInfererForecasterValues {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EventOneOutInfForcVals) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Value) > 0 {
+		for _, e := range m.Value {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EventInsertInfererPayload) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Inferer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
+	}
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = m.Value.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = len(m.ExtraData)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventInsertForecasterPayload) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Forecaster)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
+	}
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if len(m.InfererAddresses) > 0 {
+		for _, s := range m.InfererAddresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.InfererValues) > 0 {
+		for _, e := range m.InfererValues {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	l = len(m.ExtraData)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventCreateNewTopic) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Topic != nil {
+		l = m.Topic.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventAddStake) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Amount.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventRewardDelegateStake) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Amount.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventInsertReputerPayload) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ReputerValueBundle != nil {
+		l = m.ReputerValueBundle.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventReputerRegistered) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Owner)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventWorkerRegistered) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Worker)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Owner)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventReputerUnregistered) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventWorkerUnregistered) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Worker)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventFundTopic) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Funder)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Amount.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventParamsSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Params != nil {
+		l = m.Params.Size()
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventWhitelistAdminAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Admin)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventWhitelistAdminRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Admin)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalWhitelistAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalWhitelistRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalWorkerWhitelistAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalWorkerWhitelistRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalReputerWhitelistAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalReputerWhitelistRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalAdminWhitelistAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventGlobalAdminWhitelistRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventTopicWorkerWhitelistEnabled) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *EventTopicWorkerWhitelistDisabled) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *EventTopicReputerWhitelistEnabled) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *EventTopicReputerWhitelistDisabled) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *EventTopicCreatorWhitelistAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventTopicCreatorWhitelistRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventTopicWorkerWhitelistAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventTopicWorkerWhitelistRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventTopicReputerWhitelistAdded) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventTopicReputerWhitelistRemoved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Address)
+	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
 	return n
@@ -2597,6 +8343,9 @@ func (m *EventForecastTaskScoreSet) Size() (n int) {
 	}
 	l = m.Score.Size()
 	n += 1 + l + sovEvents(uint64(l))
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
 	return n
 }
 
@@ -2858,7 +8607,7 @@ func (m *EventRegretStdNormSet) Size() (n int) {
 	return n
 }
 
-func (m *EventInfererWeightSet) Size() (n int) {
+func (m *EventInfererWeightsSet) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2870,16 +8619,22 @@ func (m *EventInfererWeightSet) Size() (n int) {
 	if m.BlockHeight != 0 {
 		n += 1 + sovEvents(uint64(m.BlockHeight))
 	}
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
 	}
-	l = m.Weight.Size()
-	n += 1 + l + sovEvents(uint64(l))
+	if len(m.Weights) > 0 {
+		for _, e := range m.Weights {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
 	return n
 }
 
-func (m *EventForecasterWeightSet) Size() (n int) {
+func (m *EventForecasterWeightsSet) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2891,12 +8646,18 @@ func (m *EventForecasterWeightSet) Size() (n int) {
 	if m.BlockHeight != 0 {
 		n += 1 + sovEvents(uint64(m.BlockHeight))
 	}
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovEvents(uint64(l))
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
 	}
-	l = m.Weight.Size()
-	n += 1 + l + sovEvents(uint64(l))
+	if len(m.Weights) > 0 {
+		for _, e := range m.Weights {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -2925,6 +8686,358 @@ func (m *EventPruneRecords) Size() (n int) {
 	}
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *EventStakeRemovalCompleted) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Amount.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventDelegateRewardShareUpdated) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.RewardPerShare.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	if m.BlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *EventDelegateRewardDistributed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = m.Amount.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	if m.BlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *EventActiveReputersSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	return n
+}
+
+func (m *EventActiveInferersSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	return n
+}
+
+func (m *EventActiveForecastersSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	return n
+}
+
+func (m *EventTopicStatusChanged) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.IsActive {
+		n += 2
+	}
+	return n
+}
+
+func (m *EventNetworkInferenceInfererWeightsSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.Weights) > 0 {
+		for _, e := range m.Weights {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EventNetworkInferenceForecasterWeightsSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.Weights) > 0 {
+		for _, e := range m.Weights {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EventNetworkInferenceInfererRegretsUsedSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.Regrets) > 0 {
+		for _, e := range m.Regrets {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.Regrets) > 0 {
+		for _, e := range m.Regrets {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EventTopicWeightUpdated) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = m.NewWeight.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.TopicStake.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.TopicFeeRevenue.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventTopicFeeRevenueDripped) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	l = m.OldRevenue.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.NewRevenue.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	l = m.DripAmount.Size()
+	n += 1 + l + sovEvents(uint64(l))
+	return n
+}
+
+func (m *EventWorkerSubmissionWindowOpened) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if m.WindowEndBlock != 0 {
+		n += 1 + sovEvents(uint64(m.WindowEndBlock))
+	}
+	return n
+}
+
+func (m *EventWorkerSubmissionWindowClosed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	return n
+}
+
+func (m *EventReputerSubmissionWindowOpened) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	}
+	if m.WindowEndBlock != 0 {
+		n += 1 + sovEvents(uint64(m.WindowEndBlock))
+	}
+	return n
+}
+
+func (m *EventReputerSubmissionWindowClosed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
+	if m.NonceBlockHeight != 0 {
+		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
 	}
 	return n
 }
@@ -3333,45 +9446,7 @@ func (m *EventNetworkLossSet) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: EventNetworkLossSet: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-			}
-			m.TopicId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TopicId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValueBundle", wireType)
 			}
@@ -3401,7 +9476,7 @@ func (m *EventNetworkLossSet) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.ValueBundle == nil {
-				m.ValueBundle = &ValueBundle{}
+				m.ValueBundle = &EventValueBundle{}
 			}
 			if err := m.ValueBundle.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -3457,45 +9532,7 @@ func (m *EventNetworkInferences) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: EventNetworkInferences: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-			}
-			m.TopicId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TopicId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValueBundle", wireType)
 			}
@@ -3525,11 +9562,3866 @@ func (m *EventNetworkInferences) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.ValueBundle == nil {
-				m.ValueBundle = &ValueBundle{}
+				m.ValueBundle = &EventValueBundle{}
 			}
 			if err := m.ValueBundle.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventValueBundle) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventValueBundle: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventValueBundle: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReputerNonce", wireType)
+			}
+			m.ReputerNonce = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ReputerNonce |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExtraData", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExtraData = append(m.ExtraData[:0], dAtA[iNdEx:postIndex]...)
+			if m.ExtraData == nil {
+				m.ExtraData = []byte{}
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CombinedValue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.CombinedValue.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NaiveValue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.NaiveValue.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InfererAddresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.InfererAddresses = append(m.InfererAddresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ForecasterAddresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ForecasterAddresses = append(m.ForecasterAddresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InfererValues", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.InfererValues = append(m.InfererValues, v)
+			if err := m.InfererValues[len(m.InfererValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 10:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ForecasterValues", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.ForecasterValues = append(m.ForecasterValues, v)
+			if err := m.ForecasterValues[len(m.ForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 11:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OneOutInfererValues", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.OneOutInfererValues = append(m.OneOutInfererValues, v)
+			if err := m.OneOutInfererValues[len(m.OneOutInfererValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 12:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OneOutForecasterValues", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.OneOutForecasterValues = append(m.OneOutForecasterValues, v)
+			if err := m.OneOutForecasterValues[len(m.OneOutForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 13:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OneInForecasterValues", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.OneInForecasterValues = append(m.OneInForecasterValues, v)
+			if err := m.OneInForecasterValues[len(m.OneInForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OneOutInfererForecasterValues", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.OneOutInfererForecasterValues = append(m.OneOutInfererForecasterValues, &EventOneOutInfForcVals{})
+			if err := m.OneOutInfererForecasterValues[len(m.OneOutInfererForecasterValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventOneOutInfForcVals) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventOneOutInfForcVals: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventOneOutInfForcVals: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.Value = append(m.Value, v)
+			if err := m.Value[len(m.Value)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventInsertInfererPayload) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventInsertInfererPayload: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventInsertInfererPayload: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Inferer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Inferer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+			}
+			m.Nonce = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Nonce |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExtraData", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExtraData = append(m.ExtraData[:0], dAtA[iNdEx:postIndex]...)
+			if m.ExtraData == nil {
+				m.ExtraData = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventInsertForecasterPayload) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventInsertForecasterPayload: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventInsertForecasterPayload: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Forecaster", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Forecaster = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+			}
+			m.Nonce = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Nonce |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InfererAddresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.InfererAddresses = append(m.InfererAddresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InfererValues", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.InfererValues = append(m.InfererValues, v)
+			if err := m.InfererValues[len(m.InfererValues)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExtraData", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExtraData = append(m.ExtraData[:0], dAtA[iNdEx:postIndex]...)
+			if m.ExtraData == nil {
+				m.ExtraData = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventCreateNewTopic) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventCreateNewTopic: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventCreateNewTopic: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Topic", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Topic == nil {
+				m.Topic = &Topic{}
+			}
+			if err := m.Topic.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventAddStake) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventAddStake: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventAddStake: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRewardDelegateStake) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRewardDelegateStake: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRewardDelegateStake: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventInsertReputerPayload) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventInsertReputerPayload: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventInsertReputerPayload: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReputerValueBundle", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ReputerValueBundle == nil {
+				m.ReputerValueBundle = &EventValueBundle{}
+			}
+			if err := m.ReputerValueBundle.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventReputerRegistered) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventReputerRegistered: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventReputerRegistered: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Owner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWorkerRegistered) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWorkerRegistered: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWorkerRegistered: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Worker", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Worker = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Owner = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventReputerUnregistered) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventReputerUnregistered: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventReputerUnregistered: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWorkerUnregistered) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWorkerUnregistered: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWorkerUnregistered: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Worker", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Worker = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventFundTopic) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventFundTopic: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventFundTopic: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Funder", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Funder = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventParamsSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventParamsSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventParamsSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Params == nil {
+				m.Params = &Params{}
+			}
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWhitelistAdminAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWhitelistAdminAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWhitelistAdminAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Admin", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Admin = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWhitelistAdminRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWhitelistAdminRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWhitelistAdminRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Admin", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Admin = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalWhitelistAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalWhitelistAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalWhitelistAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalWhitelistRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalWhitelistRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalWhitelistRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalWorkerWhitelistAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalWorkerWhitelistAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalWorkerWhitelistAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalWorkerWhitelistRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalWorkerWhitelistRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalWorkerWhitelistRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalReputerWhitelistAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalReputerWhitelistAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalReputerWhitelistAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalReputerWhitelistRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalReputerWhitelistRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalReputerWhitelistRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalAdminWhitelistAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalAdminWhitelistAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalAdminWhitelistAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventGlobalAdminWhitelistRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventGlobalAdminWhitelistRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventGlobalAdminWhitelistRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicWorkerWhitelistEnabled) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistEnabled: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistEnabled: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicWorkerWhitelistDisabled) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistDisabled: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistDisabled: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicReputerWhitelistEnabled) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistEnabled: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistEnabled: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicReputerWhitelistDisabled) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistDisabled: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistDisabled: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicCreatorWhitelistAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicCreatorWhitelistAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicCreatorWhitelistAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicCreatorWhitelistRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicCreatorWhitelistRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicCreatorWhitelistRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicWorkerWhitelistAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicWorkerWhitelistRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicWorkerWhitelistRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicReputerWhitelistAdded) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistAdded: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistAdded: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicReputerWhitelistRemoved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistRemoved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicReputerWhitelistRemoved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -3758,6 +13650,25 @@ func (m *EventForecastTaskScoreSet) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipEvents(dAtA[iNdEx:])
@@ -5462,7 +15373,7 @@ func (m *EventRegretStdNormSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventInfererWeightSet) Unmarshal(dAtA []byte) error {
+func (m *EventInfererWeightsSet) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5485,10 +15396,10 @@ func (m *EventInfererWeightSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventInfererWeightSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventInfererWeightsSet: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventInfererWeightSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventInfererWeightsSet: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5531,7 +15442,7 @@ func (m *EventInfererWeightSet) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -5559,11 +15470,11 @@ func (m *EventInfererWeightSet) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Address = string(dAtA[iNdEx:postIndex])
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Weights", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -5591,7 +15502,9 @@ func (m *EventInfererWeightSet) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Weight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.Weights = append(m.Weights, v)
+			if err := m.Weights[len(m.Weights)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5616,7 +15529,7 @@ func (m *EventInfererWeightSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventForecasterWeightSet) Unmarshal(dAtA []byte) error {
+func (m *EventForecasterWeightsSet) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5639,10 +15552,10 @@ func (m *EventForecasterWeightSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventForecasterWeightSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventForecasterWeightsSet: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventForecasterWeightSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventForecasterWeightsSet: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5685,7 +15598,7 @@ func (m *EventForecasterWeightSet) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -5713,11 +15626,11 @@ func (m *EventForecasterWeightSet) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Address = string(dAtA[iNdEx:postIndex])
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Weights", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -5745,7 +15658,9 @@ func (m *EventForecasterWeightSet) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Weight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.Weights = append(m.Weights, v)
+			if err := m.Weights[len(m.Weights)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5936,6 +15851,2286 @@ func (m *EventPruneRecords) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventStakeRemovalCompleted) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventStakeRemovalCompleted: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventStakeRemovalCompleted: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventDelegateRewardShareUpdated) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventDelegateRewardShareUpdated: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventDelegateRewardShareUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardPerShare", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RewardPerShare.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventDelegateRewardDistributed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventDelegateRewardDistributed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventDelegateRewardDistributed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventActiveReputersSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventActiveReputersSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventActiveReputersSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventActiveInferersSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventActiveInferersSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventActiveInferersSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventActiveForecastersSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventActiveForecastersSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventActiveForecastersSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicStatusChanged) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicStatusChanged: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicStatusChanged: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsActive", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsActive = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceInfererWeightsSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererWeightsSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererWeightsSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Weights", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.Weights = append(m.Weights, v)
+			if err := m.Weights[len(m.Weights)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceForecasterWeightsSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterWeightsSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterWeightsSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Weights", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.Weights = append(m.Weights, v)
+			if err := m.Weights[len(m.Weights)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceInfererRegretsUsedSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererRegretsUsedSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceInfererRegretsUsedSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regrets", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.Regrets = append(m.Regrets, v)
+			if err := m.Regrets[len(m.Regrets)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterRegretsUsedSet: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventNetworkInferenceForecasterRegretsUsedSet: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regrets", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.Regrets = append(m.Regrets, v)
+			if err := m.Regrets[len(m.Regrets)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicWeightUpdated) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicWeightUpdated: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicWeightUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewWeight", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.NewWeight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicStake", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TopicStake.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicFeeRevenue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TopicFeeRevenue.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventTopicFeeRevenueDripped) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventTopicFeeRevenueDripped: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventTopicFeeRevenueDripped: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field OldRevenue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.OldRevenue.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NewRevenue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.NewRevenue.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DripAmount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.DripAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWorkerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowOpened: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowOpened: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WindowEndBlock", wireType)
+			}
+			m.WindowEndBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WindowEndBlock |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventWorkerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowClosed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventWorkerSubmissionWindowClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventReputerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowOpened: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowOpened: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WindowEndBlock", wireType)
+			}
+			m.WindowEndBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.WindowEndBlock |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventReputerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowClosed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventReputerSubmissionWindowClosed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+			}
+			m.NonceBlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NonceBlockHeight |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

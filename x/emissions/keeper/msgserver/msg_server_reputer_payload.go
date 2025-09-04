@@ -5,11 +5,11 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
-
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // A tx function that accepts a individual loss and possibly returns an error
@@ -101,5 +101,6 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	return &types.InsertReputerPayloadResponse{}, err
+	types.EmitNewInsertReputerPayloadEvent(ctx, rvb)
+	return &types.InsertReputerPayloadResponse{}, nil
 }
