@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/scheduler/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -59,13 +58,8 @@ func (k *Keeper) applyArbitrageDecision(ctx context.Context, task types.TaskID, 
 	switch decision.Action {
 	case types.ArbitrageActionCancel:
 		err = k.CancelTask(ctx, task)
-	case types.ArbitrageActionPostponeAt:
-		// if no postponed time is given, we do nothing, and it'll be picked up again next block.
-		if decision.PostponeAt != nil {
-			err = k.RescheduleTaskAt(ctx, task, *decision.PostponeAt)
-		}
-	case types.ArbitrageActionPause:
-		err = k.PausePeriodicTask(ctx, task)
+	case types.ArbitrageActionReschedule:
+		err = k.RescheduleTask(ctx, task)
 	}
 	return
 }
@@ -79,23 +73,28 @@ func (k *Keeper) runTask(ctx context.Context, task types.Task, handler types.Tas
 	}
 
 	// If the task is periodic, update its last run time and next run time, and reschedule it.
-	if nextRunTime := task.NextRun(sdkCtx); nextRunTime != nil {
-		if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id)); err != nil {
-			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
-		}
+	oldScheduleKey := getTaskScheduleKey(task)
+	if oldScheduleKey == nil {
+		// should never occur
+		panic("executed task must has not scheduled key")
+	}
 
-		runTime := sdkCtx.BlockTime()
-		task.LastRunAt = &runTime
-		task.NextRunAt = nextRunTime
+	if err := k.tasksSchedule.Remove(ctx, *oldScheduleKey); err != nil {
+		return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
+	}
+
+	if task.ComputeNextRun(sdkCtx.BlockTime()) {
 		if err := k.tasks.Set(ctx, task.Id, task); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
 
-		if err := k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id)); err != nil {
-			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
+		if key := getTaskScheduleKey(task); key != nil {
+			if err := k.tasksSchedule.Set(ctx, *key); err != nil {
+				return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
+			}
 		}
 	} else {
-		if err := k.CancelTask(ctx, task.Id); err != nil {
+		if err := k.tasks.Remove(ctx, task.Id); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't remove task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
 	}

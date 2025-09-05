@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"time"
 
 	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -16,15 +15,12 @@ import (
 type ArbitrageAction int
 
 const (
-	// ArbitrageActionCancel means the task shall not be executed.
+	// ArbitrageActionCancel means the task shall not be executed and is removed.
 	ArbitrageActionCancel ArbitrageAction = iota
 
-	// ArbitrageActionPostponeAt means the task shall execution shall be delayed at the provided time, if any (i.e. if
-	// none provided it's postponed next block).
-	ArbitrageActionPostponeAt
-
-	// ArbitrageActionPause for a periodic task only, it means the task shall not be executed, and put in pause.
-	ArbitrageActionPause
+	// ArbitrageActionReschedule means the task execution shall be rescheduled using the provided scheduling options,
+	// if any (i.e. if none provided it's postponed next block).
+	ArbitrageActionReschedule
 )
 
 type TaskHandlers []TaskHandler
@@ -65,8 +61,8 @@ type ArbitrageDecision struct {
 	// Action defines the action to take for the task.
 	Action ArbitrageAction
 
-	// PostponeAt defines the time at which the task should be postponed if the action is ArbitrageActionPostpone.
-	PostponeAt *time.Time
+	// RescheduleOpts carries the rescheduling information if the action is ArbitrageActionReschedule.
+	RescheduleOpts []SchedulingOption
 }
 
 func NewTaskHandler[T proto.Message](
