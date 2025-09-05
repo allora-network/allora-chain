@@ -59,7 +59,7 @@ func (k *Keeper) applyArbitrageDecision(ctx context.Context, task types.TaskID, 
 	case types.ArbitrageActionCancel:
 		err = k.CancelTask(ctx, task)
 	case types.ArbitrageActionReschedule:
-		err = k.RescheduleTask(ctx, task)
+		err = k.RescheduleTask(ctx, task, decision.RescheduleOpts...)
 	}
 	return
 }
@@ -67,22 +67,22 @@ func (k *Keeper) applyArbitrageDecision(ctx context.Context, task types.TaskID, 
 func (k *Keeper) runTask(ctx context.Context, task types.Task, handler types.TaskHandler) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	task.RunCount++
-	if err := handler.Run(ctx, k.cdc, task.Id, task.Args, task.RunCount); err != nil {
+	if err := handler.Run(ctx, k.cdc, task.Id, task.Args, task.RunCount+1); err != nil {
 		return errors.Wrapf(types.ErrTaskExecution, "run func failed for task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 	}
 
-	// If the task is periodic, update its last run time and next run time, and reschedule it.
 	oldScheduleKey := getTaskScheduleKey(task)
 	if oldScheduleKey == nil {
 		// should never occur
-		panic("executed task must has not scheduled key")
+		panic("executed task must be scheduled")
 	}
 
+	// remove the old schedule entry
 	if err := k.tasksSchedule.Remove(ctx, *oldScheduleKey); err != nil {
 		return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 	}
 
+	// If the task is periodic, update its last run time and next run time, and reschedule it.
 	if task.ComputeNextRun(sdkCtx.BlockTime()) {
 		if err := k.tasks.Set(ctx, task.Id, task); err != nil {
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
