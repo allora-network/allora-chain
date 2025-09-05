@@ -59,7 +59,7 @@ func TestNewTask(t *testing.T) {
 			args:     nil,
 			scheduleOpts: []SchedulingOption{
 				ScheduleIn(interval),
-				ScheduleEvery(interval),
+				ScheduleEvery(&interval),
 				WithAbsoluteScheduling(),
 			},
 			expectError: false,
@@ -95,16 +95,7 @@ func TestNewTask(t *testing.T) {
 			},
 		},
 		{
-			name:         "wrong task with no defined schedule",
-			id:           TaskID("1"),
-			typename:     "type",
-			args:         nil,
-			scheduleOpts: []SchedulingOption{},
-			expectError:  true,
-			expectTask:   nil,
-		},
-		{
-			name:     "wrong task with schedule defined in the past",
+			name:     "wrong task with invalid scheduling",
 			id:       TaskID("1"),
 			typename: "type",
 			args:     nil,
@@ -130,20 +121,165 @@ func TestNewTask(t *testing.T) {
 	}
 }
 
-func TestNextRun(t *testing.T) {
+func TestApplySchedulingOpts(t *testing.T) {
+	args := &cosmostypes.Coin{Denom: "udenom", Amount: math.NewInt(12000)}
+	packedArgs, err := codectypes.NewAnyWithValue(args)
+	require.NoError(t, err)
+
+	now := time.Now()
+	ctx := sdk.NewContext(nil, tmproto.Header{Height: 1, Time: now}, false, nil)
+	interval := 10 * time.Minute
+	negInterval := -interval
+	zeroInterval := time.Duration(0)
+	at := ctx.BlockTime().Add(interval)
+
+	testCases := []struct {
+		name         string
+		inputTask    *Task
+		scheduleOpts []SchedulingOption
+		expectError  bool
+		expectTask   *Task
+	}{
+		{
+			name: "simple scheduling",
+			inputTask: &Task{
+				Id:                 "1",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          nil,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			scheduleOpts: []SchedulingOption{
+				ScheduleAt(at),
+			},
+			expectError: false,
+			expectTask: &Task{
+				Id:                 "1",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+		},
+		{
+			name: "periodic absolute scheduling",
+			inputTask: &Task{
+				Id:                 "2",
+				Typename:           "type2",
+				Args:               nil,
+				NextRunAt:          nil,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
+			},
+			scheduleOpts: []SchedulingOption{
+				ScheduleIn(interval),
+				ScheduleEvery(&interval),
+				WithAbsoluteScheduling(),
+			},
+			expectError: false,
+			expectTask: &Task{
+				Id:                 "2",
+				Typename:           "type2",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           &interval,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
+			},
+		},
+		{
+			name: "schedule defined in the past",
+			inputTask: &Task{
+				Id:                 "1",
+				Typename:           "type",
+				Args:               packedArgs,
+				NextRunAt:          &at,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			scheduleOpts: []SchedulingOption{
+				ScheduleAt(now.Add(-interval)),
+			},
+			expectError: true,
+			expectTask:  nil,
+		},
+		{
+			name: "negative interval",
+			inputTask: &Task{
+				Id:                 "1",
+				Typename:           "type",
+				Args:               packedArgs,
+				NextRunAt:          &at,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			scheduleOpts: []SchedulingOption{
+				ScheduleEvery(&negInterval),
+			},
+			expectError: true,
+			expectTask:  nil,
+		},
+		{
+			name: "zero interval",
+			inputTask: &Task{
+				Id:                 "1",
+				Typename:           "type",
+				Args:               packedArgs,
+				NextRunAt:          &at,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			scheduleOpts: []SchedulingOption{
+				ScheduleEvery(&zeroInterval),
+			},
+			expectError: true,
+			expectTask:  nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			task := *tc.inputTask
+			err := task.ApplySchedulingOpts(ctx, tc.scheduleOpts...)
+			if tc.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectTask, &task)
+			}
+		})
+	}
+}
+
+func TestComputeNextRun(t *testing.T) {
 	now := time.Now()
 	at := now.Add(-5 * time.Second)
 	nowMinus15Min := now.Add(-15 * time.Minute)
 	interval := 10 * time.Minute
-	ctx := sdk.NewContext(nil, tmproto.Header{Height: 1, Time: now}, false, nil)
 
 	testCases := []struct {
-		name         string
-		task         *Task
-		expectedNext *time.Time
+		name           string
+		task           *Task
+		expectedTask   *Task
+		expectedResult bool
 	}{
 		{
-			name: "non-periodic task should return nil",
+			name: "non-periodic task should return false",
 			task: &Task{
 				Id:                 "task1",
 				Typename:           "type",
@@ -154,7 +290,17 @@ func TestNextRun(t *testing.T) {
 				RunCount:           0,
 				SchedulingStrategy: SchedulingStrategy_RELATIVE,
 			},
-			expectedNext: nil,
+			expectedTask: &Task{
+				Id:                 "task1",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			expectedResult: false,
 		},
 		{
 			name: "periodic task with relative scheduling is based on actual execution time",
@@ -168,7 +314,17 @@ func TestNextRun(t *testing.T) {
 				RunCount:           0,
 				SchedulingStrategy: SchedulingStrategy_RELATIVE,
 			},
-			expectedNext: func() *time.Time { t := ctx.BlockTime().Add(10 * time.Minute); return &t }(),
+			expectedTask: &Task{
+				Id:                 "task2",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          func() *time.Time { t := now.Add(10 * time.Minute); return &t }(),
+				Interval:           &interval,
+				LastRunAt:          &now,
+				RunCount:           1,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
+			},
+			expectedResult: true,
 		},
 		{
 			name: "periodic task with absolute scheduling is based on scheduled execution time",
@@ -182,7 +338,17 @@ func TestNextRun(t *testing.T) {
 				RunCount:           0,
 				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
 			},
-			expectedNext: func() *time.Time { t := at.Add(10 * time.Minute); return &t }(),
+			expectedTask: &Task{
+				Id:                 "task2",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          func() *time.Time { t := at.Add(10 * time.Minute); return &t }(),
+				Interval:           &interval,
+				LastRunAt:          &now,
+				RunCount:           1,
+				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
+			},
+			expectedResult: true,
 		},
 		{
 			name: "periodic task with absolute scheduling should not schedule in the past",
@@ -196,19 +362,24 @@ func TestNextRun(t *testing.T) {
 				RunCount:           0,
 				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
 			},
-			expectedNext: func() *time.Time { t := now.Add(5 * time.Minute); return &t }(),
+			expectedTask: &Task{
+				Id:                 "task2",
+				Typename:           "type",
+				Args:               nil,
+				NextRunAt:          func() *time.Time { t := now.Add(5 * time.Minute); return &t }(),
+				Interval:           &interval,
+				LastRunAt:          &now,
+				RunCount:           1,
+				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
+			},
+			expectedResult: true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			nextRun := tc.task.NextRun(ctx)
-			if tc.expectedNext == nil {
-				require.Nil(t, nextRun)
-			} else {
-				require.NotNil(t, nextRun)
-				require.Equal(t, *tc.expectedNext, *nextRun)
-			}
+			require.Equal(t, tc.expectedResult, tc.task.ComputeNextRun(now))
+			require.Equal(t, tc.expectedTask, tc.task)
 		})
 	}
 }
@@ -269,9 +440,30 @@ func TestScheduleEvery(t *testing.T) {
 		SchedulingStrategy: 0,
 	}
 
-	ScheduleEvery(interval)(ctx, task)
-
+	ScheduleEvery(&interval)(ctx, task)
 	require.Equal(t, interval, *task.Interval)
+
+	ScheduleEvery(nil)(ctx, task)
+	require.Nil(t, task.Interval)
+}
+
+func TestUnschedule(t *testing.T) {
+	now := time.Now()
+	ctx := sdk.NewContext(nil, tmproto.Header{Height: 1, Time: now}, false, nil)
+	task := &Task{
+		Id:                 "task",
+		Typename:           "type",
+		Args:               nil,
+		NextRunAt:          &now,
+		Interval:           nil,
+		LastRunAt:          nil,
+		RunCount:           0,
+		SchedulingStrategy: 0,
+	}
+
+	Unschedule()(ctx, task)
+
+	require.Nil(t, task.NextRunAt)
 }
 
 func TestWithRelativeScheduling(t *testing.T) {
