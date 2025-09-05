@@ -125,7 +125,7 @@ func TestScheduleTask(t *testing.T) {
 	now := time.Now()
 	d10min := 10 * time.Minute
 	d1Hour := 1 * time.Hour
-	at := now.Add(10 * time.Minute)
+	at := now.Add(10 * time.Minute).UTC()
 
 	args := &cosmostypes.Coin{Denom: "udenom", Amount: math.NewInt(12000)}
 	packedArgs, err := codectypes.NewAnyWithValue(args)
@@ -188,7 +188,7 @@ func TestScheduleTask(t *testing.T) {
 			args:     args,
 			scheduleOpts: []types.SchedulingOption{
 				types.ScheduleIn(d10min),
-				types.ScheduleEvery(d1Hour),
+				types.ScheduleEvery(&d1Hour),
 				types.WithAbsoluteScheduling(),
 			},
 			expectError: false,
@@ -248,13 +248,15 @@ func TestScheduleTask(t *testing.T) {
 			expectTask:  nil,
 		},
 		{
-			name:         "invalid scheduling",
-			id:           "existing",
-			typename:     "noargs",
-			args:         nil,
-			scheduleOpts: nil,
-			expectError:  true,
-			expectTask:   nil,
+			name:     "invalid scheduling",
+			id:       "task",
+			typename: "noargs",
+			args:     nil,
+			scheduleOpts: []types.SchedulingOption{
+				types.ScheduleAt(now.Add(-time.Hour)),
+			},
+			expectError: true,
+			expectTask:  nil,
 		},
 	}
 
@@ -293,7 +295,7 @@ func TestScheduleTask(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, tc.expectTask.Id, task.Id)
 			require.Equal(t, tc.expectTask.Typename, task.Typename)
-			require.Equal(t, tc.expectTask.NextRunAt.Unix(), task.NextRunAt.Unix())
+			require.Equal(t, tc.expectTask.NextRunAt, task.NextRunAt)
 			require.Equal(t, tc.expectTask.Interval, task.Interval)
 			require.Equal(t, tc.expectTask.LastRunAt, task.LastRunAt)
 			require.Equal(t, tc.expectTask.RunCount, task.RunCount)
@@ -346,6 +348,7 @@ func TestCancelTask(t *testing.T) {
 
 	now := time.Now()
 	at := now.Add(10 * time.Minute)
+	d1Hour := 1 * time.Hour
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -368,10 +371,10 @@ func TestCancelTask(t *testing.T) {
 
 			// pre-insert tasks
 			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(at)))
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(at), types.ScheduleEvery(1*time.Hour)))
+			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(at), types.ScheduleEvery(&d1Hour)))
 			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task3", nil, types.ScheduleAt(at)))
 			// pause the task2 to test canceling a paused task
-			require.NoError(t, k.PausePeriodicTask(ctx, "task2"))
+			require.NoError(t, k.tasksSchedule.Remove(ctx, collections.Join3[string, time.Time, types.TaskID]("noargs", at, "task2")))
 
 			err = k.CancelTask(ctx, tc.id)
 			if tc.expectError {
@@ -398,41 +401,81 @@ func TestCancelTask(t *testing.T) {
 	}
 }
 
-func TestRescheduleTaskAt(t *testing.T) {
+func TestRescheduleTask(t *testing.T) {
 	now := time.Now()
+	d1Hour := 1 * time.Hour
+	at := now.Add(d1Hour).UTC()
+
 	testCases := []struct {
 		name        string
 		id          types.TaskID
-		newAt       time.Time
+		newSchedule []types.SchedulingOption
 		expectError bool
+		expectTask  *types.Task
 	}{
 		{
 			name:        "existing task",
 			id:          "task1",
-			newAt:       now.Add(1 * time.Hour),
+			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
 			expectError: false,
+			expectTask: &types.Task{
+				Id:                 "task1",
+				Typename:           "noargs",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: types.SchedulingStrategy_RELATIVE,
+			},
 		},
 		{
-			name:        "paused task",
+			name:        "resume task",
 			id:          "task2",
-			newAt:       now.Add(1 * time.Hour),
+			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
 			expectError: false,
+			expectTask: &types.Task{
+				Id:                 "task2",
+				Typename:           "noargs",
+				Args:               nil,
+				NextRunAt:          &at,
+				Interval:           &d1Hour,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: types.SchedulingStrategy_RELATIVE,
+			},
+		},
+		{
+			name:        "pause task",
+			id:          "task1",
+			newSchedule: []types.SchedulingOption{types.Unschedule()},
+			expectError: false,
+			expectTask: &types.Task{
+				Id:                 "task1",
+				Typename:           "noargs",
+				Args:               nil,
+				NextRunAt:          nil,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           0,
+				SchedulingStrategy: types.SchedulingStrategy_RELATIVE,
+			},
 		},
 		{
 			name:        "unexisting task",
 			id:          "taskX",
-			newAt:       now.Add(1 * time.Hour),
+			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
 			expectError: true,
+			expectTask:  nil,
 		},
 		{
 			name:        "new time in the past",
 			id:          "task1",
-			newAt:       now.Add(-1 * time.Hour),
+			newSchedule: []types.SchedulingOption{types.ScheduleAt(now.Add(-d1Hour))},
 			expectError: true,
+			expectTask:  nil,
 		},
 	}
-
-	at := now.Add(10 * time.Minute)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -454,186 +497,25 @@ func TestRescheduleTaskAt(t *testing.T) {
 				WithBlockTime(now)
 
 			// pre-insert tasks
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(at)))
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(at), types.ScheduleEvery(1*time.Hour)))
+			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(now.Add(10*time.Minute))))
+			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(now.Add(10*time.Minute)), types.ScheduleEvery(&d1Hour)))
 			// pause the task2 to test rescheduling a paused task
-			require.NoError(t, k.PausePeriodicTask(ctx, "task2"))
+			require.NoError(t, k.tasksSchedule.Remove(ctx, collections.Join3[string, time.Time, types.TaskID]("noargs", at, "task2")))
 
-			err = k.RescheduleTaskAt(ctx, tc.id, tc.newAt)
+			err = k.RescheduleTask(ctx, tc.id, tc.newSchedule...)
 			if tc.expectError {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 				task, err := k.tasks.Get(ctx, tc.id)
 				require.NoError(t, err)
-				require.Equal(t, tc.newAt.Unix(), task.NextRunAt.Unix())
-				exists, err := k.tasksSchedule.Has(ctx, collections.Join3("noargs", tc.newAt, tc.id))
-				require.NoError(t, err)
-				require.True(t, exists)
-			}
-		})
-	}
-}
+				require.Equal(t, tc.expectTask, &task)
 
-func TestPauseTask(t *testing.T) {
-	testCases := []struct {
-		name                       string
-		id                         types.TaskID
-		expectError                bool
-		expectedScheduledTaskCount int
-	}{
-		{
-			name:                       "pause a periodic task",
-			id:                         "task1",
-			expectError:                false,
-			expectedScheduledTaskCount: 1,
-		},
-		{
-			name:                       "pause a already paused periodic task",
-			id:                         "task2",
-			expectError:                false,
-			expectedScheduledTaskCount: 2,
-		},
-		{
-			name:        "pause a non-periodic task should fail",
-			id:          "task3",
-			expectError: true,
-		},
-		{
-			name:        "pause a non-existing task should fail",
-			id:          "taskX",
-			expectError: true,
-		},
-	}
-
-	now := time.Now()
-	at := now.Add(10 * time.Minute)
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			storeKey := storetypes.NewKVStoreKey("scheduler")
-			storeService := runtime.NewKVStoreService(storeKey)
-			encCfg := moduletestutil.MakeTestEncodingConfig()
-			k := NewKeeper(storeService, encCfg.Codec)
-			err := k.RegisterTaskHandlers(types.TaskHandlers{
-				types.NewNoArgsTaskHandler("noargs", nil, nil, nil),
-			})
-			require.NoError(t, err)
-
-			ctx := testutil.DefaultContextWithKeys(
-				map[string]*storetypes.KVStoreKey{"scheduler": storeKey},
-				map[string]*storetypes.TransientStoreKey{"transient_test": storetypes.NewTransientStoreKey("transient_test")},
-				nil,
-			).WithHeaderInfo(header.Info{Height: 1, Time: now}).
-				WithBlockHeight(1).
-				WithBlockTime(now)
-
-			// pre-insert tasks
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(at), types.ScheduleEvery(1*time.Hour)))
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(at), types.ScheduleEvery(1*time.Hour)))
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task3", nil, types.ScheduleAt(at)))
-			// pause the task2 to test rescheduling a paused task
-			require.NoError(t, k.PausePeriodicTask(ctx, "task2"))
-
-			err = k.PausePeriodicTask(ctx, tc.id)
-			if tc.expectError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				task, err := k.tasks.Get(ctx, tc.id)
-				require.NoError(t, err)
-				require.Nil(t, task.NextRunAt)
-
-				it, err := k.tasksSchedule.IterateRaw(ctx, nil, nil, collections.OrderAscending)
-				require.NoError(t, err)
-				keys, err := it.Keys()
-				require.NoError(t, err)
-				require.Equal(t, tc.expectedScheduledTaskCount, len(keys))
-			}
-		})
-	}
-}
-
-func TestResumeTask(t *testing.T) {
-	now := time.Now()
-	testCases := []struct {
-		name        string
-		at          time.Time
-		id          types.TaskID
-		expectError bool
-	}{
-		{
-			name:        "resume a paused periodic task",
-			at:          now.Add(10 * time.Minute),
-			id:          "task1",
-			expectError: false,
-		},
-		{
-			name:        "resume a non paused periodic task should fail",
-			at:          now.Add(10 * time.Minute),
-			id:          "task2",
-			expectError: true,
-		},
-		{
-			name:        "resume a non-periodic task should fail",
-			at:          now.Add(10 * time.Minute),
-			id:          "task3",
-			expectError: true,
-		},
-		{
-			name:        "resume a task in the past should fail",
-			at:          now.Add(-10 * time.Minute),
-			id:          "task1",
-			expectError: true,
-		},
-		{
-			name:        "resume a non-existing task should fail",
-			at:          now.Add(10 * time.Minute),
-			id:          "taskX",
-			expectError: true,
-		},
-	}
-
-	at := now.Add(10 * time.Minute)
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			storeKey := storetypes.NewKVStoreKey("scheduler")
-			storeService := runtime.NewKVStoreService(storeKey)
-			encCfg := moduletestutil.MakeTestEncodingConfig()
-			k := NewKeeper(storeService, encCfg.Codec)
-			err := k.RegisterTaskHandlers(types.TaskHandlers{
-				types.NewNoArgsTaskHandler("noargs", nil, nil, nil),
-			})
-			require.NoError(t, err)
-
-			ctx := testutil.DefaultContextWithKeys(
-				map[string]*storetypes.KVStoreKey{"scheduler": storeKey},
-				map[string]*storetypes.TransientStoreKey{"transient_test": storetypes.NewTransientStoreKey("transient_test")},
-				nil,
-			).WithHeaderInfo(header.Info{Height: 1, Time: now}).
-				WithBlockHeight(1).
-				WithBlockTime(now)
-
-			// pre-insert tasks
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(at), types.ScheduleEvery(1*time.Hour)))
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(at), types.ScheduleEvery(1*time.Hour)))
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task3", nil, types.ScheduleAt(at)))
-			// pause the task2 to test resume a paused task
-			require.NoError(t, k.PausePeriodicTask(ctx, "task1"))
-
-			err = k.ResumePeriodicTask(ctx, tc.id, tc.at)
-			if tc.expectError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				task, err := k.tasks.Get(ctx, tc.id)
-				require.NoError(t, err)
-				require.Equal(t, tc.at.Unix(), task.NextRunAt.Unix())
-
-				exists, err := k.tasksSchedule.Has(ctx, collections.Join3("noargs", tc.at, tc.id))
-				require.NoError(t, err)
-				require.True(t, exists)
+				if tc.expectTask.NextRunAt != nil {
+					exists, err := k.tasksSchedule.Has(ctx, collections.Join3("noargs", *tc.expectTask.NextRunAt, tc.expectTask.Id))
+					require.NoError(t, err)
+					require.True(t, exists)
+				}
 			}
 		})
 	}
