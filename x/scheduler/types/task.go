@@ -11,7 +11,6 @@ import (
 
 // NewTask creates a new Task with the provided parameters and scheduling options.
 func NewTask(ctx context.Context, id TaskID, typename string, args *codectypes.Any, scheduleOpts ...SchedulingOption) (*Task, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	task := &Task{
 		Id:                 id,
 		Typename:           typename,
@@ -23,39 +22,54 @@ func NewTask(ctx context.Context, id TaskID, typename string, args *codectypes.A
 		SchedulingStrategy: SchedulingStrategy_RELATIVE,
 	}
 
-	for _, opt := range scheduleOpts {
-		opt(sdkCtx, task)
-	}
-
-	if task.NextRunAt == nil {
-		return nil, errors.Wrapf(ErrInvalidTask, "task '%s' must have a scheduled time", id)
-	}
-
-	if sdkCtx.BlockTime().After(*task.NextRunAt) {
-		return nil, errors.Wrapf(ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", id, *task.NextRunAt)
+	if err := task.ApplySchedulingOpts(ctx, scheduleOpts...); err != nil {
+		return nil, err
 	}
 
 	return task, nil
 }
 
-// NextRun computes the next run time for the task based on its scheduling strategy and interval.
-// If the task is not periodic (i.e., Interval is nil), it returns nil.
-func (t *Task) NextRun(ctx sdk.Context) *time.Time {
+func (t *Task) ApplySchedulingOpts(ctx context.Context, scheduleOpts ...SchedulingOption) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	for _, opt := range scheduleOpts {
+		opt(sdkCtx, t)
+	}
+
+	if t.NextRunAt != nil && sdkCtx.BlockTime().After(*t.NextRunAt) {
+		return errors.Wrapf(ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", t.Id, *t.NextRunAt)
+	}
+
+	if t.Interval != nil && *t.Interval <= 0 {
+		return errors.Wrapf(ErrInvalidTask, "cannot schedule task '%s' with a non-positive interval: %s", t.Id, *t.Interval)
+	}
+
+	return nil
+}
+
+// ComputeNextRun computes and configures the next run time for the task based on its scheduling strategy, interval and
+// the provided last run time. It updates the LastRunAt, NextRunAt and RunCount fields of the task.
+//
+// It returns true if the next run time was computed and set, false otherwise (e.g., if the task is not periodic).
+func (t *Task) ComputeNextRun(lastRun time.Time) bool {
 	if t.Interval == nil {
-		return nil
+		return false
 	}
 
 	var refTime time.Time
 	if t.SchedulingStrategy == SchedulingStrategy_ABSOLUTE {
-		elapsed := ctx.BlockTime().Sub(*t.NextRunAt)
+		elapsed := lastRun.Sub(*t.NextRunAt)
 		missed := elapsed / *t.Interval
 		refTime = t.NextRunAt.Add(missed * (*t.Interval))
 	} else {
-		refTime = ctx.BlockTime()
+		refTime = lastRun
 	}
-
 	nextRun := refTime.Add(*t.Interval)
-	return &nextRun
+
+	t.RunCount += 1
+	t.LastRunAt = &lastRun
+	t.NextRunAt = &nextRun
+
+	return true
 }
 
 // SchedulingOption defines a function that modifies a Task to set its scheduling parameters.
@@ -76,10 +90,17 @@ func ScheduleIn(in time.Duration) SchedulingOption {
 	}
 }
 
-// ScheduleEvery sets the task to be periodic, with the specified interval between executions.
-func ScheduleEvery(interval time.Duration) SchedulingOption {
+// ScheduleEvery sets the task's interval between executions, if nil the task will execute once, otherwise the task is periodic.
+func ScheduleEvery(interval *time.Duration) SchedulingOption {
 	return func(_ sdk.Context, t *Task) {
-		t.Interval = &interval
+		t.Interval = interval
+	}
+}
+
+// Unschedule sets the task the next execution unscheduled, the task is kept for future execution but is considered paused.
+func Unschedule() SchedulingOption {
+	return func(_ sdk.Context, t *Task) {
+		t.NextRunAt = nil
 	}
 }
 

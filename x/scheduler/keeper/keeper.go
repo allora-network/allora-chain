@@ -129,6 +129,8 @@ func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
 }
 
 // ScheduleTask schedules a task of the provided type to run at the specified scheduling options.
+//
+// NOTE: Depending on the provided scheduling options, the task may be created but not scheduled (i.e. paused).
 func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, scheduleOpts ...types.SchedulingOption) error {
 	handler, ok := k.handlersByTypename[typename]
 	if !ok {
@@ -157,10 +159,13 @@ func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.Tas
 		return err
 	}
 
-	return k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, *task.NextRunAt, task.Id))
+	if key := getTaskScheduleKey(*task); key != nil {
+		return k.tasksSchedule.Set(ctx, *key)
+	}
+	return nil
 }
 
-// CancelTask cancels a scheduled task, removing it from the schedule.
+// CancelTask removes a task, removing it from the schedule.
 func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 	task, err := k.tasks.Get(ctx, taskID)
 	if err != nil {
@@ -171,18 +176,19 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 		return err
 	}
 
-	if task.NextRunAt != nil {
-		return k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, taskID))
+	if key := getTaskScheduleKey(task); key != nil {
+		return k.tasksSchedule.Remove(ctx, *key)
 	}
-
 	return nil
 }
 
-// RescheduleTaskAt reschedules an already scheduled task to run at a new specified time.
-func (k *Keeper) RescheduleTaskAt(ctx context.Context, id types.TaskID, at time.Time) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if sdkCtx.BlockTime().After(at) {
-		return errors.Wrapf(types.ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", id, at)
+// RescheduleTask reschedules a task applying the provided scheduling options, if none is provided it is a noop.
+//
+// NOTE: The options are applied on the task with its current scheduling configuration, there's no reset before applying
+// the new scheduling.
+func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOpts ...types.SchedulingOption) error {
+	if len(scheduleOpts) == 0 {
+		return nil
 	}
 
 	task, err := k.tasks.Get(ctx, id)
@@ -190,60 +196,24 @@ func (k *Keeper) RescheduleTaskAt(ctx context.Context, id types.TaskID, at time.
 		return err
 	}
 
-	if task.NextRunAt != nil {
-		if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, id)); err != nil {
+	if key := getTaskScheduleKey(task); key != nil {
+		if err := k.tasksSchedule.Remove(ctx, *key); err != nil {
 			return err
 		}
 	}
 
-	task.NextRunAt = &at
+	if err := task.ApplySchedulingOpts(ctx, scheduleOpts...); err != nil {
+		return err
+	}
+
 	if err := k.tasks.Set(ctx, id, task); err != nil {
 		return err
 	}
 
-	return k.tasksSchedule.Set(ctx, collections.Join3(task.Typename, *task.NextRunAt, id))
-}
-
-// PausePeriodicTask pauses a periodic task, preventing it from running until resumed.
-func (k *Keeper) PausePeriodicTask(ctx context.Context, id types.TaskID) error {
-	task, err := k.tasks.Get(ctx, id)
-	if err != nil {
-		return err
+	if key := getTaskScheduleKey(task); key != nil {
+		return k.tasksSchedule.Set(ctx, *key)
 	}
-
-	if task.Interval == nil {
-		return errors.Wrapf(types.ErrInvalidTask, "cannot pause non-periodic task '%s'", id)
-	}
-
-	// already paused
-	if task.NextRunAt == nil {
-		return nil
-	}
-
-	if err := k.tasksSchedule.Remove(ctx, collections.Join3(task.Typename, *task.NextRunAt, id)); err != nil {
-		return err
-	}
-
-	task.NextRunAt = nil
-	return k.tasks.Set(ctx, id, task)
-}
-
-// ResumePeriodicTask resumes a paused periodic task, allowing it to run again.
-func (k *Keeper) ResumePeriodicTask(ctx context.Context, id types.TaskID, startAt time.Time) error {
-	task, err := k.tasks.Get(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	if task.Interval == nil {
-		return errors.Wrapf(types.ErrInvalidTask, "cannot resume non-periodic task '%s'", id)
-	}
-
-	if task.NextRunAt != nil {
-		return errors.Wrapf(types.ErrInvalidTask, "cannot resume non paused periodic task '%s'", id)
-	}
-
-	return k.RescheduleTaskAt(ctx, id, startAt)
+	return nil
 }
 
 // GetDueTasksAt retrieves the tasks of the specified type that are due at the provided time.
@@ -268,4 +238,12 @@ func (k *Keeper) GetDueTasksAt(
 
 func (k *Keeper) GetTask(ctx context.Context, id types.TaskID) (types.Task, error) {
 	return k.tasks.Get(ctx, id)
+}
+
+func getTaskScheduleKey(t types.Task) *collections.Triple[string, time.Time, types.TaskID] {
+	if t.NextRunAt == nil {
+		return nil
+	}
+	key := collections.Join3(t.Typename, *t.NextRunAt, t.Id)
+	return &key
 }
