@@ -29,6 +29,8 @@ func NewTask(ctx context.Context, id TaskID, typename string, args *codectypes.A
 	return task, nil
 }
 
+// ApplySchedulingOpts applies the provided scheduling options to the task, updating its scheduling parameters.
+// It validates the resulting scheduling configuration to ensure it is valid.
 func (t *Task) ApplySchedulingOpts(ctx context.Context, scheduleOpts ...SchedulingOption) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, opt := range scheduleOpts {
