@@ -177,7 +177,7 @@ func (t taskHandler[T]) UnpackArgs(cdc codec.Codec, packedArgs *codectypes.Any) 
 	args, ok := val.Interface().(T)
 	if !ok {
 		// This should never happen.
-		return zeroArgs, fmt.Errorf("failed to cast new task args")
+		return zeroArgs, fmt.Errorf("failed to cast task args")
 	}
 
 	if packedArgs.TypeUrl != codectypes.MsgTypeURL(args) {

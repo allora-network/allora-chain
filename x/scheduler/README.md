@@ -53,6 +53,16 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 }
 ```
 
+A task handler is defined by:
+- **Name**: a unique identifier for the task type;
+- **Argument type**: a type used to provide arguments to the task execution logic, which must implement `proto.Message`;
+- **Dependencies**: a list of other task types that must be executed before this task type;
+- **Arbitrage function**: a function called before task execution with the set of tasks that are due at this moment, and allow to take arbitrage decisions on whether to execute specific tasks or not;
+- **Run function**: the actual logic to execute the task;
+
+A word about the arbitrage and run functions: These are called in the context of a `BeginBlocker`, if an error is returned it'll halt the chain. 
+Through the arbitrage step a decision can be made for a task, either to cancel it or to reschedule it.
+
 **4. Register the task handler in `x/my_module/module/depinject.go`:**
 
 Update the module outputs to indicate there are task handlers to register:
@@ -75,6 +85,84 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	return ModuleOutputs{Module: m, Keeper: k, TaskHandlers: k.TaskHandlers(), Out: depinject.Out{}}
 }
 ```
+
+### Scheduling a Task
+
+A task can be created and scheduled using the `keeper.Keeper#Schedule` method:
+```go
+func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.TaskID, args proto.Message, scheduleOpts ...types.SchedulingOption) error
+```
+
+Where:
+- `typename`: the type of the task, which must point to a registered task handler;
+- `id`: a string identifier that must be unique across the different task types;
+- `args`: the arguments to be passed to the task execution logic, which must be of the type expected by the task handler;
+- `scheduleOpts`: optional scheduling options, like the execution time and interval for periodic tasks;
+
+For example, to schedule a one-shot task of type `my_task` to be executed at a specific time:
+```go
+err := schedulerKeeper.ScheduleTask(
+    ctx,
+    types.TaskMyTask, // Task type
+    "task-id", // Unique task ID
+    &types.MyTaskArgs{ // Task arguments
+        Input1: "value1",
+        Input2: "value2",
+    },
+    schedulertypes.ScheduleAt(at), // Schedule to run at specific time
+)
+```
+
+In order to schedule a periodic task of type `my_task` to be executed every interval starting in some duration:
+```go
+err := schedulerKeeper.ScheduleTask(
+    ctx,
+    types.TaskMyTask,
+    "task-id",
+    &types.MyTaskArgs{
+        Input1: "value1",
+        Input2: "value2",
+    },
+    schedulertypes.ScheduleIn(in),
+    schedulertypes.ScheduleEvery(interval),
+)
+```
+
+**NOTE:** A task can be created but not scheduled if no scheduling option is provided or by using the `scheduletypes.Unschedule()` option.
+
+An existing task can be rescheduled using the `keeper.Keeper#RescheduleTask` method:
+```go
+func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOpts ...types.SchedulingOption) error
+```
+
+Where:
+- `id`: the unique identifier of the task to be rescheduled;
+- `scheduleOpts`: the new scheduling options, like the execution time and interval for periodic tasks;
+
+For example, this can be use to postpone a task:
+```go
+err := schedulerKeeper.RescheduleTask(
+    ctx,
+    "task-id", // Unique task ID
+    schedulertypes.ScheduleAt(newAt), // Reschedule to run at a new specific time
+)
+```
+
+Or to pause & resume a periodic task:
+```go
+err := schedulerKeeper.RescheduleTask(
+    ctx,
+    "task-id", // Unique task ID
+    schedulertypes.Unschedule(), // Pause the task
+)
+err := schedulerKeeper.RescheduleTask(
+    ctx,
+    "task-id", // Unique task ID
+    schedulertypes.ScheduleAt(at), // Resume the task at
+)
+```
+
+The possibility of keeping a task unscheduled can be useful to avoid losing task execution history metadata such as the execution counter and the last execution time.
 
 ## Details
 
@@ -113,10 +201,12 @@ A `Task` is defined by:
 - **Arguments**: The arguments to be passed to the task execution logic, which must implement `proto.Message`;
 
 In the task scheduling, we'll identify two kinds of tasks:
-- **One-shot task**: Tasks that are due for a single execution at the specified time. They can be scheduled using `keeper.Keeper#ScheduleTask`;
-- **Periodic task**: Tasks that are executed recurrently at each specified interval. They can be scheduled using `keeper.Keeper#SchedulePeriodicTask`;
+- **One-shot task**: Tasks that are due for a single execution at the specified time;
+- **Periodic task**: Tasks that are executed recurrently at each specified interval;
 
-These two types share the same underlying `types.Task` structure, the presence of the `interval` field will denote a periodic task.
+All tasks share the same underlying `types.Task` data structure, a periodic task is simply a task that has the interval field set.
+This indicates that the task should be automatically rescheduled after each execution, based on the configured interval.
+In other words, a periodic task is not a particular type of task, but rather a particular scheduling configuration of a task.
 
 Internally, the `x/scheduler` module keeps tracks of executions with information like the execution counter and the last 
 execution time.
@@ -161,3 +251,65 @@ When using the `types.NewTaskHandler` helper to create handlers, serialization, 
 are automatically managed.
 
 ### Execution flow
+
+The execution logic of `x/scheduler` takes place in the `BeginBlocker`.
+
+At each block it iterates over the registered task handlers in dependency order, and for each handler, it fetches the tasks that are due for execution at the current block time.
+
+A task is considered due if its scheduled time is less than or equal to the current block time.
+
+The execution flow for each task handler follows these steps:
+
+- Call the `TaskHandler#Arbitrate` method of the handler with the fetched tasks to decide whether to execute, cancel, or reschedule each task.
+- For each task approved for execution, call the `TaskHandler#Run` method to execute the task.
+- Update the task metadata after execution, incrementing the `runCount` and setting the `lastRunAt` to the current block time.
+- If the task is periodic, compute the next run time based on the configured interval and reschedule it.
+- If the task is one-shot, remove it from the state.
+
+If an error is returned at any point in the flow (from arbitration or execution), **the chain halts**.
+
+The flow can be illustrated as follows:
+
+```mermaid
+sequenceDiagram
+  participant ABCI
+  participant Scheduler
+  participant Handler
+  participant State
+
+  ABCI->>+Scheduler: BeginBlock
+  loop For each task handler
+    Scheduler->>State: Fetch tasks of this type due this block
+    State->>Scheduler:
+    
+    Scheduler->>+Handler: Call Arbitrate func
+    Handler->>Scheduler: Return arbitrage decisions
+    deactivate Handler
+    
+    loop For each due task
+      alt Arbitrage decision == Cancel
+        Scheduler->>State: Remove task from state
+      else Arbitrage decision == Reschedule
+        Scheduler->>State: Reschedule task
+      else Execute
+        Scheduler->>Handler: Call Run func
+          alt Task is periodic
+            Scheduler->>State: Reschedule task (per strategy)
+          else Task is one-shot
+            Scheduler->>State: Remove task
+          end
+      end
+    end
+  end
+  deactivate Scheduler
+```
+
+About the `TaskHandler#Arbitrate` or `TaskHandler#Run` functions, the underlying logic may interact with the scheduler keeper
+but with caution: it is discouraged to mutate the tasks being executed as changed won't be reflected, and removal can cause errors.
+
+#### Periodic Tasks Scheduling
+
+When a task is periodic (i.e., it has a non-empty `interval`), the next run time is computed using one of two strategies:
+
+- **Relative**: from the current block time `block_time + interval`;
+- **Absolute**: from the originally scheduled time `scheduled_time + (missed_run_count + 1) * interval`;
