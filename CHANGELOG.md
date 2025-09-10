@@ -67,6 +67,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+# [Released]
+
+# v0.12.3
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#857](https://github.com/allora-network/allora-chain/pull/857) Apply an upper boundary to open reputer submission window event
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+# v0.12.2
+
+### Added
+
 * [#823](https://github.com/allora-network/allora-chain/pull/823) Pruning metric and event
 * [#834](https://github.com/allora-network/allora-chain/pull/834) Add outlier resistant network inferences event
 * [#854](https://github.com/allora-network/allora-chain/pull/854) Add EmissionInfo event
@@ -93,7 +141,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-# [Released]
 
 # v0.12.1
 
