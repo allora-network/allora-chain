@@ -14,9 +14,13 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 		ctx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 		return err
 	}
+	extraLag := topic.GroundTruthLag % topic.EpochLength
+	if extraLag != 0 {
+		extraLag = topic.EpochLength - extraLag
+	}
 	for _, nonce := range nonces.Nonces {
-		if block >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
-			windowEndBlock := block + topic.EpochLength
+		if block >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag && block <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+extraLag {
+			windowEndBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
 			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEndBlock)
 		}
 		// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
