@@ -3,6 +3,7 @@ package v0_7_0 //nolint:revive // var-naming: don't use an underscore in package
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	cosmosmath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -103,10 +104,8 @@ func AddBurnerPermissionToGovModule(ctx sdk.Context, ak authkeeper.AccountKeeper
 	}
 
 	// Check if the permission already exists to avoid duplicates
-	for _, perm := range macc.Permissions {
-		if perm == authtypes.Burner {
-			return nil // Permission already exists, nothing to do
-		}
+	if slices.Contains(macc.Permissions, authtypes.Burner) {
+		return nil // Permission already exists, nothing to do
 	}
 
 	macc.Permissions = append(macc.Permissions, authtypes.Burner)

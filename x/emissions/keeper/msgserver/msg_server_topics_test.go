@@ -1,6 +1,7 @@
 package msgserver_test
 
 import (
+	"slices"
 	"strings"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -50,13 +51,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 				// Check topic is not in active topics yet
 				activeTopics, err := keeper.GetActiveTopicIdsAtBlock(ctx, 10800)
 				s.Require().NoError(err)
-				found := false
-				for _, id := range activeTopics.TopicIds {
-					if id == topicId {
-						found = true
-						break
-					}
-				}
+				found := slices.Contains(activeTopics.TopicIds, topicId)
 				s.Require().False(found, "Added topic found in active topics")
 
 				// Check worker whitelist is enabled

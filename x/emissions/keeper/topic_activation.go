@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"slices"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
@@ -212,10 +213,8 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	existingActiveTopics := topicIdsActiveAtBlock.TopicIds
 
 	// If the topic is already active at the block, no op
-	for _, id := range existingActiveTopics {
-		if id == topicId {
-			return types.ErrTopicAlreadyActive
-		}
+	if slices.Contains(existingActiveTopics, topicId) {
+		return types.ErrTopicAlreadyActive
 	}
 
 	// If the number of active topics at the block is at the limit, remove the topic with the lowest weight

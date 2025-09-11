@@ -2,6 +2,7 @@ package testcommon_test
 
 import (
 	"math/rand"
+	"slices"
 	"testing"
 
 	testcommon "github.com/allora-network/allora-chain/test/common"
@@ -148,13 +149,7 @@ func TestRandomKeyMap_RandomKey(t *testing.T) {
 	}
 	randomKey := *randomKeyPtr
 	// Verify that the random key is one of the keys in the map
-	found := false
-	for _, key := range keys {
-		if key == randomKey {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(keys, randomKey)
 	if !found {
 		t.Errorf("Expected random key to be one of %v, but got %v", keys, randomKey)
 	}
