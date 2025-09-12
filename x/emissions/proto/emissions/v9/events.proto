@@ -62,6 +62,11 @@ message EventNetworkInferences {
   EventValueBundle value_bundle = 2;
 }
 
+message EventOutlierResistantNetworkInferences {
+  reserved 1, 2, 3;
+  EventValueBundle value_bundle = 4;
+}
+
 message EventValueBundle {
   option (gogoproto.equal) = true;
 
@@ -285,12 +290,6 @@ message EventTopicReputerWhitelistAdded {
 message EventTopicReputerWhitelistRemoved {
   uint64 topic_id = 1;
   string address = 2;
-}
-
-message EventOutlierResistantNetworkInferences {
-  uint64 topic_id = 1;
-  int64 block_height = 2;
-  emissions.v3.ValueBundle value_bundle = 3;
 }
 
 message EventForecastTaskScoreSet {

@@ -6,6 +6,7 @@ const (
 	REPUTER_SCORE_EVENT                                     = "reputer_score_event"
 	NETWORK_LOSS_EVENT                                      = "network_loss_event"
 	NETWORK_INFERENCES_EVENT                                = "network_inferences_event"
+	OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT              = "outlier_resistant_network_inferences_event"
 	INSERT_INFERER_PAYLOAD_EVENT                            = "insert_inferer_payload_event"
 	INSERT_FORECASTER_PAYLOAD_EVENT                         = "insert_forecaster_payload_event"
 	CREATE_NEW_TOPIC_EVENT                                  = "create_new_topic_event"

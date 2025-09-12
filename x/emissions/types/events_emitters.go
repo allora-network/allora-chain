@@ -70,6 +70,22 @@ func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueB
 	)
 }
 
+func EmitNewOutlierResistantNetworkInferencesEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
+	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	vb := valueBundleToEventValueBundleBase(&networkInferences)
+	jb, err := json.Marshal(vb)
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewOutlierResistantNetworkInferencesEvent", "error", err)
+		return
+	}
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent("emissions.v9.EventOutlierResistantNetworkInferences",
+			sdk.NewAttribute("value_bundle", string(jb)),
+		),
+	)
+}
+
 func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
 	metrics.IncrProducerEventCount(metrics.INSERT_INFERER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -265,13 +281,6 @@ func EmitNewGlobalAdminWhitelistRemovedEvent(ctx context.Context, address string
 	err := sdkCtx.EventManager().EmitTypedEvent(NewGlobalAdminWhitelistRemovedEventBase(address))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewGlobalAdminWhitelistRemovedEvent", "error", err)
-	}
-}
-
-func EmitNewOutlierResistantNetworkInferencesEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
-	err := ctx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(topicId, blockHeight, networkInferences))
-	if err != nil {
-		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
 	}
 }
 
