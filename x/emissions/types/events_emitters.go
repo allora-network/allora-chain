@@ -70,7 +70,7 @@ func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueB
 	)
 }
 
-func EmitNewOutlierResistantNetworkInferencesEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
+func EmitNewOutlierResistantNetworkInferencesEvent(ctx sdk.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	vb := valueBundleToEventValueBundleBase(&networkInferences)

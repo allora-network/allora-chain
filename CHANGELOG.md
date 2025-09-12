@@ -87,6 +87,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Released]
 
+# v0.12.4
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#859](https://github.com/allora-network/allora-chain/pull/859) Fix OR-NIs event emission + use optimized bundle event
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+
 # v0.12.3
 
 ### Added

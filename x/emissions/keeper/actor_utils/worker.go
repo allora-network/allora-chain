@@ -230,7 +230,7 @@ func ProcessAndStoreNetworkInferences(
 		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
 	}
 
-	types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences)
+	types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, *outlierResistantNetworkInferencesResult.NetworkInferences)
 
 	return nil
 }
