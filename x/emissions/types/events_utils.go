@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/gogoproto/proto"
@@ -147,6 +148,18 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 		OneInForecasterValues:         oneInForecasterValues,
 		OneOutInfererForecasterValues: oneOutInfererForecasterValues,
 	}
+}
+
+// valueBundleToEventValueBundleJSON returns a JSON representation of the ValueBundle.
+// NOTE: the ValueBundle contains an array of array containing messages, which the protobuf serializes as such,
+// but in order to emit the event with the actual two-dimensional array which we want, we must use json.Marshal.
+func valueBundleToEventValueBundleJSON(bundle *ValueBundle) ([]byte, error) {
+	evBundle := valueBundleToEventValueBundleBase(bundle)
+	jsn, err := json.Marshal(evBundle)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal event bundle: %w", err)
+	}
+	return jsn, nil
 }
 
 func NewReputerRegisteredEventBase(topicId TopicId, reputer, owner string) proto.Message {

@@ -2,12 +2,12 @@ package types
 
 import (
 	"context"
-	"encoding/json"
 
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Scores
@@ -39,8 +39,7 @@ func EmitNewActorScoresSetEvent(ctx context.Context, actorType ActorType, blockH
 func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	vb := valueBundleToEventValueBundleBase(&lossBundle)
-	jb, err := json.Marshal(vb)
+	jb, err := valueBundleToEventValueBundleJSON(&lossBundle)
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
 		return
@@ -57,8 +56,7 @@ func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	vb := valueBundleToEventValueBundleBase(&networkInferences)
-	jb, err := json.Marshal(vb)
+	jb, err := valueBundleToEventValueBundleJSON(&networkInferences)
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkInferencesEvent", "error", err)
 		return
@@ -73,8 +71,7 @@ func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueB
 func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	vb := valueBundleToEventValueBundleBase(&networkInferences)
-	jb, err := json.Marshal(vb)
+	jb, err := valueBundleToEventValueBundleJSON(&networkInferences)
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewOutlierResistantNetworkInferencesEvent", "error", err)
 		return
@@ -442,7 +439,7 @@ func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*al
 	}
 }
 
-/// Stake removal processing events
+// / Stake removal processing events
 
 func EmitNewStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount cosmosMath.Int) {
 	if delegator == "" {
@@ -620,7 +617,7 @@ func EmitNewReputerSubmissionWindowClosedEvent(ctx context.Context, topicId Topi
 	}
 }
 
-/// Commits
+// / Commits
 
 func EmitNewWorkerLastCommitSetEvent(ctx context.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
 	metrics.IncrProducerEventCount(metrics.WORKER_LAST_COMMIT_EVENT)
