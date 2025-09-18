@@ -1,9 +1,6 @@
 package types
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"cosmossdk.io/math"
 	"github.com/cosmos/gogoproto/proto"
 
@@ -31,12 +28,22 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 	}
 }
 
-func (m *EventOneOutInfForcVals) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.Value)
+func NewNetworkLossSetEventBase(lossBundle ValueBundle) proto.Message {
+	return &EventNetworkLossSet{
+		ValueBundle: valueBundleToEventValueBundleBase(&lossBundle),
+	}
 }
 
-func (m *EventOneOutInfForcVals) UnmarshalJSON(b []byte) error {
-	return json.Unmarshal(b, &m.Value)
+func NewNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
+	return &EventNetworkInferences{
+		ValueBundle: valueBundleToEventValueBundleBase(&networkInferences),
+	}
+}
+
+func NewOutlierResistantNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
+	return &EventOutlierResistantNetworkInferences{
+		ValueBundle: valueBundleToEventValueBundleBase(&networkInferences),
+	}
 }
 
 func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
@@ -104,7 +111,7 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 	oneOutInfererValues := make([]alloraMath.Dec, 0, len(bundle.OneOutInfererValues))
 	oneOutForecasterValues := make([]alloraMath.Dec, 0, len(bundle.OneOutForecasterValues))
 	oneInForecasterValues := make([]alloraMath.Dec, 0, len(bundle.OneInForecasterValues))
-	oneOutInfererForecasterValues := make([]*EventOneOutInfForcVals, 0, len(bundle.OneOutInfererForecasterValues))
+	oneOutInfererForecasterValues := make([]alloraMath.DecArray, 0, len(bundle.OneOutInfererForecasterValues))
 
 	for _, infVal := range bundle.InfererValues {
 		infererAddresses = append(infererAddresses, infVal.Worker)
@@ -128,9 +135,7 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 		for _, ooiVal := range ooifVal.OneOutInfererValues {
 			ooInfererValues = append(ooInfererValues, ooiVal.Value)
 		}
-		oneOutInfererForecasterValues = append(oneOutInfererForecasterValues, &EventOneOutInfForcVals{
-			Value: ooInfererValues,
-		})
+		oneOutInfererForecasterValues = append(oneOutInfererForecasterValues, ooInfererValues)
 	}
 	return &EventValueBundle{
 		TopicId:                       bundle.TopicId,
@@ -148,18 +153,6 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 		OneInForecasterValues:         oneInForecasterValues,
 		OneOutInfererForecasterValues: oneOutInfererForecasterValues,
 	}
-}
-
-// valueBundleToEventValueBundleJSON returns a JSON representation of the ValueBundle.
-// NOTE: the ValueBundle contains an array of array containing messages, which the protobuf serializes as such,
-// but in order to emit the event with the actual two-dimensional array which we want, we must use json.Marshal.
-func valueBundleToEventValueBundleJSON(bundle *ValueBundle) ([]byte, error) {
-	evBundle := valueBundleToEventValueBundleBase(bundle)
-	jsn, err := json.Marshal(evBundle)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal event bundle: %w", err)
-	}
-	return jsn, nil
 }
 
 func NewReputerRegisteredEventBase(topicId TopicId, reputer, owner string) proto.Message {
@@ -509,21 +502,6 @@ func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Messa
 		BlockHeight: blockHeight,
 		TopicId:     topicId,
 	}
-}
-
-func (m *EventOneOutInfForcVals) Equal(ei *EventOneOutInfForcVals) bool {
-	if ei == nil {
-		return false
-	}
-	if len(m.Value) != len(ei.Value) {
-		return false
-	}
-	for i, eVal := range m.Value {
-		if !eVal.Equal(ei.Value[i]) {
-			return false
-		}
-	}
-	return true
 }
 
 // Stake removal

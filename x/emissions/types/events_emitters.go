@@ -39,16 +39,9 @@ func EmitNewActorScoresSetEvent(ctx context.Context, actorType ActorType, blockH
 func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	jb, err := valueBundleToEventValueBundleJSON(&lossBundle)
-	if err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(lossBundle)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
-		return
 	}
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent("emissions.v9.EventNetworkLossSet",
-			sdk.NewAttribute("value_bundle", string(jb)),
-		),
-	)
 }
 
 // EmitNewNetworkInferencesEvent emits a network loss event using the classic attribute event path so that
@@ -56,31 +49,17 @@ func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	jb, err := valueBundleToEventValueBundleJSON(&networkInferences)
-	if err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(networkInferences)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkInferencesEvent", "error", err)
-		return
 	}
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent("emissions.v9.EventNetworkInferences",
-			sdk.NewAttribute("value_bundle", string(jb)),
-		),
-	)
 }
 
 func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	jb, err := valueBundleToEventValueBundleJSON(&networkInferences)
-	if err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(networkInferences)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewOutlierResistantNetworkInferencesEvent", "error", err)
-		return
 	}
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent("emissions.v9.EventOutlierResistantNetworkInferences",
-			sdk.NewAttribute("value_bundle", string(jb)),
-		),
-	)
 }
 
 func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
