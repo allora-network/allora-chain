@@ -226,7 +226,7 @@ allorad --home=$APP_HOME q staking validators -o=json | \
 `allorad --home=$APP_HOME status | jq -r '.validator_info.voting_power'`
 - Output should be > 0
 
-## Unstaking/unbounding  a validator
+## Unstaking/unbonding  a validator
 
 If you need to delete a validator from the chain, you just need to unbound the stake.
 
