@@ -79,6 +79,21 @@ func TestDecArray_Marshal(t *testing.T) {
 			arr:      math.DecArray{math.MustNewDecFromString("1.0"), math.MustNewDecFromString("2.0"), math.MustNewDecFromString("3.0")},
 			expected: []byte(`["1.0","2.0","3.0"]`),
 		},
+		{
+			name:     "zero values",
+			arr:      math.DecArray{math.MustNewDecFromString("0"), math.MustNewDecFromString("0.0")},
+			expected: []byte(`["0","0.0"]`),
+		},
+		{
+			name:     "very small values",
+			arr:      math.DecArray{math.MustNewDecFromString("0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")},
+			expected: []byte(`["0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"]`),
+		},
+		{
+			name:     "very large values",
+			arr:      math.DecArray{math.MustNewDecFromString("999999999999999999999999999999999999999999999999999999.999999999999999999999999999999999999999999999999999999")},
+			expected: []byte(`["999999999999999999999999999999999999999999999999999999.999999999999999999999999999999999999999999999999999999"]`),
+		},
 	}
 
 	for _, tc := range testCases {
@@ -126,6 +141,33 @@ func TestDecArray_Unmarshal(t *testing.T) {
 			data:      []byte(`"1.0"`),
 			expectErr: true,
 			expected:  nil,
+		},
+		{
+			name:      "empty string",
+			data:      []byte(``),
+			expectErr: true,
+			expected:  nil,
+		},
+		{
+			name:      "malformed - missing opening bracket",
+			data:      []byte(`"1.0"]`),
+			expectErr: true,
+		},
+		{
+			name:      "malformed - missing closing bracket",
+			data:      []byte(`["1.0"`),
+			expectErr: true,
+		},
+		{
+			name:      "extra content after array",
+			data:      []byte(`["1.0"]extra`),
+			expectErr: false,
+			expected:  math.DecArray{math.MustNewDecFromString("1.0")},
+		},
+		{
+			name:      "invalid dec value",
+			data:      []byte(`["invalid"]`),
+			expectErr: true,
 		},
 	}
 
