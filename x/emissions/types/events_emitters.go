@@ -89,12 +89,29 @@ func EmitNewCreateNewTopicEvent(ctx context.Context, topic *Topic) {
 	}
 }
 
-func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount cosmosMath.Int) {
+func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount, totalStake cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.ADD_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewAddStakeEventBase(topicId, reputer, delegator, amount))
-	if err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewAddStakeEventBase(topicId, reputer, delegator, amount)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewAddReputerStakeEvent", "error", err)
+	}
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewReputerStakeUpdatedEventBase(topicId, reputer, totalStake)); err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewReputerStakeUpdatedEvent", "error", err)
+	}
+}
+
+func EmitNewRemoveStakeEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount, totalStake cosmosMath.Int) {
+	if delegator == "" {
+		metrics.IncrProducerEventCount(metrics.REPUTER_STAKE_REMOVAL_EVENT)
+	} else {
+		metrics.IncrProducerEventCount(metrics.DELEGATE_STAKE_REMOVAL_EVENT)
+	}
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeEventBase(topicId, reputer, delegator, amount)); err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewRemoveStakeEvent", "error", err)
+	}
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewReputerStakeUpdatedEventBase(topicId, reputer, totalStake)); err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewReputerStakeUpdatedEvent", "error", err)
 	}
 }
 
@@ -415,21 +432,6 @@ func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*al
 	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardSetEventBase(topicRewards))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewTopicRewardSetEvent", "error", err)
-	}
-}
-
-// / Stake removal processing events
-
-func EmitNewStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount cosmosMath.Int) {
-	if delegator == "" {
-		metrics.IncrProducerEventCount(metrics.REPUTER_STAKE_REMOVAL_EVENT)
-	} else {
-		metrics.IncrProducerEventCount(metrics.DELEGATE_STAKE_REMOVAL_EVENT)
-	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewStakeRemovalCompletedEventBase(topicId, reputer, delegator, amount))
-	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting StakeRemovalCompletedEvent", "error", err)
 	}
 }
 
