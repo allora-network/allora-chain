@@ -28,20 +28,20 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 	}
 }
 
-func NewNetworkLossSetEventBase(height int64, lossBundle ValueBundle) proto.Message {
+func NewNetworkLossSetEventBase(lossBundle ValueBundle) proto.Message {
 	return &EventNetworkLossSet{
 		TopicId:     lossBundle.TopicId,
-		BlockHeight: height,
+		BlockHeight: lossBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
 		ValueBundle: nil,
 		Nonce:       lossBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
 		Bundle:      valueBundleToEventValueBundleBase(&lossBundle),
 	}
 }
 
-func NewNetworkInferencesEventBase(height int64, networkInferences ValueBundle) proto.Message {
+func NewNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
 	return &EventNetworkInferences{
 		TopicId:     networkInferences.TopicId,
-		BlockHeight: height,
+		BlockHeight: networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
 		ValueBundle: nil,
 		Nonce:       networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
 		Bundle:      valueBundleToEventValueBundleBase(&networkInferences),

@@ -39,7 +39,7 @@ func EmitNewActorScoresSetEvent(ctx context.Context, actorType ActorType, blockH
 func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(sdkCtx.BlockHeight(), lossBundle)); err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(lossBundle)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
 	}
 }
@@ -49,7 +49,7 @@ func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(sdkCtx.BlockHeight(), networkInferences)); err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(networkInferences)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkInferencesEvent", "error", err)
 	}
 }
