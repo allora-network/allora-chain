@@ -213,3 +213,126 @@ func TestDecArray_Size(t *testing.T) {
 		})
 	}
 }
+
+func TestDecArray_MarshalTo(t *testing.T) {
+	testCases := []struct {
+		name           string
+		arr            math.DecArray
+		bufferSize     int
+		expectErr      bool
+		expectedBytes  int
+		expectedPrefix []byte
+	}{
+		{
+			name:           "empty array - sufficient buffer",
+			arr:            math.DecArray{},
+			bufferSize:     10,
+			expectErr:      false,
+			expectedBytes:  2,
+			expectedPrefix: []byte(`[]`),
+		},
+		{
+			name:           "empty array - insufficient buffer",
+			arr:            math.DecArray{},
+			bufferSize:     1,
+			expectErr:      false,
+			expectedBytes:  1,
+			expectedPrefix: []byte(`[`),
+		},
+		{
+			name:           "nil array - sufficient buffer",
+			arr:            nil,
+			bufferSize:     10,
+			expectErr:      false,
+			expectedBytes:  2,
+			expectedPrefix: []byte(`[]`),
+		},
+		{
+			name:           "single element - sufficient buffer",
+			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
+			bufferSize:     10,
+			expectErr:      false,
+			expectedBytes:  7,
+			expectedPrefix: []byte(`["1.0"]`),
+		},
+		{
+			name:           "single element - insufficient buffer",
+			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
+			bufferSize:     3,
+			expectErr:      false,
+			expectedBytes:  3,
+			expectedPrefix: []byte(`["1`),
+		},
+		{
+			name:           "simple array - sufficient buffer",
+			arr:            math.DecArray{math.MustNewDecFromString("1.0"), math.MustNewDecFromString("2.0"), math.MustNewDecFromString("3.0")},
+			bufferSize:     20,
+			expectErr:      false,
+			expectedBytes:  19,
+			expectedPrefix: []byte(`["1.0","2.0","3.0"]`),
+		},
+		{
+			name:           "simple array - insufficient buffer",
+			arr:            math.DecArray{math.MustNewDecFromString("1.0"), math.MustNewDecFromString("2.0"), math.MustNewDecFromString("3.0")},
+			bufferSize:     5,
+			expectErr:      false,
+			expectedBytes:  5,
+			expectedPrefix: []byte(`["1.0`),
+		},
+		{
+			name:           "zero buffer size",
+			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
+			bufferSize:     0,
+			expectErr:      false,
+			expectedBytes:  0,
+			expectedPrefix: []byte(``),
+		},
+		{
+			name:           "exact buffer size",
+			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
+			bufferSize:     7,
+			expectErr:      false,
+			expectedBytes:  7,
+			expectedPrefix: []byte(`["1.0"]`),
+		},
+		{
+			name:           "zero values - sufficient buffer",
+			arr:            math.DecArray{math.MustNewDecFromString("0"), math.MustNewDecFromString("0.0")},
+			bufferSize:     15,
+			expectErr:      false,
+			expectedBytes:  11,
+			expectedPrefix: []byte(`["0","0.0"]`),
+		},
+		{
+			name:           "very small values - sufficient buffer",
+			arr:            math.DecArray{math.MustNewDecFromString("0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")},
+			bufferSize:     150,
+			expectErr:      false,
+			expectedBytes:  114,
+			expectedPrefix: []byte(`["0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"]`),
+		},
+		{
+			name:           "very large values - sufficient buffer",
+			arr:            math.DecArray{math.MustNewDecFromString("999999999999999999999999999999999999999999999999999999.999999999999999999999999999999999999999999999999999999")},
+			bufferSize:     150,
+			expectErr:      false,
+			expectedBytes:  113,
+			expectedPrefix: []byte(`["999999999999999999999999999999999999999999999999999999.999999999999999999999999999999999999999999999999999999"]`),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			buffer := make([]byte, tc.bufferSize)
+			n, err := tc.arr.MarshalTo(buffer)
+
+			if tc.expectErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedBytes, n)
+				require.Equal(t, tc.expectedPrefix, buffer[:n])
+			}
+		})
+	}
+}
