@@ -152,22 +152,31 @@ func TestDecArray_Unmarshal(t *testing.T) {
 			name:      "malformed - missing opening bracket",
 			data:      []byte(`"1.0"]`),
 			expectErr: true,
+			expected:  nil,
 		},
 		{
 			name:      "malformed - missing closing bracket",
 			data:      []byte(`["1.0"`),
 			expectErr: true,
+			expected:  nil,
 		},
 		{
 			name:      "extra content after array",
 			data:      []byte(`["1.0"]extra`),
-			expectErr: false,
-			expected:  math.DecArray{math.MustNewDecFromString("1.0")},
+			expectErr: true,
+			expected:  nil,
+		},
+		{
+			name:      "allowed token after array",
+			data:      []byte(`["1.0"],`),
+			expectErr: true,
+			expected:  nil,
 		},
 		{
 			name:      "invalid dec value",
 			data:      []byte(`["invalid"]`),
 			expectErr: true,
+			expected:  nil,
 		},
 	}
 
@@ -219,7 +228,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 		name           string
 		arr            math.DecArray
 		bufferSize     int
-		expectErr      bool
 		expectedBytes  int
 		expectedPrefix []byte
 	}{
@@ -227,7 +235,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "empty array - sufficient buffer",
 			arr:            math.DecArray{},
 			bufferSize:     10,
-			expectErr:      false,
 			expectedBytes:  2,
 			expectedPrefix: []byte(`[]`),
 		},
@@ -235,7 +242,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "empty array - insufficient buffer",
 			arr:            math.DecArray{},
 			bufferSize:     1,
-			expectErr:      false,
 			expectedBytes:  1,
 			expectedPrefix: []byte(`[`),
 		},
@@ -243,7 +249,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "nil array - sufficient buffer",
 			arr:            nil,
 			bufferSize:     10,
-			expectErr:      false,
 			expectedBytes:  2,
 			expectedPrefix: []byte(`[]`),
 		},
@@ -251,7 +256,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "single element - sufficient buffer",
 			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
 			bufferSize:     10,
-			expectErr:      false,
 			expectedBytes:  7,
 			expectedPrefix: []byte(`["1.0"]`),
 		},
@@ -259,7 +263,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "single element - insufficient buffer",
 			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
 			bufferSize:     3,
-			expectErr:      false,
 			expectedBytes:  3,
 			expectedPrefix: []byte(`["1`),
 		},
@@ -267,7 +270,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "simple array - sufficient buffer",
 			arr:            math.DecArray{math.MustNewDecFromString("1.0"), math.MustNewDecFromString("2.0"), math.MustNewDecFromString("3.0")},
 			bufferSize:     20,
-			expectErr:      false,
 			expectedBytes:  19,
 			expectedPrefix: []byte(`["1.0","2.0","3.0"]`),
 		},
@@ -275,7 +277,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "simple array - insufficient buffer",
 			arr:            math.DecArray{math.MustNewDecFromString("1.0"), math.MustNewDecFromString("2.0"), math.MustNewDecFromString("3.0")},
 			bufferSize:     5,
-			expectErr:      false,
 			expectedBytes:  5,
 			expectedPrefix: []byte(`["1.0`),
 		},
@@ -283,7 +284,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "zero buffer size",
 			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
 			bufferSize:     0,
-			expectErr:      false,
 			expectedBytes:  0,
 			expectedPrefix: []byte(``),
 		},
@@ -291,7 +291,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "exact buffer size",
 			arr:            math.DecArray{math.MustNewDecFromString("1.0")},
 			bufferSize:     7,
-			expectErr:      false,
 			expectedBytes:  7,
 			expectedPrefix: []byte(`["1.0"]`),
 		},
@@ -299,7 +298,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "zero values - sufficient buffer",
 			arr:            math.DecArray{math.MustNewDecFromString("0"), math.MustNewDecFromString("0.0")},
 			bufferSize:     15,
-			expectErr:      false,
 			expectedBytes:  11,
 			expectedPrefix: []byte(`["0","0.0"]`),
 		},
@@ -307,7 +305,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "very small values - sufficient buffer",
 			arr:            math.DecArray{math.MustNewDecFromString("0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")},
 			bufferSize:     150,
-			expectErr:      false,
 			expectedBytes:  114,
 			expectedPrefix: []byte(`["0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"]`),
 		},
@@ -315,7 +312,6 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			name:           "very large values - sufficient buffer",
 			arr:            math.DecArray{math.MustNewDecFromString("999999999999999999999999999999999999999999999999999999.999999999999999999999999999999999999999999999999999999")},
 			bufferSize:     150,
-			expectErr:      false,
 			expectedBytes:  113,
 			expectedPrefix: []byte(`["999999999999999999999999999999999999999999999999999999.999999999999999999999999999999999999999999999999999999"]`),
 		},
@@ -326,13 +322,9 @@ func TestDecArray_MarshalTo(t *testing.T) {
 			buffer := make([]byte, tc.bufferSize)
 			n, err := tc.arr.MarshalTo(buffer)
 
-			if tc.expectErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.Equal(t, tc.expectedBytes, n)
-				require.Equal(t, tc.expectedPrefix, buffer[:n])
-			}
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedBytes, n)
+			require.Equal(t, tc.expectedPrefix, buffer[:n])
 		})
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -101,5 +102,11 @@ func (d *DecArray) UnmarshalJSON(data []byte) error {
 	if d, ok := token.(json.Delim); !ok || d != ']' {
 		return fmt.Errorf("expected closing ']'")
 	}
+
+	token, err = decoder.Token()
+	if token != nil || err != io.EOF {
+		return fmt.Errorf("unexpected data after closing token")
+	}
+
 	return nil
 }
