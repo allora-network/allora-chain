@@ -2165,7 +2165,7 @@ func (k *Keeper) AddReputerStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed -- rolling back reputer and topic stake")
 	}
 
-	types.EmitNewAddStakeEvent(ctx, topicId, reputer, "", stakeToAdd)
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, "", stakeToAdd, totalStakeNew)
 	return nil
 }
 
@@ -2282,7 +2282,7 @@ func (k *Keeper) AddDelegateStake(
 		return errorsmod.Wrapf(err, "AddDelegateStake Setting stake from delegators upon reputer failed")
 	}
 
-	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, stakeToAdd)
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, stakeToAdd, topicStakeNew)
 	return nil
 }
 
@@ -2358,6 +2358,15 @@ func (k *Keeper) RemoveReputerStake(
 	if err != nil {
 		return errorsmod.Wrapf(err, "Deleting stake removal from queue failed")
 	}
+
+	types.EmitNewRemoveStakeEvent(
+		sdk.UnwrapSDKContext(ctx),
+		topicId,
+		reputer,
+		"",
+		stakeToRemove,
+		topicStakeNew,
+	)
 
 	return nil
 }
@@ -2514,6 +2523,15 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalBlockHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
+
+	types.EmitNewRemoveStakeEvent(
+		sdk.UnwrapSDKContext(ctx),
+		topicId,
+		reputer,
+		delegator,
+		stakeToRemove,
+		topicStakeNew,
+	)
 
 	return nil
 }
