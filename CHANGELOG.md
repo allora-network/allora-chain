@@ -100,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * [#859](https://github.com/allora-network/allora-chain/pull/859) Fix OR-NIs event emission + use optimized bundle event
+* [#863](https://github.com/allora-network/allora-chain/pull/863) Add missing stake related events
 
 ### Security
 
