@@ -21,7 +21,7 @@ const (
 	AttributeKeyAddresses     = "addresses"
 	AttributeKeyScores        = "scores"
 	AttributeKeyRewards       = "rewards"
-	AttributeKeyValueBundle   = "value_bundle"
+	AttributeKeyValueBundle   = "bundle"
 	AttributeKeyCoefficients  = "coefficients"
 	AttributeKeyRegrets       = "regrets"
 	AttributeKeyRegret        = "regret"
@@ -424,7 +424,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Equal(t, "emissions.v9.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 1)
+	require.Len(t, attributes, 5)
 	val, exists := event.GetAttribute(AttributeKeyValueBundle)
 	require.True(t, exists)
 	assertEventValueBundle(t, val.GetValue(), loss)
@@ -468,7 +468,7 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	require.Equal(t, "emissions.v9.EventNetworkInferences", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 1)
+	require.Len(t, attributes, 5)
 
 	val, exists := event.GetAttribute(AttributeKeyValueBundle)
 	require.True(t, exists)

@@ -2,12 +2,12 @@ package types
 
 import (
 	"context"
-	"encoding/json"
 
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Scores
@@ -39,17 +39,9 @@ func EmitNewActorScoresSetEvent(ctx context.Context, actorType ActorType, blockH
 func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_LOSS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	vb := valueBundleToEventValueBundleBase(&lossBundle)
-	jb, err := json.Marshal(vb)
-	if err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(lossBundle)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
-		return
 	}
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent("emissions.v9.EventNetworkLossSet",
-			sdk.NewAttribute("value_bundle", string(jb)),
-		),
-	)
 }
 
 // EmitNewNetworkInferencesEvent emits a network loss event using the classic attribute event path so that
@@ -57,17 +49,17 @@ func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	vb := valueBundleToEventValueBundleBase(&networkInferences)
-	jb, err := json.Marshal(vb)
-	if err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(networkInferences)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNetworkInferencesEvent", "error", err)
-		return
 	}
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent("emissions.v9.EventNetworkInferences",
-			sdk.NewAttribute("value_bundle", string(jb)),
-		),
-	)
+}
+
+func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
+	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(networkInferences)); err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewOutlierResistantNetworkInferencesEvent", "error", err)
+	}
 }
 
 func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
@@ -268,13 +260,6 @@ func EmitNewGlobalAdminWhitelistRemovedEvent(ctx context.Context, address string
 	}
 }
 
-func EmitNewOutlierResistantNetworkInferencesEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) {
-	err := ctx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(topicId, blockHeight, networkInferences))
-	if err != nil {
-		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent", "error", err)
-	}
-}
-
 func EmitNewForecastTaskUtilityScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec, nonce int64) {
 	metrics.IncrProducerEventCount(metrics.FORECAST_TASK_SCORE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -433,7 +418,7 @@ func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*al
 	}
 }
 
-/// Stake removal processing events
+// / Stake removal processing events
 
 func EmitNewStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount cosmosMath.Int) {
 	if delegator == "" {
@@ -453,7 +438,7 @@ func EmitNewStakeRemovalCompletedEvent(ctx context.Context, topicId TopicId, rep
 func EmitNewDelegateRewardShareUpdatedEvent(ctx context.Context, topicId TopicId, reputer string, rewardPerShare alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.DELEGATE_REWARD_SHARE_UPDATED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardShareUpdatedEventBase(topicId, reputer, rewardPerShare, sdkCtx.BlockHeight()))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardShareUpdatedEventBase(topicId, reputer, rewardPerShare))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting DelegateRewardShareUpdatedEvent", "error", err)
 	}
@@ -464,7 +449,7 @@ func EmitNewDelegateRewardShareUpdatedEvent(ctx context.Context, topicId TopicId
 func EmitNewDelegateRewardDistributedEvent(ctx context.Context, topicId TopicId, reputer string, amount cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.DELEGATE_REWARD_DISTRIBUTED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardDistributedEventBase(topicId, reputer, amount, sdkCtx.BlockHeight()))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewDelegateRewardDistributedEventBase(topicId, reputer, amount))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting DelegateRewardDistributedEvent", "error", err)
 	}
@@ -475,7 +460,7 @@ func EmitNewDelegateRewardDistributedEvent(ctx context.Context, topicId TopicId,
 func EmitNewActiveReputersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses []string) {
 	metrics.IncrProducerEventCount(metrics.ACTIVE_REPUTERS_SET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveReputersSetEventBase(topicId, nonceBlockHeight, addresses, sdkCtx.BlockHeight()))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveReputersSetEventBase(topicId, nonceBlockHeight, addresses))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting ActiveReputersSetEvent", "error", err)
 	}
@@ -484,7 +469,7 @@ func EmitNewActiveReputersSetEvent(ctx context.Context, topicId TopicId, nonceBl
 func EmitNewActiveInferersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses []string) {
 	metrics.IncrProducerEventCount(metrics.ACTIVE_INFERERS_SET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveInferersSetEventBase(topicId, nonceBlockHeight, addresses, sdkCtx.BlockHeight()))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveInferersSetEventBase(topicId, nonceBlockHeight, addresses))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting ActiveInferersSetEvent", "error", err)
 	}
@@ -493,7 +478,7 @@ func EmitNewActiveInferersSetEvent(ctx context.Context, topicId TopicId, nonceBl
 func EmitNewActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, addresses []string) {
 	metrics.IncrProducerEventCount(metrics.ACTIVE_FORECASTERS_SET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveForecastersSetEventBase(topicId, nonceBlockHeight, addresses, sdkCtx.BlockHeight()))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewActiveForecastersSetEventBase(topicId, nonceBlockHeight, addresses))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting ActiveForecastersSetEvent", "error", err)
 	}
@@ -611,7 +596,7 @@ func EmitNewReputerSubmissionWindowClosedEvent(ctx context.Context, topicId Topi
 	}
 }
 
-/// Commits
+// / Commits
 
 func EmitNewWorkerLastCommitSetEvent(ctx context.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
 	metrics.IncrProducerEventCount(metrics.WORKER_LAST_COMMIT_EVENT)

@@ -1,8 +1,6 @@
 package types
 
 import (
-	"encoding/json"
-
 	"cosmossdk.io/math"
 	"github.com/cosmos/gogoproto/proto"
 
@@ -30,12 +28,32 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 	}
 }
 
-func (m *EventOneOutInfForcVals) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.Value)
+func NewNetworkLossSetEventBase(lossBundle ValueBundle) proto.Message {
+	return &EventNetworkLossSet{
+		TopicId:     lossBundle.TopicId,
+		BlockHeight: lossBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		ValueBundle: nil,
+		Nonce:       lossBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Bundle:      valueBundleToEventValueBundleBase(&lossBundle),
+	}
 }
 
-func (m *EventOneOutInfForcVals) UnmarshalJSON(b []byte) error {
-	return json.Unmarshal(b, &m.Value)
+func NewNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
+	return &EventNetworkInferences{
+		TopicId:     networkInferences.TopicId,
+		BlockHeight: networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		ValueBundle: nil,
+		Nonce:       networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Bundle:      valueBundleToEventValueBundleBase(&networkInferences),
+	}
+}
+
+func NewOutlierResistantNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
+	return &EventOutlierResistantNetworkInferences{
+		TopicId: networkInferences.TopicId,
+		Nonce:   networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Bundle:  valueBundleToEventValueBundleBase(&networkInferences),
+	}
 }
 
 func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
@@ -91,7 +109,10 @@ func NewRewardDelegateStakeEventBase(topicId TopicId, reputer, delegator string,
 
 func NewInsertReputerPayloadEventBase(bundle *ReputerValueBundle) proto.Message {
 	return &EventInsertReputerPayload{
-		ReputerValueBundle: valueBundleToEventValueBundleBase(bundle.ValueBundle),
+		TopicId: bundle.ValueBundle.TopicId,
+		Nonce:   bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Reputer: bundle.ValueBundle.Reputer,
+		Bundle:  valueBundleToEventValueBundleBase(bundle.ValueBundle),
 	}
 }
 
@@ -103,7 +124,7 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 	oneOutInfererValues := make([]alloraMath.Dec, 0, len(bundle.OneOutInfererValues))
 	oneOutForecasterValues := make([]alloraMath.Dec, 0, len(bundle.OneOutForecasterValues))
 	oneInForecasterValues := make([]alloraMath.Dec, 0, len(bundle.OneInForecasterValues))
-	oneOutInfererForecasterValues := make([]*EventOneOutInfForcVals, 0, len(bundle.OneOutInfererForecasterValues))
+	oneOutInfererForecasterValues := make([]alloraMath.DecArray, 0, len(bundle.OneOutInfererForecasterValues))
 
 	for _, infVal := range bundle.InfererValues {
 		infererAddresses = append(infererAddresses, infVal.Worker)
@@ -127,14 +148,9 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 		for _, ooiVal := range ooifVal.OneOutInfererValues {
 			ooInfererValues = append(ooInfererValues, ooiVal.Value)
 		}
-		oneOutInfererForecasterValues = append(oneOutInfererForecasterValues, &EventOneOutInfForcVals{
-			Value: ooInfererValues,
-		})
+		oneOutInfererForecasterValues = append(oneOutInfererForecasterValues, ooInfererValues)
 	}
 	return &EventValueBundle{
-		TopicId:                       bundle.TopicId,
-		ReputerNonce:                  bundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Reputer:                       bundle.Reputer,
 		ExtraData:                     bundle.ExtraData,
 		CombinedValue:                 bundle.CombinedValue,
 		NaiveValue:                    bundle.NaiveValue,
@@ -314,14 +330,6 @@ func NewTopicReputerWhitelistRemovedEventBase(topicId TopicId, address string) p
 	return &EventTopicReputerWhitelistRemoved{
 		TopicId: topicId,
 		Address: address,
-	}
-}
-
-func NewOutlierResistantNetworkInferencesEventBase(topicId TopicId, blockHeight BlockHeight, networkInferences ValueBundle) proto.Message {
-	return &EventOutlierResistantNetworkInferences{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		ValueBundle: &networkInferences,
 	}
 }
 
@@ -506,21 +514,6 @@ func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Messa
 	}
 }
 
-func (m *EventOneOutInfForcVals) Equal(ei *EventOneOutInfForcVals) bool {
-	if ei == nil {
-		return false
-	}
-	if len(m.Value) != len(ei.Value) {
-		return false
-	}
-	for i, eVal := range m.Value {
-		if !eVal.Equal(ei.Value[i]) {
-			return false
-		}
-	}
-	return true
-}
-
 // Stake removal
 func NewStakeRemovalCompletedEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
 	return &EventStakeRemovalCompleted{
@@ -531,25 +524,23 @@ func NewStakeRemovalCompletedEventBase(topicId TopicId, reputer string, delegato
 	}
 }
 
-func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec, blockHeight int64) proto.Message {
+func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec) proto.Message {
 	return &EventDelegateRewardShareUpdated{
 		TopicId:        topicId,
 		Reputer:        reputer,
 		RewardPerShare: rewardPerShare,
-		BlockHeight:    blockHeight,
 	}
 }
 
-func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int, blockHeight int64) proto.Message {
+func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int) proto.Message {
 	return &EventDelegateRewardDistributed{
-		TopicId:     topicId,
-		Reputer:     reputer,
-		Amount:      amount,
-		BlockHeight: blockHeight,
+		TopicId: topicId,
+		Reputer: reputer,
+		Amount:  amount,
 	}
 }
 
-func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string) proto.Message {
 	return &EventActiveReputersSet{
 		TopicId:          topicId,
 		Addresses:        addresses,
@@ -557,7 +548,7 @@ func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addr
 	}
 }
 
-func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string) proto.Message {
 	return &EventActiveInferersSet{
 		TopicId:          topicId,
 		Addresses:        addresses,
@@ -565,7 +556,7 @@ func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addr
 	}
 }
 
-func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string, blockHeight int64) proto.Message {
+func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string) proto.Message {
 	return &EventActiveForecastersSet{
 		TopicId:          topicId,
 		Addresses:        addresses,
