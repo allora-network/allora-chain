@@ -117,12 +117,11 @@ func NewRequestStakeRemovalEventBase(topicId TopicId, reputer string, delegator 
 	}
 }
 
-func NewCancelStakeRemovalEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
+func NewCancelStakeRemovalEventBase(topicId TopicId, reputer string, delegator string) proto.Message {
 	return &EventCancelStakeRemoval{
 		TopicId:   topicId,
 		Reputer:   reputer,
 		Delegator: delegator,
-		Amount:    amount,
 	}
 }
 

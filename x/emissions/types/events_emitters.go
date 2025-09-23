@@ -123,10 +123,10 @@ func EmitNewRequestStakeRemovalEvent(ctx context.Context, topicId TopicId, reput
 	}
 }
 
-func EmitNewCancelStakeRemovalEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount cosmosMath.Int) {
+func EmitNewCancelStakeRemovalEvent(ctx context.Context, topicId TopicId, reputer, delegator string) {
 	metrics.IncrProducerEventCount(metrics.CANCEL_STAKE_REMOVAL_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if err := sdkCtx.EventManager().EmitTypedEvent(NewCancelStakeRemovalEventBase(topicId, reputer, delegator, amount)); err != nil {
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewCancelStakeRemovalEventBase(topicId, reputer, delegator)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewCancelStakeRemovalEvent", "error", err)
 	}
 }

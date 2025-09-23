@@ -2751,7 +2751,12 @@ func (k *Keeper) SetStakeRemoval(ctx context.Context, removalInfo types.StakeRem
 		return errorsmod.Wrap(err, "error setting stake removal by block")
 	}
 	byActorKey := collections.Join3(removalInfo.Reputer, removalInfo.TopicId, removalInfo.BlockRemovalCompleted)
-	return k.stakeRemovalsByActor.Set(ctx, byActorKey)
+	err = k.stakeRemovalsByActor.Set(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewRequestStakeRemovalEvent(ctx, removalInfo.TopicId, removalInfo.Reputer, removalInfo.Reputer, removalInfo.Amount, removalInfo.BlockRemovalCompleted)
+	return nil
 }
 
 // remove a stake removal from the queue
@@ -2774,7 +2779,12 @@ func (k *Keeper) DeleteStakeRemoval(
 		return errorsmod.Wrap(err, "error removing stake removal by block")
 	}
 	byActorKey := collections.Join3(address, topicId, blockHeight)
-	return k.stakeRemovalsByActor.Remove(ctx, byActorKey)
+	err = k.stakeRemovalsByActor.Remove(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewCancelStakeRemovalEvent(ctx, topicId, address, address)
+	return nil
 }
 
 // get info about a removal
@@ -2878,7 +2888,12 @@ func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.
 		return errorsmod.Wrap(err, "error setting delegate stake removal by block")
 	}
 	byActorKey := Join4(removalInfo.Delegator, removalInfo.Reputer, removalInfo.TopicId, removalInfo.BlockRemovalCompleted)
-	return k.delegateStakeRemovalsByActor.Set(ctx, byActorKey)
+	err = k.delegateStakeRemovalsByActor.Set(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewRequestStakeRemovalEvent(ctx, removalInfo.TopicId, removalInfo.Reputer, removalInfo.Delegator, removalInfo.Amount, removalInfo.BlockRemovalCompleted)
+	return nil
 }
 
 // remove a stake removal from the queue
@@ -2902,7 +2917,12 @@ func (k *Keeper) DeleteDelegateStakeRemoval(
 		return errorsmod.Wrap(err, "error removing delegate stake removal by block")
 	}
 	byActorKey := Join4(delegator, reputer, topicId, blockHeight)
-	return k.delegateStakeRemovalsByActor.Remove(ctx, byActorKey)
+	err = k.delegateStakeRemovalsByActor.Remove(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewCancelStakeRemovalEvent(ctx, topicId, reputer, delegator)
+	return nil
 }
 
 // get info about a removal

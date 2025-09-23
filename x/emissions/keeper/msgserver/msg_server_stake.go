@@ -127,8 +127,6 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 		return nil, errorsmod.Wrap(err, "failed to set stake removal")
 	}
 
-	types.EmitNewRequestStakeRemovalEvent(ctx, msg.TopicId, msg.Sender, msg.Sender, msg.Amount, stakeToRemove.BlockRemovalCompleted)
-
 	return &types.RemoveStakeResponse{}, nil
 }
 
@@ -162,8 +160,6 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
 	}
-
-	types.EmitNewCancelStakeRemovalEvent(ctx, msg.TopicId, msg.Sender, msg.Sender, removal.Amount)
 
 	return &types.CancelRemoveStakeResponse{}, nil
 }
@@ -286,8 +282,6 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 		return nil, errorsmod.Wrap(err, "failed to set delegate stake removal")
 	}
 
-	types.EmitNewRequestStakeRemovalEvent(ctx, msg.TopicId, msg.Reputer, msg.Sender, msg.Amount, stakeToRemove.BlockRemovalCompleted)
-
 	return &types.RemoveDelegateStakeResponse{}, nil
 }
 
@@ -329,8 +323,6 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to delete previous delegate stake removal")
 	}
-
-	types.EmitNewCancelStakeRemovalEvent(ctx, msg.TopicId, msg.Reputer, msg.Sender, removal.Amount)
 
 	return &types.CancelRemoveDelegateStakeResponse{}, err
 }
