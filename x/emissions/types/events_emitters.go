@@ -115,6 +115,22 @@ func EmitNewRemoveStakeEvent(ctx context.Context, topicId TopicId, reputer strin
 	}
 }
 
+func EmitNewRequestStakeRemovalEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount cosmosMath.Int, completionHeight int64) {
+	metrics.IncrProducerEventCount(metrics.REQUEST_STAKE_REMOVAL_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewRequestStakeRemovalEventBase(topicId, reputer, delegator, amount, completionHeight)); err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewRequestStakeRemovalEvent", "error", err)
+	}
+}
+
+func EmitNewCancelStakeRemovalEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.CANCEL_STAKE_REMOVAL_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewCancelStakeRemovalEventBase(topicId, reputer, delegator, amount)); err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewCancelStakeRemovalEvent", "error", err)
+	}
+}
+
 func EmitNewRewardDelegateStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.REWARD_DELEGATE_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

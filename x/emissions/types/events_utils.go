@@ -107,6 +107,25 @@ func NewRemoveStakeEventBase(topicId TopicId, reputer string, delegator string, 
 	}
 }
 
+func NewRequestStakeRemovalEventBase(topicId TopicId, reputer string, delegator string, amount math.Int, completionHeight int64) proto.Message {
+	return &EventRequestStakeRemoval{
+		TopicId:          topicId,
+		Reputer:          reputer,
+		Delegator:        delegator,
+		Amount:           amount,
+		CompletionHeight: completionHeight,
+	}
+}
+
+func NewCancelStakeRemovalEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
+	return &EventCancelStakeRemoval{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+		Amount:    amount,
+	}
+}
+
 func NewReputerStakeUpdatedEventBase(topicId TopicId, reputer string, amount math.Int) proto.Message {
 	return &EventReputerStakeUpdated{
 		TopicId: topicId,

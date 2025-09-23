@@ -76,4 +76,6 @@ const (
 	PRUNE_RECORDS_EVENT                                     = "prune_records_event"
 	REPUTER_STAKE_REMOVAL_EVENT                             = "reputer_stake_removal_event"
 	DELEGATE_STAKE_REMOVAL_EVENT                            = "delegate_stake_removal_event"
+	REQUEST_STAKE_REMOVAL_EVENT                             = "request_stake_removal_event"
+	CANCEL_STAKE_REMOVAL_EVENT                              = "cancel_stake_removal_event"
 )

@@ -171,6 +171,31 @@ message EventRemoveStake {
   ];
 }
 
+message EventRequestStakeRemoval {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 completion_height = 5;
+}
+
+message EventCancelStakeRemoval {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
 // EventReputerStakeUpdated is an event derived from the primitive ones EventAddStake and EventRemoveStake.
 // It only expresses a change in the total stake of a reputer for a topic.
 //
