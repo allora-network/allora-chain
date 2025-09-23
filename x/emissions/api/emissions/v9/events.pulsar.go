@@ -41137,10 +41137,10 @@ func (x *EventRemoveStake) GetAmount() string {
 	return ""
 }
 
-// EventReputerStakeUpdated is a derived event from the primitives ones EventAddStake and EventRemoveStake.
+// EventReputerStakeUpdated is an event derived from the primitive ones EventAddStake and EventRemoveStake.
 // It only expresses a change in the total stake of a reputer for a topic.
 //
-// Being not a primitive event, it should not be considered in an event source approach, EventAddStake and EventRemoveStake should be used instead.
+// Being not a primitive event, it should not be considered in an event sourcing approach, EventAddStake and EventRemoveStake should be used instead.
 type EventReputerStakeUpdated struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

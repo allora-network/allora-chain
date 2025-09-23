@@ -171,10 +171,10 @@ message EventRemoveStake {
   ];
 }
 
-// EventReputerStakeUpdated is an event derived from the primitives ones EventAddStake and EventRemoveStake.
+// EventReputerStakeUpdated is an event derived from the primitive ones EventAddStake and EventRemoveStake.
 // It only expresses a change in the total stake of a reputer for a topic.
 //
-// Being not a primitive event, it should not be considered in an event source approach, EventAddStake and EventRemoveStake should be used instead.
+// Being not a primitive event, it should not be considered in an event sourcing approach, EventAddStake and EventRemoveStake should be used instead.
 message EventReputerStakeUpdated {
   uint64 topic_id = 1;
   string reputer = 2;
