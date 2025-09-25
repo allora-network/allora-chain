@@ -60,6 +60,114 @@ func GetLockedVestingTokens(
 	return preseedInvestors.Add(investors).Add(team), preseedInvestors, investors, team, monthsAlreadyUnlocked
 }
 
+// GetLockedVestingTokens calculates the number of uncirculating (locked) tokens
+// for vesting categories according to the updated tokenomics.
+//
+// Vesting Logic Summary:
+// - Network Emissions: 0% TGE, linear vesting over 84 months (estimated)
+// - Foundation:
+//     * Part unlocks at TGE
+//     * Remaining vests linearly over 24 months
+// - Participants: Part unlocked at TGE, remaining vests linearly over 12 months
+//
+// Returns:
+// - totalLocked: sum of all locked tokens
+// - breakdowns per category
+// - updatedMonthsUnlocked: stored to preserve monotonicity
+
+var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("88.5").Quo(math.LegacyMustNewDecFromStr("225.0"))
+var ParticipantsInitialLockedPercentage = math.LegacyMustNewDecFromStr("11.0").Quo(math.LegacyMustNewDecFromStr("75.0"))
+
+func GetLockedVestingTokensNew(
+	blocksPerMonth uint64,
+	blockHeight math.Int,
+	params types.Params,
+	monthsAlreadyUnlocked math.Int,
+) (
+	totalLocked, preseedInvestorsLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked,
+	updatedMonthsUnlocked math.Int, err error,
+) {
+	if blocksPerMonth == 0 {
+		return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), errors.Wrap(types.ErrInvalidBlocksPerMonth, "blocks per month cannot be zero")
+	}
+	// Define periods
+	twelve := math.NewInt(12)
+	twentyFour := math.NewInt(24)
+	thirtySix := math.NewInt(36)
+	eightyFour := math.NewInt(84)
+
+	// ---- 1. Extract percentage allocations from params ----
+	maxSupply := params.MaxSupply.ToLegacyDec()
+	percentInvestors := params.InvestorsPercentOfTotalSupply
+	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
+	percentTeam := params.TeamPercentOfTotalSupply
+	percentFoundation := params.FoundationTreasuryPercentOfTotalSupply
+	percentParticipants := params.ParticipantsPercentOfTotalSupply
+	lockedFoundationPercentage := percentFoundation.Mul(FoundationInitialLockedPercentage)
+	lockedParticipantsPercentage := percentParticipants.Mul(ParticipantsInitialLockedPercentage)
+	// Full amounts
+	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
+	fullPreseedInvestors := percentPreseedInvestors.MulTruncate(maxSupply).TruncateInt()
+	fullTeam := percentTeam.MulTruncate(maxSupply).TruncateInt()
+	// Locked sub-amounts
+	lockedFoundationTotalAmount := lockedFoundationPercentage.MulTruncate(maxSupply).TruncateInt()
+	lockedParticipantsTotalAmount := lockedParticipantsPercentage.MulTruncate(maxSupply).TruncateInt()
+
+	// ---- 3. Determine months since genesis ----
+	calculatedMonthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth))
+	if calculatedMonthsUnlocked.GT(monthsAlreadyUnlocked) {
+		monthsAlreadyUnlocked = calculatedMonthsUnlocked
+	}
+	// Clamp to max vesting length
+	if monthsAlreadyUnlocked.GT(eightyFour) {
+		monthsAlreadyUnlocked = eightyFour
+	}
+
+	// Determine Foundation tokens locked
+	// Foundation (Alpha + Beta merged) ----
+	// - At TGE: foundationInitialUnlock percent unlocked immediately (includes Beta’s instant unlock and half of Alpha)
+	// - Remaining (1 - foundationInitialUnlock) percent vests linearly over 24 months
+	foundationVestingDuration := twentyFour
+
+	if monthsAlreadyUnlocked.LT(foundationVestingDuration) {
+		remainingMonthsFoundation := foundationVestingDuration.Sub(monthsAlreadyUnlocked)
+		foundationLocked = lockedFoundationTotalAmount.Mul(remainingMonthsFoundation).Quo(foundationVestingDuration)
+	} else {
+		foundationLocked = math.ZeroInt() // everything unlocked already
+	}
+
+	// Determine Participants tokens locked
+	// Participants: 64M unlocked at TGE, 11M vests linearly over 12 months
+	participantsVestingDuration := twelve
+	if monthsAlreadyUnlocked.LT(participantsVestingDuration) {
+		remainingMonthsParticipants := participantsVestingDuration.Sub(monthsAlreadyUnlocked)
+		participantsLocked = lockedParticipantsTotalAmount.Mul(remainingMonthsParticipants).Quo(participantsVestingDuration)
+	} else {
+		participantsLocked = math.ZeroInt() // everything unlocked already
+	}
+
+	// one year cliff : preseed, investors, team
+
+	if monthsAlreadyUnlocked.LT(twelve) {
+		investorsLocked = fullInvestors
+		preseedInvestorsLocked = fullPreseedInvestors
+		teamLocked = fullTeam
+	} else if monthsAlreadyUnlocked.LT(thirtySix) {
+		remainingMonths := thirtySix.Sub(monthsAlreadyUnlocked)
+		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
+		preseedInvestorsLocked = fullPreseedInvestors.Mul(remainingMonths).Quo(thirtySix)
+		teamLocked = fullTeam.Mul(remainingMonths).Quo(thirtySix)
+	} else {
+		investorsLocked = math.ZeroInt()
+		preseedInvestorsLocked = math.ZeroInt()
+		teamLocked = math.ZeroInt()
+	}
+
+	totalLocked = preseedInvestorsLocked.Add(investorsLocked).Add(teamLocked).Add(foundationLocked).Add(participantsLocked)
+	return totalLocked, preseedInvestorsLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, monthsAlreadyUnlocked, nil
+
+}
+
 // helper function to get the number of staked tokens on the network
 // includes both tokens staked by cosmos validators (cosmos staking)
 // and tokens staked by reputers (allora staking)
@@ -96,12 +204,15 @@ func GetCirculatingSupply(
 		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
 	}
 	totalSupply = params.MaxSupply
-	lockedVestingTokens, _, _, _, updatedMonthsUnlocked = GetLockedVestingTokens(
+	lockedVestingTokens, _, _, _, _, _, updatedMonthsUnlocked, err = GetLockedVestingTokensNew(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		params,
 		monthsAlreadyUnlocked,
 	)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
 	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, params)
 	if err != nil {
 		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err

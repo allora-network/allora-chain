@@ -12,4 +12,5 @@ var (
 	ErrNotFound                                        = errors.Register(ModuleName, 7, "not found")
 	ErrUnauthorized                                    = errors.Register(ModuleName, 8, "unauthorized message signer")
 	ErrInvalidMonthsUnlocked                           = errors.Register(ModuleName, 9, "invalid months unlocked")
+	ErrInvalidBlocksPerMonth                           = errors.Register(ModuleName, 10, "invalid blocks per month")
 )

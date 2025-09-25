@@ -328,12 +328,15 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 	}
 	monthsAlreadyUnlocked := k.GetMonthsAlreadyUnlocked(ctx)
 	_, lockedVestingTokensPreseed,
-		lockedVestingTokensSeed, lockedVestingTokensTeam, _ := GetLockedVestingTokens(
+		lockedVestingTokensSeed, lockedVestingTokensTeam, _, _, _, err := GetLockedVestingTokensNew(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		moduleParams,
 		monthsAlreadyUnlocked,
 	)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get locked vesting tokens")
+	}
 	circulatingSupply,
 		totalSupply,
 		lockedVestingTokensTotal,
