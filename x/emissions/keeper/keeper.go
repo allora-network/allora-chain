@@ -2165,7 +2165,7 @@ func (k *Keeper) AddReputerStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed -- rolling back reputer and topic stake")
 	}
 
-	types.EmitNewAddStakeEvent(ctx, topicId, reputer, "", stakeToAdd, reputerAuthorityNew)
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, reputer, stakeToAdd, reputerAuthorityNew)
 	return nil
 }
 
@@ -2363,7 +2363,7 @@ func (k *Keeper) RemoveReputerStake(
 		sdk.UnwrapSDKContext(ctx),
 		topicId,
 		reputer,
-		"",
+		reputer,
 		stakeToRemove,
 		reputerStakeNew,
 	)

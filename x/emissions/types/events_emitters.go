@@ -101,11 +101,7 @@ func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegat
 }
 
 func EmitNewRemoveStakeEvent(ctx context.Context, topicId TopicId, reputer string, delegator string, amount, totalStake cosmosMath.Int) {
-	if delegator == "" {
-		metrics.IncrProducerEventCount(metrics.REPUTER_STAKE_REMOVAL_EVENT)
-	} else {
-		metrics.IncrProducerEventCount(metrics.DELEGATE_STAKE_REMOVAL_EVENT)
-	}
+	metrics.IncrProducerEventCount(metrics.STAKE_REMOVAL_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewRemoveStakeEventBase(topicId, reputer, delegator, amount)); err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewRemoveStakeEvent", "error", err)
