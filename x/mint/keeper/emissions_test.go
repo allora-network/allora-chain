@@ -565,6 +565,8 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewEdgeCases() {
 	totalLocked, _, _, _, _, _, updatedMonths, err =
 		keeper.GetLockedVestingTokensNew(0, blockHeight, params, monthsUnlocked)
 	s.Require().Error(err, "Should error with zero blocks per month")
+	s.Require().Equal(cosmosMath.ZeroInt(), updatedMonths, "Months unlocked should be clamped to 0")
+	s.Require().True(totalLocked.Equal(cosmosMath.ZeroInt()), "Total locked should be zero with zero blocks per month")
 
 	// Test with negative months already unlocked (should be handled gracefully)
 	blockHeight = cosmosMath.NewInt(1000)
@@ -869,12 +871,11 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewParameterValidation()
 	largeSupplyParams := generateNewMintParams()
 	largeSupplyParams.MaxSupply = cosmosMath.NewIntFromUint64(math.MaxUint64)
 
-	totalLocked, preseedLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, _, err =
+	totalLocked, _, _, _, _, _, _, err =
 		keeper.GetLockedVestingTokensNew(blocksPerMonth, blockHeight, largeSupplyParams, monthsUnlocked)
 	s.Require().NoError(err)
 	s.Require().True(totalLocked.GT(cosmosMath.ZeroInt()), "Should handle large max supply")
 	s.Require().True(totalLocked.LT(largeSupplyParams.MaxSupply), "Total locked should be less than max supply")
-
 	// Test with zero percentages (should result in zero locked amounts)
 	zeroPercentParams := types.DefaultParams()
 	zeroPercentParams.InvestorsPercentOfTotalSupply = cosmosMath.LegacyZeroDec()
@@ -886,6 +887,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewParameterValidation()
 	totalLocked, preseedLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, _, err =
 		keeper.GetLockedVestingTokensNew(blocksPerMonth, blockHeight, zeroPercentParams, monthsUnlocked)
 	s.Require().NoError(err)
+	s.Require().True(totalLocked.Equal(cosmosMath.ZeroInt()), "Total should be zero with zero percentage")
 	s.Require().True(preseedLocked.Equal(cosmosMath.ZeroInt()), "Preseed should be zero with zero percentage")
 	s.Require().True(investorsLocked.Equal(cosmosMath.ZeroInt()), "Investors should be zero with zero percentage")
 	s.Require().True(teamLocked.Equal(cosmosMath.ZeroInt()), "Team should be zero with zero percentage")
