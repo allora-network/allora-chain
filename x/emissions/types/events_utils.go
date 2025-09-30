@@ -98,6 +98,41 @@ func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount mat
 	}
 }
 
+func NewRemoveStakeEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
+	return &EventRemoveStake{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+		Amount:    amount,
+	}
+}
+
+func NewRequestStakeRemovalEventBase(topicId TopicId, reputer string, delegator string, amount math.Int, completionHeight int64) proto.Message {
+	return &EventRequestStakeRemoval{
+		TopicId:          topicId,
+		Reputer:          reputer,
+		Delegator:        delegator,
+		Amount:           amount,
+		CompletionHeight: completionHeight,
+	}
+}
+
+func NewCancelStakeRemovalEventBase(topicId TopicId, reputer string, delegator string) proto.Message {
+	return &EventCancelStakeRemoval{
+		TopicId:   topicId,
+		Reputer:   reputer,
+		Delegator: delegator,
+	}
+}
+
+func NewReputerStakeUpdatedEventBase(topicId TopicId, reputer string, amount math.Int) proto.Message {
+	return &EventReputerStakeUpdated{
+		TopicId: topicId,
+		Reputer: reputer,
+		Amount:  amount,
+	}
+}
+
 func NewRewardDelegateStakeEventBase(topicId TopicId, reputer, delegator string, amount alloraMath.Dec) proto.Message {
 	return &EventRewardDelegateStake{
 		TopicId:   topicId,
@@ -511,16 +546,6 @@ func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Messa
 	return &EventPruneRecords{
 		BlockHeight: blockHeight,
 		TopicId:     topicId,
-	}
-}
-
-// Stake removal
-func NewStakeRemovalCompletedEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
-	return &EventStakeRemovalCompleted{
-		TopicId:   topicId,
-		Reputer:   reputer,
-		Delegator: delegator,
-		Amount:    amount,
 	}
 }
 

@@ -2165,7 +2165,7 @@ func (k *Keeper) AddReputerStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed -- rolling back reputer and topic stake")
 	}
 
-	types.EmitNewAddStakeEvent(ctx, topicId, reputer, "", stakeToAdd)
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, reputer, stakeToAdd, reputerAuthorityNew)
 	return nil
 }
 
@@ -2282,7 +2282,7 @@ func (k *Keeper) AddDelegateStake(
 		return errorsmod.Wrapf(err, "AddDelegateStake Setting stake from delegators upon reputer failed")
 	}
 
-	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, stakeToAdd)
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, stakeToAdd, stakeReputerAuthorityNew)
 	return nil
 }
 
@@ -2358,6 +2358,15 @@ func (k *Keeper) RemoveReputerStake(
 	if err != nil {
 		return errorsmod.Wrapf(err, "Deleting stake removal from queue failed")
 	}
+
+	types.EmitNewRemoveStakeEvent(
+		sdk.UnwrapSDKContext(ctx),
+		topicId,
+		reputer,
+		reputer,
+		stakeToRemove,
+		reputerStakeNew,
+	)
 
 	return nil
 }
@@ -2514,6 +2523,15 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalBlockHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
+
+	types.EmitNewRemoveStakeEvent(
+		sdk.UnwrapSDKContext(ctx),
+		topicId,
+		reputer,
+		delegator,
+		stakeToRemove,
+		stakeReputerAuthorityNew,
+	)
 
 	return nil
 }
@@ -2733,7 +2751,12 @@ func (k *Keeper) SetStakeRemoval(ctx context.Context, removalInfo types.StakeRem
 		return errorsmod.Wrap(err, "error setting stake removal by block")
 	}
 	byActorKey := collections.Join3(removalInfo.Reputer, removalInfo.TopicId, removalInfo.BlockRemovalCompleted)
-	return k.stakeRemovalsByActor.Set(ctx, byActorKey)
+	err = k.stakeRemovalsByActor.Set(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewRequestStakeRemovalEvent(ctx, removalInfo.TopicId, removalInfo.Reputer, removalInfo.Reputer, removalInfo.Amount, removalInfo.BlockRemovalCompleted)
+	return nil
 }
 
 // remove a stake removal from the queue
@@ -2756,7 +2779,12 @@ func (k *Keeper) DeleteStakeRemoval(
 		return errorsmod.Wrap(err, "error removing stake removal by block")
 	}
 	byActorKey := collections.Join3(address, topicId, blockHeight)
-	return k.stakeRemovalsByActor.Remove(ctx, byActorKey)
+	err = k.stakeRemovalsByActor.Remove(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewCancelStakeRemovalEvent(ctx, topicId, address, address)
+	return nil
 }
 
 // get info about a removal
@@ -2860,7 +2888,12 @@ func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.
 		return errorsmod.Wrap(err, "error setting delegate stake removal by block")
 	}
 	byActorKey := Join4(removalInfo.Delegator, removalInfo.Reputer, removalInfo.TopicId, removalInfo.BlockRemovalCompleted)
-	return k.delegateStakeRemovalsByActor.Set(ctx, byActorKey)
+	err = k.delegateStakeRemovalsByActor.Set(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewRequestStakeRemovalEvent(ctx, removalInfo.TopicId, removalInfo.Reputer, removalInfo.Delegator, removalInfo.Amount, removalInfo.BlockRemovalCompleted)
+	return nil
 }
 
 // remove a stake removal from the queue
@@ -2884,7 +2917,12 @@ func (k *Keeper) DeleteDelegateStakeRemoval(
 		return errorsmod.Wrap(err, "error removing delegate stake removal by block")
 	}
 	byActorKey := Join4(delegator, reputer, topicId, blockHeight)
-	return k.delegateStakeRemovalsByActor.Remove(ctx, byActorKey)
+	err = k.delegateStakeRemovalsByActor.Remove(ctx, byActorKey)
+	if err != nil {
+		return err
+	}
+	types.EmitNewCancelStakeRemovalEvent(ctx, topicId, reputer, delegator)
+	return nil
 }
 
 // get info about a removal

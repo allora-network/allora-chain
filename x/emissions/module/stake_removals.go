@@ -103,15 +103,6 @@ func RemoveStakes(
 		// if there were no errors up to this point, then the removal should be safe to do,
 		// and therefore we can write the cache to the main state
 		write()
-
-		// Emit event indicating a reputer stake removal has been processed
-		emissionstypes.EmitNewStakeRemovalCompletedEvent(
-			sdkCtx,
-			stakeRemoval.TopicId,
-			stakeRemoval.Reputer,
-			"",
-			stakeRemoval.Amount,
-		)
 	}
 
 	return nil
@@ -171,15 +162,6 @@ func RemoveDelegateStakes(
 		}
 
 		write()
-
-		// Emit event indicating a delegate stake removal has been processed
-		emissionstypes.EmitNewStakeRemovalCompletedEvent(
-			sdkCtx,
-			stakeRemoval.TopicId,
-			stakeRemoval.Reputer,
-			stakeRemoval.Delegator, // Populated delegator indicates delegate stake removal
-			stakeRemoval.Amount,
-		)
 	}
 
 	return nil

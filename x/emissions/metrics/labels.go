@@ -11,6 +11,9 @@ const (
 	INSERT_FORECASTER_PAYLOAD_EVENT                         = "insert_forecaster_payload_event"
 	CREATE_NEW_TOPIC_EVENT                                  = "create_new_topic_event"
 	ADD_STAKE_EVENT                                         = "add_stake_event"
+	STAKE_REMOVAL_EVENT                                     = "stake_removal_event"
+	REQUEST_STAKE_REMOVAL_EVENT                             = "request_stake_removal_event"
+	CANCEL_STAKE_REMOVAL_EVENT                              = "cancel_stake_removal_event"
 	REWARD_DELEGATE_STAKE_EVENT                             = "reward_delegate_stake_event"
 	DELEGATE_REWARD_SHARE_UPDATED_EVENT                     = "delegate_reward_share_updated_event"
 	DELEGATE_REWARD_DISTRIBUTED_EVENT                       = "delegate_reward_distributed_event"
@@ -74,6 +77,4 @@ const (
 	FORECASTER_WEIGHTS_EVENT                                = "forecaster_weights_event"
 	PREVIOUS_PERCENTAGE_REWARD_TO_STAKED_REPUTERS_SET_EVENT = "previous_percentage_reward_to_staked_reputers_set_event"
 	PRUNE_RECORDS_EVENT                                     = "prune_records_event"
-	REPUTER_STAKE_REMOVAL_EVENT                             = "reputer_stake_removal_event"
-	DELEGATE_STAKE_REMOVAL_EVENT                            = "delegate_stake_removal_event"
 )
