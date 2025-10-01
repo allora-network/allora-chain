@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"cosmossdk.io/core/appmodule"
 	"github.com/allora-network/allora-chain/x/scheduler/keeper"
@@ -60,20 +61,32 @@ func (am AppModule) RegisterServices(registrar grpc.ServiceRegistrar) error {
 
 // DefaultGenesis returns the scheduler module's default genesis state.
 func (am AppModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return nil
+	genesis := types.DefaultGenesisState()
+	return cdc.MustMarshalJSON(&genesis)
 }
 
 // ValidateGenesis performs genesis state validation for the scheduler module.
 func (am AppModule) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
-	return nil
+	var genesis types.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &genesis); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+
+	return genesis.Validate()
 }
 
 // InitGenesis performs the scheduler module's genesis initialization
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.RawMessage) {}
+func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.RawMessage) {
+	var genesis types.GenesisState
+	cdc.MustUnmarshalJSON(bz, &genesis)
+
+	am.keeper.InitGenesis(ctx, genesis)
+}
 
 // ExportGenesis returns the scheduler module's exported genesis state as raw JSON bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	return nil
+	gs := am.keeper.ExportGenesis(ctx)
+	return cdc.MustMarshalJSON(&gs)
 }
 
 // ConsensusVersion implements HasConsensusVersion
