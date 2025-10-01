@@ -34,14 +34,14 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	SchedulerKeeper keeper.Keeper
+	SchedulerKeeper *keeper.Keeper
 	Module          appmodule.AppModule
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
 	k := keeper.NewKeeper(in.StoreService, in.Cdc)
-	m := NewAppModule(k)
-	return ModuleOutputs{SchedulerKeeper: k, Module: m}
+	m := NewAppModule(&k)
+	return ModuleOutputs{SchedulerKeeper: &k, Module: m}
 }
 
 func InvokeRegisterTaskHandler(keeper *keeper.Keeper, perModTaskHandlers map[string]types.TaskHandlers) error {

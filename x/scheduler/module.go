@@ -27,11 +27,11 @@ const ConsensusVersion = 1
 
 // AppModule implements the AppModule interface for the scheduler module.
 type AppModule struct {
-	keeper keeper.Keeper
+	keeper *keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object.
-func NewAppModule(keeper keeper.Keeper) AppModule {
+func NewAppModule(keeper *keeper.Keeper) AppModule {
 	return AppModule{
 		keeper: keeper,
 	}
@@ -39,6 +39,11 @@ func NewAppModule(keeper keeper.Keeper) AppModule {
 
 // IsAppModule implements the appmodule.AppModule interface.
 func (am AppModule) IsAppModule() {}
+
+// GetKeeper returns the module's keeper instance - needed to avoid keeper instance mismatch
+func (am AppModule) GetKeeper() *keeper.Keeper {
+	return am.keeper
+}
 
 // Name returns the scheduler module's name.
 func (AppModule) Name() string {
