@@ -5,11 +5,13 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/gogoproto/proto"
 )
 
 // StakingKeeper defines the expected staking keeper
@@ -44,6 +46,12 @@ type EmissionsKeeper interface {
 	SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error
 	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
 	SetParams(ctx context.Context, params emissionstypes.Params) error
+}
+
+// SchedulerKeeper defines the expected interface for the scheduler keeper.
+type SchedulerKeeper interface {
+	RegisterTaskHandlers(taskHandlers schedulertypes.TaskHandlers) error
+	ScheduleTask(ctx context.Context, typename string, id schedulertypes.TaskID, args proto.Message, scheduleOpts ...schedulertypes.SchedulingOption) error
 }
 
 // used for testing

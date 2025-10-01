@@ -27,4 +27,7 @@ const (
 	// It should be synced with the gov module's name if it is ever changed.
 	// See: https://github.com/cosmos/cosmos-sdk/blob/b62a28aac041829da5ded4aeacfcd7a42873d1c8/x/gov/types/keys.go#L9
 	GovModuleName = "gov"
+
+	// Task types
+	TaskEmissionRecalculation = ModuleName + ":emission_recalculation"
 )
