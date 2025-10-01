@@ -26,6 +26,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/keepers"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -256,6 +257,11 @@ func NewAlloraApp(
 
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err
+	}
+
+	// Initialize recurring tasks after state is loaded
+	if loadLatest {
+		app.InitializeRecurringTasks()
 	}
 
 	return app, nil

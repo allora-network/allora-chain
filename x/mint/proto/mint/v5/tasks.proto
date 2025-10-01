@@ -1,0 +1,8 @@
+syntax = "proto3";
+package mint.v5;
+
+option go_package = "github.com/allora-network/allora-chain/x/mint/types";
+
+// EmissionRecalculationTaskArgs defines the arguments for the emission recalculation task.
+// This message is intentionally empty as the task doesn't require any arguments.
+message EmissionRecalculationTaskArgs {}

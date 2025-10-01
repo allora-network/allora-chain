@@ -41,6 +41,11 @@ func NewAppModule(keeper *keeper.Keeper) AppModule {
 // IsAppModule implements the appmodule.AppModule interface.
 func (am AppModule) IsAppModule() {}
 
+// GetKeeper returns the module's keeper instance - needed to avoid keeper instance mismatch
+func (am AppModule) GetKeeper() *keeper.Keeper {
+	return am.keeper
+}
+
 // Name returns the scheduler module's name.
 func (AppModule) Name() string {
 	return types.ModuleName
