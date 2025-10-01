@@ -1,0 +1,12 @@
+syntax = "proto3";
+package scheduler.v1;
+
+import "gogoproto/gogo.proto";
+import "scheduler/v1/task.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/scheduler/types";
+
+// GenesisState defines the scheduler module's genesis state.
+message GenesisState {
+  repeated Task tasks = 1 [(gogoproto.nullable) = false];
+}
