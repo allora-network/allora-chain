@@ -1,3 +1,4 @@
+//nolint:exhaustruct
 package types
 
 import (

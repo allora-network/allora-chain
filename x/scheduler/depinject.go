@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 )
 
-var _ depinject.OnePerModuleType = AppModule{}
+var _ depinject.OnePerModuleType = AppModule{} //nolint:exhaustruct
 
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
 func (am AppModule) IsOnePerModuleType() {}
@@ -41,7 +41,7 @@ type ModuleOutputs struct {
 func ProvideModule(in ModuleInputs) ModuleOutputs {
 	k := keeper.NewKeeper(in.StoreService, in.Cdc)
 	m := NewAppModule(&k)
-	return ModuleOutputs{SchedulerKeeper: &k, Module: m}
+	return ModuleOutputs{SchedulerKeeper: &k, Module: m, Out: depinject.Out{}}
 }
 
 func InvokeRegisterTaskHandlers(keeper *keeper.Keeper, perModTaskHandlers map[string]types.TaskHandlers) error {
