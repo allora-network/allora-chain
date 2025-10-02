@@ -164,6 +164,9 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 // due to a worse one out inferer value, indicating that the network is better off with the worker.
 // We increase TaskRewardAlpha between the trials to show that weighting current performance more heavily
 // means that the worker is rewarded more for their better performance in the 2nd epoch of the 2nd trial.
+// Note this test contains noise in the second phase, as in the second run there is a competing topic already created.
+// For absolutely equal conditions, it should be two different clean chains with one topic only and different alpha.
+// However this test is enough to prove the point
 func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPresentPerformance() {
 	require := s.Require()
 	k := s.EmissionsKeeper()
@@ -175,8 +178,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "0.1", "0.2", "0.3")
 	// define the different reputer performance values for each test phase
 	normalPerformance := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1", "0.2", "0.3")
-	improvedPerformance := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1", "0.2", "0.3")
-	improvedPerformance[0].OneOutInfValues = map[string]string{s.AddrsStr(workerIndexes[0]): "0.2"} // first worker performs better
+	improvedPerformance := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, "0.1", "0.01", "0.01") // first worker performs better
 	alphaValues := []string{"0.1", "0.2"}
 
 	var rewardsDistributions [2][2][]types.TaskReward // [alphaIndex][testPhase]

@@ -78,7 +78,7 @@ func calcNetworkInferencesMultipleByMedian(
 		return nil, errorsmod.Wrap(err, "while calculating median")
 	}
 
-	// Compute one-out median for each inferer
+	// Compute one-out average for each inferer
 	oneOutInfererValues := make([]*emissions.WithheldWorkerAttributedValue, 0, len(inferences.Inferences))
 	for i, inf := range inferences.Inferences {
 		// Build slice without the current inference
@@ -89,15 +89,15 @@ func calcNetworkInferencesMultipleByMedian(
 			}
 		}
 
-		// Calculate one-out median
-		oneOutMedian, err := alloraMath.Median(without)
+		// Calculate one-out average
+		oneOutAverage, err := alloraMath.Average(without)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "while calculating one-out median for inferer %s", inf.Inferer)
 		}
 
 		oneOutInfererValues = append(oneOutInfererValues, &emissions.WithheldWorkerAttributedValue{
 			Worker: inf.Inferer,
-			Value:  oneOutMedian,
+			Value:  oneOutAverage,
 		})
 	}
 

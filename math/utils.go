@@ -248,6 +248,45 @@ func Median(data []Dec) (Dec, error) {
 	return sum.Quo(NewDecFromInt64(2))
 }
 
+// Average calculates the arithmetic mean of a slice of `Dec` values.
+// For empty slices, returns ZeroDec().
+// For single-element slices, returns that element.
+func Average(data []Dec) (Dec, error) {
+	// Check for NaN values first, consistent with other functions
+	for _, v := range data {
+		if v.isNaN {
+			return Dec{}, errorsmod.Wrap(ErrNaN, "average input data contains NaN values")
+		}
+	}
+
+	if len(data) == 0 {
+		return ZeroDec(), nil
+	}
+
+	if len(data) == 1 {
+		return data[0], nil
+	}
+
+	// Calculate the sum
+	sum := ZeroDec()
+	var err error
+	for _, v := range data {
+		sum, err = sum.Add(v)
+		if err != nil {
+			return Dec{}, err
+		}
+	}
+
+	// Calculate the average by dividing sum by length
+	length := NewDecFromInt64(int64(len(data)))
+	average, err := sum.Quo(length)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	return average, nil
+}
+
 // Implements the new gradient function phi prime
 // φ'_p(x) = p / (exp(p * (c - x)) + 1)
 func Gradient(p, c, x Dec) (Dec, error) {

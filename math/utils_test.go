@@ -1030,3 +1030,278 @@ func TestGetSmoothedAlpha(t *testing.T) {
 		})
 	}
 }
+
+func TestAverage(t *testing.T) {
+	testCases := []struct {
+		name        string
+		data        []alloraMath.Dec
+		expected    alloraMath.Dec
+		expectError bool
+		epsilon     alloraMath.Dec
+	}{
+		{
+			name:        "Empty slice",
+			data:        []alloraMath.Dec{},
+			expected:    alloraMath.ZeroDec(),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name:        "Single element",
+			data:        []alloraMath.Dec{alloraMath.MustNewDecFromString("5.5")},
+			expected:    alloraMath.MustNewDecFromString("5.5"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Two elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("10"),
+				alloraMath.MustNewDecFromString("20"),
+			},
+			expected:    alloraMath.MustNewDecFromString("15"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Three elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("2"),
+				alloraMath.MustNewDecFromString("3"),
+			},
+			expected:    alloraMath.MustNewDecFromString("2"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Four elements with decimals",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1.5"),
+				alloraMath.MustNewDecFromString("2.5"),
+				alloraMath.MustNewDecFromString("3.5"),
+				alloraMath.MustNewDecFromString("4.5"),
+			},
+			expected:    alloraMath.MustNewDecFromString("3"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Negative numbers balanced",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("-10"),
+				alloraMath.MustNewDecFromString("-5"),
+				alloraMath.MustNewDecFromString("0"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("10"),
+			},
+			expected:    alloraMath.ZeroDec(),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "All negative numbers",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("-3"),
+				alloraMath.MustNewDecFromString("-2"),
+				alloraMath.MustNewDecFromString("-1"),
+			},
+			expected:    alloraMath.MustNewDecFromString("-2"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Mixed positive and negative",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("-2.5"),
+				alloraMath.MustNewDecFromString("1.5"),
+				alloraMath.MustNewDecFromString("3.5"),
+			},
+			expected:    alloraMath.MustNewDecFromString("0.833333333333333333333333333333"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Large numbers",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1000000"),
+				alloraMath.MustNewDecFromString("2000000"),
+				alloraMath.MustNewDecFromString("3000000"),
+			},
+			expected:    alloraMath.MustNewDecFromString("2000000"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Very small numbers",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("0.0001"),
+				alloraMath.MustNewDecFromString("0.0002"),
+				alloraMath.MustNewDecFromString("0.0003"),
+			},
+			expected:    alloraMath.MustNewDecFromString("0.0002"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0000001"),
+		},
+		{
+			name: "All zeros",
+			data: []alloraMath.Dec{
+				alloraMath.ZeroDec(),
+				alloraMath.ZeroDec(),
+				alloraMath.ZeroDec(),
+			},
+			expected:    alloraMath.ZeroDec(),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "All same values",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("7.5"),
+				alloraMath.MustNewDecFromString("7.5"),
+				alloraMath.MustNewDecFromString("7.5"),
+				alloraMath.MustNewDecFromString("7.5"),
+			},
+			expected:    alloraMath.MustNewDecFromString("7.5"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "Large dataset",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("2"),
+				alloraMath.MustNewDecFromString("3"),
+				alloraMath.MustNewDecFromString("4"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("6"),
+				alloraMath.MustNewDecFromString("7"),
+				alloraMath.MustNewDecFromString("8"),
+				alloraMath.MustNewDecFromString("9"),
+				alloraMath.MustNewDecFromString("10"),
+			},
+			expected:    alloraMath.MustNewDecFromString("5.5"),
+			expectError: false,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "NaN in data",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.NewNaN(),
+				alloraMath.MustNewDecFromString("3"),
+			},
+			expected:    alloraMath.ZeroDec(),
+			expectError: true,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name: "All NaN values",
+			data: []alloraMath.Dec{
+				alloraMath.NewNaN(),
+				alloraMath.NewNaN(),
+				alloraMath.NewNaN(),
+			},
+			expected:    alloraMath.ZeroDec(),
+			expectError: true,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+		{
+			name:        "Single NaN",
+			data:        []alloraMath.Dec{alloraMath.NewNaN()},
+			expected:    alloraMath.ZeroDec(),
+			expectError: true,
+			epsilon:     alloraMath.MustNewDecFromString("0.0001"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := alloraMath.Average(tc.data)
+			if tc.expectError {
+				require.Error(t, err, "Expected an error but got none")
+				require.ErrorIs(t, err, alloraMath.ErrNaN, "Expected ErrNaN error")
+			} else {
+				require.NoError(t, err, "Unexpected error: %v", err)
+				inDelta, err := alloraMath.InDelta(tc.expected, result, tc.epsilon)
+				require.NoError(t, err)
+				require.True(t, inDelta,
+					"Unexpected result for %s: got %s, want %s", tc.name, result.String(), tc.expected.String())
+			}
+		})
+	}
+}
+
+// TestAverageDeterministic tests that the Average function is deterministic
+// by running the same data multiple times and ensuring consistent results
+func TestAverageDeterministic(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.123456789012345678901234567890"), // Very long decimal
+		alloraMath.MustNewDecFromString("42"),                               // Integer without decimals
+		alloraMath.MustNewDecFromString("999999999999999999.5"),             // Very big number
+		alloraMath.MustNewDecFromString("0.0000000001"),                     // Very small number
+		alloraMath.MustNewDecFromString("1234.567890123"),                   // Medium number with many decimals
+	}
+
+	// Expected average: sum / 5 = (0.123456789012345678901234567890 + 42 + 999999999999999999.5 + 0.0000000001 + 1234.567890123) / 5
+	// = 1000000000000001276.191347012312345678901234567890 / 5
+	// = 200000000000000255.2382694024624691357802469136
+	expected := alloraMath.MustNewDecFromString("200000000000000255.2382694024624691357802469136")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
+
+	// Run the test multiple times to ensure deterministic behavior
+	for i := 0; i < 10; i++ {
+		result, err := alloraMath.Average(data)
+		require.NoError(t, err, "Unexpected error on iteration %d: %v", i, err)
+
+		inDelta, err := alloraMath.InDelta(expected, result, epsilon)
+		require.NoError(t, err)
+		require.True(t, inDelta,
+			"Non-deterministic result on iteration %d: got %s, want %s", i, result.String(), expected.String())
+	}
+}
+
+// TestAverageOrderIndependent tests that the Average function is order-independent
+// by testing the same values in different orders
+func TestAverageOrderIndependent(t *testing.T) {
+	// Test data in different orders
+	testData := [][]alloraMath.Dec{
+		{
+			alloraMath.MustNewDecFromString("1"),
+			alloraMath.MustNewDecFromString("2"),
+			alloraMath.MustNewDecFromString("3"),
+			alloraMath.MustNewDecFromString("4"),
+		},
+		{
+			alloraMath.MustNewDecFromString("4"),
+			alloraMath.MustNewDecFromString("3"),
+			alloraMath.MustNewDecFromString("2"),
+			alloraMath.MustNewDecFromString("1"),
+		},
+		{
+			alloraMath.MustNewDecFromString("2"),
+			alloraMath.MustNewDecFromString("4"),
+			alloraMath.MustNewDecFromString("1"),
+			alloraMath.MustNewDecFromString("3"),
+		},
+		{
+			alloraMath.MustNewDecFromString("3"),
+			alloraMath.MustNewDecFromString("1"),
+			alloraMath.MustNewDecFromString("4"),
+			alloraMath.MustNewDecFromString("2"),
+		},
+	}
+
+	expected := alloraMath.MustNewDecFromString("2.5")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
+
+	for i, data := range testData {
+		result, err := alloraMath.Average(data)
+		require.NoError(t, err, "Unexpected error for order %d: %v", i, err)
+
+		inDelta, err := alloraMath.InDelta(expected, result, epsilon)
+		require.NoError(t, err)
+		require.True(t, inDelta,
+			"Order-dependent result for order %d: got %s, want %s", i, result.String(), expected.String())
+	}
+}
