@@ -23,6 +23,10 @@ func (k *Keeper) BeginBlock(ctx context.Context) error {
 			return err
 		}
 
+		if len(taskIDs) == 0 {
+			continue
+		}
+
 		tasks := make([]types.Task, 0, len(taskIDs))
 		for _, id := range taskIDs {
 			task, err := k.tasks.Get(ctx, id)

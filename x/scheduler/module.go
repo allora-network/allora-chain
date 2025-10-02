@@ -28,11 +28,11 @@ const ConsensusVersion = 1
 
 // AppModule implements the AppModule interface for the scheduler module.
 type AppModule struct {
-	keeper keeper.Keeper
+	keeper *keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object.
-func NewAppModule(keeper keeper.Keeper) AppModule {
+func NewAppModule(keeper *keeper.Keeper) AppModule {
 	return AppModule{
 		keeper: keeper,
 	}
