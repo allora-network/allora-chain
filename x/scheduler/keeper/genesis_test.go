@@ -1,3 +1,4 @@
+//nolint:exhaustruct
 package keeper
 
 import (
@@ -65,7 +66,7 @@ func TestExportImportGenesis(t *testing.T) {
 		WithBlockTime(now)
 
 	beforeReimportGenesis := k2.ExportGenesis(ctx)
-	require.Len(t, beforeReimportGenesis.Tasks, 0)
+	require.Empty(t, beforeReimportGenesis.Tasks)
 
 	k2.InitGenesis(ctx, genesis)
 
@@ -73,13 +74,13 @@ func TestExportImportGenesis(t *testing.T) {
 	require.NoError(t, err)
 	keys, err := it.Keys()
 	require.NoError(t, err)
-	require.Equal(t, 2, len(keys))
+	require.Len(t, keys, 2)
 
 	it2, err := k2.tasksSchedule.IterateRaw(ctx, nil, nil, collections.OrderAscending)
 	require.NoError(t, err)
 	keys2, err := it2.Keys()
 	require.NoError(t, err)
-	require.Equal(t, 2, len(keys2))
+	require.Len(t, keys2, 2)
 
 	genesis2 := k2.ExportGenesis(ctx)
 	require.Equal(t, genesis, genesis2)

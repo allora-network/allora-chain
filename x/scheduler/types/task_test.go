@@ -1,3 +1,4 @@
+//nolint:exhaustruct
 package types
 
 import (
@@ -8,13 +9,12 @@ import (
 	"cosmossdk.io/math"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cosmostypes "github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewTask(t *testing.T) {
-	args := &cosmostypes.Coin{Denom: "udenom", Amount: math.NewInt(12000)}
+	args := &sdk.Coin{Denom: "udenom", Amount: math.NewInt(12000)}
 	packedArgs, err := codectypes.NewAnyWithValue(args)
 	require.NoError(t, err)
 
@@ -122,7 +122,7 @@ func TestNewTask(t *testing.T) {
 }
 
 func TestApplySchedulingOpts(t *testing.T) {
-	args := &cosmostypes.Coin{Denom: "udenom", Amount: math.NewInt(12000)}
+	args := &sdk.Coin{Denom: "udenom", Amount: math.NewInt(12000)}
 	packedArgs, err := codectypes.NewAnyWithValue(args)
 	require.NoError(t, err)
 

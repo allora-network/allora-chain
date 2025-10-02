@@ -77,7 +77,7 @@ func NewTaskHandler[T proto.Message](
 	// if arbitrateFn is nil, we provide a no-op function.
 	if arbitrateFn == nil {
 		arbitrateFn = func(ctx context.Context, tasks []Invocation[T]) (map[TaskID]ArbitrageDecision, error) {
-			return nil, nil
+			return nil, nil //nolint:nilnil
 		}
 	}
 
@@ -152,7 +152,7 @@ func (t taskHandler[T]) DependsOn() []string {
 
 func (t taskHandler[T]) PackArgs(args proto.Message) (*codectypes.Any, error) {
 	if args == nil && any(t.zeroArgs) == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 
 	if reflect.TypeOf(args) != reflect.TypeOf(t.zeroArgs) {

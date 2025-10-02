@@ -61,7 +61,7 @@ func (t *Task) ComputeNextRun(lastRun time.Time) bool {
 	if t.SchedulingStrategy == SchedulingStrategy_ABSOLUTE {
 		elapsed := lastRun.Sub(*t.NextRunAt)
 		missed := elapsed / *t.Interval
-		refTime = t.NextRunAt.Add(missed * (*t.Interval))
+		refTime = t.NextRunAt.Add(missed * (*t.Interval)) //nolint:durationcheck
 	} else {
 		refTime = lastRun
 	}
