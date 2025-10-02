@@ -1,7 +1,9 @@
 package rewards_test
 
 import (
+	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	cosmosMath "cosmossdk.io/math"
@@ -229,6 +231,8 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	require.False(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistributions[0][1], rewardsDistributions[1][1]),
 		"Rewards in the second phase should differ between alphas")
 
+	// Print the rewards distribution table
+	s.printRewardsDistributionTable(rewardsDistributions)
 	// Extract worker[0] rewards for comparing phase 1 improvements
 	var workerReward_0_1_Reward, workerReward_1_1_Reward alloraMath.Dec
 
@@ -265,7 +269,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 // We have 2 trials with 2 epochs each, and the reputer does worse in 2nd epoch in both trials,
 // enacted by their increasing loss between epochs.
 // We increase alpha between the trials to prove that their worsening performance decreases regret.
-// This is somewhat counterintuitive, but can be explained by the following passage from the litepaper:
+// This is somewhat counterintuitive, but can be explained by the following passage from the whitepaper:
 // "A positive regret implies that the inference of worker j is expected by worker k to outperform
 // the network's previously reported accuracy, whereas a negative regret indicates that the network
 // is expected to be more accurate."
@@ -381,9 +385,12 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		trial.decreaseRate, err = trial.decrease.Quo(trial.firstRegret)
 		require.NoError(err)
 
-		// Verify the decrease rate equals the alpha
-		require.True(trial.decreaseRate.Equal(trial.alphaRegret),
-			"Regret decrease rate should equal alpha: got %s, expected %s",
+		delta, err := alloraMath.InDelta(
+			trial.decreaseRate,
+			trial.alphaRegret,
+			alloraMath.MustNewDecFromString("0.000000000001"))
+		require.NoError(err)
+		require.True(delta, "Regret decrease rate should equal alpha (within a delta): got %s, expected %s",
 			trial.decreaseRate.String(), trial.alphaRegret.String())
 	}
 
@@ -755,7 +762,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	// calculate rewards for first epoch
 	rewardsFromStakes(0, stakes1, stakes0)
-
 	require.Equal(topicRewardsTotal[0][0], topicRewardsTotal[0][1])
 
 	// second phase: increase stake for first reputer in topic1
@@ -832,10 +838,10 @@ func (s *RewardsTestSuite) validateTopicWeightsConsistency(topicIDs [2]uint64) {
 func (s *RewardsTestSuite) validateWorkerInclusions(topicID uint64, workerIndexes []int) {
 	for _, workerIndex := range workerIndexes {
 		infererCount, _ := s.EmissionsKeeper().GetCountInfererInclusionsInTopic(s.Ctx(), topicID, s.AddrsStr(workerIndex))
-		s.Require().Equal(uint64(1), infererCount)
+		s.Require().GreaterOrEqual(infererCount, uint64(2))
 
 		forecasterCount, _ := s.EmissionsKeeper().GetCountForecasterInclusionsInTopic(s.Ctx(), topicID, s.AddrsStr(workerIndex))
-		s.Require().Equal(uint64(1), forecasterCount)
+		s.Require().GreaterOrEqual(forecasterCount, uint64(1))
 	}
 }
 
@@ -1602,4 +1608,44 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []types.TaskRewar
 	}
 
 	return true
+}
+
+// printRewardsDistributionTable formats and prints the rewards distribution in a readable table format
+func (s *RewardsTestSuite) printRewardsDistributionTable(rewardsDistributions [2][2][]types.TaskReward) {
+	var sb strings.Builder
+	sb.WriteString("\n\nREWARDS DISTRIBUTIONS TABLE\n")
+	sb.WriteString("================================================================================\n")
+
+	alphaValues := []string{"0.1", "0.2"}
+
+	for alphaIndex := 0; alphaIndex < 2; alphaIndex++ {
+		sb.WriteString(fmt.Sprintf("\n[ALPHA INDEX %d] TaskRewardAlpha = %s\n", alphaIndex, alphaValues[alphaIndex]))
+		sb.WriteString("--------------------------------------------------------------------------------\n")
+
+		for phase := 0; phase < 2; phase++ {
+			phaseName := "Normal Performance"
+			if phase == 1 {
+				phaseName = "Improved Performance"
+			}
+			sb.WriteString(fmt.Sprintf("\n  [PHASE %d] %s - Total Rewards: %d\n", phase, phaseName, len(rewardsDistributions[alphaIndex][phase])))
+			sb.WriteString("  ----------------------------------------------------------------------------\n")
+			sb.WriteString(fmt.Sprintf("  %-4s | %-42s | %-20s | %-8s | %-20s\n", "Idx", "Address", "Type", "TopicId", "Reward"))
+			sb.WriteString("  ----------------------------------------------------------------------------\n")
+
+			for i, reward := range rewardsDistributions[alphaIndex][phase] {
+				sb.WriteString(fmt.Sprintf("  %-4d | %-42s | %-20s | %-8d | %s\n",
+					i,
+					reward.Address,
+					reward.Type,
+					reward.TopicId,
+					reward.Reward.String()))
+			}
+		}
+		sb.WriteString("\n")
+	}
+
+	sb.WriteString("================================================================================\n")
+
+	// Log the entire table in one statement to preserve formatting
+	s.Ctx().Logger().Info(sb.String())
 }

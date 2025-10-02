@@ -78,6 +78,29 @@ func calcNetworkInferencesMultipleByMedian(
 		return nil, errorsmod.Wrap(err, "while calculating median")
 	}
 
+	// Compute one-out median for each inferer
+	oneOutInfererValues := make([]*emissions.WithheldWorkerAttributedValue, 0, len(inferences.Inferences))
+	for i, inf := range inferences.Inferences {
+		// Build slice without the current inference
+		without := make([]alloraMath.Dec, 0, len(inferenceValues)-1)
+		for j, val := range inferenceValues {
+			if i != j {
+				without = append(without, val)
+			}
+		}
+
+		// Calculate one-out median
+		oneOutMedian, err := alloraMath.Median(without)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "while calculating one-out median for inferer %s", inf.Inferer)
+		}
+
+		oneOutInfererValues = append(oneOutInfererValues, &emissions.WithheldWorkerAttributedValue{
+			Worker: inf.Inferer,
+			Value:  oneOutMedian,
+		})
+	}
+
 	networkInferences := &emissions.ValueBundle{
 		TopicId:   topicId,
 		ExtraData: nil,
@@ -89,13 +112,14 @@ func calcNetworkInferencesMultipleByMedian(
 		InfererValues: fn.Map(inferences.Inferences, func(inf *emissions.Inference) *emissions.WorkerAttributedValue {
 			return &emissions.WorkerAttributedValue{Worker: inf.Inferer, Value: inf.Value}
 		}),
-		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.ZeroDec(),
-		OneOutInfererValues:           nil,
+		ForecasterValues:              nil,
+		OneOutInfererValues:           oneOutInfererValues,
 		OneOutForecasterValues:        nil,
 		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
+
 	return &GetNetworkInferencesResult{
 		NetworkInferences:    networkInferences,
 		InfererToWeight:      nil,
