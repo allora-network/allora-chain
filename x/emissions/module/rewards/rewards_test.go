@@ -286,6 +286,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	stake := cosmosMath.NewInt(1000000000000000000).Mul(cosmosMath.NewInt(1000000000000000000))
 	epochLength := int64(60)
 	groundTruthLag := int64(60)
+	deltaRegret := alloraMath.MustNewDecFromString("0.000000000001")
 
 	// Alpha values for the two trials
 	alphaValues := []string{"0.1", "0.2"}
@@ -388,7 +389,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		delta, err := alloraMath.InDelta(
 			trial.decreaseRate,
 			trial.alphaRegret,
-			alloraMath.MustNewDecFromString("0.000000000001"))
+			deltaRegret)
 		require.NoError(err)
 		require.True(delta, "Regret decrease rate should equal alpha (within a delta): got %s, expected %s",
 			trial.decreaseRate.String(), trial.alphaRegret.String())
