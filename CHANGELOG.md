@@ -75,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* [#868](https://github.com/allora-network/allora-chain/pull/868) Scores take 2 gtlags to appear on topic start
+
 ### Security
 
 ### API Breaking Changes
