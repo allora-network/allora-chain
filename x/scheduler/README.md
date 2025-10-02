@@ -42,7 +42,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
         schedulertypes.NewTaskHandler[*types.MyTaskArgs](
             types.TaskMyTask, // Task type name
             nil,              // Dependencies, if any
-			func(ctx context.Context, tasks []Invocation[*types.MyTaskArgs]) ([]ArbitrageDecision, error) {
+			func(ctx context.Context, tasks []schedulertypes.Invocation[*types.MyTaskArgs]) ([]schedulertypes.ArbitrageDecision, error) {
 				return nil, nil // Arbitrage func
             },
             func(ctx context.Context, id schedulertypes.TaskID, args *types.MyTaskArgs, runCount uint64) error {
@@ -51,6 +51,20 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
         ),
     }
 }
+```
+
+We can also implement a task handler with no arguments:
+```go
+schedulertypes.NewNoArgsTaskHandler(
+    "noargs",
+    nil,
+    func(ctx context.Context, tasks []schedulertypes.TaskID) (map[schedulertypes.TaskID]schedulertypes.ArbitrageDecision, error) {
+        return nil, nil
+    },
+    func(ctx context.Context, id schedulertypes.TaskID, runCount uint64) error {
+        return nil
+    },
+)
 ```
 
 A task handler is defined by:
