@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#835](https://github.com/allora-network/allora-chain/pull/835): Introduce the `x/scheduler` module to manage tasks scheduling
+
 ### Changed
 
 ### Deprecated
@@ -87,7 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Released]
 
-# v0.12.4
+# v0.12.4
 
 ### Added
 
@@ -113,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 
-# v0.12.3
+# v0.12.3
 
 ### Added
 
