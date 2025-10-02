@@ -19,7 +19,7 @@ func (am AppModule) IsOnePerModuleType() {}
 func init() {
 	appconfig.RegisterModule(&modulev1.Module{},
 		appconfig.Provide(ProvideModule),
-		appconfig.Invoke(InvokeRegisterTaskHandler),
+		appconfig.Invoke(InvokeRegisterTaskHandlers),
 	)
 }
 
@@ -34,17 +34,17 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	SchedulerKeeper keeper.Keeper
 	Module          appmodule.AppModule
+	SchedulerKeeper *keeper.Keeper
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
 	k := keeper.NewKeeper(in.StoreService, in.Cdc)
-	m := NewAppModule(k)
-	return ModuleOutputs{SchedulerKeeper: k, Module: m}
+	m := NewAppModule(&k)
+	return ModuleOutputs{SchedulerKeeper: &k, Module: m}
 }
 
-func InvokeRegisterTaskHandler(keeper *keeper.Keeper, perModTaskHandlers map[string]types.TaskHandlers) error {
+func InvokeRegisterTaskHandlers(keeper *keeper.Keeper, perModTaskHandlers map[string]types.TaskHandlers) error {
 	if keeper == nil || perModTaskHandlers == nil {
 		return nil
 	}

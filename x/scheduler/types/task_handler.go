@@ -25,6 +25,9 @@ const (
 
 type TaskHandlers []TaskHandler
 
+// IsOnePerModuleType implements the depinject.OnePerModuleType interface.
+func (TaskHandlers) IsOnePerModuleType() {}
+
 // TaskHandler defines carries the logic attached to a type of task so that it can be managed by the scheduler.
 // Handlers must be registered to allow the module to schedule and execute tasks of that type.
 type TaskHandler interface {
