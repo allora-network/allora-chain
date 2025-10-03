@@ -53,7 +53,6 @@ type Keeper struct {
 func NewKeeper(storeService store.KVStoreService, cdc codec.Codec) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
 
-	//nolint:exhaustruct
 	k := Keeper{
 		storeService: storeService,
 		cdc:          cdc,

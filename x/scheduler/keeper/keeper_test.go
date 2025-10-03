@@ -1,4 +1,3 @@
-//nolint:exhaustruct
 package keeper
 
 import (
@@ -391,13 +390,13 @@ func TestCancelTask(t *testing.T) {
 			require.NoError(t, err)
 			keys, err := it.Keys()
 			require.NoError(t, err)
-			require.Len(t, keys, tc.expectTaskCount)
+			require.Equal(t, tc.expectTaskCount, len(keys))
 
 			it2, err := k.tasksSchedule.IterateRaw(ctx, nil, nil, collections.OrderAscending)
 			require.NoError(t, err)
 			keys2, err := it2.Keys()
 			require.NoError(t, err)
-			require.Len(t, keys2, tc.expectTaskScheduleCount)
+			require.Equal(t, tc.expectTaskScheduleCount, len(keys2))
 		})
 	}
 }

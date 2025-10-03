@@ -1,4 +1,3 @@
-//nolint:exhaustruct
 package keeper
 
 import (
@@ -78,7 +77,7 @@ func TestBeginBlocker(t *testing.T) {
 
 			require.Equal(t, []types.TaskID{"taskB1", "taskB2"}, tasks)
 
-			return nil, nil //nolint:nilnil
+			return nil, nil
 		},
 		func(ctx context.Context, id types.TaskID, runCount uint64) error {
 			handlerBRunCallCount += 1
@@ -124,7 +123,7 @@ func TestBeginBlocker(t *testing.T) {
 	// check taskA1, taskA2, taskB1 and taskB2 were deleted
 	for _, id := range []types.TaskID{"taskA1", "taskA2", "taskB1", "taskB2"} {
 		_, err := k.tasks.Get(ctx, id)
-		require.ErrorIs(t, err, collections.ErrNotFound)
+		require.True(t, errors.Is(err, collections.ErrNotFound))
 	}
 
 	// check taskA3 still exists
@@ -136,12 +135,12 @@ func TestBeginBlocker(t *testing.T) {
 	require.NoError(t, err)
 	keys, err := it.Keys()
 	require.NoError(t, err)
-	require.Len(t, keys, 1)
+	require.Equal(t, 1, len(keys))
 	it2, err := k.tasksSchedule.IterateRaw(ctx, nil, nil, collections.OrderAscending)
 	require.NoError(t, err)
 	keys2, err := it2.Keys()
 	require.NoError(t, err)
-	require.Len(t, keys2, 1)
+	require.Equal(t, 1, len(keys2))
 }
 
 func TestBeginBlockerShouldErrIfHandlerErr(t *testing.T) {
@@ -182,7 +181,7 @@ func TestBeginBlockerShouldErrIfHandlerErr(t *testing.T) {
 						return nil, errors.New("arbitrate error")
 					}
 
-					return nil, nil //nolint:nilnil
+					return nil, nil
 				},
 				func(ctx context.Context, id types.TaskID, runCount uint64) error {
 					runCalled = true
@@ -314,7 +313,7 @@ func TestApplyArbitrageDecision(t *testing.T) {
 			} else {
 				task, err := k.tasks.Get(ctx, tc.taskID)
 				if tc.expectTask == nil {
-					require.ErrorIs(t, err, collections.ErrNotFound)
+					require.True(t, errors.Is(err, collections.ErrNotFound))
 				} else {
 					require.NoError(t, err)
 					require.Equal(t, tc.expectTask, &task)
@@ -407,17 +406,18 @@ func TestRunTask(t *testing.T) {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
-				taskAfterRun, err := k.tasks.Get(ctx, tc.taskID)
+				task, err = k.tasks.Get(ctx, tc.taskID)
 				if tc.expectTaskRemoval {
-					require.ErrorIs(t, err, collections.ErrNotFound)
+					require.True(t, errors.Is(err, collections.ErrNotFound))
 				} else {
 					require.NoError(t, err)
+					task, err := k.tasks.Get(ctx, tc.taskID)
 					require.NoError(t, err)
-					require.Equal(t, uint64(1), taskAfterRun.RunCount)
-					require.NotNil(t, taskAfterRun.LastRunAt)
-					require.Equal(t, now, *taskAfterRun.LastRunAt)
+					require.Equal(t, uint64(1), task.RunCount)
+					require.NotNil(t, task.LastRunAt)
+					require.Equal(t, now, *task.LastRunAt)
 					if tc.expectNewScheduleAt != nil {
-						require.Equal(t, *tc.expectNewScheduleAt, *taskAfterRun.NextRunAt)
+						require.Equal(t, *tc.expectNewScheduleAt, *task.NextRunAt)
 						exists, err := k.tasksSchedule.Has(ctx, collections.Join3("withargs", *tc.expectNewScheduleAt, tc.taskID))
 						require.NoError(t, err)
 						require.True(t, exists)
