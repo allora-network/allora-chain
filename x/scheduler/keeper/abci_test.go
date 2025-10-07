@@ -324,7 +324,7 @@ func TestApplyArbitrageDecision(t *testing.T) {
 	}
 }
 
-func TestRunTask(t *testing.T) {
+func TestExecuteTask(t *testing.T) {
 	now := time.Now().UTC()
 	interval := 10 * time.Minute
 	in10Min := now.Add(interval)
