@@ -1,4 +1,4 @@
-package v0_14_0 //nolint:revive // var-naming: don't use an underscore in package name
+package v0_13_0 //nolint:revive // var-naming: don't use an underscore in package name
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	UpgradeName = "v0.14.0"
+	UpgradeName = "v0.13.0"
 )
 
 var Upgrade = upgrades.Upgrade{
