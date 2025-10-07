@@ -163,7 +163,22 @@ func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.Tas
 		return err
 	}
 
-	if key := getTaskScheduleKey(*task); key != nil {
+	return k.programTask(ctx, *task)
+}
+
+// programTask programs the task to its next run schedule, if any.
+func (k *Keeper) programTask(ctx context.Context, task types.Task) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	if key := getTaskScheduleKey(task); key != nil {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskScheduledEvent{
+			Id:       task.Id,
+			Typename: task.Typename,
+			At:       task.NextRunAt,
+		}); err != nil {
+			return err
+		}
+
 		return k.tasksSchedule.Set(ctx, *key)
 	}
 	return nil
@@ -171,6 +186,7 @@ func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.Tas
 
 // CancelTask removes a task, removing it from the schedule.
 func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	task, err := k.tasks.Get(ctx, taskID)
 	if err != nil {
 		return err
@@ -181,6 +197,14 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 	}
 
 	if key := getTaskScheduleKey(task); key != nil {
+		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
+			Id:       task.Id,
+			Typename: task.Typename,
+			At:       task.NextRunAt,
+		}); err != nil {
+			return err
+		}
+
 		return k.tasksSchedule.Remove(ctx, *key)
 	}
 	return nil
@@ -195,16 +219,13 @@ func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOp
 		return nil
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	task, err := k.tasks.Get(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	if key := getTaskScheduleKey(task); key != nil {
-		if err := k.tasksSchedule.Remove(ctx, *key); err != nil {
-			return err
-		}
-	}
+	oldScheduleKey := getTaskScheduleKey(task)
 
 	if err := task.ApplySchedulingOpts(ctx, scheduleOpts...); err != nil {
 		return err
@@ -214,10 +235,24 @@ func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOp
 		return err
 	}
 
-	if key := getTaskScheduleKey(task); key != nil {
-		return k.tasksSchedule.Set(ctx, *key)
+	if oldScheduleKey != nil {
+		if err := k.tasksSchedule.Remove(ctx, *oldScheduleKey); err != nil {
+			return err
+		}
+
+		// if the task no longer has a next run time, it has been unscheduled
+		if task.NextRunAt == nil {
+			if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
+				Id:       task.Id,
+				Typename: task.Typename,
+				At:       task.NextRunAt,
+			}); err != nil {
+				return err
+			}
+		}
 	}
-	return nil
+
+	return k.programTask(ctx, task)
 }
 
 // GetDueTasksAt retrieves the tasks of the specified type that are due at the provided time.
