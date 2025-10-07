@@ -324,7 +324,7 @@ func TestApplyArbitrageDecision(t *testing.T) {
 	}
 }
 
-func TestRunTask(t *testing.T) {
+func TestExecuteTask(t *testing.T) {
 	now := time.Now().UTC()
 	interval := 10 * time.Minute
 	in10Min := now.Add(interval)
@@ -402,7 +402,7 @@ func TestRunTask(t *testing.T) {
 			ctx = ctx.WithBlockTime(now)
 			task, err := k.tasks.Get(ctx, tc.taskID)
 			require.NoError(t, err)
-			err = k.runTask(ctx, task, handler)
+			err = k.executeTask(ctx, task, handler)
 			if tc.expectError {
 				require.Error(t, err)
 			} else {
