@@ -242,10 +242,11 @@ func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOp
 
 		// if the task no longer has a next run time, it has been unscheduled
 		if task.ScheduledFor == nil {
+			prevSchedule := oldScheduleKey.K2()
 			if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
 				Id:       task.Id,
 				Typename: task.Typename,
-				At:       task.ScheduledFor,
+				At:       &prevSchedule,
 			}); err != nil {
 				return err
 			}
