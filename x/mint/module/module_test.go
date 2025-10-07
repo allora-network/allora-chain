@@ -169,6 +169,12 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.appModule = mintAppModule
 }
 
+func (s *MintModuleTestSuite) recalculateEmission() cosmosMath.Int {
+	blockEmission, err := s.mintKeeper.RecalculateEmission(s.ctx)
+	s.Require().NoError(err)
+	return blockEmission
+}
+
 func TestMintModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(MintModuleTestSuite))
 }
@@ -332,6 +338,8 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 
 	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 
+	s.recalculateEmission()
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
@@ -408,6 +416,8 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	s.Require().NoError(err)
 
 	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+
+	s.recalculateEmission()
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
@@ -505,6 +515,8 @@ func (s *MintModuleTestSuite) TestNotEnoughTokensToMintToCoverInflation() {
 	s.Require().NoError(err)
 
 	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+
+	s.recalculateEmission()
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
@@ -612,6 +624,8 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	ecosystemTokensMintedZero, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
 	s.Require().NoError(err)
 	// do the first inflation calculation
+	s.recalculateEmission()
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
@@ -643,6 +657,8 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	blocks := new(big.Int).SetUint64(blocksPerMonth)
 	blocks.Add(blocks, big.NewInt(1))
 	s.ctx = s.ctx.WithBlockHeight(blocks.Int64())
+
+	s.recalculateEmission()
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
@@ -703,6 +719,8 @@ func (s *MintModuleTestSuite) TestEcosystemRefundReducesMintingInSubsequentBlock
 	tokenSupplyStart := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 
 	// 2. Run BeginBlocker at block 1 - should mint tokens
+	s.recalculateEmission()
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
@@ -736,6 +754,8 @@ func (s *MintModuleTestSuite) TestEcosystemRefundReducesMintingInSubsequentBlock
 
 	// 4. Run BeginBlocker at block 2
 	s.ctx = s.ctx.WithBlockHeight(2) // Advance block height, avoid recalculation
+	s.recalculateEmission()
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
