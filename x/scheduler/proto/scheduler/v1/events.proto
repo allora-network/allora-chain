@@ -1,0 +1,56 @@
+syntax = "proto3";
+package scheduler.v1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/scheduler/types";
+
+// TaskScheduledEvent is emitted when a task is scheduled or rescheduled at a specific time.
+// If a task is created with no scheduling (i.e. next_run_at is empty), this event is not emitted until the task is scheduled.
+// If an arbitrage decision is made to reschedule a task, this event is emitted.
+// For a periodic task, this event is emitted at each execution.
+message TaskScheduledEvent {
+  option (gogoproto.equal) = true;
+
+  // Id is the unique identifier for the task.
+  string id = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "TaskID"];
+
+  // Typename is the type of the task.
+  string typename = 2;
+
+  // At is the timestamp when the task is scheduled to be executed.
+  google.protobuf.Timestamp at = 3 [(gogoproto.stdtime) = true];
+}
+
+// TaskUnscheduledEvent is emitted when a task that was scheduled, is cancelled or unscheduled.
+// This can happen when a task is cancelled, or rescheduled with no next run time set.
+// When an arbitrage decision is made, this event may also be emitted.
+message TaskUnscheduledEvent {
+  option (gogoproto.equal) = true;
+
+  // Id is the unique identifier for the task.
+  string id = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "TaskID"];
+
+  // Typename is the type of the task.
+  string typename = 2;
+
+  // At is the timestamp when the task was scheduled to be executed.
+  google.protobuf.Timestamp at = 3 [(gogoproto.stdtime) = true];
+}
+
+// TaskExecutedEvent is emitted when a task is executed.
+// This event is emitted regardless of whether the task execution was successful or failed.
+message TaskExecutedEvent {
+  option (gogoproto.equal) = true;
+
+  // Id is the unique identifier for the task.
+  string id = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "TaskID"];
+
+  // Typename is the type of the task.
+  string typename = 2;
+
+  // At is the timestamp when the task was scheduled to be executed, which can differ from the actual block time.
+  google.protobuf.Timestamp at = 3 [(gogoproto.stdtime) = true];
+}

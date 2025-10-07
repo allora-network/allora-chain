@@ -139,6 +139,7 @@ func TestScheduleTask(t *testing.T) {
 		args         proto.Message
 		scheduleOpts []types.SchedulingOption
 		expectError  bool
+		expectEvents []proto.Message
 		expectTask   *types.Task
 	}{
 		{
@@ -150,6 +151,13 @@ func TestScheduleTask(t *testing.T) {
 				types.ScheduleAt(at),
 			},
 			expectError: false,
+			expectEvents: []proto.Message{
+				&types.TaskScheduledEvent{
+					Id:       "task1",
+					Typename: "noargs",
+					At:       &at,
+				},
+			},
 			expectTask: &types.Task{
 				Id:                 "task1",
 				Typename:           "noargs",
@@ -170,6 +178,13 @@ func TestScheduleTask(t *testing.T) {
 				types.ScheduleAt(at),
 			},
 			expectError: false,
+			expectEvents: []proto.Message{
+				&types.TaskScheduledEvent{
+					Id:       "task2",
+					Typename: "withargs",
+					At:       &at,
+				},
+			},
 			expectTask: &types.Task{
 				Id:                 "task2",
 				Typename:           "withargs",
@@ -192,6 +207,13 @@ func TestScheduleTask(t *testing.T) {
 				types.WithAbsoluteScheduling(),
 			},
 			expectError: false,
+			expectEvents: []proto.Message{
+				&types.TaskScheduledEvent{
+					Id:       "task",
+					Typename: "withargs",
+					At:       &at,
+				},
+			},
 			expectTask: &types.Task{
 				Id:                 "task",
 				Typename:           "withargs",
@@ -211,8 +233,9 @@ func TestScheduleTask(t *testing.T) {
 			scheduleOpts: []types.SchedulingOption{
 				types.ScheduleAt(at),
 			},
-			expectError: true,
-			expectTask:  nil,
+			expectError:  true,
+			expectEvents: nil,
+			expectTask:   nil,
 		},
 		{
 			name:     "wrong args type (nil)",
@@ -222,8 +245,9 @@ func TestScheduleTask(t *testing.T) {
 			scheduleOpts: []types.SchedulingOption{
 				types.ScheduleAt(at),
 			},
-			expectError: true,
-			expectTask:  nil,
+			expectError:  true,
+			expectEvents: nil,
+			expectTask:   nil,
 		},
 		{
 			name:     "wrong args type (non-nil)",
@@ -233,8 +257,9 @@ func TestScheduleTask(t *testing.T) {
 			scheduleOpts: []types.SchedulingOption{
 				types.ScheduleAt(at),
 			},
-			expectError: true,
-			expectTask:  nil,
+			expectError:  true,
+			expectEvents: nil,
+			expectTask:   nil,
 		},
 		{
 			name:     "duplicate task id",
@@ -244,8 +269,9 @@ func TestScheduleTask(t *testing.T) {
 			scheduleOpts: []types.SchedulingOption{
 				types.ScheduleAt(at),
 			},
-			expectError: true,
-			expectTask:  nil,
+			expectError:  true,
+			expectEvents: nil,
+			expectTask:   nil,
 		},
 		{
 			name:     "invalid scheduling",
@@ -255,8 +281,9 @@ func TestScheduleTask(t *testing.T) {
 			scheduleOpts: []types.SchedulingOption{
 				types.ScheduleAt(now.Add(-time.Hour)),
 			},
-			expectError: true,
-			expectTask:  nil,
+			expectError:  true,
+			expectEvents: nil,
+			expectTask:   nil,
 		},
 	}
 
@@ -284,6 +311,8 @@ func TestScheduleTask(t *testing.T) {
 			err = k.ScheduleTask(ctx, "noargs", "existing", nil, types.ScheduleAt(at))
 			require.NoError(t, err)
 
+			ctx = ctx.WithEventManager(cosmostypes.NewEventManager())
+
 			err = k.ScheduleTask(ctx, tc.typename, tc.id, tc.args, tc.scheduleOpts...)
 			if tc.expectError {
 				require.Error(t, err)
@@ -308,6 +337,9 @@ func TestScheduleTask(t *testing.T) {
 				require.Equal(t, packedArgs.Value, task.Args.Value)
 			}
 
+			evts := parseEvents(t, ctx.EventManager().Events().ToABCIEvents())
+			require.Equal(t, tc.expectEvents, evts)
+
 			exists, err := k.tasksSchedule.Has(ctx, collections.Join3(tc.expectTask.Typename, *tc.expectTask.NextRunAt, tc.expectTask.Id))
 			require.NoError(t, err)
 			require.True(t, exists)
@@ -316,17 +348,29 @@ func TestScheduleTask(t *testing.T) {
 }
 
 func TestCancelTask(t *testing.T) {
+	now := time.Now().UTC()
+	at := now.Add(10 * time.Minute)
+	d1Hour := 1 * time.Hour
+
 	testCases := []struct {
 		name                    string
 		id                      types.TaskID
 		expectError             bool
+		expectEvents            []proto.Message
 		expectTaskCount         int
 		expectTaskScheduleCount int
 	}{
 		{
-			name:                    "scheduled task",
-			id:                      "task1",
-			expectError:             false,
+			name:        "scheduled task",
+			id:          "task1",
+			expectError: false,
+			expectEvents: []proto.Message{
+				&types.TaskUnscheduledEvent{
+					Id:       "task1",
+					Typename: "noargs",
+					At:       &at,
+				},
+			},
 			expectTaskCount:         2,
 			expectTaskScheduleCount: 1,
 		},
@@ -334,6 +378,7 @@ func TestCancelTask(t *testing.T) {
 			name:                    "unscheduled task",
 			id:                      "task2",
 			expectError:             false,
+			expectEvents:            nil,
 			expectTaskCount:         2,
 			expectTaskScheduleCount: 2,
 		},
@@ -341,14 +386,11 @@ func TestCancelTask(t *testing.T) {
 			name:                    "unexisting task",
 			id:                      "taskX",
 			expectError:             true,
+			expectEvents:            nil,
 			expectTaskCount:         3,
 			expectTaskScheduleCount: 2,
 		},
 	}
-
-	now := time.Now()
-	at := now.Add(10 * time.Minute)
-	d1Hour := 1 * time.Hour
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -374,7 +416,9 @@ func TestCancelTask(t *testing.T) {
 			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(at), types.ScheduleEvery(&d1Hour)))
 			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task3", nil, types.ScheduleAt(at)))
 			// pause the task2 to test canceling a paused task
-			require.NoError(t, k.tasksSchedule.Remove(ctx, collections.Join3[string, time.Time, types.TaskID]("noargs", at, "task2")))
+			require.NoError(t, k.RescheduleTask(ctx, "task2", types.Unschedule()))
+
+			ctx = ctx.WithEventManager(cosmostypes.NewEventManager())
 
 			err = k.CancelTask(ctx, tc.id)
 			if tc.expectError {
@@ -385,6 +429,9 @@ func TestCancelTask(t *testing.T) {
 				require.NoError(t, err)
 				require.False(t, exists)
 			}
+
+			evts := parseEvents(t, ctx.EventManager().Events().ToABCIEvents())
+			require.Equal(t, tc.expectEvents, evts)
 
 			it, err := k.tasks.IterateRaw(ctx, nil, nil, collections.OrderAscending)
 			require.NoError(t, err)
@@ -402,22 +449,31 @@ func TestCancelTask(t *testing.T) {
 }
 
 func TestRescheduleTask(t *testing.T) {
-	now := time.Now()
+	now := time.Now().UTC()
 	d1Hour := 1 * time.Hour
-	at := now.Add(d1Hour).UTC()
+	in10Min := now.Add(10 * time.Minute)
+	at := now.Add(d1Hour)
 
 	testCases := []struct {
-		name        string
-		id          types.TaskID
-		newSchedule []types.SchedulingOption
-		expectError bool
-		expectTask  *types.Task
+		name         string
+		id           types.TaskID
+		newSchedule  []types.SchedulingOption
+		expectError  bool
+		expectEvents []proto.Message
+		expectTask   *types.Task
 	}{
 		{
 			name:        "existing task",
 			id:          "task1",
 			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
 			expectError: false,
+			expectEvents: []proto.Message{
+				&types.TaskScheduledEvent{
+					Id:       "task1",
+					Typename: "noargs",
+					At:       &at,
+				},
+			},
 			expectTask: &types.Task{
 				Id:                 "task1",
 				Typename:           "noargs",
@@ -434,6 +490,13 @@ func TestRescheduleTask(t *testing.T) {
 			id:          "task2",
 			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
 			expectError: false,
+			expectEvents: []proto.Message{
+				&types.TaskScheduledEvent{
+					Id:       "task2",
+					Typename: "noargs",
+					At:       &at,
+				},
+			},
 			expectTask: &types.Task{
 				Id:                 "task2",
 				Typename:           "noargs",
@@ -450,6 +513,13 @@ func TestRescheduleTask(t *testing.T) {
 			id:          "task1",
 			newSchedule: []types.SchedulingOption{types.Unschedule()},
 			expectError: false,
+			expectEvents: []proto.Message{
+				&types.TaskUnscheduledEvent{
+					Id:       "task1",
+					Typename: "noargs",
+					At:       &in10Min,
+				},
+			},
 			expectTask: &types.Task{
 				Id:                 "task1",
 				Typename:           "noargs",
@@ -462,18 +532,20 @@ func TestRescheduleTask(t *testing.T) {
 			},
 		},
 		{
-			name:        "unexisting task",
-			id:          "taskX",
-			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
-			expectError: true,
-			expectTask:  nil,
+			name:         "unexisting task",
+			id:           "taskX",
+			newSchedule:  []types.SchedulingOption{types.ScheduleAt(at)},
+			expectError:  true,
+			expectEvents: nil,
+			expectTask:   nil,
 		},
 		{
-			name:        "new time in the past",
-			id:          "task1",
-			newSchedule: []types.SchedulingOption{types.ScheduleAt(now.Add(-d1Hour))},
-			expectError: true,
-			expectTask:  nil,
+			name:         "new time in the past",
+			id:           "task1",
+			newSchedule:  []types.SchedulingOption{types.ScheduleAt(now.Add(-d1Hour))},
+			expectError:  true,
+			expectEvents: nil,
+			expectTask:   nil,
 		},
 	}
 
@@ -497,10 +569,12 @@ func TestRescheduleTask(t *testing.T) {
 				WithBlockTime(now)
 
 			// pre-insert tasks
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(now.Add(10*time.Minute))))
-			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(now.Add(10*time.Minute)), types.ScheduleEvery(&d1Hour)))
+			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task1", nil, types.ScheduleAt(in10Min)))
+			require.NoError(t, k.ScheduleTask(ctx, "noargs", "task2", nil, types.ScheduleAt(in10Min), types.ScheduleEvery(&d1Hour)))
 			// pause the task2 to test rescheduling a paused task
 			require.NoError(t, k.tasksSchedule.Remove(ctx, collections.Join3[string, time.Time, types.TaskID]("noargs", at, "task2")))
+
+			ctx = ctx.WithEventManager(cosmostypes.NewEventManager())
 
 			err = k.RescheduleTask(ctx, tc.id, tc.newSchedule...)
 			if tc.expectError {
@@ -517,6 +591,9 @@ func TestRescheduleTask(t *testing.T) {
 					require.True(t, exists)
 				}
 			}
+
+			evts := parseEvents(t, ctx.EventManager().Events().ToABCIEvents())
+			require.Equal(t, tc.expectEvents, evts)
 		})
 	}
 }
