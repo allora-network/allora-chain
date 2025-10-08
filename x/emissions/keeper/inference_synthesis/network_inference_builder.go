@@ -406,7 +406,6 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 		}
 
 		// Get regrets for the forecasters
-		remainingForecasterRegrets := make(map[string]*alloraMath.Dec)
 		for _, forecaster := range args.Forecasters {
 			regret, _, err := args.K.GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, forecaster)
 			if err != nil {
