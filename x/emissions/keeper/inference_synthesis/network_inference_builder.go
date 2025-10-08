@@ -134,10 +134,10 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 	oneOutInfererForecastImpliedValues = make([]*emissions.OneOutInfererForecasterValues, 0)
 
 	// If NetworkCombinedLoss is nil, return empty slice immediately
-	// if args.NetworkCombinedLoss == nil {
-	// 	args.Logger.Debug("NetworkCombinedLoss is nil, returning empty one-out inferer forecast implied values", "topicId", args.TopicId)
-	// 	return oneOutInfererForecastImpliedValues, nil
-	// }
+	if args.NetworkCombinedLoss == nil {
+		args.Logger.Debug("NetworkCombinedLoss is nil, returning empty one-out inferer forecast implied values", "topicId", args.TopicId)
+		return oneOutInfererForecastImpliedValues, nil
+	}
 
 	// Only process if we have both inferers and forecasters
 	if len(args.Inferers) <= 1 || len(args.Forecasters) == 0 {
