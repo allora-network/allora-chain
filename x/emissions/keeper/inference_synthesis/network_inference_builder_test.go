@@ -405,8 +405,6 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	topic.PNorm = pNorm
 	topic.Epsilon = epsilonTopic
 
-	valueBundle := s.getValueBundleForCombinedLoss(topicId, blockHeight, networkCombinedLoss)
-
 	var err error
 	var calcArgs inferencesynthesis.CalcNetworkInferencesArgs
 	calcArgs, err = inferencesynthesis.GetCalcNetworkInferenceArgs(
@@ -416,7 +414,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		&inferences,
 		forecasts,
 		topic,
-		valueBundle,
+		&networkCombinedLoss,
 		moduleParams,
 		blockHeight,
 	)
@@ -453,8 +451,6 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	topic.Epsilon = epsilonTopic
 	topic.PNorm = pNorm
 
-	networkLosses := s.getValueBundleForCombinedLoss(topicId, blockHeight, networkCombinedLoss)
-
 	moduleParams := emissionstypes.DefaultParams()
 	moduleParams.CNorm = cNorm
 	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
@@ -468,7 +464,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 		inferences,
 		forecasts,
 		topic,
-		networkLosses,
+		&networkCombinedLoss,
 		moduleParams,
 		blockHeight,
 	)
@@ -601,7 +597,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 			Forecasters:          forecasters,
 			ForecasterToForecast: forecastByWorker,
 			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  networkCombinedLoss,
+			NetworkCombinedLoss:  &networkCombinedLoss,
 			EpsilonTopic:         epsilonTopic,
 			EpsilonSafeDiv:       epsilonSafeDiv,
 			PNorm:                pNorm,
@@ -815,7 +811,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 		ForecasterToForecast:                 forecastByWorker,
 		ForecasterToRegret:                   forecasterRegrets,
 		ForecasterToForecastImpliedInference: forecastImpliedInferenceByWorker,
-		NetworkCombinedLoss:                  networkCombinedLoss,
+		NetworkCombinedLoss:                  &networkCombinedLoss,
 		EpsilonTopic:                         epsilonTopic,
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
@@ -929,7 +925,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 		ForecasterToForecast:                 forecastByWorker,
 		ForecasterToRegret:                   forecasterRegrets,
 		ForecasterToForecastImpliedInference: forecastImpliedInferenceByWorker,
-		NetworkCombinedLoss:                  networkCombinedLoss,
+		NetworkCombinedLoss:                  &networkCombinedLoss,
 		EpsilonTopic:                         epsilonTopic,
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
@@ -1073,7 +1069,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 		ForecasterToForecast:                 forecastByWorker,
 		ForecasterToRegret:                   forecasterRegrets,
 		ForecasterToForecastImpliedInference: forecastImpliedInferenceByWorker,
-		NetworkCombinedLoss:                  networkCombinedLoss,
+		NetworkCombinedLoss:                  &networkCombinedLoss,
 		EpsilonTopic:                         epsilonTopic,
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
@@ -1221,7 +1217,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 		ForecasterToForecast:                 forecastByWorker,
 		ForecasterToRegret:                   forecasterRegrets,
 		ForecasterToForecastImpliedInference: forecastImpliedInferenceByWorker,
-		NetworkCombinedLoss:                  networkCombinedLoss,
+		NetworkCombinedLoss:                  &networkCombinedLoss,
 		EpsilonTopic:                         epsilonTopic,
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
@@ -1330,7 +1326,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTw
 		ForecasterToForecast:                 forecastByWorker,
 		ForecasterToRegret:                   forecasterRegrets,
 		ForecasterToForecastImpliedInference: forecastImpliedInferenceByWorker,
-		NetworkCombinedLoss:                  networkCombinedLoss,
+		NetworkCombinedLoss:                  &networkCombinedLoss,
 		EpsilonTopic:                         epsilonTopic,
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
@@ -1426,7 +1422,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			Forecasters:          forecasters,
 			ForecasterToForecast: forecastByWorker,
 			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  networkCombinedLoss,
+			NetworkCombinedLoss:  &networkCombinedLoss,
 			EpsilonTopic:         epsilonTopic,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
@@ -1467,7 +1463,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			Forecasters:          []string{}, // Empty forecasters
 			ForecasterToForecast: make(map[string]*emissionstypes.Forecast),
 			ForecasterToRegret:   make(map[string]*alloraMath.Dec),
-			NetworkCombinedLoss:  networkCombinedLoss,
+			NetworkCombinedLoss:  &networkCombinedLoss,
 			EpsilonTopic:         epsilonTopic,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
@@ -1490,7 +1486,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			Forecasters:          forecasters,
 			ForecasterToForecast: forecastByWorker,
 			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  networkCombinedLoss,
+			NetworkCombinedLoss:  &networkCombinedLoss,
 			EpsilonTopic:         epsilonTopic,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
@@ -1567,7 +1563,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 			Forecasters:          forecasters,
 			ForecasterToForecast: forecastByWorker,
 			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  networkCombinedLoss,
+			NetworkCombinedLoss:  &networkCombinedLoss,
 			EpsilonTopic:         epsilonTopic,
 			PNorm:                pNorm,
 			CNorm:                cNorm,

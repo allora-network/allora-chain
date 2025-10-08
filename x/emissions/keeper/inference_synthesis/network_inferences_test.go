@@ -1,6 +1,7 @@
 package inferencesynthesis_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -351,7 +352,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 		false,
 	)
 	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result.NetworkInferences.CombinedValue, "0.1997509073157136")
+	testutil.InEpsilon5(s.T(), result.NetworkInferences.CombinedValue, "0.1545011958768693516000000000000000")
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldInfererNoForecastersFromCsv() {
@@ -368,11 +369,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
 	s.Require().NoError(err)
 
-	inferer0 := s.AddrsStr(0)
-	inferer1 := s.AddrsStr(1)
-	inferer2 := s.AddrsStr(2)
-	inferer3 := s.AddrsStr(3)
-	inferer4 := s.AddrsStr(4)
+	inferer0 := "allo1w4cp8s5cs70thlff3an4sv3e3gvq4u5r9nmy0l"
+	inferer1 := "allo1vmv489rj5lz27gl647v85a86lxg9evxvdgdwru"
+	inferer2 := "allo15yhwm7je53w3r6wqad2w4g0a7q5khk6wx0r3eh"
+	inferer3 := "allo15f5cqa3zmtllnnljhmqnwpuezyfcdm5fy33eud"
+	inferer4 := "allo193s398npp0ftd65l96cnh7we5nf96lzt2ty30g"
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
@@ -403,6 +404,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
+	fmt.Println("valueBundle", valueBundle)
+	fmt.Println("valueBundle.OneOutInfererValues", valueBundle.OneOutInfererValues)
+	fmt.Println("valueBundle.OneOutForecasterValues", valueBundle.OneOutForecasterValues)
+	fmt.Println("valueBundle.OneInForecasterValues", valueBundle.OneInForecasterValues)
+	fmt.Println("valueBundle.ForecasterValues", valueBundle.ForecasterValues)
+	fmt.Println("valueBundle.InfererValues", valueBundle.InfererValues)
+	fmt.Println("valueBundle.NaiveValue", valueBundle.NaiveValue)
 
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.20059970801966293")
 

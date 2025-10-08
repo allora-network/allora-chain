@@ -18,7 +18,7 @@ type CalcForecastImpliedInferencesArgs struct {
 	Forecasters          []Forecaster
 	ForecasterToForecast map[Forecaster]*emissionstypes.Forecast
 	ForecasterToRegret   map[Forecaster]*Regret
-	NetworkCombinedLoss  alloraMath.Dec
+	NetworkCombinedLoss  *alloraMath.Dec
 	EpsilonTopic         alloraMath.Dec
 	PNorm                alloraMath.Dec
 	CNorm                alloraMath.Dec
@@ -38,6 +38,12 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 	err error,
 ) {
 	args.Logger.Debug("Calculating forecast-implied inferences", "topicId", args.TopicId)
+
+	// If NetworkCombinedLoss is nil, return empty maps immediately
+	if args.NetworkCombinedLoss == nil {
+		args.Logger.Debug("NetworkCombinedLoss is nil, returning empty forecast-implied inferences", "topicId", args.TopicId)
+		return make(map[Forecaster]*emissionstypes.Inference), args.InfererToRegret, args.ForecasterToRegret, nil
+	}
 	// "k" here is the forecaster's address
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
 	forecasterToForecastImpliedInference = make(map[Forecaster]*emissionstypes.Inference, len(args.Forecasters))
@@ -114,7 +120,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					// Calculate the approximate forecast regret of the network inference
 					// this is R_ijk in the paper
 					forecastRegretOfNetworkInference, err :=
-						args.NetworkCombinedLoss.Sub(forecastElementsByInferer[infererInForecast].Value)
+						(*args.NetworkCombinedLoss).Sub(forecastElementsByInferer[infererInForecast].Value)
 					if err != nil {
 						return nil, nil, nil, errorsmod.Wrapf(err,
 							"error calculating forecast-implied inferences: error calculating network loss per value")
