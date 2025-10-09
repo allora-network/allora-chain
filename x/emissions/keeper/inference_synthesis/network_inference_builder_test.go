@@ -79,26 +79,6 @@ func (s *InferenceSynthesisTestSuite) mockEmptyValueBundle(
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) getValueBundleForCombinedLoss(topicId uint64, blockHeight int64, combinedLoss alloraMath.Dec) emissionstypes.ValueBundle {
-	valueBundle := emissionstypes.ValueBundle{
-		TopicId: topicId,
-		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
-			ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeight},
-		},
-		Reputer:                       s.AddrsStr(0),
-		ExtraData:                     nil,
-		CombinedValue:                 combinedLoss,
-		InfererValues:                 nil,
-		ForecasterValues:              nil,
-		NaiveValue:                    combinedLoss,
-		OneOutInfererValues:           nil,
-		OneOutForecasterValues:        nil,
-		OneInForecasterValues:         nil,
-		OneOutInfererForecasterValues: nil,
-	}
-	return valueBundle
-}
-
 func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int) (
 	ctx sdk.Context,
 	k keeper.Keeper,
