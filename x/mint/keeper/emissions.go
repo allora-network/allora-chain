@@ -62,20 +62,11 @@ func GetLockedVestingTokens(
 
 // GetLockedVestingTokens calculates the number of uncirculating (locked) tokens
 // for vesting categories according to the updated tokenomics.
-//
-// Vesting Logic Summary:
-// - Network Emissions: 0% TGE, linear vesting over 84 months (estimated)
-// - Foundation:
-//     * Part unlocks at TGE
-//     * Remaining vests linearly over 24 months
-// - Participants: Part unlocked at TGE, remaining vests linearly over 12 months
-//
 // Returns:
 // - totalLocked: sum of all locked tokens
 // - breakdowns per category
 // - updatedMonthsUnlocked: stored to preserve monotonicity
-
-var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("88.5").Quo(math.LegacyMustNewDecFromStr("225.0"))
+var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("88.5").Quo(math.LegacyMustNewDecFromStr("177.0"))
 
 func GetLockedVestingTokensNew(
 	blocksPerMonth uint64,

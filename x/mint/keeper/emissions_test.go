@@ -693,7 +693,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewMathematicalPrecision
 	s.Require().NoError(err)
 	// Foundation: 88.5% of 10% locked initially, should be 25% unlocked at month 18
 	expectedFoundationLocked := params.FoundationTreasuryPercentOfTotalSupply.
-		Mul(cosmosMath.LegacyMustNewDecFromStr("88.5").QuoTruncate(cosmosMath.LegacyMustNewDecFromStr("225.0"))).
+		Mul(keeper.FoundationInitialLockedPercentage).
 		Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().
 		Mul(cosmosMath.NewInt(6)).Quo(cosmosMath.NewInt(24))
 
