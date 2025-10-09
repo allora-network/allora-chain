@@ -3,6 +3,7 @@ package v0_13_0 //nolint:revive // var-naming: don't use an underscore in packag
 import (
 	"context"
 	"strings"
+	"time"
 
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -46,7 +47,60 @@ func CreateUpgradeHandler(
 				}
 			}
 
-			if err := appKeepers.MintKeeper.ScheduleEmissionRecalculationTask(ctx, appKeepers.SchedulerKeeper); err != nil {
+			oneMonthDuration := 30 * 24 * time.Hour
+
+			// Pull the currently configured cadence so we can align the scheduler with the pre-upgrade emission cycle.
+			blocksPerMonth, err := appKeepers.MintKeeper.GetParamsBlocksPerMonth(ctx)
+			if err != nil {
+				sdkCtx.Logger().Error("failed to get blocks per month", "err", err)
+				return vm, err
+			}
+
+			initialDelay := oneMonthDuration
+			var blocksRemaining uint64
+			if blocksPerMonth > 0 {
+				// Use the latest block height as the anchor for the alignment calculations.
+				blockHeight := uint64(0)
+				if sdkCtx.BlockHeight() > 0 {
+					blockHeight = uint64(sdkCtx.BlockHeight())
+				}
+
+				var blocksElapsed uint64
+				if blockHeight > 0 {
+					blocksElapsed = (blockHeight - 1) % blocksPerMonth
+				}
+
+				// Remaining blocks until we hit the next monthly emission checkpoint.
+				blocksRemaining = blocksPerMonth - blocksElapsed
+				if blocksRemaining == 0 {
+					// If we landed exactly on the boundary we still want the next run a full month later.
+					blocksRemaining = blocksPerMonth
+				}
+
+				// Convert the remaining block count into real time so the scheduler can use a relative delay.
+				monthNanoseconds := oneMonthDuration.Nanoseconds()
+				perBlockNanoseconds := monthNanoseconds / int64(blocksPerMonth)
+				remainingNanoseconds := perBlockNanoseconds * int64(blocksRemaining)
+
+				// Carry the fractional part of the division to avoid monthly drift.
+				if remainder := monthNanoseconds % int64(blocksPerMonth); remainder > 0 {
+					remainingNanoseconds += remainder * int64(blocksRemaining) / int64(blocksPerMonth)
+				}
+
+				initialDelay = time.Duration(remainingNanoseconds)
+				if initialDelay <= 0 {
+					// Guard against rounding corner cases that would otherwise schedule in the past.
+					initialDelay = time.Second
+				}
+			}
+
+			sdkCtx.Logger().Info("calculated emission recalculation schedule",
+				"interval", oneMonthDuration,
+				"initialDelay", initialDelay,
+				"blocksRemaining", blocksRemaining,
+			)
+
+			if err := appKeepers.MintKeeper.ScheduleEmissionRecalculationTask(ctx, appKeepers.SchedulerKeeper, initialDelay); err != nil {
 				sdkCtx.Logger().Error("failed to schedule emission recalculation task", "err", err)
 				return vm, err
 			}

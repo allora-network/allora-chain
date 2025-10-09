@@ -2,6 +2,7 @@ package app
 
 import (
 	"strings"
+	"time"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/pkg/errors"
@@ -23,7 +24,7 @@ func (app *AlloraApp) InitializeRecurringTasks() {
 		}
 	}
 
-	if err := app.MintKeeper.ScheduleEmissionRecalculationTask(ctx, app.SchedulerKeeper); err != nil {
+	if err := app.MintKeeper.ScheduleEmissionRecalculationTask(ctx, app.SchedulerKeeper, 0); err != nil {
 		app.Logger().Error("failed to schedule emission recalculation task", "err", err)
 		return
 	}
