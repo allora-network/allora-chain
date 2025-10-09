@@ -76,7 +76,6 @@ func GetLockedVestingTokens(
 // - updatedMonthsUnlocked: stored to preserve monotonicity
 
 var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("88.5").Quo(math.LegacyMustNewDecFromStr("225.0"))
-var ParticipantsInitialLockedPercentage = math.LegacyMustNewDecFromStr("11.0").Quo(math.LegacyMustNewDecFromStr("75.0"))
 
 func GetLockedVestingTokensNew(
 	blocksPerMonth uint64,
@@ -102,16 +101,14 @@ func GetLockedVestingTokensNew(
 	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
 	percentTeam := params.TeamPercentOfTotalSupply
 	percentFoundation := params.FoundationTreasuryPercentOfTotalSupply
-	percentParticipants := params.ParticipantsPercentOfTotalSupply
 	lockedFoundationPercentage := percentFoundation.Mul(FoundationInitialLockedPercentage)
-	lockedParticipantsPercentage := percentParticipants.Mul(ParticipantsInitialLockedPercentage)
 	// Full amounts
 	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullPreseedInvestors := percentPreseedInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullTeam := percentTeam.MulTruncate(maxSupply).TruncateInt()
+
 	// Locked sub-amounts
 	lockedFoundationTotalAmount := lockedFoundationPercentage.MulTruncate(maxSupply).TruncateInt()
-	lockedParticipantsTotalAmount := lockedParticipantsPercentage.MulTruncate(maxSupply).TruncateInt()
 
 	// ---- 3. Determine months since genesis ----
 	calculatedMonthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth))
@@ -136,18 +133,7 @@ func GetLockedVestingTokensNew(
 		foundationLocked = math.ZeroInt() // everything unlocked already
 	}
 
-	// Determine Participants tokens locked
-	// Participants: 64M unlocked at TGE, 11M vests linearly over 12 months
-	participantsVestingDuration := twelve
-	if monthsAlreadyUnlocked.LT(participantsVestingDuration) {
-		remainingMonthsParticipants := participantsVestingDuration.Sub(monthsAlreadyUnlocked)
-		participantsLocked = lockedParticipantsTotalAmount.Mul(remainingMonthsParticipants).Quo(participantsVestingDuration)
-	} else {
-		participantsLocked = math.ZeroInt() // everything unlocked already
-	}
-
 	// one year cliff : preseed, investors, team
-
 	if monthsAlreadyUnlocked.LT(twelve) {
 		investorsLocked = fullInvestors
 		preseedInvestorsLocked = fullPreseedInvestors
@@ -162,6 +148,8 @@ func GetLockedVestingTokensNew(
 		preseedInvestorsLocked = math.ZeroInt()
 		teamLocked = math.ZeroInt()
 	}
+	// participants are unlocked from start
+	participantsLocked = math.ZeroInt()
 
 	totalLocked = preseedInvestorsLocked.Add(investorsLocked).Add(teamLocked).Add(foundationLocked).Add(participantsLocked)
 	return totalLocked, preseedInvestorsLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, monthsAlreadyUnlocked, nil

@@ -381,7 +381,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	expectedInvestors := params.InvestorsPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt()
 	expectedTeam := params.TeamPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt()
 	expectedFoundation := params.FoundationTreasuryPercentOfTotalSupply.Mul(keeper.FoundationInitialLockedPercentage).Mul(params.MaxSupply.ToLegacyDec()).TruncateInt()
-	expectedParticipants := params.ParticipantsPercentOfTotalSupply.Mul(keeper.ParticipantsInitialLockedPercentage).Mul(params.MaxSupply.ToLegacyDec()).TruncateInt()
+	expectedParticipants := cosmosMath.ZeroInt() // Participants are unlocked from the start
 	expectedTotal := expectedPreseed.Add(expectedInvestors).Add(expectedTeam).Add(expectedFoundation).Add(expectedParticipants)
 
 	fmt.Println("--------------------------------")
@@ -399,7 +399,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	s.Require().Equal(investorsLocked, expectedInvestors, "Investors should be locked at genesis")
 	s.Require().Equal(teamLocked, expectedTeam, "Team should be locked at genesis")
 	s.Require().Equal(foundationLocked, expectedFoundation, "Foundation should be locked at genesis")
-	s.Require().Equal(participantsLocked, expectedParticipants, "Participants should be locked at genesis")
+	s.Require().Equal(participantsLocked, expectedParticipants, "Participants should be unlocked at genesis")
 	s.Require().Equal(cosmosMath.ZeroInt(), updatedMonths, "Months unlocked should be 0 at genesis")
 
 	// Test after 11 months (month 11) - preseed, investors, team should start vesting
@@ -414,7 +414,7 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	s.Require().True(investorsLocked.GT(cosmosMath.ZeroInt()), "Investors should be locked at month 11")
 	s.Require().True(teamLocked.GT(cosmosMath.ZeroInt()), "Team should be locked at month 11")
 	s.Require().True(foundationLocked.GT(cosmosMath.ZeroInt()), "Foundation should be locked at month 11")
-	s.Require().True(participantsLocked.GT(cosmosMath.ZeroInt()), "Participants should be locked at month 11")
+	s.Require().True(participantsLocked.Equal(cosmosMath.ZeroInt()), "Participants should be unlocked at month 11")
 	s.Require().True(totalLocked.GT(cosmosMath.ZeroInt()), "Total locked should be > 0 at month 11")
 	s.Require().Equal(cosmosMath.NewInt(11), updatedMonths, "Months unlocked should be 11 at month 11")
 
@@ -610,14 +610,14 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewVestingSchedules() {
 		}
 	}
 
-	// Test Participants vesting (12 months)
+	// Test Participants vesting - participants are unlocked from the start
 	participantsVestingTests := []struct {
 		months         int64
 		shouldBeLocked bool
 		description    string
 	}{
-		{0, true, "Participants should be locked at month 0"},
-		{6, true, "Participants should be locked at month 6"},
+		{0, false, "Participants should be unlocked at month 0"},
+		{6, false, "Participants should be unlocked at month 6"},
 		{12, false, "Participants should be unlocked at month 12"},
 		{24, false, "Participants should be unlocked at month 24"},
 	}
@@ -670,21 +670,18 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewMathematicalPrecision
 	params := generateNewMintParams()
 	blocksPerMonth := uint64(525960)
 
-	// Test at month 6 - participants should be 50% unlocked
+	// Test at month 6 - participants are unlocked from the start
 	blockHeight := cosmosMath.NewIntFromUint64(blocksPerMonth * 6)
 	monthsUnlocked := cosmosMath.NewInt(6)
 
 	_, _, _, _, _, participantsLocked, _, err :=
 		keeper.GetLockedVestingTokensNew(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
-	// Participants: 11M locked initially, should be 50% unlocked at month 6
-	expectedParticipantsLocked := params.ParticipantsPercentOfTotalSupply.
-		Mul(cosmosMath.LegacyMustNewDecFromStr("11.0").QuoTruncate(cosmosMath.LegacyMustNewDecFromStr("75.0"))).
-		Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().
-		Mul(cosmosMath.NewInt(6)).Quo(cosmosMath.NewInt(12))
+	// Participants are unlocked from the start, so always zero
+	expectedParticipantsLocked := cosmosMath.ZeroInt()
 
 	s.Require().True(participantsLocked.Equal(expectedParticipantsLocked),
-		"Participants locked should be 50% at month 6. Expected: %s, Got: %s",
+		"Participants locked should be zero at month 6. Expected: %s, Got: %s",
 		expectedParticipantsLocked, participantsLocked)
 
 	// Test at month 18 - foundation should be 25% unlocked (18/24)
