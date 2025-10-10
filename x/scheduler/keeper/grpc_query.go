@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
 	collutils "github.com/allora-network/allora-chain/utils/collections"
@@ -66,4 +67,20 @@ func (q Querier) getTasksByType(ctx context.Context, typename string, pagination
 		},
 		query.WithCollectionPaginationPairPrefix[string, types.TaskID](typename),
 	)
+}
+
+func (q Querier) Task(ctx context.Context, req *types.QueryTaskRequest) (*types.QueryTaskResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	task, err := q.GetTask(ctx, req.TaskId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, err.Error())
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTaskResponse{Task: task}, nil
 }

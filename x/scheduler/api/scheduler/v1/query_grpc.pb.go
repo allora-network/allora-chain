@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Query_Tasks_FullMethodName = "/scheduler.v1.Query/Tasks"
+	Query_Task_FullMethodName  = "/scheduler.v1.Query/Task"
 )
 
 // QueryClient is the client API for Query service.
@@ -33,6 +34,8 @@ type QueryClient interface {
 	// When called from another module, this query might consume a high amount of
 	// gas if the pagination field is incorrectly set.
 	Tasks(ctx context.Context, in *QueryTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
+	// Task queries a task by its ID.
+	Task(ctx context.Context, in *QueryTaskRequest, opts ...grpc.CallOption) (*QueryTaskResponse, error)
 }
 
 type queryClient struct {
@@ -53,6 +56,16 @@ func (c *queryClient) Tasks(ctx context.Context, in *QueryTasksRequest, opts ...
 	return out, nil
 }
 
+func (c *queryClient) Task(ctx context.Context, in *QueryTaskRequest, opts ...grpc.CallOption) (*QueryTaskResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryTaskResponse)
+	err := c.cc.Invoke(ctx, Query_Task_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility.
@@ -64,6 +77,8 @@ type QueryServer interface {
 	// When called from another module, this query might consume a high amount of
 	// gas if the pagination field is incorrectly set.
 	Tasks(context.Context, *QueryTasksRequest) (*QueryTasksResponse, error)
+	// Task queries a task by its ID.
+	Task(context.Context, *QueryTaskRequest) (*QueryTaskResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -76,6 +91,9 @@ type UnimplementedQueryServer struct{}
 
 func (UnimplementedQueryServer) Tasks(context.Context, *QueryTasksRequest) (*QueryTasksResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Tasks not implemented")
+}
+func (UnimplementedQueryServer) Task(context.Context, *QueryTaskRequest) (*QueryTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Task not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 func (UnimplementedQueryServer) testEmbeddedByValue()               {}
@@ -116,6 +134,24 @@ func _Query_Tasks_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Task_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Task(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Task_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Task(ctx, req.(*QueryTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -126,6 +162,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Tasks",
 			Handler:    _Query_Tasks_Handler,
+		},
+		{
+			MethodName: "Task",
+			Handler:    _Query_Task_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

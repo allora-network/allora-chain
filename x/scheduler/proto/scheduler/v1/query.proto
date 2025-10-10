@@ -21,6 +21,22 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/scheduler/v1/tasks";
   }
+
+  // Task queries a task by its ID.
+  rpc Task(QueryTaskRequest) returns (QueryTaskResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/scheduler/v1/tasks/{task_id}";
+  }
+//
+//  rpc Handlers(QueryHandlersRequest) returns (QueryHandlersResponse) {
+//    option (cosmos.query.v1.module_query_safe) = false;
+//    option (google.api.http).get = "/scheduler/v1/handlers";
+//  }
+//
+//  rpc Handler(QueryHandlerRequest) returns (QueryHandlerResponse) {
+//    option (cosmos.query.v1.module_query_safe) = false;
+//    option (google.api.http).get = "/scheduler/v1/handlers/{typename}";
+//  }
 }
 
 // QueryTasksRequest is the request type for the Query/Tasks RPC method.
@@ -39,4 +55,16 @@ message QueryTasksResponse {
 
   // Pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryTaskRequest is the request type for the Query/Task RPC method.
+message QueryTaskRequest {
+  // TaskId is the id of the queried task.
+  string task_id = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "TaskID"];
+}
+
+// QueryTaskResponse is the response type for the Query/Task RPC method.
+message QueryTaskResponse {
+  // Task is the queried task.
+  Task task = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
