@@ -1,0 +1,42 @@
+syntax = "proto3";
+package scheduler.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/query/v1/query.proto";
+import "scheduler/v1/task.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/scheduler/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Tasks queries all tasks.
+  //
+  // When called from another module, this query might consume a high amount of
+  // gas if the pagination field is incorrectly set.
+  rpc Tasks(QueryTasksRequest) returns (QueryTasksResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/scheduler/v1/tasks";
+  }
+}
+
+// QueryTasksRequest is the request type for the Query/Tasks RPC method.
+message QueryTasksRequest {
+  // Typename if specified, filters tasks by their handler typename.
+  string typename = 1;
+
+  // Pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryTasksResponse is the response type for the Query/Tasks RPC method.
+message QueryTasksResponse {
+  // Tasks contains all the queried tasks.
+  repeated Task tasks = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+
+  // Pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
