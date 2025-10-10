@@ -133,7 +133,7 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 	}
 	// Remove the topic from the active topics at the block
 	// If the topic is not found in the active topics at the block, no op
-	newActiveTopicIds := []TopicId{}
+	newActiveTopicIds := topicIdsActiveAtBlock.TopicIds 
 	for i, id := range topicIdsActiveAtBlock.TopicIds {
 		if id == topicId {
 			newActiveTopicIds = append(topicIdsActiveAtBlock.TopicIds[:i], topicIdsActiveAtBlock.TopicIds[i+1:]...)
