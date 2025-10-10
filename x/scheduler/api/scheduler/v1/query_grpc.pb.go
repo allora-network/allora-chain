@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Query_Tasks_FullMethodName    = "/scheduler.v1.Query/Tasks"
-	Query_Task_FullMethodName     = "/scheduler.v1.Query/Task"
-	Query_Handlers_FullMethodName = "/scheduler.v1.Query/Handlers"
+	Query_Tasks_FullMethodName          = "/scheduler.v1.Query/Tasks"
+	Query_Task_FullMethodName           = "/scheduler.v1.Query/Task"
+	Query_ScheduledTasks_FullMethodName = "/scheduler.v1.Query/ScheduledTasks"
+	Query_Handlers_FullMethodName       = "/scheduler.v1.Query/Handlers"
 )
 
 // QueryClient is the client API for Query service.
@@ -37,6 +38,11 @@ type QueryClient interface {
 	Tasks(ctx context.Context, in *QueryTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
 	// Task queries a task by its ID.
 	Task(ctx context.Context, in *QueryTaskRequest, opts ...grpc.CallOption) (*QueryTaskResponse, error)
+	// ScheduledTasks queries the scheduled tasks of a specific type.
+	//
+	// When called from another module, this query might consume a high amount of
+	// gas if the pagination field is incorrectly set.
+	ScheduledTasks(ctx context.Context, in *QueryScheduledTasksRequest, opts ...grpc.CallOption) (*QueryScheduledTasksResponse, error)
 	// Handlers queries all the registered task handlers.
 	Handlers(ctx context.Context, in *QueryHandlersRequest, opts ...grpc.CallOption) (*QueryHandlersResponse, error)
 }
@@ -69,6 +75,16 @@ func (c *queryClient) Task(ctx context.Context, in *QueryTaskRequest, opts ...gr
 	return out, nil
 }
 
+func (c *queryClient) ScheduledTasks(ctx context.Context, in *QueryScheduledTasksRequest, opts ...grpc.CallOption) (*QueryScheduledTasksResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(QueryScheduledTasksResponse)
+	err := c.cc.Invoke(ctx, Query_ScheduledTasks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) Handlers(ctx context.Context, in *QueryHandlersRequest, opts ...grpc.CallOption) (*QueryHandlersResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QueryHandlersResponse)
@@ -92,6 +108,11 @@ type QueryServer interface {
 	Tasks(context.Context, *QueryTasksRequest) (*QueryTasksResponse, error)
 	// Task queries a task by its ID.
 	Task(context.Context, *QueryTaskRequest) (*QueryTaskResponse, error)
+	// ScheduledTasks queries the scheduled tasks of a specific type.
+	//
+	// When called from another module, this query might consume a high amount of
+	// gas if the pagination field is incorrectly set.
+	ScheduledTasks(context.Context, *QueryScheduledTasksRequest) (*QueryScheduledTasksResponse, error)
 	// Handlers queries all the registered task handlers.
 	Handlers(context.Context, *QueryHandlersRequest) (*QueryHandlersResponse, error)
 	mustEmbedUnimplementedQueryServer()
@@ -109,6 +130,9 @@ func (UnimplementedQueryServer) Tasks(context.Context, *QueryTasksRequest) (*Que
 }
 func (UnimplementedQueryServer) Task(context.Context, *QueryTaskRequest) (*QueryTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Task not implemented")
+}
+func (UnimplementedQueryServer) ScheduledTasks(context.Context, *QueryScheduledTasksRequest) (*QueryScheduledTasksResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScheduledTasks not implemented")
 }
 func (UnimplementedQueryServer) Handlers(context.Context, *QueryHandlersRequest) (*QueryHandlersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Handlers not implemented")
@@ -170,6 +194,24 @@ func _Query_Task_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_ScheduledTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryScheduledTasksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ScheduledTasks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_ScheduledTasks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ScheduledTasks(ctx, req.(*QueryScheduledTasksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_Handlers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryHandlersRequest)
 	if err := dec(in); err != nil {
@@ -202,6 +244,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Task",
 			Handler:    _Query_Task_Handler,
+		},
+		{
+			MethodName: "ScheduledTasks",
+			Handler:    _Query_ScheduledTasks_Handler,
 		},
 		{
 			MethodName: "Handlers",

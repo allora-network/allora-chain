@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"time"
 
 	"cosmossdk.io/collections"
 	collutils "github.com/allora-network/allora-chain/utils/collections"
@@ -29,12 +30,12 @@ func (q Querier) Tasks(ctx context.Context, req *types.QueryTasksRequest) (*type
 	}
 
 	var tasks []types.Task
-	var pageRes *query.PageResponse
+	var page *query.PageResponse
 	var err error
 	if req.Typename == "" {
-		tasks, pageRes, err = q.getAllTasks(ctx, req.Pagination)
+		tasks, page, err = q.getAllTasks(ctx, req.Pagination)
 	} else {
-		tasks, pageRes, err = q.getTasksByType(ctx, req.Typename, req.Pagination)
+		tasks, page, err = q.getTasksByType(ctx, req.Typename, req.Pagination)
 	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -42,7 +43,7 @@ func (q Querier) Tasks(ctx context.Context, req *types.QueryTasksRequest) (*type
 
 	return &types.QueryTasksResponse{
 		Tasks:      tasks,
-		Pagination: pageRes,
+		Pagination: page,
 	}, nil
 }
 
@@ -83,6 +84,40 @@ func (q Querier) Task(ctx context.Context, req *types.QueryTaskRequest) (*types.
 	}
 
 	return &types.QueryTaskResponse{Task: task}, nil
+}
+
+func (q Querier) ScheduledTasks(ctx context.Context, req *types.QueryScheduledTasksRequest) (*types.QueryScheduledTasksResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+	if req.Typename == "" {
+		return nil, status.Error(codes.InvalidArgument, "empty typename")
+	}
+
+	var prefixOpt func(opt *query.CollectionsPaginateOptions[collections.Triple[string, time.Time, types.TaskID]])
+	if req.From != nil {
+		prefixOpt = collutils.WithCollectionPaginationTripleSuperPrefix[string, time.Time, types.TaskID](req.Typename, *req.From)
+	} else {
+		prefixOpt = collutils.WithCollectionPaginationTriplePrefix[string, time.Time, types.TaskID](req.Typename)
+	}
+
+	tasks, page, err := query.CollectionPaginate(
+		ctx,
+		q.tasksSchedule,
+		req.Pagination,
+		func(key collections.Triple[string, time.Time, types.TaskID], _ collections.NoValue) (types.Task, error) {
+			return q.tasks.Get(ctx, key.K3())
+		},
+		prefixOpt,
+	)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryScheduledTasksResponse{
+		Tasks:      tasks,
+		Pagination: page,
+	}, nil
 }
 
 func (q Querier) Handlers(_ context.Context, _ *types.QueryHandlersRequest) (*types.QueryHandlersResponse, error) {

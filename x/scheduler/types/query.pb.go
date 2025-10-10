@@ -12,19 +12,23 @@ import (
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -227,6 +231,125 @@ func (m *QueryTaskResponse) GetTask() Task {
 	return Task{}
 }
 
+// QueryScheduledTasksRequest is the request type for the Query/ScheduledTasks RPC method.
+type QueryScheduledTasksRequest struct {
+	// Typename is the type of tasks to query.
+	Typename string `protobuf:"bytes,1,opt,name=typename,proto3" json:"typename,omitempty"`
+	// From is an optional filter to only return tasks scheduled from a given time (i.e. after or before depending on the order, inclusive).
+	From *time.Time `protobuf:"bytes,2,opt,name=from,proto3,stdtime" json:"from,omitempty"`
+	// Pagination defines an optional pagination for the request.
+	Pagination *query.PageRequest `protobuf:"bytes,4,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryScheduledTasksRequest) Reset()         { *m = QueryScheduledTasksRequest{} }
+func (m *QueryScheduledTasksRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryScheduledTasksRequest) ProtoMessage()    {}
+func (*QueryScheduledTasksRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ceaf3ad2abe9ebe9, []int{4}
+}
+func (m *QueryScheduledTasksRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryScheduledTasksRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryScheduledTasksRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryScheduledTasksRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryScheduledTasksRequest.Merge(m, src)
+}
+func (m *QueryScheduledTasksRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryScheduledTasksRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryScheduledTasksRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryScheduledTasksRequest proto.InternalMessageInfo
+
+func (m *QueryScheduledTasksRequest) GetTypename() string {
+	if m != nil {
+		return m.Typename
+	}
+	return ""
+}
+
+func (m *QueryScheduledTasksRequest) GetFrom() *time.Time {
+	if m != nil {
+		return m.From
+	}
+	return nil
+}
+
+func (m *QueryScheduledTasksRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryScheduledTasksResponse is the response type for the Query/ScheduledTasks RPC method.
+type QueryScheduledTasksResponse struct {
+	// Tasks contains all the queried tasks.
+	Tasks []Task `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks"`
+	// Pagination defines the pagination in the response.
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryScheduledTasksResponse) Reset()         { *m = QueryScheduledTasksResponse{} }
+func (m *QueryScheduledTasksResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryScheduledTasksResponse) ProtoMessage()    {}
+func (*QueryScheduledTasksResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ceaf3ad2abe9ebe9, []int{5}
+}
+func (m *QueryScheduledTasksResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryScheduledTasksResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryScheduledTasksResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryScheduledTasksResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryScheduledTasksResponse.Merge(m, src)
+}
+func (m *QueryScheduledTasksResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryScheduledTasksResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryScheduledTasksResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryScheduledTasksResponse proto.InternalMessageInfo
+
+func (m *QueryScheduledTasksResponse) GetTasks() []Task {
+	if m != nil {
+		return m.Tasks
+	}
+	return nil
+}
+
+func (m *QueryScheduledTasksResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 // QueryHandlersRequest is the response type for the Query/Handlers RPC method.
 type QueryHandlersRequest struct {
 }
@@ -235,7 +358,7 @@ func (m *QueryHandlersRequest) Reset()         { *m = QueryHandlersRequest{} }
 func (m *QueryHandlersRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryHandlersRequest) ProtoMessage()    {}
 func (*QueryHandlersRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ceaf3ad2abe9ebe9, []int{4}
+	return fileDescriptor_ceaf3ad2abe9ebe9, []int{6}
 }
 func (m *QueryHandlersRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -274,7 +397,7 @@ func (m *QueryHandlersResponse) Reset()         { *m = QueryHandlersResponse{} }
 func (m *QueryHandlersResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryHandlersResponse) ProtoMessage()    {}
 func (*QueryHandlersResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ceaf3ad2abe9ebe9, []int{5}
+	return fileDescriptor_ceaf3ad2abe9ebe9, []int{7}
 }
 func (m *QueryHandlersResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -315,6 +438,8 @@ func init() {
 	proto.RegisterType((*QueryTasksResponse)(nil), "scheduler.v1.QueryTasksResponse")
 	proto.RegisterType((*QueryTaskRequest)(nil), "scheduler.v1.QueryTaskRequest")
 	proto.RegisterType((*QueryTaskResponse)(nil), "scheduler.v1.QueryTaskResponse")
+	proto.RegisterType((*QueryScheduledTasksRequest)(nil), "scheduler.v1.QueryScheduledTasksRequest")
+	proto.RegisterType((*QueryScheduledTasksResponse)(nil), "scheduler.v1.QueryScheduledTasksResponse")
 	proto.RegisterType((*QueryHandlersRequest)(nil), "scheduler.v1.QueryHandlersRequest")
 	proto.RegisterType((*QueryHandlersResponse)(nil), "scheduler.v1.QueryHandlersResponse")
 }
@@ -322,42 +447,49 @@ func init() {
 func init() { proto.RegisterFile("scheduler/v1/query.proto", fileDescriptor_ceaf3ad2abe9ebe9) }
 
 var fileDescriptor_ceaf3ad2abe9ebe9 = []byte{
-	// 557 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0x4f, 0x6f, 0xd3, 0x30,
-	0x18, 0xc6, 0x9b, 0xb2, 0x96, 0xd6, 0x43, 0x88, 0x99, 0x6d, 0x94, 0x00, 0x69, 0x95, 0x49, 0xac,
-	0xaa, 0x44, 0xac, 0xb4, 0x17, 0x24, 0x6e, 0x15, 0x1a, 0xec, 0x06, 0x11, 0x27, 0x2e, 0x93, 0xdb,
-	0x5a, 0x69, 0xd4, 0xd4, 0xce, 0xe2, 0xb4, 0xdb, 0x84, 0xb8, 0x70, 0xe2, 0x88, 0xe0, 0x4b, 0x70,
-	0xe4, 0x63, 0xec, 0x38, 0x89, 0x0b, 0xe2, 0x30, 0xa1, 0x76, 0x12, 0x5f, 0x03, 0xf9, 0x4f, 0xb2,
-	0x74, 0x6b, 0xd9, 0xa5, 0x8a, 0xfd, 0xbe, 0xcf, 0xfb, 0xfc, 0xfc, 0xb8, 0x06, 0x35, 0xde, 0x1f,
-	0x92, 0xc1, 0x24, 0x24, 0x31, 0x9a, 0xba, 0xe8, 0x70, 0x42, 0xe2, 0x13, 0x27, 0x8a, 0x59, 0xc2,
-	0xe0, 0x9d, 0xac, 0xe2, 0x4c, 0x5d, 0xb3, 0xd5, 0x67, 0x7c, 0xcc, 0x38, 0xea, 0x61, 0x4e, 0x54,
-	0x1b, 0x9a, 0xba, 0x3d, 0x92, 0x60, 0x17, 0x45, 0xd8, 0x0f, 0x28, 0x4e, 0x02, 0x46, 0x95, 0xd2,
-	0xdc, 0xf4, 0x99, 0xcf, 0xe4, 0x27, 0x12, 0x5f, 0x7a, 0xf7, 0xb1, 0xcf, 0x98, 0x1f, 0x12, 0x84,
-	0xa3, 0x00, 0x61, 0x4a, 0x59, 0x22, 0x25, 0x5c, 0x57, 0x1f, 0xaa, 0xf9, 0x07, 0x4a, 0xa6, 0x16,
-	0xba, 0xf4, 0x48, 0x5b, 0xa7, 0xae, 0x79, 0x4a, 0xf3, 0xc1, 0x02, 0x7f, 0x82, 0xf9, 0x48, 0x17,
-	0x36, 0xf0, 0x38, 0xa0, 0x0c, 0xc9, 0x5f, 0xb5, 0x65, 0x1f, 0x81, 0x8d, 0xb7, 0x42, 0xfa, 0x0e,
-	0xf3, 0x11, 0xf7, 0xc8, 0xe1, 0x84, 0xf0, 0x04, 0x9a, 0xa0, 0x92, 0x9c, 0x44, 0x84, 0xe2, 0x31,
-	0xa9, 0x19, 0x0d, 0xa3, 0x59, 0xf5, 0xb2, 0x35, 0xdc, 0x03, 0xe0, 0xf2, 0x70, 0xb5, 0x62, 0xc3,
-	0x68, 0xae, 0xb7, 0x9f, 0x3a, 0x1a, 0x4e, 0x24, 0xe1, 0x28, 0x14, 0x9d, 0x84, 0xf3, 0x06, 0xfb,
-	0x44, 0xcf, 0xf5, 0x72, 0x4a, 0xfb, 0xab, 0x01, 0x60, 0xde, 0x99, 0x47, 0x8c, 0x72, 0x02, 0x3b,
-	0xa0, 0x24, 0x80, 0x79, 0xcd, 0x68, 0xdc, 0x6a, 0xae, 0xb7, 0xa1, 0x93, 0x4f, 0xdc, 0x11, 0xbd,
-	0xdd, 0xea, 0xe9, 0x79, 0xbd, 0xf0, 0xfd, 0xef, 0x8f, 0x96, 0xe1, 0xa9, 0x5e, 0xf8, 0x6a, 0x09,
-	0xd3, 0xee, 0x8d, 0x4c, 0xca, 0x71, 0x01, 0xea, 0x05, 0xb8, 0x97, 0x31, 0xa5, 0x61, 0xec, 0x82,
-	0xdb, 0xc2, 0xe5, 0x20, 0x18, 0xa8, 0x2c, 0xba, 0x77, 0x85, 0xff, 0xef, 0xf3, 0x7a, 0x59, 0x74,
-	0xed, 0xbf, 0xf4, 0xca, 0xa2, 0xbc, 0x3f, 0xb0, 0xf7, 0x72, 0x51, 0x66, 0xe7, 0x71, 0xc1, 0x9a,
-	0x28, 0x4b, 0xe9, 0x8d, 0xc7, 0x91, 0xad, 0xf6, 0x36, 0xd8, 0x94, 0x73, 0x5e, 0x63, 0x3a, 0x08,
-	0x49, 0x9c, 0xde, 0x8a, 0xdd, 0x01, 0x5b, 0x57, 0xf6, 0xb5, 0x87, 0x09, 0x2a, 0x43, 0xbd, 0x27,
-	0x63, 0xab, 0x7a, 0xd9, 0xba, 0x7d, 0x51, 0x04, 0x25, 0xa9, 0x82, 0x21, 0x28, 0xc9, 0xa8, 0x61,
-	0x7d, 0x11, 0xe2, 0xda, 0xf5, 0x9b, 0x8d, 0xd5, 0x0d, 0xca, 0xd1, 0x6e, 0x7c, 0x16, 0xbc, 0x9f,
-	0x7e, 0x5e, 0x7c, 0x2b, 0x6e, 0xc1, 0xfb, 0xe8, 0xda, 0xff, 0x8d, 0x43, 0x0e, 0xd6, 0x84, 0x04,
-	0x5a, 0x2b, 0x66, 0xa5, 0x5e, 0xf5, 0x95, 0x75, 0x6d, 0xd5, 0xba, 0xb4, 0xaa, 0xc3, 0x27, 0x4b,
-	0xac, 0xd0, 0x07, 0x7d, 0x3d, 0x1f, 0xe1, 0x31, 0xa8, 0xa4, 0xe1, 0x40, 0x7b, 0xc9, 0xe0, 0x2b,
-	0x89, 0x9a, 0x3b, 0xff, 0xed, 0xd1, 0x00, 0x3b, 0x02, 0xa0, 0x20, 0x01, 0x6a, 0x70, 0x7b, 0x11,
-	0x20, 0x8d, 0xb9, 0xeb, 0x9d, 0xce, 0x2c, 0xe3, 0x6c, 0x66, 0x19, 0x7f, 0x66, 0x96, 0xf1, 0x65,
-	0x6e, 0x15, 0xce, 0xe6, 0x56, 0xe1, 0xd7, 0xdc, 0x2a, 0xbc, 0x7f, 0xee, 0x07, 0xc9, 0x70, 0xd2,
-	0x73, 0xfa, 0x6c, 0x8c, 0x70, 0x18, 0xb2, 0x18, 0x3f, 0xa3, 0x24, 0x39, 0x62, 0xf1, 0x28, 0x5d,
-	0xf6, 0x87, 0x38, 0xa0, 0xe8, 0x38, 0x37, 0x59, 0x3c, 0x36, 0xde, 0x2b, 0xcb, 0x17, 0xda, 0xf9,
-	0x17, 0x00, 0x00, 0xff, 0xff, 0xb3, 0x4b, 0xb8, 0x3f, 0x8f, 0x04, 0x00, 0x00,
+	// 669 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x93, 0x4d, 0x4f, 0xd4, 0x5c,
+	0x14, 0xc7, 0xe7, 0xf2, 0x0c, 0x3c, 0x70, 0x31, 0x44, 0xae, 0x80, 0x63, 0xd1, 0x76, 0x52, 0x12,
+	0x19, 0x27, 0xb1, 0x37, 0x03, 0x9a, 0x98, 0xb8, 0x9b, 0x18, 0x94, 0x9d, 0x56, 0x56, 0x6e, 0xc8,
+	0x9d, 0x99, 0x4b, 0xa7, 0x61, 0xda, 0x5b, 0x7a, 0x3b, 0xbc, 0xc4, 0xb0, 0xd1, 0x8d, 0x4b, 0xa2,
+	0x4b, 0xfd, 0x00, 0x2e, 0x5d, 0xf9, 0x19, 0x58, 0x92, 0xb8, 0x31, 0x2e, 0xd0, 0x80, 0x89, 0x5f,
+	0xc3, 0xdc, 0x97, 0x0e, 0x2d, 0x14, 0x21, 0xae, 0xdc, 0x4c, 0xe6, 0xdc, 0xf3, 0x3f, 0xe7, 0xfc,
+	0xce, 0x4b, 0x61, 0x85, 0xb7, 0xbb, 0xb4, 0xd3, 0xef, 0xd1, 0x18, 0x6f, 0x36, 0xf0, 0x46, 0x9f,
+	0xc6, 0x3b, 0x4e, 0x14, 0xb3, 0x84, 0xa1, 0x2b, 0x03, 0x8f, 0xb3, 0xd9, 0x30, 0xea, 0x6d, 0xc6,
+	0x03, 0xc6, 0x71, 0x8b, 0x70, 0xaa, 0x64, 0x78, 0xb3, 0xd1, 0xa2, 0x09, 0x69, 0xe0, 0x88, 0x78,
+	0x7e, 0x48, 0x12, 0x9f, 0x85, 0x2a, 0xd2, 0x98, 0xf2, 0x98, 0xc7, 0xe4, 0x5f, 0x2c, 0xfe, 0xe9,
+	0xd7, 0x9b, 0x1e, 0x63, 0x5e, 0x8f, 0x62, 0x12, 0xf9, 0x98, 0x84, 0x21, 0x4b, 0x64, 0x08, 0xd7,
+	0x5e, 0x4b, 0x7b, 0xa5, 0xd5, 0xea, 0xaf, 0xe1, 0xc4, 0x0f, 0x28, 0x4f, 0x48, 0x10, 0x69, 0xc1,
+	0x0d, 0x05, 0xb0, 0xaa, 0xf2, 0x2a, 0x43, 0xbb, 0x66, 0x35, 0x5b, 0x8a, 0x95, 0x6d, 0xc3, 0xb8,
+	0x9e, 0x6b, 0x30, 0x21, 0x7c, 0x5d, 0x3b, 0x26, 0x49, 0xe0, 0x87, 0x0c, 0xcb, 0x5f, 0xf5, 0x64,
+	0x6f, 0xc1, 0xc9, 0x67, 0x22, 0x74, 0x85, 0xf0, 0x75, 0xee, 0xd2, 0x8d, 0x3e, 0xe5, 0x09, 0x32,
+	0xe0, 0x68, 0xb2, 0x13, 0xd1, 0x90, 0x04, 0xb4, 0x02, 0xaa, 0xa0, 0x36, 0xe6, 0x0e, 0x6c, 0xb4,
+	0x04, 0xe1, 0x49, 0xf7, 0x95, 0xa1, 0x2a, 0xa8, 0x8d, 0x2f, 0xdc, 0x76, 0x34, 0x9c, 0x18, 0x95,
+	0xa3, 0x50, 0xf4, 0xa8, 0x9c, 0xa7, 0xc4, 0xa3, 0x3a, 0xaf, 0x9b, 0x89, 0xb4, 0xdf, 0x02, 0x88,
+	0xb2, 0x95, 0x79, 0xc4, 0x42, 0x4e, 0xd1, 0x22, 0x1c, 0x16, 0xc0, 0xbc, 0x02, 0xaa, 0xff, 0xd5,
+	0xc6, 0x17, 0x90, 0x93, 0x5d, 0x89, 0x23, 0xb4, 0xcd, 0xb1, 0xfd, 0x43, 0xab, 0xf4, 0xf1, 0xd7,
+	0xa7, 0x3a, 0x70, 0x95, 0x16, 0x3d, 0x2e, 0x60, 0x9a, 0xbf, 0x90, 0x49, 0x55, 0xcc, 0x41, 0x3d,
+	0x84, 0x57, 0x07, 0x4c, 0xe9, 0x30, 0xe6, 0xe1, 0xff, 0xa2, 0xca, 0xaa, 0xdf, 0x51, 0xb3, 0x68,
+	0x4e, 0x88, 0xfa, 0xdf, 0x0e, 0xad, 0x11, 0xa1, 0x5a, 0x7e, 0xe4, 0x8e, 0x08, 0xf7, 0x72, 0xc7,
+	0x5e, 0xca, 0x8c, 0x72, 0xd0, 0x4f, 0x03, 0x96, 0x85, 0x5b, 0x86, 0x5e, 0xd8, 0x8e, 0x94, 0xda,
+	0x9f, 0x01, 0x34, 0x64, 0xa2, 0xe7, 0x5a, 0xdb, 0xb9, 0xf4, 0x72, 0xee, 0xc1, 0xf2, 0x5a, 0xcc,
+	0x02, 0x3d, 0x02, 0xc3, 0x51, 0x17, 0xe6, 0xa4, 0x17, 0xe6, 0xac, 0xa4, 0x17, 0xd6, 0x2c, 0xef,
+	0x7d, 0xb7, 0x80, 0x2b, 0xd5, 0xa7, 0x56, 0x5a, 0xfe, 0xeb, 0x95, 0xbe, 0x07, 0x70, 0xb6, 0x10,
+	0xfc, 0x9f, 0xd8, 0xed, 0x0c, 0x9c, 0x92, 0x70, 0x4f, 0x48, 0xd8, 0xe9, 0xd1, 0x38, 0x9d, 0xa7,
+	0xbd, 0x08, 0xa7, 0x4f, 0xbd, 0x6b, 0x5c, 0x03, 0x8e, 0x76, 0xf5, 0x9b, 0x24, 0x1e, 0x73, 0x07,
+	0xf6, 0xc2, 0xeb, 0x32, 0x1c, 0x96, 0x51, 0xa8, 0x07, 0x87, 0x65, 0x97, 0xc8, 0xca, 0xb7, 0x73,
+	0xe6, 0xab, 0x32, 0xaa, 0xe7, 0x0b, 0x54, 0x45, 0xbb, 0xfa, 0x46, 0x74, 0xfe, 0xea, 0xcb, 0xcf,
+	0x77, 0x43, 0xd3, 0xe8, 0x1a, 0x3e, 0xf3, 0x19, 0x73, 0xc4, 0x61, 0x59, 0x84, 0x20, 0xf3, 0x9c,
+	0x5c, 0x69, 0x2d, 0xeb, 0x5c, 0xbf, 0x2e, 0x55, 0x3f, 0x29, 0x65, 0xa1, 0x5b, 0x05, 0xa5, 0xf0,
+	0x4b, 0x7d, 0xf5, 0xbb, 0xe8, 0x03, 0x80, 0x13, 0xf9, 0x95, 0xa2, 0x5a, 0x41, 0xfe, 0xc2, 0x73,
+	0x35, 0xee, 0x5c, 0x42, 0xa9, 0x99, 0xee, 0x9f, 0x30, 0xd5, 0x51, 0x2d, 0xcf, 0x94, 0x1a, 0x82,
+	0x4b, 0x5f, 0xfb, 0xae, 0x9e, 0xc9, 0x36, 0x1c, 0x4d, 0x77, 0x87, 0xec, 0x82, 0x6a, 0xa7, 0x16,
+	0x6e, 0xcc, 0xfd, 0x51, 0xa3, 0x59, 0xe6, 0x04, 0x4b, 0x49, 0xb2, 0x54, 0xd0, 0x4c, 0x9e, 0x25,
+	0xbd, 0x82, 0xa6, 0xbb, 0x7f, 0x64, 0x82, 0x83, 0x23, 0x13, 0xfc, 0x38, 0x32, 0xc1, 0xde, 0xb1,
+	0x59, 0x3a, 0x38, 0x36, 0x4b, 0x5f, 0x8f, 0xcd, 0xd2, 0x8b, 0x07, 0x9e, 0x9f, 0x74, 0xfb, 0x2d,
+	0xa7, 0xcd, 0x02, 0x4c, 0x7a, 0x3d, 0x16, 0x93, 0xbb, 0x21, 0x4d, 0xb6, 0x58, 0xbc, 0x9e, 0x9a,
+	0xed, 0x2e, 0xf1, 0x43, 0xbc, 0x9d, 0xc9, 0x2c, 0xfa, 0xe2, 0xad, 0x11, 0xf9, 0xb1, 0x2e, 0xfe,
+	0x0e, 0x00, 0x00, 0xff, 0xff, 0x5c, 0x3d, 0xbc, 0xed, 0xa6, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -379,6 +511,11 @@ type QueryClient interface {
 	Tasks(ctx context.Context, in *QueryTasksRequest, opts ...grpc.CallOption) (*QueryTasksResponse, error)
 	// Task queries a task by its ID.
 	Task(ctx context.Context, in *QueryTaskRequest, opts ...grpc.CallOption) (*QueryTaskResponse, error)
+	// ScheduledTasks queries the scheduled tasks of a specific type.
+	//
+	// When called from another module, this query might consume a high amount of
+	// gas if the pagination field is incorrectly set.
+	ScheduledTasks(ctx context.Context, in *QueryScheduledTasksRequest, opts ...grpc.CallOption) (*QueryScheduledTasksResponse, error)
 	// Handlers queries all the registered task handlers.
 	Handlers(ctx context.Context, in *QueryHandlersRequest, opts ...grpc.CallOption) (*QueryHandlersResponse, error)
 }
@@ -409,6 +546,15 @@ func (c *queryClient) Task(ctx context.Context, in *QueryTaskRequest, opts ...gr
 	return out, nil
 }
 
+func (c *queryClient) ScheduledTasks(ctx context.Context, in *QueryScheduledTasksRequest, opts ...grpc.CallOption) (*QueryScheduledTasksResponse, error) {
+	out := new(QueryScheduledTasksResponse)
+	err := c.cc.Invoke(ctx, "/scheduler.v1.Query/ScheduledTasks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) Handlers(ctx context.Context, in *QueryHandlersRequest, opts ...grpc.CallOption) (*QueryHandlersResponse, error) {
 	out := new(QueryHandlersResponse)
 	err := c.cc.Invoke(ctx, "/scheduler.v1.Query/Handlers", in, out, opts...)
@@ -427,6 +573,11 @@ type QueryServer interface {
 	Tasks(context.Context, *QueryTasksRequest) (*QueryTasksResponse, error)
 	// Task queries a task by its ID.
 	Task(context.Context, *QueryTaskRequest) (*QueryTaskResponse, error)
+	// ScheduledTasks queries the scheduled tasks of a specific type.
+	//
+	// When called from another module, this query might consume a high amount of
+	// gas if the pagination field is incorrectly set.
+	ScheduledTasks(context.Context, *QueryScheduledTasksRequest) (*QueryScheduledTasksResponse, error)
 	// Handlers queries all the registered task handlers.
 	Handlers(context.Context, *QueryHandlersRequest) (*QueryHandlersResponse, error)
 }
@@ -440,6 +591,9 @@ func (*UnimplementedQueryServer) Tasks(ctx context.Context, req *QueryTasksReque
 }
 func (*UnimplementedQueryServer) Task(ctx context.Context, req *QueryTaskRequest) (*QueryTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Task not implemented")
+}
+func (*UnimplementedQueryServer) ScheduledTasks(ctx context.Context, req *QueryScheduledTasksRequest) (*QueryScheduledTasksResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScheduledTasks not implemented")
 }
 func (*UnimplementedQueryServer) Handlers(ctx context.Context, req *QueryHandlersRequest) (*QueryHandlersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Handlers not implemented")
@@ -485,6 +639,24 @@ func _Query_Task_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_ScheduledTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryScheduledTasksRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ScheduledTasks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scheduler.v1.Query/ScheduledTasks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ScheduledTasks(ctx, req.(*QueryScheduledTasksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_Handlers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryHandlersRequest)
 	if err := dec(in); err != nil {
@@ -515,6 +687,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Task",
 			Handler:    _Query_Task_Handler,
+		},
+		{
+			MethodName: "ScheduledTasks",
+			Handler:    _Query_ScheduledTasks_Handler,
 		},
 		{
 			MethodName: "Handlers",
@@ -682,6 +858,107 @@ func (m *QueryTaskResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryScheduledTasksRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryScheduledTasksRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryScheduledTasksRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.From != nil {
+		n5, err5 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(*m.From, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(*m.From):])
+		if err5 != nil {
+			return 0, err5
+		}
+		i -= n5
+		i = encodeVarintQuery(dAtA, i, uint64(n5))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Typename) > 0 {
+		i -= len(m.Typename)
+		copy(dAtA[i:], m.Typename)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Typename)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryScheduledTasksResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryScheduledTasksResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryScheduledTasksResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Tasks) > 0 {
+		for iNdEx := len(m.Tasks) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Tasks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *QueryHandlersRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -803,6 +1080,46 @@ func (m *QueryTaskResponse) Size() (n int) {
 	_ = l
 	l = m.Task.Size()
 	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryScheduledTasksRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Typename)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.From != nil {
+		l = github_com_cosmos_gogoproto_types.SizeOfStdTime(*m.From)
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryScheduledTasksResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Tasks) > 0 {
+		for _, e := range m.Tasks {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -1217,6 +1534,280 @@ func (m *QueryTaskResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Task.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryScheduledTasksRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryScheduledTasksRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryScheduledTasksRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Typename", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Typename = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field From", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.From == nil {
+				m.From = new(time.Time)
+			}
+			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(m.From, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryScheduledTasksResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryScheduledTasksResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryScheduledTasksResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tasks", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tasks = append(m.Tasks, Task{})
+			if err := m.Tasks[len(m.Tasks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
