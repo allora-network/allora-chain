@@ -84,3 +84,7 @@ func (q Querier) Task(ctx context.Context, req *types.QueryTaskRequest) (*types.
 
 	return &types.QueryTaskResponse{Task: task}, nil
 }
+
+func (q Querier) Handlers(_ context.Context, _ *types.QueryHandlersRequest) (*types.QueryHandlersResponse, error) {
+	return &types.QueryHandlersResponse{Handlers: q.handlersOrder}, nil
+}

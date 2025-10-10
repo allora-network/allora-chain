@@ -27,16 +27,12 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/scheduler/v1/tasks/{task_id}";
   }
-//
-//  rpc Handlers(QueryHandlersRequest) returns (QueryHandlersResponse) {
-//    option (cosmos.query.v1.module_query_safe) = false;
-//    option (google.api.http).get = "/scheduler/v1/handlers";
-//  }
-//
-//  rpc Handler(QueryHandlerRequest) returns (QueryHandlerResponse) {
-//    option (cosmos.query.v1.module_query_safe) = false;
-//    option (google.api.http).get = "/scheduler/v1/handlers/{typename}";
-//  }
+
+  // Handlers queries all the registered task handlers.
+  rpc Handlers(QueryHandlersRequest) returns (QueryHandlersResponse) {
+    option (cosmos.query.v1.module_query_safe) = false;
+    option (google.api.http).get = "/scheduler/v1/handlers";
+  }
 }
 
 // QueryTasksRequest is the request type for the Query/Tasks RPC method.
@@ -67,4 +63,14 @@ message QueryTaskRequest {
 message QueryTaskResponse {
   // Task is the queried task.
   Task task = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+
+// QueryHandlersRequest is the response type for the Query/Handlers RPC method.
+message QueryHandlersRequest {}
+
+// QueryHandlersResponse is the response type for the Query/Handlers RPC method.
+message QueryHandlersResponse {
+  // Handlers contains the typenames of all registered task handlers in their execution order.
+  repeated string handlers = 1;
 }
