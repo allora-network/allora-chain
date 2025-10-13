@@ -179,9 +179,20 @@ func valueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
 		oneInForecasterValues = append(oneInForecasterValues, oiFVal.Value)
 	}
 	for _, ooifVal := range bundle.OneOutInfererForecasterValues {
-		ooInfererValues := make([]alloraMath.Dec, 0, len(ooifVal.OneOutInfererValues))
+		// ensure the number of inferers for each forecaster is the same as the full set of inferers,
+		// where any gaps in values would be filled with NaNs.
+		infVals := make(map[string]alloraMath.Dec, len(ooifVal.OneOutInfererValues))
 		for _, ooiVal := range ooifVal.OneOutInfererValues {
-			ooInfererValues = append(ooInfererValues, ooiVal.Value)
+			infVals[ooiVal.Worker] = ooiVal.Value
+		}
+
+		ooInfererValues := make([]alloraMath.Dec, len(infererAddresses))
+		for i, infAddr := range infererAddresses {
+			if v, ok := infVals[infAddr]; ok {
+				ooInfererValues[i] = v
+			} else {
+				ooInfererValues[i] = alloraMath.NewNaN()
+			}
 		}
 		oneOutInfererForecasterValues = append(oneOutInfererForecasterValues, ooInfererValues)
 	}
