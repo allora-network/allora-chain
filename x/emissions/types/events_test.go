@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 
@@ -500,6 +501,17 @@ func assertEventValueBundle(t *testing.T, val string, bundle types.ValueBundle) 
 	require.Equal(t, len(bundle.OneInForecasterValues), len(result.OneInForecasterValues))
 	for i := range bundle.OneInForecasterValues {
 		require.Equal(t, bundle.OneInForecasterValues[i].Value, result.OneInForecasterValues[i])
+	}
+	require.Equal(t, len(bundle.OneOutInfererForecasterValues), len(result.OneOutInfererForecasterValues))
+	for i := range result.OneOutInfererForecasterValues {
+		for j := range result.OneOutInfererForecasterValues[i] {
+			// handle case where nan is added to complete the matrix
+			if j == len(bundle.OneOutInfererForecasterValues[i].OneOutInfererValues) {
+				require.Equal(t, result.OneOutInfererForecasterValues[i][j], alloraMath.NewNaN())
+				continue
+			}
+			require.Equal(t, result.OneOutInfererForecasterValues[i][j], bundle.OneOutInfererForecasterValues[i].OneOutInfererValues[j].Value)
+		}
 	}
 }
 
