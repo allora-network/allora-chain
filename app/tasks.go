@@ -2,7 +2,6 @@ package app
 
 import (
 	"strings"
-	"time"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/pkg/errors"
