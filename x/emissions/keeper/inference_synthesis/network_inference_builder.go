@@ -976,6 +976,8 @@ func CalcNetworkInferences(
 	// The one-out network forecaster inferences are also used to
 	// calculate confidence intervals on the network inference I_i
 	var oneOutForecasterInferences []*emissions.WithheldWorkerAttributedValue
+	var oneInForecasterInferences []*emissions.WorkerAttributedValue
+	var oneOutInfererForecastImpliedValues []*emissions.OneOutInfererForecasterValues
 	if args.NetworkCombinedLoss != nil {
 		oneOutForecasterInferences, err = GetOneOutForecasterInferences(
 			GetOneOutForecasterInferencesArgs{
@@ -1000,18 +1002,12 @@ func CalcNetworkInferences(
 		if err != nil {
 			return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out forecaster inferences")
 		}
-	} else {
-		oneOutForecasterInferences = []*emissions.WithheldWorkerAttributedValue{}
-	}
-
-	// get the one-in forecaster inferences I^+_ki
-	// which adds only a single forecast-implied inference I_ik to the inferences
-	// from the inference task I_ij . As such, it is used to quantify how the naive
-	// network inference I^-_i changes with the addition of a single
-	// forecast-implied inference, which in turn is used for setting the
-	// reward distribution between workers for their forecasting tasks.
-	var oneInForecasterInferences []*emissions.WorkerAttributedValue
-	if args.NetworkCombinedLoss != nil {
+		// get the one-in forecaster inferences I^+_ki
+		// which adds only a single forecast-implied inference I_ik to the inferences
+		// from the inference task I_ij . As such, it is used to quantify how the naive
+		// network inference I^-_i changes with the addition of a single
+		// forecast-implied inference, which in turn is used for setting the
+		// reward distribution between workers for their forecasting tasks.
 		oneInForecasterInferences, err = GetOneInForecasterInferences(
 			GetOneInForecasterInferencesArgs{
 				Ctx:                                  args.Ctx,
@@ -1033,13 +1029,8 @@ func CalcNetworkInferences(
 		if err != nil {
 			return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-in inferences")
 		}
-	} else {
-		oneInForecasterInferences = []*emissions.WorkerAttributedValue{}
-	}
 
-	// Calculate one-out inferer forecast implied values
-	var oneOutInfererForecastImpliedValues []*emissions.OneOutInfererForecasterValues
-	if args.NetworkCombinedLoss != nil {
+		// Calculate one-out inferer forecast implied values
 		oneOutInfererForecastImpliedValues, err = GetOneOutInfererForecastImpliedInferences(
 			GetOneOutInfererForecastImpliedInferencesArgs{
 				Ctx:                  args.Ctx,
@@ -1063,8 +1054,6 @@ func CalcNetworkInferences(
 		if err != nil {
 			return nil, RegretInformedWeights{}, errorsmod.Wrap(err, "while calculating one-out inferer forecast implied inferences")
 		}
-	} else {
-		oneOutInfererForecastImpliedValues = []*emissions.OneOutInfererForecasterValues{}
 	}
 
 	// Build value bundle to return all the calculated inferences
