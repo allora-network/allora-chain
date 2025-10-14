@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Querier is used as Keeper will have duplicate methods if used directly, and gRPC names take precedence over keeper
+// Querier implements the gRPC query service for the scheduler module.
 type Querier struct {
 	*Keeper
 }

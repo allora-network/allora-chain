@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"cosmossdk.io/collections"
-	collcodec "cosmossdk.io/collections/codec"
+	"cosmossdk.io/collections/codec"
 	"cosmossdk.io/collections/indexes"
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
@@ -23,28 +23,16 @@ type multiIndexCollectionWrapper[ReferenceKey, PrimaryKey, Value any] struct {
 	i *indexes.Multi[ReferenceKey, PrimaryKey, Value]
 }
 
+type pairKeyCodec[K1, K2 any] interface {
+	KeyCodec1() codec.KeyCodec[K1]
+	KeyCodec2() codec.KeyCodec[K2]
+}
+
 func (w multiIndexCollectionWrapper[R, P, V]) IterateRaw(ctx context.Context, start, end []byte, order collections.Order) (collections.Iterator[collections.Pair[R, P], collections.NoValue], error) {
 	var it collections.Iterator[collections.Pair[R, P], collections.NoValue]
-	var err error
-	var startKey, endKey collections.Pair[R, P]
-	if len(start) > 0 {
-		_, startKey, err = w.KeyCodec().Decode(start)
-		if err != nil {
-			return it, err
-		}
-	}
-	if len(end) > 0 {
-		_, endKey, err = w.KeyCodec().Decode(end)
-		if err != nil {
-			return it, err
-		}
-	}
-
-	ranger := (&collections.Range[collections.Pair[R, P]]{}).
-		StartInclusive(startKey).
-		EndInclusive(endKey)
-	if order == collections.OrderDescending {
-		ranger = ranger.Descending()
+	ranger, err := w.decodeRange(start, end, order)
+	if err != nil {
+		return it, err
 	}
 
 	mit, err := w.i.Iterate(ctx, ranger)
@@ -54,6 +42,61 @@ func (w multiIndexCollectionWrapper[R, P, V]) IterateRaw(ctx context.Context, st
 	return collections.Iterator[collections.Pair[R, P], collections.NoValue](mit), nil
 }
 
-func (w multiIndexCollectionWrapper[R, K, V]) KeyCodec() collcodec.KeyCodec[collections.Pair[R, K]] {
+func (w multiIndexCollectionWrapper[R, P, V]) KeyCodec() codec.KeyCodec[collections.Pair[R, P]] {
 	return w.i.KeyCodec()
+}
+
+func (w multiIndexCollectionWrapper[R, P, V]) decodeRange(start, end []byte, order collections.Order) (collections.Ranger[collections.Pair[R, P]], error) {
+	ranger := &collections.Range[collections.Pair[R, P]]{}
+
+	if len(end) > 0 {
+		// The end range is always a prefix and has its last byte incremented to make it just after the real prefix, so we decrement it
+		alignedEnd := make([]byte, len(end))
+		copy(alignedEnd, end)
+		alignedEnd[len(alignedEnd)-1]--
+
+		endKey, err := w.decodeKey(alignedEnd)
+		if err != nil {
+			return nil, err
+		}
+
+		ranger = ranger.Prefix(endKey)
+	}
+
+	if len(start) > 0 {
+		startKey, err := w.decodeKey(start)
+		if err != nil {
+			return nil, err
+		}
+		ranger = ranger.StartInclusive(startKey)
+	}
+
+	if order == collections.OrderDescending {
+		ranger = ranger.Descending()
+	}
+
+	return ranger, nil
+}
+
+func (w multiIndexCollectionWrapper[R, P, V]) decodeKey(key []byte) (collections.Pair[R, P], error) {
+	var p collections.Pair[R, P]
+	pkc1 := w.KeyCodec().(pairKeyCodec[R, P]).KeyCodec1()
+	pkc2 := w.KeyCodec().(pairKeyCodec[R, P]).KeyCodec2()
+
+	read, k1, err := pkc1.DecodeNonTerminal(key)
+	if err != nil {
+		return p, nil
+	}
+
+	remainingKey := key[read:]
+	if len(remainingKey) == 0 {
+		return collections.PairPrefix[R, P](k1), nil
+	}
+
+	_, k2, err := pkc2.Decode(remainingKey)
+	if err != nil {
+		return p, nil
+	}
+
+	return collections.Join(k1, k2), nil
 }
