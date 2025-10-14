@@ -408,7 +408,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 				Forecaster: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
 				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 					{
-						Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+						Worker: "TestInferer",
 						Value:  alloraMath.MustNewDecFromString("0.0112"),
 					},
 				},
