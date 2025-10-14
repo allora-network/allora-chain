@@ -42,7 +42,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 	// If NetworkCombinedLoss is nil, return empty maps immediately
 	if args.NetworkCombinedLoss == nil {
 		args.Logger.Debug("NetworkCombinedLoss is nil, returning empty forecast-implied inferences", "topicId", args.TopicId)
-		return make(map[Forecaster]*emissionstypes.Inference), args.InfererToRegret, args.ForecasterToRegret, nil
+		return nil, args.InfererToRegret, args.ForecasterToRegret, nil
 	}
 	// "k" here is the forecaster's address
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
