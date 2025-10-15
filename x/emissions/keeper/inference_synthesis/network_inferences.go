@@ -6,7 +6,6 @@ import (
 	"github.com/pkg/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils/fn"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -47,62 +46,13 @@ func GetNetworkInferences(
 
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:
-		// 1. Try to get latest network loss
-		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
-		if errors.Is(err, emissions.ErrNotFound) {
-			// 2a. If we have no network losses, fallback to using the median of the inferences.
-			return calcNetworkInferencesMultipleByMedian(topicId, inferences, *inferencesNonce)
-		} else if err != nil {
-			return nil, errorsmod.Wrap(err, "while getting latest network loss bundle")
-		}
-
-		// 2b. Otherwise, calculate the normal way.
-		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce, networkLosses)
+		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
 		return calcNetworkInferencesSingle(*inferencesNonce, topicId, inferences), nil
 	} else {
 		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
-}
-
-func calcNetworkInferencesMultipleByMedian(
-	topicId TopicId,
-	inferences *emissions.Inferences,
-	inferenceBlockHeight BlockHeight,
-) (*GetNetworkInferencesResult, error) {
-	inferenceValues := fn.Map(inferences.Inferences, func(inf *emissions.Inference) alloraMath.Dec { return inf.Value })
-
-	medianValue, err := alloraMath.Median(inferenceValues)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "while calculating median")
-	}
-
-	networkInferences := &emissions.ValueBundle{
-		TopicId:   topicId,
-		ExtraData: nil,
-		ReputerRequestNonce: &emissions.ReputerRequestNonce{
-			ReputerNonce: &emissions.Nonce{BlockHeight: inferenceBlockHeight},
-		},
-		Reputer:       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
-		CombinedValue: medianValue,
-		InfererValues: fn.Map(inferences.Inferences, func(inf *emissions.Inference) *emissions.WorkerAttributedValue {
-			return &emissions.WorkerAttributedValue{Worker: inf.Inferer, Value: inf.Value}
-		}),
-		ForecasterValues:              nil,
-		NaiveValue:                    alloraMath.ZeroDec(),
-		OneOutInfererValues:           nil,
-		OneOutForecasterValues:        nil,
-		OneInForecasterValues:         nil,
-		OneOutInfererForecasterValues: nil,
-	}
-	return &GetNetworkInferencesResult{
-		NetworkInferences:    networkInferences,
-		InfererToWeight:      nil,
-		ForecasterToWeight:   nil,
-		InferenceBlockHeight: inferenceBlockHeight,
-		LossBlockHeight:      0,
-	}, nil
 }
 
 func calcNetworkInferencesMultiple(
@@ -112,7 +62,6 @@ func calcNetworkInferencesMultiple(
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
 	inferenceBlockHeight BlockHeight,
-	networkLosses *emissions.ValueBundle,
 ) (*GetNetworkInferencesResult, error) {
 	// Set forecasts to nil if there are no forecasts
 	if forecasts == nil {
@@ -133,6 +82,16 @@ func calcNetworkInferencesMultiple(
 		return nil, errorsmod.Wrap(err, "while getting topic")
 	}
 
+	var previousNetworkCombinedLoss *alloraMath.Dec
+	networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
+	if err != nil && !errors.Is(err, emissions.ErrNotFound) {
+		return nil, errorsmod.Wrap(err, "while getting latest network loss bundle")
+	} else {
+		if networkLosses != nil {
+			previousNetworkCombinedLoss = &networkLosses.CombinedValue
+		}
+	}
+
 	// Otherwise, go ahead and calculate the inferences in the more complex way
 	calcArgs, err := GetCalcNetworkInferenceArgs(
 		ctx,
@@ -141,7 +100,7 @@ func calcNetworkInferencesMultiple(
 		inferences,
 		forecasts,
 		topic,
-		*networkLosses,
+		previousNetworkCombinedLoss,
 		moduleParams,
 		inferenceBlockHeight,
 	)
@@ -154,12 +113,17 @@ func calcNetworkInferencesMultiple(
 		return nil, errorsmod.Wrap(err, "while calculating network inferences")
 	}
 
+	lossBlockHeight := int64(0)
+	if networkLosses != nil {
+		lossBlockHeight = networkLosses.ReputerRequestNonce.ReputerNonce.BlockHeight
+	}
+
 	return &GetNetworkInferencesResult{
 		NetworkInferences:    networkInferences,
 		InfererToWeight:      weights.Inferers,
 		ForecasterToWeight:   weights.Forecasters,
 		InferenceBlockHeight: inferenceBlockHeight,
-		LossBlockHeight:      networkLosses.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		LossBlockHeight:      lossBlockHeight,
 	}, nil
 }
 
@@ -213,7 +177,7 @@ func GetCalcNetworkInferenceArgs(
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
 	topic emissions.Topic,
-	networkLosses emissions.ValueBundle,
+	previousLossesCombinedValue *alloraMath.Dec,
 	moduleParams emissions.Params,
 	inferenceBlockHeight BlockHeight,
 ) (
@@ -244,51 +208,12 @@ func GetCalcNetworkInferenceArgs(
 		infererRegrets = append(infererRegrets, regret.Value)
 	}
 
-	forecasterToRegret := make(map[string]*alloraMath.Dec)
-	forecasterAddresses := make([]string, 0, len(sortedForecasters))
-	forecasterRegrets := make([]alloraMath.Dec, 0, len(sortedForecasters))
-	for _, forecaster := range sortedForecasters {
-		regret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
-		if err != nil {
-			return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting forecaster regret")
-		}
-
-		logger.Debug("Forecaster has regret", "forecaster", forecaster, "regret", regret.Value)
-		forecasterToRegret[forecaster] = &regret.Value
-
-		// Collect for set event emission
-		forecasterAddresses = append(forecasterAddresses, forecaster)
-		forecasterRegrets = append(forecasterRegrets, regret.Value)
-	}
-
 	// Get the latest regret stdnorm from the keeper. If zero, it will recalculate with provided data.
 	stdDevPlusEpsilon, err := k.GetLatestRegretStdNorm(ctx, topicId)
 	if err != nil {
 		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret stdnorm")
 	}
 	logger.Info("GetCalcNetworkInferenceArgs: StdDevPlusEpsilon", "stdDevPlusEpsilon", stdDevPlusEpsilon)
-
-	forecastImpliedInferencesByWorker, _, _, err := CalcForecastImpliedInferences(
-		CalcForecastImpliedInferencesArgs{
-			Logger:               logger,
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             sortedInferers,
-			InfererToInference:   infererToInference,
-			InfererToRegret:      infererToRegret,
-			Forecasters:          sortedForecasters,
-			ForecasterToForecast: forecasterToForecast,
-			ForecasterToRegret:   forecasterToRegret,
-			NetworkCombinedLoss:  networkLosses.CombinedValue,
-			EpsilonTopic:         topic.Epsilon,
-			PNorm:                topic.PNorm,
-			CNorm:                moduleParams.CNorm,
-			StdDevPlusEpsilon:    stdDevPlusEpsilon,
-		},
-	)
-	if err != nil {
-		return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error calculating forecast implied inferences")
-	}
 
 	calcArgs = CalcNetworkInferencesArgs{
 		Ctx:                                  ctx,
@@ -303,7 +228,7 @@ func GetCalcNetworkInferenceArgs(
 		ForecasterToForecast:                 make(map[Forecaster]*emissions.Forecast, 0),
 		ForecasterToRegret:                   make(map[Forecaster]*alloraMath.Dec, 0),
 		ForecasterToForecastImpliedInference: make(map[Forecaster]*emissions.Inference, 0),
-		NetworkCombinedLoss:                  networkLosses.CombinedValue,
+		NetworkCombinedLoss:                  previousLossesCombinedValue,
 		EpsilonTopic:                         topic.Epsilon,
 		EpsilonSafeDiv:                       moduleParams.EpsilonSafeDiv,
 		PNorm:                                topic.PNorm,
@@ -312,26 +237,67 @@ func GetCalcNetworkInferenceArgs(
 		InferenceBlockHeight:                 inferenceBlockHeight,
 	}
 
-	// If there are forecast-implied inferences, add forecasters info
-	// It will not have available forecast-implied inferences if the forecasters
-	// didn't make any forecasts for the existing inferers
-	if len(forecastImpliedInferencesByWorker) > 0 {
+	if previousLossesCombinedValue != nil {
+		forecasterToRegret := make(map[string]*alloraMath.Dec)
+		forecasterAddresses := make([]string, 0, len(sortedForecasters))
+		forecasterRegrets := make([]alloraMath.Dec, 0, len(sortedForecasters))
 		for _, forecaster := range sortedForecasters {
-			if forecastImpliedInference, ok := forecastImpliedInferencesByWorker[forecaster]; ok {
-				calcArgs.Forecasters = append(calcArgs.Forecasters, forecaster)
-				calcArgs.ForecasterToForecast[forecaster] = forecasterToForecast[forecaster]
-				calcArgs.ForecasterToRegret[forecaster] = forecasterToRegret[forecaster]
-				calcArgs.ForecasterToForecastImpliedInference[forecaster] = forecastImpliedInference
+			regret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
+			if err != nil {
+				return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting forecaster regret")
 			}
+
+			logger.Debug("Forecaster has regret", "forecaster", forecaster, "regret", regret.Value)
+			forecasterToRegret[forecaster] = &regret.Value
+
+			// Collect for set event emission
+			forecasterAddresses = append(forecasterAddresses, forecaster)
+			forecasterRegrets = append(forecasterRegrets, regret.Value)
+		}
+
+		forecastImpliedInferencesByWorker, _, _, err := CalcForecastImpliedInferences(
+			CalcForecastImpliedInferencesArgs{
+				Logger:               logger,
+				TopicId:              topicId,
+				AllInferersAreNew:    allInferersAreNew,
+				Inferers:             sortedInferers,
+				InfererToInference:   infererToInference,
+				InfererToRegret:      infererToRegret,
+				Forecasters:          sortedForecasters,
+				ForecasterToForecast: forecasterToForecast,
+				ForecasterToRegret:   forecasterToRegret,
+				NetworkCombinedLoss:  previousLossesCombinedValue,
+				EpsilonTopic:         topic.Epsilon,
+				PNorm:                topic.PNorm,
+				CNorm:                moduleParams.CNorm,
+				StdDevPlusEpsilon:    stdDevPlusEpsilon,
+			},
+		)
+		if err != nil {
+			return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error calculating forecast implied inferences")
+		}
+		// If there are forecast-implied inferences, add forecasters info
+		// It will not have available forecast-implied inferences if the forecasters
+		// didn't make any forecasts for the existing inferers
+		if len(forecastImpliedInferencesByWorker) > 0 {
+			for _, forecaster := range sortedForecasters {
+				if forecastImpliedInference, ok := forecastImpliedInferencesByWorker[forecaster]; ok {
+					calcArgs.Forecasters = append(calcArgs.Forecasters, forecaster)
+					calcArgs.ForecasterToForecast[forecaster] = forecasterToForecast[forecaster]
+					calcArgs.ForecasterToRegret[forecaster] = forecasterToRegret[forecaster]
+					calcArgs.ForecasterToForecastImpliedInference[forecaster] = forecastImpliedInference
+				}
+			}
+		}
+
+		if len(forecasterAddresses) > 0 {
+			emissions.EmitNewNetworkInferenceForecasterRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, forecasterAddresses, forecasterRegrets)
 		}
 	}
 
 	// Emit set events for regrets used in network inference calculation
 	if len(infererAddresses) > 0 {
 		emissions.EmitNewNetworkInferenceInfererRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, infererAddresses, infererRegrets)
-	}
-	if len(forecasterAddresses) > 0 {
-		emissions.EmitNewNetworkInferenceForecasterRegretsUsedSetEvent(ctx, topicId, inferenceBlockHeight, forecasterAddresses, forecasterRegrets)
 	}
 
 	return calcArgs, nil
