@@ -79,6 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+* [#877](https://github.com/allora-network/allora-chain/pull/877) Upgrade Comet v0.38.19
+
 ### API Breaking Changes
 
 #### Removed
