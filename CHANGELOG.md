@@ -157,6 +157,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+[#846](https://github.com/allora-network/allora-chain/pull/846) Use v5 in mint module autocli txs
+
 ### Security
 
 * [#849](https://github.com/allora-network/allora-chain/pull/849) Fix [GHSA-p22h-3m2v-cmgh](https://github.com/cosmos/cosmos-sdk/security/advisories/GHSA-p22h-3m2v-cmgh) `x/distribution` issue

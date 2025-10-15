@@ -2,7 +2,6 @@ package mint
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	mintv2 "github.com/allora-network/allora-chain/x/mint/api/mint/v2"
 	mintv5 "github.com/allora-network/allora-chain/x/mint/api/mint/v5"
 )
 
@@ -32,7 +31,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			Short:                "Querying commands for the mint module",
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: mintv2.MsgService_ServiceDesc.ServiceName,
+			Service: mintv5.MsgService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
