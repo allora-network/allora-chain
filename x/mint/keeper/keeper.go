@@ -428,3 +428,13 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 
 	return &moduleParams, eventInfo, nil
 }
+
+// GetStartingEmissionsBlockHeight gets the starting block height for emissions
+func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (uint64, error) {
+	return k.emissionsKeeper.GetStartingEmissionsBlockHeight(ctx)
+}
+
+// SetStartingEmissionsBlockHeight sets the starting block height for emissions
+func (k Keeper) SetStartingEmissionsBlockHeight(ctx context.Context, height uint64) error {
+	return k.emissionsKeeper.SetStartingEmissionsBlockHeight(ctx, height)
+}

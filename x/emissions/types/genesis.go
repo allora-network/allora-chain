@@ -103,6 +103,7 @@ func NewGenesisState() *GenesisState {
 		OutlierResistantNetworkInferences:              []*TopicIdBlockHeightValueBundles{},
 		MonthlyReputerRewards:                          cosmosMath.ZeroInt(),
 		MonthlyTopicRewards:                            cosmosMath.ZeroInt(),
+		StartingEmissionsBlockHeight:                   0,
 	}
 }
 

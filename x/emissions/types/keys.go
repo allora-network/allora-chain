@@ -118,4 +118,5 @@ var (
 	OutlierResistantNetworkInferencesKey              = collections.NewPrefix(103)
 	MonthlyReputerRewardsKey                          = collections.NewPrefix(104)
 	MonthlyTopicRewardsKey                            = collections.NewPrefix(105)
+	StartingEmissionsBlockHeightKey                   = collections.NewPrefix(106)
 )

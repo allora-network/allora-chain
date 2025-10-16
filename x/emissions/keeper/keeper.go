@@ -191,6 +191,9 @@ type Keeper struct {
 	// MAD (Median Absolute Deviation) per topic
 	madInferences collections.Map[TopicId, alloraMath.Dec]
 
+	// Starting block height for emissions
+	startingEmissionsBlockHeight collections.Item[BlockHeight]
+
 	// / NONCES
 
 	// map of open worker nonce windows for topics on particular block heights
@@ -392,6 +395,7 @@ func NewKeeper(
 		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		monthlyReputerRewards:                     collections.NewItem(sb, types.MonthlyReputerRewardsKey, "monthly_reputer_rewards", sdk.IntValue),
 		monthlyTopicRewards:                       collections.NewItem(sb, types.MonthlyTopicRewardsKey, "monthly_topic_rewards", sdk.IntValue),
+		startingEmissionsBlockHeight:              collections.NewItem(sb, types.StartingEmissionsBlockHeightKey, "starting_emissions_block_height", collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -4743,12 +4747,31 @@ func (k Keeper) AddMonthlyRewards(ctx context.Context, reputerReward cosmosMath.
 	return k.monthlyTopicRewards.Set(ctx, newTopicRewards)
 }
 
+// SetMonthlyReputerRewards sets the monthly reputer rewards to the given value.
+func (k *Keeper) SetMonthlyReputerRewards(ctx context.Context, rewards cosmosMath.Int) error {
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(rewards); err != nil {
+		return errorsmod.Wrap(err, "monthly reputer rewards validation failed")
+	}
+	return k.monthlyReputerRewards.Set(ctx, rewards)
+}
+
+// SetMonthlyTopicRewards sets the monthly topic rewards to the given value.
+func (k *Keeper) SetMonthlyTopicRewards(ctx context.Context, rewards cosmosMath.Int) error {
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(rewards); err != nil {
+		return errorsmod.Wrap(err, "monthly topic rewards validation failed")
+	}
+	return k.monthlyTopicRewards.Set(ctx, rewards)
+}
+
 // ResetMonthlyRewards resets the monthly reputer and topic reward counters to zero.
 func (k Keeper) ResetMonthlyRewards(ctx context.Context) error {
-	if err := k.monthlyReputerRewards.Set(ctx, cosmosMath.ZeroInt()); err != nil {
-		return err
+	if err := k.SetMonthlyReputerRewards(ctx, cosmosMath.ZeroInt()); err != nil {
+		return errorsmod.Wrap(err, "error resetting monthly reputer rewards")
 	}
-	return k.monthlyTopicRewards.Set(ctx, cosmosMath.ZeroInt())
+	if err := k.SetMonthlyTopicRewards(ctx, cosmosMath.ZeroInt()); err != nil {
+		return errorsmod.Wrap(err, "error resetting monthly topic rewards")
+	}
+	return nil
 }
 
 // updateTopicWeightAfterStakeChange updates the topic weight and total sum of previous topic weights
@@ -4806,4 +4829,23 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
 
 	return nil
+}
+
+// Gets the starting block height for emissions
+func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (BlockHeight, error) {
+	ret, err := k.startingEmissionsBlockHeight.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return BlockHeight(0), nil
+	} else if err != nil {
+		return BlockHeight(0), errorsmod.Wrap(err, "error getting starting emissions block height")
+	}
+	return ret, nil
+}
+
+// Sets the starting block height for emissions
+func (k *Keeper) SetStartingEmissionsBlockHeight(ctx context.Context, height BlockHeight) error {
+	if height < 0 {
+		return errorsmod.Wrap(types.ErrInvalidValue, "starting emissions block height cannot be negative")
+	}
+	return k.startingEmissionsBlockHeight.Set(ctx, height)
 }

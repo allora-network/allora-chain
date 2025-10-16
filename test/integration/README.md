@@ -9,7 +9,7 @@ bash local_testnet_l1.sh
 To run integration tests, set the INTEGRATION variable to true
 
 ```
-INTEGRATION=true go test -v -run TestExternalTestSuite ./test/integration
+INTEGRATION=true go test -v -timeout 15m -run TestExternalTestSuite ./test/integration
 ```
 
 Stop the chain

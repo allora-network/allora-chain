@@ -29,7 +29,8 @@ func NewMsgServerImpl(k Keeper) types.MsgServiceServer {
 // if the sender is a whitelist admin
 // it optionally also allows recalculating the target emission
 func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (*types.UpdateParamsResponse, error) {
-	isAdmin, err := ms.IsWhitelistAdmin(ctx, msg.Sender)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	isAdmin, err := ms.IsWhitelistAdmin(sdkCtx, msg.Sender)
 	if err != nil {
 		return nil, errors.Wrap(err, "error checking if admin")
 	}
@@ -39,6 +40,41 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 
 	if err := msg.Params.Validate(); err != nil {
 		return nil, errors.Wrap(err, "error validating params")
+	}
+	moduleParams, err := ms.Keeper.GetParams(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting module params")
+	}
+
+	startingEmissionsBlockHeight, err := ms.Keeper.emissionsKeeper.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting starting emissions block height")
+	}
+
+	// TODO Add here: if emissions are to be enabled in the request, and it was disabled before,
+	// we need to set the starting block height,
+	// and schedule a job to recalculate the target emission at the end of the month and every month thereafter.
+	if msg.Params.EmissionEnabled {
+		if !moduleParams.EmissionEnabled && startingEmissionsBlockHeight == 0 {
+			// only if emissions move from disabled to enabled, we need to set the starting block height
+			// and schedule a job to recalculate the target emission at the end of the month and every month thereafter.
+			err = ms.Keeper.SetStartingEmissionsBlockHeight(ctx, uint64(sdkCtx.BlockHeight()))
+			if err != nil {
+				return nil, errors.Wrap(err, "error setting starting emissions block height")
+			}
+			// force the months already unlocked to 0
+			err = ms.Keeper.SetMonthsAlreadyUnlocked(ctx, math.NewInt(0))
+			if err != nil {
+				return nil, errors.Wrap(err, "error setting months already unlocked")
+			}
+
+			// TODO Add here: schedule a job to recalculate the target emission at the end of the month and every month thereafter.
+			// if err := ms.Keeper.ScheduleEmissionRecalculationTask(ctx, appKeepers.SchedulerKeeper, initialDelay); err != nil {
+			// 	sdkCtx.Logger().Error("failed to schedule emission recalculation task", "err", err)
+			// 	return vm, err
+			// }
+
+		}
 	}
 
 	if err := ms.Params.Set(ctx, msg.Params); err != nil {
@@ -52,6 +88,8 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 	if err != nil {
 		return nil, errors.Wrap(err, "error setting blocks per month")
 	}
+
+	// else, if recalculate target emission is true, we need to recalculate the target emission as below.
 
 	if msg.RecalculateTargetEmission {
 		sdkCtx, moduleParams, blocksPerMonth, vPercent,

@@ -7,6 +7,7 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_12_0"
+	"github.com/allora-network/allora-chain/app/upgrades/v0_13_0"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -57,7 +58,7 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 // propose an upgrade to the v0.11.0 software version
 func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight int64) {
 	ctx := context.Background()
-	name := v0_12_0.UpgradeName
+	name := v0_13_0.UpgradeName
 	summary := "Upgrade to " + name + " software version"
 
 	currHeight, err := m.Client.BlockHeight(ctx)
