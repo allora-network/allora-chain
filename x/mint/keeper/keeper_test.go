@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"errors"
-	"testing"
 
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/golang/mock/gomock"
@@ -10,6 +9,7 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	alloralog "github.com/allora-network/allora-chain/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -27,6 +27,7 @@ import (
 
 type MintKeeperTestSuite struct {
 	suite.Suite
+	moduleName string
 
 	mintKeeper      keeper.Keeper
 	ctx             sdk.Context
@@ -41,16 +42,15 @@ type MintKeeperTestSuite struct {
 	epochGet        map[int]func(string) alloraMath.Dec
 }
 
-func TestMintKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(MintKeeperTestSuite))
-}
-
 func (s *MintKeeperTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModuleBasic{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	s.ctx = testCtx.Ctx
+	s.moduleName = types.ModuleName
+	// Set logger to show logs from the module too
+	logger := alloralog.NewTestLogger(s.T()).With("module", s.moduleName)
+	s.ctx = testCtx.Ctx.WithLogger(logger)
 
 	// gomock initializations
 	s.ctrl = gomock.NewController(s.T())

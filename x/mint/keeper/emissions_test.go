@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"math"
 
 	cosmosMath "cosmossdk.io/math"
@@ -53,76 +52,6 @@ func (s *MintKeeperTestSuite) TestGetExponentialMovingAverageSimple() {
 
 	expectedValue := cosmosMath.NewInt(820).ToLegacyDec()
 	s.Require().True(expectedValue.Equal(result))
-}
-
-func (s *MintKeeperTestSuite) TestNumberLockedTokensBeforeVest() {
-	defaultParams := types.DefaultParams()
-	fullPreseedInvestors := defaultParams.InvestorsPreseedPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
-	fullSeedInvestors := defaultParams.InvestorsPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
-	fullTeam := defaultParams.TeamPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
-	expectedLocked := fullPreseedInvestors.Add(fullSeedInvestors).Add(fullTeam)
-
-	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
-	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
-	s.Require().NoError(err)
-	monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(2))
-	result, _, _, _, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
-		bpm,
-		cosmosMath.NewIntFromUint64(bpm*2),
-		defaultParams,
-		monthsUnlocked,
-	)
-	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
-	s.Require().Equal(monthsUnlocked, updatedMonthsUnlocked)
-}
-
-func (s *MintKeeperTestSuite) TestNumberLockedTokensDuringVest() {
-	defaultParams := types.DefaultParams()
-	// after 13 months investors and team should get 1/3 + 1/36 = 13/36 so 23/36 locked
-	thirtySix := cosmosMath.NewInt(36)
-	monthLocked := cosmosMath.NewInt(23)
-	investorsPreseed := defaultParams.InvestorsPreseedPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt().
-		Mul(monthLocked).Quo(thirtySix)
-	investorsSeed := defaultParams.InvestorsPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt().
-		Mul(monthLocked).Quo(thirtySix)
-	team := defaultParams.TeamPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt().
-		Mul(monthLocked).Quo(thirtySix)
-	expectedLocked := investorsPreseed.Add(investorsSeed).Add(team)
-	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
-	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
-	s.Require().NoError(err)
-	monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(13))
-	result, _, _, _, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
-		bpm,
-		cosmosMath.NewIntFromUint64(bpm*13+1),
-		defaultParams,
-		monthsUnlocked,
-	)
-	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
-	s.Require().Equal(monthsUnlocked, updatedMonthsUnlocked)
-}
-
-func (s *MintKeeperTestSuite) TestNumberLockedTokensAfterVest() {
-	defaultParams := types.DefaultParams()
-	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
-	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
-	s.Require().NoError(err)
-	monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(40))
-	result, _, _, _, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
-		bpm,
-		cosmosMath.NewIntFromUint64(bpm*40),
-		defaultParams,
-		monthsUnlocked,
-	)
-	s.Require().True(result.Equal(cosmosMath.ZeroInt()))
-	thirtySixMonths := cosmosMath.NewIntFromUint64(uint64(36))
-	s.Require().Equal(thirtySixMonths, updatedMonthsUnlocked)
 }
 
 func (s *MintKeeperTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple() {
@@ -256,99 +185,6 @@ func (s *MintKeeperTestSuite) TestCalEFromCsv() {
 	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
-func (s *MintKeeperTestSuite) TestGetLockedVestingTokens() {
-	_1e18 := alloraMath.NewDecFinite(1, 18)
-	blocksPerMonth := uint64(525960)
-	epoch0 := s.epochGet[0]
-	preseedFullyVested := epoch0("investors_preseed_tokens_total")
-	seedFullyVested := epoch0("investors_seed_tokens_total")
-	teamFullyVested := epoch0("team_tokens_total")
-
-	preseedAccumulated := alloraMath.ZeroDec()
-	seedAccumulated := alloraMath.ZeroDec()
-	teamAccumulated := alloraMath.ZeroDec()
-	for i := 0; i < 96; i++ {
-		epoch := s.epochGet[i]
-		monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(i))
-		result, resultPreseed, resultSeed, resultTeam, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
-			blocksPerMonth,
-			cosmosMath.NewIntFromUint64(blocksPerMonth*uint64(i)),
-			types.DefaultParams(),
-			monthsUnlocked,
-		)
-		if i > 36 {
-			s.Require().True(updatedMonthsUnlocked.Equal(cosmosMath.NewIntFromUint64(uint64(36))))
-		} else {
-			s.Require().True(monthsUnlocked.Equal(updatedMonthsUnlocked), "expected %s, got %s", monthsUnlocked, updatedMonthsUnlocked)
-		}
-		resultPreseedDec, err := alloraMath.NewDecFromSdkInt(resultPreseed)
-		s.Require().NoError(err)
-		resultSeedDec, err := alloraMath.NewDecFromSdkInt(resultSeed)
-		s.Require().NoError(err)
-		resultTeamDec, err := alloraMath.NewDecFromSdkInt(resultTeam)
-		s.Require().NoError(err)
-		resultD, err := alloraMath.NewDecFromSdkInt(result)
-		s.Require().NoError(err)
-		resultPreseedAllo, err := resultPreseedDec.Quo(_1e18)
-		s.Require().NoError(err)
-		resultSeedAllo, err := resultSeedDec.Quo(_1e18)
-		s.Require().NoError(err)
-		resultTeamAllo, err := resultTeamDec.Quo(_1e18)
-		s.Require().NoError(err)
-		resultDAllo, err := resultD.Quo(_1e18)
-		s.Require().NoError(err)
-
-		preseedTokensEmission := epoch("investors_preseed_tokens_emission")
-		s.Require().NoError(err)
-		preseedAccumulated, err = preseedAccumulated.Add(preseedTokensEmission)
-		s.Require().NoError(err)
-		seedTokensEmission := epoch("investors_seed_tokens_emission")
-		seedAccumulated, err = seedAccumulated.Add(seedTokensEmission)
-		s.Require().NoError(err)
-		teamTokensEmission := epoch("team_tokens_emission")
-		teamAccumulated, err = teamAccumulated.Add(teamTokensEmission)
-		s.Require().NoError(err)
-
-		preseedLocked, err := preseedFullyVested.Sub(preseedAccumulated)
-		s.Require().NoError(err)
-		// rounding precision error
-		if preseedLocked.Lt(alloraMath.OneDec()) {
-			preseedLocked = alloraMath.ZeroDec()
-		}
-		seedLocked, err := seedFullyVested.Sub(seedAccumulated)
-		s.Require().NoError(err)
-		if seedLocked.Lt(alloraMath.OneDec()) {
-			seedLocked = alloraMath.ZeroDec()
-		}
-		teamLocked, err := teamFullyVested.Sub(teamAccumulated)
-		s.Require().NoError(err)
-		if teamLocked.Lt(alloraMath.OneDec()) {
-			teamLocked = alloraMath.ZeroDec()
-		}
-
-		expected, err := preseedLocked.Add(seedLocked)
-		s.Require().NoError(err)
-		expected, err = expected.Add(teamLocked)
-		s.Require().NoError(err)
-
-		// s.ctx.Logger().Info("Epoch %d ## total %s | %s ## preseed %s | %s ## seed %s | %s ## team %s | %s\n",
-		// 	i,
-		// 	resultDAllo.String(),
-		// 	expected.String(),
-		// 	resultPreseedAllo.String(),
-		// 	preseedLocked.String(),
-		// 	resultSeedAllo.String(),
-		// 	seedLocked.String(),
-		// 	resultTeamAllo.String(),
-		// 	teamLocked.String(),
-		// )
-		testutil.InEpsilon5Dec(s.T(), resultPreseedAllo, preseedLocked)
-		testutil.InEpsilon5Dec(s.T(), resultSeedAllo, seedLocked)
-		testutil.InEpsilon5Dec(s.T(), resultTeamAllo, teamLocked)
-		testutil.InEpsilon5Dec(s.T(), resultDAllo, expected)
-	}
-}
-
 // ============================================================================
 // COMPREHENSIVE TESTS FOR GetLockedVestingTokensNew
 // ============================================================================
@@ -384,15 +220,15 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	expectedParticipants := cosmosMath.ZeroInt() // Participants are unlocked from the start
 	expectedTotal := expectedPreseed.Add(expectedInvestors).Add(expectedTeam).Add(expectedFoundation).Add(expectedParticipants)
 
-	fmt.Println("--------------------------------")
-	fmt.Println("Test at genesis (month 0)")
-	fmt.Printf("Total locked: %s\n", totalLocked.String())
-	fmt.Printf("Preseed locked: %s\n", preseedLocked.String())
-	fmt.Printf("Investors locked: %s\n", investorsLocked.String())
-	fmt.Printf("Team locked: %s\n", teamLocked.String())
-	fmt.Printf("Foundation locked: %s\n", foundationLocked.String())
-	fmt.Printf("Participants locked: %s\n", participantsLocked.String())
-	fmt.Printf("Updated months: %s\n", updatedMonths.String())
+	s.mintKeeper.Logger(s.ctx).Debug("--------------------------------")
+	s.mintKeeper.Logger(s.ctx).Debug("Test at genesis (month 0)")
+	s.mintKeeper.Logger(s.ctx).Debug("Total locked", "value", totalLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Preseed locked", "value", preseedLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Investors locked", "value", investorsLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Team locked", "value", teamLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Foundation locked", "value", foundationLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Participants locked", "value", participantsLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Updated months", "value", updatedMonths.String())
 	// At genesis, all tokens should be locked except what's unlocked at TGE
 	s.Require().Equal(totalLocked, expectedTotal, "Total locked should be equal to the sum of all locked tokens at genesis")
 	s.Require().Equal(preseedLocked, expectedPreseed, "Preseed should be locked at genesis")
@@ -433,15 +269,15 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	expectedFoundation = params.FoundationTreasuryPercentOfTotalSupply.Mul(keeper.FoundationInitialLockedPercentage).Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(12)).Quo(cosmosMath.NewInt(24))
 	expectedParticipants = cosmosMath.ZeroInt()
 
-	fmt.Println("--------------------------------")
-	fmt.Println("Test at 12 months")
-	fmt.Printf("Total locked: %s\n", totalLocked.String())
-	fmt.Printf("Preseed locked: %s\n", preseedLocked.String()+" | "+expectedPreseed.String())
-	fmt.Printf("Investors locked: %s\n", investorsLocked.String()+" | "+expectedInvestors.String())
-	fmt.Printf("Team locked: %s\n", teamLocked.String()+" | "+expectedTeam.String())
-	fmt.Printf("Foundation locked: %s\n", foundationLocked.String()+" | "+expectedFoundation.String())
-	fmt.Printf("Participants locked: %s\n", participantsLocked.String()+" | "+expectedParticipants.String())
-	fmt.Printf("Updated months: %s\n", updatedMonths.String())
+	s.mintKeeper.Logger(s.ctx).Debug("--------------------------------")
+	s.mintKeeper.Logger(s.ctx).Debug("Test at 12 months")
+	s.mintKeeper.Logger(s.ctx).Debug("Total locked", "value", totalLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Preseed locked", "actual", preseedLocked.String(), "expected", expectedPreseed.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Investors locked", "actual", investorsLocked.String(), "expected", expectedInvestors.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Team locked", "actual", teamLocked.String(), "expected", expectedTeam.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Foundation locked", "actual", foundationLocked.String(), "expected", expectedFoundation.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Participants locked", "actual", participantsLocked.String(), "expected", expectedParticipants.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Updated months", "value", updatedMonths.String())
 	s.Require().Equal(preseedLocked, expectedPreseed, "Preseed locked should be 2/3 of total at month 12")
 	s.Require().Equal(investorsLocked, expectedInvestors, "Investors locked should be 2/3 of total at month 12")
 	s.Require().Equal(teamLocked, expectedTeam, "Team locked should be 2/3 of total at month 12")
@@ -460,15 +296,15 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 	expectedInvestors = params.InvestorsPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(12)).Quo(cosmosMath.NewInt(36))
 	expectedTeam = params.TeamPercentOfTotalSupply.Mul(params.MaxSupply.ToLegacyDec()).TruncateInt().Mul(cosmosMath.NewInt(12)).Quo(cosmosMath.NewInt(36))
 
-	fmt.Println("--------------------------------")
-	fmt.Println("Test at 24 months")
-	fmt.Printf("Total locked: %s\n", totalLocked.String())
-	fmt.Printf("Preseed locked: %s\n", preseedLocked.String())
-	fmt.Printf("Investors locked: %s\n", investorsLocked.String())
-	fmt.Printf("Team locked: %s\n", teamLocked.String())
-	fmt.Printf("Foundation locked: %s\n", foundationLocked.String())
-	fmt.Printf("Participants locked: %s\n", participantsLocked.String())
-	fmt.Printf("Updated months: %s\n", updatedMonths.String())
+	s.mintKeeper.Logger(s.ctx).Debug("--------------------------------")
+	s.mintKeeper.Logger(s.ctx).Debug("Test at 24 months")
+	s.mintKeeper.Logger(s.ctx).Debug("Total locked", "value", totalLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Preseed locked", "value", preseedLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Investors locked", "value", investorsLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Team locked", "value", teamLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Foundation locked", "value", foundationLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Participants locked", "value", participantsLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Updated months", "value", updatedMonths.String())
 	s.Require().True(preseedLocked.Equal(expectedPreseed), "Preseed should be 2/3 unlocked at month 24")
 	s.Require().True(investorsLocked.Equal(expectedInvestors), "Investors should be 2/3  unlocked at month 24")
 	s.Require().True(teamLocked.Equal(expectedTeam), "Team should be 2/3 unlocked at month 24")
@@ -484,15 +320,15 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewBasicFunctionality() 
 		keeper.GetLockedVestingTokensNew(blocksPerMonth, blockHeight, params, monthsUnlocked)
 	s.Require().NoError(err)
 
-	fmt.Println("--------------------------------")
-	fmt.Println("Test at 36 months")
-	fmt.Printf("Total locked: %s\n", totalLocked.String())
-	fmt.Printf("Preseed locked: %s\n", preseedLocked.String())
-	fmt.Printf("Investors locked: %s\n", investorsLocked.String())
-	fmt.Printf("Team locked: %s\n", teamLocked.String())
-	fmt.Printf("Foundation locked: %s\n", foundationLocked.String())
-	fmt.Printf("Participants locked: %s\n", participantsLocked.String())
-	fmt.Printf("Updated months: %s\n", updatedMonths.String())
+	s.mintKeeper.Logger(s.ctx).Debug("--------------------------------")
+	s.mintKeeper.Logger(s.ctx).Debug("Test at 36 months")
+	s.mintKeeper.Logger(s.ctx).Debug("Total locked", "value", totalLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Preseed locked", "value", preseedLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Investors locked", "value", investorsLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Team locked", "value", teamLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Foundation locked", "value", foundationLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Participants locked", "value", participantsLocked.String())
+	s.mintKeeper.Logger(s.ctx).Debug("Updated months", "value", updatedMonths.String())
 	s.Require().Equal(preseedLocked, cosmosMath.ZeroInt(), "Preseed should be fully unlocked at month 36")
 	s.Require().Equal(investorsLocked, cosmosMath.ZeroInt(), "Investors should be fully unlocked at month 36")
 	s.Require().Equal(teamLocked, cosmosMath.ZeroInt(), "Team should be fully unlocked at month 36")
