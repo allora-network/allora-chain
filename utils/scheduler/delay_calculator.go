@@ -1,8 +1,17 @@
 package scheduler
 
 import (
+	"math"
 	"time"
 )
+
+// safeUint64ToInt64 safely converts uint64 to int64, capping at MaxInt64 if overflow would occur
+func safeUint64ToInt64(val uint64) int64 {
+	if val > math.MaxInt64 {
+		return math.MaxInt64
+	}
+	return int64(val)
+}
 
 // CalculateEmissionDelayResult holds the results of emission delay calculation
 type CalculateEmissionDelayResult struct {
@@ -49,12 +58,15 @@ func CalculateEmissionScheduleDelay(blockHeight uint64, blocksPerMonth uint64) C
 
 	// Convert the remaining block count into real time so the scheduler can use a relative delay.
 	monthNanoseconds := monthDuration.Nanoseconds()
-	perBlockNanoseconds := monthNanoseconds / int64(blocksPerMonth)
-	remainingNanoseconds := perBlockNanoseconds * int64(blocksRemaining)
+	blocksPerMonthInt64 := safeUint64ToInt64(blocksPerMonth)
+	blocksRemainingInt64 := safeUint64ToInt64(blocksRemaining)
+
+	perBlockNanoseconds := monthNanoseconds / blocksPerMonthInt64
+	remainingNanoseconds := perBlockNanoseconds * blocksRemainingInt64
 
 	// Carry the fractional part of the division to avoid monthly drift.
-	if remainder := monthNanoseconds % int64(blocksPerMonth); remainder > 0 {
-		remainingNanoseconds += remainder * int64(blocksRemaining) / int64(blocksPerMonth)
+	if remainder := monthNanoseconds % blocksPerMonthInt64; remainder > 0 {
+		remainingNanoseconds += remainder * blocksRemainingInt64 / blocksPerMonthInt64
 	}
 
 	initialDelay := time.Duration(remainingNanoseconds)

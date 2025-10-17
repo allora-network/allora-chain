@@ -139,6 +139,28 @@ func TestCalculateEmissionScheduleDelay(t *testing.T) {
 			previousDelay = result.InitialDelay
 		}
 	})
+
+	t.Run("integer overflow handling", func(t *testing.T) {
+		// Test with values that would overflow int64 to ensure safe conversion
+		maxUint64 := uint64(math.MaxUint64)
+		overflowBlocksPerMonth := maxUint64
+
+		// Should handle overflow gracefully without panic
+		result := CalculateEmissionScheduleDelay(1000, overflowBlocksPerMonth)
+
+		// Should return valid results
+		assert.Positive(t, result.InitialDelay)
+		assert.Positive(t, result.BlocksRemaining)
+
+		// Test with large but valid blocksRemaining
+		largeBlockHeight := uint64(math.MaxInt64) + 1000
+		normalBlocksPerMonth := uint64(43200)
+
+		result2 := CalculateEmissionScheduleDelay(largeBlockHeight, normalBlocksPerMonth)
+		assert.Positive(t, result2.InitialDelay)
+		assert.Positive(t, result2.BlocksRemaining)
+		assert.LessOrEqual(t, result2.BlocksRemaining, normalBlocksPerMonth)
+	})
 }
 
 func TestCalculateEmissionDelayResult(t *testing.T) {
