@@ -66,7 +66,7 @@ message QueryTasksResponse {
 // QueryTaskRequest is the request type for the Query/Task RPC method.
 message QueryTaskRequest {
   // TaskId is the id of the queried task.
-  string task_id = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "TaskID"];
+  string task_id = 1;
 }
 
 // QueryTaskResponse is the response type for the Query/Task RPC method.
@@ -81,6 +81,7 @@ message QueryScheduledTasksRequest {
   string typename = 1;
 
   // From is an optional filter to only return tasks scheduled from a given time (i.e. after or before depending on the order, inclusive).
+  // With this filter pagination by offset is not supported, pagination by key must be used instead.
   google.protobuf.Timestamp from = 2 [(gogoproto.stdtime) = true];
 
   // Pagination defines an optional pagination for the request.
