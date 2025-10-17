@@ -4826,4 +4826,3 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 
 	return nil
 }
-

@@ -1035,7 +1035,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-
 	return nil
 }
 
@@ -2618,7 +2617,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get monthly topic rewards")
 	}
-
 
 	return &types.GenesisState{
 		Params:                                         moduleParams,
