@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -34,6 +35,8 @@ type Keeper struct {
 	PreviousBlockEmission                    collections.Item[math.Int]
 	EcosystemTokensMinted                    collections.Item[math.Int]
 	MonthsUnlocked                           collections.Item[math.Int]
+	// Starting block height for emissions
+	StartingEmissionsBlockHeight collections.Item[int64]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -66,6 +69,7 @@ func NewKeeper(
 		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
 		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 		MonthsUnlocked:                           collections.NewItem(sb, types.MonthsUnlockedKey, "monthsunlocked", sdk.IntValue),
+		StartingEmissionsBlockHeight:             collections.NewItem(sb, types.StartingEmissionsBlockHeightKey, "startingemissionsblockheight", collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -430,11 +434,18 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 }
 
 // GetStartingEmissionsBlockHeight gets the starting block height for emissions
-func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (uint64, error) {
-	return k.emissionsKeeper.GetStartingEmissionsBlockHeight(ctx)
+func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (int64, error) {
+	ret, err := k.StartingEmissionsBlockHeight.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		}
+		return 0, errorsmod.Wrap(err, "error getting starting emissions block height")
+	}
+	return ret, nil
 }
 
 // SetStartingEmissionsBlockHeight sets the starting block height for emissions
-func (k Keeper) SetStartingEmissionsBlockHeight(ctx context.Context, height uint64) error {
-	return k.emissionsKeeper.SetStartingEmissionsBlockHeight(ctx, height)
+func (k Keeper) SetStartingEmissionsBlockHeight(ctx context.Context, height int64) error {
+	return k.StartingEmissionsBlockHeight.Set(ctx, height)
 }
