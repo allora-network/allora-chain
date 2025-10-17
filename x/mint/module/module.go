@@ -191,6 +191,7 @@ type ModuleInputs struct {
 	BankKeeper      types.BankKeeper
 	StakingKeeper   types.StakingKeeper
 	EmissionsKeeper types.EmissionsKeeper
+	SchedulerKeeper types.SchedulerKeeper
 }
 
 type ModuleOutputs struct {
@@ -214,6 +215,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.AccountKeeper,
 		in.BankKeeper,
 		in.EmissionsKeeper,
+		in.SchedulerKeeper,
 		feeCollectorName,
 	)
 

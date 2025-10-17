@@ -22,6 +22,7 @@ import (
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 	secp256k1 "github.com/cometbft/cometbft/crypto/secp256k1"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -52,6 +53,7 @@ type MintModuleTestSuite struct {
 	bankKeeper      types.BankKeeper
 	appModule       mint.AppModule
 	emissionsKeeper emissionskeeper.Keeper
+	schedulerKeeper schedulerkeeper.Keeper
 	mintKeeper      keeper.Keeper
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -71,7 +73,9 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.addrs = addrs
 	s.addrsStr = addrsStr
 	key := storetypes.NewKVStoreKey(types.StoreKey)
+	keyScheduler := storetypes.NewKVStoreKey("scheduler")
 	storeService := runtime.NewKVStoreService(key)
+	storeServiceScheduler := runtime.NewKVStoreService(keyScheduler)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
@@ -142,6 +146,11 @@ func (s *MintModuleTestSuite) SetupTest() {
 		"fee_collector",
 	)
 
+	schedulerKeeper := schedulerkeeper.NewKeeper(
+		storeServiceScheduler,
+		encCfg.Codec,
+	)
+
 	mintKeeper := keeper.NewKeeper(
 		encCfg.Codec,
 		storeService,
@@ -149,6 +158,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		&schedulerKeeper,
 		authtypes.FeeCollectorName,
 	)
 

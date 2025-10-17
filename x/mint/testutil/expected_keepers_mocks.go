@@ -10,7 +10,9 @@ import (
 
 	address "cosmossdk.io/core/address"
 	math "cosmossdk.io/math"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 	types "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/gogoproto/proto"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -249,4 +251,60 @@ func (m *MockBankKeeper) GetBalance(ctx context.Context, addr types.AccAddress, 
 func (mr *MockBankKeeperMockRecorder) GetBalance(ctx context.Context, addr types.AccAddress, denom string) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBalance", reflect.TypeOf((*MockBankKeeper)(nil).GetBalance), ctx, addr, denom)
+}
+
+// MockSchedulerKeeper is a mock of SchedulerKeeper interface.
+type MockSchedulerKeeper struct {
+	ctrl     *gomock.Controller
+	recorder *MockSchedulerKeeperMockRecorder
+}
+
+// MockSchedulerKeeperMockRecorder is the mock recorder for MockSchedulerKeeper.
+type MockSchedulerKeeperMockRecorder struct {
+	mock *MockSchedulerKeeper
+}
+
+// NewMockSchedulerKeeper creates a new mock instance.
+func NewMockSchedulerKeeper(ctrl *gomock.Controller) *MockSchedulerKeeper {
+	mock := &MockSchedulerKeeper{ctrl: ctrl}
+	mock.recorder = &MockSchedulerKeeperMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSchedulerKeeper) EXPECT() *MockSchedulerKeeperMockRecorder {
+	return m.recorder
+}
+
+// RegisterTaskHandlers mocks base method.
+func (m *MockSchedulerKeeper) RegisterTaskHandlers(taskHandlers schedulertypes.TaskHandlers) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterTaskHandlers", taskHandlers)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterTaskHandlers indicates an expected call of RegisterTaskHandlers.
+func (mr *MockSchedulerKeeperMockRecorder) RegisterTaskHandlers(taskHandlers interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterTaskHandlers", reflect.TypeOf((*MockSchedulerKeeper)(nil).RegisterTaskHandlers), taskHandlers)
+}
+
+// ScheduleTask mocks base method.
+func (m *MockSchedulerKeeper) ScheduleTask(ctx context.Context, typename string, id schedulertypes.TaskID, args proto.Message, scheduleOpts ...schedulertypes.SchedulingOption) error {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, typename, id, args}
+	for _, a := range scheduleOpts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ScheduleTask", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScheduleTask indicates an expected call of ScheduleTask.
+func (mr *MockSchedulerKeeperMockRecorder) ScheduleTask(ctx, typename, id, args interface{}, scheduleOpts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, typename, id, args}, scheduleOpts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScheduleTask", reflect.TypeOf((*MockSchedulerKeeper)(nil).ScheduleTask), varargs...)
 }

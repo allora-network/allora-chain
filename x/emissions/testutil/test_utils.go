@@ -44,6 +44,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 )
 
 type TestSuite struct {
@@ -54,11 +55,13 @@ type TestSuite struct {
 	codec                 codec.Codec
 	storeServiceBank      store.KVStoreService
 	storeServiceEmissions store.KVStoreService
+	storeServiceScheduler store.KVStoreService
 	accountKeeper         authkeeper.AccountKeeper
 	bankKeeper            bankkeeper.BaseKeeper
 	emissionsKeeper       *keeper.Keeper
 	mintKeeper            minttypes.MintKeeper
 	stakingKeeper         minttypes.StakingKeeper
+	schedulerKeeper       schedulerkeeper.Keeper
 	emissionsAppModule    module.AppModule
 	emissionsQueryServer  types.QueryServiceServer
 	emissionsMsgServer    types.MsgServiceServer
@@ -254,17 +257,20 @@ func WithSkipNetworkInferences() Option {
 
 func (s *TestSuite) SetupTest() {
 	var (
-		keyEmissions        = storetypes.NewKVStoreKey("emissions")
-		keyAccount          = storetypes.NewKVStoreKey("account")
-		keyBank             = storetypes.NewKVStoreKey("bank")
-		keyStaking          = storetypes.NewKVStoreKey("staking")
-		keyMint             = storetypes.NewKVStoreKey("mint")
-		storeServiceAccount = runtime.NewKVStoreService(keyAccount)
-		storeServiceStaking = runtime.NewKVStoreService(keyStaking)
-		storeServiceMint    = runtime.NewKVStoreService(keyMint)
+		keyEmissions          = storetypes.NewKVStoreKey("emissions")
+		keyAccount            = storetypes.NewKVStoreKey("account")
+		keyBank               = storetypes.NewKVStoreKey("bank")
+		keyStaking            = storetypes.NewKVStoreKey("staking")
+		keyMint               = storetypes.NewKVStoreKey("mint")
+		keyScheduler          = storetypes.NewKVStoreKey("scheduler")
+		storeServiceAccount   = runtime.NewKVStoreService(keyAccount)
+		storeServiceStaking   = runtime.NewKVStoreService(keyStaking)
+		storeServiceMint      = runtime.NewKVStoreService(keyMint)
+		storeServiceScheduler = runtime.NewKVStoreService(keyScheduler)
 	)
 	s.storeServiceEmissions = runtime.NewKVStoreService(keyEmissions)
 	s.storeServiceBank = runtime.NewKVStoreService(keyBank)
+	s.storeServiceScheduler = runtime.NewKVStoreService(keyScheduler)
 	testCtx := testutil.DefaultContextWithKeys(map[string]*storetypes.KVStoreKey{
 		"emissions": keyEmissions,
 		"account":   keyAccount,
@@ -333,6 +339,10 @@ func (s *TestSuite) SetupTest() {
 		codecAddress.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		codecAddress.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
+	schedulerKeeper := schedulerkeeper.NewKeeper(
+		storeServiceScheduler,
+		encCfg.Codec,
+	)
 	mintKeeper := mintkeeper.NewKeeper(
 		encCfg.Codec,
 		storeServiceMint,
@@ -340,6 +350,7 @@ func (s *TestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		&schedulerKeeper,
 		authtypes.FeeCollectorName,
 	)
 

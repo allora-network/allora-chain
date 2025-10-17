@@ -51,6 +51,7 @@ func (s *MintV5MigrationTestSuite) SetupTest() {
 	bankKeeper := minttestutil.NewMockBankKeeper(s.ctrl)
 	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(s.ctrl)
 	stakingKeeper := minttestutil.NewMockStakingKeeper(s.ctrl)
+	schedulerKeeper := minttestutil.NewMockSchedulerKeeper(s.ctrl)
 	accountKeeper.EXPECT().GetModuleAddress(minttypes.ModuleName).Return(authtypes.NewModuleAddress(minttypes.ModuleName))
 	mintKeeper := keeper.NewKeeper(
 		encCfg.Codec,
@@ -59,6 +60,7 @@ func (s *MintV5MigrationTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		schedulerKeeper,
 		authtypes.FeeCollectorName,
 	)
 

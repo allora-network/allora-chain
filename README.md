@@ -267,7 +267,7 @@ To run integration tests, execute the following commands:
 
 ```bash
 bash test/local_testnet_l1.sh
-INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
+INTEGRATION=TRUE go test -timeout 15m ./test/integration/ -v
 ```
 
 ## Run Upgrade Tests
@@ -276,7 +276,7 @@ To run upgrade tests, execute the following commands:
 
 ```bash
 DO_UPGRADE="true" UPGRADE_VERSION="v0.6.0" bash test/local_testnet_l1.sh
-UPGRADE=TRUE go test -timeout 10m ./test/integration/ -v
+UPGRADE=TRUE go test -timeout 15m ./test/integration/ -v
 ```
 
 ## Run Stress Tests

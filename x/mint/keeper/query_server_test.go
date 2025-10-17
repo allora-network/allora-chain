@@ -42,6 +42,7 @@ func (suite *MintTestSuite) SetupTest() {
 	bankKeeper := minttestutil.NewMockBankKeeper(ctrl)
 	stakingKeeper := minttestutil.NewMockStakingKeeper(ctrl)
 	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(ctrl)
+	schedulerKeeper := minttestutil.NewMockSchedulerKeeper(ctrl)
 
 	accountKeeper.EXPECT().GetModuleAddress("mint").Return(sdk.AccAddress{})
 
@@ -52,6 +53,7 @@ func (suite *MintTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		schedulerKeeper,
 		authtypes.FeeCollectorName,
 	)
 
