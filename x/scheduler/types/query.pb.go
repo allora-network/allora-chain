@@ -242,7 +242,7 @@ func (m *QueryTaskResponse) GetTask() Task {
 type QueryScheduledTasksRequest struct {
 	// Typename is the type of tasks to query.
 	Typename string `protobuf:"bytes,1,opt,name=typename,proto3" json:"typename,omitempty"`
-	// From is an optional filter to only return tasks scheduled from a given time (i.e. after or before depending on the order, inclusive).
+	// From is an optional filter to only return tasks scheduled from a given time (i.e. after or before depending on the order, inclusive)
 	// With this filter pagination by offset is not supported, pagination by key must be used instead.
 	From *time.Time `protobuf:"bytes,2,opt,name=from,proto3,stdtime" json:"from,omitempty"`
 	// Pagination defines an optional pagination for the request.
