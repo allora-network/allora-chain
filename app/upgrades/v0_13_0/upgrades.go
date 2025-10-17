@@ -38,6 +38,7 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
+		// Schedule the emission recalculation task if emissions are enabled and starting block is not set
 		if appKeepers != nil && appKeepers.SchedulerKeeper != nil {
 			// Check emissions are enabled to calculate when to start the scheduler
 			moduleParams, err := appKeepers.MintKeeper.GetParams(ctx)
@@ -94,7 +95,6 @@ func CreateUpgradeHandler(
 			} else {
 				sdkCtx.Logger().Info("Emissions are disabled - not scheduled emission recalculation task")
 			}
-
 		}
 
 		sdkCtx.Logger().Info("MIGRATIONS COMPLETED")

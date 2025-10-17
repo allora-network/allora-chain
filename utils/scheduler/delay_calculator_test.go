@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -91,6 +92,15 @@ func TestCalculateEmissionScheduleDelay(t *testing.T) {
 
 		// Verify the calculation includes fractional handling
 		monthNanos := oneMonth.Nanoseconds()
+
+		// Safe conversion with bounds checking
+		if blocksPerMonth > math.MaxInt64 {
+			t.Fatalf("blocksPerMonth exceeds int64 max: %d", blocksPerMonth)
+		}
+		if result.BlocksRemaining > math.MaxInt64 {
+			t.Fatalf("BlocksRemaining exceeds int64 max: %d", result.BlocksRemaining)
+		}
+
 		perBlockNanos := monthNanos / int64(blocksPerMonth)
 		expectedNanos := perBlockNanos * int64(result.BlocksRemaining)
 
@@ -108,8 +118,8 @@ func TestCalculateEmissionScheduleDelay(t *testing.T) {
 		result := CalculateEmissionScheduleDelay(largeBlockHeight, blocksPerMonth)
 
 		// Should still calculate correctly
-		assert.Greater(t, result.InitialDelay, time.Duration(0))
-		assert.Greater(t, result.BlocksRemaining, uint64(0))
+		assert.Positive(t, result.InitialDelay)
+		assert.Positive(t, result.BlocksRemaining)
 		assert.LessOrEqual(t, result.BlocksRemaining, blocksPerMonth)
 	})
 
