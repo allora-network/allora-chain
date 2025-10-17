@@ -285,9 +285,6 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-
-  // STARTING EMISSIONS BLOCK HEIGHT
-  int64 starting_emissions_block_height = 99;
 }
 
 message TopicIdAndTopic {

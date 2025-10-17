@@ -46,8 +46,6 @@ type EmissionsKeeper interface {
 	SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error
 	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
 	SetParams(ctx context.Context, params emissionstypes.Params) error
-	GetStartingEmissionsBlockHeight(ctx context.Context) (uint64, error)
-	SetStartingEmissionsBlockHeight(ctx context.Context, height uint64) error
 }
 
 // SchedulerKeeper defines the expected interface for the scheduler keeper.

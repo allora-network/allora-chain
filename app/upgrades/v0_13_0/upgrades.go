@@ -3,12 +3,12 @@ package v0_13_0 //nolint:revive // var-naming: don't use an underscore in packag
 import (
 	"context"
 	"strings"
-	"time"
 
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/allora-network/allora-chain/app/keepers"
 	"github.com/allora-network/allora-chain/app/upgrades"
+	"github.com/allora-network/allora-chain/utils/scheduler"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -38,74 +38,63 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
+		// Schedule the emission recalculation task if emissions are enabled and starting block is not set
 		if appKeepers != nil && appKeepers.SchedulerKeeper != nil {
-			mintTaskHandlers := appKeepers.MintKeeper.TaskHandlers()
-			if err := appKeepers.SchedulerKeeper.RegisterTaskHandlers(mintTaskHandlers); err != nil {
-				if !errors.Is(err, schedulertypes.ErrInvalidTaskHandler) || !strings.Contains(err.Error(), "duplicate task handler") {
-					sdkCtx.Logger().Error("failed to register mint task handlers", "err", err)
-					return vm, err
-				}
-			}
-
-			oneMonthDuration := 30 * 24 * time.Hour
-
-			// Pull the currently configured cadence so we can align the scheduler with the pre-upgrade emission cycle.
-			blocksPerMonth, err := appKeepers.MintKeeper.GetParamsBlocksPerMonth(ctx)
+			// Check emissions are enabled to calculate when to start the scheduler
+			moduleParams, err := appKeepers.MintKeeper.GetParams(ctx)
 			if err != nil {
-				sdkCtx.Logger().Error("failed to get blocks per month", "err", err)
+				sdkCtx.Logger().Error("failed to get module params", "err", err)
 				return vm, err
 			}
 
-			initialDelay := oneMonthDuration
-			var blocksRemaining uint64
-			if blocksPerMonth > 0 {
+			// Check starting block is not set
+			startingEmissionsBlockHeight, err := appKeepers.MintKeeper.GetStartingEmissionsBlockHeight(ctx)
+			if err != nil {
+				sdkCtx.Logger().Error("failed to get starting emissions block height", "err", err)
+				return vm, err
+			}
+			// Only schedule the task if emissions are enabled
+			if !moduleParams.EmissionEnabled && startingEmissionsBlockHeight == 0 {
+
+				mintTaskHandlers := appKeepers.MintKeeper.TaskHandlers()
+				if err := appKeepers.SchedulerKeeper.RegisterTaskHandlers(mintTaskHandlers); err != nil {
+					if !errors.Is(err, schedulertypes.ErrInvalidTaskHandler) || !strings.Contains(err.Error(), "duplicate task handler") {
+						sdkCtx.Logger().Error("failed to register mint task handlers", "err", err)
+						return vm, err
+					}
+				}
+
+				// Pull the currently configured cadence so we can align the scheduler with the pre-upgrade emission cycle.
+				blocksPerMonth, err := appKeepers.MintKeeper.GetParamsBlocksPerMonth(ctx)
+				if err != nil {
+					sdkCtx.Logger().Error("failed to get blocks per month", "err", err)
+					return vm, err
+				}
+
 				// Use the latest block height as the anchor for the alignment calculations.
 				blockHeight := uint64(0)
 				if sdkCtx.BlockHeight() > 0 {
 					blockHeight = uint64(sdkCtx.BlockHeight())
 				}
 
-				var blocksElapsed uint64
-				if blockHeight > 0 {
-					blocksElapsed = (blockHeight - 1) % blocksPerMonth
-				}
+				// Calculate the emission schedule delay using the utility function
+				result := scheduler.CalculateEmissionScheduleDelay(blockHeight, blocksPerMonth)
+				initialDelay := result.InitialDelay
+				blocksRemaining := result.BlocksRemaining
 
-				// Remaining blocks until we hit the next monthly emission checkpoint.
-				blocksRemaining = blocksPerMonth - blocksElapsed
-				if blocksRemaining == 0 {
-					// If we landed exactly on the boundary we still want the next run a full month later.
-					blocksRemaining = blocksPerMonth
-				}
+				sdkCtx.Logger().Info("calculated emission recalculation schedule",
+					"initialDelay", initialDelay,
+					"blocksRemaining", blocksRemaining,
+				)
 
-				// Convert the remaining block count into real time so the scheduler can use a relative delay.
-				monthNanoseconds := oneMonthDuration.Nanoseconds()
-				perBlockNanoseconds := monthNanoseconds / int64(blocksPerMonth)
-				remainingNanoseconds := perBlockNanoseconds * int64(blocksRemaining)
-
-				// Carry the fractional part of the division to avoid monthly drift.
-				if remainder := monthNanoseconds % int64(blocksPerMonth); remainder > 0 {
-					remainingNanoseconds += remainder * int64(blocksRemaining) / int64(blocksPerMonth)
+				if err := appKeepers.MintKeeper.ScheduleEmissionRecalculationTask(ctx, appKeepers.SchedulerKeeper, initialDelay); err != nil {
+					sdkCtx.Logger().Error("failed to schedule emission recalculation task", "err", err)
+					return vm, err
 				}
-
-				initialDelay = time.Duration(remainingNanoseconds)
-				if initialDelay <= 0 {
-					// Guard against rounding corner cases that would otherwise schedule in the past.
-					initialDelay = time.Second
-				}
+				sdkCtx.Logger().Info("scheduled emission recalculation task")
+			} else {
+				sdkCtx.Logger().Info("Emissions are disabled - not scheduled emission recalculation task")
 			}
-
-			sdkCtx.Logger().Info("calculated emission recalculation schedule",
-				"interval", oneMonthDuration,
-				"initialDelay", initialDelay,
-				"blocksRemaining", blocksRemaining,
-			)
-
-			if err := appKeepers.MintKeeper.ScheduleEmissionRecalculationTask(ctx, appKeepers.SchedulerKeeper, initialDelay); err != nil {
-				sdkCtx.Logger().Error("failed to schedule emission recalculation task", "err", err)
-				return vm, err
-			}
-
-			sdkCtx.Logger().Info("scheduled emission recalculation task")
 		}
 
 		sdkCtx.Logger().Info("MIGRATIONS COMPLETED")

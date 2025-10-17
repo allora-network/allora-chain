@@ -5708,31 +5708,3 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
-
-func (s *KeeperTestSuite) TestStartingEmissionsBlockHeight() {
-	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
-
-	// Initial state should be zero
-	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(int64(0), startingEmissionsBlockHeight, "Initial starting emissions block height should be zero")
-
-	// Set starting emissions block height
-	err = k.SetStartingEmissionsBlockHeight(ctx, 1000)
-	s.Require().NoError(err)
-
-	// Get starting emissions block height
-	startingEmissionsBlockHeight, err = k.GetStartingEmissionsBlockHeight(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(int64(1000), startingEmissionsBlockHeight, "Starting emissions block height should be set to 1000")
-
-	// Test setting a negative starting emissions block height
-	err = k.SetStartingEmissionsBlockHeight(ctx, -1)
-	s.Require().Error(err, "Setting negative starting emissions block height should fail")
-
-	// Get starting emissions block height
-	startingEmissionsBlockHeight, err = k.GetStartingEmissionsBlockHeight(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(int64(1000), startingEmissionsBlockHeight, "Starting emissions block height should remain unchanged")
-}

@@ -1035,10 +1035,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	if err := k.SetStartingEmissionsBlockHeight(ctx, data.StartingEmissionsBlockHeight); err != nil {
-		return errors.Wrap(err, "error setting starting emissions block height")
-	}
-
 	return nil
 }
 
@@ -2622,12 +2618,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		return nil, errors.Wrap(err, "failed to get monthly topic rewards")
 	}
 
-	// Get Starting Emissions Block Height
-	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get starting emissions block height")
-	}
-
 	return &types.GenesisState{
 		Params:                                         moduleParams,
 		NextTopicId:                                    nextTopicId,
@@ -2724,6 +2714,5 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		OutlierResistantNetworkInferences:              outlierResistantNetworkInferences,
 		MonthlyReputerRewards:                          monthlyReputerRewards,
 		MonthlyTopicRewards:                            monthlyTopicRewards,
-		StartingEmissionsBlockHeight:                   startingEmissionsBlockHeight,
 	}, nil
 }

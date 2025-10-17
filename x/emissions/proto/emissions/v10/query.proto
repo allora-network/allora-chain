@@ -552,12 +552,6 @@ service QueryService {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v10/reputer_submission_window_status/{topic_id}";
   }
-
-  // Get starting emissions block height
-  rpc GetStartingEmissionsBlockHeight(GetStartingEmissionsBlockHeightRequest) returns (GetStartingEmissionsBlockHeightResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/starting_emissions_block_height";
-  }
 }
 
 message IsWhitelistedGlobalWorkerRequest {
@@ -1635,10 +1629,4 @@ message GetReputerSubmissionWindowStatusResponse {
   bool is_registered = 7 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_whitelisted = 8 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_topic_active = 9 [(amino.dont_omitempty) = true];
-}
-
-message GetStartingEmissionsBlockHeightRequest {}
-
-message GetStartingEmissionsBlockHeightResponse {
-  int64 starting_emissions_block_height = 1;
 }
