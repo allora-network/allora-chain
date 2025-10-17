@@ -436,10 +436,9 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 // GetStartingEmissionsBlockHeight gets the starting block height for emissions
 func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (int64, error) {
 	ret, err := k.StartingEmissionsBlockHeight.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return 0, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return 0, nil
+	} else if err != nil {
 		return 0, errorsmod.Wrap(err, "error getting starting emissions block height")
 	}
 	return ret, nil

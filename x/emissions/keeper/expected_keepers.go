@@ -30,4 +30,3 @@ type BankKeeper interface {
 
 	BlockedAddr(addr sdk.AccAddress) bool
 }
-
