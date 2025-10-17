@@ -93,20 +93,16 @@ func TestCalculateEmissionScheduleDelay(t *testing.T) {
 		// Verify the calculation includes fractional handling
 		monthNanos := oneMonth.Nanoseconds()
 
-		// Safe conversion with bounds checking
-		if blocksPerMonth > math.MaxInt64 {
-			t.Fatalf("blocksPerMonth exceeds int64 max: %d", blocksPerMonth)
-		}
-		if result.BlocksRemaining > math.MaxInt64 {
-			t.Fatalf("BlocksRemaining exceeds int64 max: %d", result.BlocksRemaining)
-		}
+		// Use safe conversion function
+		blocksPerMonthInt64 := safeUint64ToInt64(blocksPerMonth)
+		blocksRemainingInt64 := safeUint64ToInt64(result.BlocksRemaining)
 
-		perBlockNanos := monthNanos / int64(blocksPerMonth)
-		expectedNanos := perBlockNanos * int64(result.BlocksRemaining)
+		perBlockNanos := monthNanos / blocksPerMonthInt64
+		expectedNanos := perBlockNanos * blocksRemainingInt64
 
 		// Add fractional part
-		if remainder := monthNanos % int64(blocksPerMonth); remainder > 0 {
-			expectedNanos += remainder * int64(result.BlocksRemaining) / int64(blocksPerMonth)
+		if remainder := monthNanos % blocksPerMonthInt64; remainder > 0 {
+			expectedNanos += remainder * blocksRemainingInt64 / blocksPerMonthInt64
 		}
 
 		assert.Equal(t, time.Duration(expectedNanos), result.InitialDelay)
