@@ -50,11 +50,11 @@ type Keeper struct {
 }
 
 // NewKeeper returns a new keeper by codec and storeKey inputs.
-func NewKeeper(storeService store.KVStoreService, cdc codec.Codec) Keeper {
+func NewKeeper(storeService store.KVStoreService, cdc codec.Codec) *Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
 
 	//nolint:exhaustruct
-	k := Keeper{
+	k := &Keeper{
 		storeService: storeService,
 		cdc:          cdc,
 
