@@ -82,8 +82,6 @@ func TestExportImportGenesis(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, keys2, 2)
 
-	require.Len(t, ctx.EventManager().Events(), 0, "init genesis should not emit events")
-
 	genesis2 := k2.ExportGenesis(ctx)
 	require.Equal(t, genesis, genesis2)
 }

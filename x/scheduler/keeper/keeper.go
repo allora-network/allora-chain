@@ -160,22 +160,7 @@ func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.Tas
 		return err
 	}
 
-	return k.programTask(ctx, *task)
-}
-
-// programTask programs the task to its next run schedule, if any.
-func (k *Keeper) programTask(ctx context.Context, task types.Task) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	if key := getTaskScheduleKey(task); key != nil {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskScheduledEvent{
-			Id:       task.Id,
-			Typename: task.Typename,
-			At:       task.NextRunAt,
-		}); err != nil {
-			return err
-		}
-
+	if key := getTaskScheduleKey(*task); key != nil {
 		return k.tasksSchedule.Set(ctx, *key)
 	}
 	return nil
@@ -183,7 +168,6 @@ func (k *Keeper) programTask(ctx context.Context, task types.Task) error {
 
 // CancelTask removes a task, removing it from the schedule.
 func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	task, err := k.tasks.Get(ctx, taskID)
 	if err != nil {
 		return err
@@ -194,14 +178,6 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 	}
 
 	if key := getTaskScheduleKey(task); key != nil {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
-			Id:       task.Id,
-			Typename: task.Typename,
-			At:       task.NextRunAt,
-		}); err != nil {
-			return err
-		}
-
 		return k.tasksSchedule.Remove(ctx, *key)
 	}
 	return nil
@@ -216,13 +192,16 @@ func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOp
 		return nil
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	task, err := k.tasks.Get(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	oldScheduleKey := getTaskScheduleKey(task)
+	if key := getTaskScheduleKey(task); key != nil {
+		if err := k.tasksSchedule.Remove(ctx, *key); err != nil {
+			return err
+		}
+	}
 
 	if err := task.ApplySchedulingOpts(ctx, scheduleOpts...); err != nil {
 		return err
@@ -232,25 +211,10 @@ func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOp
 		return err
 	}
 
-	if oldScheduleKey != nil {
-		if err := k.tasksSchedule.Remove(ctx, *oldScheduleKey); err != nil {
-			return err
-		}
-
-		// if the task no longer has a next run time, it has been unscheduled
-		if task.NextRunAt == nil {
-			prevSchedule := oldScheduleKey.K2()
-			if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
-				Id:       task.Id,
-				Typename: task.Typename,
-				At:       &prevSchedule,
-			}); err != nil {
-				return err
-			}
-		}
+	if key := getTaskScheduleKey(task); key != nil {
+		return k.tasksSchedule.Set(ctx, *key)
 	}
-
-	return k.programTask(ctx, task)
+	return nil
 }
 
 // GetDueTasksAt retrieves the tasks of the specified type that are due at the provided time.
@@ -283,75 +247,4 @@ func getTaskScheduleKey(t types.Task) *collections.Triple[string, time.Time, typ
 	}
 	key := collections.Join3(t.Typename, *t.NextRunAt, t.Id)
 	return &key
-}
-
-// GetDueTasksAtIter retrieves an iterator over the task of the specified type that are due at the provided time.
-// TODO: Test that!
-func (k *Keeper) GetDueTasksAt(
-	ctx context.Context,
-	typename string,
-	at time.Time,
-) ([]types.TaskID, error) {
-	lb := collections.TriplePrefix[string, time.Time, types.TaskID](typename)
-	ub := collections.TripleSuperPrefix[string, time.Time, types.TaskID](typename, at)
-
-	ranger := (&collections.Range[collections.Triple[string, time.Time, types.TaskID]]{}).
-		StartInclusive(lb).
-		EndInclusive(ub)
-
-	tasks := make([]types.TaskID, 0)
-	return tasks, k.tasksSchedule.Walk(ctx, ranger, func(key collections.Triple[string, time.Time, types.TaskID]) (bool, error) {
-		tasks = append(tasks, key.K3())
-		return false, nil
-	})
-}
-
-func (k *Keeper) GetTask(ctx context.Context, id types.TaskID) (types.Task, error) {
-	return k.tasks.Get(ctx, id)
-}
-
-func (k *Keeper) scheduleTask(
-	ctx context.Context,
-	typename string,
-	id types.TaskID,
-	args proto.Message,
-	startAt time.Time,
-	every *time.Duration,
-) error {
-	handler, ok := k.handlersByTypename[typename]
-	if !ok {
-		return errors.Wrapf(types.ErrInvalidTask, "task '%s' handler not registered: '%s'", id, typename)
-	}
-
-	packedArgs, err := handler.PackArgs(args)
-	if err != nil {
-		return err
-	}
-
-	exists, err := k.tasks.Has(ctx, id)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return errors.Wrapf(types.ErrInvalidTask, "task '%s' already exists", id)
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if sdkCtx.BlockTime().After(startAt) {
-		return errors.Wrapf(types.ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", id, startAt)
-	}
-
-	if err := k.tasks.Set(ctx, id, types.Task{
-		Id:        id,
-		Typename:  typename,
-		Args:      packedArgs,
-		NextRunAt: &startAt,
-		Interval:  every,
-		LastRunAt: nil,
-		RunCount:  0,
-	}); err != nil {
-		return err
-	}
-
-	return k.tasksSchedule.Set(ctx, collections.Join3(typename, startAt, id))
 }
