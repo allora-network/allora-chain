@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#851](https://github.com/allora-network/allora-chain/pull/851) Enforce recommended settings
+
 ### Changed
 
 ### Deprecated
@@ -91,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Released]
 
-# v0.12.4
+# v0.12.4
 
 ### Added
 
@@ -117,7 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 
-# v0.12.3
+# v0.12.3
 
 ### Added
 
