@@ -99,7 +99,7 @@ func ScheduleEvery(interval *time.Duration) SchedulingOption {
 	}
 }
 
-// Unschedule sets the task the next execution unscheduled, the task is kept for future execution but is considered paused.
+// Unschedule sets the task’s next execution to unscheduled. The task remains stored for future use but is considered paused.
 func Unschedule() SchedulingOption {
 	return func(_ sdk.Context, t *Task) {
 		t.NextRunAt = nil
