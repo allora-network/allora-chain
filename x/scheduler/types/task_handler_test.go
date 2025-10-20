@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"cosmossdk.io/math"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -276,6 +277,10 @@ func TestTaskHandlerArbitrate(t *testing.T) {
 }
 
 func TestTaskHandlerRun(t *testing.T) {
+	now := time.Now().UTC()
+	d10Min := time.Duration(10) * time.Minute
+	nowMinus10Min := now.Add(-d10Min)
+
 	encCfg := moduletestutil.MakeTestEncodingConfig()
 
 	args := &cosmostypes.Coin{Denom: "udenom", Amount: math.NewInt(12000)}
@@ -284,106 +289,97 @@ func TestTaskHandlerRun(t *testing.T) {
 	wrongPackedArgs, err := codectypes.NewAnyWithValue(&cosmostypes.DecCoin{Denom: "udenom", Amount: math.LegacyNewDec(12000)})
 	require.NoError(t, err)
 
-	type runInputs struct {
-		id         TaskID
-		packedArgs *codectypes.Any
-		runCount   uint64
-	}
-	type runFnInputs struct {
-		id       TaskID
-		args     *cosmostypes.Coin
-		runCount uint64
-	}
 	testCases := []struct {
-		name                     string
-		runInput                 runInputs
-		runFnReturnErr           error
-		runFnShouldBeCalled      bool
-		runShouldErr             bool
-		runFnShouldReceiveInputs runFnInputs
+		name                string
+		inputTask           Task
+		runFnReturnErr      error
+		runFnShouldBeCalled bool
+		runShouldErr        bool
 	}{
 		{
 			name: "run called with proper inputs",
-			runInput: runInputs{
-				id:         "task1",
-				packedArgs: packedArgs,
-				runCount:   1,
+			inputTask: Task{
+				Id:                 "task1",
+				Typename:           "type",
+				Args:               packedArgs,
+				ScheduledFor:       &now,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           1,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
 			},
 			runFnReturnErr:      nil,
 			runFnShouldBeCalled: true,
 			runShouldErr:        false,
-			runFnShouldReceiveInputs: runFnInputs{
-				id:       "task1",
-				args:     args,
-				runCount: 1,
-			},
 		},
 		{
 			name: "run called with proper inputs (bis)",
-			runInput: runInputs{
-				id:         "task15",
-				packedArgs: packedArgs,
-				runCount:   16,
+			inputTask: Task{
+				Id:                 "task15",
+				Typename:           "type",
+				Args:               packedArgs,
+				ScheduledFor:       &now,
+				Interval:           &d10Min,
+				LastRunAt:          &nowMinus10Min,
+				RunCount:           16,
+				SchedulingStrategy: SchedulingStrategy_ABSOLUTE,
 			},
 			runFnReturnErr:      nil,
 			runFnShouldBeCalled: true,
 			runShouldErr:        false,
-			runFnShouldReceiveInputs: runFnInputs{
-				id:       "task15",
-				args:     args,
-				runCount: 16,
-			},
 		},
 		{
 			name: "run should fail if underlying fn returns error",
-			runInput: runInputs{
-				id:         "task1",
-				packedArgs: packedArgs,
-				runCount:   1,
+			inputTask: Task{
+				Id:                 "task1",
+				Typename:           "type",
+				Args:               packedArgs,
+				ScheduledFor:       &now,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           1,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
 			},
 			runFnReturnErr:      fmt.Errorf("some error"),
 			runFnShouldBeCalled: true,
 			runShouldErr:        true,
-			runFnShouldReceiveInputs: runFnInputs{
-				id:       "task1",
-				args:     args,
-				runCount: 1,
-			},
 		},
 		{
 			name: "run with wrong args should fail",
-			runInput: runInputs{
-				id:         "task1",
-				packedArgs: wrongPackedArgs,
-				runCount:   1,
+			inputTask: Task{
+				Id:                 "task1",
+				Typename:           "type",
+				Args:               wrongPackedArgs,
+				ScheduledFor:       &now,
+				Interval:           nil,
+				LastRunAt:          nil,
+				RunCount:           1,
+				SchedulingStrategy: SchedulingStrategy_RELATIVE,
 			},
-			runFnReturnErr:           nil,
-			runFnShouldBeCalled:      false,
-			runShouldErr:             true,
-			runFnShouldReceiveInputs: runFnInputs{},
+			runFnReturnErr:      nil,
+			runFnShouldBeCalled: false,
+			runShouldErr:        true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var runFnCalled bool
-			var runFnReceivedInput runFnInputs
+			var runFnReceivedTask Task
+			var runFnReceivedArgs *cosmostypes.Coin
 			var zeroNonNilArgs *cosmostypes.Coin
 			handler := taskHandler[*cosmostypes.Coin]{
 				name:     "handler",
 				zeroArgs: zeroNonNilArgs,
-				runFn: func(ctx context.Context, id TaskID, args *cosmostypes.Coin, runCount uint64) error {
+				runFn: func(ctx context.Context, task Task, args *cosmostypes.Coin) error {
 					runFnCalled = true
-					runFnReceivedInput = runFnInputs{
-						id:       id,
-						args:     args,
-						runCount: runCount,
-					}
+					runFnReceivedTask = task
+					runFnReceivedArgs = args
 					return tc.runFnReturnErr
 				},
 			}
 
-			err = handler.Run(context.Background(), encCfg.Codec, tc.runInput.id, tc.runInput.packedArgs, tc.runInput.runCount)
+			err = handler.Run(context.Background(), encCfg.Codec, tc.inputTask)
 			if tc.runShouldErr {
 				require.Error(t, err)
 			} else {
@@ -391,7 +387,10 @@ func TestTaskHandlerRun(t *testing.T) {
 			}
 
 			require.Equal(t, tc.runFnShouldBeCalled, runFnCalled)
-			require.Equal(t, tc.runFnShouldReceiveInputs, runFnReceivedInput)
+			if tc.runFnShouldBeCalled {
+				require.Equal(t, tc.inputTask, runFnReceivedTask)
+				require.Equal(t, args, runFnReceivedArgs)
+			}
 		})
 	}
 }

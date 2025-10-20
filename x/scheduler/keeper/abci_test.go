@@ -52,16 +52,16 @@ func TestBeginBlocker(t *testing.T) {
 				"taskA1": {Action: types.ArbitrageActionCancel},
 			}, nil
 		},
-		func(ctx context.Context, id types.TaskID, a *cosmostypes.Coin, runCount uint64) error {
+		func(ctx context.Context, task types.Task, a *cosmostypes.Coin) error {
 			handlerARunCallCount += 1
 
 			// handler A must be called first
 			require.Equal(t, 0, handlerBArbitrateCallCount)
 			require.Equal(t, 0, handlerBRunCallCount)
 
-			require.Equal(t, types.TaskID("taskA2"), id)
+			require.Equal(t, types.TaskID("taskA2"), task.Id)
 			require.Equal(t, args, a)
-			require.Equal(t, uint64(1), runCount)
+			require.Equal(t, uint64(0), task.RunCount)
 
 			return nil
 		},
@@ -80,15 +80,15 @@ func TestBeginBlocker(t *testing.T) {
 
 			return nil, nil //nolint:nilnil
 		},
-		func(ctx context.Context, id types.TaskID, runCount uint64) error {
+		func(ctx context.Context, task types.Task) error {
 			handlerBRunCallCount += 1
-			bTaskRun = append(bTaskRun, id)
+			bTaskRun = append(bTaskRun, task.Id)
 
 			// handler A must be called first
 			require.Equal(t, 1, handlerAArbitrateCallCount)
 			require.Equal(t, 1, handlerARunCallCount)
 
-			require.Equal(t, uint64(1), runCount)
+			require.Equal(t, uint64(0), task.RunCount)
 
 			return nil
 		},
@@ -184,7 +184,7 @@ func TestBeginBlockerShouldErrIfHandlerErr(t *testing.T) {
 
 					return nil, nil //nolint:nilnil
 				},
-				func(ctx context.Context, id types.TaskID, runCount uint64) error {
+				func(ctx context.Context, task types.Task) error {
 					runCalled = true
 					if tc.runErr {
 						return errors.New("run error")
@@ -248,7 +248,7 @@ func TestApplyArbitrageDecision(t *testing.T) {
 				Id:                 "task1",
 				Typename:           "noargs",
 				Args:               nil,
-				NextRunAt:          &in10min,
+				ScheduledFor:       &in10min,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -266,7 +266,7 @@ func TestApplyArbitrageDecision(t *testing.T) {
 				Id:                 "task1",
 				Typename:           "noargs",
 				Args:               nil,
-				NextRunAt:          &in5min,
+				ScheduledFor:       &in5min,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -376,10 +376,10 @@ func TestRunTask(t *testing.T) {
 				"withargs",
 				nil,
 				nil,
-				func(ctx context.Context, id types.TaskID, a *cosmostypes.Coin, runCount uint64) error {
-					require.Equal(t, tc.taskID, id)
+				func(ctx context.Context, task types.Task, a *cosmostypes.Coin) error {
+					require.Equal(t, tc.taskID, task.Id)
 					require.Equal(t, args, a)
-					require.Equal(t, uint64(1), runCount)
+					require.Equal(t, uint64(0), task.RunCount)
 
 					if tc.runFail {
 						return errors.New("run failure")
@@ -402,7 +402,7 @@ func TestRunTask(t *testing.T) {
 			ctx = ctx.WithBlockTime(now)
 			task, err := k.tasks.Get(ctx, tc.taskID)
 			require.NoError(t, err)
-			err = k.runTask(ctx, task, handler)
+			err = k.executeTask(ctx, task, handler)
 			if tc.expectError {
 				require.Error(t, err)
 			} else {
@@ -417,7 +417,7 @@ func TestRunTask(t *testing.T) {
 					require.NotNil(t, taskAfterRun.LastRunAt)
 					require.Equal(t, now, *taskAfterRun.LastRunAt)
 					if tc.expectNewScheduleAt != nil {
-						require.Equal(t, *tc.expectNewScheduleAt, *taskAfterRun.NextRunAt)
+						require.Equal(t, *tc.expectNewScheduleAt, *taskAfterRun.ScheduledFor)
 						exists, err := k.tasksSchedule.Has(ctx, collections.Join3("withargs", *tc.expectNewScheduleAt, tc.taskID))
 						require.NoError(t, err)
 						require.True(t, exists)

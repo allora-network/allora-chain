@@ -52,7 +52,7 @@ func (k *Keeper) BeginBlock(ctx context.Context) error {
 				continue
 			}
 
-			if err := k.runTask(ctx, task, handler); err != nil {
+			if err := k.executeTask(ctx, task, handler); err != nil {
 				return err
 			}
 		}
@@ -71,10 +71,10 @@ func (k *Keeper) applyArbitrageDecision(ctx context.Context, task types.TaskID, 
 	return
 }
 
-func (k *Keeper) runTask(ctx context.Context, task types.Task, handler types.TaskHandler) error {
+func (k *Keeper) executeTask(ctx context.Context, task types.Task, handler types.TaskHandler) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	if err := handler.Run(ctx, k.cdc, task.Id, task.Args, task.RunCount+1); err != nil {
+	if err := handler.Run(ctx, k.cdc, task); err != nil {
 		return errors.Wrapf(types.ErrTaskExecution, "run func failed for task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 	}
 

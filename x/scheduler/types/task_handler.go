@@ -45,9 +45,8 @@ type TaskHandler interface {
 	// determine the action to take for each task invocation: If no action is taken for a task, it'll be executed.
 	Arbitrate(ctx context.Context, cdc codec.Codec, tasks []Task) (map[TaskID]ArbitrageDecision, error)
 
-	// Run is called to execute the task with the provided arguments. The runCount is incremented each time the task is
-	// executed (i.e., it's always 1 for non-periodic tasks).
-	Run(ctx context.Context, cdc codec.Codec, id TaskID, args *codectypes.Any, runCount uint64) error
+	// Run is called to execute the logic related to the provided task.
+	Run(ctx context.Context, cdc codec.Codec, task Task) error
 }
 
 // Invocation represents a scheduled task invocation.
@@ -72,7 +71,7 @@ func NewTaskHandler[T proto.Message](
 	name string,
 	dependsOn []string,
 	arbitrateFn func(ctx context.Context, tasks []Invocation[T]) (map[TaskID]ArbitrageDecision, error),
-	runFn func(ctx context.Context, id TaskID, args T, runCount uint64) error,
+	runFn func(ctx context.Context, task Task, args T) error,
 ) TaskHandler {
 	// if arbitrateFn is nil, we provide a no-op function.
 	if arbitrateFn == nil {
@@ -83,7 +82,7 @@ func NewTaskHandler[T proto.Message](
 
 	// if runFn is nil, we provide a no-op function.
 	if runFn == nil {
-		runFn = func(ctx context.Context, id TaskID, args T, runCount uint64) error {
+		runFn = func(ctx context.Context, task Task, args T) error {
 			return nil
 		}
 	}
@@ -110,10 +109,10 @@ func NewNoArgsTaskHandler(
 	name string,
 	dependsOn []string,
 	arbitrateFn func(ctx context.Context, tasks []TaskID) (map[TaskID]ArbitrageDecision, error),
-	runFn func(ctx context.Context, id TaskID, runCount uint64) error,
+	runFn func(ctx context.Context, task Task) error,
 ) TaskHandler {
 	var wrappedArbitrateFn func(ctx context.Context, tasks []Invocation[proto.Message]) (map[TaskID]ArbitrageDecision, error)
-	var wrappedRunFn func(ctx context.Context, id TaskID, args proto.Message, runCount uint64) error
+	var wrappedRunFn func(ctx context.Context, task Task, args proto.Message) error
 
 	if arbitrateFn != nil {
 		wrappedArbitrateFn = func(ctx context.Context, tasks []Invocation[proto.Message]) (map[TaskID]ArbitrageDecision, error) {
@@ -126,8 +125,8 @@ func NewNoArgsTaskHandler(
 	}
 
 	if runFn != nil {
-		wrappedRunFn = func(ctx context.Context, id TaskID, args proto.Message, runCount uint64) error {
-			return runFn(ctx, id, runCount)
+		wrappedRunFn = func(ctx context.Context, task Task, _ proto.Message) error {
+			return runFn(ctx, task)
 		}
 	}
 
@@ -139,7 +138,7 @@ type taskHandler[T proto.Message] struct {
 	deps        []string
 	zeroArgs    T
 	arbitrateFn func(ctx context.Context, tasks []Invocation[T]) (map[TaskID]ArbitrageDecision, error)
-	runFn       func(ctx context.Context, id TaskID, args T, runCount uint64) error
+	runFn       func(ctx context.Context, task Task, args T) error
 }
 
 func (t taskHandler[T]) Typename() string {
@@ -206,13 +205,13 @@ func (t taskHandler[T]) Arbitrate(ctx context.Context, cdc codec.Codec, tasks []
 	return t.arbitrateFn(ctx, invocations)
 }
 
-func (t taskHandler[T]) Run(ctx context.Context, cdc codec.Codec, id TaskID, packedArgs *codectypes.Any, runCount uint64) error {
-	args, err := t.UnpackArgs(cdc, packedArgs)
+func (t taskHandler[T]) Run(ctx context.Context, cdc codec.Codec, task Task) error {
+	args, err := t.UnpackArgs(cdc, task.Args)
 	if err != nil {
 		return err
 	}
 
-	return t.runFn(ctx, id, args, runCount)
+	return t.runFn(ctx, task, args)
 }
 
 func (t taskHandler[T]) HasArgs() bool {

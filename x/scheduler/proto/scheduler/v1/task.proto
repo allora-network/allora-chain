@@ -20,8 +20,8 @@ message Task {
   // args is the arguments for the task. The format depends on the task type.
   google.protobuf.Any args = 3;
 
-  // next_run_at is the timestamp of the next scheduled run for the task. If empty, the task is not scheduled (i.e. it's paused).
-  google.protobuf.Timestamp next_run_at = 4 [(gogoproto.stdtime) = true];
+  // scheduled_for is the timestamp of the currently scheduled run for the task. If empty, the task is not scheduled (i.e. it's paused).
+  google.protobuf.Timestamp scheduled_for = 4 [(gogoproto.stdtime) = true];
 
   // interval is the duration between task runs. If empty, the task runs only once. If set, the task is considered periodic.
   google.protobuf.Duration interval = 5 [(gogoproto.stdduration) = true];
@@ -39,10 +39,10 @@ message Task {
 // SchedulingStrategy defines the scheduling behaviour of a task, it is only useful in the context of a periodic task,
 // and affects how the next run time is calculated after each execution.
 enum SchedulingStrategy {
-  // RELATIVE means the next run time is calculated relative to the current time, i.e. next_run_at = now + interval.
+  // RELATIVE means the next run time is calculated relative to the current time, i.e. scheduled_for = now + interval.
   // This is the default behaviour.
   RELATIVE = 0;
 
-  // ABSOLUTE means the next run time is calculated relative to the last scheduled run time, i.e. next_run_at = last_run_at + interval.
+  // ABSOLUTE means the next run time is calculated relative to the last scheduled run time, i.e. scheduled_for = last_run_at + interval.
   ABSOLUTE = 1;
 }

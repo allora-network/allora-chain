@@ -45,7 +45,7 @@ func TestNewTask(t *testing.T) {
 				Id:                 "1",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -67,7 +67,7 @@ func TestNewTask(t *testing.T) {
 				Id:                 "2",
 				Typename:           "type2",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           &interval,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -87,7 +87,7 @@ func TestNewTask(t *testing.T) {
 				Id:                 "1",
 				Typename:           "type",
 				Args:               packedArgs,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -146,7 +146,7 @@ func TestApplySchedulingOpts(t *testing.T) {
 				Id:                 "1",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          nil,
+				ScheduledFor:       nil,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -160,7 +160,7 @@ func TestApplySchedulingOpts(t *testing.T) {
 				Id:                 "1",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -173,7 +173,7 @@ func TestApplySchedulingOpts(t *testing.T) {
 				Id:                 "2",
 				Typename:           "type2",
 				Args:               nil,
-				NextRunAt:          nil,
+				ScheduledFor:       nil,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -189,7 +189,7 @@ func TestApplySchedulingOpts(t *testing.T) {
 				Id:                 "2",
 				Typename:           "type2",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           &interval,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -202,7 +202,7 @@ func TestApplySchedulingOpts(t *testing.T) {
 				Id:                 "1",
 				Typename:           "type",
 				Args:               packedArgs,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -220,7 +220,7 @@ func TestApplySchedulingOpts(t *testing.T) {
 				Id:                 "1",
 				Typename:           "type",
 				Args:               packedArgs,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -238,7 +238,7 @@ func TestApplySchedulingOpts(t *testing.T) {
 				Id:                 "1",
 				Typename:           "type",
 				Args:               packedArgs,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -284,7 +284,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task1",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -294,7 +294,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task1",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -308,7 +308,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           &interval,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -318,7 +318,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          func() *time.Time { t := now.Add(10 * time.Minute); return &t }(),
+				ScheduledFor:       func() *time.Time { t := now.Add(10 * time.Minute); return &t }(),
 				Interval:           &interval,
 				LastRunAt:          &now,
 				RunCount:           1,
@@ -332,7 +332,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           &interval,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -342,7 +342,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          func() *time.Time { t := at.Add(10 * time.Minute); return &t }(),
+				ScheduledFor:       func() *time.Time { t := at.Add(10 * time.Minute); return &t }(),
 				Interval:           &interval,
 				LastRunAt:          &now,
 				RunCount:           1,
@@ -356,7 +356,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          &nowMinus15Min,
+				ScheduledFor:       &nowMinus15Min,
 				Interval:           &interval,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -366,7 +366,7 @@ func TestComputeNextRun(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "type",
 				Args:               nil,
-				NextRunAt:          func() *time.Time { t := now.Add(5 * time.Minute); return &t }(),
+				ScheduledFor:       func() *time.Time { t := now.Add(5 * time.Minute); return &t }(),
 				Interval:           &interval,
 				LastRunAt:          &now,
 				RunCount:           1,
@@ -392,7 +392,7 @@ func TestScheduleAt(t *testing.T) {
 		Id:                 "task",
 		Typename:           "type",
 		Args:               nil,
-		NextRunAt:          &now,
+		ScheduledFor:       &now,
 		Interval:           nil,
 		LastRunAt:          nil,
 		RunCount:           0,
@@ -401,7 +401,7 @@ func TestScheduleAt(t *testing.T) {
 
 	ScheduleAt(runAt)(ctx, task)
 
-	require.Equal(t, runAt, *task.NextRunAt)
+	require.Equal(t, runAt, *task.ScheduledFor)
 }
 
 func TestScheduleIn(t *testing.T) {
@@ -412,7 +412,7 @@ func TestScheduleIn(t *testing.T) {
 		Id:                 "task",
 		Typename:           "type",
 		Args:               nil,
-		NextRunAt:          &now,
+		ScheduledFor:       &now,
 		Interval:           nil,
 		LastRunAt:          nil,
 		RunCount:           0,
@@ -421,8 +421,8 @@ func TestScheduleIn(t *testing.T) {
 
 	ScheduleIn(in)(ctx, task)
 	fmt.Println(now.Add(in))
-	fmt.Println(task.NextRunAt)
-	require.Equal(t, ctx.BlockTime().Add(in), *task.NextRunAt)
+	fmt.Println(task.ScheduledFor)
+	require.Equal(t, ctx.BlockTime().Add(in), *task.ScheduledFor)
 }
 
 func TestScheduleEvery(t *testing.T) {
@@ -433,7 +433,7 @@ func TestScheduleEvery(t *testing.T) {
 		Id:                 "task",
 		Typename:           "type",
 		Args:               nil,
-		NextRunAt:          &now,
+		ScheduledFor:       &now,
 		Interval:           nil,
 		LastRunAt:          nil,
 		RunCount:           0,
@@ -454,7 +454,7 @@ func TestUnschedule(t *testing.T) {
 		Id:                 "task",
 		Typename:           "type",
 		Args:               nil,
-		NextRunAt:          &now,
+		ScheduledFor:       &now,
 		Interval:           nil,
 		LastRunAt:          nil,
 		RunCount:           0,
@@ -463,7 +463,7 @@ func TestUnschedule(t *testing.T) {
 
 	Unschedule()(ctx, task)
 
-	require.Nil(t, task.NextRunAt)
+	require.Nil(t, task.ScheduledFor)
 }
 
 func TestWithRelativeScheduling(t *testing.T) {
@@ -473,7 +473,7 @@ func TestWithRelativeScheduling(t *testing.T) {
 		Id:                 "task",
 		Typename:           "type",
 		Args:               nil,
-		NextRunAt:          &now,
+		ScheduledFor:       &now,
 		Interval:           nil,
 		LastRunAt:          nil,
 		RunCount:           0,
@@ -492,7 +492,7 @@ func TestWithAbsoluteScheduling(t *testing.T) {
 		Id:                 "task",
 		Typename:           "type",
 		Args:               nil,
-		NextRunAt:          &now,
+		ScheduledFor:       &now,
 		Interval:           nil,
 		LastRunAt:          nil,
 		RunCount:           0,

@@ -155,7 +155,7 @@ func TestScheduleTask(t *testing.T) {
 				Id:                 "task1",
 				Typename:           "noargs",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -175,7 +175,7 @@ func TestScheduleTask(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "withargs",
 				Args:               packedArgs,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -197,7 +197,7 @@ func TestScheduleTask(t *testing.T) {
 				Id:                 "task",
 				Typename:           "withargs",
 				Args:               packedArgs,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           &d1Hour,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -296,7 +296,7 @@ func TestScheduleTask(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, tc.expectTask.Id, task.Id)
 			require.Equal(t, tc.expectTask.Typename, task.Typename)
-			require.Equal(t, tc.expectTask.NextRunAt, task.NextRunAt)
+			require.Equal(t, tc.expectTask.ScheduledFor, task.ScheduledFor)
 			require.Equal(t, tc.expectTask.Interval, task.Interval)
 			require.Equal(t, tc.expectTask.LastRunAt, task.LastRunAt)
 			require.Equal(t, tc.expectTask.RunCount, task.RunCount)
@@ -309,7 +309,7 @@ func TestScheduleTask(t *testing.T) {
 				require.Equal(t, packedArgs.Value, task.Args.Value)
 			}
 
-			exists, err := k.tasksSchedule.Has(ctx, collections.Join3(tc.expectTask.Typename, *tc.expectTask.NextRunAt, tc.expectTask.Id))
+			exists, err := k.tasksSchedule.Has(ctx, collections.Join3(tc.expectTask.Typename, *tc.expectTask.ScheduledFor, tc.expectTask.Id))
 			require.NoError(t, err)
 			require.True(t, exists)
 		})
@@ -423,7 +423,7 @@ func TestRescheduleTask(t *testing.T) {
 				Id:                 "task1",
 				Typename:           "noargs",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -439,7 +439,7 @@ func TestRescheduleTask(t *testing.T) {
 				Id:                 "task2",
 				Typename:           "noargs",
 				Args:               nil,
-				NextRunAt:          &at,
+				ScheduledFor:       &at,
 				Interval:           &d1Hour,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -455,7 +455,7 @@ func TestRescheduleTask(t *testing.T) {
 				Id:                 "task1",
 				Typename:           "noargs",
 				Args:               nil,
-				NextRunAt:          nil,
+				ScheduledFor:       nil,
 				Interval:           nil,
 				LastRunAt:          nil,
 				RunCount:           0,
@@ -512,8 +512,8 @@ func TestRescheduleTask(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, tc.expectTask, &task)
 
-				if tc.expectTask.NextRunAt != nil {
-					exists, err := k.tasksSchedule.Has(ctx, collections.Join3("noargs", *tc.expectTask.NextRunAt, tc.expectTask.Id))
+				if tc.expectTask.ScheduledFor != nil {
+					exists, err := k.tasksSchedule.Has(ctx, collections.Join3("noargs", *tc.expectTask.ScheduledFor, tc.expectTask.Id))
 					require.NoError(t, err)
 					require.True(t, exists)
 				}

@@ -15,7 +15,7 @@ func NewTask(ctx context.Context, id TaskID, typename string, args *codectypes.A
 		Id:                 id,
 		Typename:           typename,
 		Args:               args,
-		NextRunAt:          nil,
+		ScheduledFor:       nil,
 		Interval:           nil,
 		LastRunAt:          nil,
 		RunCount:           0,
@@ -37,8 +37,8 @@ func (t *Task) ApplySchedulingOpts(ctx context.Context, scheduleOpts ...Scheduli
 		opt(sdkCtx, t)
 	}
 
-	if t.NextRunAt != nil && sdkCtx.BlockTime().After(*t.NextRunAt) {
-		return errors.Wrapf(ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", t.Id, *t.NextRunAt)
+	if t.ScheduledFor != nil && sdkCtx.BlockTime().After(*t.ScheduledFor) {
+		return errors.Wrapf(ErrInvalidTask, "cannot schedule task '%s' for a time in the past: '%s'", t.Id, *t.ScheduledFor)
 	}
 
 	if t.Interval != nil && *t.Interval <= 0 {
@@ -49,7 +49,7 @@ func (t *Task) ApplySchedulingOpts(ctx context.Context, scheduleOpts ...Scheduli
 }
 
 // ComputeNextRun computes and configures the next run time for the task based on its scheduling strategy, interval and
-// the provided last run time. It updates the LastRunAt, NextRunAt and RunCount fields of the task.
+// the provided last run time. It updates the LastRunAt, ScheduledFor and RunCount fields of the task.
 //
 // It returns true if the next run time was computed and set, false otherwise (e.g., if the task is not periodic).
 func (t *Task) ComputeNextRun(lastRun time.Time) bool {
@@ -59,9 +59,9 @@ func (t *Task) ComputeNextRun(lastRun time.Time) bool {
 
 	var refTime time.Time
 	if t.SchedulingStrategy == SchedulingStrategy_ABSOLUTE {
-		elapsed := lastRun.Sub(*t.NextRunAt)
+		elapsed := lastRun.Sub(*t.ScheduledFor)
 		missed := elapsed / *t.Interval
-		refTime = t.NextRunAt.Add(missed * (*t.Interval)) //nolint:durationcheck
+		refTime = t.ScheduledFor.Add(missed * (*t.Interval)) //nolint:durationcheck
 	} else {
 		refTime = lastRun
 	}
@@ -69,7 +69,7 @@ func (t *Task) ComputeNextRun(lastRun time.Time) bool {
 
 	t.RunCount += 1
 	t.LastRunAt = &lastRun
-	t.NextRunAt = &nextRun
+	t.ScheduledFor = &nextRun
 
 	return true
 }
@@ -80,7 +80,7 @@ type SchedulingOption func(sdk.Context, *Task)
 // ScheduleAt sets the exact time when the task should be executed.
 func ScheduleAt(at time.Time) SchedulingOption {
 	return func(_ sdk.Context, t *Task) {
-		t.NextRunAt = &at
+		t.ScheduledFor = &at
 	}
 }
 
@@ -88,7 +88,7 @@ func ScheduleAt(at time.Time) SchedulingOption {
 func ScheduleIn(in time.Duration) SchedulingOption {
 	return func(ctx sdk.Context, t *Task) {
 		at := ctx.BlockTime().Add(in)
-		t.NextRunAt = &at
+		t.ScheduledFor = &at
 	}
 }
 
@@ -102,7 +102,7 @@ func ScheduleEvery(interval *time.Duration) SchedulingOption {
 // Unschedule sets the task’s next execution to unscheduled. The task remains stored for future use but is considered paused.
 func Unschedule() SchedulingOption {
 	return func(_ sdk.Context, t *Task) {
-		t.NextRunAt = nil
+		t.ScheduledFor = nil
 	}
 }
 

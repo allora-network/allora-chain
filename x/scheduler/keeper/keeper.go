@@ -245,9 +245,9 @@ func (k *Keeper) GetTask(ctx context.Context, id types.TaskID) (types.Task, erro
 }
 
 func getTaskScheduleKey(t types.Task) *collections.Triple[string, time.Time, types.TaskID] {
-	if t.NextRunAt == nil {
+	if t.ScheduledFor == nil {
 		return nil
 	}
-	key := collections.Join3(t.Typename, *t.NextRunAt, t.Id)
+	key := collections.Join3(t.Typename, *t.ScheduledFor, t.Id)
 	return &key
 }

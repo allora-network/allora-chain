@@ -45,7 +45,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			func(ctx context.Context, tasks []schedulertypes.Invocation[*types.MyTaskArgs]) ([]schedulertypes.ArbitrageDecision, error) {
 				return nil, nil // Arbitrage func
             },
-            func(ctx context.Context, id schedulertypes.TaskID, args *types.MyTaskArgs, runCount uint64) error {
+            func(ctx context.Context, task schedulertypes.Task, args *types.MyTaskArgs) error {
                 return nil // Run func
             },
         ),
@@ -61,7 +61,7 @@ schedulertypes.NewNoArgsTaskHandler(
     func(ctx context.Context, tasks []schedulertypes.TaskID) (map[schedulertypes.TaskID]schedulertypes.ArbitrageDecision, error) {
         return nil, nil
     },
-    func(ctx context.Context, id schedulertypes.TaskID, runCount uint64) error {
+    func(ctx context.Context, task schedulertypes.Task) error {
         return nil
     },
 )
