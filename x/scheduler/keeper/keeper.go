@@ -109,7 +109,7 @@ func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
 
 		for _, dep := range handler.DependsOn() {
 			if _, ok := k.handlersByTypename[dep]; !ok {
-				return errors.Wrapf(types.ErrInvalidTaskHandler, "unexisting dependency '%s' on task handler '%s'", dep, handler.Typename())
+				return errors.Wrapf(types.ErrInvalidTaskHandler, "nonexistent dependency '%s' on task handler '%s'", dep, handler.Typename())
 			}
 
 			if err := addRec(dep); err != nil {
