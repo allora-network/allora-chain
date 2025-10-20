@@ -76,6 +76,9 @@ func NewKeeper(storeService store.KVStoreService, cdc codec.Codec) Keeper {
 
 // RegisterTaskHandlers registers the provided task handlers, this must be called once at startup to configure the handlers.
 func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
+	k.handlersByTypename = make(map[string]types.TaskHandler)
+	k.handlersOrder = nil
+
 	typenames := make([]string, 0, len(taskHandlers))
 	for _, taskHandler := range taskHandlers {
 		typename := taskHandler.Typename()
