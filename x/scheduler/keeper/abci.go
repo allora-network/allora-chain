@@ -17,7 +17,10 @@ func (k *Keeper) BeginBlock(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	for _, taskType := range k.handlersOrder {
-		handler := k.handlersByTypename[taskType]
+		handler, ok := k.handlersByTypename[taskType]
+		if !ok {
+			return errors.Wrapf(types.ErrInvalidTaskHandler, "no handler registered for task type '%s'", taskType)
+		}
 		taskIDs, err := k.GetDueTasksAt(ctx, taskType, sdkCtx.BlockTime())
 		if err != nil {
 			return err
