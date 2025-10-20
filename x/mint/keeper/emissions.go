@@ -351,23 +351,15 @@ func GetEmissionPerMonth(
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
 	ctx.Logger().Info(
-		"Emission Per Unit Staked Token Calculation\n"+
-			"FEmission %s\n"+
-			"ecosystemLocked %s\n"+
-			"networkStaked %s\n"+
-			"circulatingSupply %s\n"+
-			"totalSupply %s\n"+
-			"lockedVestingTokens %s\n",
-		"ecosystemBalance%s\n",
-		"ecosystemMintSupplyRemaining %s\n"+
-			params.FEmission.String(),
-		ecosystemLocked.String(),
-		networkStaked.String(),
-		circulatingSupply.String(),
-		totalSupply.String(),
-		lockedVestingTokens.String(),
-		ecosystemBalance.String(),
-		ecosystemMintSupplyRemaining.String(),
+		"Emission Per Unit Staked Token Calculation",
+		"FEmission", params.FEmission.String(),
+		"ecosystemLocked", ecosystemLocked.String(),
+		"networkStaked", networkStaked.String(),
+		"circulatingSupply", circulatingSupply.String(),
+		"totalSupply", totalSupply.String(),
+		"lockedVestingTokens", lockedVestingTokens.String(),
+		"ecosystemBalance", ecosystemBalance.String(),
+		"ecosystemMintSupplyRemaining", ecosystemMintSupplyRemaining.String(),
 	)
 
 	targetRewardEmissionPerUnitStakedToken,

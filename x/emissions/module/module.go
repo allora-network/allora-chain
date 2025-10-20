@@ -30,6 +30,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -189,11 +190,13 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // EndBlock returns the end blocker for the emissions module.
-func (am AppModule) EndBlock(ctx context.Context) (err error) {
+func (am AppModule) EndBlock(ctx context.Context) error {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err = EndBlocker(ctx, am)
+	err := EndBlocker(ctx, am)
 	if err != nil {
 		sdkCtx.Logger().Error("Emissions EndBlocker error! ", err)
 	}
-	return
+	return err
 }
