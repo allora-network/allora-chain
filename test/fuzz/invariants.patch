@@ -23,7 +23,7 @@ index 94adfd8c..bace078c 100644
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index c830a170..c5b3102f 100644
+index c830a170..91c629cd 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -40,6 +40,8 @@ var (
@@ -35,3 +35,12 @@ index c830a170..c5b3102f 100644
  )
  
  // ConsensusVersion defines the current module consensus version.
+@@ -197,3 +199,8 @@ func (am AppModule) EndBlock(ctx context.Context) (err error) {
+ 	}
+ 	return
+ }
++
++// RegisterInvariants registers the emissions module invariants.
++func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
++	keeper.RegisterInvariants(ir, &am.keeper)
++}
