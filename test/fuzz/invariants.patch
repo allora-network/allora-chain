@@ -1,16 +1,19 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index 94adfd8c..bace078c 100644
+index 94adfd8c..50495035 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -2,6 +2,7 @@ package module
+@@ -2,8 +2,10 @@ package module
  
  import (
  	"context"
 +	"fmt"
  
  	"cosmossdk.io/errors"
++	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
  	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
-@@ -15,6 +16,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
+ 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+ 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+@@ -15,6 +17,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
  	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
  
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
