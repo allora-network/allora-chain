@@ -63,13 +63,11 @@ func (w multiIndexCollectionWrapper[R, P, V]) decodeRange(start, end []byte, ord
 		ranger = ranger.Prefix(endKey)
 	}
 
-	if len(start) > 0 {
-		startKey, err := w.decodeKey(start)
-		if err != nil {
-			return nil, err
-		}
-		ranger = ranger.StartInclusive(startKey)
+	startKey, err := w.decodeKey(start)
+	if err != nil {
+		return nil, err
 	}
+	ranger = ranger.StartInclusive(startKey)
 
 	if order == collections.OrderDescending {
 		ranger = ranger.Descending()
@@ -80,6 +78,10 @@ func (w multiIndexCollectionWrapper[R, P, V]) decodeRange(start, end []byte, ord
 
 func (w multiIndexCollectionWrapper[R, P, V]) decodeKey(key []byte) (collections.Pair[R, P], error) {
 	var p collections.Pair[R, P]
+	if len(key) == 0 {
+		return p, nil
+	}
+
 	pkc1 := w.KeyCodec().(pairKeyCodec[R, P]).KeyCodec1()
 	pkc2 := w.KeyCodec().(pairKeyCodec[R, P]).KeyCodec2()
 
