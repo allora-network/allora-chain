@@ -171,15 +171,15 @@ func (k *Keeper) programTask(ctx context.Context, task types.Task) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	if key := getTaskScheduleKey(task); key != nil {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskScheduledEvent{
-			Id:       task.Id,
-			Typename: task.Typename,
-			At:       task.ScheduledFor,
-		}); err != nil {
+		if err := k.tasksSchedule.Set(ctx, *key); err != nil {
 			return err
 		}
 
-		return k.tasksSchedule.Set(ctx, *key)
+		return sdkCtx.EventManager().EmitTypedEvent(&types.TaskScheduledEvent{
+			Id:       task.Id,
+			Typename: task.Typename,
+			At:       task.ScheduledFor,
+		})
 	}
 	return nil
 }
@@ -197,15 +197,15 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 	}
 
 	if key := getTaskScheduleKey(task); key != nil {
-		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
-			Id:       task.Id,
-			Typename: task.Typename,
-			At:       task.ScheduledFor,
-		}); err != nil {
+		if err := k.tasksSchedule.Remove(ctx, *key); err != nil {
 			return err
 		}
 
-		return k.tasksSchedule.Remove(ctx, *key)
+		return sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
+			Id:       task.Id,
+			Typename: task.Typename,
+			At:       task.ScheduledFor,
+		})
 	}
 	return nil
 }
