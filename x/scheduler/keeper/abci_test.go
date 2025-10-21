@@ -477,6 +477,8 @@ func TestExecuteTask(t *testing.T) {
 }
 
 func parseEvents(t *testing.T, events []abci.Event) []proto.Message {
+	t.Helper()
+
 	var parsed []proto.Message
 	for _, e := range events {
 		evt, err := cosmostypes.ParseTypedEvent(e)
