@@ -162,6 +162,9 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo() {
 	err = s.mintKeeper.EcosystemTokensMinted.Set(testCtx, math.ZeroInt())
 	s.Require().NoError(err)
 
+	err = s.mintKeeper.StartingEmissionsBlockHeight.Set(testCtx, 0)
+	s.Require().NoError(err)
+
 	// Call the function
 	params, eventInfo, err := s.mintKeeper.GetEmissionInfo(testCtx)
 
@@ -255,6 +258,9 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo_FirstMonth() {
 	err = s.mintKeeper.EcosystemTokensMinted.Set(testCtx, math.ZeroInt())
 	s.Require().NoError(err)
 
+	err = s.mintKeeper.StartingEmissionsBlockHeight.Set(testCtx, 0)
+	s.Require().NoError(err)
+
 	// Call the function
 	params, eventInfo, err := s.mintKeeper.GetEmissionInfo(testCtx)
 
@@ -298,6 +304,8 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo_ErrorCases() {
 	err = s.mintKeeper.MonthsUnlocked.Set(s.ctx, math.ZeroInt())
 	s.Require().NoError(err)
 	err = s.mintKeeper.EcosystemTokensMinted.Set(s.ctx, math.ZeroInt())
+	s.Require().NoError(err)
+	err = s.mintKeeper.StartingEmissionsBlockHeight.Set(s.ctx, 0)
 	s.Require().NoError(err)
 
 	_, _, err = s.mintKeeper.GetEmissionInfo(s.ctx)
