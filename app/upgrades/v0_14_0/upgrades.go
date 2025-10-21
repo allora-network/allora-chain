@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	UpgradeName = "v0.13.0"
+	UpgradeName = "v0.14.0"
 )
 
 var Upgrade = upgrades.Upgrade{

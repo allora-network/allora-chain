@@ -1,4 +1,4 @@
-package v0_13_0 //nolint:revive // var-naming: don't use an underscore in package name
+package v0_15_0 //nolint:revive // var-naming: don't use an underscore in package name
 
 import (
 	"context"
@@ -7,18 +7,19 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/allora-network/allora-chain/app/keepers"
 	"github.com/allora-network/allora-chain/app/upgrades"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 const (
-	UpgradeName = "v0.13.0"
+	UpgradeName = "v0.15.0"
 )
 
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
-	StoreUpgrades:        storetypes.StoreUpgrades{Added: nil, Renamed: nil, Deleted: nil},
+	StoreUpgrades:        storetypes.StoreUpgrades{Added: []string{schedulertypes.StoreKey}, Renamed: nil, Deleted: nil},
 }
 
 func CreateUpgradeHandler(
