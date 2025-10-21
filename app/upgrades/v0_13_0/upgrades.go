@@ -2,7 +2,6 @@ package v0_13_0 //nolint:revive // var-naming: don't use an underscore in packag
 
 import (
 	"context"
-	"strings"
 
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -12,7 +11,6 @@ import (
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -55,14 +53,6 @@ func CreateUpgradeHandler(
 			}
 			// Only schedule the task if emissions are enabled
 			if !moduleParams.EmissionEnabled && startingEmissionsBlockHeight == 0 {
-
-				mintTaskHandlers := appKeepers.MintKeeper.TaskHandlers()
-				if err := appKeepers.SchedulerKeeper.RegisterTaskHandlers(mintTaskHandlers); err != nil {
-					if !errors.Is(err, schedulertypes.ErrInvalidTaskHandler) || !strings.Contains(err.Error(), "duplicate task handler") {
-						sdkCtx.Logger().Error("failed to register mint task handlers", "err", err)
-						return vm, err
-					}
-				}
 
 				// Pull the currently configured cadence so we can align the scheduler with the pre-upgrade emission cycle.
 				blocksPerMonth, err := appKeepers.MintKeeper.GetParamsBlocksPerMonth(ctx)

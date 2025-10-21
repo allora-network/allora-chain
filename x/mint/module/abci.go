@@ -14,15 +14,24 @@ import (
 // and sends inflationary rewards to the validators and reputers module accounts
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
 	moduleParams, err := k.Params.Get(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "could not get module params")
 	}
+
 	// if emissions are not enabled, do nothing
 	if !moduleParams.EmissionEnabled {
 		return nil
 	}
+
+	// if the block height is 0, and emissions are enabled, schedule the emission recalculation task with no initial delay
+	if sdkCtx.BlockHeight() == 0 {
+		err = k.ScheduleEmissionRecalculationTask(ctx, 0)
+		if err != nil {
+			return errorsmod.Wrap(err, "could not schedule emission recalculation task at block 0")
+		}
+	}
+
 	// Get the balance of the "ecosystem" module account
 	ecosystemBalance, err := k.GetEcosystemBalance(ctx, moduleParams.MintDenom)
 	if err != nil {
