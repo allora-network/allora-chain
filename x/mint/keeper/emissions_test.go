@@ -774,6 +774,20 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewConsistency() {
 	s.Require().True(participantsLocked2.Equal(participantsLocked3), "Participants results should be identical")
 }
 
+// TestGetLockedVestingTokensNewParameterValidation tests with different parameter sets
+func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewMonthsUnlockedClamping() {
+	blocksPerMonth := uint64(525960)
+	blockHeight := cosmosMath.NewIntFromUint64(blocksPerMonth * 37) // Month 12
+	monthsUnlocked := cosmosMath.NewInt(36)
+
+	// Test with zero max supply
+	params := generateNewMintParams()
+	_, _, _, _, _, _, updatedMonths, err :=
+		keeper.GetLockedVestingTokensNew(blocksPerMonth, blockHeight, params, monthsUnlocked)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.NewInt(36), updatedMonths, "Should clamp months to 36")
+}
+
 // TestGetLockedVestingTokensNewPrecisionAndRounding tests precision and rounding behavior
 func (s *MintKeeperTestSuite) TestGetLockedVestingTokensNewPrecisionAndRounding() {
 	params := generateNewMintParams()

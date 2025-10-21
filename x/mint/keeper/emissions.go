@@ -66,7 +66,7 @@ func GetLockedVestingTokens(
 // - totalLocked: sum of all locked tokens
 // - breakdowns per category
 // - updatedMonthsUnlocked: stored to preserve monotonicity
-var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("88.5").Quo(math.LegacyMustNewDecFromStr("177.0"))
+var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("0.5")
 
 func GetLockedVestingTokensNew(
 	blocksPerMonth uint64,
@@ -84,7 +84,6 @@ func GetLockedVestingTokensNew(
 	twelve := math.NewInt(12)
 	twentyFour := math.NewInt(24)
 	thirtySix := math.NewInt(36)
-	eightyFour := math.NewInt(84)
 
 	// ---- 1. Extract percentage allocations from params ----
 	maxSupply := params.MaxSupply.ToLegacyDec()
@@ -107,8 +106,8 @@ func GetLockedVestingTokensNew(
 		monthsAlreadyUnlocked = calculatedMonthsUnlocked
 	}
 	// Clamp to max vesting length
-	if monthsAlreadyUnlocked.GT(eightyFour) {
-		monthsAlreadyUnlocked = eightyFour
+	if monthsAlreadyUnlocked.GT(thirtySix) {
+		monthsAlreadyUnlocked = thirtySix
 	}
 
 	// Determine Foundation tokens locked
