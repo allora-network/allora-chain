@@ -85,7 +85,7 @@ message QueryScheduledTasksRequest {
   google.protobuf.Timestamp from = 2 [(gogoproto.stdtime) = true];
 
   // Pagination defines an optional pagination for the request.
-  cosmos.base.query.v1beta1.PageRequest pagination = 4;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 // QueryScheduledTasksResponse is the response type for the Query/ScheduledTasks RPC method.
