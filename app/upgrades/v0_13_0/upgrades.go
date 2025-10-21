@@ -87,7 +87,7 @@ func CreateUpgradeHandler(
 					"blocksRemaining", blocksRemaining,
 				)
 
-				if err := appKeepers.MintKeeper.ScheduleEmissionRecalculationTask(ctx, appKeepers.SchedulerKeeper, initialDelay); err != nil {
+				if err := appKeepers.MintKeeper.ScheduleEmissionRecalculationTask(ctx, initialDelay); err != nil {
 					sdkCtx.Logger().Error("failed to schedule emission recalculation task", "err", err)
 					return vm, err
 				}

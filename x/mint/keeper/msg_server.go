@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"time"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -68,11 +69,12 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 				return nil, errors.Wrap(err, "error setting months already unlocked")
 			}
 
-			// TODO Add here: schedule a job to recalculate the target emission at the end of the month and every month thereafter.
-			// if err := ms.Keeper.ScheduleEmissionRecalculationTask(ctx, appKeepers.SchedulerKeeper, initialDelay); err != nil {
-			// 	sdkCtx.Logger().Error("failed to schedule emission recalculation task", "err", err)
-			// 	return vm, err
-			// }
+			// Schedule a job to recalculate the target emission in one month and every month thereafter.
+			initialDelay := time.Duration(0)
+			if err := ms.Keeper.ScheduleEmissionRecalculationTask(ctx, initialDelay); err != nil {
+				sdkCtx.Logger().Error("failed to schedule emission recalculation task", "err", err)
+				return nil, errors.Wrap(err, "failed to schedule emission recalculation task")
+			}
 
 		}
 	}

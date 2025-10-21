@@ -45,19 +45,17 @@ func (k *Keeper) executeEmissionRecalculationTask(ctx context.Context) error {
 // ScheduleEmissionRecalculationTask schedules the emission recalculation task to run roughly every month.
 func (k *Keeper) ScheduleEmissionRecalculationTask(
 	ctx context.Context,
-	schedulerKeeper types.SchedulerKeeper,
 	initialDelay time.Duration,
 ) error {
 	// Approximate one month as 30 days. The exact cadence is recalculated by the
 	// mint module based on on-chain parameters when the task runs.
 	oneMonthDuration := time.Hour * 24 * 30
-
 	k.Logger(ctx).Info("scheduling emission recalculation task",
 		"interval", oneMonthDuration,
 		"initialDelay", initialDelay,
 	)
 
-	return schedulerKeeper.ScheduleTask(
+	return k.schedulerKeeper.ScheduleTask(
 		ctx,
 		types.TaskEmissionRecalculation,
 		schedulertypes.TaskID("emission_recalculation"),
