@@ -53,6 +53,7 @@ import (
 	_ "cosmossdk.io/x/upgrade"                                    // import for side-effects
 	_ "github.com/allora-network/allora-chain/x/emissions/module" // import for side-effects
 	_ "github.com/allora-network/allora-chain/x/mint/module"      // import for side-effects
+	_ "github.com/allora-network/allora-chain/x/scheduler"        // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"                       // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"             // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/authz/module"               // import for side-effects
@@ -180,6 +181,7 @@ func NewAlloraApp(
 		&app.AuthzKeeper,
 		&app.CircuitBreakerKeeper,
 		&app.EvidenceKeeper,
+		&app.SchedulerKeeper,
 	); err != nil {
 		return nil, err
 	}
