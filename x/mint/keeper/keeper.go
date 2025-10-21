@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -17,6 +18,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+type BlockHeight = int64
 
 // Keeper of the mint store
 type Keeper struct {
@@ -34,6 +37,8 @@ type Keeper struct {
 	PreviousBlockEmission                    collections.Item[math.Int]
 	EcosystemTokensMinted                    collections.Item[math.Int]
 	MonthsUnlocked                           collections.Item[math.Int]
+	// Starting block height for emissions
+	StartingEmissionsBlockHeight collections.Item[BlockHeight]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -66,6 +71,7 @@ func NewKeeper(
 		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
 		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 		MonthsUnlocked:                           collections.NewItem(sb, types.MonthsUnlockedKey, "monthsunlocked", sdk.IntValue),
+		StartingEmissionsBlockHeight:             collections.NewItem(sb, types.StartingEmissionsBlockHeightKey, "startingemissionsblockheight", collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -315,12 +321,17 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 	if err != nil {
 		return nil, nil, errorsmod.Wrap(err, "failed to get blocks per month")
 	}
+	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get starting emissions block height")
+	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := uint64(sdkCtx.BlockHeight())
-	numberOfRecalcs := blockHeight / blocksPerMonth
-	blockHeightTarget_e_i_LastCalculated := numberOfRecalcs*blocksPerMonth + 1          //nolint:revive // var-naming: don't use underscores in Go names
-	blockHeightTarget_e_i_Next := blockHeightTarget_e_i_LastCalculated + blocksPerMonth //nolint:revive // var-naming: don't use underscores in Go names
+	blockHeightTGEAdjusted := blockHeight - (uint64(startingEmissionsBlockHeight))
+	numberOfRecalcs := blockHeightTGEAdjusted / blocksPerMonth
+	blockHeightTarget_e_i_LastCalculated := uint64(startingEmissionsBlockHeight) + numberOfRecalcs*blocksPerMonth + 1          //nolint:revive // var-naming: don't use underscores in Go names
+	blockHeightTarget_e_i_Next := uint64(startingEmissionsBlockHeight) + blockHeightTarget_e_i_LastCalculated + blocksPerMonth //nolint:revive // var-naming: don't use underscores in Go names
 
 	networkStakedTokens, err := GetNumStakedTokens(ctx, k)
 	if err != nil {
@@ -328,12 +339,15 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 	}
 	monthsAlreadyUnlocked := k.GetMonthsAlreadyUnlocked(ctx)
 	_, lockedVestingTokensPreseed,
-		lockedVestingTokensSeed, lockedVestingTokensTeam, _ := GetLockedVestingTokens(
+		lockedVestingTokensSeed, lockedVestingTokensTeam, _, _, _, err := GetLockedVestingTokens(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		moduleParams,
 		monthsAlreadyUnlocked,
 	)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get locked vesting tokens")
+	}
 	circulatingSupply,
 		totalSupply,
 		lockedVestingTokensTotal,
@@ -424,7 +438,24 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
 		MonthsAlreadyUnlocked:                    monthsAlreadyUnlocked,
 		UpdatedMonthsUnlocked:                    updatedMonthsUnlocked,
+		StartingEmissionsBlockHeight:             startingEmissionsBlockHeight,
 	}
 
 	return &moduleParams, eventInfo, nil
+}
+
+// GetStartingEmissionsBlockHeight gets the starting block height for emissions
+func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (int64, error) {
+	ret, err := k.StartingEmissionsBlockHeight.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return 0, nil
+	} else if err != nil {
+		return 0, errorsmod.Wrap(err, "error getting starting emissions block height")
+	}
+	return ret, nil
+}
+
+// SetStartingEmissionsBlockHeight sets the starting block height for emissions
+func (k Keeper) SetStartingEmissionsBlockHeight(ctx context.Context, height int64) error {
+	return k.StartingEmissionsBlockHeight.Set(ctx, height)
 }

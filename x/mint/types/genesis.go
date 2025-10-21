@@ -9,6 +9,7 @@ func NewGenesisState(
 	previousBlockEmission math.Int,
 	ecosystemTokensMinted math.Int,
 	monthsUnlocked math.Int,
+	startingEmissionsBlockHeight int64,
 ) *GenesisState {
 	return &GenesisState{
 		Params:                                   params,
@@ -16,6 +17,7 @@ func NewGenesisState(
 		PreviousBlockEmission:                    previousBlockEmission,
 		EcosystemTokensMinted:                    ecosystemTokensMinted,
 		MonthsUnlocked:                           monthsUnlocked,
+		StartingEmissionsBlockHeight:             startingEmissionsBlockHeight,
 	}
 }
 
@@ -27,6 +29,7 @@ func DefaultGenesisState() *GenesisState {
 		PreviousBlockEmission:                    DefaultPreviousBlockEmission(),
 		EcosystemTokensMinted:                    DefaultEcosystemTokensMinted(),
 		MonthsUnlocked:                           math.NewInt(0),
+		StartingEmissionsBlockHeight:             0,
 	}
 }
 

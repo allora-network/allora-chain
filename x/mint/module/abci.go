@@ -30,6 +30,12 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 
 	blockHeight := uint64(sdkCtx.BlockHeight())
+	// Use this to be removed to current block height.
+	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "could not get starting emissions block height")
+	}
+	blockHeightTGEAdjusted := blockHeight - (uint64(startingEmissionsBlockHeight))
 
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
@@ -52,7 +58,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return errorsmod.Wrap(err, "could not convert validators vs allora percent reward to legacy dec")
 	}
 	// every month on the first block of the month, update the emissions rate
-	if blockHeight%blocksPerMonth == 1 { // easier to test when genesis starts at 1
+	if blockHeightTGEAdjusted%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		// Recalculate the target emission for the block
 		// WARNING: After Calling RecalculateTargetEmission,
 		// PreviousRewardEmissionPerUnitStakedToken and PreviousBlockEmission
@@ -61,7 +67,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		blockEmission, _, err = keeper.RecalculateTargetEmission(
 			sdkCtx,
 			k,
-			blockHeight,
+			blockHeightTGEAdjusted,
 			blocksPerMonth,
 			moduleParams,
 			ecosystemBalance,

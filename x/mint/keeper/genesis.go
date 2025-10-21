@@ -33,6 +33,10 @@ func (k Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, data *t
 		panic(err)
 	}
 
+	if err := k.StartingEmissionsBlockHeight.Set(ctx, data.StartingEmissionsBlockHeight); err != nil {
+		panic(err)
+	}
+
 	ak.GetModuleAccount(ctx, types.ModuleName)
 }
 
@@ -58,6 +62,11 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
+	startingEmissionsBlockHeight, err := k.StartingEmissionsBlockHeight.Get(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	monthsUnlocked := k.GetMonthsAlreadyUnlocked(ctx)
 
 	return types.NewGenesisState(
@@ -66,5 +75,6 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		previousBlockEmission,
 		ecosystemTokensMinted,
 		monthsUnlocked,
+		startingEmissionsBlockHeight,
 	)
 }
