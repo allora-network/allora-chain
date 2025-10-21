@@ -29,7 +29,7 @@ var _ = time.Kitchen
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // TaskScheduledEvent is emitted when a task is scheduled or rescheduled at a specific time.
-// If a task is created with no scheduling (i.e. next_run_at is empty), this event is not emitted until the task is scheduled.
+// If a task is created with no scheduling (i.e. scheduled_for is empty), this event is not emitted until the task is scheduled.
 // If an arbitrage decision is made to reschedule a task, this event is emitted.
 // For a periodic task, this event is emitted at each execution.
 type TaskScheduledEvent struct {
