@@ -137,6 +137,9 @@ func GetCirculatingSupply(
 		params,
 		monthsAlreadyUnlocked,
 	)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
 	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, params)
 	if err != nil {
 		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
