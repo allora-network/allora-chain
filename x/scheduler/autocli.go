@@ -56,7 +56,10 @@ Specify a 'from' to filter results from a specific scheduled time (and use the p
 					Long:      "Query the registered task handlers, returning their typename in the order of execution.",
 				},
 			},
+			SubCommands:          nil,
 			EnhanceCustomCommand: false,
+			Short:                "Querying commands for the scheduler module",
 		},
+		Tx: nil,
 	}
 }

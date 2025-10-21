@@ -2,6 +2,7 @@ package collections
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/collections/codec"
@@ -9,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
-var _ query.Collection[collections.Pair[any, any], collections.NoValue] = multiIndexCollectionWrapper[any, any, any]{}
+var _ query.Collection[collections.Pair[any, any], collections.NoValue] = multiIndexCollectionWrapper[any, any, any]{} //nolint:exhaustruct
 
 // WrapMultiIndexToCollection wraps a indexes.Multi as a query.Collection.
 // The keys of the collection are pairs of (ReferenceKey, PrimaryKey) and the values are empty (NoValue).
@@ -82,8 +83,12 @@ func (w multiIndexCollectionWrapper[R, P, V]) decodeKey(key []byte) (collections
 		return p, nil
 	}
 
-	pkc1 := w.KeyCodec().(pairKeyCodec[R, P]).KeyCodec1()
-	pkc2 := w.KeyCodec().(pairKeyCodec[R, P]).KeyCodec2()
+	pkc, ok := w.KeyCodec().(pairKeyCodec[R, P])
+	if !ok {
+		return p, fmt.Errorf("key codec is not a pair key codec")
+	}
+	pkc1 := pkc.KeyCodec1()
+	pkc2 := pkc.KeyCodec2()
 
 	read, k1, err := pkc1.DecodeNonTerminal(key)
 	if err != nil {

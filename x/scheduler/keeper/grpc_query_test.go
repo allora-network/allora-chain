@@ -1,3 +1,4 @@
+//nolint:exhaustruct
 package keeper_test
 
 import (

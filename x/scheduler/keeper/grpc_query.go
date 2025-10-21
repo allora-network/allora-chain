@@ -19,7 +19,7 @@ type Querier struct {
 	*Keeper
 }
 
-var _ types.QueryServer = Querier{}
+var _ types.QueryServer = Querier{} //nolint:exhaustruct
 
 func NewQuerier(keeper *Keeper) Querier {
 	return Querier{Keeper: keeper}

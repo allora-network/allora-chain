@@ -1,3 +1,4 @@
+//nolint:exhaustruct
 package collections_test
 
 import (
