@@ -255,4 +255,6 @@ message EventEmissionInfo {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+
+  int64 starting_emissions_block_height = 29;
 }

@@ -46,4 +46,7 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+
+  // starting block height for emissions
+  int64 starting_emissions_block_height = 6;
 }
