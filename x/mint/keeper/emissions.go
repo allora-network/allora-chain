@@ -51,7 +51,7 @@ func GetLockedVestingTokens(
 	// Locked sub-amounts
 	lockedFoundationTotalAmount := lockedFoundationPercentage.MulTruncate(maxSupply).TruncateInt()
 
-	// ---- 3. Determine months since genesis ----
+	// ---- 3. Determine months since TGE ----
 	calculatedMonthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth))
 	if calculatedMonthsUnlocked.GT(monthsAlreadyUnlocked) {
 		monthsAlreadyUnlocked = calculatedMonthsUnlocked
