@@ -457,5 +457,8 @@ func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (int64, err
 
 // SetStartingEmissionsBlockHeight sets the starting block height for emissions
 func (k Keeper) SetStartingEmissionsBlockHeight(ctx context.Context, height int64) error {
+	if height < 0 {
+		return errorsmod.Wrap(errors.New("starting emissions block height must be positive"), "error setting starting emissions block height")
+	}
 	return k.StartingEmissionsBlockHeight.Set(ctx, height)
 }
