@@ -90,11 +90,11 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 		if err != nil {
 			return nil, errors.Wrap(err, "error getting args for recalculate")
 		}
-		blockHeight := uint64(sdkCtx.BlockHeight() - startingEmissionsBlockHeight)
+		blockHeightTGEAdjusted := uint64(sdkCtx.BlockHeight() - startingEmissionsBlockHeight)
 		_, _, err = RecalculateTargetEmission(
 			sdkCtx,
 			ms.Keeper,
-			blockHeight,
+			blockHeightTGEAdjusted,
 			blocksPerMonth,
 			moduleParams,
 			ecosystemBalance,
@@ -130,11 +130,11 @@ func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *t
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting starting emissions block height")
 	}
-	blockHeight := uint64(sdkCtx.BlockHeight() - startingEmissionsBlockHeight)
+	blockHeightTGEAdjusted := uint64(sdkCtx.BlockHeight() - startingEmissionsBlockHeight)
 	_, _, err = RecalculateTargetEmission(
 		sdkCtx,
 		ms.Keeper,
-		blockHeight,
+		blockHeightTGEAdjusted,
 		blocksPerMonth,
 		moduleParams,
 		ecosystemBalance,
