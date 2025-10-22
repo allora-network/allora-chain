@@ -68,6 +68,7 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 			if err != nil {
 				return nil, errors.Wrap(err, "error setting months already unlocked")
 			}
+			ms.Logger(ctx).Info("Starting emissions block height set", "starting emissions block height", sdkCtx.BlockHeight())
 		}
 	}
 

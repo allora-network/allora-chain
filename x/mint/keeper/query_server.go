@@ -91,6 +91,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryServiceEmis
 		LockedVestingTokensInvestorsPreseed:      eventInfo.LockedVestingTokensInvestorsPreseed,
 		LockedVestingTokensInvestorsSeed:         eventInfo.LockedVestingTokensInvestorsSeed,
 		LockedVestingTokensTeam:                  eventInfo.LockedVestingTokensTeam,
+		LockedVestingTokensFoundation:            eventInfo.LockedVestingTokensFoundation,
 		EcosystemLocked:                          eventInfo.EcosystemLocked,
 		CirculatingSupply:                        eventInfo.CirculatingSupply,
 		MaxSupply:                                eventInfo.MaxSupply,

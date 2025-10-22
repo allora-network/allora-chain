@@ -257,4 +257,11 @@ message EventEmissionInfo {
   ];
 
   int64 starting_emissions_block_height = 29;
+
+  string locked_vesting_tokens_foundation = 30 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
