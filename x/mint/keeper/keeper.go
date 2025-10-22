@@ -327,9 +327,8 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	blockHeight := uint64(sdkCtx.BlockHeight())
-	blockHeightTGEAdjusted := blockHeight - (uint64(startingEmissionsBlockHeight))
-	numberOfRecalcs := blockHeightTGEAdjusted / blocksPerMonth
+	blockCountSinceTGE := uint64(sdkCtx.BlockHeight()) - (uint64(startingEmissionsBlockHeight))
+	numberOfRecalcs := blockCountSinceTGE / blocksPerMonth
 	blockHeightTarget_e_i_LastCalculated := uint64(startingEmissionsBlockHeight) + numberOfRecalcs*blocksPerMonth + 1          //nolint:revive // var-naming: don't use underscores in Go names
 	blockHeightTarget_e_i_Next := uint64(startingEmissionsBlockHeight) + blockHeightTarget_e_i_LastCalculated + blocksPerMonth //nolint:revive // var-naming: don't use underscores in Go names
 
@@ -341,7 +340,7 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 	_, lockedVestingTokensPreseed,
 		lockedVestingTokensSeed, lockedVestingTokensTeam, _, _, _, err := GetLockedVestingTokens(
 		blocksPerMonth,
-		math.NewIntFromUint64(blockHeight),
+		math.NewIntFromUint64(blockCountSinceTGE),
 		moduleParams,
 		monthsAlreadyUnlocked,
 	)
@@ -353,7 +352,7 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 		lockedVestingTokensTotal,
 		ecosystemLocked,
 		updatedMonthsUnlocked,
-		err := GetCirculatingSupply(ctx, k, moduleParams, blockHeight, blocksPerMonth, monthsAlreadyUnlocked)
+		err := GetCirculatingSupply(ctx, k, moduleParams, blockCountSinceTGE, blocksPerMonth, monthsAlreadyUnlocked)
 	if err != nil {
 		return nil, nil, errorsmod.Wrap(err, "failed to get circulating supply")
 	}
@@ -391,7 +390,7 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 	)
 	var previousRewardEmissionPerUnitStakedToken math.LegacyDec
 	// if this is the first month/time we're calculating the target emission...
-	if blockHeight < blocksPerMonth {
+	if blockCountSinceTGE < blocksPerMonth {
 		previousRewardEmissionPerUnitStakedToken = targetRewardEmissionPerUnitStakedToken
 	} else {
 		previousRewardEmissionPerUnitStakedToken, err = k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)

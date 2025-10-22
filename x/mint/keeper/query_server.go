@@ -44,7 +44,7 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryServiceInflati
 	if err != nil {
 		return nil, err
 	}
-	blockHeightTGEAdjusted := blockHeight - (uint64(startingEmissionsBlockHeight))
+	blockCountSinceTGE := blockHeight - (uint64(startingEmissionsBlockHeight))
 	blockEmission, err := q.k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryServiceInflati
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
 	monthsUnlocked := q.k.GetMonthsAlreadyUnlocked(ctx)
-	circulatingSupply, _, _, _, _, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeightTGEAdjusted, blocksPerMonth, monthsUnlocked)
+	circulatingSupply, _, _, _, _, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockCountSinceTGE, blocksPerMonth, monthsUnlocked)
 	if err != nil {
 		return nil, err
 	}
