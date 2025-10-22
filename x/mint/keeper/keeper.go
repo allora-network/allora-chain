@@ -329,8 +329,8 @@ func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.Even
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockCountSinceTGE := uint64(sdkCtx.BlockHeight()) - (uint64(startingEmissionsBlockHeight))
 	numberOfRecalcs := blockCountSinceTGE / blocksPerMonth
-	blockHeightTarget_e_i_LastCalculated := uint64(startingEmissionsBlockHeight) + numberOfRecalcs*blocksPerMonth + 1          //nolint:revive // var-naming: don't use underscores in Go names
-	blockHeightTarget_e_i_Next := uint64(startingEmissionsBlockHeight) + blockHeightTarget_e_i_LastCalculated + blocksPerMonth //nolint:revive // var-naming: don't use underscores in Go names
+	blockHeightTarget_e_i_LastCalculated := uint64(startingEmissionsBlockHeight) + numberOfRecalcs*blocksPerMonth + 1 //nolint:revive // var-naming: don't use underscores in Go names
+	blockHeightTarget_e_i_Next := blockHeightTarget_e_i_LastCalculated + blocksPerMonth                               //nolint:revive // var-naming: don't use underscores in Go names
 
 	networkStakedTokens, err := GetNumStakedTokens(ctx, k)
 	if err != nil {
