@@ -477,6 +477,7 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	assertEventValueBundle(t, val.GetValue(), networkInferences)
 }
 
+// nolint:exhaustruct
 func TestValueBundleToEventValueBundleBase(t *testing.T) {
 	const maxInferers = 32
 
@@ -821,7 +822,6 @@ func TestValueBundleToEventValueBundleBase(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			require.Equal(t, tc.exp, types.ValueBundleToEventValueBundleBase(tc.in))
 		})

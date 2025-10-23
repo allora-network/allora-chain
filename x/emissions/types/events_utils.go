@@ -151,32 +151,33 @@ func NewInsertReputerPayloadEventBase(bundle *ReputerValueBundle) proto.Message 
 	}
 }
 
-func ValueBundleToEventValueBundleBase(bundle *ValueBundle) (ret *EventValueBundle) {
-	ret = &EventValueBundle{
+func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
+	// nolint:exhaustruct
+	evb := &EventValueBundle{
 		ExtraData:     bundle.ExtraData,
 		CombinedValue: bundle.CombinedValue,
 		NaiveValue:    bundle.NaiveValue,
 	}
 
-	ret.InfererValues = convertArray(bundle.InfererValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
-	ret.InfererAddresses = convertArray(bundle.InfererValues, func(i *WorkerAttributedValue) string { return i.GetWorker() })
-	ret.ForecasterValues = convertArray(bundle.ForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
-	ret.ForecasterAddresses = convertArray(bundle.ForecasterValues, func(i *WorkerAttributedValue) string { return i.GetWorker() })
-	ret.OneOutInfererValues = convertArray(bundle.OneOutInfererValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
-	ret.OneInForecasterValues = convertArray(bundle.OneInForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
-	ret.OneOutForecasterValues = convertArray(bundle.OneOutForecasterValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	evb.InfererValues = convertArray(bundle.InfererValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	evb.InfererAddresses = convertArray(bundle.InfererValues, func(i *WorkerAttributedValue) string { return i.GetWorker() })
+	evb.ForecasterValues = convertArray(bundle.ForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	evb.ForecasterAddresses = convertArray(bundle.ForecasterValues, func(i *WorkerAttributedValue) string { return i.GetWorker() })
+	evb.OneOutInfererValues = convertArray(bundle.OneOutInfererValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	evb.OneInForecasterValues = convertArray(bundle.OneInForecasterValues, func(i *WorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
+	evb.OneOutForecasterValues = convertArray(bundle.OneOutForecasterValues, func(i *WithheldWorkerAttributedValue) alloraMath.Dec { return i.GetValue() })
 
-	lenInf, looif := len(ret.InfererAddresses), len(bundle.OneOutInfererForecasterValues)
+	lenInf, looif := len(evb.InfererAddresses), len(bundle.OneOutInfererForecasterValues)
 	if lenInf == 0 || looif == 0 {
-		return
+		return evb
 	}
 
-	ret.OneOutInfererForecasterValues = make([]alloraMath.DecArray, looif)
+	evb.OneOutInfererForecasterValues = make([]alloraMath.DecArray, looif)
 
 	// ensure the number of inferers for each forecaster is the same as the full set of inferers,
 	// where any gaps in values would be filled with NaNs.
 	infererIndex := make(map[string]int, lenInf)
-	for i, addr := range ret.InfererAddresses {
+	for i, addr := range evb.InfererAddresses {
 		infererIndex[addr] = i
 	}
 
@@ -190,9 +191,9 @@ func ValueBundleToEventValueBundleBase(bundle *ValueBundle) (ret *EventValueBund
 				oo[j] = cell.Value
 			}
 		}
-		ret.OneOutInfererForecasterValues[idx] = oo
+		evb.OneOutInfererForecasterValues[idx] = oo
 	}
-	return
+	return evb
 }
 
 func convertArray[I, O any](in []I, get func(I) O) (out []O) {
