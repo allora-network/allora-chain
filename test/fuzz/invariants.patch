@@ -1,5 +1,5 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index 94adfd8c..50495035 100644
+index e7fcf865..01ef3799 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
 @@ -2,8 +2,10 @@ package module
@@ -12,10 +12,10 @@ index 94adfd8c..50495035 100644
 +	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
  	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
  	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
- 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-@@ -15,6 +17,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
- 	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
+ 	sdk "github.com/cosmos/cosmos-sdk/types"
+@@ -11,6 +13,11 @@ import (
  
+ func EndBlocker(ctx context.Context, am AppModule) error {
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
 +	// Add invariant check logic
 +	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
@@ -25,3 +25,24 @@ index 94adfd8c..50495035 100644
  	blockHeight := sdkCtx.BlockHeight()
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
+diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
+index 7cc8ee97..e99ddb32 100644
+--- a/x/emissions/module/module.go
++++ b/x/emissions/module/module.go
+@@ -41,6 +41,7 @@ var (
+ 	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
+ 	_ appmodule.AppModule     = AppModule{} // nolint: exhaustruct
+ 	_ appmodule.HasEndBlocker = AppModule{} // nolint: exhaustruct
++	_ module.HasInvariants    = AppModule{} //nolint: exhaustruct
+ )
+ 
+ // ConsensusVersion defines the current module consensus version.
+@@ -204,3 +205,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
+ 	}
+ 	return err
+ }
++
++// RegisterInvariants registers the emissions module invariants.
++func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
++	keeper.RegisterInvariants(ir, &am.keeper)
++}
