@@ -192,7 +192,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // EndBlock returns the end blocker for the emissions module.
 func (am AppModule) EndBlock(ctx context.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := EndBlocker(ctx, am)
 	if err != nil {

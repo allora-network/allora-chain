@@ -1,5 +1,5 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index 6f025b97..01ef3799 100644
+index 94adfd8c..50495035 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
 @@ -2,16 +2,22 @@ package module
@@ -26,24 +26,3 @@ index 6f025b97..01ef3799 100644
  	blockHeight := sdkCtx.BlockHeight()
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
-diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index b8ea4f69..b38156d6 100644
---- a/x/emissions/module/module.go
-+++ b/x/emissions/module/module.go
-@@ -41,6 +41,7 @@ var (
- 	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
- 	_ appmodule.AppModule     = AppModule{} // nolint: exhaustruct
- 	_ appmodule.HasEndBlocker = AppModule{} // nolint: exhaustruct
-+	_ module.HasInvariants    = AppModule{} //nolint: exhaustruct
- )
- 
- // ConsensusVersion defines the current module consensus version.
-@@ -200,3 +201,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
- 	}
- 	return err
- }
-+
-+// RegisterInvariants registers the emissions module invariants.
-+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-+	keeper.RegisterInvariants(ir, &am.keeper)
-+}
