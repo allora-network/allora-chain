@@ -57,9 +57,11 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 	// and schedule a job to recalculate the target emission at the end of the month and every month thereafter.
 	if msg.Params.EmissionEnabled {
 		if !moduleParams.EmissionEnabled && startingEmissionsBlockHeight == 0 {
+			// reset local var - may be used below if recalculation is requested
+			startingEmissionsBlockHeight = sdkCtx.BlockHeight()
 			// only if emissions move from disabled to enabled, we need to set the starting block height
 			// and schedule a job to recalculate the target emission at the end of the month and every month thereafter.
-			err = ms.Keeper.SetStartingEmissionsBlockHeight(ctx, sdkCtx.BlockHeight())
+			err = ms.Keeper.SetStartingEmissionsBlockHeight(ctx, startingEmissionsBlockHeight)
 			if err != nil {
 				return nil, errors.Wrap(err, "error setting starting emissions block height")
 			}
