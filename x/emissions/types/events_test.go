@@ -2,6 +2,7 @@ package types_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -476,41 +477,417 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	assertEventValueBundle(t, val.GetValue(), networkInferences)
 }
 
+func TestValueBundleToEventValueBundleBase(t *testing.T) {
+	const maxInferers = 32
+
+	d := func(s string) alloraMath.Dec { return alloraMath.MustNewDecFromString(s) }
+	nan := func() alloraMath.Dec { return alloraMath.NewNaN() }
+
+	buildFullRowWA := func(n int) []*types.WorkerAttributedValue {
+		out := make([]*types.WorkerAttributedValue, 0, n)
+		for i := 1; i <= n; i++ {
+			out = append(out, &types.WorkerAttributedValue{
+				Worker: fmt.Sprintf("inf%d", i), Value: d(fmt.Sprintf("%d", i)),
+			})
+		}
+		return out
+	}
+	buildFullRowOOIF := func(n int) []*types.WithheldWorkerAttributedValue {
+		out := make([]*types.WithheldWorkerAttributedValue, 0, n)
+		for i := 1; i <= n; i++ {
+			out = append(out, &types.WithheldWorkerAttributedValue{
+				Worker: fmt.Sprintf("inf%d", i), Value: d(fmt.Sprintf("%d", i)),
+			})
+		}
+		return out
+	}
+
+	tests := []struct {
+		name string
+		in   *types.ValueBundle
+		exp  *types.EventValueBundle
+	}{
+		{
+			name: "0 actors (empty everything)",
+			in:   &types.ValueBundle{},
+			exp:  &types.EventValueBundle{},
+		},
+		{
+			name: "1 actor (inferer or forecaster), full row",
+			in: &types.ValueBundle{
+				ExtraData:              []byte("extra"),
+				CombinedValue:          alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:             alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:          []*types.WorkerAttributedValue{{Worker: "inf1", Value: d("1")}},
+				ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "F1", Value: d("10")}},
+				OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "inf1", Value: d("100")}},
+				OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "F1", Value: d("1000")}},
+				OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "F1", Value: d("7")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{{
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{{Worker: "inf1", Value: d("3")}},
+				}},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"inf1"},
+				ForecasterAddresses:           []string{"F1"},
+				InfererValues:                 []alloraMath.Dec{d("1")},
+				ForecasterValues:              []alloraMath.Dec{d("10")},
+				OneOutInfererValues:           []alloraMath.Dec{d("100")},
+				OneOutForecasterValues:        []alloraMath.Dec{d("1000")},
+				OneInForecasterValues:         []alloraMath.Dec{d("7")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{d("3")}},
+			},
+		},
+		{
+			name: "1 actor; OOIF missing -> NaN padded",
+			in: &types.ValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:                 []*types.WorkerAttributedValue{{Worker: "inf1", Value: d("1")}},
+				ForecasterValues:              []*types.WorkerAttributedValue{{Worker: "F1", Value: d("10")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{{ /* empty row */ }},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"inf1"},
+				ForecasterAddresses:           []string{"F1"},
+				InfererValues:                 []alloraMath.Dec{d("1")},
+				ForecasterValues:              []alloraMath.Dec{d("10")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{nan()}},
+			},
+		},
+		{
+			name: "3 inferers; missing FIRST -> NaN then values",
+			in: &types.ValueBundle{
+				ExtraData:        []byte("extra"),
+				CombinedValue:    alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:       alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:    []*types.WorkerAttributedValue{{"inf1", d("1")}, {"inf2", d("2")}, {"inf3", d("3")}},
+				ForecasterValues: []*types.WorkerAttributedValue{{"F1", d("42")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{{
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+						{"inf2", d("12")}, {"inf3", d("13")},
+					},
+				}},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"inf1", "inf2", "inf3"},
+				ForecasterAddresses:           []string{"F1"},
+				InfererValues:                 []alloraMath.Dec{d("1"), d("2"), d("3")},
+				ForecasterValues:              []alloraMath.Dec{d("42")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{nan(), d("12"), d("13")}},
+			},
+		},
+		{
+			name: "3 inferers; missing MIDDLE -> NaN padded",
+			in: &types.ValueBundle{
+				ExtraData:        []byte("extra"),
+				CombinedValue:    alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:       alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:    []*types.WorkerAttributedValue{{"A", d("1")}, {"B", d("2")}, {"C", d("3")}},
+				ForecasterValues: []*types.WorkerAttributedValue{{"F1", d("1")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{{
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+						{"A", d("10")}, {"C", d("30")},
+					},
+				}},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"A", "B", "C"},
+				ForecasterAddresses:           []string{"F1"},
+				InfererValues:                 []alloraMath.Dec{d("1"), d("2"), d("3")},
+				ForecasterValues:              []alloraMath.Dec{d("1")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{d("10"), nan(), d("30")}},
+			},
+		},
+		{
+			name: "3 inferers; missing LAST -> NaN padded",
+			in: &types.ValueBundle{
+				ExtraData:        []byte("extra"),
+				CombinedValue:    alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:       alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:    []*types.WorkerAttributedValue{{"A", d("1")}, {"B", d("2")}, {"C", d("3")}},
+				ForecasterValues: []*types.WorkerAttributedValue{{"F1", d("1")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{{
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+						{"A", d("10")}, {"B", d("20")},
+					},
+				}},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"A", "B", "C"},
+				ForecasterAddresses:           []string{"F1"},
+				InfererValues:                 []alloraMath.Dec{d("1"), d("2"), d("3")},
+				ForecasterValues:              []alloraMath.Dec{d("1")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{d("10"), d("20"), nan()}},
+			},
+		},
+		{
+			name: "multiple forecasters, different gaps; order preserved",
+			in: &types.ValueBundle{
+				ExtraData:        []byte("extra"),
+				CombinedValue:    alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:       alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:    []*types.WorkerAttributedValue{{"inf1", d("1")}, {"inf2", d("2")}, {"inf3", d("3")}},
+				ForecasterValues: []*types.WorkerAttributedValue{{"F1", d("9")}, {"F2", d("8")}, {"F3", d("7")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+					{OneOutInfererValues: []*types.WithheldWorkerAttributedValue{{"inf1", d("11")}, {"inf3", d("13")}}},
+					{OneOutInfererValues: []*types.WithheldWorkerAttributedValue{{"inf2", d("22")}}},
+					{OneOutInfererValues: buildFullRowOOIF(3)}, // inf1..3 => 1..3
+				},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:           []byte("extra"),
+				CombinedValue:       alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:          alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:    []string{"inf1", "inf2", "inf3"},
+				ForecasterAddresses: []string{"F1", "F2", "F3"},
+				InfererValues:       []alloraMath.Dec{d("1"), d("2"), d("3")},
+				ForecasterValues:    []alloraMath.Dec{d("9"), d("8"), d("7")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{
+					{d("11"), nan(), d("13")},
+					{nan(), d("22"), nan()},
+					{d("1"), d("2"), d("3")},
+				},
+			},
+		},
+		{
+			name: "unknown inferer ignored; padding still matches known inferers",
+			in: &types.ValueBundle{
+				ExtraData:        []byte("extra"),
+				CombinedValue:    alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:       alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:    []*types.WorkerAttributedValue{{"X", d("1")}, {"Y", d("2")}},
+				ForecasterValues: []*types.WorkerAttributedValue{{"F", d("9")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+					{OneOutInfererValues: []*types.WithheldWorkerAttributedValue{{"X", d("5")}, {"Z", d("999")}}},
+				},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"X", "Y"},
+				ForecasterAddresses:           []string{"F"},
+				InfererValues:                 []alloraMath.Dec{d("1"), d("2")},
+				ForecasterValues:              []alloraMath.Dec{d("9")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{d("5"), nan()}},
+			},
+		},
+		{
+			name: "N actors (no gaps)",
+			in: &types.ValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:                 buildFullRowWA(4),
+				ForecasterValues:              []*types.WorkerAttributedValue{{Worker: "F", Value: d("0")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{{OneOutInfererValues: buildFullRowOOIF(4)}},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"inf1", "inf2", "inf3", "inf4"},
+				ForecasterAddresses:           []string{"F"},
+				InfererValues:                 []alloraMath.Dec{d("1"), d("2"), d("3"), d("4")},
+				ForecasterValues:              []alloraMath.Dec{d("0")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{d("1"), d("2"), d("3"), d("4")}},
+			},
+		},
+		{
+			name: "N = max actors (no gaps)",
+			in: &types.ValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:                 buildFullRowWA(maxInferers),
+				ForecasterValues:              []*types.WorkerAttributedValue{{Worker: "F", Value: d("0")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{{OneOutInfererValues: buildFullRowOOIF(maxInferers)}},
+			},
+			exp: func() *types.EventValueBundle {
+				addrs := make([]string, 0, maxInferers)
+				vals := make([]alloraMath.Dec, 0, maxInferers)
+				row := make([]alloraMath.Dec, 0, maxInferers)
+				for i := 1; i <= maxInferers; i++ {
+					addrs = append(addrs, fmt.Sprintf("inf%d", i))
+					vals = append(vals, d(fmt.Sprintf("%d", i)))
+					row = append(row, d(fmt.Sprintf("%d", i)))
+				}
+				return &types.EventValueBundle{
+					ExtraData:                     []byte("extra"),
+					CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+					NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+					InfererAddresses:              addrs,
+					ForecasterAddresses:           []string{"F"},
+					InfererValues:                 vals,
+					ForecasterValues:              []alloraMath.Dec{d("0")},
+					OneOutInfererForecasterValues: []alloraMath.DecArray{row},
+				}
+			}(),
+		},
+		{
+			name: "permuted input order; output uses infererAddresses order",
+			in: &types.ValueBundle{
+				ExtraData:        []byte("extra"),
+				CombinedValue:    alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:       alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:    []*types.WorkerAttributedValue{{"B", d("2")}, {"A", d("1")}, {"C", d("3")}},
+				ForecasterValues: []*types.WorkerAttributedValue{{"F1", d("9")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+					{OneOutInfererValues: []*types.WithheldWorkerAttributedValue{{"C", d("33")}, {"A", d("11")}}},
+				},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"B", "A", "C"},
+				ForecasterAddresses:           []string{"F1"},
+				InfererValues:                 []alloraMath.Dec{d("2"), d("1"), d("3")},
+				ForecasterValues:              []alloraMath.Dec{d("9")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{{nan(), d("11"), d("33")}},
+			},
+		},
+		{
+			name: "actors exist but OOIF rows nil",
+			in: &types.ValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:                 []*types.WorkerAttributedValue{{"inf1", d("1")}, {"inf2", d("2")}},
+				ForecasterValues:              []*types.WorkerAttributedValue{{"F1", d("9")}, {"F2", d("8")}},
+				OneOutInfererForecasterValues: nil,
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:                     []byte("extra"),
+				CombinedValue:                 alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:                    alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:              []string{"inf1", "inf2"},
+				ForecasterAddresses:           []string{"F1", "F2"},
+				InfererValues:                 []alloraMath.Dec{d("1"), d("2")},
+				ForecasterValues:              []alloraMath.Dec{d("9"), d("8")},
+				OneOutInfererForecasterValues: nil,
+			},
+		},
+		{
+			name: "all auxiliary vectors present; OOIF mixed gaps",
+			in: &types.ValueBundle{
+				ExtraData:              []byte("extra"),
+				CombinedValue:          alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:             alloraMath.MustNewDecFromString("0.0113"),
+				InfererValues:          []*types.WorkerAttributedValue{{"i1", d("1")}, {"i2", d("2")}, {"i3", d("3")}, {"i4", d("4")}},
+				ForecasterValues:       []*types.WorkerAttributedValue{{"f1", d("10")}, {"f2", d("20")}},
+				OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{"i1", d("100")}, {"i2", d("200")}, {"i3", d("300")}, {"i4", d("400")}},
+				OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{"f1", d("1000")}, {"f2", d("2000")}},
+				OneInForecasterValues:  []*types.WorkerAttributedValue{{"f1", d("7")}, {"f2", d("8")}},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+					{OneOutInfererValues: []*types.WithheldWorkerAttributedValue{{"i1", d("11")}, {"i4", d("14")}}},
+					{OneOutInfererValues: []*types.WithheldWorkerAttributedValue{{"i2", d("22")}, {"i3", d("23")}}},
+				},
+			},
+			exp: &types.EventValueBundle{
+				ExtraData:              []byte("extra"),
+				CombinedValue:          alloraMath.MustNewDecFromString("0.0112"),
+				NaiveValue:             alloraMath.MustNewDecFromString("0.0113"),
+				InfererAddresses:       []string{"i1", "i2", "i3", "i4"},
+				ForecasterAddresses:    []string{"f1", "f2"},
+				InfererValues:          []alloraMath.Dec{d("1"), d("2"), d("3"), d("4")},
+				ForecasterValues:       []alloraMath.Dec{d("10"), d("20")},
+				OneOutInfererValues:    []alloraMath.Dec{d("100"), d("200"), d("300"), d("400")},
+				OneOutForecasterValues: []alloraMath.Dec{d("1000"), d("2000")},
+				OneInForecasterValues:  []alloraMath.Dec{d("7"), d("8")},
+				OneOutInfererForecasterValues: []alloraMath.DecArray{
+					{d("11"), nan(), nan(), d("14")},
+					{nan(), d("22"), d("23"), nan()},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.exp, types.ValueBundleToEventValueBundleBase(tc.in))
+		})
+	}
+}
+
 func assertEventValueBundle(t *testing.T, val string, bundle types.ValueBundle) {
 	t.Helper()
-	var result types.EventValueBundle
-	_ = json.Unmarshal([]byte(val), &result)
-	require.Equal(t, bundle.CombinedValue, result.CombinedValue)
-	require.Equal(t, bundle.NaiveValue, result.NaiveValue)
-	require.Equal(t, len(bundle.InfererValues), len(result.InfererValues))
+
+	var got types.EventValueBundle
+	require.NoError(t, json.Unmarshal([]byte(val), &got))
+
+	require.True(t, bundle.CombinedValue.Equal(got.CombinedValue))
+	require.True(t, bundle.NaiveValue.Equal(got.NaiveValue))
+
+	require.Equal(t, len(bundle.InfererValues), len(got.InfererValues))
 	for i := range bundle.InfererValues {
-		require.Equal(t, bundle.InfererValues[i].Value, result.InfererValues[i])
+		require.True(t, bundle.InfererValues[i].Value.Equal(got.InfererValues[i]))
 	}
-	require.Equal(t, len(bundle.ForecasterValues), len(result.ForecasterValues))
+	require.Equal(t, len(bundle.ForecasterValues), len(got.ForecasterValues))
 	for i := range bundle.ForecasterValues {
-		require.Equal(t, bundle.ForecasterValues[i].Value, result.ForecasterValues[i])
+		require.True(t, bundle.ForecasterValues[i].Value.Equal(got.ForecasterValues[i]))
 	}
-	require.Equal(t, len(bundle.OneOutInfererValues), len(result.OneOutInfererValues))
+	require.Equal(t, len(bundle.OneOutInfererValues), len(got.OneOutInfererValues))
 	for i := range bundle.OneOutInfererValues {
-		require.Equal(t, bundle.OneOutInfererValues[i].Value, result.OneOutInfererValues[i])
+		require.True(t, bundle.OneOutInfererValues[i].Value.Equal(got.OneOutInfererValues[i]))
 	}
-	require.Equal(t, len(bundle.OneOutForecasterValues), len(result.OneOutForecasterValues))
+	require.Equal(t, len(bundle.OneOutForecasterValues), len(got.OneOutForecasterValues))
 	for i := range bundle.OneOutForecasterValues {
-		require.Equal(t, bundle.OneOutForecasterValues[i].Value, result.OneOutForecasterValues[i])
+		require.True(t, bundle.OneOutForecasterValues[i].Value.Equal(got.OneOutForecasterValues[i]))
 	}
-	require.Equal(t, len(bundle.OneInForecasterValues), len(result.OneInForecasterValues))
+	require.Equal(t, len(bundle.OneInForecasterValues), len(got.OneInForecasterValues))
 	for i := range bundle.OneInForecasterValues {
-		require.Equal(t, bundle.OneInForecasterValues[i].Value, result.OneInForecasterValues[i])
+		require.True(t, bundle.OneInForecasterValues[i].Value.Equal(got.OneInForecasterValues[i]))
 	}
-	require.Equal(t, len(bundle.OneOutInfererForecasterValues), len(result.OneOutInfererForecasterValues))
-	for i := range result.OneOutInfererForecasterValues {
-		for j := range result.OneOutInfererForecasterValues[i] {
-			// handle case where nan is added to complete the matrix
-			if j == len(bundle.OneOutInfererForecasterValues[i].OneOutInfererValues) {
-				require.Equal(t, result.OneOutInfererForecasterValues[i][j], alloraMath.NewNaN())
+
+	colIndex := make(map[string]int, len(got.InfererAddresses))
+	for j, addr := range got.InfererAddresses {
+		colIndex[addr] = j
+	}
+
+	require.Equal(t, len(bundle.OneOutInfererForecasterValues), len(got.OneOutInfererForecasterValues))
+
+	for i := range bundle.OneOutInfererForecasterValues {
+		expected := make([]alloraMath.Dec, len(got.InfererAddresses))
+		for j := range expected {
+			expected[j] = alloraMath.NewNaN()
+		}
+
+		for _, iv := range bundle.OneOutInfererForecasterValues[i].OneOutInfererValues {
+			if j, ok := colIndex[iv.Worker]; ok {
+				expected[j] = iv.Value
+			}
+		}
+
+		require.Equal(t, len(expected), len(got.OneOutInfererForecasterValues[i]),
+			"row %d length must equal number of inferers", i)
+
+		// handle case where nan is added to complete the matrix
+		for j := range expected {
+			ge := got.OneOutInfererForecasterValues[i][j]
+			ex := expected[j]
+			if ex.IsNaN() && ge.IsNaN() {
 				continue
 			}
-			require.Equal(t, result.OneOutInfererForecasterValues[i][j], bundle.OneOutInfererForecasterValues[i].OneOutInfererValues[j].Value)
+			require.Truef(t, ge.Equal(ex), "row %d col %d: got %v want %v", i, j, ge, ex)
 		}
 	}
 }
