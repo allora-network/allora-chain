@@ -278,7 +278,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsRecalculateTargetEmission() {
 	s.Require().NotEqual(startEmission, updatedTargetEmission)
 }
 
-func (s *MintKeeperTestSuite) TestRecalculateTargetEmission() {
+func (s *MintKeeperTestSuite) TestRecalculateTargetEmissionMonthsAlreadyUnlockedGrowsWithStartingBlockHeight() {
 	ecosystemTokensMinted := sdkmath.NewInt(1000000)
 	err := s.mintKeeper.EcosystemTokensMinted.Set(s.ctx, ecosystemTokensMinted)
 	s.Require().NoError(err)
@@ -288,17 +288,17 @@ func (s *MintKeeperTestSuite) TestRecalculateTargetEmission() {
 	request := &types.RecalculateTargetEmissionRequest{
 		Sender: s.adminAddr,
 	}
-	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil).AnyTimes()
 	expectedEmissionsParams := emissionstypes.DefaultParams()
-	s.accountKeeper.EXPECT().GetModuleAddress("ecosystem").Return(sdk.AccAddress{})
-	s.accountKeeper.EXPECT().GetModuleAddress("ecosystem").Return(sdk.AccAddress{})
-	s.bankKeeper.EXPECT().GetBalance(s.ctx, sdk.AccAddress{}, "stake").Return(sdk.Coin{Denom: "stake", Amount: sdkmath.NewInt(1000000000000000000)})
-	s.bankKeeper.EXPECT().GetBalance(s.ctx, sdk.AccAddress{}, "stake").Return(sdk.Coin{Denom: "stake", Amount: sdkmath.NewInt(1000000000000000000)})
-	s.emissionsKeeper.EXPECT().GetPreviousPercentageRewardToStakedReputers(s.ctx).Return(alloraMath.MustNewDecFromString("0.5"), nil)
-	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(sdkmath.NewInt(1000000000000000000), nil)
-	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(sdkmath.NewInt(1000000000000000000), nil)
-	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil)
-	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil)
+	s.accountKeeper.EXPECT().GetModuleAddress("ecosystem").Return(sdk.AccAddress{}).AnyTimes()
+	s.accountKeeper.EXPECT().GetModuleAddress("ecosystem").Return(sdk.AccAddress{}).AnyTimes()
+	s.bankKeeper.EXPECT().GetBalance(s.ctx, sdk.AccAddress{}, "stake").Return(sdk.Coin{Denom: "stake", Amount: sdkmath.NewInt(1000000000000000000)}).AnyTimes()
+	s.bankKeeper.EXPECT().GetBalance(s.ctx, sdk.AccAddress{}, "stake").Return(sdk.Coin{Denom: "stake", Amount: sdkmath.NewInt(1000000000000000000)}).AnyTimes()
+	s.emissionsKeeper.EXPECT().GetPreviousPercentageRewardToStakedReputers(s.ctx).Return(alloraMath.MustNewDecFromString("0.5"), nil).AnyTimes()
+	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(sdkmath.NewInt(1000000000000000000), nil).AnyTimes()
+	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(sdkmath.NewInt(1000000000000000000), nil).AnyTimes()
+	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil).AnyTimes()
+	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil).AnyTimes()
 
 	resp, err := s.msgServer.RecalculateTargetEmission(s.ctx, request)
 	s.Require().NoError(err)
@@ -308,4 +308,16 @@ func (s *MintKeeperTestSuite) TestRecalculateTargetEmission() {
 	updatedTargetEmission, err := s.mintKeeper.GetPreviousRewardEmissionPerUnitStakedToken(s.ctx)
 	s.Require().NoError(err)
 	s.Require().NotEqual(startEmission, updatedTargetEmission)
+
+	monhsAlreadyUnlockedStart := s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
+	s.Require().Equal(monhsAlreadyUnlockedStart, sdkmath.NewInt(0))
+
+	s.mintKeeper.SetStartingEmissionsBlockHeight(s.ctx, 100000000) // very high
+	resp, err = s.msgServer.RecalculateTargetEmission(s.ctx, request)
+	s.Require().NoError(err)
+	s.Require().NotNil(resp)
+	s.Require().Equal(&types.RecalculateTargetEmissionResponse{}, resp)
+
+	monhsAlreadyUnlockedEnd := s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
+	s.Require().True(monhsAlreadyUnlockedEnd.GT(monhsAlreadyUnlockedStart))
 }
