@@ -6,14 +6,10 @@ import (
 	"cosmossdk.io/errors"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func EndBlocker(ctx context.Context, am AppModule) error {
-	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
