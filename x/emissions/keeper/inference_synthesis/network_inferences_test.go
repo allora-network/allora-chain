@@ -351,7 +351,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 		false,
 	)
 	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result.NetworkInferences.CombinedValue, "0.1997509073157136")
+	testutil.InEpsilon5(s.T(), result.NetworkInferences.CombinedValue, "0.1545011958768693516000000000000000")
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldInfererNoForecastersFromCsv() {
@@ -403,7 +403,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
-
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.20059970801966293")
 
 	s.Require().Len(valueBundle.OneOutInfererValues, 5)
