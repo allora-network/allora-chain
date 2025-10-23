@@ -10,7 +10,6 @@ import (
 )
 
 func EndBlocker(ctx context.Context, am AppModule) error {
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
