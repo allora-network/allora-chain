@@ -312,7 +312,8 @@ func (s *MintKeeperTestSuite) TestRecalculateTargetEmissionMonthsAlreadyUnlocked
 	monhsAlreadyUnlockedStart := s.mintKeeper.GetMonthsAlreadyUnlocked(s.ctx)
 	s.Require().Equal(monhsAlreadyUnlockedStart, sdkmath.NewInt(0))
 
-	s.mintKeeper.SetStartingEmissionsBlockHeight(s.ctx, 100000000) // very high
+	err = s.mintKeeper.SetStartingEmissionsBlockHeight(s.ctx, 100000000) // very high
+	s.Require().NoError(err)
 	resp, err = s.msgServer.RecalculateTargetEmission(s.ctx, request)
 	s.Require().NoError(err)
 	s.Require().NotNil(resp)
