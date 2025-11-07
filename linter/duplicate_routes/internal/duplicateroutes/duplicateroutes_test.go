@@ -1,29 +1,28 @@
 package duplicateroutes
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
+	"testing/fstest"
 )
 
 func TestScanDetectsDuplicates(t *testing.T) {
-	dir := t.TempDir()
-	file := filepath.Join(dir, "query.proto")
-	writeFile(t, file, joinLines(
-		`syntax = "proto3";`,
-		`service Query {`,
-		`  rpc Foo(Foo) returns (Foo) {`,
-		`    option (google.api.http).get = "/foo";`,
-		`  }`,
-		``,
-		`  rpc Bar(Bar) returns (Bar) {`,
-		`    option (google.api.http).get = "/foo";`,
-		`  }`,
-		`}`,
-	))
+	fsys := fstest.MapFS{
+		"query.proto": {Data: joinLines(
+			`syntax = "proto3";`,
+			`service Query {`,
+			`  rpc Foo(Foo) returns (Foo) {`,
+			`    option (google.api.http).get = "/foo";`,
+			`  }`,
+			``,
+			`  rpc Bar(Bar) returns (Bar) {`,
+			`    option (google.api.http).get = "/foo";`,
+			`  }`,
+			`}`,
+		)},
+	}
 
-	findings, err := Scan([]string{file})
+	findings, err := ScanFS(fsys, []string{"query.proto"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -33,7 +32,7 @@ func TestScanDetectsDuplicates(t *testing.T) {
 	}
 
 	finding := findings[0]
-	if finding.File != file {
+	if finding.File != "query.proto" {
 		t.Fatalf("unexpected file: %s", finding.File)
 	}
 	if finding.Route != "/foo" {
@@ -43,24 +42,24 @@ func TestScanDetectsDuplicates(t *testing.T) {
 }
 
 func TestScanHandlesMultilineRoutes(t *testing.T) {
-	dir := t.TempDir()
-	file := filepath.Join(dir, "query.proto")
-	writeFile(t, file, joinLines(
-		`syntax = "proto3";`,
-		`service Query {`,
-		`  rpc Foo(Foo) returns (Foo) {`,
-		`    option (google.api.http).get =`,
-		`      "/foo/"`,
-		`      "bar";`,
-		`  }`,
-		``,
-		`  rpc Bar(Bar) returns (Bar) {`,
-		`    option (google.api.http).get = "/foo/bar";`,
-		`  }`,
-		`}`,
-	))
+	fsys := fstest.MapFS{
+		"query.proto": {Data: joinLines(
+			`syntax = "proto3";`,
+			`service Query {`,
+			`  rpc Foo(Foo) returns (Foo) {`,
+			`    option (google.api.http).get =`,
+			`      "/foo/"`,
+			`      "bar";`,
+			`  }`,
+			``,
+			`  rpc Bar(Bar) returns (Bar) {`,
+			`    option (google.api.http).get = "/foo/bar";`,
+			`  }`,
+			`}`,
+		)},
+	}
 
-	findings, err := Scan([]string{file})
+	findings, err := ScanFS(fsys, []string{"query.proto"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -77,22 +76,22 @@ func TestScanHandlesMultilineRoutes(t *testing.T) {
 }
 
 func TestScanIgnoresUniqueRoutes(t *testing.T) {
-	dir := t.TempDir()
-	file := filepath.Join(dir, "query.proto")
-	writeFile(t, file, joinLines(
-		`syntax = "proto3";`,
-		`service Query {`,
-		`  rpc Foo(Foo) returns (Foo) {`,
-		`    option (google.api.http).get = "/foo";`,
-		`  }`,
-		``,
-		`  rpc Bar(Bar) returns (Bar) {`,
-		`    option (google.api.http).get = "/bar";`,
-		`  }`,
-		`}`,
-	))
+	fsys := fstest.MapFS{
+		"query.proto": {Data: joinLines(
+			`syntax = "proto3";`,
+			`service Query {`,
+			`  rpc Foo(Foo) returns (Foo) {`,
+			`    option (google.api.http).get = "/foo";`,
+			`  }`,
+			``,
+			`  rpc Bar(Bar) returns (Bar) {`,
+			`    option (google.api.http).get = "/bar";`,
+			`  }`,
+			`}`,
+		)},
+	}
 
-	findings, err := Scan([]string{file})
+	findings, err := ScanFS(fsys, []string{"query.proto"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -103,41 +102,34 @@ func TestScanIgnoresUniqueRoutes(t *testing.T) {
 }
 
 func TestScanRecursesDirectories(t *testing.T) {
-	root := t.TempDir()
-	subDir := filepath.Join(root, "sub")
-	if err := os.Mkdir(subDir, 0o755); err != nil {
-		t.Fatalf("failed to create sub directory: %v", err)
+	fsys := fstest.MapFS{
+		"a.proto": {Data: joinLines(
+			`syntax = "proto3";`,
+			`service Query {`,
+			`  rpc Foo(Foo) returns (Foo) {`,
+			`    option (google.api.http).get = "/dup";`,
+			`  }`,
+			``,
+			`  rpc Bar(Bar) returns (Bar) {`,
+			`    option (google.api.http).get = "/dup";`,
+			`  }`,
+			`}`,
+		)},
+		"sub/b.proto": {Data: joinLines(
+			`syntax = "proto3";`,
+			`service Query {`,
+			`  rpc Foo(Foo) returns (Foo) {`,
+			`    option (google.api.http).get = "/unique";`,
+			`  }`,
+			``,
+			`  rpc Bar(Bar) returns (Bar) {`,
+			`    option (google.api.http).get = "/unique";`,
+			`  }`,
+			`}`,
+		)},
 	}
 
-	file1 := filepath.Join(root, "a.proto")
-	writeFile(t, file1, joinLines(
-		`syntax = "proto3";`,
-		`service Query {`,
-		`  rpc Foo(Foo) returns (Foo) {`,
-		`    option (google.api.http).get = "/dup";`,
-		`  }`,
-		``,
-		`  rpc Bar(Bar) returns (Bar) {`,
-		`    option (google.api.http).get = "/dup";`,
-		`  }`,
-		`}`,
-	))
-
-	file2 := filepath.Join(subDir, "b.proto")
-	writeFile(t, file2, joinLines(
-		`syntax = "proto3";`,
-		`service Query {`,
-		`  rpc Foo(Foo) returns (Foo) {`,
-		`    option (google.api.http).get = "/unique";`,
-		`  }`,
-		``,
-		`  rpc Bar(Bar) returns (Bar) {`,
-		`    option (google.api.http).get = "/unique";`,
-		`  }`,
-		`}`,
-	))
-
-	findings, err := Scan([]string{root})
+	findings, err := ScanFS(fsys, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -151,14 +143,16 @@ func TestScanRecursesDirectories(t *testing.T) {
 		findingsByFile[finding.File] = finding
 	}
 
-	assertLines(t, findingsByFile[file1].Lines, []int{4, 8})
-	if findingsByFile[file1].Route != "/dup" {
-		t.Fatalf("unexpected route for file1: %s", findingsByFile[file1].Route)
+	aProto := findingsByFile["a.proto"]
+	assertLines(t, aProto.Lines, []int{4, 8})
+	if aProto.Route != "/dup" {
+		t.Fatalf("unexpected route for a.proto: %s", aProto.Route)
 	}
 
-	assertLines(t, findingsByFile[file2].Lines, []int{4, 8})
-	if findingsByFile[file2].Route != "/unique" {
-		t.Fatalf("unexpected route for file2: %s", findingsByFile[file2].Route)
+	subB := findingsByFile["sub/b.proto"]
+	assertLines(t, subB.Lines, []int{4, 8})
+	if subB.Route != "/unique" {
+		t.Fatalf("unexpected route for sub/b.proto: %s", subB.Route)
 	}
 }
 
@@ -174,13 +168,6 @@ func assertLines(t *testing.T, got, want []int) {
 	}
 }
 
-func joinLines(lines ...string) string {
-	return strings.Join(lines, "\n") + "\n"
-}
-
-func writeFile(t *testing.T, path, contents string) {
-	t.Helper()
-	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
-		t.Fatalf("failed to write file %s: %v", path, err)
-	}
+func joinLines(lines ...string) []byte {
+	return []byte(strings.Join(lines, "\n") + "\n")
 }

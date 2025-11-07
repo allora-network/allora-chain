@@ -24,16 +24,49 @@ type Finding struct {
 	Lines []int
 }
 
+// FileSystem encapsulates the filesystem interactions required by the scanner.
+type FileSystem interface {
+	Stat(string) (fs.FileInfo, error)
+	WalkDir(string, fs.WalkDirFunc) error
+	ReadFile(string) ([]byte, error)
+}
+
+type osFS struct{}
+
+func (osFS) Stat(name string) (fs.FileInfo, error) {
+	return os.Stat(name)
+}
+
+func (osFS) WalkDir(root string, fn fs.WalkDirFunc) error {
+	return filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		return fn(path, d, err)
+	})
+}
+
+func (osFS) ReadFile(name string) ([]byte, error) {
+	return os.ReadFile(name)
+}
+
 // Scan walks the provided paths, recursively searching for duplicate google.api.http routes.
 // When paths is empty, the current working directory is used.
 func Scan(paths []string) ([]Finding, error) {
+	return scanWithFilesystem(osFS{}, paths)
+}
+
+// ScanFS performs the scan against an arbitrary fs.FS implementation.
+// When roots is empty, the scan starts from ".".
+func ScanFS(fsys fs.FS, roots []string) ([]Finding, error) {
+	return scanWithFilesystem(fsAdapter{fsys: fsys}, roots)
+}
+
+func scanWithFilesystem(fsys FileSystem, paths []string) ([]Finding, error) {
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
 
 	aggregated := make(map[string]map[string][]int)
 	for _, root := range paths {
-		if err := processPath(root, aggregated); err != nil {
+		if err := processPath(fsys, root, aggregated); err != nil {
 			return nil, err
 		}
 	}
@@ -41,17 +74,21 @@ func Scan(paths []string) ([]Finding, error) {
 	return finalizeFindings(aggregated), nil
 }
 
-func processPath(root string, aggregated map[string]map[string][]int) error {
-	info, err := os.Stat(root)
+func processPath(fsys FileSystem, root string, aggregated map[string]map[string][]int) error {
+	if root == "" {
+		root = "."
+	}
+
+	info, err := fsys.Stat(root)
 	if err != nil {
 		return err
 	}
 
 	if !info.IsDir() {
-		return processFile(root, aggregated)
+		return processFile(fsys, root, aggregated)
 	}
 
-	return filepath.WalkDir(root, func(path string, d fs.DirEntry, walkErr error) error {
+	return fsys.WalkDir(root, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
 		}
@@ -61,16 +98,16 @@ func processPath(root string, aggregated map[string]map[string][]int) error {
 		if filepath.Ext(path) != ".proto" {
 			return nil
 		}
-		return processFile(path, aggregated)
+		return processFile(fsys, path, aggregated)
 	})
 }
 
-func processFile(path string, aggregated map[string]map[string][]int) error {
+func processFile(fsys FileSystem, path string, aggregated map[string]map[string][]int) error {
 	if filepath.Ext(path) != ".proto" {
 		return nil
 	}
 
-	duplicates, err := findDuplicates(path)
+	duplicates, err := findDuplicates(fsys, path)
 	if err != nil {
 		return err
 	}
@@ -89,8 +126,8 @@ func processFile(path string, aggregated map[string]map[string][]int) error {
 	return nil
 }
 
-func findDuplicates(path string) (map[string][]int, error) {
-	data, err := os.ReadFile(path)
+func findDuplicates(fsys FileSystem, path string) (map[string][]int, error) {
+	data, err := fsys.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +164,22 @@ func findDuplicates(path string) (map[string][]int, error) {
 		}
 	}
 	return duplicates, nil
+}
+
+type fsAdapter struct {
+	fsys fs.FS
+}
+
+func (a fsAdapter) Stat(name string) (fs.FileInfo, error) {
+	return fs.Stat(a.fsys, name)
+}
+
+func (a fsAdapter) WalkDir(root string, fn fs.WalkDirFunc) error {
+	return fs.WalkDir(a.fsys, root, fn)
+}
+
+func (a fsAdapter) ReadFile(name string) ([]byte, error) {
+	return fs.ReadFile(a.fsys, name)
 }
 
 func collectRouteParts(lines []string, start int) ([]string, int) {
