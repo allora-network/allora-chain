@@ -64,6 +64,8 @@ else
 endif
 BUILDDIR ?= $(CURDIR)/build
 
+PROTO_LINT_PATHS ?= x/emissions/proto x/mint/proto
+
 ###########
 # Install #
 ###########
@@ -102,6 +104,7 @@ lint:
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m
 	@go run ./linter/check-defer-close .
 	@go run ./linter/fuzz-transitions
+	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
 
 build-maprange-linter:
 	@echo "--> Buiding maprange linter"
@@ -111,4 +114,8 @@ maprange: build-maprange-linter
 	@echo "--> Running maprange linter"
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/maprange/.golangci-maprange.yml
 
-.PHONY: all install build lint build-maprange-linter maprange
+duplicate-routes:
+	@echo "--> Running duplicate route linter"
+	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
+
+.PHONY: all install build lint build-maprange-linter maprange duplicate-routes
