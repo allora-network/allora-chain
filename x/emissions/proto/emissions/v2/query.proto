@@ -165,7 +165,7 @@ service Query {
 
   rpc GetLatestAvailableNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v2/network_inferences/{topic_id}";
+    option (google.api.http).get = "/emissions/v2/latest_available_network_inferences/{topic_id}";
   }
 
   rpc IsWorkerNonceUnfulfilled(QueryIsWorkerNonceUnfulfilledRequest) returns (QueryIsWorkerNonceUnfulfilledResponse) {
@@ -216,7 +216,7 @@ service Query {
 
   rpc GetTopicLastReputerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v2/topic_last_commit/{topic_id}";
+    option (google.api.http).get = "/emissions/v2/topic_last_reputer_commit_info/{topic_id}";
   }
 
   rpc GetTopicRewardNonce(QueryTopicRewardNonceRequest) returns (QueryTopicRewardNonceResponse) {
