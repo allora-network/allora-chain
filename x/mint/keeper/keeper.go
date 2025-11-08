@@ -296,6 +296,163 @@ func (k Keeper) GetMonthsAlreadyUnlocked(ctx context.Context) math.Int {
 
 // GetEmissionInfo calculates and returns comprehensive emission information
 // This function can be called from the query server or BeginBlocker to emit events
+func (k Keeper) GetEmissionInfoDisableAdjusted(ctx context.Context) (*types.Params, *types.EventEmissionInfo, error) {
+	moduleParams, err := k.Params.Get(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get module params")
+	}
+
+	ecosystemBalance, err := k.GetEcosystemBalance(ctx, moduleParams.MintDenom)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get ecosystem balance")
+	}
+
+	previousBlockEmission, err := k.PreviousBlockEmission.Get(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get previous block emission")
+	}
+
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, moduleParams)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get ecosystem mint supply remaining")
+	}
+
+	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get blocks per month")
+	}
+	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get starting emissions block height")
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockCountSinceTGE := uint64(sdkCtx.BlockHeight()) - (uint64(startingEmissionsBlockHeight))
+	numberOfRecalcs := blockCountSinceTGE / blocksPerMonth
+	blockHeightTarget_e_i_LastCalculated := uint64(startingEmissionsBlockHeight) + numberOfRecalcs*blocksPerMonth + 1 //nolint:revive // var-naming: don't use underscores in Go names
+	blockHeightTarget_e_i_Next := blockHeightTarget_e_i_LastCalculated + blocksPerMonth                               //nolint:revive // var-naming: don't use underscores in Go names
+
+	networkStakedTokens, err := GetNumStakedTokens(ctx, k)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get number of staked tokens")
+	}
+
+	var monthsAlreadyUnlocked math.Int
+	if moduleParams.EmissionEnabled {
+		monthsAlreadyUnlocked = k.GetMonthsAlreadyUnlocked(ctx)
+	} else {
+		monthsAlreadyUnlocked = math.ZeroInt()
+	}
+	_, lockedVestingTokensPreseed,
+		lockedVestingTokensSeed, lockedVestingTokensTeam, lockedVestingTokensFoundation, _, _, err := GetLockedVestingTokensEnabledAdjusted(
+		blocksPerMonth,
+		math.NewIntFromUint64(blockCountSinceTGE),
+		moduleParams,
+		monthsAlreadyUnlocked,
+	)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get locked vesting tokens")
+	}
+
+	circulatingSupply,
+		totalSupply,
+		lockedVestingTokensTotal,
+		ecosystemLocked,
+		updatedMonthsUnlocked,
+		err := GetCirculatingSupply(ctx, k, moduleParams, blockCountSinceTGE, blocksPerMonth, monthsAlreadyUnlocked)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get circulating supply")
+	}
+	targetRewardEmissionPerUnitStakedToken,
+		err := GetTargetRewardEmissionPerUnitStakedToken(
+		moduleParams.FEmission,
+		ecosystemLocked,
+		networkStakedTokens,
+		circulatingSupply,
+		moduleParams.MaxSupply,
+	)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get target reward emission per unit staked token")
+	}
+	reputersPercent, err := k.GetPreviousPercentageRewardToStakedReputers(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get previous percentage reward to staked reputers")
+	}
+	vPercentADec, err := k.GetValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get validators vs allora percent reward")
+	}
+	vPercent, err := vPercentADec.SdkLegacyDec()
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to convert validators vs allora percent reward to legacy dec")
+	}
+	maximumMonthlyEmissionPerUnitStakedToken := GetMaximumMonthlyEmissionPerUnitStakedToken(
+		moduleParams.MaximumMonthlyPercentageYield,
+		reputersPercent,
+		vPercent,
+	)
+	targetRewardEmissionPerUnitStakedToken = GetCappedTargetEmissionPerUnitStakedToken(
+		targetRewardEmissionPerUnitStakedToken,
+		maximumMonthlyEmissionPerUnitStakedToken,
+	)
+	var previousRewardEmissionPerUnitStakedToken math.LegacyDec
+	// if this is the first month/time we're calculating the target emission...
+	if blockCountSinceTGE < blocksPerMonth {
+		previousRewardEmissionPerUnitStakedToken = targetRewardEmissionPerUnitStakedToken
+	} else {
+		previousRewardEmissionPerUnitStakedToken, err = k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
+		if err != nil {
+			return nil, nil, errorsmod.Wrap(err, "failed to get previous reward emission per unit staked token")
+		}
+	}
+	emissionPerUnitStakedToken := GetExponentialMovingAverage(
+		targetRewardEmissionPerUnitStakedToken,
+		moduleParams.OneMonthSmoothingDegree,
+		previousRewardEmissionPerUnitStakedToken,
+	)
+	emissionPerMonth := GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStakedTokens)
+	blockEmission := emissionPerMonth.
+		Quo(math.NewIntFromUint64(blocksPerMonth))
+	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	alloraRewardsCut := blockEmission.Sub(validatorCut)
+
+	eventInfo := &types.EventEmissionInfo{
+		EcosystemBalance:                         ecosystemBalance,
+		PreviousBlockEmission:                    previousBlockEmission,
+		EcosystemMintSupplyRemaining:             ecosystemMintSupplyRemaining,
+		BlocksPerMonth:                           blocksPerMonth,
+		BlockHeightTargetEILastCalculated:        blockHeightTarget_e_i_LastCalculated,
+		BlockHeightTargetEINextCalculated:        blockHeightTarget_e_i_Next,
+		NetworkStakedTokens:                      networkStakedTokens,
+		LockedVestingTokensTotal:                 lockedVestingTokensTotal,
+		LockedVestingTokensInvestorsPreseed:      lockedVestingTokensPreseed,
+		LockedVestingTokensInvestorsSeed:         lockedVestingTokensSeed,
+		LockedVestingTokensTeam:                  lockedVestingTokensTeam,
+		LockedVestingTokensFoundation:            lockedVestingTokensFoundation,
+		EcosystemLocked:                          ecosystemLocked,
+		CirculatingSupply:                        circulatingSupply,
+		MaxSupply:                                totalSupply,
+		TargetEmissionRatePerUnitStakedToken:     targetRewardEmissionPerUnitStakedToken,
+		ReputersPercent:                          reputersPercent,
+		ValidatorsPercent:                        vPercent,
+		MaximumMonthlyEmissionPerUnitStakedToken: maximumMonthlyEmissionPerUnitStakedToken,
+		TargetRewardEmissionPerUnitStakedToken:   targetRewardEmissionPerUnitStakedToken,
+		EmissionPerUnitStakedToken:               emissionPerUnitStakedToken,
+		EmissionPerMonth:                         emissionPerMonth,
+		BlockEmission:                            blockEmission,
+		ValidatorCut:                             validatorCut,
+		AlloraRewardsCut:                         alloraRewardsCut,
+		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
+		MonthsAlreadyUnlocked:                    monthsAlreadyUnlocked,
+		UpdatedMonthsUnlocked:                    updatedMonthsUnlocked,
+		StartingEmissionsBlockHeight:             startingEmissionsBlockHeight,
+	}
+
+	return &moduleParams, eventInfo, nil
+}
+
+// GetEmissionInfo calculates and returns comprehensive emission information
+// This function can be called from the query server or BeginBlocker to emit events
 func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.EventEmissionInfo, error) {
 	moduleParams, err := k.Params.Get(ctx)
 	if err != nil {

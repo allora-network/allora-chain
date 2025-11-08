@@ -72,7 +72,7 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryServiceInflati
 // mint and inflation emission rate endpoint
 // nice way to access live chain data
 func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryServiceEmissionInfoRequest) (*types.QueryServiceEmissionInfoResponse, error) {
-	params, eventInfo, err := q.k.GetEmissionInfo(ctx)
+	params, eventInfo, err := q.k.GetEmissionInfoDisableAdjusted(ctx)
 	if err != nil {
 		return nil, err
 	}

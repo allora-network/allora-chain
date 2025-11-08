@@ -19,6 +19,93 @@ var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("0.5")
 // these tokens will be custodied by a centralized actor off chain.
 // this function returns the circulating supply based off of what
 // the agreements off chain say were supposed to happen for token lockup
+// if emission is disabled, return 0 for all locked vesting tokens
+func GetLockedVestingTokensEnabledAdjusted(
+	blocksPerMonth uint64,
+	blockHeight math.Int,
+	params types.Params,
+	monthsAlreadyUnlocked math.Int,
+) (
+	totalLocked, preseedInvestorsLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked,
+	updatedMonthsUnlocked math.Int, err error,
+) {
+	if blocksPerMonth == 0 {
+		return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), errors.Wrap(types.ErrInvalidBlocksPerMonth, "blocks per month cannot be zero")
+	}
+	// Define periods
+	twelve := math.NewInt(12)
+	twentyFour := math.NewInt(24)
+	thirtySix := math.NewInt(36)
+
+	// ---- 1. Extract percentage allocations from params ----
+	maxSupply := params.MaxSupply.ToLegacyDec()
+	percentInvestors := params.InvestorsPercentOfTotalSupply
+	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
+	percentTeam := params.TeamPercentOfTotalSupply
+	percentFoundation := params.FoundationTreasuryPercentOfTotalSupply
+	lockedFoundationPercentage := percentFoundation.Mul(FoundationInitialLockedPercentage)
+	// Full amounts
+	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
+	fullPreseedInvestors := percentPreseedInvestors.MulTruncate(maxSupply).TruncateInt()
+	fullTeam := percentTeam.MulTruncate(maxSupply).TruncateInt()
+
+	// Locked sub-amounts
+	lockedFoundationTotalAmount := lockedFoundationPercentage.MulTruncate(maxSupply).TruncateInt()
+
+	// ---- 3. Determine months since TGE ----
+	if params.EmissionEnabled {
+		calculatedMonthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth))
+		if calculatedMonthsUnlocked.GT(monthsAlreadyUnlocked) {
+			monthsAlreadyUnlocked = calculatedMonthsUnlocked
+		}
+		// Clamp to max vesting length
+		if monthsAlreadyUnlocked.GT(thirtySix) {
+			monthsAlreadyUnlocked = thirtySix
+		}
+	} else {
+		monthsAlreadyUnlocked = math.ZeroInt()
+	}
+
+	// Determine Foundation tokens locked
+	// - At TGE: foundationInitialUnlock percent unlocked immediately
+	// - Remaining (1 - foundationInitialUnlock) percent vests linearly over 24 months
+	foundationVestingDuration := twentyFour
+	if monthsAlreadyUnlocked.LT(foundationVestingDuration) {
+		remainingMonthsFoundation := foundationVestingDuration.Sub(monthsAlreadyUnlocked)
+		foundationLocked = lockedFoundationTotalAmount.Mul(remainingMonthsFoundation).Quo(foundationVestingDuration)
+	} else {
+		foundationLocked = math.ZeroInt() // everything unlocked already
+	}
+
+	// one year cliff : preseed, investors, team
+	if monthsAlreadyUnlocked.LT(twelve) {
+		investorsLocked = fullInvestors
+		preseedInvestorsLocked = fullPreseedInvestors
+		teamLocked = fullTeam
+	} else if monthsAlreadyUnlocked.LT(thirtySix) {
+		remainingMonths := thirtySix.Sub(monthsAlreadyUnlocked)
+		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
+		preseedInvestorsLocked = fullPreseedInvestors.Mul(remainingMonths).Quo(thirtySix)
+		teamLocked = fullTeam.Mul(remainingMonths).Quo(thirtySix)
+	} else {
+		investorsLocked = math.ZeroInt()
+		preseedInvestorsLocked = math.ZeroInt()
+		teamLocked = math.ZeroInt()
+	}
+	// participants are unlocked from start
+	participantsLocked = math.ZeroInt()
+
+	totalLocked = preseedInvestorsLocked.Add(investorsLocked).Add(teamLocked).Add(foundationLocked).Add(participantsLocked)
+	return totalLocked, preseedInvestorsLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, monthsAlreadyUnlocked, nil
+
+}
+
+// GetLockedVestingTokens calculates the number of uncirculating (locked) tokens
+// for vesting categories according to the updated tokenomics.
+// return the uncirculating supply, i.e. tokens on a vesting schedule
+// these tokens will be custodied by a centralized actor off chain.
+// this function returns the circulating supply based off of what
+// the agreements off chain say were supposed to happen for token lockup
 func GetLockedVestingTokens(
 	blocksPerMonth uint64,
 	blockHeight math.Int,
