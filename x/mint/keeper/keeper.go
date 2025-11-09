@@ -344,7 +344,7 @@ func (k Keeper) GetEmissionInfoDisableAdjusted(ctx context.Context) (*types.Para
 		monthsAlreadyUnlocked = math.ZeroInt()
 	}
 	_, lockedVestingTokensPreseed,
-		lockedVestingTokensSeed, lockedVestingTokensTeam, lockedVestingTokensFoundation, _, _, err := GetLockedVestingTokensEnabledAdjusted(
+		lockedVestingTokensSeed, lockedVestingTokensTeam, lockedVestingTokensFoundation, _, _, err := GetLockedVestingTokensDisabledAdjusted(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockCountSinceTGE),
 		moduleParams,
@@ -359,7 +359,7 @@ func (k Keeper) GetEmissionInfoDisableAdjusted(ctx context.Context) (*types.Para
 		lockedVestingTokensTotal,
 		ecosystemLocked,
 		updatedMonthsUnlocked,
-		err := GetCirculatingSupply(ctx, k, moduleParams, blockCountSinceTGE, blocksPerMonth, monthsAlreadyUnlocked)
+		err := GetCirculatingSupplyDisabledAdjusted(ctx, k, moduleParams, blockCountSinceTGE, blocksPerMonth, monthsAlreadyUnlocked)
 	if err != nil {
 		return nil, nil, errorsmod.Wrap(err, "failed to get circulating supply")
 	}

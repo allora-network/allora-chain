@@ -20,7 +20,7 @@ var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("0.5")
 // this function returns the circulating supply based off of what
 // the agreements off chain say were supposed to happen for token lockup
 // if emission is disabled, return 0 for all locked vesting tokens
-func GetLockedVestingTokensEnabledAdjusted(
+func GetLockedVestingTokensDisabledAdjusted(
 	blocksPerMonth uint64,
 	blockHeight math.Int,
 	params types.Params,
@@ -219,6 +219,45 @@ func GetCirculatingSupply(
 	}
 	totalSupply = params.MaxSupply
 	lockedVestingTokens, _, _, _, _, _, updatedMonthsUnlocked, err = GetLockedVestingTokens(
+		blocksPerMonth,
+		math.NewIntFromUint64(blockHeight),
+		params,
+		monthsAlreadyUnlocked,
+	)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, params)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
+	ecosystemLocked = ecosystemBalance.Add(ecosystemMintSupplyRemaining)
+	circulatingSupply = totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
+	return circulatingSupply, totalSupply, lockedVestingTokens, ecosystemLocked, updatedMonthsUnlocked, nil
+}
+
+// return the circulating supply of tokens
+func GetCirculatingSupplyDisabledAdjusted(
+	ctx context.Context,
+	k types.MintKeeper,
+	params types.Params,
+	blockHeight uint64,
+	blocksPerMonth uint64,
+	monthsAlreadyUnlocked math.Int,
+) (
+	circulatingSupply,
+	totalSupply,
+	lockedVestingTokens,
+	ecosystemLocked math.Int,
+	updatedMonthsUnlocked math.Int,
+	err error,
+) {
+	ecosystemBalance, err := k.GetEcosystemBalance(ctx, params.MintDenom)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
+	totalSupply = params.MaxSupply
+	lockedVestingTokens, _, _, _, _, _, updatedMonthsUnlocked, err = GetLockedVestingTokensDisabledAdjusted(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		params,
