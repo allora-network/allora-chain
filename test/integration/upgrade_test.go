@@ -6,7 +6,7 @@ import (
 	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	v0_13_0 "github.com/allora-network/allora-chain/app/upgrades/v0_13_0"
+	"github.com/allora-network/allora-chain/app/upgrades/v0_14_0"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -57,7 +57,7 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 // propose an upgrade to the v0.11.0 software version
 func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight int64) {
 	ctx := context.Background()
-	name := v0_13_0.UpgradeName
+	name := v0_14_0.UpgradeName
 	summary := "Upgrade to " + name + " software version"
 
 	currHeight, err := m.Client.BlockHeight(ctx)
@@ -162,7 +162,7 @@ func getAppliedVersionHeight(m testCommon.TestConfig, version string) int64 {
 }
 
 func UpgradeChecks(m testCommon.TestConfig) {
-	versionName := v0_13_0.UpgradeName
+	versionName := v0_14_0.UpgradeName
 	m.T.Log("--- Getting Emissions Module Version Before Upgrade ---")
 	emissionsVersionBefore := getEmissionsVersion(m)
 	m.T.Logf("--- Propose Upgrade to %s software version from v0 (%d) ---", versionName, emissionsVersionBefore)
@@ -176,7 +176,7 @@ func UpgradeChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Getting Emissions Module Version After Upgrade ---")
 	emissionsVersionAfter := getEmissionsVersion(m)
 	m.T.Log("--- Checking Emissions Module Version Has Been Upgraded ---")
-	require.Greater(m.T, emissionsVersionAfter, emissionsVersionBefore)
+	require.Equal(m.T, emissionsVersionAfter, emissionsVersionBefore)
 	height := getAppliedVersionHeight(m, versionName)
 	m.T.Log("--- Checking upgrade has been applied at the proposed height ---")
 	require.Equal(m.T, height, proposalHeight)
