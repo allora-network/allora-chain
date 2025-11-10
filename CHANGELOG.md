@@ -94,6 +94,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Released]
 
+
+# v0.14.0
+
+### Added
+
+* [#887](https://github.com/allora-network/allora-chain/pull/887) Mint foundation coins
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added
+
+#### Changed
+
+
+# v0.13.0
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#883](https://github.com/allora-network/allora-chain/pull/883) Tokenomics adjustments, Upgrade Comet v0.38.19, Cleaner BeginBlocker/EndBlocker 
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+
 # v0.12.4
 
 ### Added
