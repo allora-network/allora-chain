@@ -37,7 +37,7 @@ RUN cp build/allorad /go/bin/allorad-$UPGRADE_VERSION_TAG
 
 #==============================================================
 
-FROM debian:bookworm-slim as execution
+FROM debian:bookworm-slim AS execution
 
 ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \
