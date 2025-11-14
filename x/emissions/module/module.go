@@ -44,7 +44,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 12
+const ConsensusVersion = 13
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -154,6 +154,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return nil
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 11 to 12: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 12, func(ctx sdk.Context) error {
+		return nil
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 12 to 13: %v", types.ModuleName, err))
 	}
 }
 
