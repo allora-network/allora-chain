@@ -34,14 +34,14 @@ func GetNetworkInferences(
 		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
 
-	// Enable gradient cache for this function's scope
-	enableGradientCache()
+	// Enable math helper cache for this function's scope
+	enableMathCache()
 
-	// Disable gradient cache and clear cache when function exits
+	// Disable math helper cache and clear cache when function exits
 	defer func() {
-		disableGradientCache()
-		clearGradientCache()
-		ctx.Logger().Debug("Gradient cache cleared after network inference calculation")
+		disableMathCache()
+		clearMathCache()
+		ctx.Logger().Debug("Math helper cache cleared after network inference calculation")
 	}()
 
 	if len(inferences.Inferences) > 1 {

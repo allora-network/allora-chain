@@ -69,7 +69,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 		{
 			name:           "Equal very negative regrets",
 			regretFrac:     "-24.5",
-			maxRegret:      "-24.5", 
+			maxRegret:      "-24.5",
 			expectedWeight: "1", // When regret == maxRegret, result is always 1
 			tolerance:      "1e-15",
 		},
@@ -109,7 +109,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			tolerance:      "1e-10",
 		},
 		{
-			name:           "Near-zero regret, zero max", 
+			name:           "Near-zero regret, zero max",
 			regretFrac:     "-0.25",
 			maxRegret:      "0.0",
 			expectedWeight: "0.4973900296949617",
@@ -169,13 +169,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 
 			expected := alloraMath.MustNewDecFromString(tc.expectedWeight)
 			tolerance := alloraMath.MustNewDecFromString(tc.tolerance)
-			
+
 			withinTolerance, err := alloraMath.InDelta(expected, weight, tolerance)
 			s.Require().NoError(err, "Error in tolerance check for case: %s", tc.name)
-			s.Require().True(withinTolerance, 
-				"Case %s: Expected %s, got %s, tolerance %s", 
+			s.Require().True(withinTolerance,
+				"Case %s: Expected %s, got %s, tolerance %s",
 				tc.name, expected.String(), weight.String(), tolerance.String())
-				
+
 			// Additional sanity checks
 			s.Require().True(weight.IsFinite(), "Weight should be finite for case: %s", tc.name)
 			s.Require().False(weight.IsNaN(), "Weight should not be NaN for case: %s", tc.name)
@@ -276,7 +276,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			tolerance:      "1e-2",
 			description:    "Very large weight when regret much better than max",
 		},
-	} 
+	}
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
@@ -288,13 +288,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 
 			expected := alloraMath.MustNewDecFromString(tc.expectedWeight)
 			tolerance := alloraMath.MustNewDecFromString(tc.tolerance)
-			
+
 			withinTolerance, err := alloraMath.InDelta(expected, weight, tolerance)
 			s.Require().NoError(err, "Error in tolerance check for case: %s", tc.name)
-			s.Require().True(withinTolerance, 
-				"Case %s: %s\nExpected %s, got %s, tolerance %s", 
+			s.Require().True(withinTolerance,
+				"Case %s: %s\nExpected %s, got %s, tolerance %s",
 				tc.name, tc.description, expected.String(), weight.String(), tolerance.String())
-				
+
 			// Additional sanity checks
 			s.Require().True(weight.IsFinite(), "Weight should be finite for case: %s", tc.name)
 			s.Require().False(weight.IsNaN(), "Weight should not be NaN for case: %s", tc.name)
@@ -305,17 +305,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1DivExp1_DifferentParameters() {
 	testCases := []struct {
-		name           string
-		pNorm          string
-		cNorm          string
-		regretFrac     string
-		maxRegret      string
-		description    string
+		name        string
+		pNorm       string
+		cNorm       string
+		regretFrac  string
+		maxRegret   string
+		description string
 	}{
 		{
 			name:        "Low p, low c parameters",
 			pNorm:       "1.0",
-			cNorm:       "0.1", 
+			cNorm:       "0.1",
 			regretFrac:  "-1.0",
 			maxRegret:   "-1.0",
 			description: "With lower parameters, identity should still hold",
@@ -333,7 +333,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			pNorm:       "1.5",
 			cNorm:       "2.0",
 			regretFrac:  "1.0",
-			maxRegret:   "1.0", 
+			maxRegret:   "1.0",
 			description: "With mixed parameters, identity should still hold",
 		},
 		{
@@ -359,11 +359,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			// For identity cases (regret == maxRegret), result should always be 1
 			expectedOne := alloraMath.OneDec()
 			tolerance := alloraMath.MustNewDecFromString("1e-15")
-			
+
 			withinTolerance, err := alloraMath.InDelta(expectedOne, weight, tolerance)
 			s.Require().NoError(err, "Error in tolerance check for case: %s", tc.name)
-			s.Require().True(withinTolerance, 
-				"Case %s: %s\nExpected 1, got %s (p=%s, c=%s)", 
+			s.Require().True(withinTolerance,
+				"Case %s: %s\nExpected 1, got %s (p=%s, c=%s)",
 				tc.name, tc.description, weight.String(), tc.pNorm, tc.cNorm)
 		})
 	}
@@ -379,7 +379,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			regret := alloraMath.MustNewDecFromString(val)
 			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, regret, pNorm, cNorm)
 			s.Require().NoError(err)
-			
+
 			one := alloraMath.OneDec()
 			tolerance := alloraMath.MustNewDecFromString("1e-15")
 			withinTolerance, err := alloraMath.InDelta(one, weight, tolerance)
@@ -390,21 +390,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 
 	s.Run("Monotonicity: better regret (closer to max) => higher weight", func() {
 		maxRegret := alloraMath.MustNewDecFromString("1.0")
-		
+
 		// Test points from worst to best regret
 		regrets := []string{"-5", "-2", "-1", "0", "0.5", "1.0"}
 		weights := make([]alloraMath.Dec, len(regrets))
-		
+
 		for i, regretStr := range regrets {
 			regret := alloraMath.MustNewDecFromString(regretStr)
 			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm)
 			s.Require().NoError(err)
 			weights[i] = weight
 		}
-		
+
 		// Check that weights are monotonically increasing (better regret => higher weight)
 		for i := 1; i < len(weights); i++ {
-			s.Require().True(weights[i].Gte(weights[i-1]), 
+			s.Require().True(weights[i].Gte(weights[i-1]),
 				"Weight should increase with better regret: regret[%d]=%s gave weight=%s, regret[%d]=%s gave weight=%s",
 				i-1, regrets[i-1], weights[i-1].String(), i, regrets[i], weights[i].String())
 		}
@@ -413,19 +413,19 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 	s.Run("Positivity: all weights should be positive", func() {
 		testCases := []struct{ regret, maxRegret string }{
 			{"-10", "-5"},
-			{"-1", "1"}, 
+			{"-1", "1"},
 			{"0", "2"},
 			{"1", "1"},
 			{"5", "-2"}, // Even when regret > max
 		}
-		
+
 		for _, tc := range testCases {
 			regret := alloraMath.MustNewDecFromString(tc.regret)
 			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm)
 			s.Require().NoError(err)
-			s.Require().True(weight.IsPositive(), 
-				"Weight should be positive for regret=%s, maxRegret=%s, got %s", 
+			s.Require().True(weight.IsPositive(),
+				"Weight should be positive for regret=%s, maxRegret=%s, got %s",
 				tc.regret, tc.maxRegret, weight.String())
 		}
 	})
@@ -445,7 +445,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 		s.Require().Error(err)
 		s.Require().Contains(err.Error(), "NaN")
 
-		// Test NaN maxRegret  
+		// Test NaN maxRegret
 		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, nan, pNorm, cNorm)
 		s.Require().Error(err)
 		s.Require().Contains(err.Error(), "NaN")

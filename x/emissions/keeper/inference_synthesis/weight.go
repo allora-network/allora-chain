@@ -39,45 +39,42 @@ type CalcRegretStdDevFilteredByWeightsArgs struct {
 	EpsilonTopic        alloraMath.Dec
 }
 
-// Gradient cache implementation
-// NOTE: This cache was designed for the old Gradient-based algorithm.
-// Since CalcWeightFromNormalizedRegret now uses Exp1DivExp1, this cache
-// may need to be cleared or replaced with an Exp1DivExp1-specific cache.
+// Math helper cache implementation
+// Used to memoize expensive helper computations like Gradient and Exp1DivExp1.
 var (
-	gradientCache = make(map[string]alloraMath.Dec)
-	cacheEnabled  = false
+	mathHelperCache  = make(map[string]alloraMath.Dec)
+	mathCacheEnabled = false
 )
 
-func enableGradientCache() {
-	cacheEnabled = true
+func enableMathCache() {
+	mathCacheEnabled = true
 }
 
-func disableGradientCache() {
-	cacheEnabled = false
+func disableMathCache() {
+	mathCacheEnabled = false
 }
 
-func clearGradientCache() {
-	gradientCache = make(map[string]alloraMath.Dec)
+func clearMathCache() {
+	mathHelperCache = make(map[string]alloraMath.Dec)
 }
 
-// Cached version of Gradient function
-func cachedGradient(p, c, x alloraMath.Dec) (alloraMath.Dec, error) {
-	if !cacheEnabled {
-		return alloraMath.Gradient(p, c, x)
+func cachedExp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
+	if !mathCacheEnabled {
+		return alloraMath.Exp1DivExp1(a, b)
 	}
 
-	key := fmt.Sprintf("gradient:%s:%s:%s", p.String(), c.String(), x.String())
+	key := fmt.Sprintf("exp1divexp1:%s:%s", a.String(), b.String())
 
-	if cachedValue, exists := gradientCache[key]; exists {
+	if cachedValue, exists := mathHelperCache[key]; exists {
 		return cachedValue, nil
 	}
 
-	result, err := alloraMath.Gradient(p, c, x)
+	result, err := alloraMath.Exp1DivExp1(a, b)
 	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrapf(err, "error calculating gradient")
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "error calculating Exp1DivExp1")
 	}
 
-	gradientCache[key] = result
+	mathHelperCache[key] = result
 	return result, nil
 }
 
@@ -509,7 +506,7 @@ func CalcWeightFromNormalizedRegret(
 	}
 
 	// Calculate weight = exp1_div_exp1(exponent_max_regret, exponent_regret)
-	weight, err := alloraMath.Exp1DivExp1(exponentMaxRegret, exponentRegret)
+	weight, err := cachedExp1DivExp1(exponentMaxRegret, exponentRegret)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating Exp1DivExp1")
 	}

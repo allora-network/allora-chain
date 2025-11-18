@@ -67,6 +67,7 @@ func InEpsilon4(t *testing.T, value alloraMath.Dec, target string) {
 	InEpsilon(t, value, targetDec, epsilonDec)
 }
 
+// unused:
 // func InEpsilon4Dec(t *testing.T, value alloraMath.Dec, target alloraMath.Dec) {
 // 	t.Helper()
 // 	InEpsilon(t, value, target, alloraMath.MustNewDecFromString("0.0001"))
