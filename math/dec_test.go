@@ -1335,6 +1335,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "0",
 			expectedStr: "1", // (e^0 + 1) / (e^0 + 1) = 2/2 = 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1343,6 +1344,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-1",
 			expectedStr: "1", // (e^-1 + 1) / (e^-1 + 1) = 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1351,6 +1353,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-1",
 			expectedStr: "0.8299965984314521", // (e^-2 + 1) / (e^-1 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1359,6 +1362,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-2",
 			expectedStr: "1.204824214809825", // (e^-1 + 1) / (e^-2 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1367,6 +1371,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-10",
 			expectedStr: "1", // Should be exactly 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1375,6 +1380,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-5",
 			expectedStr: "0.9933522451505159", // (e^-10 + 1) / (e^-5 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 
@@ -1385,6 +1391,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "0",
 			expectedStr: "1.859140914229523", // e^1 * (e^-1 + 1) / (e^0 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1393,6 +1400,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-1",
 			expectedStr: "6.132891427731616", // e^2 * (e^-2 + 1) / (e^-1 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1401,6 +1409,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-2",
 			expectedStr: "131.6026739489939", // e^5 * (e^-5 + 1) / (e^-2 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1409,6 +1418,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-10",
 			expectedStr: "2.105075347802713", // e^0.1 * (e^-0.1 + 1) / (e^-10 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 
@@ -1419,6 +1429,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "1",
 			expectedStr: "0.5378828427399902", // e^-1 * (e^0 + 1) / (e^-1 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1427,6 +1438,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "2",
 			expectedStr: "0.1630552263616172", // e^-2 * (e^-1 + 1) / (e^-2 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1435,6 +1447,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "0.1",
 			expectedStr: "0.4750423784325841", // e^-0.1 * (e^-10 + 1) / (e^-0.1 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1443,6 +1456,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "5",
 			expectedStr: "0.007598629799783373", // e^-5 * (e^-2 + 1) / (e^-5 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 
@@ -1453,6 +1467,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "1",
 			expectedStr: "1", // Should be exactly 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1461,6 +1476,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "1",
 			expectedStr: "2.256164671199036", // e^1 * (e^-2 + 1) / (e^-1 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1469,6 +1485,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "2",
 			expectedStr: "0.4432300588540602", // e^-1 * (e^-1 + 1) / (e^-2 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1477,6 +1494,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "3",
 			expectedStr: "7.086049534658406", // e^2 * (e^-5 + 1) / (e^-3 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1485,6 +1503,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "0.2",
 			expectedStr: "0.9476763771641353", // e^-0.1 * (e^-0.1 + 1) / (e^-0.2 + 1)
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 
@@ -1495,6 +1514,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "0.0001",
 			expectedStr: "0.99995", // Very close to 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.001",
 		},
 		{
@@ -1503,6 +1523,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "0",
 			expectedStr: "1.00005", // Very close to 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.001",
 		},
 		{
@@ -1511,6 +1532,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-0.0001",
 			expectedStr: "1.00005", // Very close to 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.001",
 		},
 		{
@@ -1519,6 +1541,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "0",
 			expectedStr: "0.99995", // Very close to 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.001",
 		},
 
@@ -1529,6 +1552,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "10",
 			expectedStr: "1", // Should be exactly 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1537,6 +1561,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-20",
 			expectedStr: "1", // Should be exactly 1
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.0000000001",
 		},
 		{
@@ -1545,6 +1570,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "-10",
 			expectedStr: "22026.465794806718074", // Very large number
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.001",
 		},
 		{
@@ -1553,6 +1579,7 @@ func TestExp1DivExp1(t *testing.T) {
 			b:           "10",
 			expectedStr: "0.0000453999297624848", // Very small number
 			shouldError: false,
+			errorType:   nil,
 			tolerance:   "0.000001",
 		},
 
@@ -1564,6 +1591,7 @@ func TestExp1DivExp1(t *testing.T) {
 			expectedStr: "",
 			shouldError: true,
 			errorType:   alloraMath.ErrNaN,
+			tolerance:   "",
 		},
 		{
 			name:        "Error: b is NaN",
@@ -1572,6 +1600,7 @@ func TestExp1DivExp1(t *testing.T) {
 			expectedStr: "",
 			shouldError: true,
 			errorType:   alloraMath.ErrNaN,
+			tolerance:   "",
 		},
 		{
 			name:        "Error: Both NaN",
@@ -1580,6 +1609,7 @@ func TestExp1DivExp1(t *testing.T) {
 			expectedStr: "",
 			shouldError: true,
 			errorType:   alloraMath.ErrNaN,
+			tolerance:   "",
 		},
 	}
 
