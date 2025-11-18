@@ -10,6 +10,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+var InitialRegretCNorm = alloraMath.MustNewDecFromString("0.75")
+
 type networkLossesByWorker struct {
 	CombinedLoss                  Loss
 	InfererLosses                 map[Worker]Loss
@@ -420,7 +422,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 				regrets,
 				args.EpsilonTopic,
 				args.PNorm,
-				args.CNorm,
+				InitialRegretCNorm,
 				quantile,
 				args.PNormSafeDiv,
 			)

@@ -403,7 +403,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
-	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.20059970801966293")
+	testutil.InEpsilon4(s.T(), valueBundle.CombinedValue, "0.20059970801966293") // Reduced to Epsilon4 after removal of regret boundaries
 
 	s.Require().Len(valueBundle.OneOutInfererValues, 5)
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
@@ -535,7 +535,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 		case inferer3:
 			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.09957413455954356")
 		case inferer4:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.23133130005198607")
+			testutil.InEpsilon4(s.T(), oneOutInfererValue.Value, "0.23133130005198607") // Reduced to Epsilon4 after removal of regret boundaries
 		default:
 			s.Require().Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}

@@ -775,3 +775,187 @@ func decimalPlaces(d *apd.Decimal) uint32 {
 func shouldBeNaN(d *apd.Decimal) bool {
 	return d.Form == apd.NaN || d.Form == apd.NaNSignaling
 }
+
+// Exp1DivExp1 computes (e^a + 1) / (e^b + 1) with numerical stability optimizations.
+// It uses different mathematical transformations based on the signs of a and b to avoid
+// overflow/underflow issues that can occur with large positive or negative values.
+func Exp1DivExp1(a, b Dec) (Dec, error) {
+	if a.IsNaN() || b.IsNaN() {
+		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot compute Exp1DivExp1 with NaN arguments: a=%s, b=%s", a.String(), b.String())
+	}
+
+	zero := ZeroDec()
+	one := OneDec()
+
+	// Case 1: a <= 0 && b <= 0
+	// Formula: (e^a + 1) / (e^b + 1)
+	if (a.Lte(zero)) && (b.Lte(zero)) {
+		expA, err := Exp(a)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(a) where a=%s", a.String())
+		}
+
+		expB, err := Exp(b)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(b) where b=%s", b.String())
+		}
+
+		numerator, err := expA.Add(one)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(a) + 1")
+		}
+
+		denominator, err := expB.Add(one)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(b) + 1")
+		}
+
+		result, err := numerator.Quo(denominator)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing final division")
+		}
+
+		return result, nil
+	}
+
+	// Case 2: a > 0 && b <= 0
+	// Formula: e^a * (e^{-a} + 1) / (e^b + 1) == (e^a + e^0) / (e^b + 1)
+	if (a.IsPositive()) && (b.Lte(zero)) {
+		expA, err := Exp(a)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(a) where a=%s", a.String())
+		}
+
+		negA, err := a.Neg()
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing -a where a=%s", a.String())
+		}
+
+		expNegA, err := Exp(negA)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(-a) where a=%s", a.String())
+		}
+
+		expB, err := Exp(b)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(b) where b=%s", b.String())
+		}
+
+		expNegAPlus1, err := expNegA.Add(one)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(-a) + 1")
+		}
+
+		numerator, err := expA.Mul(expNegAPlus1)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(a) * (exp(-a) + 1)")
+		}
+
+		denominator, err := expB.Add(one)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(b) + 1")
+		}
+
+		result, err := numerator.Quo(denominator)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing final division")
+		}
+
+		return result, nil
+	}
+
+	// Case 3: a <= 0 && b > 0
+	// Formula: e^{-b} * (e^a + 1) / (e^{-b} + 1)
+	if (a.Lte(zero)) && (b.IsPositive()) {
+		negB, err := b.Neg()
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing -b where b=%s", b.String())
+		}
+
+		expNegB, err := Exp(negB)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(-b) where b=%s", b.String())
+		}
+
+		expA, err := Exp(a)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(a) where a=%s", a.String())
+		}
+
+		expAPlus1, err := expA.Add(one)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(a) + 1")
+		}
+
+		numerator, err := expNegB.Mul(expAPlus1)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(-b) * (exp(a) + 1)")
+		}
+
+		denominator, err := expNegB.Add(one)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing exp(-b) + 1")
+		}
+
+		result, err := numerator.Quo(denominator)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error computing final division")
+		}
+
+		return result, nil
+	}
+
+	// Case 4: a > 0 && b > 0
+	// Formula: e^{a-b} * (e^{-a} + 1) / (e^{-b} + 1)
+	aMinusB, err := a.Sub(b)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing a - b where a=%s, b=%s", a.String(), b.String())
+	}
+
+	expAMinusB, err := Exp(aMinusB)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing exp(a-b) where a-b=%s", aMinusB.String())
+	}
+
+	negA, err := a.Neg()
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing -a where a=%s", a.String())
+	}
+
+	expNegA, err := Exp(negA)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing exp(-a) where a=%s", a.String())
+	}
+
+	negB, err := b.Neg()
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing -b where b=%s", b.String())
+	}
+
+	expNegB, err := Exp(negB)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing exp(-b) where b=%s", b.String())
+	}
+
+	expNegAPlus1, err := expNegA.Add(one)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing exp(-a) + 1")
+	}
+
+	expNegBPlus1, err := expNegB.Add(one)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing exp(-b) + 1")
+	}
+
+	numerator, err := expAMinusB.Mul(expNegAPlus1)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing exp(a-b) * (exp(-a) + 1)")
+	}
+
+	result, err := numerator.Quo(expNegBPlus1)
+	if err != nil {
+		return Dec{}, errorsmod.Wrapf(err, "error computing final division")
+	}
+
+	return result, nil
+}

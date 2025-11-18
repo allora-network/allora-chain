@@ -60,10 +60,17 @@ func InEpsilon3(t *testing.T, value alloraMath.Dec, target string) {
 	InEpsilon(t, value, targetDec, epsilonDec)
 }
 
-/*unused
 func InEpsilon4(t *testing.T, value alloraMath.Dec, target string) {
-       s.inEpsilon(t, value, target, "0.0001")
-}*/
+	t.Helper()
+	epsilonDec := alloraMath.MustNewDecFromString("0.0001")
+	targetDec := alloraMath.MustNewDecFromString(target)
+	InEpsilon(t, value, targetDec, epsilonDec)
+}
+
+// func InEpsilon4Dec(t *testing.T, value alloraMath.Dec, target alloraMath.Dec) {
+// 	t.Helper()
+// 	InEpsilon(t, value, target, alloraMath.MustNewDecFromString("0.0001"))
+// }
 
 func InEpsilon5(t *testing.T, value alloraMath.Dec, target string) {
 	t.Helper()
