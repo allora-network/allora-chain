@@ -132,7 +132,9 @@ type moduleVersionSnapshot struct {
 // query the current version of a module, returning whether it exists
 func getModuleVersion(m testCommon.TestConfig, moduleName string) moduleVersionSnapshot {
 	ctx := context.Background()
-	queryModuleVersionsRequest := &upgradetypes.QueryModuleVersionsRequest{}
+	queryModuleVersionsRequest := &upgradetypes.QueryModuleVersionsRequest{
+		ModuleName: "",
+	}
 	moduleVersions, err := m.Client.QueryUpgrade().ModuleVersions(ctx, queryModuleVersionsRequest)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, moduleVersions)
@@ -226,7 +228,7 @@ func UpgradeChecks(m testCommon.TestConfig, upgradeName string) {
 			require.Falsef(m.T, preSnapshot.Found, "module %s should not exist before upgrade", check.ModuleName)
 			require.Truef(m.T, postSnapshot.Found, "module %s expected to exist after upgrade", check.ModuleName)
 			if check.ExpectedVersion == nil {
-				require.Greaterf(m.T, postSnapshot.Version, uint64(0), "module %s consensus version should be greater than 0", check.ModuleName)
+				require.Positivef(m.T, postSnapshot.Version, "module %s consensus version should be greater than 0", check.ModuleName)
 			}
 		default:
 			require.Failf(m.T, "unsupported module check type", "module %s has unsupported check type %s", check.ModuleName, check.CheckType)
