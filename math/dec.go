@@ -820,7 +820,7 @@ func Exp1DivExp1(a, b Dec) (Dec, error) {
 
 	// Case 2: a > 0 && b <= 0
 	// Formula: e^a * (e^{-a} + 1) / (e^b + 1) == (e^a + e^0) / (e^b + 1)
-	if (a.IsPositive()) && (b.Lte(zero)) {
+	if (a.Gt(zero)) && (b.Lte(zero)) {
 		expA, err := Exp(a)
 		if err != nil {
 			return Dec{}, errorsmod.Wrapf(err, "error computing exp(a) where a=%s", a.String())
@@ -866,7 +866,7 @@ func Exp1DivExp1(a, b Dec) (Dec, error) {
 
 	// Case 3: a <= 0 && b > 0
 	// Formula: e^{-b} * (e^a + 1) / (e^{-b} + 1)
-	if (a.Lte(zero)) && (b.IsPositive()) {
+	if (a.Lte(zero)) && (b.Gt(zero)) {
 		negB, err := b.Neg()
 		if err != nil {
 			return Dec{}, errorsmod.Wrapf(err, "error computing -b where b=%s", b.String())
