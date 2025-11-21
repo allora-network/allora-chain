@@ -4832,6 +4832,11 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 		return nil
 	}
 
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting topic")
+	}
+
 	// Get params for weight calculation
 	params, err := k.GetParams(ctx)
 	if err != nil {
