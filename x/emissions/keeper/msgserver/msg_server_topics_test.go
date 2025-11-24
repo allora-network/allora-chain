@@ -187,6 +187,9 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NotNil(createResult)
 	topicId := createResult.TopicId
 
+	// Activate so updates are deferred to epoch end (pending path)
+	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
+
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:     sender,
@@ -407,6 +410,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	require.Equal("mse", originalTopic.LossMethod)
 
 	// Test successful update of allowed fields
+	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:     sender,
 		TopicId:    topicId,
@@ -515,6 +519,9 @@ func (s *MsgServerTestSuite) TestUpdateTopicReplacesPendingUpdate() {
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
 	topicId := createResult.TopicId
+
+	// Ensure topic active so updates go to pending
+	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
 
 	// First update changes metadata only
 	firstUpdate := &types.UpdateTopicRequest{
