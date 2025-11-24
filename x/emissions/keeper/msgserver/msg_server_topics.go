@@ -151,6 +151,15 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, errorsmod.Wrap(err, "Updated topic validation failed")
 	}
 
+	// Explicitly drop any previously staged update; the latest tx fully replaces it.
+	if hasPending, err := ms.k.HasPendingTopicUpdate(ctx, msg.TopicId); err != nil {
+		return nil, errorsmod.Wrap(err, "Failed to check existing pending topic update")
+	} else if hasPending {
+		if err := ms.k.DeletePendingTopicUpdate(ctx, msg.TopicId); err != nil {
+			return nil, errorsmod.Wrap(err, "Failed to clear existing pending topic update")
+		}
+	}
+
 	// Store the pending update to be applied at epoch end
 	if err := ms.k.SetPendingTopicUpdate(ctx, msg.TopicId, updatedTopic); err != nil {
 		return nil, errorsmod.Wrap(err, "Failed to set pending topic update")

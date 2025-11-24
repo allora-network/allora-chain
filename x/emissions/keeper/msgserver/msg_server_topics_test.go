@@ -433,3 +433,66 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	require.Equal(originalTopic.WorkerSubmissionWindow, pendingTopic.WorkerSubmissionWindow)
 	require.Equal(originalTopic.EpochLength, pendingTopic.EpochLength)
 }
+
+func (s *MsgServerTestSuite) TestUpdateTopicReplacesPendingUpdate() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	// Create a topic
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	// First update changes metadata only
+	firstUpdate := &types.UpdateTopicRequest{
+		Sender:     sender,
+		TopicId:    topicId,
+		Metadata:   []string{"Updated metadata"},
+		LossMethod: nil,
+	}
+	_, err = msgServer.UpdateTopic(ctx, firstUpdate)
+	require.NoError(err)
+
+	pending, err := s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
+	require.NoError(err)
+	require.Equal("Updated metadata", pending.Metadata)
+	require.Equal("mse", pending.LossMethod)
+
+	// Second update (same epoch) replaces the pending update instead of merging
+	secondUpdate := &types.UpdateTopicRequest{
+		Sender:     sender,
+		TopicId:    topicId,
+		Metadata:   nil,
+		LossMethod: []string{"mae"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, secondUpdate)
+	require.NoError(err)
+
+	pending, err = s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
+	require.NoError(err)
+	// Metadata falls back to original because the second update replaces the prior pending change
+	require.Equal("Original metadata", pending.Metadata)
+	require.Equal("mae", pending.LossMethod)
+}
