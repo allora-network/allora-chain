@@ -34,6 +34,8 @@ message GenesisState {
   // every topic that has been created indexed by their topicId starting from 1
   // (0 is reserved for the root network)
   repeated TopicIdAndTopic topics = 4;
+  // pending topic updates staged to be applied at epoch end
+  repeated TopicIdAndTopic pending_topic_updates = 99;
   repeated uint64 active_topics = 5;
   // every topic that has been churned and ready to be rewarded i.e. reputer
   // losses have been committed

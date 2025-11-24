@@ -47,6 +47,14 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
+	// PendingTopicUpdates []*TopicIdAndTopic
+	for _, pendingTopic := range data.PendingTopicUpdates {
+		if pendingTopic != nil {
+			if err := k.SetPendingTopicUpdate(ctx, pendingTopic.TopicId, *pendingTopic.Topic); err != nil {
+				return errors.Wrap(err, "error setting pending topic update")
+			}
+		}
+	}
 	//ActiveTopics []uint64
 	for _, topicId := range data.ActiveTopics {
 		if err := types.ValidateTopicId(topicId); err != nil {
@@ -1051,6 +1059,23 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			Topic:   &value,
 		}
 		topics = append(topics, &topic)
+	}
+
+	pendingTopicUpdates := make([]*types.TopicIdAndTopic, 0)
+	pendingTopicsIter, err := k.pendingTopicUpdates.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate pending topic updates")
+	}
+	for ; pendingTopicsIter.Valid(); pendingTopicsIter.Next() {
+		keyValue, err := pendingTopicsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: pendingTopicUpdatesIter")
+		}
+		value := keyValue.Value
+		pendingTopicUpdates = append(pendingTopicUpdates, &types.TopicIdAndTopic{
+			TopicId: keyValue.Key,
+			Topic:   &value,
+		})
 	}
 
 	activeTopics := make([]uint64, 0)
@@ -2607,6 +2632,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		Params:                                         moduleParams,
 		NextTopicId:                                    nextTopicId,
 		Topics:                                         topics,
+		PendingTopicUpdates:                            pendingTopicUpdates,
 		ActiveTopics:                                   activeTopics,
 		RewardableTopics:                               rewardableTopics,
 		TopicWorkers:                                   topicWorkers,

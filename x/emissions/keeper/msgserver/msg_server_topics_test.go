@@ -434,6 +434,57 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	require.Equal(originalTopic.EpochLength, pendingTopic.EpochLength)
 }
 
+func (s *MsgServerTestSuite) TestUpdateTopicInactiveAppliesImmediately() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	// Create a topic (starts inactive); ensure inactive explicitly if needed
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	// Apply update; should be immediate (no pending)
+	updateMsg := &types.UpdateTopicRequest{
+		Sender:     sender,
+		TopicId:    topicId,
+		Metadata:   []string{"Updated metadata"},
+		LossMethod: []string{"mae"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateMsg)
+	require.NoError(err)
+
+	hasPending, err := s.EmissionsKeeper().HasPendingTopicUpdate(ctx, topicId)
+	require.NoError(err)
+	require.False(hasPending)
+
+	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal("Updated metadata", updatedTopic.Metadata)
+	require.Equal("mae", updatedTopic.LossMethod)
+}
+
 func (s *MsgServerTestSuite) TestUpdateTopicReplacesPendingUpdate() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
 	require := s.Require()
