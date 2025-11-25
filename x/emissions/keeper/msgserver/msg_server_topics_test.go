@@ -187,9 +187,6 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NotNil(createResult)
 	topicId := createResult.TopicId
 
-	// Activate so updates are deferred to epoch end (pending path)
-	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
-
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:     sender,
@@ -202,16 +199,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NoError(err)
 	require.NotNil(updateResult)
 
-	// Verify that the pending update was stored
-	hasPending, err := s.EmissionsKeeper().HasPendingTopicUpdate(ctx, topicId)
+	// Verify topic updated
+	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
-	require.True(hasPending, "Should have pending topic update")
-
-	// Verify the pending update has the correct values
-	pendingTopic, err := s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
-	require.NoError(err)
-	require.Equal("Updated metadata", pendingTopic.Metadata)
-	require.Equal("mae", pendingTopic.LossMethod)
+	require.Equal("Updated metadata", updatedTopic.Metadata)
+	require.Equal("mae", updatedTopic.LossMethod)
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
@@ -410,7 +402,6 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	require.Equal("mse", originalTopic.LossMethod)
 
 	// Test successful update of allowed fields
-	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:     sender,
 		TopicId:    topicId,
@@ -422,135 +413,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	require.NoError(err)
 	require.NotNil(updateResult)
 
-	// Verify pending update was created
-	hasPending, err := s.EmissionsKeeper().HasPendingTopicUpdate(ctx, topicId)
-	require.NoError(err)
-	require.True(hasPending)
-
-	// Get pending update and verify only allowed fields were changed
-	pendingTopic, err := s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
-	require.NoError(err)
-	require.Equal("updated metadata", pendingTopic.Metadata)
-	require.Equal("mae", pendingTopic.LossMethod)
-	// Verify restricted fields remain unchanged
-	require.Equal(originalTopic.GroundTruthLag, pendingTopic.GroundTruthLag)
-	require.Equal(originalTopic.WorkerSubmissionWindow, pendingTopic.WorkerSubmissionWindow)
-	require.Equal(originalTopic.EpochLength, pendingTopic.EpochLength)
-}
-
-func (s *MsgServerTestSuite) TestUpdateTopicInactiveAppliesImmediately() {
-	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
-	require := s.Require()
-
-	senderAddr := s.Addrs(0)
-	sender := s.AddrsStr(0)
-
-	// Create a topic (starts inactive); ensure inactive explicitly if needed
-	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
-	createTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  sender,
-		Metadata:                 "Original metadata",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    false,
-		EnableReputerWhitelist:   false,
-	}
-	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
-	require.NoError(err)
-	topicId := createResult.TopicId
-
-	// Apply update; should be immediate (no pending)
-	updateMsg := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   []string{"Updated metadata"},
-		LossMethod: []string{"mae"},
-	}
-	_, err = msgServer.UpdateTopic(ctx, updateMsg)
-	require.NoError(err)
-
-	hasPending, err := s.EmissionsKeeper().HasPendingTopicUpdate(ctx, topicId)
-	require.NoError(err)
-	require.False(hasPending)
-
+	// Verify topic updated and only allowed fields changed
 	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
-	require.Equal("Updated metadata", updatedTopic.Metadata)
+	require.Equal("updated metadata", updatedTopic.Metadata)
 	require.Equal("mae", updatedTopic.LossMethod)
-}
-
-func (s *MsgServerTestSuite) TestUpdateTopicReplacesPendingUpdate() {
-	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
-	require := s.Require()
-
-	senderAddr := s.Addrs(0)
-	sender := s.AddrsStr(0)
-
-	// Create a topic
-	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
-	createTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  sender,
-		Metadata:                 "Original metadata",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		AllowNegative:            false,
-		AlphaRegret:              alloraMath.NewDecFromInt64(1),
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		EnableWorkerWhitelist:    false,
-		EnableReputerWhitelist:   false,
-	}
-	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
-	require.NoError(err)
-	topicId := createResult.TopicId
-
-	// Ensure topic active so updates go to pending
-	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
-
-	// First update changes metadata only
-	firstUpdate := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   []string{"Updated metadata"},
-		LossMethod: nil,
-	}
-	_, err = msgServer.UpdateTopic(ctx, firstUpdate)
-	require.NoError(err)
-
-	pending, err := s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
-	require.NoError(err)
-	require.Equal("Updated metadata", pending.Metadata)
-	require.Equal("mse", pending.LossMethod)
-
-	// Second update (same epoch) replaces the pending update instead of merging
-	secondUpdate := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   nil,
-		LossMethod: []string{"mae"},
-	}
-	_, err = msgServer.UpdateTopic(ctx, secondUpdate)
-	require.NoError(err)
-
-	pending, err = s.EmissionsKeeper().GetPendingTopicUpdate(ctx, topicId)
-	require.NoError(err)
-	// Metadata falls back to original because the second update replaces the prior pending change
-	require.Equal("Original metadata", pending.Metadata)
-	require.Equal("mae", pending.LossMethod)
+	// Verify restricted fields remain unchanged
+	require.Equal(originalTopic.GroundTruthLag, updatedTopic.GroundTruthLag)
+	require.Equal(originalTopic.WorkerSubmissionWindow, updatedTopic.WorkerSubmissionWindow)
+	require.Equal(originalTopic.EpochLength, updatedTopic.EpochLength)
 }

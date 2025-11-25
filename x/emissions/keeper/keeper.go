@@ -51,8 +51,6 @@ type Keeper struct {
 	nextTopicId collections.Sequence
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
 	topics collections.Map[TopicId, types.Topic]
-	// pending topic updates to be applied at epoch end
-	pendingTopicUpdates collections.Map[TopicId, types.Topic]
 	// which topics are active at the current block height
 	activeTopics collections.KeySet[TopicId]
 	// topic to next possible churning block
@@ -305,7 +303,6 @@ func NewKeeper(
 		topicStake:                               collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, sdk.IntValue),
 		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
-		pendingTopicUpdates:                      collections.NewMap(sb, types.PendingTopicUpdatesKey, "pending_topic_updates", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
 		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
 		topicToNextPossibleChurningBlock:         collections.NewMap(sb, types.TopicToNextPossibleChurningBlockKey, "topic_to_next_possible_churning_block", collections.Uint64Key, collections.Int64Value),
 		blockToActiveTopics:                      collections.NewMap(sb, types.BlockToActiveTopicsKey, "block_to_active_topics", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
@@ -4868,75 +4865,4 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
 
 	return nil
-}
-
-/// PENDING TOPIC UPDATES
-
-// SetPendingTopicUpdate sets a pending topic update to be applied at epoch end
-func (k *Keeper) SetPendingTopicUpdate(ctx context.Context, topicId TopicId, topic types.Topic) error {
-	if err := types.ValidateTopicId(topicId); err != nil {
-		return errorsmod.Wrap(err, "topic id validation failed")
-	}
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting params")
-	}
-	if err := topic.Validate(params); err != nil {
-		return errorsmod.Wrap(err, "topic validation failed")
-	}
-	return k.pendingTopicUpdates.Set(ctx, topicId, topic)
-}
-
-// GetPendingTopicUpdate gets a pending topic update
-func (k *Keeper) GetPendingTopicUpdate(ctx context.Context, topicId TopicId) (types.Topic, error) {
-	return k.pendingTopicUpdates.Get(ctx, topicId)
-}
-
-// HasPendingTopicUpdate checks if there is a pending topic update
-func (k *Keeper) HasPendingTopicUpdate(ctx context.Context, topicId TopicId) (bool, error) {
-	return k.pendingTopicUpdates.Has(ctx, topicId)
-}
-
-// DeletePendingTopicUpdate removes a pending topic update
-func (k *Keeper) DeletePendingTopicUpdate(ctx context.Context, topicId TopicId) error {
-	return k.pendingTopicUpdates.Remove(ctx, topicId)
-}
-
-// ApplyPendingTopicUpdate applies a pending topic update to the actual topic
-func (k *Keeper) ApplyPendingTopicUpdate(ctx context.Context, topicId TopicId) error {
-	pendingTopic, err := k.GetPendingTopicUpdate(ctx, topicId)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting pending topic update")
-	}
-
-	if err := k.SetTopic(ctx, topicId, pendingTopic); err != nil {
-		return errorsmod.Wrap(err, "error setting topic")
-	}
-
-	if err := k.DeletePendingTopicUpdate(ctx, topicId); err != nil {
-		return errorsmod.Wrap(err, "error deleting pending topic update")
-	}
-
-	return nil
-}
-
-// GetAllPendingTopicUpdates returns all pending topic updates
-func (k *Keeper) GetAllPendingTopicUpdates(ctx context.Context) (map[TopicId]types.Topic, error) {
-	updates := make(map[TopicId]types.Topic)
-
-	iter, err := k.pendingTopicUpdates.Iterate(ctx, nil)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error iterating pending topic updates")
-	}
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "error getting key value")
-		}
-		updates[kv.Key] = kv.Value
-	}
-
-	return updates, nil
 }

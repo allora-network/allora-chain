@@ -151,34 +151,9 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, errorsmod.Wrap(err, "Updated topic validation failed")
 	}
 
-	// If topic is inactive, apply immediately; for active topics, defer to epoch end.
-	isActive, err := ms.k.IsTopicActive(ctx, msg.TopicId)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "Failed to check topic active status")
-	}
-	if !isActive {
-		if err := ms.k.SetTopic(ctx, msg.TopicId, updatedTopic); err != nil {
-			return nil, errorsmod.Wrap(err, "Failed to apply update to inactive topic")
-		}
-		// Clean up any previously staged pending update if present.
-		if hasPending, err := ms.k.HasPendingTopicUpdate(ctx, msg.TopicId); err == nil && hasPending {
-			_ = ms.k.DeletePendingTopicUpdate(ctx, msg.TopicId)
-		}
-		return &types.UpdateTopicResponse{}, nil
-	}
-
-	// Explicitly drop any previously staged update; the latest tx fully replaces it.
-	if hasPending, err := ms.k.HasPendingTopicUpdate(ctx, msg.TopicId); err != nil {
-		return nil, errorsmod.Wrap(err, "Failed to check existing pending topic update")
-	} else if hasPending {
-		if err := ms.k.DeletePendingTopicUpdate(ctx, msg.TopicId); err != nil {
-			return nil, errorsmod.Wrap(err, "Failed to clear existing pending topic update")
-		}
-	}
-
-	// Store the pending update to be applied at epoch end
-	if err := ms.k.SetPendingTopicUpdate(ctx, msg.TopicId, updatedTopic); err != nil {
-		return nil, errorsmod.Wrap(err, "Failed to set pending topic update")
+	// Apply update
+	if err := ms.k.SetTopic(ctx, msg.TopicId, updatedTopic); err != nil {
+		return nil, errorsmod.Wrap(err, "Failed to apply topic update")
 	}
 
 	return &types.UpdateTopicResponse{}, nil

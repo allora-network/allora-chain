@@ -11,7 +11,6 @@ func NewGenesisState() *GenesisState {
 		Params:                                         DefaultParams(),
 		NextTopicId:                                    0,
 		Topics:                                         []*TopicIdAndTopic{},
-		PendingTopicUpdates:                            []*TopicIdAndTopic{},
 		ActiveTopics:                                   []uint64{},
 		RewardableTopics:                               []uint64{},
 		TopicWorkers:                                   []*TopicAndActorId{},
