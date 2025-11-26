@@ -189,10 +189,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   []string{"Updated metadata"},
-		LossMethod: []string{"mae"},
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            []string{"Updated metadata"},
+		LossMethod:          []string{"mae"},
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -241,10 +244,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:     otherUser,
-		TopicId:    topicId,
-		Metadata:   []string{"Updated metadata"},
-		LossMethod: nil,
+		Sender:              otherUser,
+		TopicId:             topicId,
+		Metadata:            []string{"Updated metadata"},
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -260,10 +266,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    nonexistentTopicId,
-		Metadata:   []string{"Updated metadata"},
-		LossMethod: nil,
+		Sender:              sender,
+		TopicId:             nonexistentTopicId,
+		Metadata:            []string{"Updated metadata"},
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -306,10 +315,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicNoChanges() {
 
 	// Try to update with no fields set
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   nil,
-		LossMethod: nil,
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -326,10 +338,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   nil,
-		LossMethod: []string{""},
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          []string{""},
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -338,10 +353,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long loss method
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   nil,
-		LossMethod: []string{strings.Repeat("a", 257)},
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          []string{strings.Repeat("a", 257)},
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -350,10 +368,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   []string{strings.Repeat("a", 257)},
-		LossMethod: nil,
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            []string{strings.Repeat("a", 257)},
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -403,10 +424,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Test successful update of allowed fields
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:     sender,
-		TopicId:    topicId,
-		Metadata:   []string{"updated metadata"},
-		LossMethod: []string{"mae"},
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            []string{"updated metadata"},
+		LossMethod:          []string{"mae"},
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -457,6 +481,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
 		AlphaRegret:         []string{"0.25"},
 		MeritSortitionAlpha: []string{"0.3"},
 		PNorm:               []string{"3.5"},
@@ -479,7 +505,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
 		MeritSortitionAlpha: []string{"0.4"},
+		PNorm:               nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -494,9 +524,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid alpha_regret (<=0)
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:      sender,
-		TopicId:     topicId,
-		AlphaRegret: []string{"0"},
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         []string{"0"},
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
 	}
 	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "alpha regret")
@@ -505,16 +539,24 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
 		MeritSortitionAlpha: []string{"1.1"},
+		PNorm:               nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "merit sortition alpha")
 
 	// Invalid p_norm (below range)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:  sender,
-		TopicId: topicId,
-		PNorm:   []string{"2.0"},
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               []string{"2.0"},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "p-norm")
@@ -563,7 +605,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
 		MeritSortitionAlpha: []string{"0.3"},
+		PNorm:               nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -614,7 +660,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
 		MeritSortitionAlpha: []string{"0.3"},
+		PNorm:               nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)

@@ -3253,6 +3253,105 @@ func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error)
 	return k.topics.Has(ctx, topicId)
 }
 
+// UpdateTopic applies allowed changes to a topic.
+func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (types.Topic, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return types.Topic{}, errorsmod.Wrapf(err, "error getting params for sender: %v", &msg.Sender)
+	}
+
+	topic, err := k.GetTopic(ctx, msg.TopicId)
+	if err != nil {
+		return types.Topic{}, errorsmod.Wrapf(err, "error getting topic: %v", msg.TopicId)
+	}
+
+	if topic.Creator != msg.Sender {
+		return types.Topic{}, types.ErrNotPermittedToModifyTopic
+	}
+
+	if err := msg.Validate(params.MaxStringLength); err != nil {
+		return types.Topic{}, err
+	}
+
+	updatedTopic := topic
+	hasChanges := false
+
+	if len(msg.Metadata) > 0 {
+		updatedTopic.Metadata = msg.Metadata[0]
+		hasChanges = true
+	}
+
+	if len(msg.LossMethod) > 0 {
+		updatedTopic.LossMethod = msg.LossMethod[0]
+		hasChanges = true
+	}
+
+	if len(msg.AlphaRegret) > 0 {
+		alphaRegret, err := alloraMath.NewDecFromString(msg.AlphaRegret[0])
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "failed to parse alpha_regret")
+		}
+		updatedTopic.AlphaRegret = alphaRegret
+		hasChanges = true
+	}
+
+	if len(msg.MeritSortitionAlpha) > 0 {
+		meritSortitionAlpha, err := alloraMath.NewDecFromString(msg.MeritSortitionAlpha[0])
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "failed to parse merit_sortition_alpha")
+		}
+
+		isActive, err := k.IsTopicActive(ctx, msg.TopicId)
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
+		}
+		if isActive {
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			blockHeight := sdkCtx.BlockHeight()
+			nonces, err := k.GetUnfulfilledWorkerNonces(ctx, msg.TopicId)
+			if err != nil {
+				return types.Topic{}, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
+			}
+			if len(nonces.Nonces) > 0 {
+				lastNonce := nonces.Nonces[0]
+				withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(updatedTopic, *lastNonce, blockHeight)
+				if err != nil {
+					return types.Topic{}, errorsmod.Wrap(err, "failed to check worker submission window")
+				}
+				if withinWindow {
+					return types.Topic{}, errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable, "cannot update merit_sortition_alpha while worker window is open")
+				}
+			}
+		}
+
+		updatedTopic.MeritSortitionAlpha = meritSortitionAlpha
+		hasChanges = true
+	}
+
+	if len(msg.PNorm) > 0 {
+		pNorm, err := alloraMath.NewDecFromString(msg.PNorm[0])
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "failed to parse p_norm")
+		}
+		updatedTopic.PNorm = pNorm
+		hasChanges = true
+	}
+
+	if !hasChanges {
+		return types.Topic{}, errorsmod.Wrap(types.ErrNoUpdateFields, "no fields to update")
+	}
+
+	if err := updatedTopic.Validate(params); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
+	}
+
+	if err := k.SetTopic(ctx, msg.TopicId, updatedTopic); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "failed to apply topic update")
+	}
+
+	return updatedTopic, nil
+}
+
 // Returns the number of topics that are active in the network
 func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
