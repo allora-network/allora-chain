@@ -332,6 +332,9 @@ message UpdateTopicRequest {
   // Optional fields using repeated pattern - if empty, field is not updated
   repeated string metadata = 3;
   repeated string loss_method = 4;
+  repeated string alpha_regret = 5;
+  repeated string merit_sortition_alpha = 6;
+  repeated string p_norm = 7;
 }
 
 message UpdateTopicResponse {}

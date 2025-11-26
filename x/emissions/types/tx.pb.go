@@ -563,8 +563,11 @@ type UpdateTopicRequest struct {
 	Sender  string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	TopicId uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	// Optional fields using repeated pattern - if empty, field is not updated
-	Metadata   []string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty"`
-	LossMethod []string `protobuf:"bytes,4,rep,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
+	Metadata            []string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty"`
+	LossMethod          []string `protobuf:"bytes,4,rep,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
+	AlphaRegret         []string `protobuf:"bytes,5,rep,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
+	MeritSortitionAlpha []string `protobuf:"bytes,6,rep,name=merit_sortition_alpha,json=meritSortitionAlpha,proto3" json:"merit_sortition_alpha,omitempty"`
+	PNorm               []string `protobuf:"bytes,7,rep,name=p_norm,json=pNorm,proto3" json:"p_norm,omitempty"`
 }
 
 func (m *UpdateTopicRequest) Reset()         { *m = UpdateTopicRequest{} }
@@ -624,6 +627,27 @@ func (m *UpdateTopicRequest) GetMetadata() []string {
 func (m *UpdateTopicRequest) GetLossMethod() []string {
 	if m != nil {
 		return m.LossMethod
+	}
+	return nil
+}
+
+func (m *UpdateTopicRequest) GetAlphaRegret() []string {
+	if m != nil {
+		return m.AlphaRegret
+	}
+	return nil
+}
+
+func (m *UpdateTopicRequest) GetMeritSortitionAlpha() []string {
+	if m != nil {
+		return m.MeritSortitionAlpha
+	}
+	return nil
+}
+
+func (m *UpdateTopicRequest) GetPNorm() []string {
+	if m != nil {
+		return m.PNorm
 	}
 	return nil
 }

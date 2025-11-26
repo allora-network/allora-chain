@@ -1237,5 +1237,26 @@ func (msg *UpdateTopicRequest) Validate(maxStringLen uint64) error {
 		}
 	}
 
+	if len(msg.AlphaRegret) > 0 {
+		alphaRegret, err := alloraMath.NewDecFromString(msg.AlphaRegret[0])
+		if err != nil || alphaRegret.Lte(alloraMath.ZeroDec()) || alphaRegret.Gt(alloraMath.OneDec()) || ValidateDec(alphaRegret) != nil {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
+		}
+	}
+
+	if len(msg.MeritSortitionAlpha) > 0 {
+		meritSortitionAlpha, err := alloraMath.NewDecFromString(msg.MeritSortitionAlpha[0])
+		if err != nil || !isAlloraDecZeroOrLessThanOne(meritSortitionAlpha) {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
+		}
+	}
+
+	if len(msg.PNorm) > 0 {
+		pNorm, err := alloraMath.NewDecFromString(msg.PNorm[0])
+		if err != nil || pNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || pNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(pNorm) != nil {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
+		}
+	}
+
 	return nil
 }

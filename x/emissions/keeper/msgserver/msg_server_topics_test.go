@@ -423,3 +423,203 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	require.Equal(originalTopic.WorkerSubmissionWindow, updatedTopic.WorkerSubmissionWindow)
 	require.Equal(originalTopic.EpochLength, updatedTopic.EpochLength)
 }
+
+func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		AlphaRegret:         []string{"0.25"},
+		MeritSortitionAlpha: []string{"0.3"},
+		PNorm:               []string{"3.5"},
+	}
+
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.25"), updatedTopic.AlphaRegret)
+	require.Equal(alloraMath.MustNewDecFromString("0.3"), updatedTopic.MeritSortitionAlpha)
+	require.Equal(alloraMath.MustNewDecFromString("3.5"), updatedTopic.PNorm)
+
+	// Add a fulfilled nonce (window closed) and ensure updates still allowed
+	s.Require().NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 1}))
+	// Close window by moving block height beyond worker submission window
+	s.WithBlockHeight(50)
+	ctx = s.Ctx()
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		MeritSortitionAlpha: []string{"0.4"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	topicId := s.CreateTopic()
+
+	// Invalid alpha_regret (<=0)
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:      sender,
+		TopicId:     topicId,
+		AlphaRegret: []string{"0"},
+	}
+	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "alpha regret")
+
+	// Invalid merit_sortition_alpha (>1)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		MeritSortitionAlpha: []string{"1.1"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "merit sortition alpha")
+
+	// Invalid p_norm (below range)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:  sender,
+		TopicId: topicId,
+		PNorm:   []string{"2.0"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "p-norm")
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.WithBlockHeight(10)
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
+
+	// Add a nonce whose window covers the current block.
+	newerNonce := &types.Nonce{BlockHeight: 5}
+	require.NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, newerNonce))
+
+	// Ensure current block is within the nonce window
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		MeritSortitionAlpha: []string{"0.3"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+
+	// Verify no changes were applied
+	current, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.1"), current.MeritSortitionAlpha)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	// Topic inactive by default
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	// Add a nonce whose window covers current block
+	nonce := &types.Nonce{BlockHeight: 5}
+	require.NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, nonce))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		MeritSortitionAlpha: []string{"0.3"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	current, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.3"), current.MeritSortitionAlpha)
+}

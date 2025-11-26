@@ -5,8 +5,10 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -139,6 +141,58 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 
 	if len(msg.LossMethod) > 0 {
 		updatedTopic.LossMethod = msg.LossMethod[0]
+		hasChanges = true
+	}
+
+	if len(msg.AlphaRegret) > 0 {
+		alphaRegret, err := alloraMath.NewDecFromString(msg.AlphaRegret[0])
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "Failed to parse alpha_regret")
+		}
+		updatedTopic.AlphaRegret = alphaRegret
+		hasChanges = true
+	}
+
+	if len(msg.MeritSortitionAlpha) > 0 {
+		meritSortitionAlpha, err := alloraMath.NewDecFromString(msg.MeritSortitionAlpha[0])
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "Failed to parse merit_sortition_alpha")
+		}
+
+		// If the topic is active and the worker submission window is open, disallow updating merit_sortition_alpha
+		isActive, err := ms.k.IsTopicActive(ctx, msg.TopicId)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "Failed to check topic active status")
+		}
+		if isActive {
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			blockHeight := sdkCtx.BlockHeight()
+			nonces, err := ms.k.GetUnfulfilledWorkerNonces(ctx, msg.TopicId)
+			if err != nil {
+				return nil, errorsmod.Wrap(err, "Failed to get unfulfilled worker nonces")
+			}
+			if len(nonces.Nonces) > 0 {
+				lastNonce := nonces.Nonces[0]
+				withinWindow, err := keeper.BlockWithinWorkerSubmissionWindowOfNonce(updatedTopic, *lastNonce, blockHeight)
+				if err != nil {
+					return nil, errorsmod.Wrap(err, "Failed to check worker submission window")
+				}
+				if withinWindow {
+					return nil, errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable, "cannot update merit_sortition_alpha while worker window is open")
+				}
+			}
+		}
+
+		updatedTopic.MeritSortitionAlpha = meritSortitionAlpha
+		hasChanges = true
+	}
+
+	if len(msg.PNorm) > 0 {
+		pNorm, err := alloraMath.NewDecFromString(msg.PNorm[0])
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "Failed to parse p_norm")
+		}
+		updatedTopic.PNorm = pNorm
 		hasChanges = true
 	}
 
