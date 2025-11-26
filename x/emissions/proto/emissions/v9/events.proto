@@ -147,6 +147,10 @@ message EventCreateNewTopic {
   emissions.v3.Topic topic = 1;
 }
 
+message EventTopicUpdated {
+  uint64 topic_id = 1;
+}
+
 message EventAddStake {
   uint64 topic_id = 1;
   string reputer = 2;

@@ -39,9 +39,8 @@ type GenesisState struct {
 	NextTopicId uint64 `protobuf:"varint,3,opt,name=next_topic_id,json=nextTopicId,proto3" json:"next_topic_id,omitempty"`
 	// every topic that has been created indexed by their topicId starting from 1
 	// (0 is reserved for the root network)
-	Topics              []*TopicIdAndTopic `protobuf:"bytes,4,rep,name=topics,proto3" json:"topics,omitempty"`
-	PendingTopicUpdates []*TopicIdAndTopic `protobuf:"bytes,99,rep,name=pending_topic_updates,json=pendingTopicUpdates,proto3" json:"pending_topic_updates,omitempty"`
-	ActiveTopics        []uint64           `protobuf:"varint,5,rep,packed,name=active_topics,json=activeTopics,proto3" json:"active_topics,omitempty"`
+	Topics       []*TopicIdAndTopic `protobuf:"bytes,4,rep,name=topics,proto3" json:"topics,omitempty"`
+	ActiveTopics []uint64           `protobuf:"varint,5,rep,packed,name=active_topics,json=activeTopics,proto3" json:"active_topics,omitempty"`
 	// every topic that has been churned and ready to be rewarded i.e. reputer
 	// losses have been committed
 	RewardableTopics []uint64 `protobuf:"varint,6,rep,packed,name=rewardable_topics,json=rewardableTopics,proto3" json:"rewardable_topics,omitempty"`
@@ -290,13 +289,6 @@ func (m *GenesisState) GetNextTopicId() uint64 {
 func (m *GenesisState) GetTopics() []*TopicIdAndTopic {
 	if m != nil {
 		return m.Topics
-	}
-	return nil
-}
-
-func (m *GenesisState) GetPendingTopicUpdates() []*TopicIdAndTopic {
-	if m != nil {
-		return m.PendingTopicUpdates
 	}
 	return nil
 }
@@ -4448,22 +4440,6 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x22
 		}
 	}
-	if len(m.PendingTopicUpdates) > 0 {
-		for iNdEx := len(m.PendingTopicUpdates) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.PendingTopicUpdates[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintGenesis(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x6
-			i--
-			dAtA[i] = 0x98
-		}
-	}
 	if m.NextTopicId != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.NextTopicId))
 		i--
@@ -5940,12 +5916,6 @@ func (m *GenesisState) Size() (n int) {
 			n += 1 + l + sovGenesis(uint64(l))
 		}
 	}
-	if len(m.PendingTopicUpdates) > 0 {
-		for _, e := range m.PendingTopicUpdates {
-			l = e.Size()
-			n += 2 + l + sovGenesis(uint64(l))
-		}
-	}
 	if len(m.ActiveTopics) > 0 {
 		l = 0
 		for _, e := range m.ActiveTopics {
@@ -7229,40 +7199,7 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 99:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PendingTopicUpdates", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowGenesis
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthGenesis
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PendingTopicUpdates = append(m.PendingTopicUpdates, &TopicIdAndTopic{})
-			if err := m.PendingTopicUpdates[len(m.PendingTopicUpdates)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
+		case 5:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {

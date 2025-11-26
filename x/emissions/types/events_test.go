@@ -207,6 +207,20 @@ func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
 	require.Empty(t, events)
 }
 
+func TestEmitNewTopicUpdatedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+
+	types.EmitNewTopicUpdatedEvent(ctx, 1)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+	require.Equal(t, "emissions.v9.EventTopicUpdated", events[0].Type)
+
+	val, exists := events[0].GetAttribute("topic_id")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+}
+
 func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	rewards := []types.TaskReward{

@@ -6862,6 +6862,410 @@ func (x *fastReflection_EventCreateNewTopic) ProtoMethods() *protoiface.Methods 
 }
 
 var (
+	md_EventTopicUpdated          protoreflect.MessageDescriptor
+	fd_EventTopicUpdated_topic_id protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v9_events_proto_init()
+	md_EventTopicUpdated = File_emissions_v9_events_proto.Messages().ByName("EventTopicUpdated")
+	fd_EventTopicUpdated_topic_id = md_EventTopicUpdated.Fields().ByName("topic_id")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventTopicUpdated)(nil)
+
+type fastReflection_EventTopicUpdated EventTopicUpdated
+
+func (x *EventTopicUpdated) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTopicUpdated)(x)
+}
+
+func (x *EventTopicUpdated) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v9_events_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventTopicUpdated_messageType fastReflection_EventTopicUpdated_messageType
+var _ protoreflect.MessageType = fastReflection_EventTopicUpdated_messageType{}
+
+type fastReflection_EventTopicUpdated_messageType struct{}
+
+func (x fastReflection_EventTopicUpdated_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTopicUpdated)(nil)
+}
+func (x fastReflection_EventTopicUpdated_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTopicUpdated)
+}
+func (x fastReflection_EventTopicUpdated_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicUpdated
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventTopicUpdated) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicUpdated
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventTopicUpdated) Type() protoreflect.MessageType {
+	return _fastReflection_EventTopicUpdated_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventTopicUpdated) New() protoreflect.Message {
+	return new(fastReflection_EventTopicUpdated)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventTopicUpdated) Interface() protoreflect.ProtoMessage {
+	return (*EventTopicUpdated)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventTopicUpdated) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventTopicUpdated_topic_id, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventTopicUpdated) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicUpdated.topic_id":
+		return x.TopicId != uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicUpdated) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicUpdated.topic_id":
+		x.TopicId = uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventTopicUpdated) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v9.EventTopicUpdated.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicUpdated does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicUpdated) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicUpdated.topic_id":
+		x.TopicId = value.Uint()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicUpdated) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicUpdated.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v9.EventTopicUpdated is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventTopicUpdated) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v9.EventTopicUpdated.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
+		}
+		panic(fmt.Errorf("message emissions.v9.EventTopicUpdated does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventTopicUpdated) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v9.EventTopicUpdated", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventTopicUpdated) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicUpdated) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventTopicUpdated) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventTopicUpdated)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicUpdated)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicUpdated)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicUpdated: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
 	md_EventAddStake           protoreflect.MessageDescriptor
 	fd_EventAddStake_topic_id  protoreflect.FieldDescriptor
 	fd_EventAddStake_reputer   protoreflect.FieldDescriptor
@@ -6887,7 +7291,7 @@ func (x *EventAddStake) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventAddStake) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[9]
+	mi := &file_emissions_v9_events_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7483,7 +7887,7 @@ func (x *EventRemoveStake) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventRemoveStake) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[10]
+	mi := &file_emissions_v9_events_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8081,7 +8485,7 @@ func (x *EventRequestStakeRemoval) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventRequestStakeRemoval) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[11]
+	mi := &file_emissions_v9_events_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8721,7 +9125,7 @@ func (x *EventCancelStakeRemoval) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventCancelStakeRemoval) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[12]
+	mi := &file_emissions_v9_events_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9253,7 +9657,7 @@ func (x *EventReputerStakeUpdated) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventReputerStakeUpdated) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[13]
+	mi := &file_emissions_v9_events_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9787,7 +10191,7 @@ func (x *EventRewardDelegateStake) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventRewardDelegateStake) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[14]
+	mi := &file_emissions_v9_events_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10383,7 +10787,7 @@ func (x *EventInsertReputerPayload) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventInsertReputerPayload) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[15]
+	mi := &file_emissions_v9_events_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10976,7 +11380,7 @@ func (x *EventReputerRegistered) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventReputerRegistered) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[16]
+	mi := &file_emissions_v9_events_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11508,7 +11912,7 @@ func (x *EventWorkerRegistered) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventWorkerRegistered) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[17]
+	mi := &file_emissions_v9_events_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12038,7 +12442,7 @@ func (x *EventReputerUnregistered) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventReputerUnregistered) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[18]
+	mi := &file_emissions_v9_events_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12506,7 +12910,7 @@ func (x *EventWorkerUnregistered) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventWorkerUnregistered) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[19]
+	mi := &file_emissions_v9_events_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12976,7 +13380,7 @@ func (x *EventFundTopic) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventFundTopic) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[20]
+	mi := &file_emissions_v9_events_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13504,7 +13908,7 @@ func (x *EventParamsSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventParamsSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[21]
+	mi := &file_emissions_v9_events_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13939,7 +14343,7 @@ func (x *EventWhitelistAdminAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventWhitelistAdminAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[22]
+	mi := &file_emissions_v9_events_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14359,7 +14763,7 @@ func (x *EventWhitelistAdminRemoved) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventWhitelistAdminRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[23]
+	mi := &file_emissions_v9_events_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14779,7 +15183,7 @@ func (x *EventGlobalWhitelistAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventGlobalWhitelistAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[24]
+	mi := &file_emissions_v9_events_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15199,7 +15603,7 @@ func (x *EventGlobalWhitelistRemoved) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventGlobalWhitelistRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[25]
+	mi := &file_emissions_v9_events_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15619,7 +16023,7 @@ func (x *EventGlobalWorkerWhitelistAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventGlobalWorkerWhitelistAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[26]
+	mi := &file_emissions_v9_events_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16039,7 +16443,7 @@ func (x *EventGlobalWorkerWhitelistRemoved) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventGlobalWorkerWhitelistRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[27]
+	mi := &file_emissions_v9_events_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16459,7 +16863,7 @@ func (x *EventGlobalReputerWhitelistAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventGlobalReputerWhitelistAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[28]
+	mi := &file_emissions_v9_events_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16879,7 +17283,7 @@ func (x *EventGlobalReputerWhitelistRemoved) ProtoReflect() protoreflect.Message
 }
 
 func (x *EventGlobalReputerWhitelistRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[29]
+	mi := &file_emissions_v9_events_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17299,7 +17703,7 @@ func (x *EventGlobalAdminWhitelistAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventGlobalAdminWhitelistAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[30]
+	mi := &file_emissions_v9_events_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17719,7 +18123,7 @@ func (x *EventGlobalAdminWhitelistRemoved) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventGlobalAdminWhitelistRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[31]
+	mi := &file_emissions_v9_events_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18139,7 +18543,7 @@ func (x *EventTopicWorkerWhitelistEnabled) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicWorkerWhitelistEnabled) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[32]
+	mi := &file_emissions_v9_events_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18543,7 +18947,7 @@ func (x *EventTopicWorkerWhitelistDisabled) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventTopicWorkerWhitelistDisabled) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[33]
+	mi := &file_emissions_v9_events_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18947,7 +19351,7 @@ func (x *EventTopicReputerWhitelistEnabled) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventTopicReputerWhitelistEnabled) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[34]
+	mi := &file_emissions_v9_events_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19351,7 +19755,7 @@ func (x *EventTopicReputerWhitelistDisabled) ProtoReflect() protoreflect.Message
 }
 
 func (x *EventTopicReputerWhitelistDisabled) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[35]
+	mi := &file_emissions_v9_events_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19755,7 +20159,7 @@ func (x *EventTopicCreatorWhitelistAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicCreatorWhitelistAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[36]
+	mi := &file_emissions_v9_events_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20175,7 +20579,7 @@ func (x *EventTopicCreatorWhitelistRemoved) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventTopicCreatorWhitelistRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[37]
+	mi := &file_emissions_v9_events_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20597,7 +21001,7 @@ func (x *EventTopicWorkerWhitelistAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicWorkerWhitelistAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[38]
+	mi := &file_emissions_v9_events_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21065,7 +21469,7 @@ func (x *EventTopicWorkerWhitelistRemoved) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicWorkerWhitelistRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[39]
+	mi := &file_emissions_v9_events_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21533,7 +21937,7 @@ func (x *EventTopicReputerWhitelistAdded) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicReputerWhitelistAdded) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[40]
+	mi := &file_emissions_v9_events_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22001,7 +22405,7 @@ func (x *EventTopicReputerWhitelistRemoved) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventTopicReputerWhitelistRemoved) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[41]
+	mi := &file_emissions_v9_events_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22471,7 +22875,7 @@ func (x *EventForecastTaskScoreSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventForecastTaskScoreSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[42]
+	mi := &file_emissions_v9_events_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22987,7 +23391,7 @@ func (x *EventWorkerLastCommitSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventWorkerLastCommitSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[43]
+	mi := &file_emissions_v9_events_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23518,7 +23922,7 @@ func (x *EventReputerLastCommitSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventReputerLastCommitSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[44]
+	mi := &file_emissions_v9_events_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24139,7 +24543,7 @@ func (x *EventTopicRewardsSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicRewardsSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[45]
+	mi := &file_emissions_v9_events_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24853,7 +25257,7 @@ func (x *EventEMAScoresSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventEMAScoresSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[46]
+	mi := &file_emissions_v9_events_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -25716,7 +26120,7 @@ func (x *EventListeningCoefficientsSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventListeningCoefficientsSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[47]
+	mi := &file_emissions_v9_events_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -26462,7 +26866,7 @@ func (x *EventInfererNetworkRegretSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventInfererNetworkRegretSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[48]
+	mi := &file_emissions_v9_events_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -27162,7 +27566,7 @@ func (x *EventForecasterNetworkRegretSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventForecasterNetworkRegretSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[49]
+	mi := &file_emissions_v9_events_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -27862,7 +28266,7 @@ func (x *EventNaiveInfererNetworkRegretSet) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventNaiveInfererNetworkRegretSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[50]
+	mi := &file_emissions_v9_events_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -28468,7 +28872,7 @@ func (x *EventTopicInitialRegretSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicInitialRegretSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[51]
+	mi := &file_emissions_v9_events_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -28986,7 +29390,7 @@ func (x *EventTopicInitialEmaScoreSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicInitialEmaScoreSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[52]
+	mi := &file_emissions_v9_events_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -29548,7 +29952,7 @@ func (x *EventRegretStdNormSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventRegretStdNormSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[53]
+	mi := &file_emissions_v9_events_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30158,7 +30562,7 @@ func (x *EventInfererWeightsSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventInfererWeightsSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[54]
+	mi := &file_emissions_v9_events_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30858,7 +31262,7 @@ func (x *EventForecasterWeightsSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventForecasterWeightsSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[55]
+	mi := &file_emissions_v9_events_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31462,7 +31866,7 @@ func (x *EventPreviousPercentageRewardToStakedReputersSet) ProtoReflect() protor
 }
 
 func (x *EventPreviousPercentageRewardToStakedReputersSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[56]
+	mi := &file_emissions_v9_events_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31930,7 +32334,7 @@ func (x *EventPruneRecords) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventPruneRecords) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[57]
+	mi := &file_emissions_v9_events_proto_msgTypes[58]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -32384,7 +32788,7 @@ func (x *EventDelegateRewardShareUpdated) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventDelegateRewardShareUpdated) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[58]
+	mi := &file_emissions_v9_events_proto_msgTypes[59]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -32916,7 +33320,7 @@ func (x *EventDelegateRewardDistributed) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventDelegateRewardDistributed) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[59]
+	mi := &file_emissions_v9_events_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -33494,7 +33898,7 @@ func (x *EventActiveReputersSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventActiveReputersSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[60]
+	mi := &file_emissions_v9_events_proto_msgTypes[61]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -34070,7 +34474,7 @@ func (x *EventActiveInferersSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventActiveInferersSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[61]
+	mi := &file_emissions_v9_events_proto_msgTypes[62]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -34646,7 +35050,7 @@ func (x *EventActiveForecastersSet) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventActiveForecastersSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[62]
+	mi := &file_emissions_v9_events_proto_msgTypes[63]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -35174,7 +35578,7 @@ func (x *EventTopicStatusChanged) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicStatusChanged) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[63]
+	mi := &file_emissions_v9_events_proto_msgTypes[64]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -35728,7 +36132,7 @@ func (x *EventNetworkInferenceInfererWeightsSet) ProtoReflect() protoreflect.Mes
 }
 
 func (x *EventNetworkInferenceInfererWeightsSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[64]
+	mi := &file_emissions_v9_events_proto_msgTypes[65]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -36428,7 +36832,7 @@ func (x *EventNetworkInferenceForecasterWeightsSet) ProtoReflect() protoreflect.
 }
 
 func (x *EventNetworkInferenceForecasterWeightsSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[65]
+	mi := &file_emissions_v9_events_proto_msgTypes[66]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -37128,7 +37532,7 @@ func (x *EventNetworkInferenceInfererRegretsUsedSet) ProtoReflect() protoreflect
 }
 
 func (x *EventNetworkInferenceInfererRegretsUsedSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[66]
+	mi := &file_emissions_v9_events_proto_msgTypes[67]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -37828,7 +38232,7 @@ func (x *EventNetworkInferenceForecasterRegretsUsedSet) ProtoReflect() protorefl
 }
 
 func (x *EventNetworkInferenceForecasterRegretsUsedSet) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[67]
+	mi := &file_emissions_v9_events_proto_msgTypes[68]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -38436,7 +38840,7 @@ func (x *EventTopicWeightUpdated) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicWeightUpdated) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[68]
+	mi := &file_emissions_v9_events_proto_msgTypes[69]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -39032,7 +39436,7 @@ func (x *EventTopicFeeRevenueDripped) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicFeeRevenueDripped) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[69]
+	mi := &file_emissions_v9_events_proto_msgTypes[70]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -39626,7 +40030,7 @@ func (x *EventWorkerSubmissionWindowOpened) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventWorkerSubmissionWindowOpened) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[70]
+	mi := &file_emissions_v9_events_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -40124,7 +40528,7 @@ func (x *EventWorkerSubmissionWindowClosed) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventWorkerSubmissionWindowClosed) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[71]
+	mi := &file_emissions_v9_events_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -40578,7 +40982,7 @@ func (x *EventReputerSubmissionWindowOpened) ProtoReflect() protoreflect.Message
 }
 
 func (x *EventReputerSubmissionWindowOpened) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[72]
+	mi := &file_emissions_v9_events_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -41076,7 +41480,7 @@ func (x *EventReputerSubmissionWindowClosed) ProtoReflect() protoreflect.Message
 }
 
 func (x *EventReputerSubmissionWindowClosed) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v9_events_proto_msgTypes[73]
+	mi := &file_emissions_v9_events_proto_msgTypes[74]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -42195,6 +42599,41 @@ func (x *EventCreateNewTopic) GetTopic() *v3.Topic {
 	return nil
 }
 
+type EventTopicUpdated struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (x *EventTopicUpdated) Reset() {
+	*x = EventTopicUpdated{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v9_events_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventTopicUpdated) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventTopicUpdated) ProtoMessage() {}
+
+// Deprecated: Use EventTopicUpdated.ProtoReflect.Descriptor instead.
+func (*EventTopicUpdated) Descriptor() ([]byte, []int) {
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *EventTopicUpdated) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
 type EventAddStake struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -42209,7 +42648,7 @@ type EventAddStake struct {
 func (x *EventAddStake) Reset() {
 	*x = EventAddStake{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[9]
+		mi := &file_emissions_v9_events_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42223,7 +42662,7 @@ func (*EventAddStake) ProtoMessage() {}
 
 // Deprecated: Use EventAddStake.ProtoReflect.Descriptor instead.
 func (*EventAddStake) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{9}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *EventAddStake) GetTopicId() uint64 {
@@ -42268,7 +42707,7 @@ type EventRemoveStake struct {
 func (x *EventRemoveStake) Reset() {
 	*x = EventRemoveStake{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[10]
+		mi := &file_emissions_v9_events_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42282,7 +42721,7 @@ func (*EventRemoveStake) ProtoMessage() {}
 
 // Deprecated: Use EventRemoveStake.ProtoReflect.Descriptor instead.
 func (*EventRemoveStake) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{10}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *EventRemoveStake) GetTopicId() uint64 {
@@ -42328,7 +42767,7 @@ type EventRequestStakeRemoval struct {
 func (x *EventRequestStakeRemoval) Reset() {
 	*x = EventRequestStakeRemoval{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[11]
+		mi := &file_emissions_v9_events_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42342,7 +42781,7 @@ func (*EventRequestStakeRemoval) ProtoMessage() {}
 
 // Deprecated: Use EventRequestStakeRemoval.ProtoReflect.Descriptor instead.
 func (*EventRequestStakeRemoval) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{11}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *EventRequestStakeRemoval) GetTopicId() uint64 {
@@ -42393,7 +42832,7 @@ type EventCancelStakeRemoval struct {
 func (x *EventCancelStakeRemoval) Reset() {
 	*x = EventCancelStakeRemoval{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[12]
+		mi := &file_emissions_v9_events_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42407,7 +42846,7 @@ func (*EventCancelStakeRemoval) ProtoMessage() {}
 
 // Deprecated: Use EventCancelStakeRemoval.ProtoReflect.Descriptor instead.
 func (*EventCancelStakeRemoval) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{12}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *EventCancelStakeRemoval) GetTopicId() uint64 {
@@ -42448,7 +42887,7 @@ type EventReputerStakeUpdated struct {
 func (x *EventReputerStakeUpdated) Reset() {
 	*x = EventReputerStakeUpdated{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[13]
+		mi := &file_emissions_v9_events_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42462,7 +42901,7 @@ func (*EventReputerStakeUpdated) ProtoMessage() {}
 
 // Deprecated: Use EventReputerStakeUpdated.ProtoReflect.Descriptor instead.
 func (*EventReputerStakeUpdated) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{13}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *EventReputerStakeUpdated) GetTopicId() uint64 {
@@ -42500,7 +42939,7 @@ type EventRewardDelegateStake struct {
 func (x *EventRewardDelegateStake) Reset() {
 	*x = EventRewardDelegateStake{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[14]
+		mi := &file_emissions_v9_events_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42514,7 +42953,7 @@ func (*EventRewardDelegateStake) ProtoMessage() {}
 
 // Deprecated: Use EventRewardDelegateStake.ProtoReflect.Descriptor instead.
 func (*EventRewardDelegateStake) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{14}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *EventRewardDelegateStake) GetTopicId() uint64 {
@@ -42559,7 +42998,7 @@ type EventInsertReputerPayload struct {
 func (x *EventInsertReputerPayload) Reset() {
 	*x = EventInsertReputerPayload{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[15]
+		mi := &file_emissions_v9_events_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42573,7 +43012,7 @@ func (*EventInsertReputerPayload) ProtoMessage() {}
 
 // Deprecated: Use EventInsertReputerPayload.ProtoReflect.Descriptor instead.
 func (*EventInsertReputerPayload) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{15}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *EventInsertReputerPayload) GetTopicId() uint64 {
@@ -42617,7 +43056,7 @@ type EventReputerRegistered struct {
 func (x *EventReputerRegistered) Reset() {
 	*x = EventReputerRegistered{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[16]
+		mi := &file_emissions_v9_events_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42631,7 +43070,7 @@ func (*EventReputerRegistered) ProtoMessage() {}
 
 // Deprecated: Use EventReputerRegistered.ProtoReflect.Descriptor instead.
 func (*EventReputerRegistered) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{16}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *EventReputerRegistered) GetTopicId() uint64 {
@@ -42668,7 +43107,7 @@ type EventWorkerRegistered struct {
 func (x *EventWorkerRegistered) Reset() {
 	*x = EventWorkerRegistered{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[17]
+		mi := &file_emissions_v9_events_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42682,7 +43121,7 @@ func (*EventWorkerRegistered) ProtoMessage() {}
 
 // Deprecated: Use EventWorkerRegistered.ProtoReflect.Descriptor instead.
 func (*EventWorkerRegistered) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{17}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *EventWorkerRegistered) GetTopicId() uint64 {
@@ -42718,7 +43157,7 @@ type EventReputerUnregistered struct {
 func (x *EventReputerUnregistered) Reset() {
 	*x = EventReputerUnregistered{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[18]
+		mi := &file_emissions_v9_events_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42732,7 +43171,7 @@ func (*EventReputerUnregistered) ProtoMessage() {}
 
 // Deprecated: Use EventReputerUnregistered.ProtoReflect.Descriptor instead.
 func (*EventReputerUnregistered) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{18}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *EventReputerUnregistered) GetTopicId() uint64 {
@@ -42761,7 +43200,7 @@ type EventWorkerUnregistered struct {
 func (x *EventWorkerUnregistered) Reset() {
 	*x = EventWorkerUnregistered{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[19]
+		mi := &file_emissions_v9_events_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42775,7 +43214,7 @@ func (*EventWorkerUnregistered) ProtoMessage() {}
 
 // Deprecated: Use EventWorkerUnregistered.ProtoReflect.Descriptor instead.
 func (*EventWorkerUnregistered) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{19}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *EventWorkerUnregistered) GetTopicId() uint64 {
@@ -42805,7 +43244,7 @@ type EventFundTopic struct {
 func (x *EventFundTopic) Reset() {
 	*x = EventFundTopic{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[20]
+		mi := &file_emissions_v9_events_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42819,7 +43258,7 @@ func (*EventFundTopic) ProtoMessage() {}
 
 // Deprecated: Use EventFundTopic.ProtoReflect.Descriptor instead.
 func (*EventFundTopic) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{20}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *EventFundTopic) GetTopicId() uint64 {
@@ -42854,7 +43293,7 @@ type EventParamsSet struct {
 func (x *EventParamsSet) Reset() {
 	*x = EventParamsSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[21]
+		mi := &file_emissions_v9_events_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42868,7 +43307,7 @@ func (*EventParamsSet) ProtoMessage() {}
 
 // Deprecated: Use EventParamsSet.ProtoReflect.Descriptor instead.
 func (*EventParamsSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{21}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *EventParamsSet) GetParams() *v8.Params {
@@ -42889,7 +43328,7 @@ type EventWhitelistAdminAdded struct {
 func (x *EventWhitelistAdminAdded) Reset() {
 	*x = EventWhitelistAdminAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[22]
+		mi := &file_emissions_v9_events_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42903,7 +43342,7 @@ func (*EventWhitelistAdminAdded) ProtoMessage() {}
 
 // Deprecated: Use EventWhitelistAdminAdded.ProtoReflect.Descriptor instead.
 func (*EventWhitelistAdminAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{22}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *EventWhitelistAdminAdded) GetAdmin() string {
@@ -42924,7 +43363,7 @@ type EventWhitelistAdminRemoved struct {
 func (x *EventWhitelistAdminRemoved) Reset() {
 	*x = EventWhitelistAdminRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[23]
+		mi := &file_emissions_v9_events_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42938,7 +43377,7 @@ func (*EventWhitelistAdminRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventWhitelistAdminRemoved.ProtoReflect.Descriptor instead.
 func (*EventWhitelistAdminRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{23}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *EventWhitelistAdminRemoved) GetAdmin() string {
@@ -42959,7 +43398,7 @@ type EventGlobalWhitelistAdded struct {
 func (x *EventGlobalWhitelistAdded) Reset() {
 	*x = EventGlobalWhitelistAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[24]
+		mi := &file_emissions_v9_events_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -42973,7 +43412,7 @@ func (*EventGlobalWhitelistAdded) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalWhitelistAdded.ProtoReflect.Descriptor instead.
 func (*EventGlobalWhitelistAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{24}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *EventGlobalWhitelistAdded) GetAddress() string {
@@ -42994,7 +43433,7 @@ type EventGlobalWhitelistRemoved struct {
 func (x *EventGlobalWhitelistRemoved) Reset() {
 	*x = EventGlobalWhitelistRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[25]
+		mi := &file_emissions_v9_events_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43008,7 +43447,7 @@ func (*EventGlobalWhitelistRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventGlobalWhitelistRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{25}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *EventGlobalWhitelistRemoved) GetAddress() string {
@@ -43029,7 +43468,7 @@ type EventGlobalWorkerWhitelistAdded struct {
 func (x *EventGlobalWorkerWhitelistAdded) Reset() {
 	*x = EventGlobalWorkerWhitelistAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[26]
+		mi := &file_emissions_v9_events_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43043,7 +43482,7 @@ func (*EventGlobalWorkerWhitelistAdded) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalWorkerWhitelistAdded.ProtoReflect.Descriptor instead.
 func (*EventGlobalWorkerWhitelistAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{26}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *EventGlobalWorkerWhitelistAdded) GetAddress() string {
@@ -43064,7 +43503,7 @@ type EventGlobalWorkerWhitelistRemoved struct {
 func (x *EventGlobalWorkerWhitelistRemoved) Reset() {
 	*x = EventGlobalWorkerWhitelistRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[27]
+		mi := &file_emissions_v9_events_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43078,7 +43517,7 @@ func (*EventGlobalWorkerWhitelistRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalWorkerWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventGlobalWorkerWhitelistRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{27}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *EventGlobalWorkerWhitelistRemoved) GetAddress() string {
@@ -43099,7 +43538,7 @@ type EventGlobalReputerWhitelistAdded struct {
 func (x *EventGlobalReputerWhitelistAdded) Reset() {
 	*x = EventGlobalReputerWhitelistAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[28]
+		mi := &file_emissions_v9_events_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43113,7 +43552,7 @@ func (*EventGlobalReputerWhitelistAdded) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalReputerWhitelistAdded.ProtoReflect.Descriptor instead.
 func (*EventGlobalReputerWhitelistAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{28}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *EventGlobalReputerWhitelistAdded) GetAddress() string {
@@ -43134,7 +43573,7 @@ type EventGlobalReputerWhitelistRemoved struct {
 func (x *EventGlobalReputerWhitelistRemoved) Reset() {
 	*x = EventGlobalReputerWhitelistRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[29]
+		mi := &file_emissions_v9_events_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43148,7 +43587,7 @@ func (*EventGlobalReputerWhitelistRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalReputerWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventGlobalReputerWhitelistRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{29}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *EventGlobalReputerWhitelistRemoved) GetAddress() string {
@@ -43169,7 +43608,7 @@ type EventGlobalAdminWhitelistAdded struct {
 func (x *EventGlobalAdminWhitelistAdded) Reset() {
 	*x = EventGlobalAdminWhitelistAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[30]
+		mi := &file_emissions_v9_events_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43183,7 +43622,7 @@ func (*EventGlobalAdminWhitelistAdded) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalAdminWhitelistAdded.ProtoReflect.Descriptor instead.
 func (*EventGlobalAdminWhitelistAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{30}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *EventGlobalAdminWhitelistAdded) GetAddress() string {
@@ -43204,7 +43643,7 @@ type EventGlobalAdminWhitelistRemoved struct {
 func (x *EventGlobalAdminWhitelistRemoved) Reset() {
 	*x = EventGlobalAdminWhitelistRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[31]
+		mi := &file_emissions_v9_events_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43218,7 +43657,7 @@ func (*EventGlobalAdminWhitelistRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventGlobalAdminWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventGlobalAdminWhitelistRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{31}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *EventGlobalAdminWhitelistRemoved) GetAddress() string {
@@ -43239,7 +43678,7 @@ type EventTopicWorkerWhitelistEnabled struct {
 func (x *EventTopicWorkerWhitelistEnabled) Reset() {
 	*x = EventTopicWorkerWhitelistEnabled{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[32]
+		mi := &file_emissions_v9_events_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43253,7 +43692,7 @@ func (*EventTopicWorkerWhitelistEnabled) ProtoMessage() {}
 
 // Deprecated: Use EventTopicWorkerWhitelistEnabled.ProtoReflect.Descriptor instead.
 func (*EventTopicWorkerWhitelistEnabled) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{32}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *EventTopicWorkerWhitelistEnabled) GetTopicId() uint64 {
@@ -43274,7 +43713,7 @@ type EventTopicWorkerWhitelistDisabled struct {
 func (x *EventTopicWorkerWhitelistDisabled) Reset() {
 	*x = EventTopicWorkerWhitelistDisabled{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[33]
+		mi := &file_emissions_v9_events_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43288,7 +43727,7 @@ func (*EventTopicWorkerWhitelistDisabled) ProtoMessage() {}
 
 // Deprecated: Use EventTopicWorkerWhitelistDisabled.ProtoReflect.Descriptor instead.
 func (*EventTopicWorkerWhitelistDisabled) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{33}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *EventTopicWorkerWhitelistDisabled) GetTopicId() uint64 {
@@ -43309,7 +43748,7 @@ type EventTopicReputerWhitelistEnabled struct {
 func (x *EventTopicReputerWhitelistEnabled) Reset() {
 	*x = EventTopicReputerWhitelistEnabled{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[34]
+		mi := &file_emissions_v9_events_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43323,7 +43762,7 @@ func (*EventTopicReputerWhitelistEnabled) ProtoMessage() {}
 
 // Deprecated: Use EventTopicReputerWhitelistEnabled.ProtoReflect.Descriptor instead.
 func (*EventTopicReputerWhitelistEnabled) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{34}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *EventTopicReputerWhitelistEnabled) GetTopicId() uint64 {
@@ -43344,7 +43783,7 @@ type EventTopicReputerWhitelistDisabled struct {
 func (x *EventTopicReputerWhitelistDisabled) Reset() {
 	*x = EventTopicReputerWhitelistDisabled{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[35]
+		mi := &file_emissions_v9_events_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43358,7 +43797,7 @@ func (*EventTopicReputerWhitelistDisabled) ProtoMessage() {}
 
 // Deprecated: Use EventTopicReputerWhitelistDisabled.ProtoReflect.Descriptor instead.
 func (*EventTopicReputerWhitelistDisabled) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{35}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *EventTopicReputerWhitelistDisabled) GetTopicId() uint64 {
@@ -43379,7 +43818,7 @@ type EventTopicCreatorWhitelistAdded struct {
 func (x *EventTopicCreatorWhitelistAdded) Reset() {
 	*x = EventTopicCreatorWhitelistAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[36]
+		mi := &file_emissions_v9_events_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43393,7 +43832,7 @@ func (*EventTopicCreatorWhitelistAdded) ProtoMessage() {}
 
 // Deprecated: Use EventTopicCreatorWhitelistAdded.ProtoReflect.Descriptor instead.
 func (*EventTopicCreatorWhitelistAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{36}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *EventTopicCreatorWhitelistAdded) GetAddress() string {
@@ -43414,7 +43853,7 @@ type EventTopicCreatorWhitelistRemoved struct {
 func (x *EventTopicCreatorWhitelistRemoved) Reset() {
 	*x = EventTopicCreatorWhitelistRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[37]
+		mi := &file_emissions_v9_events_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43428,7 +43867,7 @@ func (*EventTopicCreatorWhitelistRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventTopicCreatorWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventTopicCreatorWhitelistRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{37}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *EventTopicCreatorWhitelistRemoved) GetAddress() string {
@@ -43450,7 +43889,7 @@ type EventTopicWorkerWhitelistAdded struct {
 func (x *EventTopicWorkerWhitelistAdded) Reset() {
 	*x = EventTopicWorkerWhitelistAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[38]
+		mi := &file_emissions_v9_events_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43464,7 +43903,7 @@ func (*EventTopicWorkerWhitelistAdded) ProtoMessage() {}
 
 // Deprecated: Use EventTopicWorkerWhitelistAdded.ProtoReflect.Descriptor instead.
 func (*EventTopicWorkerWhitelistAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{38}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *EventTopicWorkerWhitelistAdded) GetTopicId() uint64 {
@@ -43493,7 +43932,7 @@ type EventTopicWorkerWhitelistRemoved struct {
 func (x *EventTopicWorkerWhitelistRemoved) Reset() {
 	*x = EventTopicWorkerWhitelistRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[39]
+		mi := &file_emissions_v9_events_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43507,7 +43946,7 @@ func (*EventTopicWorkerWhitelistRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventTopicWorkerWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventTopicWorkerWhitelistRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{39}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *EventTopicWorkerWhitelistRemoved) GetTopicId() uint64 {
@@ -43536,7 +43975,7 @@ type EventTopicReputerWhitelistAdded struct {
 func (x *EventTopicReputerWhitelistAdded) Reset() {
 	*x = EventTopicReputerWhitelistAdded{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[40]
+		mi := &file_emissions_v9_events_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43550,7 +43989,7 @@ func (*EventTopicReputerWhitelistAdded) ProtoMessage() {}
 
 // Deprecated: Use EventTopicReputerWhitelistAdded.ProtoReflect.Descriptor instead.
 func (*EventTopicReputerWhitelistAdded) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{40}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *EventTopicReputerWhitelistAdded) GetTopicId() uint64 {
@@ -43579,7 +44018,7 @@ type EventTopicReputerWhitelistRemoved struct {
 func (x *EventTopicReputerWhitelistRemoved) Reset() {
 	*x = EventTopicReputerWhitelistRemoved{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[41]
+		mi := &file_emissions_v9_events_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43593,7 +44032,7 @@ func (*EventTopicReputerWhitelistRemoved) ProtoMessage() {}
 
 // Deprecated: Use EventTopicReputerWhitelistRemoved.ProtoReflect.Descriptor instead.
 func (*EventTopicReputerWhitelistRemoved) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{41}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *EventTopicReputerWhitelistRemoved) GetTopicId() uint64 {
@@ -43623,7 +44062,7 @@ type EventForecastTaskScoreSet struct {
 func (x *EventForecastTaskScoreSet) Reset() {
 	*x = EventForecastTaskScoreSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[42]
+		mi := &file_emissions_v9_events_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43637,7 +44076,7 @@ func (*EventForecastTaskScoreSet) ProtoMessage() {}
 
 // Deprecated: Use EventForecastTaskScoreSet.ProtoReflect.Descriptor instead.
 func (*EventForecastTaskScoreSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{42}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *EventForecastTaskScoreSet) GetTopicId() uint64 {
@@ -43674,7 +44113,7 @@ type EventWorkerLastCommitSet struct {
 func (x *EventWorkerLastCommitSet) Reset() {
 	*x = EventWorkerLastCommitSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[43]
+		mi := &file_emissions_v9_events_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43688,7 +44127,7 @@ func (*EventWorkerLastCommitSet) ProtoMessage() {}
 
 // Deprecated: Use EventWorkerLastCommitSet.ProtoReflect.Descriptor instead.
 func (*EventWorkerLastCommitSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{43}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *EventWorkerLastCommitSet) GetTopicId() uint64 {
@@ -43725,7 +44164,7 @@ type EventReputerLastCommitSet struct {
 func (x *EventReputerLastCommitSet) Reset() {
 	*x = EventReputerLastCommitSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[44]
+		mi := &file_emissions_v9_events_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43739,7 +44178,7 @@ func (*EventReputerLastCommitSet) ProtoMessage() {}
 
 // Deprecated: Use EventReputerLastCommitSet.ProtoReflect.Descriptor instead.
 func (*EventReputerLastCommitSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{44}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *EventReputerLastCommitSet) GetTopicId() uint64 {
@@ -43775,7 +44214,7 @@ type EventTopicRewardsSet struct {
 func (x *EventTopicRewardsSet) Reset() {
 	*x = EventTopicRewardsSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[45]
+		mi := &file_emissions_v9_events_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43789,7 +44228,7 @@ func (*EventTopicRewardsSet) ProtoMessage() {}
 
 // Deprecated: Use EventTopicRewardsSet.ProtoReflect.Descriptor instead.
 func (*EventTopicRewardsSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{45}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *EventTopicRewardsSet) GetTopicIds() []uint64 {
@@ -43822,7 +44261,7 @@ type EventEMAScoresSet struct {
 func (x *EventEMAScoresSet) Reset() {
 	*x = EventEMAScoresSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[46]
+		mi := &file_emissions_v9_events_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43836,7 +44275,7 @@ func (*EventEMAScoresSet) ProtoMessage() {}
 
 // Deprecated: Use EventEMAScoresSet.ProtoReflect.Descriptor instead.
 func (*EventEMAScoresSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{46}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *EventEMAScoresSet) GetActorType() ActorType {
@@ -43896,7 +44335,7 @@ type EventListeningCoefficientsSet struct {
 func (x *EventListeningCoefficientsSet) Reset() {
 	*x = EventListeningCoefficientsSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[47]
+		mi := &file_emissions_v9_events_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43910,7 +44349,7 @@ func (*EventListeningCoefficientsSet) ProtoMessage() {}
 
 // Deprecated: Use EventListeningCoefficientsSet.ProtoReflect.Descriptor instead.
 func (*EventListeningCoefficientsSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{47}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *EventListeningCoefficientsSet) GetActorType() ActorType {
@@ -43962,7 +44401,7 @@ type EventInfererNetworkRegretSet struct {
 func (x *EventInfererNetworkRegretSet) Reset() {
 	*x = EventInfererNetworkRegretSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[48]
+		mi := &file_emissions_v9_events_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -43976,7 +44415,7 @@ func (*EventInfererNetworkRegretSet) ProtoMessage() {}
 
 // Deprecated: Use EventInfererNetworkRegretSet.ProtoReflect.Descriptor instead.
 func (*EventInfererNetworkRegretSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{48}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *EventInfererNetworkRegretSet) GetTopicId() uint64 {
@@ -44021,7 +44460,7 @@ type EventForecasterNetworkRegretSet struct {
 func (x *EventForecasterNetworkRegretSet) Reset() {
 	*x = EventForecasterNetworkRegretSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[49]
+		mi := &file_emissions_v9_events_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44035,7 +44474,7 @@ func (*EventForecasterNetworkRegretSet) ProtoMessage() {}
 
 // Deprecated: Use EventForecasterNetworkRegretSet.ProtoReflect.Descriptor instead.
 func (*EventForecasterNetworkRegretSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{49}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *EventForecasterNetworkRegretSet) GetTopicId() uint64 {
@@ -44080,7 +44519,7 @@ type EventNaiveInfererNetworkRegretSet struct {
 func (x *EventNaiveInfererNetworkRegretSet) Reset() {
 	*x = EventNaiveInfererNetworkRegretSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[50]
+		mi := &file_emissions_v9_events_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44094,7 +44533,7 @@ func (*EventNaiveInfererNetworkRegretSet) ProtoMessage() {}
 
 // Deprecated: Use EventNaiveInfererNetworkRegretSet.ProtoReflect.Descriptor instead.
 func (*EventNaiveInfererNetworkRegretSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{50}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *EventNaiveInfererNetworkRegretSet) GetTopicId() uint64 {
@@ -44138,7 +44577,7 @@ type EventTopicInitialRegretSet struct {
 func (x *EventTopicInitialRegretSet) Reset() {
 	*x = EventTopicInitialRegretSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[51]
+		mi := &file_emissions_v9_events_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44152,7 +44591,7 @@ func (*EventTopicInitialRegretSet) ProtoMessage() {}
 
 // Deprecated: Use EventTopicInitialRegretSet.ProtoReflect.Descriptor instead.
 func (*EventTopicInitialRegretSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{51}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *EventTopicInitialRegretSet) GetTopicId() uint64 {
@@ -44190,7 +44629,7 @@ type EventTopicInitialEmaScoreSet struct {
 func (x *EventTopicInitialEmaScoreSet) Reset() {
 	*x = EventTopicInitialEmaScoreSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[52]
+		mi := &file_emissions_v9_events_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44204,7 +44643,7 @@ func (*EventTopicInitialEmaScoreSet) ProtoMessage() {}
 
 // Deprecated: Use EventTopicInitialEmaScoreSet.ProtoReflect.Descriptor instead.
 func (*EventTopicInitialEmaScoreSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{52}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *EventTopicInitialEmaScoreSet) GetActorType() ActorType {
@@ -44248,7 +44687,7 @@ type EventRegretStdNormSet struct {
 func (x *EventRegretStdNormSet) Reset() {
 	*x = EventRegretStdNormSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[53]
+		mi := &file_emissions_v9_events_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44262,7 +44701,7 @@ func (*EventRegretStdNormSet) ProtoMessage() {}
 
 // Deprecated: Use EventRegretStdNormSet.ProtoReflect.Descriptor instead.
 func (*EventRegretStdNormSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{53}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *EventRegretStdNormSet) GetTopicId() uint64 {
@@ -44300,7 +44739,7 @@ type EventInfererWeightsSet struct {
 func (x *EventInfererWeightsSet) Reset() {
 	*x = EventInfererWeightsSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[54]
+		mi := &file_emissions_v9_events_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44314,7 +44753,7 @@ func (*EventInfererWeightsSet) ProtoMessage() {}
 
 // Deprecated: Use EventInfererWeightsSet.ProtoReflect.Descriptor instead.
 func (*EventInfererWeightsSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{54}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *EventInfererWeightsSet) GetTopicId() uint64 {
@@ -44359,7 +44798,7 @@ type EventForecasterWeightsSet struct {
 func (x *EventForecasterWeightsSet) Reset() {
 	*x = EventForecasterWeightsSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[55]
+		mi := &file_emissions_v9_events_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44373,7 +44812,7 @@ func (*EventForecasterWeightsSet) ProtoMessage() {}
 
 // Deprecated: Use EventForecasterWeightsSet.ProtoReflect.Descriptor instead.
 func (*EventForecasterWeightsSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{55}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *EventForecasterWeightsSet) GetTopicId() uint64 {
@@ -44416,7 +44855,7 @@ type EventPreviousPercentageRewardToStakedReputersSet struct {
 func (x *EventPreviousPercentageRewardToStakedReputersSet) Reset() {
 	*x = EventPreviousPercentageRewardToStakedReputersSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[56]
+		mi := &file_emissions_v9_events_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44430,7 +44869,7 @@ func (*EventPreviousPercentageRewardToStakedReputersSet) ProtoMessage() {}
 
 // Deprecated: Use EventPreviousPercentageRewardToStakedReputersSet.ProtoReflect.Descriptor instead.
 func (*EventPreviousPercentageRewardToStakedReputersSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{56}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *EventPreviousPercentageRewardToStakedReputersSet) GetBlockHeight() int64 {
@@ -44459,7 +44898,7 @@ type EventPruneRecords struct {
 func (x *EventPruneRecords) Reset() {
 	*x = EventPruneRecords{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[57]
+		mi := &file_emissions_v9_events_proto_msgTypes[58]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44473,7 +44912,7 @@ func (*EventPruneRecords) ProtoMessage() {}
 
 // Deprecated: Use EventPruneRecords.ProtoReflect.Descriptor instead.
 func (*EventPruneRecords) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{57}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *EventPruneRecords) GetBlockHeight() int64 {
@@ -44503,7 +44942,7 @@ type EventDelegateRewardShareUpdated struct {
 func (x *EventDelegateRewardShareUpdated) Reset() {
 	*x = EventDelegateRewardShareUpdated{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[58]
+		mi := &file_emissions_v9_events_proto_msgTypes[59]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44517,7 +44956,7 @@ func (*EventDelegateRewardShareUpdated) ProtoMessage() {}
 
 // Deprecated: Use EventDelegateRewardShareUpdated.ProtoReflect.Descriptor instead.
 func (*EventDelegateRewardShareUpdated) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{58}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *EventDelegateRewardShareUpdated) GetTopicId() uint64 {
@@ -44554,7 +44993,7 @@ type EventDelegateRewardDistributed struct {
 func (x *EventDelegateRewardDistributed) Reset() {
 	*x = EventDelegateRewardDistributed{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[59]
+		mi := &file_emissions_v9_events_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44568,7 +45007,7 @@ func (*EventDelegateRewardDistributed) ProtoMessage() {}
 
 // Deprecated: Use EventDelegateRewardDistributed.ProtoReflect.Descriptor instead.
 func (*EventDelegateRewardDistributed) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{59}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *EventDelegateRewardDistributed) GetTopicId() uint64 {
@@ -44605,7 +45044,7 @@ type EventActiveReputersSet struct {
 func (x *EventActiveReputersSet) Reset() {
 	*x = EventActiveReputersSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[60]
+		mi := &file_emissions_v9_events_proto_msgTypes[61]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44619,7 +45058,7 @@ func (*EventActiveReputersSet) ProtoMessage() {}
 
 // Deprecated: Use EventActiveReputersSet.ProtoReflect.Descriptor instead.
 func (*EventActiveReputersSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{60}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *EventActiveReputersSet) GetTopicId() uint64 {
@@ -44656,7 +45095,7 @@ type EventActiveInferersSet struct {
 func (x *EventActiveInferersSet) Reset() {
 	*x = EventActiveInferersSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[61]
+		mi := &file_emissions_v9_events_proto_msgTypes[62]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44670,7 +45109,7 @@ func (*EventActiveInferersSet) ProtoMessage() {}
 
 // Deprecated: Use EventActiveInferersSet.ProtoReflect.Descriptor instead.
 func (*EventActiveInferersSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{61}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *EventActiveInferersSet) GetTopicId() uint64 {
@@ -44707,7 +45146,7 @@ type EventActiveForecastersSet struct {
 func (x *EventActiveForecastersSet) Reset() {
 	*x = EventActiveForecastersSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[62]
+		mi := &file_emissions_v9_events_proto_msgTypes[63]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44721,7 +45160,7 @@ func (*EventActiveForecastersSet) ProtoMessage() {}
 
 // Deprecated: Use EventActiveForecastersSet.ProtoReflect.Descriptor instead.
 func (*EventActiveForecastersSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{62}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *EventActiveForecastersSet) GetTopicId() uint64 {
@@ -44757,7 +45196,7 @@ type EventTopicStatusChanged struct {
 func (x *EventTopicStatusChanged) Reset() {
 	*x = EventTopicStatusChanged{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[63]
+		mi := &file_emissions_v9_events_proto_msgTypes[64]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44771,7 +45210,7 @@ func (*EventTopicStatusChanged) ProtoMessage() {}
 
 // Deprecated: Use EventTopicStatusChanged.ProtoReflect.Descriptor instead.
 func (*EventTopicStatusChanged) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{63}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *EventTopicStatusChanged) GetTopicId() uint64 {
@@ -44802,7 +45241,7 @@ type EventNetworkInferenceInfererWeightsSet struct {
 func (x *EventNetworkInferenceInfererWeightsSet) Reset() {
 	*x = EventNetworkInferenceInfererWeightsSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[64]
+		mi := &file_emissions_v9_events_proto_msgTypes[65]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44816,7 +45255,7 @@ func (*EventNetworkInferenceInfererWeightsSet) ProtoMessage() {}
 
 // Deprecated: Use EventNetworkInferenceInfererWeightsSet.ProtoReflect.Descriptor instead.
 func (*EventNetworkInferenceInfererWeightsSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{64}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *EventNetworkInferenceInfererWeightsSet) GetTopicId() uint64 {
@@ -44861,7 +45300,7 @@ type EventNetworkInferenceForecasterWeightsSet struct {
 func (x *EventNetworkInferenceForecasterWeightsSet) Reset() {
 	*x = EventNetworkInferenceForecasterWeightsSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[65]
+		mi := &file_emissions_v9_events_proto_msgTypes[66]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44875,7 +45314,7 @@ func (*EventNetworkInferenceForecasterWeightsSet) ProtoMessage() {}
 
 // Deprecated: Use EventNetworkInferenceForecasterWeightsSet.ProtoReflect.Descriptor instead.
 func (*EventNetworkInferenceForecasterWeightsSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{65}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *EventNetworkInferenceForecasterWeightsSet) GetTopicId() uint64 {
@@ -44920,7 +45359,7 @@ type EventNetworkInferenceInfererRegretsUsedSet struct {
 func (x *EventNetworkInferenceInfererRegretsUsedSet) Reset() {
 	*x = EventNetworkInferenceInfererRegretsUsedSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[66]
+		mi := &file_emissions_v9_events_proto_msgTypes[67]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44934,7 +45373,7 @@ func (*EventNetworkInferenceInfererRegretsUsedSet) ProtoMessage() {}
 
 // Deprecated: Use EventNetworkInferenceInfererRegretsUsedSet.ProtoReflect.Descriptor instead.
 func (*EventNetworkInferenceInfererRegretsUsedSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{66}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *EventNetworkInferenceInfererRegretsUsedSet) GetTopicId() uint64 {
@@ -44979,7 +45418,7 @@ type EventNetworkInferenceForecasterRegretsUsedSet struct {
 func (x *EventNetworkInferenceForecasterRegretsUsedSet) Reset() {
 	*x = EventNetworkInferenceForecasterRegretsUsedSet{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[67]
+		mi := &file_emissions_v9_events_proto_msgTypes[68]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44993,7 +45432,7 @@ func (*EventNetworkInferenceForecasterRegretsUsedSet) ProtoMessage() {}
 
 // Deprecated: Use EventNetworkInferenceForecasterRegretsUsedSet.ProtoReflect.Descriptor instead.
 func (*EventNetworkInferenceForecasterRegretsUsedSet) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{67}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *EventNetworkInferenceForecasterRegretsUsedSet) GetTopicId() uint64 {
@@ -45038,7 +45477,7 @@ type EventTopicWeightUpdated struct {
 func (x *EventTopicWeightUpdated) Reset() {
 	*x = EventTopicWeightUpdated{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[68]
+		mi := &file_emissions_v9_events_proto_msgTypes[69]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45052,7 +45491,7 @@ func (*EventTopicWeightUpdated) ProtoMessage() {}
 
 // Deprecated: Use EventTopicWeightUpdated.ProtoReflect.Descriptor instead.
 func (*EventTopicWeightUpdated) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{68}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *EventTopicWeightUpdated) GetTopicId() uint64 {
@@ -45097,7 +45536,7 @@ type EventTopicFeeRevenueDripped struct {
 func (x *EventTopicFeeRevenueDripped) Reset() {
 	*x = EventTopicFeeRevenueDripped{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[69]
+		mi := &file_emissions_v9_events_proto_msgTypes[70]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45111,7 +45550,7 @@ func (*EventTopicFeeRevenueDripped) ProtoMessage() {}
 
 // Deprecated: Use EventTopicFeeRevenueDripped.ProtoReflect.Descriptor instead.
 func (*EventTopicFeeRevenueDripped) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{69}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *EventTopicFeeRevenueDripped) GetTopicId() uint64 {
@@ -45155,7 +45594,7 @@ type EventWorkerSubmissionWindowOpened struct {
 func (x *EventWorkerSubmissionWindowOpened) Reset() {
 	*x = EventWorkerSubmissionWindowOpened{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[70]
+		mi := &file_emissions_v9_events_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45169,7 +45608,7 @@ func (*EventWorkerSubmissionWindowOpened) ProtoMessage() {}
 
 // Deprecated: Use EventWorkerSubmissionWindowOpened.ProtoReflect.Descriptor instead.
 func (*EventWorkerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{70}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *EventWorkerSubmissionWindowOpened) GetTopicId() uint64 {
@@ -45205,7 +45644,7 @@ type EventWorkerSubmissionWindowClosed struct {
 func (x *EventWorkerSubmissionWindowClosed) Reset() {
 	*x = EventWorkerSubmissionWindowClosed{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[71]
+		mi := &file_emissions_v9_events_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45219,7 +45658,7 @@ func (*EventWorkerSubmissionWindowClosed) ProtoMessage() {}
 
 // Deprecated: Use EventWorkerSubmissionWindowClosed.ProtoReflect.Descriptor instead.
 func (*EventWorkerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{71}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *EventWorkerSubmissionWindowClosed) GetTopicId() uint64 {
@@ -45249,7 +45688,7 @@ type EventReputerSubmissionWindowOpened struct {
 func (x *EventReputerSubmissionWindowOpened) Reset() {
 	*x = EventReputerSubmissionWindowOpened{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[72]
+		mi := &file_emissions_v9_events_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45263,7 +45702,7 @@ func (*EventReputerSubmissionWindowOpened) ProtoMessage() {}
 
 // Deprecated: Use EventReputerSubmissionWindowOpened.ProtoReflect.Descriptor instead.
 func (*EventReputerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{72}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *EventReputerSubmissionWindowOpened) GetTopicId() uint64 {
@@ -45299,7 +45738,7 @@ type EventReputerSubmissionWindowClosed struct {
 func (x *EventReputerSubmissionWindowClosed) Reset() {
 	*x = EventReputerSubmissionWindowClosed{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v9_events_proto_msgTypes[73]
+		mi := &file_emissions_v9_events_proto_msgTypes[74]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45313,7 +45752,7 @@ func (*EventReputerSubmissionWindowClosed) ProtoMessage() {}
 
 // Deprecated: Use EventReputerSubmissionWindowClosed.ProtoReflect.Descriptor instead.
 func (*EventReputerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
-	return file_emissions_v9_events_proto_rawDescGZIP(), []int{73}
+	return file_emissions_v9_events_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *EventReputerSubmissionWindowClosed) GetTopicId() uint64 {
@@ -45518,7 +45957,10 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x65, 0x6e, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69,
 	0x63, 0x12, 0x29, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e,
-	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0xac, 0x01, 0x0a,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0x2e, 0x0a, 0x11,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
+	0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0xac, 0x01, 0x0a,
 	0x0d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x19,
 	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70,
@@ -46116,7 +46558,7 @@ func file_emissions_v9_events_proto_rawDescGZIP() []byte {
 }
 
 var file_emissions_v9_events_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_emissions_v9_events_proto_msgTypes = make([]protoimpl.MessageInfo, 74)
+var file_emissions_v9_events_proto_msgTypes = make([]protoimpl.MessageInfo, 75)
 var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(ActorType)(0),                                           // 0: emissions.v9.ActorType
 	(*EventScoresSet)(nil),                                   // 1: emissions.v9.EventScoresSet
@@ -46128,89 +46570,90 @@ var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(*EventInsertInfererPayload)(nil),                        // 7: emissions.v9.EventInsertInfererPayload
 	(*EventInsertForecasterPayload)(nil),                     // 8: emissions.v9.EventInsertForecasterPayload
 	(*EventCreateNewTopic)(nil),                              // 9: emissions.v9.EventCreateNewTopic
-	(*EventAddStake)(nil),                                    // 10: emissions.v9.EventAddStake
-	(*EventRemoveStake)(nil),                                 // 11: emissions.v9.EventRemoveStake
-	(*EventRequestStakeRemoval)(nil),                         // 12: emissions.v9.EventRequestStakeRemoval
-	(*EventCancelStakeRemoval)(nil),                          // 13: emissions.v9.EventCancelStakeRemoval
-	(*EventReputerStakeUpdated)(nil),                         // 14: emissions.v9.EventReputerStakeUpdated
-	(*EventRewardDelegateStake)(nil),                         // 15: emissions.v9.EventRewardDelegateStake
-	(*EventInsertReputerPayload)(nil),                        // 16: emissions.v9.EventInsertReputerPayload
-	(*EventReputerRegistered)(nil),                           // 17: emissions.v9.EventReputerRegistered
-	(*EventWorkerRegistered)(nil),                            // 18: emissions.v9.EventWorkerRegistered
-	(*EventReputerUnregistered)(nil),                         // 19: emissions.v9.EventReputerUnregistered
-	(*EventWorkerUnregistered)(nil),                          // 20: emissions.v9.EventWorkerUnregistered
-	(*EventFundTopic)(nil),                                   // 21: emissions.v9.EventFundTopic
-	(*EventParamsSet)(nil),                                   // 22: emissions.v9.EventParamsSet
-	(*EventWhitelistAdminAdded)(nil),                         // 23: emissions.v9.EventWhitelistAdminAdded
-	(*EventWhitelistAdminRemoved)(nil),                       // 24: emissions.v9.EventWhitelistAdminRemoved
-	(*EventGlobalWhitelistAdded)(nil),                        // 25: emissions.v9.EventGlobalWhitelistAdded
-	(*EventGlobalWhitelistRemoved)(nil),                      // 26: emissions.v9.EventGlobalWhitelistRemoved
-	(*EventGlobalWorkerWhitelistAdded)(nil),                  // 27: emissions.v9.EventGlobalWorkerWhitelistAdded
-	(*EventGlobalWorkerWhitelistRemoved)(nil),                // 28: emissions.v9.EventGlobalWorkerWhitelistRemoved
-	(*EventGlobalReputerWhitelistAdded)(nil),                 // 29: emissions.v9.EventGlobalReputerWhitelistAdded
-	(*EventGlobalReputerWhitelistRemoved)(nil),               // 30: emissions.v9.EventGlobalReputerWhitelistRemoved
-	(*EventGlobalAdminWhitelistAdded)(nil),                   // 31: emissions.v9.EventGlobalAdminWhitelistAdded
-	(*EventGlobalAdminWhitelistRemoved)(nil),                 // 32: emissions.v9.EventGlobalAdminWhitelistRemoved
-	(*EventTopicWorkerWhitelistEnabled)(nil),                 // 33: emissions.v9.EventTopicWorkerWhitelistEnabled
-	(*EventTopicWorkerWhitelistDisabled)(nil),                // 34: emissions.v9.EventTopicWorkerWhitelistDisabled
-	(*EventTopicReputerWhitelistEnabled)(nil),                // 35: emissions.v9.EventTopicReputerWhitelistEnabled
-	(*EventTopicReputerWhitelistDisabled)(nil),               // 36: emissions.v9.EventTopicReputerWhitelistDisabled
-	(*EventTopicCreatorWhitelistAdded)(nil),                  // 37: emissions.v9.EventTopicCreatorWhitelistAdded
-	(*EventTopicCreatorWhitelistRemoved)(nil),                // 38: emissions.v9.EventTopicCreatorWhitelistRemoved
-	(*EventTopicWorkerWhitelistAdded)(nil),                   // 39: emissions.v9.EventTopicWorkerWhitelistAdded
-	(*EventTopicWorkerWhitelistRemoved)(nil),                 // 40: emissions.v9.EventTopicWorkerWhitelistRemoved
-	(*EventTopicReputerWhitelistAdded)(nil),                  // 41: emissions.v9.EventTopicReputerWhitelistAdded
-	(*EventTopicReputerWhitelistRemoved)(nil),                // 42: emissions.v9.EventTopicReputerWhitelistRemoved
-	(*EventForecastTaskScoreSet)(nil),                        // 43: emissions.v9.EventForecastTaskScoreSet
-	(*EventWorkerLastCommitSet)(nil),                         // 44: emissions.v9.EventWorkerLastCommitSet
-	(*EventReputerLastCommitSet)(nil),                        // 45: emissions.v9.EventReputerLastCommitSet
-	(*EventTopicRewardsSet)(nil),                             // 46: emissions.v9.EventTopicRewardsSet
-	(*EventEMAScoresSet)(nil),                                // 47: emissions.v9.EventEMAScoresSet
-	(*EventListeningCoefficientsSet)(nil),                    // 48: emissions.v9.EventListeningCoefficientsSet
-	(*EventInfererNetworkRegretSet)(nil),                     // 49: emissions.v9.EventInfererNetworkRegretSet
-	(*EventForecasterNetworkRegretSet)(nil),                  // 50: emissions.v9.EventForecasterNetworkRegretSet
-	(*EventNaiveInfererNetworkRegretSet)(nil),                // 51: emissions.v9.EventNaiveInfererNetworkRegretSet
-	(*EventTopicInitialRegretSet)(nil),                       // 52: emissions.v9.EventTopicInitialRegretSet
-	(*EventTopicInitialEmaScoreSet)(nil),                     // 53: emissions.v9.EventTopicInitialEmaScoreSet
-	(*EventRegretStdNormSet)(nil),                            // 54: emissions.v9.EventRegretStdNormSet
-	(*EventInfererWeightsSet)(nil),                           // 55: emissions.v9.EventInfererWeightsSet
-	(*EventForecasterWeightsSet)(nil),                        // 56: emissions.v9.EventForecasterWeightsSet
-	(*EventPreviousPercentageRewardToStakedReputersSet)(nil), // 57: emissions.v9.EventPreviousPercentageRewardToStakedReputersSet
-	(*EventPruneRecords)(nil),                                // 58: emissions.v9.EventPruneRecords
-	(*EventDelegateRewardShareUpdated)(nil),                  // 59: emissions.v9.EventDelegateRewardShareUpdated
-	(*EventDelegateRewardDistributed)(nil),                   // 60: emissions.v9.EventDelegateRewardDistributed
-	(*EventActiveReputersSet)(nil),                           // 61: emissions.v9.EventActiveReputersSet
-	(*EventActiveInferersSet)(nil),                           // 62: emissions.v9.EventActiveInferersSet
-	(*EventActiveForecastersSet)(nil),                        // 63: emissions.v9.EventActiveForecastersSet
-	(*EventTopicStatusChanged)(nil),                          // 64: emissions.v9.EventTopicStatusChanged
-	(*EventNetworkInferenceInfererWeightsSet)(nil),           // 65: emissions.v9.EventNetworkInferenceInfererWeightsSet
-	(*EventNetworkInferenceForecasterWeightsSet)(nil),        // 66: emissions.v9.EventNetworkInferenceForecasterWeightsSet
-	(*EventNetworkInferenceInfererRegretsUsedSet)(nil),       // 67: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet
-	(*EventNetworkInferenceForecasterRegretsUsedSet)(nil),    // 68: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet
-	(*EventTopicWeightUpdated)(nil),                          // 69: emissions.v9.EventTopicWeightUpdated
-	(*EventTopicFeeRevenueDripped)(nil),                      // 70: emissions.v9.EventTopicFeeRevenueDripped
-	(*EventWorkerSubmissionWindowOpened)(nil),                // 71: emissions.v9.EventWorkerSubmissionWindowOpened
-	(*EventWorkerSubmissionWindowClosed)(nil),                // 72: emissions.v9.EventWorkerSubmissionWindowClosed
-	(*EventReputerSubmissionWindowOpened)(nil),               // 73: emissions.v9.EventReputerSubmissionWindowOpened
-	(*EventReputerSubmissionWindowClosed)(nil),               // 74: emissions.v9.EventReputerSubmissionWindowClosed
-	(*v3.ValueBundle)(nil),                                   // 75: emissions.v3.ValueBundle
-	(*v3.Topic)(nil),                                         // 76: emissions.v3.Topic
-	(*v8.Params)(nil),                                        // 77: emissions.v8.Params
-	(*v3.Nonce)(nil),                                         // 78: emissions.v3.Nonce
+	(*EventTopicUpdated)(nil),                                // 10: emissions.v9.EventTopicUpdated
+	(*EventAddStake)(nil),                                    // 11: emissions.v9.EventAddStake
+	(*EventRemoveStake)(nil),                                 // 12: emissions.v9.EventRemoveStake
+	(*EventRequestStakeRemoval)(nil),                         // 13: emissions.v9.EventRequestStakeRemoval
+	(*EventCancelStakeRemoval)(nil),                          // 14: emissions.v9.EventCancelStakeRemoval
+	(*EventReputerStakeUpdated)(nil),                         // 15: emissions.v9.EventReputerStakeUpdated
+	(*EventRewardDelegateStake)(nil),                         // 16: emissions.v9.EventRewardDelegateStake
+	(*EventInsertReputerPayload)(nil),                        // 17: emissions.v9.EventInsertReputerPayload
+	(*EventReputerRegistered)(nil),                           // 18: emissions.v9.EventReputerRegistered
+	(*EventWorkerRegistered)(nil),                            // 19: emissions.v9.EventWorkerRegistered
+	(*EventReputerUnregistered)(nil),                         // 20: emissions.v9.EventReputerUnregistered
+	(*EventWorkerUnregistered)(nil),                          // 21: emissions.v9.EventWorkerUnregistered
+	(*EventFundTopic)(nil),                                   // 22: emissions.v9.EventFundTopic
+	(*EventParamsSet)(nil),                                   // 23: emissions.v9.EventParamsSet
+	(*EventWhitelistAdminAdded)(nil),                         // 24: emissions.v9.EventWhitelistAdminAdded
+	(*EventWhitelistAdminRemoved)(nil),                       // 25: emissions.v9.EventWhitelistAdminRemoved
+	(*EventGlobalWhitelistAdded)(nil),                        // 26: emissions.v9.EventGlobalWhitelistAdded
+	(*EventGlobalWhitelistRemoved)(nil),                      // 27: emissions.v9.EventGlobalWhitelistRemoved
+	(*EventGlobalWorkerWhitelistAdded)(nil),                  // 28: emissions.v9.EventGlobalWorkerWhitelistAdded
+	(*EventGlobalWorkerWhitelistRemoved)(nil),                // 29: emissions.v9.EventGlobalWorkerWhitelistRemoved
+	(*EventGlobalReputerWhitelistAdded)(nil),                 // 30: emissions.v9.EventGlobalReputerWhitelistAdded
+	(*EventGlobalReputerWhitelistRemoved)(nil),               // 31: emissions.v9.EventGlobalReputerWhitelistRemoved
+	(*EventGlobalAdminWhitelistAdded)(nil),                   // 32: emissions.v9.EventGlobalAdminWhitelistAdded
+	(*EventGlobalAdminWhitelistRemoved)(nil),                 // 33: emissions.v9.EventGlobalAdminWhitelistRemoved
+	(*EventTopicWorkerWhitelistEnabled)(nil),                 // 34: emissions.v9.EventTopicWorkerWhitelistEnabled
+	(*EventTopicWorkerWhitelistDisabled)(nil),                // 35: emissions.v9.EventTopicWorkerWhitelistDisabled
+	(*EventTopicReputerWhitelistEnabled)(nil),                // 36: emissions.v9.EventTopicReputerWhitelistEnabled
+	(*EventTopicReputerWhitelistDisabled)(nil),               // 37: emissions.v9.EventTopicReputerWhitelistDisabled
+	(*EventTopicCreatorWhitelistAdded)(nil),                  // 38: emissions.v9.EventTopicCreatorWhitelistAdded
+	(*EventTopicCreatorWhitelistRemoved)(nil),                // 39: emissions.v9.EventTopicCreatorWhitelistRemoved
+	(*EventTopicWorkerWhitelistAdded)(nil),                   // 40: emissions.v9.EventTopicWorkerWhitelistAdded
+	(*EventTopicWorkerWhitelistRemoved)(nil),                 // 41: emissions.v9.EventTopicWorkerWhitelistRemoved
+	(*EventTopicReputerWhitelistAdded)(nil),                  // 42: emissions.v9.EventTopicReputerWhitelistAdded
+	(*EventTopicReputerWhitelistRemoved)(nil),                // 43: emissions.v9.EventTopicReputerWhitelistRemoved
+	(*EventForecastTaskScoreSet)(nil),                        // 44: emissions.v9.EventForecastTaskScoreSet
+	(*EventWorkerLastCommitSet)(nil),                         // 45: emissions.v9.EventWorkerLastCommitSet
+	(*EventReputerLastCommitSet)(nil),                        // 46: emissions.v9.EventReputerLastCommitSet
+	(*EventTopicRewardsSet)(nil),                             // 47: emissions.v9.EventTopicRewardsSet
+	(*EventEMAScoresSet)(nil),                                // 48: emissions.v9.EventEMAScoresSet
+	(*EventListeningCoefficientsSet)(nil),                    // 49: emissions.v9.EventListeningCoefficientsSet
+	(*EventInfererNetworkRegretSet)(nil),                     // 50: emissions.v9.EventInfererNetworkRegretSet
+	(*EventForecasterNetworkRegretSet)(nil),                  // 51: emissions.v9.EventForecasterNetworkRegretSet
+	(*EventNaiveInfererNetworkRegretSet)(nil),                // 52: emissions.v9.EventNaiveInfererNetworkRegretSet
+	(*EventTopicInitialRegretSet)(nil),                       // 53: emissions.v9.EventTopicInitialRegretSet
+	(*EventTopicInitialEmaScoreSet)(nil),                     // 54: emissions.v9.EventTopicInitialEmaScoreSet
+	(*EventRegretStdNormSet)(nil),                            // 55: emissions.v9.EventRegretStdNormSet
+	(*EventInfererWeightsSet)(nil),                           // 56: emissions.v9.EventInfererWeightsSet
+	(*EventForecasterWeightsSet)(nil),                        // 57: emissions.v9.EventForecasterWeightsSet
+	(*EventPreviousPercentageRewardToStakedReputersSet)(nil), // 58: emissions.v9.EventPreviousPercentageRewardToStakedReputersSet
+	(*EventPruneRecords)(nil),                                // 59: emissions.v9.EventPruneRecords
+	(*EventDelegateRewardShareUpdated)(nil),                  // 60: emissions.v9.EventDelegateRewardShareUpdated
+	(*EventDelegateRewardDistributed)(nil),                   // 61: emissions.v9.EventDelegateRewardDistributed
+	(*EventActiveReputersSet)(nil),                           // 62: emissions.v9.EventActiveReputersSet
+	(*EventActiveInferersSet)(nil),                           // 63: emissions.v9.EventActiveInferersSet
+	(*EventActiveForecastersSet)(nil),                        // 64: emissions.v9.EventActiveForecastersSet
+	(*EventTopicStatusChanged)(nil),                          // 65: emissions.v9.EventTopicStatusChanged
+	(*EventNetworkInferenceInfererWeightsSet)(nil),           // 66: emissions.v9.EventNetworkInferenceInfererWeightsSet
+	(*EventNetworkInferenceForecasterWeightsSet)(nil),        // 67: emissions.v9.EventNetworkInferenceForecasterWeightsSet
+	(*EventNetworkInferenceInfererRegretsUsedSet)(nil),       // 68: emissions.v9.EventNetworkInferenceInfererRegretsUsedSet
+	(*EventNetworkInferenceForecasterRegretsUsedSet)(nil),    // 69: emissions.v9.EventNetworkInferenceForecasterRegretsUsedSet
+	(*EventTopicWeightUpdated)(nil),                          // 70: emissions.v9.EventTopicWeightUpdated
+	(*EventTopicFeeRevenueDripped)(nil),                      // 71: emissions.v9.EventTopicFeeRevenueDripped
+	(*EventWorkerSubmissionWindowOpened)(nil),                // 72: emissions.v9.EventWorkerSubmissionWindowOpened
+	(*EventWorkerSubmissionWindowClosed)(nil),                // 73: emissions.v9.EventWorkerSubmissionWindowClosed
+	(*EventReputerSubmissionWindowOpened)(nil),               // 74: emissions.v9.EventReputerSubmissionWindowOpened
+	(*EventReputerSubmissionWindowClosed)(nil),               // 75: emissions.v9.EventReputerSubmissionWindowClosed
+	(*v3.ValueBundle)(nil),                                   // 76: emissions.v3.ValueBundle
+	(*v3.Topic)(nil),                                         // 77: emissions.v3.Topic
+	(*v8.Params)(nil),                                        // 78: emissions.v8.Params
+	(*v3.Nonce)(nil),                                         // 79: emissions.v3.Nonce
 }
 var file_emissions_v9_events_proto_depIdxs = []int32{
 	0,  // 0: emissions.v9.EventScoresSet.actor_type:type_name -> emissions.v9.ActorType
 	0,  // 1: emissions.v9.EventRewardsSettled.actor_type:type_name -> emissions.v9.ActorType
-	75, // 2: emissions.v9.EventNetworkLossSet.value_bundle:type_name -> emissions.v3.ValueBundle
+	76, // 2: emissions.v9.EventNetworkLossSet.value_bundle:type_name -> emissions.v3.ValueBundle
 	6,  // 3: emissions.v9.EventNetworkLossSet.bundle:type_name -> emissions.v9.EventValueBundle
-	75, // 4: emissions.v9.EventNetworkInferences.value_bundle:type_name -> emissions.v3.ValueBundle
+	76, // 4: emissions.v9.EventNetworkInferences.value_bundle:type_name -> emissions.v3.ValueBundle
 	6,  // 5: emissions.v9.EventNetworkInferences.bundle:type_name -> emissions.v9.EventValueBundle
 	6,  // 6: emissions.v9.EventOutlierResistantNetworkInferences.bundle:type_name -> emissions.v9.EventValueBundle
-	76, // 7: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v3.Topic
+	77, // 7: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v3.Topic
 	6,  // 8: emissions.v9.EventInsertReputerPayload.bundle:type_name -> emissions.v9.EventValueBundle
-	77, // 9: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
-	78, // 10: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
-	78, // 11: emissions.v9.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	78, // 9: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
+	79, // 10: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	79, // 11: emissions.v9.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
 	0,  // 12: emissions.v9.EventEMAScoresSet.actor_type:type_name -> emissions.v9.ActorType
 	0,  // 13: emissions.v9.EventListeningCoefficientsSet.actor_type:type_name -> emissions.v9.ActorType
 	0,  // 14: emissions.v9.EventTopicInitialEmaScoreSet.actor_type:type_name -> emissions.v9.ActorType
@@ -46336,7 +46779,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventAddStake); i {
+			switch v := v.(*EventTopicUpdated); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46348,7 +46791,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventRemoveStake); i {
+			switch v := v.(*EventAddStake); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46360,7 +46803,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventRequestStakeRemoval); i {
+			switch v := v.(*EventRemoveStake); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46372,7 +46815,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventCancelStakeRemoval); i {
+			switch v := v.(*EventRequestStakeRemoval); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46384,7 +46827,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerStakeUpdated); i {
+			switch v := v.(*EventCancelStakeRemoval); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46396,7 +46839,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventRewardDelegateStake); i {
+			switch v := v.(*EventReputerStakeUpdated); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46408,7 +46851,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventInsertReputerPayload); i {
+			switch v := v.(*EventRewardDelegateStake); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46420,7 +46863,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerRegistered); i {
+			switch v := v.(*EventInsertReputerPayload); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46432,7 +46875,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWorkerRegistered); i {
+			switch v := v.(*EventReputerRegistered); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46444,7 +46887,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerUnregistered); i {
+			switch v := v.(*EventWorkerRegistered); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46456,7 +46899,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWorkerUnregistered); i {
+			switch v := v.(*EventReputerUnregistered); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46468,7 +46911,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventFundTopic); i {
+			switch v := v.(*EventWorkerUnregistered); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46480,7 +46923,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventParamsSet); i {
+			switch v := v.(*EventFundTopic); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46492,7 +46935,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWhitelistAdminAdded); i {
+			switch v := v.(*EventParamsSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46504,7 +46947,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWhitelistAdminRemoved); i {
+			switch v := v.(*EventWhitelistAdminAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46516,7 +46959,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalWhitelistAdded); i {
+			switch v := v.(*EventWhitelistAdminRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46528,7 +46971,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalWhitelistRemoved); i {
+			switch v := v.(*EventGlobalWhitelistAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46540,7 +46983,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalWorkerWhitelistAdded); i {
+			switch v := v.(*EventGlobalWhitelistRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46552,7 +46995,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalWorkerWhitelistRemoved); i {
+			switch v := v.(*EventGlobalWorkerWhitelistAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46564,7 +47007,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalReputerWhitelistAdded); i {
+			switch v := v.(*EventGlobalWorkerWhitelistRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46576,7 +47019,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalReputerWhitelistRemoved); i {
+			switch v := v.(*EventGlobalReputerWhitelistAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46588,7 +47031,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalAdminWhitelistAdded); i {
+			switch v := v.(*EventGlobalReputerWhitelistRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46600,7 +47043,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventGlobalAdminWhitelistRemoved); i {
+			switch v := v.(*EventGlobalAdminWhitelistAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46612,7 +47055,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicWorkerWhitelistEnabled); i {
+			switch v := v.(*EventGlobalAdminWhitelistRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46624,7 +47067,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicWorkerWhitelistDisabled); i {
+			switch v := v.(*EventTopicWorkerWhitelistEnabled); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46636,7 +47079,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicReputerWhitelistEnabled); i {
+			switch v := v.(*EventTopicWorkerWhitelistDisabled); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46648,7 +47091,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicReputerWhitelistDisabled); i {
+			switch v := v.(*EventTopicReputerWhitelistEnabled); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46660,7 +47103,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicCreatorWhitelistAdded); i {
+			switch v := v.(*EventTopicReputerWhitelistDisabled); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46672,7 +47115,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicCreatorWhitelistRemoved); i {
+			switch v := v.(*EventTopicCreatorWhitelistAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46684,7 +47127,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicWorkerWhitelistAdded); i {
+			switch v := v.(*EventTopicCreatorWhitelistRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46696,7 +47139,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicWorkerWhitelistRemoved); i {
+			switch v := v.(*EventTopicWorkerWhitelistAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46708,7 +47151,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicReputerWhitelistAdded); i {
+			switch v := v.(*EventTopicWorkerWhitelistRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46720,7 +47163,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicReputerWhitelistRemoved); i {
+			switch v := v.(*EventTopicReputerWhitelistAdded); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46732,7 +47175,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventForecastTaskScoreSet); i {
+			switch v := v.(*EventTopicReputerWhitelistRemoved); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46744,7 +47187,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWorkerLastCommitSet); i {
+			switch v := v.(*EventForecastTaskScoreSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46756,7 +47199,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerLastCommitSet); i {
+			switch v := v.(*EventWorkerLastCommitSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46768,7 +47211,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicRewardsSet); i {
+			switch v := v.(*EventReputerLastCommitSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46780,7 +47223,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventEMAScoresSet); i {
+			switch v := v.(*EventTopicRewardsSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46792,7 +47235,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventListeningCoefficientsSet); i {
+			switch v := v.(*EventEMAScoresSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46804,7 +47247,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventInfererNetworkRegretSet); i {
+			switch v := v.(*EventListeningCoefficientsSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46816,7 +47259,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventForecasterNetworkRegretSet); i {
+			switch v := v.(*EventInfererNetworkRegretSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46828,7 +47271,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventNaiveInfererNetworkRegretSet); i {
+			switch v := v.(*EventForecasterNetworkRegretSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46840,7 +47283,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicInitialRegretSet); i {
+			switch v := v.(*EventNaiveInfererNetworkRegretSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46852,7 +47295,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicInitialEmaScoreSet); i {
+			switch v := v.(*EventTopicInitialRegretSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46864,7 +47307,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventRegretStdNormSet); i {
+			switch v := v.(*EventTopicInitialEmaScoreSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46876,7 +47319,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventInfererWeightsSet); i {
+			switch v := v.(*EventRegretStdNormSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46888,7 +47331,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventForecasterWeightsSet); i {
+			switch v := v.(*EventInfererWeightsSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46900,7 +47343,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventPreviousPercentageRewardToStakedReputersSet); i {
+			switch v := v.(*EventForecasterWeightsSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46912,7 +47355,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventPruneRecords); i {
+			switch v := v.(*EventPreviousPercentageRewardToStakedReputersSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46924,7 +47367,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventDelegateRewardShareUpdated); i {
+			switch v := v.(*EventPruneRecords); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46936,7 +47379,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventDelegateRewardDistributed); i {
+			switch v := v.(*EventDelegateRewardShareUpdated); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46948,7 +47391,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventActiveReputersSet); i {
+			switch v := v.(*EventDelegateRewardDistributed); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46960,7 +47403,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventActiveInferersSet); i {
+			switch v := v.(*EventActiveReputersSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46972,7 +47415,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventActiveForecastersSet); i {
+			switch v := v.(*EventActiveInferersSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46984,7 +47427,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicStatusChanged); i {
+			switch v := v.(*EventActiveForecastersSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -46996,7 +47439,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventNetworkInferenceInfererWeightsSet); i {
+			switch v := v.(*EventTopicStatusChanged); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47008,7 +47451,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventNetworkInferenceForecasterWeightsSet); i {
+			switch v := v.(*EventNetworkInferenceInfererWeightsSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47020,7 +47463,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventNetworkInferenceInfererRegretsUsedSet); i {
+			switch v := v.(*EventNetworkInferenceForecasterWeightsSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47032,7 +47475,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventNetworkInferenceForecasterRegretsUsedSet); i {
+			switch v := v.(*EventNetworkInferenceInfererRegretsUsedSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47044,7 +47487,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicWeightUpdated); i {
+			switch v := v.(*EventNetworkInferenceForecasterRegretsUsedSet); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47056,7 +47499,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicFeeRevenueDripped); i {
+			switch v := v.(*EventTopicWeightUpdated); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47068,7 +47511,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWorkerSubmissionWindowOpened); i {
+			switch v := v.(*EventTopicFeeRevenueDripped); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47080,7 +47523,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWorkerSubmissionWindowClosed); i {
+			switch v := v.(*EventWorkerSubmissionWindowOpened); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47092,7 +47535,7 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerSubmissionWindowOpened); i {
+			switch v := v.(*EventWorkerSubmissionWindowClosed); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -47104,6 +47547,18 @@ func file_emissions_v9_events_proto_init() {
 			}
 		}
 		file_emissions_v9_events_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventReputerSubmissionWindowOpened); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v9_events_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventReputerSubmissionWindowClosed); i {
 			case 0:
 				return &v.state
@@ -47122,7 +47577,7 @@ func file_emissions_v9_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_v9_events_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   74,
+			NumMessages:   75,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

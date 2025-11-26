@@ -210,5 +210,7 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, errorsmod.Wrap(err, "Failed to apply topic update")
 	}
 
+	types.EmitNewTopicUpdatedEvent(ctx, msg.TopicId)
+
 	return &types.UpdateTopicResponse{}, nil
 }
