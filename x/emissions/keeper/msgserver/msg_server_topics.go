@@ -100,11 +100,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {
 	defer metrics.RecordMetrics("UpdateTopic", time.Now(), &err)
 
-	// Validate the sender address
-	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
-		return nil, err
-	}
-
 	if _, err := ms.k.UpdateTopic(ctx, msg); err != nil {
 		return nil, err
 	}
