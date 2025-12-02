@@ -10,10 +10,12 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -53,8 +55,10 @@ type MintModuleTestSuite struct {
 	appModule       mint.AppModule
 	emissionsKeeper emissionskeeper.Keeper
 	mintKeeper      keeper.Keeper
+	emissionsModule emissions.AppModule
 	addrs           []sdk.AccAddress
 	addrsStr        []string
+	codec           codec.Codec
 }
 
 // SetupTest setups a new test, to be run before each test case
@@ -158,10 +162,12 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.stakingKeeper = stakingKeeper
 	s.emissionsKeeper = emissionsKeeper
 	s.mintKeeper = mintKeeper
+	s.codec = encCfg.Codec
 
 	emissionsModule := emissions.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	emissionsDefaultGenesis := emissionsModule.DefaultGenesis(encCfg.Codec)
 	emissionsModule.InitGenesis(ctx, encCfg.Codec, emissionsDefaultGenesis)
+	s.emissionsModule = emissionsModule
 
 	mintAppModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
 	defaultGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
@@ -800,4 +806,182 @@ func (s *MintModuleTestSuite) TestEmissionDisabled() {
 		"Ecosystem tokens minted should be zero when emission is disabled: %s != 0",
 		ecosystemTokensMintedAfter.String(),
 	)
+}
+
+// Helper methods for monthly reset tests
+func (s *MintModuleTestSuite) WithBlockHeight(height int64) {
+	s.ctx = s.ctx.WithBlockHeight(height)
+}
+
+func (s *MintModuleTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
+	err := s.bankKeeper.MintCoins(s.ctx, moduleName, coins)
+	s.Require().NoError(err)
+}
+
+func (s *MintModuleTestSuite) BeginBlock() {
+	err := mint.BeginBlocker(s.ctx, s.mintKeeper)
+	s.Require().NoError(err)
+}
+
+func (s *MintModuleTestSuite) EndBlock() {
+	err := s.emissionsModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+}
+
+// TestMonthlyPercentageRewardCalculation tests that monthly rewards reset happens correctly
+// in the mint BeginBlocker when blockCountSinceTGE % blocksPerMonth == 1.
+// This test verifies the chain behavior: rewards accumulate over a month, then reset happens
+// at the start of the next month via BeginBlocker.
+func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation() {
+	// Disable emissions for this test - we're only testing monthly reset, not emission calculations
+	// The monthly reset happens before the emission check, so it will still run
+	mintParams, err := s.mintKeeper.Params.Get(s.ctx)
+	s.Require().NoError(err)
+	mintParams.EmissionEnabled = false
+	err = s.mintKeeper.Params.Set(s.ctx, mintParams)
+	s.Require().NoError(err)
+
+	// 1. Setup Params
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	blocksPerMonth := int64(10)
+	params.BlocksPerMonth = uint64(blocksPerMonth)
+	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err)
+
+	// 2. Fund Rewards Module (required for EndBlocker checks)
+	initialRewardAmount := cosmosMath.NewInt(1000000)
+	s.MintTokensToModule(emissionstypes.AlloraRewardsAccountName, initialRewardAmount)
+
+	// 3. Define simulated reward increments per block
+	reputerIncrement := cosmosMath.NewInt(10)
+	topicIncrement := cosmosMath.NewInt(50)
+
+	// 4. Simulate Block Progression and Reward Accumulation
+	// Monthly rewards reset happens in mint BeginBlocker when blockCountSinceTGE % blocksPerMonth == 1
+	// Since startingEmissionsBlockHeight defaults to 0, reset happens at blocks 1, 11, 21, etc.
+	for i := int64(1); i <= blocksPerMonth; i++ {
+		s.WithBlockHeight(i)
+
+		// Run BeginBlocker - monthly reset happens here when i % blocksPerMonth == 1
+		s.BeginBlock()
+
+		// Run EndBlocker (simulates standard block processing)
+		s.EndBlock()
+
+		// Manually add rewards to simulate accumulation during the month
+		// Skip adding rewards at block 1 since that's when the first reset happens
+		if i > 1 && i%blocksPerMonth != 1 {
+			err = s.emissionsKeeper.AddMonthlyRewards(s.ctx, reputerIncrement, topicIncrement)
+			s.Require().NoError(err, "Failed to add rewards at block %d", i)
+		}
+	}
+
+	// 5. Calculate Expected Totals and Percentage *before* the reset block
+	// Rewards accumulate from block 2 to block 10 (9 blocks), then reset happens at block 11
+	totalReputerRewards := reputerIncrement.MulRaw(blocksPerMonth - 1)
+	totalTopicRewards := topicIncrement.MulRaw(blocksPerMonth - 1)
+
+	expectedPercentage := alloraMath.ZeroDec()
+	if !totalTopicRewards.IsZero() {
+		reputersDec, err := alloraMath.NewDecFromSdkInt(totalReputerRewards)
+		s.Require().NoError(err)
+		topicDec, err := alloraMath.NewDecFromSdkInt(totalTopicRewards)
+		s.Require().NoError(err)
+		expectedPercentage, err = reputersDec.Quo(topicDec)
+		s.Require().NoError(err)
+	}
+
+	// Sanity check the accumulated values before the reset block
+	reputerRewardsBeforeFinal, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(totalReputerRewards.Equal(reputerRewardsBeforeFinal), "Mismatch in accumulated reputer rewards before reset")
+	topicRewardsBeforeFinal, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(totalTopicRewards.Equal(topicRewardsBeforeFinal), "Mismatch in accumulated topic rewards before reset")
+
+	// 6. Trigger BeginBlocker at the start of the next month (block blocksPerMonth + 1)
+	// This is when the monthly reset happens (blockCountSinceTGE % blocksPerMonth == 1)
+	s.WithBlockHeight(blocksPerMonth + 1)
+	s.BeginBlock()
+
+	// 7. Verify State After BeginBlocker (monthly reset happens here)
+	actualPercentageAfter, err := s.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(s.ctx)
+	s.Require().NoError(err)
+	s.T().Logf("Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
+	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
+
+	// Verify counters reset by BeginBlocker
+	reputerRewardsAfter, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by BeginBlocker")
+
+	topicRewardsAfter, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by BeginBlocker")
+}
+
+// TestMonthlyPercentageRewardCalculation_ZeroTopicRewards tests monthly reset when there are no topic rewards.
+// This verifies that the percentage calculation handles zero topic rewards correctly.
+func (s *MintModuleTestSuite) TestMonthlyPercentageRewardCalculation_ZeroTopicRewards() {
+	// Disable emissions for this test - we're only testing monthly reset, not emission calculations
+	// The monthly reset happens before the emission check, so it will still run
+	mintParams, err := s.mintKeeper.Params.Get(s.ctx)
+	s.Require().NoError(err)
+	mintParams.EmissionEnabled = false
+	err = s.mintKeeper.Params.Set(s.ctx, mintParams)
+	s.Require().NoError(err)
+
+	// 1. Setup Params
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	blocksPerMonth := int64(10)
+	params.BlocksPerMonth = uint64(blocksPerMonth)
+	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err)
+
+	// 2. Fund Rewards Module (required for EndBlocker checks)
+	initialRewardAmount := cosmosMath.NewInt(1000000)
+	s.MintTokensToModule(emissionstypes.AlloraRewardsAccountName, initialRewardAmount)
+
+	// 3. Ensure No Topics or Reward Activity
+	// No topics created, no workers/reputers registered, no data submitted.
+	// This ensures EmitRewards calculates zero rewards throughout the month.
+
+	// 4. Simulate Block Progression up to the Monthly Boundary
+	for i := int64(1); i <= blocksPerMonth; i++ {
+		s.WithBlockHeight(i)
+
+		// Run BeginBlocker - monthly reset happens here when i % blocksPerMonth == 1
+		s.BeginBlock()
+
+		// Run EndBlocker (simulates standard block processing)
+		s.EndBlock()
+
+		// Sanity check: Verify topic rewards remain zero during the month
+		topicRewards, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+		s.Require().NoError(err)
+		s.Require().True(topicRewards.IsZero(), "Topic rewards became non-zero before month end at block %d", i)
+	}
+
+	// 5. Trigger BeginBlocker at the start of the next month (block blocksPerMonth + 1)
+	s.WithBlockHeight(blocksPerMonth + 1)
+	s.BeginBlock()
+
+	// 6. Verify State After BeginBlocker
+	// Verify percentage is zero due to zero topic rewards
+	expectedPercentage := alloraMath.ZeroDec()
+	actualPercentageAfter, err := s.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
+
+	// Verify counters reset by BeginBlocker
+	reputerRewardsAfter, err := s.emissionsKeeper.GetMonthlyReputerRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by BeginBlocker")
+
+	topicRewardsAfter, err := s.emissionsKeeper.GetMonthlyTopicRewards(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by BeginBlocker")
 }

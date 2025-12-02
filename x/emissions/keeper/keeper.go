@@ -4751,6 +4751,65 @@ func (k Keeper) ResetMonthlyRewards(ctx context.Context) error {
 	return k.monthlyTopicRewards.Set(ctx, cosmosMath.ZeroInt())
 }
 
+// HandleMonthlyRewardsReset calculates the percentage of rewards that went to staked reputers
+// in the previous month, stores it, and resets the monthly counters.
+// This method is called monthly (typically from the mint module's BeginBlocker) to:
+// 1. Read accumulated monthly rewards for reputers and topic participants
+// 2. Calculate what percentage of topic rewards went to staked reputers
+// 3. Store this percentage for use in next month's emission calculations
+// 4. Reset the monthly counters to zero for the next month
+// Note: Uses value receiver to allow passing keeper by value to mint module (consistent with other keepers)
+func (k Keeper) HandleMonthlyRewardsReset(ctx context.Context) (err error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	totalRewardToStakedReputers, err := k.GetMonthlyReputerRewards(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "Failed to get monthly reputer rewards")
+	}
+
+	totalRewardToTopicParticipants, err := k.GetMonthlyTopicRewards(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "Failed to get monthly topic rewards")
+	}
+
+	sdkCtx.Logger().Info("Monthly rewards", "totalRewardToStakedReputers", totalRewardToStakedReputers, "totalRewardToTopicParticipants", totalRewardToTopicParticipants)
+
+	percentageToStakedReputersDec := alloraMath.ZeroDec()
+	if !totalRewardToTopicParticipants.IsZero() {
+		totalReputersDec, err := alloraMath.NewDecFromSdkInt(totalRewardToStakedReputers)
+		if err != nil {
+			return errorsmod.Wrap(err, "Failed to convert total reputer rewards to alloraMath.Dec")
+		}
+		totalTopicDec, err := alloraMath.NewDecFromSdkInt(totalRewardToTopicParticipants)
+		if err != nil {
+			return errorsmod.Wrap(err, "Failed to convert total topic rewards to alloraMath.Dec")
+		}
+
+		percentageToStakedReputersDec, err = totalReputersDec.Quo(totalTopicDec)
+		if err != nil {
+			return errorsmod.Wrap(err, "Failed to calculate percentage to staked reputers")
+		}
+	}
+
+	err = k.SetPreviousPercentageRewardToStakedReputers(ctx, percentageToStakedReputersDec)
+	if err != nil {
+		return errorsmod.Wrap(err, "Failed to set previous percentage reward to staked reputers")
+	}
+
+	// Emit the event
+	types.EmitNewPreviousPercentageRewardToStakedReputersSetEvent(sdkCtx, sdkCtx.BlockHeight(), percentageToStakedReputersDec)
+
+	// Reset monthly reputer rewards
+	err = k.ResetMonthlyRewards(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "Failed to reset monthly reputer rewards")
+	}
+
+	sdkCtx.Logger().Debug("Monthly rewards reset triggered for block height", "blockHeight", sdkCtx.BlockHeight(),
+		"previousPercentageRewardToStakedReputers", percentageToStakedReputersDec.String())
+	return nil
+}
+
 // updateTopicWeightAfterStakeChange updates the topic weight and total sum of previous topic weights
 // after a stake change occurs, if there is no prior topic weight. This is used by both RemoveReputerStake and RemoveDelegateStake.
 func (k *Keeper) updateTopicWeightAfterStakeChange(

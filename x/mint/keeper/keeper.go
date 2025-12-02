@@ -274,6 +274,11 @@ func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math
 	return k.emissionsKeeper.SetRewardCurrentBlockEmission(ctx, emission)
 }
 
+// GetEmissionsKeeper returns the emissions keeper interface
+func (k Keeper) GetEmissionsKeeper() types.EmissionsKeeper {
+	return k.emissionsKeeper
+}
+
 // Getter for the number of months unlocked
 // this Getter coerces values to be between 0 and 36
 // rather than throwing errors for invalid values stored in the keeper

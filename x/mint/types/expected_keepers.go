@@ -44,6 +44,10 @@ type EmissionsKeeper interface {
 	SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error
 	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
 	SetParams(ctx context.Context, params emissionstypes.Params) error
+	// HandleMonthlyRewardsReset calculates the percentage of rewards that went to staked reputers
+	// in the previous month, stores it, and resets the monthly counters.
+	// This is called monthly from the mint module's BeginBlocker.
+	HandleMonthlyRewardsReset(ctx context.Context) error
 }
 
 // used for testing

@@ -15,11 +15,41 @@ import (
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
+	// Calculate blockCountSinceTGE early - needed for monthly reset check
+	// This must happen BEFORE the emission enabled check so monthly reset always runs
+	blockHeight := uint64(sdkCtx.BlockHeight())
+	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "could not get starting emissions block height")
+	}
+	blockCountSinceTGE := blockHeight - (uint64(startingEmissionsBlockHeight))
+
+	// Get blocksPerMonth for monthly reset check
+	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "could not get blocks per month")
+	}
+
+	// Handle monthly rewards reset BEFORE checking if emissions are enabled
+	// This ensures the reset happens regardless of emission settings, as it's
+	// a critical accounting function that tracks reward percentages for staked reputers.
+	// The reset must happen even if emissions are disabled, because it's used for
+	// calculating reward distributions in the emissions module.
+	if blockCountSinceTGE%blocksPerMonth == 1 { // easier to test when genesis starts at 1
+		// Handle monthly rewards reset before recalculating emissions
+		// This calculates the percentage of rewards that went to staked reputers in the previous month,
+		// stores it for use in emission calculations, and resets the monthly counters.
+		resetErr := k.GetEmissionsKeeper().HandleMonthlyRewardsReset(ctx)
+		if resetErr != nil {
+			return errorsmod.Wrap(resetErr, "could not handle monthly rewards reset")
+		}
+	}
+
 	moduleParams, err := k.Params.Get(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "could not get module params")
 	}
-	// if emissions are not enabled, do nothing
+	// if emissions are not enabled, do nothing (but monthly reset already happened above)
 	if !moduleParams.EmissionEnabled {
 		return nil
 	}
@@ -29,14 +59,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return errorsmod.Wrap(err, "could not get ecosystem balance")
 	}
 
-	blockHeight := uint64(sdkCtx.BlockHeight())
-	// Use this to be removed to current block height.
-	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "could not get starting emissions block height")
-	}
-	blockCountSinceTGE := blockHeight - (uint64(startingEmissionsBlockHeight))
-
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "could not get previous block emission")
@@ -44,10 +66,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(sdkCtx, moduleParams)
 	if err != nil {
 		return errorsmod.Wrap(err, "could not get ecosystem mint supply remaining")
-	}
-	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "could not get blocks per month")
 	}
 	vPercentADec, err := k.GetValidatorsVsAlloraPercentReward(ctx)
 	if err != nil {
@@ -58,7 +76,9 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return errorsmod.Wrap(err, "could not convert validators vs allora percent reward to legacy dec")
 	}
 	// every month on the first block of the month, update the emissions rate
+	// Note: Monthly rewards reset already happened above (before emission enabled check)
 	if blockCountSinceTGE%blocksPerMonth == 1 { // easier to test when genesis starts at 1
+
 		// Recalculate the target emission for the block
 		// WARNING: After Calling RecalculateTargetEmission,
 		// PreviousRewardEmissionPerUnitStakedToken and PreviousBlockEmission

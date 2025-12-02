@@ -20,16 +20,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 
-	defer func() {
-		if uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
-			resetErr := rewards.HandleMonthlyRewardsReset(sdkCtx, am.keeper)
-			if resetErr != nil {
-				sdkCtx.Logger().Error("Error handling monthly rewards reset", "error", resetErr)
-				err = resetErr
-			}
-		}
-	}()
-
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
 	err = RemoveStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 	if err != nil {
