@@ -349,7 +349,6 @@ func (s *TestSuite) SetupTest() {
 	s.emissionsKeeper = &emissionsKeeper
 	s.mintKeeper = mintKeeper
 	s.stakingKeeper = stakingKeeper
-
 	emissionsAppModule := module.NewAppModule(encCfg.Codec, emissionsKeeper)
 	defaultEmissionsGenesis := emissionsAppModule.DefaultGenesis(encCfg.Codec)
 	emissionsAppModule.InitGenesis(ctx, encCfg.Codec, defaultEmissionsGenesis)
