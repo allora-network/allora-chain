@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -63,6 +64,11 @@ func CreateUpgradeHandler(
 			coins,
 		); err != nil {
 			return nil, err
+		}
+
+		err = keepers.MintKeeper.AddEcosystemTokensMinted(ctx, coins.AmountOf(params.BaseCoinUnit))
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "could not add ecosystem tokens minted")
 		}
 
 		sdkCtx.Logger().Info("MIGRATIONS COMPLETED")
