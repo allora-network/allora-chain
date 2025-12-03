@@ -3128,6 +3128,40 @@ func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.Offc
 	return k.reputers.Get(ctx, reputerKey)
 }
 
+// UpdateReputerOwner updates the payout owner associated with a reputer node.
+func (k *Keeper) UpdateReputerOwner(ctx context.Context, reputer ActorId, newOwner string) (string, error) {
+	if err := types.ValidateBech32(reputer); err != nil {
+		return "", errorsmod.Wrap(err, "reputer validation failed")
+	}
+	if err := types.ValidateBech32(newOwner); err != nil {
+		return "", errorsmod.Wrap(err, "new owner validation failed")
+	}
+	nodeInfo, err := k.reputers.Get(ctx, reputer)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", reputer)
+		}
+		return "", errorsmod.Wrap(err, "error getting reputer info")
+	}
+	if nodeInfo.NodeAddress != reputer {
+		return "", errorsmod.Wrapf(
+			types.ErrInvariantFailure,
+			"stored reputer node address %s does not match key %s",
+			nodeInfo.NodeAddress,
+			reputer,
+		)
+	}
+	oldOwner := nodeInfo.Owner
+	nodeInfo.Owner = newOwner
+	if err := nodeInfo.Validate(); err != nil {
+		return "", errorsmod.Wrap(err, "reputer info validation failed")
+	}
+	if err := k.reputers.Set(ctx, reputer, nodeInfo); err != nil {
+		return "", errorsmod.Wrap(err, "error setting reputer info")
+	}
+	return oldOwner, nil
+}
+
 // / WORKERS
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
@@ -3165,6 +3199,40 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, worker Actor
 
 func (k *Keeper) GetWorkerInfo(ctx sdk.Context, workerKey ActorId) (types.OffchainNode, error) {
 	return k.workers.Get(ctx, workerKey)
+}
+
+// UpdateWorkerOwner updates the payout owner associated with a worker node.
+func (k *Keeper) UpdateWorkerOwner(ctx context.Context, worker ActorId, newOwner string) (string, error) {
+	if err := types.ValidateBech32(worker); err != nil {
+		return "", errorsmod.Wrap(err, "worker validation failed")
+	}
+	if err := types.ValidateBech32(newOwner); err != nil {
+		return "", errorsmod.Wrap(err, "new owner validation failed")
+	}
+	nodeInfo, err := k.workers.Get(ctx, worker)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker %s", worker)
+		}
+		return "", errorsmod.Wrap(err, "error getting worker info")
+	}
+	if nodeInfo.NodeAddress != worker {
+		return "", errorsmod.Wrapf(
+			types.ErrInvariantFailure,
+			"stored worker node address %s does not match key %s",
+			nodeInfo.NodeAddress,
+			worker,
+		)
+	}
+	oldOwner := nodeInfo.Owner
+	nodeInfo.Owner = newOwner
+	if err := nodeInfo.Validate(); err != nil {
+		return "", errorsmod.Wrap(err, "worker info validation failed")
+	}
+	if err := k.workers.Set(ctx, worker, nodeInfo); err != nil {
+		return "", errorsmod.Wrap(err, "error setting worker info")
+	}
+	return oldOwner, nil
 }
 
 // / TOPICS

@@ -62,6 +62,7 @@ const (
 	MsgService_RemoveFromTopicWorkerWhitelist_FullMethodName       = "/emissions.v9.MsgService/RemoveFromTopicWorkerWhitelist"
 	MsgService_AddToTopicReputerWhitelist_FullMethodName           = "/emissions.v9.MsgService/AddToTopicReputerWhitelist"
 	MsgService_RemoveFromTopicReputerWhitelist_FullMethodName      = "/emissions.v9.MsgService/RemoveFromTopicReputerWhitelist"
+	MsgService_UpdateOwner_FullMethodName                          = "/emissions.v9.MsgService/UpdateOwner"
 )
 
 // MsgServiceClient is the client API for MsgService service.
@@ -113,6 +114,7 @@ type MsgServiceClient interface {
 	RemoveFromTopicWorkerWhitelist(ctx context.Context, in *RemoveFromTopicWorkerWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicWorkerWhitelistResponse, error)
 	AddToTopicReputerWhitelist(ctx context.Context, in *AddToTopicReputerWhitelistRequest, opts ...grpc.CallOption) (*AddToTopicReputerWhitelistResponse, error)
 	RemoveFromTopicReputerWhitelist(ctx context.Context, in *RemoveFromTopicReputerWhitelistRequest, opts ...grpc.CallOption) (*RemoveFromTopicReputerWhitelistResponse, error)
+	UpdateOwner(ctx context.Context, in *UpdateOwnerRequest, opts ...grpc.CallOption) (*UpdateOwnerResponse, error)
 }
 
 type msgServiceClient struct {
@@ -553,6 +555,16 @@ func (c *msgServiceClient) RemoveFromTopicReputerWhitelist(ctx context.Context, 
 	return out, nil
 }
 
+func (c *msgServiceClient) UpdateOwner(ctx context.Context, in *UpdateOwnerRequest, opts ...grpc.CallOption) (*UpdateOwnerResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateOwnerResponse)
+	err := c.cc.Invoke(ctx, MsgService_UpdateOwner_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServiceServer is the server API for MsgService service.
 // All implementations must embed UnimplementedMsgServiceServer
 // for forward compatibility.
@@ -602,6 +614,7 @@ type MsgServiceServer interface {
 	RemoveFromTopicWorkerWhitelist(context.Context, *RemoveFromTopicWorkerWhitelistRequest) (*RemoveFromTopicWorkerWhitelistResponse, error)
 	AddToTopicReputerWhitelist(context.Context, *AddToTopicReputerWhitelistRequest) (*AddToTopicReputerWhitelistResponse, error)
 	RemoveFromTopicReputerWhitelist(context.Context, *RemoveFromTopicReputerWhitelistRequest) (*RemoveFromTopicReputerWhitelistResponse, error)
+	UpdateOwner(context.Context, *UpdateOwnerRequest) (*UpdateOwnerResponse, error)
 	mustEmbedUnimplementedMsgServiceServer()
 }
 
@@ -740,6 +753,9 @@ func (UnimplementedMsgServiceServer) AddToTopicReputerWhitelist(context.Context,
 }
 func (UnimplementedMsgServiceServer) RemoveFromTopicReputerWhitelist(context.Context, *RemoveFromTopicReputerWhitelistRequest) (*RemoveFromTopicReputerWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromTopicReputerWhitelist not implemented")
+}
+func (UnimplementedMsgServiceServer) UpdateOwner(context.Context, *UpdateOwnerRequest) (*UpdateOwnerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateOwner not implemented")
 }
 func (UnimplementedMsgServiceServer) mustEmbedUnimplementedMsgServiceServer() {}
 func (UnimplementedMsgServiceServer) testEmbeddedByValue()                    {}
@@ -1536,6 +1552,24 @@ func _MsgService_RemoveFromTopicReputerWhitelist_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MsgService_UpdateOwner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOwnerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).UpdateOwner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_UpdateOwner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).UpdateOwner(ctx, req.(*UpdateOwnerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MsgService_ServiceDesc is the grpc.ServiceDesc for MsgService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1714,6 +1748,10 @@ var MsgService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromTopicReputerWhitelist",
 			Handler:    _MsgService_RemoveFromTopicReputerWhitelist_Handler,
+		},
+		{
+			MethodName: "UpdateOwner",
+			Handler:    _MsgService_UpdateOwner_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

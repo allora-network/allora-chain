@@ -171,6 +171,15 @@ func EmitNewWorkerRegisteredEvent(ctx context.Context, topicId TopicId, worker, 
 	}
 }
 
+func EmitNodeOwnerUpdatedEvent(ctx context.Context, nodeAddress, oldOwner, newOwner string, isReputer bool) {
+	metrics.IncrProducerEventCount(metrics.NODE_OWNER_UPDATED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNodeOwnerUpdatedEventBase(nodeAddress, oldOwner, newOwner, isReputer))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting NodeOwnerUpdatedEvent", "error", err)
+	}
+}
+
 func EmitNewReputerUnregisteredEvent(ctx context.Context, topicId TopicId, reputer string) {
 	metrics.IncrProducerEventCount(metrics.REPUTER_UNREGISTERED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
