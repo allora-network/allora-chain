@@ -6939,9 +6939,9 @@ func (x *fastReflection_EventTopicUpdated) Interface() protoreflect.ProtoMessage
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_EventTopicUpdated) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TopicId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventTopicUpdated_topic_id, value) {
+	if x.Topic != nil {
+		value := protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
+		if !f(fd_EventTopicUpdated_topic, value) {
 			return
 		}
 	}
@@ -7150,8 +7150,9 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.TopicId != 0 {
-			n += 1 + runtime.Sov(uint64(x.TopicId))
+		if x.Topic != nil {
+			l = options.Size(x.Topic)
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.Topic != nil {
 			l = options.Size(x.Topic)
@@ -7203,7 +7204,7 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 		if x.TopicId != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
 			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -7255,10 +7256,10 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Topic", wireType)
 				}
-				x.TopicId = 0
+				var msglen int
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -7268,7 +7269,7 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.TopicId |= uint64(b&0x7F) << shift
+					msglen |= int(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -42707,11 +42708,11 @@ func (*EventTopicUpdated) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *EventTopicUpdated) GetTopicId() uint64 {
+func (x *EventTopicUpdated) GetTopic() *v3.Topic {
 	if x != nil {
-		return x.TopicId
+		return x.Topic
 	}
-	return 0
+	return nil
 }
 
 func (x *EventTopicUpdated) GetTopic() *v3.Topic {
