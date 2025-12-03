@@ -239,6 +239,13 @@ message EventWorkerRegistered {
   string owner = 3;
 }
 
+message EventNodeOwnerUpdated {
+  string node_address = 1;
+  string old_owner = 2;
+  string new_owner = 3;
+  bool is_reputer = 4;
+}
+
 message EventReputerUnregistered {
   uint64 topic_id = 1;
   string reputer = 2;

@@ -99,6 +99,8 @@ service MsgService {
   rpc AddToTopicReputerWhitelist(AddToTopicReputerWhitelistRequest) returns (AddToTopicReputerWhitelistResponse);
 
   rpc RemoveFromTopicReputerWhitelist(RemoveFromTopicReputerWhitelistRequest) returns (RemoveFromTopicReputerWhitelistResponse);
+
+  rpc UpdateOwner(UpdateOwnerRequest) returns (UpdateOwnerResponse);
 }
 
 /// PARAMS
@@ -378,6 +380,18 @@ message InsertWorkerPayloadRequest {
 
 message InsertWorkerPayloadResponse {}
 ///  Inference Node Registration
+
+message UpdateOwnerRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  string new_owner = 2;
+  bool is_reputer = 3;
+}
+
+message UpdateOwnerResponse {
+  bool success = 1;
+  string message = 2;
+}
 
 message RegisterRequest {
   reserved 2, 3;

@@ -37,6 +37,7 @@ const (
 	WORKER_REGISTERED_EVENT                                 = "worker_registered_event"
 	REPUTER_UNREGISTERED_EVENT                              = "reputer_unregistered_event"
 	WORKER_UNREGISTERED_EVENT                               = "worker_unregistered_event"
+	NODE_OWNER_UPDATED_EVENT                                = "node_owner_updated_event"
 	FUND_TOPIC_EVENT                                        = "fund_topic_event"
 	PARAMS_SET_EVENT                                        = "params_set_event"
 	WHITELIST_ADMIN_ADDED_EVENT                             = "whitelist_admin_added_event"

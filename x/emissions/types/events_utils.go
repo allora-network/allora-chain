@@ -231,6 +231,15 @@ func NewWorkerRegisteredEventBase(topicId TopicId, worker, owner string) proto.M
 	}
 }
 
+func NewNodeOwnerUpdatedEventBase(nodeAddress, oldOwner, newOwner string, isReputer bool) proto.Message {
+	return &EventNodeOwnerUpdated{
+		NodeAddress: nodeAddress,
+		OldOwner:    oldOwner,
+		NewOwner:    newOwner,
+		IsReputer:   isReputer,
+	}
+}
+
 func NewReputerUnregisteredEventBase(topicId TopicId, reputer string) proto.Message {
 	return &EventReputerUnregistered{
 		TopicId: topicId,
