@@ -6862,14 +6862,14 @@ func (x *fastReflection_EventCreateNewTopic) ProtoMethods() *protoiface.Methods 
 }
 
 var (
-	md_EventTopicUpdated          protoreflect.MessageDescriptor
-	fd_EventTopicUpdated_topic_id protoreflect.FieldDescriptor
+	md_EventTopicUpdated       protoreflect.MessageDescriptor
+	fd_EventTopicUpdated_topic protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_events_proto_init()
 	md_EventTopicUpdated = File_emissions_v9_events_proto.Messages().ByName("EventTopicUpdated")
-	fd_EventTopicUpdated_topic_id = md_EventTopicUpdated.Fields().ByName("topic_id")
+	fd_EventTopicUpdated_topic = md_EventTopicUpdated.Fields().ByName("topic")
 }
 
 var _ protoreflect.Message = (*fastReflection_EventTopicUpdated)(nil)
@@ -6937,9 +6937,9 @@ func (x *fastReflection_EventTopicUpdated) Interface() protoreflect.ProtoMessage
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_EventTopicUpdated) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TopicId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_EventTopicUpdated_topic_id, value) {
+	if x.Topic != nil {
+		value := protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
+		if !f(fd_EventTopicUpdated_topic, value) {
 			return
 		}
 	}
@@ -6958,8 +6958,8 @@ func (x *fastReflection_EventTopicUpdated) Range(f func(protoreflect.FieldDescri
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_EventTopicUpdated) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicUpdated.topic_id":
-		return x.TopicId != uint64(0)
+	case "emissions.v9.EventTopicUpdated.topic":
+		return x.Topic != nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
@@ -6976,8 +6976,8 @@ func (x *fastReflection_EventTopicUpdated) Has(fd protoreflect.FieldDescriptor) 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicUpdated) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicUpdated.topic_id":
-		x.TopicId = uint64(0)
+	case "emissions.v9.EventTopicUpdated.topic":
+		x.Topic = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
@@ -6994,9 +6994,9 @@ func (x *fastReflection_EventTopicUpdated) Clear(fd protoreflect.FieldDescriptor
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_EventTopicUpdated) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v9.EventTopicUpdated.topic_id":
-		value := x.TopicId
-		return protoreflect.ValueOfUint64(value)
+	case "emissions.v9.EventTopicUpdated.topic":
+		value := x.Topic
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
@@ -7017,8 +7017,8 @@ func (x *fastReflection_EventTopicUpdated) Get(descriptor protoreflect.FieldDesc
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicUpdated) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicUpdated.topic_id":
-		x.TopicId = value.Uint()
+	case "emissions.v9.EventTopicUpdated.topic":
+		x.Topic = value.Message().Interface().(*v3.Topic)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
@@ -7039,8 +7039,11 @@ func (x *fastReflection_EventTopicUpdated) Set(fd protoreflect.FieldDescriptor, 
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_EventTopicUpdated) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicUpdated.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v9.EventTopicUpdated is not mutable"))
+	case "emissions.v9.EventTopicUpdated.topic":
+		if x.Topic == nil {
+			x.Topic = new(v3.Topic)
+		}
+		return protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
@@ -7054,8 +7057,9 @@ func (x *fastReflection_EventTopicUpdated) Mutable(fd protoreflect.FieldDescript
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_EventTopicUpdated) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v9.EventTopicUpdated.topic_id":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v9.EventTopicUpdated.topic":
+		m := new(v3.Topic)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
@@ -7125,8 +7129,9 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.TopicId != 0 {
-			n += 1 + runtime.Sov(uint64(x.TopicId))
+		if x.Topic != nil {
+			l = options.Size(x.Topic)
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -7157,10 +7162,19 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.TopicId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+		if x.Topic != nil {
+			encoded, err := options.Marshal(x.Topic)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -7212,10 +7226,10 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Topic", wireType)
 				}
-				x.TopicId = 0
+				var msglen int
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -7225,11 +7239,28 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.TopicId |= uint64(b&0x7F) << shift
+					msglen |= int(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Topic == nil {
+					x.Topic = &v3.Topic{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topic); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -42604,7 +42635,7 @@ type EventTopicUpdated struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Topic *v3.Topic `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
 }
 
 func (x *EventTopicUpdated) Reset() {
@@ -42627,11 +42658,11 @@ func (*EventTopicUpdated) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *EventTopicUpdated) GetTopicId() uint64 {
+func (x *EventTopicUpdated) GetTopic() *v3.Topic {
 	if x != nil {
-		return x.TopicId
+		return x.Topic
 	}
-	return 0
+	return nil
 }
 
 type EventAddStake struct {
@@ -45957,10 +45988,11 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x65, 0x6e, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69,
 	0x63, 0x12, 0x29, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e,
-	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0x2e, 0x0a, 0x11,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0x3e, 0x0a, 0x11,
 	0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
-	0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0xac, 0x01, 0x0a,
+	0x64, 0x12, 0x29, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0xac, 0x01, 0x0a,
 	0x0d, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x19,
 	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70,
@@ -46650,18 +46682,19 @@ var file_emissions_v9_events_proto_depIdxs = []int32{
 	6,  // 5: emissions.v9.EventNetworkInferences.bundle:type_name -> emissions.v9.EventValueBundle
 	6,  // 6: emissions.v9.EventOutlierResistantNetworkInferences.bundle:type_name -> emissions.v9.EventValueBundle
 	77, // 7: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v3.Topic
-	6,  // 8: emissions.v9.EventInsertReputerPayload.bundle:type_name -> emissions.v9.EventValueBundle
-	78, // 9: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
-	79, // 10: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
-	79, // 11: emissions.v9.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
-	0,  // 12: emissions.v9.EventEMAScoresSet.actor_type:type_name -> emissions.v9.ActorType
-	0,  // 13: emissions.v9.EventListeningCoefficientsSet.actor_type:type_name -> emissions.v9.ActorType
-	0,  // 14: emissions.v9.EventTopicInitialEmaScoreSet.actor_type:type_name -> emissions.v9.ActorType
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	77, // 8: emissions.v9.EventTopicUpdated.topic:type_name -> emissions.v3.Topic
+	6,  // 9: emissions.v9.EventInsertReputerPayload.bundle:type_name -> emissions.v9.EventValueBundle
+	78, // 10: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
+	79, // 11: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	79, // 12: emissions.v9.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	0,  // 13: emissions.v9.EventEMAScoresSet.actor_type:type_name -> emissions.v9.ActorType
+	0,  // 14: emissions.v9.EventListeningCoefficientsSet.actor_type:type_name -> emissions.v9.ActorType
+	0,  // 15: emissions.v9.EventTopicInitialEmaScoreSet.actor_type:type_name -> emissions.v9.ActorType
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_emissions_v9_events_proto_init() }

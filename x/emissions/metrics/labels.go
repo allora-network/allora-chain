@@ -10,6 +10,7 @@ const (
 	INSERT_INFERER_PAYLOAD_EVENT                            = "insert_inferer_payload_event"
 	INSERT_FORECASTER_PAYLOAD_EVENT                         = "insert_forecaster_payload_event"
 	CREATE_NEW_TOPIC_EVENT                                  = "create_new_topic_event"
+	TOPIC_UPDATED_EVENT                                     = "topic_updated_event"
 	ADD_STAKE_EVENT                                         = "add_stake_event"
 	STAKE_REMOVAL_EVENT                                     = "stake_removal_event"
 	REQUEST_STAKE_REMOVAL_EVENT                             = "request_stake_removal_event"

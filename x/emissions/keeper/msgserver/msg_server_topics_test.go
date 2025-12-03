@@ -380,6 +380,20 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 	require.Error(err)
 	require.Nil(updateResult)
 	require.ErrorContains(err, "metadata invalid")
+
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            []string{strings.Repeat("a", 257)},
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
+	}
+	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "metadata invalid")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {

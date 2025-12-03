@@ -148,7 +148,7 @@ message EventCreateNewTopic {
 }
 
 message EventTopicUpdated {
-  uint64 topic_id = 1;
+  emissions.v3.Topic topic = 1;
 }
 
 message EventAddStake {

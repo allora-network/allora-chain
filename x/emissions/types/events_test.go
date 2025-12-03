@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	cosmosMath "cosmossdk.io/math"
@@ -210,15 +211,29 @@ func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
 func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 
-	types.EmitNewTopicUpdatedEvent(ctx, 1)
+	topic := types.Topic{
+		Id:         1,
+		Metadata:   "updated metadata",
+		LossMethod: "mse",
+	}
+
+	types.EmitNewTopicUpdatedEvent(ctx, topic)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 	require.Equal(t, "emissions.v9.EventTopicUpdated", events[0].Type)
 
-	val, exists := events[0].GetAttribute("topic_id")
-	require.True(t, exists)
-	require.Contains(t, val.GetValue(), "1")
+	attributes := events[0].Attributes
+	found := false
+	for _, attr := range attributes {
+		if strings.Contains(attr.Key, "topic") {
+			require.Contains(t, attr.Value, "updated metadata")
+			require.Contains(t, attr.Value, "\"id\":\"1\"")
+			found = true
+			break
+		}
+	}
+	require.True(t, found, "expected topic attribute to be present in event")
 }
 
 func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {

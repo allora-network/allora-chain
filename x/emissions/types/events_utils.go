@@ -89,9 +89,9 @@ func NewCreateNewTopicEventBase(topic *Topic) proto.Message {
 	}
 }
 
-func NewTopicUpdatedEventBase(topicId TopicId) proto.Message {
+func NewTopicUpdatedEventBase(topic *Topic) proto.Message {
 	return &EventTopicUpdated{
-		TopicId: topicId,
+		Topic: topic,
 	}
 }
 
