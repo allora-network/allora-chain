@@ -13,7 +13,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// Register registers a new network participant to the network for the first time for worker or reputer
+// Register registers a new network participant to the network as worker or reputer
 func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_ *types.RegisterResponse, err error) {
 	defer metrics.RecordMetrics("Register", time.Now(), &err)
 
