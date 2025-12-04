@@ -212,9 +212,20 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 
 	topic := types.Topic{
-		Id:         1,
-		Metadata:   "updated metadata",
-		LossMethod: "mse",
+		Id:                       1,
+		Metadata:                 "updated metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 
 	types.EmitNewTopicUpdatedEvent(ctx, topic)
