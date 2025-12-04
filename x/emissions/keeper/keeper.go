@@ -3269,10 +3269,6 @@ func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest)
 		return types.Topic{}, types.ErrNotPermittedToModifyTopic
 	}
 
-	if err := msg.Validate(params.MaxStringLength); err != nil {
-		return types.Topic{}, err
-	}
-
 	updatedTopic := topic
 	hasChanges := false
 
