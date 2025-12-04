@@ -213,6 +213,9 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 
 	topic := types.Topic{
 		Id:                       1,
+		Creator:                  "creator",
+		EpochLastEnded:           100,
+		InitialRegret:            alloraMath.MustNewDecFromString("0.01"),
 		Metadata:                 "updated metadata",
 		LossMethod:               "mse",
 		EpochLength:              100,
