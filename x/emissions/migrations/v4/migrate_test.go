@@ -71,7 +71,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 		PRewardReputer:                      defaultParams.PRewardReputer,
 		CRewardInference:                    defaultParams.CRewardInference,
 		CRewardForecast:                     defaultParams.CRewardForecast,
-		CNorm:                               defaultParams.CNorm,
+		CNorm:                               alloraMath.MustNewDecFromString("0.75"),
 		EpsilonReputer:                      defaultParams.EpsilonReputer,
 		HalfMaxProcessStakeRemovalsEndBlock: defaultParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      defaultParams.EpsilonSafeDiv,
@@ -126,7 +126,6 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 	s.Require().True(paramsExpected.PRewardReputer.Equal(params.PRewardReputer), "%s!=%s", paramsExpected.PRewardReputer, params.PRewardReputer)
 	s.Require().True(paramsExpected.CRewardInference.Equal(params.CRewardInference), "%s!=%s", paramsExpected.CRewardInference, params.CRewardInference)
 	s.Require().True(paramsExpected.CRewardForecast.Equal(params.CRewardForecast), "%s!=%s", paramsExpected.CRewardForecast, params.CRewardForecast)
-	s.Require().True(paramsExpected.CNorm.Equal(params.CNorm), "%s!=%s", paramsExpected.CNorm, params.CNorm)
 	s.Require().True(paramsExpected.EpsilonReputer.Equal(params.EpsilonReputer), "%s!=%s", paramsExpected.EpsilonReputer, params.EpsilonReputer)
 	s.Require().Equal(paramsExpected.HalfMaxProcessStakeRemovalsEndBlock, params.HalfMaxProcessStakeRemovalsEndBlock)
 	s.Require().True(paramsExpected.EpsilonSafeDiv.Equal(params.EpsilonSafeDiv), "%s!=%s", paramsExpected.EpsilonSafeDiv, params.EpsilonSafeDiv)

@@ -1,13 +1,13 @@
-package v6
+package v12
 
 import (
-	"encoding/binary"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 
 	errorsmod "cosmossdk.io/errors"
-	storetypes "cosmossdk.io/store/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
-	v7Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
+	oldV11Types "github.com/allora-network/allora-chain/x/emissions/migrations/v12/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -15,38 +15,59 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-// MigrateStore migrates the store from version 5 to version 6
+// MigrateStore migrates the store from version 11 to version 12
 // It does the following:
-// - Migrate params to add and set GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-// - Iterates through all topics to turn on their respective worker and reputer whitelists
+// - Migrate params to remove CNorm (it's now per-topic)
+// - Migrate all topics to add CNorm field with the old global value
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
-	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 5 TO VERSION 6")
-	ctx.Logger().Info("MIGRATING STORE FROM VERSION 5 TO VERSION 6")
+	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 11 TO VERSION 12")
+	ctx.Logger().Info("MIGRATING STORE FROM VERSION 11 TO VERSION 12")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 5 TO VERSION 6")
-	// This also flips on global and topic creator whitelists
+	ctx.Logger().Info("GETTING OLD CNORM VALUE FROM PARAMS")
+	oldCNorm, err := getOldCNormFromParams(store)
+	if err != nil {
+		ctx.Logger().Error("ERROR GETTING OLD CNORM VALUE FROM PARAMS")
+		return err
+	}
+	ctx.Logger().Info("OLD CNORM VALUE", "cNorm", oldCNorm)
+
+	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 11 TO VERSION 12")
 	if err := MigrateParams(store, cdc); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 5 TO VERSION 6")
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 11 TO VERSION 12")
 		return err
 	}
 
-	ctx.Logger().Info("FLIPPING ON ALL TOPIC WORKER AND REPUTER WHITELISTS - VERSION 5 TO VERSION 6")
-	if err := FlipOnTopicWhitelists(ctx, store, cdc, emissionsKeeper); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER FlipOnTopicWhitelists() - VERSION 5 TO VERSION 6")
+	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 11 TO VERSION 12")
+	if err := MigrateTopics(ctx, store, cdc, oldCNorm); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 11 TO VERSION 12")
 		return err
 	}
 
-	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 5 TO VERSION 6 COMPLETE")
+	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 11 TO VERSION 12 COMPLETE")
 	return nil
 }
 
-// Migrate params for this new version
-// The changes are the addition of GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
+// getOldCNormFromParams extracts the CNorm value from the old params before migration
+func getOldCNormFromParams(store storetypes.KVStore) (alloraMath.Dec, error) {
+	oldParams := oldV11Types.Params{} //nolint: exhaustruct
+	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
+	if oldParamsBytes == nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
+	}
+	err := proto.Unmarshal(oldParamsBytes, &oldParams)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "failed to unmarshal old parameters")
+	}
+	return oldParams.CNorm, nil
+}
+
+// MigrateParams migrates params by removing the CNorm field
+// CNorm is now stored per-topic instead of globally
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV5Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
+	oldParams := oldV11Types.Params{} //nolint: exhaustruct
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -56,12 +77,9 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		return errorsmod.Wrapf(err, "failed to unmarshal old parameters")
 	}
 
-	defaultParams := emissionstypes.DefaultParams()
-
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
-	// ADDED:
-	//      GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-	newParams := v7Types.Params{ //nolint: exhaustruct
+	// REMOVED: CNorm
+	newParams := emissionstypes.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,
@@ -95,7 +113,6 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		PRewardReputer:                      oldParams.PRewardReputer,
 		CRewardInference:                    oldParams.CRewardInference,
 		CRewardForecast:                     oldParams.CRewardForecast,
-		CNorm:                               oldParams.CNorm,
 		EpsilonReputer:                      oldParams.EpsilonReputer,
 		HalfMaxProcessStakeRemovalsEndBlock: oldParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      oldParams.EpsilonSafeDiv,
@@ -105,10 +122,17 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		MaxStringLength:                     oldParams.MaxStringLength,
 		InitialRegretQuantile:               oldParams.InitialRegretQuantile,
 		PNormSafeDiv:                        oldParams.PNormSafeDiv,
-		// NEW PARAMS
-		GlobalWhitelistEnabled:       defaultParams.GlobalWhitelistEnabled,
-		TopicCreatorWhitelistEnabled: defaultParams.TopicCreatorWhitelistEnabled,
-		MinExperiencedWorkerRegrets:  defaultParams.MinExperiencedWorkerRegrets,
+		GlobalWhitelistEnabled:              oldParams.GlobalWhitelistEnabled,
+		TopicCreatorWhitelistEnabled:        oldParams.TopicCreatorWhitelistEnabled,
+		MinExperiencedWorkerRegrets:         oldParams.MinExperiencedWorkerRegrets,
+		InferenceOutlierDetectionThreshold:  oldParams.InferenceOutlierDetectionThreshold,
+		InferenceOutlierDetectionAlpha:      oldParams.InferenceOutlierDetectionAlpha,
+		LambdaInitialScore:                  oldParams.LambdaInitialScore,
+		GlobalWorkerWhitelistEnabled:        oldParams.GlobalWorkerWhitelistEnabled,
+		GlobalReputerWhitelistEnabled:       oldParams.GlobalReputerWhitelistEnabled,
+		GlobalAdminWhitelistAppended:        oldParams.GlobalAdminWhitelistAppended,
+		MaxWhitelistInputArrayLength:        oldParams.MaxWhitelistInputArrayLength,
+		MinWeightThresholdForStdnorm:        oldParams.MinWeightThresholdForStdnorm,
 	}
 
 	store.Delete(emissionstypes.ParamsKey)
@@ -116,35 +140,40 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	return nil
 }
 
-// Iterate through all topics and turn on their respective worker and reputer whitelists
-func FlipOnTopicWhitelists(
+// MigrateTopics iterates through all topics and adds CNorm field with the old global value
+func MigrateTopics(
 	ctx sdk.Context,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
-	emissionsKeeper keeper.Keeper,
+	oldCNorm alloraMath.Dec,
 ) error {
-	nextTopicId, err := emissionsKeeper.GetNextTopicId(ctx)
-	if err != nil {
-		return err
-	}
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	iterator := topicStore.Iterator(nil, nil)
+	defer iterator.Close()
 
-	// Iterate all topics to migrate using collections.go api
-	// Turn on worker and reputer whitelists for each topic
-	for id := uint64(1); id < nextTopicId; id++ {
-		idByte := make([]byte, 8)
-		binary.BigEndian.PutUint64(idByte, id)
-		ctx.Logger().Info("MIGRATION V6: Updating topic", "topicId", id)
+	ctx.Logger().Info("MIGRATION V12: Migrating topics to add CNorm", "cNorm", oldCNorm)
 
-		err = emissionsKeeper.EnableTopicWorkerWhitelist(ctx, id)
+	topicsToChange := make(map[string]emissionstypes.Topic, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		var topic emissionstypes.Topic
+		err := proto.Unmarshal(iterator.Value(), &topic)
 		if err != nil {
-			return errorsmod.Wrapf(err, "failed to enable topic %d worker whitelist", id)
+			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
-		err = emissionsKeeper.EnableTopicReputerWhitelist(ctx, id)
-		if err != nil {
-			return errorsmod.Wrapf(err, "failed to enable topic %d reputer whitelist", id)
-		}
+		ctx.Logger().Debug("MIGRATION V12: Updating topic", "topicId", topic.Id)
+
+		topic.CNorm = oldCNorm
+
+		topicsToChange[string(iterator.Key())] = topic
+	}
+	_ = iterator.Close()
+
+	for key, topic := range topicsToChange {
+		topicStore.Set([]byte(key), cdc.MustMarshal(&topic))
+		ctx.Logger().Debug("MIGRATION V12: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
 	}
 
+	ctx.Logger().Info("MIGRATION V12: Topics migration complete", "topicsUpdated", len(topicsToChange))
 	return nil
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
 	migrationV10 "github.com/allora-network/allora-chain/x/emissions/migrations/v10"
 	migrationV11 "github.com/allora-network/allora-chain/x/emissions/migrations/v11"
+	migrationV12 "github.com/allora-network/allora-chain/x/emissions/migrations/v12"
 	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
 	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
