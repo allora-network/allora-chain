@@ -3334,7 +3334,7 @@ func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest)
 	}
 
 	if !hasChanges {
-		return types.Topic{}, errorsmod.Wrap(types.ErrNoUpdateFields, "no fields to update")
+		return topic, nil
 	}
 
 	if err := updatedTopic.Validate(params); err != nil {
