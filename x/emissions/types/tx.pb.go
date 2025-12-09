@@ -73,7 +73,6 @@ type OptionalParams struct {
 	PRewardReputer                      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,35,rep,name=p_reward_reputer,json=pRewardReputer,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_reputer"`
 	CRewardInference                    []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,36,rep,name=c_reward_inference,json=cRewardInference,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"c_reward_inference"`
 	CRewardForecast                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,37,rep,name=c_reward_forecast,json=cRewardForecast,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"c_reward_forecast"`
-	CNorm                               []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,38,rep,name=c_norm,json=cNorm,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"c_norm"`
 	EpsilonReputer                      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,40,rep,name=epsilon_reputer,json=epsilonReputer,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"epsilon_reputer"`
 	HalfMaxProcessStakeRemovalsEndBlock []uint64                                          `protobuf:"varint,42,rep,packed,name=half_max_process_stake_removals_end_block,json=halfMaxProcessStakeRemovalsEndBlock,proto3" json:"half_max_process_stake_removals_end_block,omitempty"`
 	DataSendingFee                      []cosmossdk_io_math.Int                           `protobuf:"bytes,43,rep,name=data_sending_fee,json=dataSendingFee,proto3,customtype=cosmossdk.io/math.Int" json:"data_sending_fee"`
@@ -417,6 +416,7 @@ type CreateNewTopicRequest struct {
 	ActiveReputerQuantile    github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,18,opt,name=active_reputer_quantile,json=activeReputerQuantile,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"active_reputer_quantile"`
 	EnableWorkerWhitelist    bool                                            `protobuf:"varint,19,opt,name=enable_worker_whitelist,json=enableWorkerWhitelist,proto3" json:"enable_worker_whitelist,omitempty"`
 	EnableReputerWhitelist   bool                                            `protobuf:"varint,20,opt,name=enable_reputer_whitelist,json=enableReputerWhitelist,proto3" json:"enable_reputer_whitelist,omitempty"`
+	CNorm                    github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,21,opt,name=c_norm,json=cNorm,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"c_norm"`
 }
 
 func (m *CreateNewTopicRequest) Reset()         { *m = CreateNewTopicRequest{} }
@@ -6703,22 +6703,6 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0xc2
 		}
 	}
-	if len(m.CNorm) > 0 {
-		for iNdEx := len(m.CNorm) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.CNorm[iNdEx].Size()
-				i -= size
-				if _, err := m.CNorm[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x2
-			i--
-			dAtA[i] = 0xb2
-		}
-	}
 	if len(m.CRewardForecast) > 0 {
 		for iNdEx := len(m.CRewardForecast) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -7364,6 +7348,18 @@ func (m *CreateNewTopicRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	{
+		size := m.CNorm.Size()
+		i -= size
+		if _, err := m.CNorm.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1
+	i--
+	dAtA[i] = 0xaa
 	if m.EnableReputerWhitelist {
 		i--
 		if m.EnableReputerWhitelist {
@@ -10456,12 +10452,6 @@ func (m *OptionalParams) Size() (n int) {
 			n += 2 + l + sovTx(uint64(l))
 		}
 	}
-	if len(m.CNorm) > 0 {
-		for _, e := range m.CNorm {
-			l = e.Size()
-			n += 2 + l + sovTx(uint64(l))
-		}
-	}
 	if len(m.EpsilonReputer) > 0 {
 		for _, e := range m.EpsilonReputer {
 			l = e.Size()
@@ -10652,6 +10642,8 @@ func (m *CreateNewTopicRequest) Size() (n int) {
 	if m.EnableReputerWhitelist {
 		n += 3
 	}
+	l = m.CNorm.Size()
+	n += 2 + l + sovTx(uint64(l))
 	return n
 }
 
@@ -13605,42 +13597,6 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 38:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CNorm", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_allora_network_allora_chain_math.Dec
-			m.CNorm = append(m.CNorm, v)
-			if err := m.CNorm[len(m.CNorm)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		case 40:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field EpsilonReputer", wireType)
@@ -15440,6 +15396,40 @@ func (m *CreateNewTopicRequest) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.EnableReputerWhitelist = bool(v != 0)
+		case 21:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CNorm", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.CNorm.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -15775,6 +15765,38 @@ func (m *UpdateTopicRequest) Unmarshal(dAtA []byte) error {
 			if err := m.PNorm.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CNorm", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CNorm = append(m.CNorm, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

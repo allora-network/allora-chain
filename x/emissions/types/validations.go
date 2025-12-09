@@ -916,6 +916,12 @@ func (topic Topic) Validate(params Params) error {
 	if !isAlloraDecZeroOrLessThanOne(topic.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active reputer quantile must be between 0 and 1 inclusive")
 	}
+	if err := ValidateDec(topic.CNorm); err != nil {
+		return errors.Wrap(err, "topic c_norm is invalid")
+	}
+	if topic.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || topic.CNorm.Gt(alloraMath.MustNewDecFromString("100")) {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
+	}
 
 	return nil
 }
@@ -1191,6 +1197,9 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	}
 	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(msg.PNorm) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
+	}
+	if msg.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || msg.CNorm.Gt(alloraMath.MustNewDecFromString("100")) || ValidateDec(msg.CNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "c_norm must be between -100 and 100")
 	}
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")

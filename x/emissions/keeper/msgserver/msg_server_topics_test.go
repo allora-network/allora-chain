@@ -114,6 +114,49 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			expectedError: "loss method invalid",
 			expectSuccess: false,
 		},
+		{
+			name: "Fails with CNorm below -100",
+			setup: func() *types.CreateNewTopicRequest {
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.CNorm = alloraMath.MustNewDecFromString("-101")
+				return msg
+			},
+			expectedError: "c_norm must be between -100 and 100",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails with CNorm above 100",
+			setup: func() *types.CreateNewTopicRequest {
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.CNorm = alloraMath.MustNewDecFromString("101")
+				return msg
+			},
+			expectedError: "c_norm must be between -100 and 100",
+			expectSuccess: false,
+		},
+		{
+			name: "Success with valid CNorm value",
+			setup: func() *types.CreateNewTopicRequest {
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.CNorm = alloraMath.MustNewDecFromString("0.75")
+				return msg
+			},
+			postCheck: func(topicId uint64) {
+				topic, err := keeper.GetTopic(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().Equal(alloraMath.MustNewDecFromString("0.75"), topic.CNorm)
+			},
+			expectSuccess: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -440,6 +483,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -463,6 +507,60 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	require.Equal(alloraMath.MustNewDecFromString("0.25"), updatedTopic.AlphaRegret)
 	require.Equal(alloraMath.MustNewDecFromString("0.3"), updatedTopic.MeritSortitionAlpha)
 	require.Equal(alloraMath.MustNewDecFromString("3.5"), updatedTopic.PNorm)
+
+	// Test updating CNorm with valid values
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
+		CNorm:               []string{"50.5"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("50.5"), updatedTopic.CNorm)
+
+	// Test updating CNorm to boundary value -100
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
+		CNorm:               []string{"-100"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("-100"), updatedTopic.CNorm)
+
+	// Test updating CNorm to boundary value 100
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
+		CNorm:               []string{"100"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("100"), updatedTopic.CNorm)
 
 	// Add a fulfilled nonce (window closed) and ensure updates still allowed
 	s.Require().NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 1}))
@@ -527,6 +625,48 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "p-norm")
+
+	// Invalid c_norm (below -100)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
+		CNorm:               []string{"-101"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "c_norm")
+
+	// Invalid c_norm (above 100)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
+		CNorm:               []string{"101"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "c_norm")
+
+	// Invalid c_norm (not a valid number)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            nil,
+		LossMethod:          nil,
+		AlphaRegret:         nil,
+		MeritSortitionAlpha: nil,
+		PNorm:               nil,
+		CNorm:               []string{"invalid"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "c_norm")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindowOpen() {

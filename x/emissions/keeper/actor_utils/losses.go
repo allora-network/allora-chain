@@ -196,7 +196,7 @@ func CloseReputerNonce(
 			NetworkLosses:         networkLossBundle,
 			Nonce:                 nonce,
 			AlphaRegret:           topic.AlphaRegret,
-			CNorm:                 params.CNorm,
+			CNorm:                 topic.CNorm,
 			PNorm:                 topic.PNorm,
 			EpsilonTopic:          topic.Epsilon,
 			InitialRegretQuantile: params.InitialRegretQuantile,
@@ -248,7 +248,7 @@ func CloseReputerNonce(
 			ForecasterToRegret: forecasterRegrets,
 			EpsilonTopic:       topic.Epsilon,
 			PNorm:              topic.PNorm,
-			CNorm:              params.CNorm,
+			CNorm:              topic.CNorm,
 			StdDevPlusEpsilon:  stdDevPlusEpsilon,
 		},
 	)

@@ -47,7 +47,6 @@ func DefaultParams() Params {
 		PRewardReputer:                      alloraMath.NewDecFromInt64(1),                // fiducial value for rewards calculation
 		CRewardInference:                    alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
 		CRewardForecast:                     alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
-		CNorm:                               alloraMath.MustNewDecFromString("0.75"),      // fiducial value for inference synthesis
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                   // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
@@ -175,9 +174,6 @@ func (p Params) Validate() error {
 	}
 	if err := validateCRewardForecast(p.CRewardForecast); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: c reward forecast")
-	}
-	if err := validateCNorm(p.CNorm); err != nil {
-		return errorsmod.Wrap(err, "params validation failure: c norm")
 	}
 	if err := validateHalfMaxProcessStakeRemovalsEndBlock(p.HalfMaxProcessStakeRemovalsEndBlock); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: half max process stake removals end block")
@@ -402,17 +398,6 @@ func validateCRewardInference(i alloraMath.Dec) error {
 // fiducial value for rewards calculation
 // should be x > 0
 func validateCRewardForecast(i alloraMath.Dec) error {
-	if err := ValidateDec(i); err != nil {
-		return err
-	} else if i.Lte(alloraMath.ZeroDec()) {
-		return ErrValidationMustBeGreaterthanZero
-	}
-	return nil
-}
-
-// fiducial value for inference synthesis
-// should be x > 0
-func validateCNorm(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
 	} else if i.Lte(alloraMath.ZeroDec()) {

@@ -4066,7 +4066,6 @@ func mockUninitializedParams() types.Params {
 		PRewardReputer:                      alloraMath.NewDecFromInt64(1),
 		CRewardInference:                    alloraMath.MustNewDecFromString("0.1"),
 		CRewardForecast:                     alloraMath.MustNewDecFromString("0.1"),
-		CNorm:                               alloraMath.MustNewDecFromString("0.1"),
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(1),
 		DataSendingFee:                      cosmosMath.NewInt(0),
 		MaxElementsPerForecast:              uint64(0),
