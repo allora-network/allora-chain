@@ -4,16 +4,17 @@
 package oldtypes
 
 import (
-	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+
+	cosmossdk_io_math "cosmossdk.io/math"
 	github_com_allora_network_allora_chain_math "github.com/allora-network/allora-chain/math"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	io "io"
-	math "math"
-	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -317,10 +318,6 @@ func (m *Params) GetMaxWhitelistInputArrayLength() uint64 {
 		return m.MaxWhitelistInputArrayLength
 	}
 	return 0
-}
-
-func init() {
-	proto.RegisterType((*Params)(nil), "emissions.v8.Params")
 }
 
 func init() { proto.RegisterFile("emissions/v8/params.proto", fileDescriptor_8dbbe45df843ba21) }

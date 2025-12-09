@@ -174,4 +174,3 @@ message Params {
     (gogoproto.nullable) = false
   ];
 }
-

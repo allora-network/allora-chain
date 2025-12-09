@@ -85,4 +85,3 @@ message TopicIdWeightPair {
     (gogoproto.nullable) = false
   ];
 }
-
