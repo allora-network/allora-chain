@@ -273,7 +273,7 @@ func MigrateTopics(
 }
 
 func getNewTopic(oldMsg oldtypes.Topic) types.Topic {
-	return types.Topic{
+	return types.Topic{ //nolint:exhaustruct
 		Id:             oldMsg.Id,
 		Creator:        oldMsg.Creator,
 		Metadata:       oldMsg.Metadata,

@@ -224,6 +224,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -280,6 +281,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -385,6 +387,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		AlphaRegret:         nil,
 		MeritSortitionAlpha: nil,
 		PNorm:               nil,
+		CNorm:               nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -420,6 +423,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -695,6 +699,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -753,6 +758,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)

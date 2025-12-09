@@ -232,7 +232,7 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 
 // copyTopic duplicates a topic into a new struct
 func copyTopic(original emissionstypes.Topic) emissionstypes.Topic {
-	return emissionstypes.Topic{
+	return emissionstypes.Topic{ //nolint:exhaustruct
 		Id:                       original.Id,
 		Creator:                  original.Creator,
 		Metadata:                 original.Metadata,

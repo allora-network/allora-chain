@@ -55,6 +55,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
