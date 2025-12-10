@@ -263,8 +263,8 @@ func TestCollectRouteParts(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		tc := tc
+	for i := range tests {
+		tc := tests[i]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
