@@ -6,7 +6,7 @@ import (
 )
 
 // TestInactivateTopicWithoutMinWeightReset_TopicNotFoundInBlockRemovesAllTopics
-// Tests that when a topic is not found in the block's active topics list, all existing topics remain unchanged (no-op).
+// Tests that when a topic is not found in the block's active topics list, an error is returned.
 func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicNotFoundInBlockRemovesAllTopics() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -59,12 +59,13 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicNotFound
 
 	// Inactivate topic that is not in the block's active topics list
 	err = k.InactivateTopic(ctx, nonExistentInBlockTopicId)
-	s.Require().NoError(err, "InactivateTopic should not error when topic not found in block")
+	s.Require().Error(err, "InactivateTopic should error when topic not found in block")
+	s.Require().ErrorIs(err, types.ErrNotFound, "Error should be ErrNotFound")
 
-	// Verify all existing topics remain unchanged (no-op behavior)
+	// Verify all existing topics remain unchanged (error prevents modification)
 	retrievedTopics, err = k.GetActiveTopicIdsAtBlock(ctx, block)
 	s.Require().NoError(err)
-	s.Require().Len(retrievedTopics.TopicIds, 3, "All topics should remain unchanged when topic not found")
+	s.Require().Len(retrievedTopics.TopicIds, 3, "All topics should remain unchanged when error occurs")
 	s.Require().Contains(retrievedTopics.TopicIds, topicId1, "topicId1 should remain")
 	s.Require().Contains(retrievedTopics.TopicIds, topicId2, "topicId2 should remain")
 	s.Require().Contains(retrievedTopics.TopicIds, topicId3, "topicId3 should remain")
@@ -124,7 +125,7 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicFoundInB
 }
 
 // TestInactivateTopicWithoutMinWeightReset_EmptyBlockListNoOp
-// Tests that inactivating a topic when the block has no active topics performs a no-op.
+// Tests that inactivating a topic when the block has no active topics returns an error.
 func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_EmptyBlockListNoOp() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -155,9 +156,10 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_EmptyBlockLis
 
 	// Inactivate topic when block has no active topics
 	err = k.InactivateTopic(ctx, topicId)
-	s.Require().NoError(err)
+	s.Require().Error(err, "InactivateTopic should error when topic not found in block")
+	s.Require().ErrorIs(err, types.ErrNotFound, "Error should be ErrNotFound")
 
-	// Verify block still has no active topics (no-op behavior)
+	// Verify block still has no active topics (error prevents modification)
 	retrievedTopics, err = k.GetActiveTopicIdsAtBlock(ctx, block)
 	s.Require().NoError(err)
 	s.Require().Empty(retrievedTopics.TopicIds, "Block should still have no active topics")

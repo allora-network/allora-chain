@@ -131,6 +131,7 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 	if err != nil {
 		return errors.Wrap(err, "failed to get active topic ids at block")
 	}
+	topicFound := false
 	// Remove the topic from the active topics at the block
 	// If the topic is not found in the active topics at the block, no op
 	for i, id := range topicIdsActiveAtBlock.TopicIds {
@@ -143,8 +144,13 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 			if err != nil {
 				return errors.Wrap(err, "failed to set block to active topics")
 			}
+			topicFound = true
 			break
 		}
+	}
+
+	if !topicFound {
+		return errors.Wrap(types.ErrNotFound, "active topic expected to be found in block's active topics list")
 	}
 
 	err = k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
