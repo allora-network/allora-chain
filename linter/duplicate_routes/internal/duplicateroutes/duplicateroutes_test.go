@@ -156,6 +156,134 @@ func TestScanRecursesDirectories(t *testing.T) {
 	}
 }
 
+func TestCollectRouteParts(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		lines     []string
+		start     int
+		wantParts []string
+		wantLast  int
+	}{
+		{
+			name:      "single literal ends same line",
+			lines:     []string{`option (google.api.http).get = "/foo";`},
+			start:     0,
+			wantParts: []string{"/foo"},
+			wantLast:  0,
+		},
+		{
+			name: "single literal semicolon next line",
+			lines: []string{
+				`option (google.api.http).get = "/foo"`,
+				`;`,
+			},
+			start:     0,
+			wantParts: []string{"/foo"},
+			wantLast:  1,
+		},
+		{
+			name: "multi line fragments joined",
+			lines: []string{
+				`option (google.api.http).get = "/foo/"`,
+				`  "bar/"`,
+				`  "baz";`,
+			},
+			start:     0,
+			wantParts: []string{"/foo/", "bar/", "baz"},
+			wantLast:  2,
+		},
+		{
+			name: "multiple literals same line",
+			lines: []string{
+				`option (google.api.http).get = "/foo" + "/bar";`,
+			},
+			start:     0,
+			wantParts: []string{"/foo", "/bar"},
+			wantLast:  0,
+		},
+		{
+			name:      "empty literal captured",
+			lines:     []string{`option (google.api.http).get = "" ;`},
+			start:     0,
+			wantParts: []string{""},
+			wantLast:  0,
+		},
+		{
+			name: "no semicolon before EOF",
+			lines: []string{
+				`option (google.api.http).get = "/foo/"`,
+				`  "bar"`,
+			},
+			start:     0,
+			wantParts: []string{"/foo/", "bar"},
+			wantLast:  1,
+		},
+		{
+			name: "start mid statement",
+			lines: []string{
+				`option (google.api.http).get = "/foo/"`,
+				`  "bar";`,
+			},
+			start:     1,
+			wantParts: []string{"bar"},
+			wantLast:  1,
+		},
+		{
+			name: "escaped quotes preserved",
+			lines: []string{
+				`option (google.api.http).get = "/fo\"o/"`,
+				`  "ba\"r";`,
+			},
+			start:     0,
+			wantParts: []string{`/fo\"o/`, `ba\"r`},
+			wantLast:  1,
+		},
+		{
+			name: "no literals found",
+			lines: []string{
+				`option (google.api.http).get = ;`,
+			},
+			start:     0,
+			wantParts: []string{},
+			wantLast:  0,
+		},
+		{
+			name: "stop at first terminator",
+			lines: []string{
+				`option (google.api.http).get = "/foo";`,
+				`option (google.api.http).get = "/bar/"`,
+				`  "baz";`,
+				`option (google.api.http).get = "/qux";`,
+			},
+			start:     1,
+			wantParts: []string{"/bar/", "baz"},
+			wantLast:  2,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			gotParts, gotLast := collectRouteParts(tc.lines, tc.start)
+			if len(gotParts) != len(tc.wantParts) {
+				t.Fatalf("collectRouteParts() parts length = %d, want %d (%v vs %v)", len(gotParts), len(tc.wantParts), gotParts, tc.wantParts)
+			}
+			for i, got := range gotParts {
+				if got != tc.wantParts[i] {
+					t.Fatalf("collectRouteParts() parts[%d] = %q, want %q (all parts: %v vs %v)", i, got, tc.wantParts[i], gotParts, tc.wantParts)
+				}
+			}
+			if gotLast != tc.wantLast {
+				t.Fatalf("collectRouteParts() last = %d, want %d", gotLast, tc.wantLast)
+			}
+		})
+	}
+}
+
 func assertLines(t *testing.T, got, want []int) {
 	t.Helper()
 	if len(got) != len(want) {
