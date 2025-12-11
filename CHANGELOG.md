@@ -79,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * [#871](https://github.com/allora-network/allora-chain/pull/871) Remove recover from Begin/EndBlockers, align mint/emissions
+* [#876](https://github.com/allora-network/allora-chain/pull/876) Fix jagged OOIF matrix for events containing value bundle
 
 ### Security
 
