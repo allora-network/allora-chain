@@ -245,14 +245,18 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 
 	found := false
 	for _, attr := range attributes {
-		if strings.Contains(attr.Key, "topic") {
+		if strings.Contains(attr.Key, "topic_id") {
+			require.Equal(t, "\"1\"", attr.Value)
+			foundTopicId = true
+		}
+		if attr.Key == "topic" {
 			require.Contains(t, attr.Value, "updated metadata")
 			require.Contains(t, attr.Value, "\"id\":\"1\"")
-			found = true
-			break
+			foundTopic = true
 		}
 	}
-	require.True(t, found, "expected topic attribute to be present in event")
+	require.True(t, foundTopic, "expected topic attribute to be present in event")
+	require.True(t, foundTopicId, "expected topic_id attribute to be present in event")
 }
 
 func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {

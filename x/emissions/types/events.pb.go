@@ -716,6 +716,13 @@ func (m *EventTopicUpdated) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_EventTopicUpdated proto.InternalMessageInfo
 
+func (m *EventTopicUpdated) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
 func (m *EventTopicUpdated) GetTopic() *Topic {
 	if m != nil {
 		return m.Topic
@@ -5309,6 +5316,11 @@ func (m *EventTopicUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0xa
 	}
+	if m.TopicId != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -8343,6 +8355,9 @@ func (m *EventTopicUpdated) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovEvents(uint64(m.TopicId))
+	}
 	if m.Topic != nil {
 		l = m.Topic.Size()
 		n += 1 + l + sovEvents(uint64(l))
@@ -11374,6 +11389,25 @@ func (m *EventTopicUpdated) Unmarshal(dAtA []byte) error {
 		}
 		switch fieldNum {
 		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Topic", wireType)
 			}
