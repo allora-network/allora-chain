@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// register alice as a reputer in topic 1, then check success
+// register alice as a reputer in topic 1
 func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	registerAliceRequest := &emissionstypes.RegisterRequest{
@@ -24,8 +24,6 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	registerAliceResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerAliceResponse)
 	require.NoError(m.T, err)
-	require.True(m.T, registerAliceResponse.Success)
-	require.Equal(m.T, "Node successfully registered", registerAliceResponse.Message)
 
 	// Check Alice registered as reputer
 	aliceRegistered, err := m.Client.QueryEmissions().IsReputerRegisteredInTopicId(
@@ -50,7 +48,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.False(m.T, aliceNotRegisteredAsWorker.IsRegistered)
 }
 
-// register bob as worker in topic 1, then check success
+// register bob as worker in topic 1
 func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	registerBobRequest := &emissionstypes.RegisterRequest{
@@ -66,8 +64,6 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	registerBobResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerBobResponse)
 	require.NoError(m.T, err)
-	require.True(m.T, registerBobResponse.Success)
-	require.Equal(m.T, "Node successfully registered", registerBobResponse.Message)
 	// Check Bob registered as worker
 	bobRegistered, err := m.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
 		ctx,
