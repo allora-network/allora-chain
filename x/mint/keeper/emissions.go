@@ -10,6 +10,11 @@ import (
 	"github.com/allora-network/allora-chain/x/mint/types"
 )
 
+// Percentage of foundation tokens that are locked at TGE
+var FoundationInitialLockedPercentage = math.LegacyMustNewDecFromStr("0.5")
+
+// GetLockedVestingTokens calculates the number of uncirculating (locked) tokens
+// for vesting categories according to the updated tokenomics.
 // return the uncirculating supply, i.e. tokens on a vesting schedule
 // these tokens will be custodied by a centralized actor off chain.
 // this function returns the circulating supply based off of what
@@ -19,45 +24,75 @@ func GetLockedVestingTokens(
 	blockHeight math.Int,
 	params types.Params,
 	monthsAlreadyUnlocked math.Int,
-) (total, preseedInvestors, investors, team math.Int, updatedMonthsUnlocked math.Int) {
-	// foundation is unlocked from genesis
-	// participants are unlocked from genesis
-	// investors and team tokens are locked on a 1 year cliff three year vesting schedule
-	// before 1 year, all tokens are locked
-	// between 1 and 3 years, investors and team tokens are vesting and partially unlocked
-	// after 3 years, all tokens are unlocked
+) (
+	totalLocked, preseedInvestorsLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked,
+	updatedMonthsUnlocked math.Int, err error,
+) {
+	if blocksPerMonth == 0 {
+		return math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), math.ZeroInt(), errors.Wrap(types.ErrInvalidBlocksPerMonth, "blocks per month cannot be zero")
+	}
+	// Define periods
+	twelve := math.NewInt(12)
+	twentyFour := math.NewInt(24)
+	thirtySix := math.NewInt(36)
+
+	// ---- 1. Extract percentage allocations from params ----
 	maxSupply := params.MaxSupply.ToLegacyDec()
 	percentInvestors := params.InvestorsPercentOfTotalSupply
 	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
 	percentTeam := params.TeamPercentOfTotalSupply
+	percentFoundation := params.FoundationTreasuryPercentOfTotalSupply
+	lockedFoundationPercentage := percentFoundation.Mul(FoundationInitialLockedPercentage)
+	// Full amounts
 	fullInvestors := percentInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullPreseedInvestors := percentPreseedInvestors.MulTruncate(maxSupply).TruncateInt()
 	fullTeam := percentTeam.MulTruncate(maxSupply).TruncateInt()
-	thirtySix := math.NewInt(36)
-	// calculate whether the number of months unlocked should be allowed to increase
-	calcMonthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth))
-	if calcMonthsUnlocked.GTE(thirtySix) {
-		calcMonthsUnlocked = thirtySix
+
+	// Locked sub-amounts
+	lockedFoundationTotalAmount := lockedFoundationPercentage.MulTruncate(maxSupply).TruncateInt()
+
+	// ---- 3. Determine months since TGE ----
+	calculatedMonthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth))
+	if calculatedMonthsUnlocked.GT(monthsAlreadyUnlocked) {
+		monthsAlreadyUnlocked = calculatedMonthsUnlocked
 	}
-	if monthsAlreadyUnlocked.GTE(thirtySix) {
+	// Clamp to max vesting length
+	if monthsAlreadyUnlocked.GT(thirtySix) {
 		monthsAlreadyUnlocked = thirtySix
 	}
-	if calcMonthsUnlocked.GT(monthsAlreadyUnlocked) {
-		monthsAlreadyUnlocked = calcMonthsUnlocked
+
+	// Determine Foundation tokens locked
+	// - At TGE: foundationInitialUnlock percent unlocked immediately
+	// - Remaining (1 - foundationInitialUnlock) percent vests linearly over 24 months
+	foundationVestingDuration := twentyFour
+	if monthsAlreadyUnlocked.LT(foundationVestingDuration) {
+		remainingMonthsFoundation := foundationVestingDuration.Sub(monthsAlreadyUnlocked)
+		foundationLocked = lockedFoundationTotalAmount.Mul(remainingMonthsFoundation).Quo(foundationVestingDuration)
+	} else {
+		foundationLocked = math.ZeroInt() // everything unlocked already
 	}
-	// one year cliff
-	twelve := math.NewInt(12)
+
+	// one year cliff : preseed, investors, team
 	if monthsAlreadyUnlocked.LT(twelve) {
-		allLocked := fullPreseedInvestors.Add(fullInvestors).Add(fullTeam)
-		return allLocked, fullPreseedInvestors, fullInvestors, fullTeam, monthsAlreadyUnlocked
+		investorsLocked = fullInvestors
+		preseedInvestorsLocked = fullPreseedInvestors
+		teamLocked = fullTeam
+	} else if monthsAlreadyUnlocked.LT(thirtySix) {
+		remainingMonths := thirtySix.Sub(monthsAlreadyUnlocked)
+		investorsLocked = fullInvestors.Mul(remainingMonths).Quo(thirtySix)
+		preseedInvestorsLocked = fullPreseedInvestors.Mul(remainingMonths).Quo(thirtySix)
+		teamLocked = fullTeam.Mul(remainingMonths).Quo(thirtySix)
+	} else {
+		investorsLocked = math.ZeroInt()
+		preseedInvestorsLocked = math.ZeroInt()
+		teamLocked = math.ZeroInt()
 	}
-	// use the value from the keeper for monthsLocked if it's greater than the calculated value
-	// otherwise use the calculated value
-	monthsLocked := thirtySix.Sub(monthsAlreadyUnlocked)
-	investors = fullInvestors.Mul(monthsLocked).Quo(thirtySix)
-	preseedInvestors = fullPreseedInvestors.Mul(monthsLocked).Quo(thirtySix)
-	team = fullTeam.Mul(monthsLocked).Quo(thirtySix)
-	return preseedInvestors.Add(investors).Add(team), preseedInvestors, investors, team, monthsAlreadyUnlocked
+	// participants are unlocked from start
+	participantsLocked = math.ZeroInt()
+
+	totalLocked = preseedInvestorsLocked.Add(investorsLocked).Add(teamLocked).Add(foundationLocked).Add(participantsLocked)
+	return totalLocked, preseedInvestorsLocked, investorsLocked, teamLocked, foundationLocked, participantsLocked, monthsAlreadyUnlocked, nil
+
 }
 
 // helper function to get the number of staked tokens on the network
@@ -96,12 +131,15 @@ func GetCirculatingSupply(
 		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
 	}
 	totalSupply = params.MaxSupply
-	lockedVestingTokens, _, _, _, updatedMonthsUnlocked = GetLockedVestingTokens(
+	lockedVestingTokens, _, _, _, _, _, updatedMonthsUnlocked, err = GetLockedVestingTokens(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		params,
 		monthsAlreadyUnlocked,
 	)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
 	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, params)
 	if err != nil {
 		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, math.Int{}, err

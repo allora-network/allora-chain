@@ -29,7 +29,8 @@ func NewMsgServerImpl(k Keeper) types.MsgServiceServer {
 // if the sender is a whitelist admin
 // it optionally also allows recalculating the target emission
 func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (*types.UpdateParamsResponse, error) {
-	isAdmin, err := ms.IsWhitelistAdmin(ctx, msg.Sender)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	isAdmin, err := ms.IsWhitelistAdmin(sdkCtx, msg.Sender)
 	if err != nil {
 		return nil, errors.Wrap(err, "error checking if admin")
 	}
@@ -39,6 +40,38 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 
 	if err := msg.Params.Validate(); err != nil {
 		return nil, errors.Wrap(err, "error validating params")
+	}
+
+	moduleParams, err := ms.Keeper.GetParams(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting module params")
+	}
+
+	startingEmissionsBlockHeight, err := ms.Keeper.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting starting emissions block height")
+	}
+
+	// TODO Add here: if emissions are to be enabled in the request, and it was disabled before,
+	// we need to set the starting block height,
+	// and schedule a job to recalculate the target emission at the end of the month and every month thereafter.
+	if msg.Params.EmissionEnabled {
+		if !moduleParams.EmissionEnabled && startingEmissionsBlockHeight == 0 {
+			// reset local var - may be used below if recalculation is requested
+			startingEmissionsBlockHeight = sdkCtx.BlockHeight()
+			// only if emissions move from disabled to enabled, we need to set the starting block height
+			// and schedule a job to recalculate the target emission at the end of the month and every month thereafter.
+			err = ms.Keeper.SetStartingEmissionsBlockHeight(ctx, startingEmissionsBlockHeight)
+			if err != nil {
+				return nil, errors.Wrap(err, "error setting starting emissions block height")
+			}
+			// force the months already unlocked to 0
+			err = ms.Keeper.SetMonthsAlreadyUnlocked(ctx, math.NewInt(0))
+			if err != nil {
+				return nil, errors.Wrap(err, "error setting months already unlocked")
+			}
+			ms.Logger(ctx).Info("Starting emissions block height set", "starting emissions block height", sdkCtx.BlockHeight())
+		}
 	}
 
 	if err := ms.Params.Set(ctx, msg.Params); err != nil {
@@ -60,10 +93,11 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 		if err != nil {
 			return nil, errors.Wrap(err, "error getting args for recalculate")
 		}
+		blockCountSinceTGE := uint64(sdkCtx.BlockHeight() - startingEmissionsBlockHeight)
 		_, _, err = RecalculateTargetEmission(
 			sdkCtx,
 			ms.Keeper,
-			uint64(sdkCtx.BlockHeight()),
+			blockCountSinceTGE,
 			blocksPerMonth,
 			moduleParams,
 			ecosystemBalance,
@@ -95,10 +129,15 @@ func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *t
 		return nil, errors.Wrap(err, "error getting args for recalculate")
 	}
 
+	startingEmissionsBlockHeight, err := ms.Keeper.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting starting emissions block height")
+	}
+	blockCountSinceTGE := uint64(sdkCtx.BlockHeight() - startingEmissionsBlockHeight)
 	_, _, err = RecalculateTargetEmission(
 		sdkCtx,
 		ms.Keeper,
-		uint64(sdkCtx.BlockHeight()),
+		blockCountSinceTGE,
 		blocksPerMonth,
 		moduleParams,
 		ecosystemBalance,

@@ -1,22 +1,21 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index 6f025b97..01ef3799 100644
+index e7fcf865..5bfb9d44 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -2,16 +2,22 @@ package module
- 
+@@ -3,7 +3,10 @@ package module
  import (
  	"context"
-+	"fmt"
  
++	"fmt"
++
  	"cosmossdk.io/errors"
 +	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
  	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
  	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
  	sdk "github.com/cosmos/cosmos-sdk/types"
- )
+@@ -11,6 +14,11 @@ import (
  
  func EndBlocker(ctx context.Context, am AppModule) error {
--
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
 +	// Add invariant check logic
 +	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
@@ -27,7 +26,7 @@ index 6f025b97..01ef3799 100644
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index b8ea4f69..b38156d6 100644
+index 7cc8ee97..e99ddb32 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -41,6 +41,7 @@ var (
@@ -38,7 +37,7 @@ index b8ea4f69..b38156d6 100644
  )
  
  // ConsensusVersion defines the current module consensus version.
-@@ -200,3 +201,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
+@@ -204,3 +205,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
  	}
  	return err
  }

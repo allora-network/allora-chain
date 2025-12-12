@@ -6,7 +6,6 @@ import (
 	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/allora-network/allora-chain/app/upgrades/v0_12_0"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -54,15 +53,18 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 	}
 }
 
-// propose an upgrade to the v0.11.0 software version
-func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight int64) {
+// propose an upgrade to the specified software version
+func proposeUpgrade(m testCommon.TestConfig, upgradeName string, planHeightDelta int64) (proposalId uint64, proposalHeight int64) {
 	ctx := context.Background()
-	name := v0_12_0.UpgradeName
+	name := upgradeName
 	summary := "Upgrade to " + name + " software version"
 
 	currHeight, err := m.Client.BlockHeight(ctx)
 	require.NoError(m.T, err)
-	proposalHeight = currHeight + 50 // 4 1/6 minutes
+	if planHeightDelta <= 0 {
+		planHeightDelta = DefaultPlanHeightDelta
+	}
+	proposalHeight = currHeight + planHeightDelta // 4 1/6 minutes
 	m.T.Logf("Current Height: %d, proposing upgrade for %d", currHeight, proposalHeight)
 	msgSoftwareUpgrade := &upgradetypes.MsgSoftwareUpgrade{
 		Authority: authtypes.NewModuleAddress("gov").String(),
@@ -122,19 +124,34 @@ func waitForProposalPass(m testCommon.TestConfig, proposalId uint64) {
 	require.Equal(m.T, govtypesv1.StatusPassed, proposal.Proposal.Status)
 }
 
-// query the current version of the emissions module
-func getEmissionsVersion(m testCommon.TestConfig) uint64 {
+type moduleVersionSnapshot struct {
+	Version uint64
+	Found   bool
+}
+
+// query the current version of a module, returning whether it exists
+func getModuleVersion(m testCommon.TestConfig, moduleName string) moduleVersionSnapshot {
 	ctx := context.Background()
 	queryModuleVersionsRequest := &upgradetypes.QueryModuleVersionsRequest{
-		ModuleName: "emissions",
+		ModuleName: "",
 	}
 	moduleVersions, err := m.Client.QueryUpgrade().ModuleVersions(ctx, queryModuleVersionsRequest)
-	m.T.Logf("Module Versions: %+v", moduleVersions)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, moduleVersions)
-	require.Len(m.T, moduleVersions.ModuleVersions, 1)
-	require.NotNil(m.T, moduleVersions.ModuleVersions[0])
-	return moduleVersions.ModuleVersions[0].Version
+
+	for _, mv := range moduleVersions.ModuleVersions {
+		if mv.Name == moduleName {
+			return moduleVersionSnapshot{
+				Version: mv.Version,
+				Found:   true,
+			}
+		}
+	}
+
+	return moduleVersionSnapshot{
+		Version: 0,
+		Found:   false,
+	}
 }
 
 // wait for the block before the upgrade, then sleep to give
@@ -161,23 +178,69 @@ func getAppliedVersionHeight(m testCommon.TestConfig, version string) int64 {
 	return queryAppliedPlanResponse.Height
 }
 
-func UpgradeChecks(m testCommon.TestConfig) {
-	versionName := v0_12_0.UpgradeName
-	m.T.Log("--- Getting Emissions Module Version Before Upgrade ---")
-	emissionsVersionBefore := getEmissionsVersion(m)
-	m.T.Logf("--- Propose Upgrade to %s software version from v0 (%d) ---", versionName, emissionsVersionBefore)
-	proposalId, proposalHeight := proposeUpgrade(m)
+func UpgradeChecks(m testCommon.TestConfig, upgradeName string) {
+	scenario, ok := UpgradeScenarios[upgradeName]
+	require.Truef(m.T, ok, "upgrade scenario %s not defined", upgradeName)
+
+	planHeightDelta := scenario.PlanHeightDelta
+	if planHeightDelta <= 0 {
+		planHeightDelta = DefaultPlanHeightDelta
+	}
+
+	m.T.Logf("--- Preparing upgrade scenario for %s ---", scenario.UpgradeName)
+
+	preUpgradeVersions := make(map[string]moduleVersionSnapshot, len(scenario.ModuleChecks))
+	for _, check := range scenario.ModuleChecks {
+		snapshot := getModuleVersion(m, check.ModuleName)
+		preUpgradeVersions[check.ModuleName] = snapshot
+		if snapshot.Found {
+			m.T.Logf("Module %s pre-upgrade consensus version: %d", check.ModuleName, snapshot.Version)
+		} else {
+			m.T.Logf("Module %s not found before upgrade", check.ModuleName)
+		}
+	}
+
+	m.T.Logf("--- Propose Upgrade to %s software version ---", scenario.UpgradeName)
+	proposalId, proposalHeight := proposeUpgrade(m, scenario.UpgradeName, planHeightDelta)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
 	m.T.Logf("--- Waiting for Proposal %d to Pass ---", proposalId)
 	waitForProposalPass(m, proposalId)
-	m.T.Logf("--- Waiting for Upgrade to %s at height %d ---", versionName, proposalHeight)
+	m.T.Logf("--- Waiting for Upgrade to %s at height %d ---", scenario.UpgradeName, proposalHeight)
 	waitForUpgrade(m, proposalHeight)
-	m.T.Log("--- Getting Emissions Module Version After Upgrade ---")
-	emissionsVersionAfter := getEmissionsVersion(m)
-	m.T.Log("--- Checking Emissions Module Version Has Been Upgraded ---")
-	require.Greater(m.T, emissionsVersionAfter, emissionsVersionBefore)
-	height := getAppliedVersionHeight(m, versionName)
+
+	for _, check := range scenario.ModuleChecks {
+		m.T.Logf("--- Validating module %s ---", check.ModuleName)
+		preSnapshot := preUpgradeVersions[check.ModuleName]
+		postSnapshot := getModuleVersion(m, check.ModuleName)
+
+		switch check.CheckType {
+		case ModuleCheckExpectIncrease:
+			require.Truef(m.T, preSnapshot.Found, "module %s expected to exist before upgrade", check.ModuleName)
+			require.Truef(m.T, postSnapshot.Found, "module %s expected to exist after upgrade", check.ModuleName)
+			require.Greaterf(m.T, postSnapshot.Version, preSnapshot.Version, "module %s consensus version did not increase", check.ModuleName)
+		case ModuleCheckExpectEqual:
+			require.Equalf(m.T, preSnapshot.Found, postSnapshot.Found, "module %s presence changed unexpectedly", check.ModuleName)
+			if preSnapshot.Found {
+				require.Equalf(m.T, preSnapshot.Version, postSnapshot.Version, "module %s consensus version changed unexpectedly", check.ModuleName)
+			}
+		case ModuleCheckExpectNew:
+			require.Falsef(m.T, preSnapshot.Found, "module %s should not exist before upgrade", check.ModuleName)
+			require.Truef(m.T, postSnapshot.Found, "module %s expected to exist after upgrade", check.ModuleName)
+			if check.ExpectedVersion == nil {
+				require.Positivef(m.T, postSnapshot.Version, "module %s consensus version should be greater than 0", check.ModuleName)
+			}
+		default:
+			require.Failf(m.T, "unsupported module check type", "module %s has unsupported check type %s", check.ModuleName, check.CheckType)
+		}
+
+		if check.ExpectedVersion != nil {
+			require.Truef(m.T, postSnapshot.Found, "module %s expected to exist after upgrade for version assertion", check.ModuleName)
+			require.Equalf(m.T, *check.ExpectedVersion, postSnapshot.Version, "module %s consensus version mismatch", check.ModuleName)
+		}
+	}
+
+	height := getAppliedVersionHeight(m, scenario.UpgradeName)
 	m.T.Log("--- Checking upgrade has been applied at the proposed height ---")
 	require.Equal(m.T, height, proposalHeight)
 }

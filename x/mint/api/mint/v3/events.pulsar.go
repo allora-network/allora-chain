@@ -2560,6 +2560,8 @@ var (
 	fd_EventEmissionInfo_previous_reward_emission_per_unit_staked_token protoreflect.FieldDescriptor
 	fd_EventEmissionInfo_months_already_unlocked                        protoreflect.FieldDescriptor
 	fd_EventEmissionInfo_updated_months_unlocked                        protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_starting_emissions_block_height                protoreflect.FieldDescriptor
+	fd_EventEmissionInfo_locked_vesting_tokens_foundation               protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -2592,6 +2594,8 @@ func init() {
 	fd_EventEmissionInfo_previous_reward_emission_per_unit_staked_token = md_EventEmissionInfo.Fields().ByName("previous_reward_emission_per_unit_staked_token")
 	fd_EventEmissionInfo_months_already_unlocked = md_EventEmissionInfo.Fields().ByName("months_already_unlocked")
 	fd_EventEmissionInfo_updated_months_unlocked = md_EventEmissionInfo.Fields().ByName("updated_months_unlocked")
+	fd_EventEmissionInfo_starting_emissions_block_height = md_EventEmissionInfo.Fields().ByName("starting_emissions_block_height")
+	fd_EventEmissionInfo_locked_vesting_tokens_foundation = md_EventEmissionInfo.Fields().ByName("locked_vesting_tokens_foundation")
 }
 
 var _ protoreflect.Message = (*fastReflection_EventEmissionInfo)(nil)
@@ -2821,6 +2825,18 @@ func (x *fastReflection_EventEmissionInfo) Range(f func(protoreflect.FieldDescri
 			return
 		}
 	}
+	if x.StartingEmissionsBlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.StartingEmissionsBlockHeight)
+		if !f(fd_EventEmissionInfo_starting_emissions_block_height, value) {
+			return
+		}
+	}
+	if x.LockedVestingTokensFoundation != "" {
+		value := protoreflect.ValueOfString(x.LockedVestingTokensFoundation)
+		if !f(fd_EventEmissionInfo_locked_vesting_tokens_foundation, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -2890,6 +2906,10 @@ func (x *fastReflection_EventEmissionInfo) Has(fd protoreflect.FieldDescriptor) 
 		return x.MonthsAlreadyUnlocked != ""
 	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
 		return x.UpdatedMonthsUnlocked != ""
+	case "mint.v3.EventEmissionInfo.starting_emissions_block_height":
+		return x.StartingEmissionsBlockHeight != int64(0)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_foundation":
+		return x.LockedVestingTokensFoundation != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
@@ -2960,6 +2980,10 @@ func (x *fastReflection_EventEmissionInfo) Clear(fd protoreflect.FieldDescriptor
 		x.MonthsAlreadyUnlocked = ""
 	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
 		x.UpdatedMonthsUnlocked = ""
+	case "mint.v3.EventEmissionInfo.starting_emissions_block_height":
+		x.StartingEmissionsBlockHeight = int64(0)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_foundation":
+		x.LockedVestingTokensFoundation = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
@@ -3057,6 +3081,12 @@ func (x *fastReflection_EventEmissionInfo) Get(descriptor protoreflect.FieldDesc
 	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
 		value := x.UpdatedMonthsUnlocked
 		return protoreflect.ValueOfString(value)
+	case "mint.v3.EventEmissionInfo.starting_emissions_block_height":
+		value := x.StartingEmissionsBlockHeight
+		return protoreflect.ValueOfInt64(value)
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_foundation":
+		value := x.LockedVestingTokensFoundation
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
@@ -3131,6 +3161,10 @@ func (x *fastReflection_EventEmissionInfo) Set(fd protoreflect.FieldDescriptor, 
 		x.MonthsAlreadyUnlocked = value.Interface().(string)
 	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
 		x.UpdatedMonthsUnlocked = value.Interface().(string)
+	case "mint.v3.EventEmissionInfo.starting_emissions_block_height":
+		x.StartingEmissionsBlockHeight = value.Int()
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_foundation":
+		x.LockedVestingTokensFoundation = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
@@ -3205,6 +3239,10 @@ func (x *fastReflection_EventEmissionInfo) Mutable(fd protoreflect.FieldDescript
 		panic(fmt.Errorf("field months_already_unlocked of message mint.v3.EventEmissionInfo is not mutable"))
 	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
 		panic(fmt.Errorf("field updated_months_unlocked of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.starting_emissions_block_height":
+		panic(fmt.Errorf("field starting_emissions_block_height of message mint.v3.EventEmissionInfo is not mutable"))
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_foundation":
+		panic(fmt.Errorf("field locked_vesting_tokens_foundation of message mint.v3.EventEmissionInfo is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v3.EventEmissionInfo"))
@@ -3271,6 +3309,10 @@ func (x *fastReflection_EventEmissionInfo) NewField(fd protoreflect.FieldDescrip
 	case "mint.v3.EventEmissionInfo.months_already_unlocked":
 		return protoreflect.ValueOfString("")
 	case "mint.v3.EventEmissionInfo.updated_months_unlocked":
+		return protoreflect.ValueOfString("")
+	case "mint.v3.EventEmissionInfo.starting_emissions_block_height":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "mint.v3.EventEmissionInfo.locked_vesting_tokens_foundation":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -3446,6 +3488,13 @@ func (x *fastReflection_EventEmissionInfo) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
+		if x.StartingEmissionsBlockHeight != 0 {
+			n += 2 + runtime.Sov(uint64(x.StartingEmissionsBlockHeight))
+		}
+		l = len(x.LockedVestingTokensFoundation)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -3474,6 +3523,22 @@ func (x *fastReflection_EventEmissionInfo) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.LockedVestingTokensFoundation) > 0 {
+			i -= len(x.LockedVestingTokensFoundation)
+			copy(dAtA[i:], x.LockedVestingTokensFoundation)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LockedVestingTokensFoundation)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xf2
+		}
+		if x.StartingEmissionsBlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.StartingEmissionsBlockHeight))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xe8
 		}
 		if len(x.UpdatedMonthsUnlocked) > 0 {
 			i -= len(x.UpdatedMonthsUnlocked)
@@ -4558,6 +4623,57 @@ func (x *fastReflection_EventEmissionInfo) ProtoMethods() *protoiface.Methods {
 				}
 				x.UpdatedMonthsUnlocked = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 29:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field StartingEmissionsBlockHeight", wireType)
+				}
+				x.StartingEmissionsBlockHeight = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.StartingEmissionsBlockHeight |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 30:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LockedVestingTokensFoundation", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LockedVestingTokensFoundation = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -4876,6 +4992,8 @@ type EventEmissionInfo struct {
 	PreviousRewardEmissionPerUnitStakedToken string `protobuf:"bytes,26,opt,name=previous_reward_emission_per_unit_staked_token,json=previousRewardEmissionPerUnitStakedToken,proto3" json:"previous_reward_emission_per_unit_staked_token,omitempty"`
 	MonthsAlreadyUnlocked                    string `protobuf:"bytes,27,opt,name=months_already_unlocked,json=monthsAlreadyUnlocked,proto3" json:"months_already_unlocked,omitempty"`
 	UpdatedMonthsUnlocked                    string `protobuf:"bytes,28,opt,name=updated_months_unlocked,json=updatedMonthsUnlocked,proto3" json:"updated_months_unlocked,omitempty"`
+	StartingEmissionsBlockHeight             int64  `protobuf:"varint,29,opt,name=starting_emissions_block_height,json=startingEmissionsBlockHeight,proto3" json:"starting_emissions_block_height,omitempty"`
+	LockedVestingTokensFoundation            string `protobuf:"bytes,30,opt,name=locked_vesting_tokens_foundation,json=lockedVestingTokensFoundation,proto3" json:"locked_vesting_tokens_foundation,omitempty"`
 }
 
 func (x *EventEmissionInfo) Reset() {
@@ -5087,6 +5205,20 @@ func (x *EventEmissionInfo) GetUpdatedMonthsUnlocked() string {
 	return ""
 }
 
+func (x *EventEmissionInfo) GetStartingEmissionsBlockHeight() int64 {
+	if x != nil {
+		return x.StartingEmissionsBlockHeight
+	}
+	return 0
+}
+
+func (x *EventEmissionInfo) GetLockedVestingTokensFoundation() string {
+	if x != nil {
+		return x.LockedVestingTokensFoundation
+	}
+	return ""
+}
+
 var File_mint_v3_events_proto protoreflect.FileDescriptor
 
 var file_mint_v3_events_proto_rawDesc = []byte{
@@ -5164,7 +5296,7 @@ var file_mint_v3_events_proto_rawDesc = []byte{
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x28, 0x0a, 0x10, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73,
 	0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x0e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73, 0x50, 0x65, 0x72, 0x4d, 0x6f, 0x6e, 0x74, 0x68,
-	0x22, 0xf8, 0x16, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x22, 0xba, 0x18, 0x0a, 0x11, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
 	0x6f, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x5d, 0x0a, 0x11, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73,
 	0x74, 0x65, 0x6d, 0x5f, 0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
@@ -5347,17 +5479,30 @@ var file_mint_v3_events_proto_rawDesc = []byte{
 	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63,
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x15,
 	0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x73, 0x55, 0x6e, 0x6c,
-	0x6f, 0x63, 0x6b, 0x65, 0x64, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x42, 0x99, 0x01, 0x0a, 0x0b,
-	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x33, 0x42, 0x0b, 0x45, 0x76, 0x65,
-	0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x40, 0x67, 0x69, 0x74, 0x68,
-	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
-	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
-	0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69,
-	0x6e, 0x74, 0x2f, 0x76, 0x33, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x33, 0xa2, 0x02, 0x03, 0x4d,
-	0x58, 0x58, 0xaa, 0x02, 0x07, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x33, 0xca, 0x02, 0x07, 0x4d,
-	0x69, 0x6e, 0x74, 0x5c, 0x56, 0x33, 0xe2, 0x02, 0x13, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x33,
-	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x08, 0x4d,
-	0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x33, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x63, 0x6b, 0x65, 0x64, 0x12, 0x45, 0x0a, 0x1f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x69, 0x6e,
+	0x67, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x1d, 0x20, 0x01, 0x28, 0x03, 0x52, 0x1c,
+	0x73, 0x74, 0x61, 0x72, 0x74, 0x69, 0x6e, 0x67, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x79, 0x0a, 0x20,
+	0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x5f, 0x76, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x5f, 0x74,
+	0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x5f, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x18, 0x1e, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1d, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64,
+	0x56, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x73, 0x46, 0x6f, 0x75,
+	0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x42, 0x99, 0x01,
+	0x0a, 0x0b, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x33, 0x42, 0x0b, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x40, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
+	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f,
+	0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x33, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x33, 0xa2, 0x02,
+	0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02, 0x07, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x33, 0xca, 0x02,
+	0x07, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x33, 0xe2, 0x02, 0x13, 0x4d, 0x69, 0x6e, 0x74, 0x5c,
+	0x56, 0x33, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02,
+	0x08, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x33, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (

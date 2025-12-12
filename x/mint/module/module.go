@@ -24,7 +24,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/mint module consensus version.
-const ConsensusVersion = 5
+const ConsensusVersion = 6
 
 var (
 	_ module.AppModuleBasic = AppModule{} //nolint:exhaustruct
@@ -142,6 +142,13 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	})
 	if err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 4 to 5: %v", types.ModuleName, err))
+	}
+	err = cfg.RegisterMigration(types.ModuleName, 5, func(ctx sdk.Context) error {
+		ctx.Logger().Info("MIGRATING %s MODULE FROM VERSION 5 TO VERSION 6", "module", types.ModuleName)
+		return nil
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 5 to 6: %v", types.ModuleName, err))
 	}
 }
 

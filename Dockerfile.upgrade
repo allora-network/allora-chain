@@ -2,8 +2,8 @@ FROM golang:1.22-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV GOMODCACHE=/gocache
-ENV BASELINE_VERSION_TAG=v0.11.0
-ENV UPGRADE_VERSION_TAG=v0.12.0
+ENV BASELINE_VERSION_TAG=v0.14.0
+ENV UPGRADE_VERSION_TAG=v0.15.0
 ENV GIT_STASH_MESSAGE="Docker build"
 
 
@@ -37,7 +37,7 @@ RUN cp build/allorad /go/bin/allorad-$UPGRADE_VERSION_TAG
 
 #==============================================================
 
-FROM debian:bookworm-slim as execution
+FROM debian:bookworm-slim AS execution
 
 ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \

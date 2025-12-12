@@ -65,6 +65,12 @@ func TestUpgradeTestSuite(t *testing.T) {
 		seed,
 	)
 
-	t.Log(">>> Test Upgrading Emissions Module Version")
-	UpgradeChecks(testConfig)
+	targetUpgrade := os.Getenv("UPGRADE_TARGET")
+	if targetUpgrade == "" {
+		targetUpgrade = DefaultUpgradeTarget
+	}
+	t.Logf(">>> Target Upgrade: %s <<<", targetUpgrade)
+
+	t.Log(">>> Test Upgrade Flow <<<")
+	UpgradeChecks(testConfig, targetUpgrade)
 }

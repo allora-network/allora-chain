@@ -10,6 +10,7 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	alloralog "github.com/allora-network/allora-chain/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -27,6 +28,7 @@ import (
 
 type MintKeeperTestSuite struct {
 	suite.Suite
+	moduleName string
 
 	mintKeeper      keeper.Keeper
 	ctx             sdk.Context
@@ -50,7 +52,10 @@ func (s *MintKeeperTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	s.ctx = testCtx.Ctx
+	s.moduleName = types.ModuleName
+	// Set logger to show logs from the module too
+	logger := alloralog.NewTestLogger(s.T()).With("module", s.moduleName)
+	s.ctx = testCtx.Ctx.WithLogger(logger)
 
 	// gomock initializations
 	s.ctrl = gomock.NewController(s.T())
@@ -82,13 +87,14 @@ func (s *MintKeeperTestSuite) SetupTest() {
 	s.Require().Equal(testCtx.Ctx.Logger().With("module", "x/"+types.ModuleName),
 		s.mintKeeper.Logger(testCtx.Ctx))
 
-	err := s.mintKeeper.Params.Set(s.ctx, types.DefaultParams())
+	// err := s.mintKeeper.Params.Set(s.ctx, types.DefaultParams())
+	err := s.mintKeeper.Params.Set(s.ctx, generateNewMintParams())
 	s.Require().NoError(err)
 
 	s.msgServer = keeper.NewMsgServerImpl(s.mintKeeper)
 	s.epochGet = alloratestutil.GetTokenomicsSimulatorValuesGetterForEpochs()
-}
 
+}
 func (s *MintKeeperTestSuite) TestAliasFunctions() {
 	stakingTokenSupply := math.NewIntFromUint64(100000000000)
 	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(stakingTokenSupply, nil)
@@ -158,6 +164,9 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo() {
 
 	// Set up EcosystemTokensMinted (required by GetEcosystemMintSupplyRemaining)
 	err = s.mintKeeper.EcosystemTokensMinted.Set(testCtx, math.ZeroInt())
+	s.Require().NoError(err)
+
+	err = s.mintKeeper.SetStartingEmissionsBlockHeight(testCtx, 0)
 	s.Require().NoError(err)
 
 	// Call the function
@@ -253,6 +262,9 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo_FirstMonth() {
 	err = s.mintKeeper.EcosystemTokensMinted.Set(testCtx, math.ZeroInt())
 	s.Require().NoError(err)
 
+	err = s.mintKeeper.SetStartingEmissionsBlockHeight(testCtx, 0)
+	s.Require().NoError(err)
+
 	// Call the function
 	params, eventInfo, err := s.mintKeeper.GetEmissionInfo(testCtx)
 
@@ -296,6 +308,8 @@ func (s *MintKeeperTestSuite) TestGetEmissionInfo_ErrorCases() {
 	err = s.mintKeeper.MonthsUnlocked.Set(s.ctx, math.ZeroInt())
 	s.Require().NoError(err)
 	err = s.mintKeeper.EcosystemTokensMinted.Set(s.ctx, math.ZeroInt())
+	s.Require().NoError(err)
+	err = s.mintKeeper.SetStartingEmissionsBlockHeight(s.ctx, 0)
 	s.Require().NoError(err)
 
 	_, _, err = s.mintKeeper.GetEmissionInfo(s.ctx)

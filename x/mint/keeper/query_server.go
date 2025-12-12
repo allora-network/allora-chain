@@ -40,6 +40,11 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryServiceInflati
 		return nil, err
 	}
 	blockHeight := uint64(sdk.UnwrapSDKContext(ctx).BlockHeight())
+	startingEmissionsBlockHeight, err := q.k.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return nil, err
+	}
+	blockCountSinceTGE := blockHeight - (uint64(startingEmissionsBlockHeight))
 	blockEmission, err := q.k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
 		return nil, err
@@ -53,7 +58,7 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryServiceInflati
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
 	monthsUnlocked := q.k.GetMonthsAlreadyUnlocked(ctx)
-	circulatingSupply, _, _, _, _, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth, monthsUnlocked)
+	circulatingSupply, _, _, _, _, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockCountSinceTGE, blocksPerMonth, monthsUnlocked)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +91,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryServiceEmis
 		LockedVestingTokensInvestorsPreseed:      eventInfo.LockedVestingTokensInvestorsPreseed,
 		LockedVestingTokensInvestorsSeed:         eventInfo.LockedVestingTokensInvestorsSeed,
 		LockedVestingTokensTeam:                  eventInfo.LockedVestingTokensTeam,
+		LockedVestingTokensFoundation:            eventInfo.LockedVestingTokensFoundation,
 		EcosystemLocked:                          eventInfo.EcosystemLocked,
 		CirculatingSupply:                        eventInfo.CirculatingSupply,
 		MaxSupply:                                eventInfo.MaxSupply,
@@ -102,5 +108,6 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryServiceEmis
 		PreviousRewardEmissionPerUnitStakedToken: eventInfo.PreviousRewardEmissionPerUnitStakedToken,
 		MonthsAlreadyUnlocked:                    eventInfo.MonthsAlreadyUnlocked,
 		UpdatedMonthsUnlocked:                    eventInfo.UpdatedMonthsUnlocked,
+		StartingEmissionsBlockHeight:             eventInfo.StartingEmissionsBlockHeight,
 	}, nil
 }

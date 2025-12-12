@@ -44,7 +44,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 11
+const ConsensusVersion = 13
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -150,6 +150,16 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 10 to 11: %v", types.ModuleName, err))
 	}
+	if err := cfg.RegisterMigration(types.ModuleName, 11, func(ctx sdk.Context) error {
+		return nil
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 11 to 12: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 12, func(ctx sdk.Context) error {
+		return nil
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 12 to 13: %v", types.ModuleName, err))
+	}
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the module.
@@ -192,7 +202,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // EndBlock returns the end blocker for the emissions module.
 func (am AppModule) EndBlock(ctx context.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := EndBlocker(ctx, am)
 	if err != nil {
