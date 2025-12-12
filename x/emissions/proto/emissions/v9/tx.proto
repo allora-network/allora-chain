@@ -388,10 +388,7 @@ message UpdateOwnerRequest {
   bool is_reputer = 3;
 }
 
-message UpdateOwnerResponse {
-  bool success = 1;
-  string message = 2;
-}
+message UpdateOwnerResponse {}
 
 message RegisterRequest {
   reserved 2, 3;
@@ -406,8 +403,8 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-  bool success = 1;
-  string message = 2;
+  bool success = 1 [deprecated = true];
+  string message = 2 [deprecated = true];
 }
 
 message RemoveRegistrationRequest {
@@ -419,8 +416,8 @@ message RemoveRegistrationRequest {
 }
 
 message RemoveRegistrationResponse {
-  bool success = 1;
-  string message = 2;
+  bool success = 1 [deprecated = true];
+  string message = 2 [deprecated = true];
 }
 
 ///  Staking

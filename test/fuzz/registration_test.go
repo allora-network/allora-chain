@@ -6,7 +6,6 @@ import (
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/stretchr/testify/require"
 )
 
 // determine if this state transition is worth trying based on our knowledge of the state
@@ -53,9 +52,6 @@ func registerWorker(
 	registerWorkerResponse := &emissionstypes.RegisterResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerWorkerResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
-	if data.failOnErr {
-		require.True(m.T, registerWorkerResponse.Success)
-	}
 	if err != nil {
 		iterFailLog(m.T, iteration, "failed to register ", actor, "as worker in topic id ", topicId, "tx decode error", err)
 		return false
@@ -106,9 +102,6 @@ func unregisterWorker(
 	removeRegistrationResponse := &emissionstypes.RemoveRegistrationResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(removeRegistrationResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
-	if data.failOnErr {
-		require.True(m.T, removeRegistrationResponse.Success)
-	}
 	if err != nil {
 		iterFailLog(
 			m.T,
@@ -163,9 +156,6 @@ func registerReputer(
 	registerWorkerResponse := &emissionstypes.RegisterResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerWorkerResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
-	if data.failOnErr {
-		require.True(m.T, registerWorkerResponse.Success)
-	}
 	if err != nil {
 		iterFailLog(
 			m.T,
@@ -219,9 +209,6 @@ func unregisterReputer(
 	removeRegistrationResponseMsg := &emissionstypes.RemoveRegistrationResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(removeRegistrationResponseMsg)
 	failIfOnErr(m.T, data.failOnErr, err)
-	if data.failOnErr {
-		require.True(m.T, removeRegistrationResponseMsg.Success)
-	}
 	if err != nil {
 		iterFailLog(
 			m.T,

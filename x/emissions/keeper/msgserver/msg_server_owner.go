@@ -28,8 +28,5 @@ func (ms msgServer) UpdateOwner(ctx context.Context, msg *types.UpdateOwnerReque
 
 	types.EmitNodeOwnerUpdatedEvent(ctx, msg.Sender, oldOwner, msg.NewOwner, msg.IsReputer)
 
-	return &types.UpdateOwnerResponse{
-		Success: true,
-		Message: "Node owner updated",
-	}, nil
+	return &types.UpdateOwnerResponse{}, nil
 }

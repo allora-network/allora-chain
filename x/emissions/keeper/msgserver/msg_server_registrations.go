@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -76,10 +75,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		types.EmitNewWorkerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	}
 
-	return &types.RegisterResponse{
-		Success: true,
-		Message: "Node successfully registered",
-	}, nil
+	return &types.RegisterResponse{}, nil
 }
 
 // RemoveRegistration removes registration from a topic for worker or reputer
@@ -135,10 +131,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 	}
 
 	// Return a successful response
-	return &types.RemoveRegistrationResponse{
-		Success: true,
-		Message: fmt.Sprintf("Node successfully removed from topic %d", msg.TopicId),
-	}, nil
+	return &types.RemoveRegistrationResponse{}, nil
 }
 
 // CheckBalanceForRegistration checks if the account has enough balance to register

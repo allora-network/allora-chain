@@ -37,13 +37,12 @@ func (s *MsgServerTestSuite) TestUpdateOwnerSuccess() {
 				s.Require().NoError(err)
 			}
 
-			resp, err := msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+			_, err := msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
 				Sender:    sender,
 				NewOwner:  newOwner,
 				IsReputer: tc.isReputer,
 			})
 			s.Require().NoError(err)
-			s.Require().True(resp.Success)
 
 			if tc.isReputer {
 				node, err := s.EmissionsKeeper().GetReputerInfo(s.Ctx(), sender)
