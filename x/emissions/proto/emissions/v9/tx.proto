@@ -328,13 +328,20 @@ message UpdateTopicRequest {
 
   string sender = 1;
   uint64 topic_id = 2;
-
-  // Optional fields using repeated pattern - if empty, field is not updated
-  repeated string metadata = 3;
-  repeated string loss_method = 4;
-  repeated string alpha_regret = 5;
-  repeated string merit_sortition_alpha = 6;
-  repeated string p_norm = 7;
+  string metadata = 3;
+  string loss_method = 4;
+  string alpha_regret = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string merit_sortition_alpha = 6 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string p_norm = 7 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message UpdateTopicResponse {}

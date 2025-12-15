@@ -3270,33 +3270,18 @@ func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest)
 	}
 
 	updatedTopic := topic
-	hasChanges := false
+	updatedTopic.Metadata = msg.Metadata
+	updatedTopic.LossMethod = msg.LossMethod
+	updatedTopic.AlphaRegret = msg.AlphaRegret
+	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
+	updatedTopic.PNorm = msg.PNorm
 
-	if len(msg.Metadata) > 0 {
-		updatedTopic.Metadata = msg.Metadata[0]
-		hasChanges = true
+	if err := updatedTopic.Validate(params); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
 	}
 
-	if len(msg.LossMethod) > 0 {
-		updatedTopic.LossMethod = msg.LossMethod[0]
-		hasChanges = true
-	}
-
-	if len(msg.AlphaRegret) > 0 {
-		alphaRegret, err := alloraMath.NewDecFromString(msg.AlphaRegret[0])
-		if err != nil {
-			return types.Topic{}, errorsmod.Wrap(err, "failed to parse alpha_regret")
-		}
-		updatedTopic.AlphaRegret = alphaRegret
-		hasChanges = true
-	}
-
-	if len(msg.MeritSortitionAlpha) > 0 {
-		meritSortitionAlpha, err := alloraMath.NewDecFromString(msg.MeritSortitionAlpha[0])
-		if err != nil {
-			return types.Topic{}, errorsmod.Wrap(err, "failed to parse merit_sortition_alpha")
-		}
-
+	// Check merit_sortition_alpha update restriction when topic is active and worker window is open
+	if !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha) {
 		isActive, err := k.IsTopicActive(ctx, msg.TopicId)
 		if err != nil {
 			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
@@ -3310,7 +3295,7 @@ func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest)
 			}
 			if len(nonces.Nonces) > 0 {
 				lastNonce := nonces.Nonces[0]
-				withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(updatedTopic, *lastNonce, blockHeight)
+				withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *lastNonce, blockHeight)
 				if err != nil {
 					return types.Topic{}, errorsmod.Wrap(err, "failed to check worker submission window")
 				}
@@ -3319,26 +3304,6 @@ func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest)
 				}
 			}
 		}
-
-		updatedTopic.MeritSortitionAlpha = meritSortitionAlpha
-		hasChanges = true
-	}
-
-	if len(msg.PNorm) > 0 {
-		pNorm, err := alloraMath.NewDecFromString(msg.PNorm[0])
-		if err != nil {
-			return types.Topic{}, errorsmod.Wrap(err, "failed to parse p_norm")
-		}
-		updatedTopic.PNorm = pNorm
-		hasChanges = true
-	}
-
-	if !hasChanges {
-		return topic, nil
-	}
-
-	if err := updatedTopic.Validate(params); err != nil {
-		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
 	}
 
 	if err := k.SetTopic(ctx, msg.TopicId, updatedTopic); err != nil {
