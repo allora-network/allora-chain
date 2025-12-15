@@ -730,13 +730,6 @@ func (m *EventTopicUpdated) GetTopic() *Topic {
 	return nil
 }
 
-func (m *EventTopicUpdated) GetTopic() *Topic {
-	if m != nil {
-		return m.Topic
-	}
-	return nil
-}
-
 type EventAddStake struct {
 	TopicId   uint64                `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	Reputer   string                `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
@@ -5314,11 +5307,6 @@ func (m *EventTopicUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.TopicId != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
 		i--
-		dAtA[i] = 0xa
-	}
-	if m.TopicId != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
-		i--
 		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
@@ -8362,10 +8350,6 @@ func (m *EventTopicUpdated) Size() (n int) {
 		l = m.Topic.Size()
 		n += 1 + l + sovEvents(uint64(l))
 	}
-	if m.Topic != nil {
-		l = m.Topic.Size()
-		n += 1 + l + sovEvents(uint64(l))
-	}
 	return n
 }
 
@@ -11403,25 +11387,6 @@ func (m *EventTopicUpdated) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.TopicId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Topic", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

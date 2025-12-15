@@ -1,4 +1,4 @@
-package v12
+package v14
 
 import (
 	"cosmossdk.io/store/prefix"
@@ -7,7 +7,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldV11Types "github.com/allora-network/allora-chain/x/emissions/migrations/v12/oldtypes"
+	oldV11Types "github.com/allora-network/allora-chain/x/emissions/migrations/v14/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -15,13 +15,13 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-// MigrateStore migrates the store from version 11 to version 12
+// MigrateStore migrates the store from version 13 to version 14.
 // It does the following:
 // - Migrate params to remove CNorm (it's now per-topic)
 // - Migrate all topics to add CNorm field with the old global value
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
-	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 11 TO VERSION 12")
-	ctx.Logger().Info("MIGRATING STORE FROM VERSION 11 TO VERSION 12")
+	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 13 TO VERSION 14")
+	ctx.Logger().Info("MIGRATING STORE FROM VERSION 13 TO VERSION 14")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
@@ -34,19 +34,19 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 	ctx.Logger().Info("OLD CNORM VALUE", "cNorm", oldCNorm)
 
-	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 11 TO VERSION 12")
+	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 13 TO VERSION 14")
 	if err := MigrateParams(store, cdc); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 11 TO VERSION 12")
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 13 TO VERSION 14")
 		return err
 	}
 
-	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 11 TO VERSION 12")
+	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 13 TO VERSION 14")
 	if err := MigrateTopics(ctx, store, cdc, oldCNorm); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 11 TO VERSION 12")
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 13 TO VERSION 14")
 		return err
 	}
 
-	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 11 TO VERSION 12 COMPLETE")
+	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 13 TO VERSION 14 COMPLETE")
 	return nil
 }
 

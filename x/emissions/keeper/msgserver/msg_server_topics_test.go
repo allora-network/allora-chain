@@ -241,6 +241,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		AlphaRegret:         alloraMath.NewDecFromInt64(1),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.NewDecFromInt64(3),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -297,6 +298,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		AlphaRegret:         alloraMath.NewDecFromInt64(1),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.NewDecFromInt64(3),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -319,6 +321,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -343,6 +346,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -358,6 +362,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -373,26 +378,13 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
 	require.Nil(updateResult)
 	require.ErrorContains(err, "metadata invalid")
 
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            []string{strings.Repeat("a", 257)},
-		LossMethod:          nil,
-		AlphaRegret:         nil,
-		MeritSortitionAlpha: nil,
-		PNorm:               nil,
-		CNorm:               nil,
-	}
-	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.Error(err)
-	require.Nil(updateResult)
-	require.ErrorContains(err, "metadata invalid")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
@@ -445,6 +437,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -501,6 +494,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -516,12 +510,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
-		Metadata:            nil,
-		LossMethod:          nil,
-		AlphaRegret:         nil,
-		MeritSortitionAlpha: nil,
-		PNorm:               nil,
-		CNorm:               []string{"50.5"},
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("50.5"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -534,12 +528,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
-		Metadata:            nil,
-		LossMethod:          nil,
-		AlphaRegret:         nil,
-		MeritSortitionAlpha: nil,
-		PNorm:               nil,
-		CNorm:               []string{"-100"},
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("-100"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -552,12 +546,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
-		Metadata:            nil,
-		LossMethod:          nil,
-		AlphaRegret:         nil,
-		MeritSortitionAlpha: nil,
-		PNorm:               nil,
-		CNorm:               []string{"100"},
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("100"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -579,6 +573,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.4"),
 		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("100"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -600,6 +595,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		AlphaRegret:         alloraMath.ZeroDec(),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "alpha regret")
@@ -613,6 +609,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("1.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "merit sortition alpha")
@@ -626,6 +623,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("2.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "p-norm")
@@ -634,12 +632,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
-		Metadata:            nil,
-		LossMethod:          nil,
-		AlphaRegret:         nil,
-		MeritSortitionAlpha: nil,
-		PNorm:               nil,
-		CNorm:               []string{"-101"},
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("-101"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -648,26 +646,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 	updateTopicMsg = &types.UpdateTopicRequest{
 		Sender:              sender,
 		TopicId:             topicId,
-		Metadata:            nil,
-		LossMethod:          nil,
-		AlphaRegret:         nil,
-		MeritSortitionAlpha: nil,
-		PNorm:               nil,
-		CNorm:               []string{"101"},
-	}
-	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorContains(err, "c_norm")
-
-	// Invalid c_norm (not a valid number)
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            nil,
-		LossMethod:          nil,
-		AlphaRegret:         nil,
-		MeritSortitionAlpha: nil,
-		PNorm:               nil,
-		CNorm:               []string{"invalid"},
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("101"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -722,6 +706,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -778,6 +763,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)

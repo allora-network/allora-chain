@@ -6951,12 +6951,6 @@ func (x *fastReflection_EventTopicUpdated) Range(f func(protoreflect.FieldDescri
 			return
 		}
 	}
-	if x.Topic != nil {
-		value := protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
-		if !f(fd_EventTopicUpdated_topic, value) {
-			return
-		}
-	}
 }
 
 // Has reports whether a field is populated.
@@ -7163,10 +7157,6 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 			l = options.Size(x.Topic)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.Topic != nil {
-			l = options.Size(x.Topic)
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -7209,11 +7199,6 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 			i--
 			dAtA[i] = 0x12
-		}
-		if x.TopicId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
-			i--
-			dAtA[i] = 0xa
 		}
 		if x.TopicId != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
@@ -7284,25 +7269,6 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 					b := dAtA[iNdEx]
 					iNdEx++
 					x.TopicId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Topic", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -42746,13 +42712,6 @@ func (x *EventTopicUpdated) GetTopicId() uint64 {
 		return x.TopicId
 	}
 	return 0
-}
-
-func (x *EventTopicUpdated) GetTopic() *v3.Topic {
-	if x != nil {
-		return x.Topic
-	}
-	return nil
 }
 
 func (x *EventTopicUpdated) GetTopic() *v3.Topic {

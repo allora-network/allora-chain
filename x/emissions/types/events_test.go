@@ -243,7 +243,8 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	found := false
+	foundTopicId := false
+	foundTopic := false
 	for _, attr := range attributes {
 		if strings.Contains(attr.Key, "topic_id") {
 			require.Equal(t, "\"1\"", attr.Value)
