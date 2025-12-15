@@ -968,6 +968,20 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "UpdateTopic",
+					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm]",
+					Short:     "Update an existing topic's modifiable configuration",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "metadata"},
+						{ProtoField: "loss_method"},
+						{ProtoField: "alpha_regret"},
+						{ProtoField: "merit_sortition_alpha"},
+						{ProtoField: "p_norm"},
+					},
+				},
+				{
 					RpcMethod: "Register",
 					Use:       "register [sender] [topic_ids] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",

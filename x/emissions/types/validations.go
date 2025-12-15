@@ -1217,37 +1217,3 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 
 	return nil
 }
-
-// Validate checks if the given UpdateTopicRequest is valid
-func (msg *UpdateTopicRequest) Validate(maxStringLen uint64) error {
-	if err := ValidateBech32(msg.Sender); err != nil {
-		return errors.Wrap(err, "invalid msg Sender address")
-	}
-
-	// Validate metadata
-	if uint64(len(msg.Metadata)) > maxStringLen {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata invalid")
-	}
-
-	// Validate loss_method
-	if len(msg.LossMethod) == 0 || uint64(len(msg.LossMethod)) > maxStringLen {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
-	}
-
-	// Validate alpha_regret
-	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) || ValidateDec(msg.AlphaRegret) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
-	}
-
-	// Validate merit_sortition_alpha
-	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
-	}
-
-	// Validate p_norm
-	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(msg.PNorm) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
-	}
-
-	return nil
-}
