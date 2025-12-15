@@ -1401,10 +1401,6 @@ func (s *RewardsTestSuite) compareRewards(actual, expected map[uint64]*alloraMat
 	return true
 }
 
-// NOTE: TestMonthlyPercentageRewardCalculation and TestMonthlyPercentageRewardCalculation_ZeroTopicRewards
-// have been moved to x/mint/module/module_test.go because they test chain behavior (BeginBlocker/EndBlocker)
-// rather than keeper logic. The monthly reset now happens in mint BeginBlocker, so these tests belong there.
-
 func (s *RewardsTestSuite) TestNoActiveParticipantsNoRewardsForTopic() {
 	require := s.Require()
 
