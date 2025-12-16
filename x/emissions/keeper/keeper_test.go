@@ -1944,25 +1944,6 @@ func (s *KeeperTestSuite) TestUpdateWorkerOwner() {
 	s.Require().ErrorIs(err, types.ErrAddressNotRegistered)
 }
 
-func (s *KeeperTestSuite) TestUpdateWorkerOwnerNodeAddressMismatch() {
-	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
-
-	topicId := uint64(403)
-	worker := s.AddrsStr(8)
-	initialOwner := s.AddrsStr(9)
-	mismatchedNodeAddress := s.AddrsStr(10)
-
-	err := k.InsertWorker(ctx, topicId, worker, types.OffchainNode{
-		NodeAddress: mismatchedNodeAddress,
-		Owner:       initialOwner,
-	})
-	s.Require().NoError(err)
-
-	_, err = k.UpdateWorkerOwner(ctx, worker, s.AddrsStr(11))
-	s.Require().ErrorIs(err, types.ErrInvariantFailure)
-}
-
 func (s *KeeperTestSuite) TestRemoveWorker() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -2040,25 +2021,6 @@ func (s *KeeperTestSuite) TestUpdateReputerOwner() {
 
 	_, err = k.UpdateReputerOwner(ctx, s.AddrsStr(7), newOwner)
 	s.Require().ErrorIs(err, types.ErrAddressNotRegistered)
-}
-
-func (s *KeeperTestSuite) TestUpdateReputerOwnerNodeAddressMismatch() {
-	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
-
-	topicId := uint64(503)
-	reputer := s.AddrsStr(12)
-	initialOwner := s.AddrsStr(13)
-	mismatchedNodeAddress := s.AddrsStr(14)
-
-	err := k.InsertReputer(ctx, topicId, reputer, types.OffchainNode{
-		NodeAddress: mismatchedNodeAddress,
-		Owner:       initialOwner,
-	})
-	s.Require().NoError(err)
-
-	_, err = k.UpdateReputerOwner(ctx, reputer, s.AddrsStr(15))
-	s.Require().ErrorIs(err, types.ErrInvariantFailure)
 }
 
 func (s *KeeperTestSuite) TestGetReputerInfo() {

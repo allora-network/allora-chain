@@ -219,3 +219,52 @@ func (s *MsgServerTestSuite) TestUpdateOwnerRoleSpecificity() {
 	s.Require().NoError(err)
 	s.Require().Equal(newReputerOwner, storedReputer.Owner)
 }
+
+func (s *MsgServerTestSuite) TestUpdateOwnerSenderMismatch() {
+	ctx := s.Ctx()
+	msgServer := s.EmissionsMsgServer()
+
+	reputerAddr := s.AddrsStr(30)
+	reputerOwner := s.AddrsStr(31)
+	reputerTopic := uint64(910)
+	mismatchedReputerNode := s.AddrsStr(32)
+
+	err := s.EmissionsKeeper().InsertReputer(ctx, reputerTopic, reputerAddr, types.OffchainNode{
+		NodeAddress: mismatchedReputerNode,
+		Owner:       reputerOwner,
+	})
+	s.Require().NoError(err)
+
+	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+		Sender:    reputerAddr,
+		NewOwner:  s.AddrsStr(33),
+		IsReputer: true,
+	})
+	s.Require().ErrorIs(err, types.ErrInvariantFailure)
+
+	storedReputer, err := s.EmissionsKeeper().GetReputerInfo(s.Ctx(), reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(reputerOwner, storedReputer.Owner)
+
+	workerAddr := s.AddrsStr(34)
+	workerOwner := s.AddrsStr(35)
+	workerTopic := uint64(911)
+	mismatchedWorkerNode := s.AddrsStr(36)
+
+	err = s.EmissionsKeeper().InsertWorker(ctx, workerTopic, workerAddr, types.OffchainNode{
+		NodeAddress: mismatchedWorkerNode,
+		Owner:       workerOwner,
+	})
+	s.Require().NoError(err)
+
+	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+		Sender:    workerAddr,
+		NewOwner:  s.AddrsStr(37),
+		IsReputer: false,
+	})
+	s.Require().ErrorIs(err, types.ErrInvariantFailure)
+
+	storedWorker, err := s.EmissionsKeeper().GetWorkerInfo(s.Ctx(), workerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(workerOwner, storedWorker.Owner)
+}
