@@ -53,14 +53,14 @@ func CreateUpgradeHandler(
 		}
 
 		sdkCtx.Logger().Info(
-			"Transferring newly minted coins to allorapendingrewards module account",
+			"Transferring newly minted coins to allorarewards module account",
 			"coins", coins,
 			"module", emissionstypes.AlloraPendingRewardForDelegatorAccountName,
 		)
 		if err := keepers.BankKeeper.SendCoinsFromModuleToModule(
 			ctx,
 			minttypes.ModuleName,
-			emissionstypes.AlloraPendingRewardForDelegatorAccountName,
+			emissionstypes.AlloraRewardsAccountName,
 			coins,
 		); err != nil {
 			return nil, err
