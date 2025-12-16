@@ -3143,14 +3143,6 @@ func (k *Keeper) UpdateReputerOwner(ctx context.Context, reputer ActorId, newOwn
 		}
 		return "", errorsmod.Wrap(err, "error getting reputer info")
 	}
-	if nodeInfo.NodeAddress != reputer {
-		return "", errorsmod.Wrapf(
-			types.ErrInvariantFailure,
-			"stored reputer node address %s does not match key %s",
-			nodeInfo.NodeAddress,
-			reputer,
-		)
-	}
 	oldOwner := nodeInfo.Owner
 	nodeInfo.Owner = newOwner
 	if err := nodeInfo.Validate(); err != nil {
@@ -3215,14 +3207,6 @@ func (k *Keeper) UpdateWorkerOwner(ctx context.Context, worker ActorId, newOwner
 			return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker %s", worker)
 		}
 		return "", errorsmod.Wrap(err, "error getting worker info")
-	}
-	if nodeInfo.NodeAddress != worker {
-		return "", errorsmod.Wrapf(
-			types.ErrInvariantFailure,
-			"stored worker node address %s does not match key %s",
-			nodeInfo.NodeAddress,
-			worker,
-		)
 	}
 	oldOwner := nodeInfo.Owner
 	nodeInfo.Owner = newOwner
