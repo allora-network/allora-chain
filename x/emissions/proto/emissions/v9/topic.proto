@@ -1,5 +1,5 @@
 syntax = "proto3";
-package emissions.v4;
+package emissions.v9;
 
 import "emissions/v3/nonce.proto";
 import "gogoproto/gogo.proto";
