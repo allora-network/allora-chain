@@ -100,7 +100,23 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {
 	defer metrics.RecordMetrics("UpdateTopic", time.Now(), &err)
 
-	updatedTopic, err := ms.k.UpdateTopic(ctx, msg)
+	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+		return nil, err
+	}
+
+	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	updatedTopic := topic
+	updatedTopic.Metadata = msg.Metadata
+	updatedTopic.LossMethod = msg.LossMethod
+	updatedTopic.AlphaRegret = msg.AlphaRegret
+	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
+	updatedTopic.PNorm = msg.PNorm
+
+	updatedTopic, err = ms.k.UpdateTopic(ctx, msg.Sender, topic, updatedTopic)
 	if err != nil {
 		return nil, err
 	}

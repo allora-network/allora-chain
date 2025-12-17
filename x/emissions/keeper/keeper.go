@@ -3254,42 +3254,38 @@ func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error)
 }
 
 // UpdateTopic applies allowed changes to a topic.
-func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (types.Topic, error) {
+func (k *Keeper) UpdateTopic(ctx context.Context, sender ActorId, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return types.Topic{}, errorsmod.Wrapf(err, "error getting params for sender: %v", &msg.Sender)
+		return types.Topic{}, errorsmod.Wrap(err, "error getting params")
 	}
 
-	topic, err := k.GetTopic(ctx, msg.TopicId)
-	if err != nil {
-		return types.Topic{}, errorsmod.Wrapf(err, "error getting topic: %v", msg.TopicId)
-	}
-
-	if topic.Creator != msg.Sender {
+	if topic.Creator != sender {
 		return types.Topic{}, types.ErrNotPermittedToModifyTopic
 	}
 
-	updatedTopic := topic
-	updatedTopic.Metadata = msg.Metadata
-	updatedTopic.LossMethod = msg.LossMethod
-	updatedTopic.AlphaRegret = msg.AlphaRegret
-	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
-	updatedTopic.PNorm = msg.PNorm
+	// Only allow updates to specific fields, and keep all other topic fields unchanged.
+	newTopic := topic
+	newTopic.Metadata = updatedTopic.Metadata
+	newTopic.LossMethod = updatedTopic.LossMethod
+	newTopic.AlphaRegret = updatedTopic.AlphaRegret
+	newTopic.MeritSortitionAlpha = updatedTopic.MeritSortitionAlpha
+	newTopic.PNorm = updatedTopic.PNorm
 
-	if err := updatedTopic.Validate(params); err != nil {
+	if err := newTopic.Validate(params); err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
 	}
 
 	// Check merit_sortition_alpha update restriction when topic is active and worker window is open
-	if !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha) {
-		isActive, err := k.IsTopicActive(ctx, msg.TopicId)
+	if !topic.MeritSortitionAlpha.Equal(newTopic.MeritSortitionAlpha) {
+		isActive, err := k.IsTopicActive(ctx, topic.Id)
 		if err != nil {
 			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
 		}
 		if isActive {
 			sdkCtx := sdk.UnwrapSDKContext(ctx)
 			blockHeight := sdkCtx.BlockHeight()
-			nonces, err := k.GetUnfulfilledWorkerNonces(ctx, msg.TopicId)
+			nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topic.Id)
 			if err != nil {
 				return types.Topic{}, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
 			}
@@ -3306,11 +3302,11 @@ func (k *Keeper) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest)
 		}
 	}
 
-	if err := k.SetTopic(ctx, msg.TopicId, updatedTopic); err != nil {
+	if err := k.SetTopic(ctx, topic.Id, newTopic); err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "failed to apply topic update")
 	}
 
-	return updatedTopic, nil
+	return newTopic, nil
 }
 
 // Returns the number of topics that are active in the network
