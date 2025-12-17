@@ -5,6 +5,7 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Topics tests
@@ -254,7 +255,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorIs(err, types.ErrNotPermittedToModifyTopic)
+	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 	require.Nil(updateResult)
 }
 

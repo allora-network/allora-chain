@@ -20,6 +20,7 @@ import (
 	coreStore "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -3261,7 +3262,7 @@ func (k *Keeper) UpdateTopic(ctx context.Context, sender ActorId, topic types.To
 	}
 
 	if topic.Creator != sender {
-		return types.Topic{}, types.ErrNotPermittedToModifyTopic
+		return types.Topic{}, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "not permitted to modify topic")
 	}
 
 	// Only allow updates to specific fields, and keep all other topic fields unchanged.

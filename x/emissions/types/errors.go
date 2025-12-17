@@ -97,5 +97,4 @@ var (
 	ErrMaxWhitelistInputArrayLengthExceeded      = errors.Register(ModuleName, 92, "max whitelist input array length exceeded")
 	ErrTopicAlreadyActive                        = errors.Register(ModuleName, 93, "topic already active")
 	ErrTopicCannotBeActivated                    = errors.Register(ModuleName, 94, "topic cannot be activated")
-	ErrNotPermittedToModifyTopic                 = errors.Register(ModuleName, 95, "not permitted to modify topic")
 )
