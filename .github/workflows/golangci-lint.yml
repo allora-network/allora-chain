@@ -44,3 +44,6 @@ jobs:
       - name: check-log-sprintf
         run: go run ./linter/log-sprintf ./...
         timeout-minutes: 10
+      - name: check-duplicate-routes
+        run: make duplicate-routes
+        timeout-minutes: 10
