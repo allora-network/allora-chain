@@ -309,6 +309,187 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	}
 }
 
+func (s *KeeperTestSuite) TestGetOpenReputerSubmissionWindows() {
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(50),
+	)
+
+	// Initially, no open nonces
+	openNonces, err := k.GetOpenReputerSubmissionWindows(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Initially should have no open nonces")
+
+	// Add nonces at different block heights
+	// Nonce 1: block 1000, will be open at block 1100-1200 (1000 + 100 GTLag to 1000 + 100 + 0 + 100)
+	nonce1 := &types.Nonce{BlockHeight: 1000}
+	err = k.AddReputerNonce(ctx, topicId, nonce1)
+	s.Require().NoError(err)
+
+	// Nonce 2: block 2000, will be open at block 2100-2200
+	nonce2 := &types.Nonce{BlockHeight: 2000}
+	err = k.AddReputerNonce(ctx, topicId, nonce2)
+	s.Require().NoError(err)
+
+	// Set block height to 1150 (within window for nonce1, outside for nonce2)
+	s.WithBlockHeight(1150)
+	openNonces, err = k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce")
+	s.Require().Equal(int64(1000), openNonces.Nonces[0].ReputerNonce.BlockHeight, "Should be nonce1")
+
+	// Set block height to 2150 (within window for nonce2, outside for nonce1)
+	s.WithBlockHeight(2150)
+	openNonces, err = k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce")
+	s.Require().Equal(int64(2000), openNonces.Nonces[0].ReputerNonce.BlockHeight, "Should be nonce2")
+
+	// Set block height to 1050 (before window opens for nonce1)
+	s.WithBlockHeight(1050)
+	openNonces, err = k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Should have no open nonces before window opens")
+
+	// Set block height to 1200 (exactly at window end for nonce1, inclusive)
+	s.WithBlockHeight(1200)
+	openNonces, err = k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce at window end")
+	s.Require().Equal(int64(1000), openNonces.Nonces[0].ReputerNonce.BlockHeight, "Should be nonce1")
+
+	// Set block height to 1201 (after window closes for nonce1)
+	s.WithBlockHeight(1201)
+	openNonces, err = k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Should have no open nonces after window closes")
+}
+
+func (s *KeeperTestSuite) TestGetOpenWorkerSubmissionWindows() {
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(50),
+	)
+
+	// Initially, no open nonces
+	openNonces, err := k.GetOpenWorkerSubmissionWindows(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Initially should have no open nonces")
+
+	// Add nonces at different block heights
+	// Nonce 1: block 1000, will be open at block 1000-1050
+	nonce1 := &types.Nonce{BlockHeight: 1000}
+	err = k.AddWorkerNonce(ctx, topicId, nonce1)
+	s.Require().NoError(err)
+
+	// Nonce 2: block 2000, will be open at block 2000-2050
+	nonce2 := &types.Nonce{BlockHeight: 2000}
+	err = k.AddWorkerNonce(ctx, topicId, nonce2)
+	s.Require().NoError(err)
+
+	// Set block height to 1025 (within window for nonce1, outside for nonce2)
+	s.WithBlockHeight(1025)
+	openNonces, err = k.GetOpenWorkerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce")
+	s.Require().Equal(int64(1000), openNonces.Nonces[0].BlockHeight, "Should be nonce1")
+
+	// Set block height to 2025 (within window for nonce2, outside for nonce1)
+	s.WithBlockHeight(2025)
+	openNonces, err = k.GetOpenWorkerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce")
+	s.Require().Equal(int64(2000), openNonces.Nonces[0].BlockHeight, "Should be nonce2")
+
+	// Set block height to 999 (before window opens for nonce1)
+	s.WithBlockHeight(999)
+	openNonces, err = k.GetOpenWorkerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Should have no open nonces before window opens")
+
+	// Set block height to 1000 (exactly at window start for nonce1, inclusive)
+	s.WithBlockHeight(1000)
+	openNonces, err = k.GetOpenWorkerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce at window start")
+	s.Require().Equal(int64(1000), openNonces.Nonces[0].BlockHeight, "Should be nonce1")
+
+	// Set block height to 1050 (exactly at window end for nonce1, inclusive)
+	s.WithBlockHeight(1050)
+	openNonces, err = k.GetOpenWorkerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce at window end")
+	s.Require().Equal(int64(1000), openNonces.Nonces[0].BlockHeight, "Should be nonce1")
+
+	// Set block height to 1051 (after window closes for nonce1)
+	s.WithBlockHeight(1051)
+	openNonces, err = k.GetOpenWorkerSubmissionWindows(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Should have no open nonces after window closes")
+}
+
+func (s *KeeperTestSuite) TestGetOpenReputerSubmissionWindowsWithMultipleNoncesInWindow() {
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(50),
+	)
+
+	// Add multiple nonces that will be open at the same time
+	// All these will be open at block 1200
+	nonce1 := &types.Nonce{BlockHeight: 1000} // Open at 1100-1200
+	nonce2 := &types.Nonce{BlockHeight: 1100} // Open at 1200-1300
+	err := k.AddReputerNonce(s.Ctx(), topicId, nonce1)
+	s.Require().NoError(err)
+	err = k.AddReputerNonce(s.Ctx(), topicId, nonce2)
+	s.Require().NoError(err)
+
+	// Set block height to 1150 (only nonce1 is open)
+	s.WithBlockHeight(1150)
+	openNonces, err := k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 1, "Should have one open nonce")
+	s.Require().Equal(int64(1000), openNonces.Nonces[0].ReputerNonce.BlockHeight, "Should be nonce1")
+
+	// Set block height to 1200 (both nonces are open - nonce1 at end, nonce2 at start)
+	s.WithBlockHeight(1200)
+	openNonces, err = k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(openNonces.Nonces, 2, "Should have two open nonces")
+	// Check both are present
+	nonceHeights := []int64{
+		openNonces.Nonces[0].ReputerNonce.BlockHeight,
+		openNonces.Nonces[1].ReputerNonce.BlockHeight,
+	}
+	s.Require().Contains(nonceHeights, int64(1000), "Should contain nonce1")
+	s.Require().Contains(nonceHeights, int64(1100), "Should contain nonce2")
+}
+
+func (s *KeeperTestSuite) TestGetOpenReputerSubmissionWindowsWithNonExistentTopic() {
+	k := s.EmissionsKeeper()
+	nonExistentTopicId := uint64(99999)
+
+	_, err := k.GetOpenReputerSubmissionWindows(s.Ctx(), nonExistentTopicId)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error getting topic")
+}
+
+func (s *KeeperTestSuite) TestGetOpenWorkerSubmissionWindowsWithNonExistentTopic() {
+	k := s.EmissionsKeeper()
+	nonExistentTopicId := uint64(99999)
+
+	_, err := k.GetOpenWorkerSubmissionWindows(s.Ctx(), nonExistentTopicId)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error getting topic")
+}
+
 func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()

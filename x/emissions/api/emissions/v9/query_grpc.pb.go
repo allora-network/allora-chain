@@ -51,6 +51,8 @@ const (
 	QueryService_IsReputerNonceUnfulfilled_FullMethodName                   = "/emissions.v9.QueryService/IsReputerNonceUnfulfilled"
 	QueryService_GetUnfulfilledWorkerNonces_FullMethodName                  = "/emissions.v9.QueryService/GetUnfulfilledWorkerNonces"
 	QueryService_GetUnfulfilledReputerNonces_FullMethodName                 = "/emissions.v9.QueryService/GetUnfulfilledReputerNonces"
+	QueryService_GetOpenReputerSubmissionWindows_FullMethodName             = "/emissions.v9.QueryService/GetOpenReputerSubmissionWindows"
+	QueryService_GetOpenWorkerSubmissionWindows_FullMethodName              = "/emissions.v9.QueryService/GetOpenWorkerSubmissionWindows"
 	QueryService_GetInfererNetworkRegret_FullMethodName                     = "/emissions.v9.QueryService/GetInfererNetworkRegret"
 	QueryService_GetForecasterNetworkRegret_FullMethodName                  = "/emissions.v9.QueryService/GetForecasterNetworkRegret"
 	QueryService_GetOneInForecasterNetworkRegret_FullMethodName             = "/emissions.v9.QueryService/GetOneInForecasterNetworkRegret"
@@ -165,6 +167,8 @@ type QueryServiceClient interface {
 	IsReputerNonceUnfulfilled(ctx context.Context, in *IsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*IsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(ctx context.Context, in *GetUnfulfilledWorkerNoncesRequest, opts ...grpc.CallOption) (*GetUnfulfilledWorkerNoncesResponse, error)
 	GetUnfulfilledReputerNonces(ctx context.Context, in *GetUnfulfilledReputerNoncesRequest, opts ...grpc.CallOption) (*GetUnfulfilledReputerNoncesResponse, error)
+	GetOpenReputerSubmissionWindows(ctx context.Context, in *GetOpenReputerSubmissionWindowsRequest, opts ...grpc.CallOption) (*GetOpenReputerSubmissionWindowsResponse, error)
+	GetOpenWorkerSubmissionWindows(ctx context.Context, in *GetOpenWorkerSubmissionWindowsRequest, opts ...grpc.CallOption) (*GetOpenWorkerSubmissionWindowsResponse, error)
 	GetInfererNetworkRegret(ctx context.Context, in *GetInfererNetworkRegretRequest, opts ...grpc.CallOption) (*GetInfererNetworkRegretResponse, error)
 	GetForecasterNetworkRegret(ctx context.Context, in *GetForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*GetForecasterNetworkRegretResponse, error)
 	GetOneInForecasterNetworkRegret(ctx context.Context, in *GetOneInForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*GetOneInForecasterNetworkRegretResponse, error)
@@ -570,6 +574,26 @@ func (c *queryServiceClient) GetUnfulfilledReputerNonces(ctx context.Context, in
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetUnfulfilledReputerNoncesResponse)
 	err := c.cc.Invoke(ctx, QueryService_GetUnfulfilledReputerNonces_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetOpenReputerSubmissionWindows(ctx context.Context, in *GetOpenReputerSubmissionWindowsRequest, opts ...grpc.CallOption) (*GetOpenReputerSubmissionWindowsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetOpenReputerSubmissionWindowsResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetOpenReputerSubmissionWindows_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetOpenWorkerSubmissionWindows(ctx context.Context, in *GetOpenWorkerSubmissionWindowsRequest, opts ...grpc.CallOption) (*GetOpenWorkerSubmissionWindowsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetOpenWorkerSubmissionWindowsResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetOpenWorkerSubmissionWindows_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1345,6 +1369,8 @@ type QueryServiceServer interface {
 	IsReputerNonceUnfulfilled(context.Context, *IsReputerNonceUnfulfilledRequest) (*IsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(context.Context, *GetUnfulfilledWorkerNoncesRequest) (*GetUnfulfilledWorkerNoncesResponse, error)
 	GetUnfulfilledReputerNonces(context.Context, *GetUnfulfilledReputerNoncesRequest) (*GetUnfulfilledReputerNoncesResponse, error)
+	GetOpenReputerSubmissionWindows(context.Context, *GetOpenReputerSubmissionWindowsRequest) (*GetOpenReputerSubmissionWindowsResponse, error)
+	GetOpenWorkerSubmissionWindows(context.Context, *GetOpenWorkerSubmissionWindowsRequest) (*GetOpenWorkerSubmissionWindowsResponse, error)
 	GetInfererNetworkRegret(context.Context, *GetInfererNetworkRegretRequest) (*GetInfererNetworkRegretResponse, error)
 	GetForecasterNetworkRegret(context.Context, *GetForecasterNetworkRegretRequest) (*GetForecasterNetworkRegretResponse, error)
 	GetOneInForecasterNetworkRegret(context.Context, *GetOneInForecasterNetworkRegretRequest) (*GetOneInForecasterNetworkRegretResponse, error)
@@ -1531,6 +1557,12 @@ func (UnimplementedQueryServiceServer) GetUnfulfilledWorkerNonces(context.Contex
 }
 func (UnimplementedQueryServiceServer) GetUnfulfilledReputerNonces(context.Context, *GetUnfulfilledReputerNoncesRequest) (*GetUnfulfilledReputerNoncesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUnfulfilledReputerNonces not implemented")
+}
+func (UnimplementedQueryServiceServer) GetOpenReputerSubmissionWindows(context.Context, *GetOpenReputerSubmissionWindowsRequest) (*GetOpenReputerSubmissionWindowsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOpenReputerSubmissionWindows not implemented")
+}
+func (UnimplementedQueryServiceServer) GetOpenWorkerSubmissionWindows(context.Context, *GetOpenWorkerSubmissionWindowsRequest) (*GetOpenWorkerSubmissionWindowsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOpenWorkerSubmissionWindows not implemented")
 }
 func (UnimplementedQueryServiceServer) GetInfererNetworkRegret(context.Context, *GetInfererNetworkRegretRequest) (*GetInfererNetworkRegretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfererNetworkRegret not implemented")
@@ -2344,6 +2376,42 @@ func _QueryService_GetUnfulfilledReputerNonces_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServiceServer).GetUnfulfilledReputerNonces(ctx, req.(*GetUnfulfilledReputerNoncesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetOpenReputerSubmissionWindows_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOpenReputerSubmissionWindowsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetOpenReputerSubmissionWindows(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetOpenReputerSubmissionWindows_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetOpenReputerSubmissionWindows(ctx, req.(*GetOpenReputerSubmissionWindowsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetOpenWorkerSubmissionWindows_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOpenWorkerSubmissionWindowsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetOpenWorkerSubmissionWindows(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetOpenWorkerSubmissionWindows_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetOpenWorkerSubmissionWindows(ctx, req.(*GetOpenWorkerSubmissionWindowsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3796,6 +3864,14 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUnfulfilledReputerNonces",
 			Handler:    _QueryService_GetUnfulfilledReputerNonces_Handler,
+		},
+		{
+			MethodName: "GetOpenReputerSubmissionWindows",
+			Handler:    _QueryService_GetOpenReputerSubmissionWindows_Handler,
+		},
+		{
+			MethodName: "GetOpenWorkerSubmissionWindows",
+			Handler:    _QueryService_GetOpenWorkerSubmissionWindows_Handler,
 		},
 		{
 			MethodName: "GetInfererNetworkRegret",
