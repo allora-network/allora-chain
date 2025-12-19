@@ -20,7 +20,6 @@ import (
 	coreStore "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -3255,30 +3254,18 @@ func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error)
 }
 
 // UpdateTopic applies allowed changes to a topic.
-func (k *Keeper) UpdateTopic(ctx context.Context, sender ActorId, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
+func (k *Keeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "error getting params")
 	}
 
-	if topic.Creator != sender {
-		return types.Topic{}, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "not permitted to modify topic")
-	}
-
-	// Only allow updates to specific fields, and keep all other topic fields unchanged.
-	newTopic := topic
-	newTopic.Metadata = updatedTopic.Metadata
-	newTopic.LossMethod = updatedTopic.LossMethod
-	newTopic.AlphaRegret = updatedTopic.AlphaRegret
-	newTopic.MeritSortitionAlpha = updatedTopic.MeritSortitionAlpha
-	newTopic.PNorm = updatedTopic.PNorm
-
-	if err := newTopic.Validate(params); err != nil {
+	if err := updatedTopic.Validate(params); err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
 	}
 
 	// Check merit_sortition_alpha update restriction when topic is active and worker window is open
-	if !topic.MeritSortitionAlpha.Equal(newTopic.MeritSortitionAlpha) {
+	if !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha) {
 		isActive, err := k.IsTopicActive(ctx, topic.Id)
 		if err != nil {
 			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
@@ -3303,11 +3290,11 @@ func (k *Keeper) UpdateTopic(ctx context.Context, sender ActorId, topic types.To
 		}
 	}
 
-	if err := k.SetTopic(ctx, topic.Id, newTopic); err != nil {
+	if err := k.SetTopic(ctx, topic.Id, updatedTopic); err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "failed to apply topic update")
 	}
 
-	return newTopic, nil
+	return updatedTopic, nil
 }
 
 // Returns the number of topics that are active in the network

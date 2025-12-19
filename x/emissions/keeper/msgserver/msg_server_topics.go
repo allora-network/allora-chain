@@ -8,6 +8,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
@@ -109,6 +110,10 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, err
 	}
 
+	if topic.Creator != msg.Sender {
+		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "not permitted to modify topic")
+	}
+
 	updatedTopic := topic
 	updatedTopic.Metadata = msg.Metadata
 	updatedTopic.LossMethod = msg.LossMethod
@@ -116,7 +121,7 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 
-	updatedTopic, err = ms.k.UpdateTopic(ctx, msg.Sender, topic, updatedTopic)
+	updatedTopic, err = ms.k.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {
 		return nil, err
 	}

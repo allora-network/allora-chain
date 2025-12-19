@@ -19,3 +19,19 @@ event: `allora_emissions_event_total`
 query/tx: `allora_emissions_request_total` for occurrences, `allora_emissions_request_duration_ms` for latency measures.
 Different labels are applied where appropriate (eg "topic_id", "address", "nonce", etc.)
 See `x/emissions/metrics/` for details.
+
+## Topic configuration updates (UpdateTopic)
+
+The `UpdateTopic` tx is intentionally limited to a small set of mutable fields. Today, topic creators can update:
+
+- **`metadata`**
+- **`loss_method`**
+- **`alpha_regret`**
+- **`merit_sortition_alpha`**
+- **`p_norm`**
+
+All other topic fields are treated as immutable because they impact state transitions, scheduling/cadence, or other invariants that should remain stable once a topic is created.
+
+### Constraints
+
+- **`merit_sortition_alpha`** cannot be updated while the topic is active *and* the worker submission window is currently open (to avoid changing selection dynamics mid-window).
