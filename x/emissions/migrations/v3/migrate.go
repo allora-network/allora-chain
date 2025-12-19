@@ -17,7 +17,7 @@ import (
 	"github.com/allora-network/allora-chain/utils/migutils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
-	v4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
+	v3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
 	types "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -74,7 +74,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxRetriesToFulfilNoncesWorker
 	//      MaxRetriesToFulfilNoncesReputer
 	//      MaxTopicsPerBlock
-	newParams := v4Types.Params{ //nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
+	newParams := v3Types.Params{ //nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

@@ -11,7 +11,7 @@ import (
 	"github.com/allora-network/allora-chain/utils/migutils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v5/oldtypes"
-	v6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
+	v5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -73,7 +73,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      InitialRegretQuantile, PNormSafeDiv
-	newParams := v6Types.Params{ //nolint: exhaustruct
+	newParams := v5Types.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

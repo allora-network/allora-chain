@@ -26,13 +26,13 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	ctx.Logger().Info("GETTING OLD CNORM VALUE FROM PARAMS")
+	ctx.Logger().Info("GETTING OLD C_NORM VALUE FROM PARAMS")
 	oldCNorm, err := getOldCNormFromParams(store)
 	if err != nil {
-		ctx.Logger().Error("ERROR GETTING OLD CNORM VALUE FROM PARAMS")
+		ctx.Logger().Error("ERROR GETTING OLD C_NORM VALUE FROM PARAMS")
 		return err
 	}
-	ctx.Logger().Info("OLD CNORM VALUE", "cNorm", oldCNorm)
+	ctx.Logger().Info("OLD C_NORM VALUE", "cNorm", oldCNorm)
 
 	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 13 TO VERSION 14")
 	if err := MigrateParams(store, cdc); err != nil {
@@ -151,9 +151,9 @@ func MigrateTopics(
 	iterator := topicStore.Iterator(nil, nil)
 	defer iterator.Close()
 
-	ctx.Logger().Info("MIGRATION V12: Migrating topics to add CNorm", "cNorm", oldCNorm)
+	ctx.Logger().Info("MIGRATION V14: Migrating topics to add CNorm", "cNorm", oldCNorm)
 
-	topicsToChange := make(map[string]emissionstypes.Topic, 0)
+	topicsToChange := make(map[string]emissionstypes.Topic)
 	for ; iterator.Valid(); iterator.Next() {
 		var topic emissionstypes.Topic
 		err := proto.Unmarshal(iterator.Value(), &topic)
@@ -161,19 +161,18 @@ func MigrateTopics(
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
-		ctx.Logger().Debug("MIGRATION V12: Updating topic", "topicId", topic.Id)
+		ctx.Logger().Debug("MIGRATION V14: Updating topic", "topicId", topic.Id)
 
 		topic.CNorm = oldCNorm
 
 		topicsToChange[string(iterator.Key())] = topic
 	}
-	_ = iterator.Close()
 
 	for key, topic := range topicsToChange {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&topic))
-		ctx.Logger().Debug("MIGRATION V12: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
+		ctx.Logger().Debug("MIGRATION V14: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
 	}
 
-	ctx.Logger().Info("MIGRATION V12: Topics migration complete", "topicsUpdated", len(topicsToChange))
+	ctx.Logger().Info("MIGRATION V14: Topics migration complete", "topicsUpdated", len(topicsToChange))
 	return nil
 }
