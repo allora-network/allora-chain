@@ -17,7 +17,7 @@ import (
 
 // MigrateStore migrates the store from version 13 to version 14.
 // It does the following:
-// - Migrate params to remove CNorm (it's now per-topic)
+// - Keep deprecated params.CNorm for backwards compatibility (ignored by logic; now per-topic)
 // - Migrate all topics to add CNorm field with the old global value
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 13 TO VERSION 14")
@@ -64,8 +64,8 @@ func getOldCNormFromParams(store storetypes.KVStore) (alloraMath.Dec, error) {
 	return oldParams.CNorm, nil
 }
 
-// MigrateParams migrates params by removing the CNorm field
-// CNorm is now stored per-topic instead of globally
+// MigrateParams migrates params while keeping the deprecated CNorm field for backwards
+// compatibility. CNorm is now stored per-topic instead of being read from params.
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	oldParams := oldV11Types.Params{} //nolint: exhaustruct
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
@@ -78,7 +78,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	}
 
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
-	// REMOVED: CNorm
+	// DEPRECATED (kept for backwards compatibility): CNorm
 	newParams := emissionstypes.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
@@ -113,6 +113,8 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		PRewardReputer:                      oldParams.PRewardReputer,
 		CRewardInference:                    oldParams.CRewardInference,
 		CRewardForecast:                     oldParams.CRewardForecast,
+		// Deprecated: kept for backwards compatibility, ignored by chain logic.
+		CNorm: oldParams.CNorm,
 		EpsilonReputer:                      oldParams.EpsilonReputer,
 		HalfMaxProcessStakeRemovalsEndBlock: oldParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      oldParams.EpsilonSafeDiv,

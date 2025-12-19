@@ -12,59 +12,61 @@ import (
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
-		Version:                             "v10",                                        // version of the protocol should be in lockstep with github release tag version
-		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),       // total weight for a topic < this => don't run inference solicitation or loss update
-		RequiredMinimumStake:                cosmosMath.NewInt(10000),                     // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),            // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
-		MinEpochLength:                      12,                                           // shortest number of blocks per epoch topics are allowed to set as their cadence
-		BetaEntropy:                         alloraMath.MustNewDecFromString("0.25"),      // controls resilience of reward payouts against copycat workers
-		LearningRate:                        alloraMath.MustNewDecFromString("0.05"),      // speed of gradient descent
-		GradientDescentMaxIters:             uint64(10),                                   // max iterations on gradient descent
-		MaxGradientThreshold:                alloraMath.MustNewDecFromString("0.001"),     // gradient descent stops when gradient falls below this
-		MinStakeFraction:                    alloraMath.MustNewDecFromString("0.5"),       // minimum fraction of stake that should be listened to when setting consensus listening coefficients
-		EpsilonReputer:                      alloraMath.MustNewDecFromString("0.01"),      // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
-		EpsilonSafeDiv:                      alloraMath.MustNewDecFromString("0.0000001"), // a small tolerance quantity used to cap division by zero
-		MaxUnfulfilledWorkerRequests:        uint64(100),                                  // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
-		MaxUnfulfilledReputerRequests:       uint64(100),                                  // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
-		TopicRewardStakeImportance:          alloraMath.MustNewDecFromString("0.5"),       // importance of stake in determining rewards for a topic
-		TopicRewardFeeRevenueImportance:     alloraMath.MustNewDecFromString("0.5"),       // importance of fee revenue in determining rewards for a topic
-		TopicRewardAlpha:                    alloraMath.MustNewDecFromString("0.5"),       // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
-		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1"),       // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
-		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0.25"),      // 25% rewards go to cosmos network validators
-		MaxSamplesToScaleScores:             uint64(10),                                   // maximum number of previous scores to store and use for standard deviation calculation
-		MaxTopInferersToReward:              uint64(32),                                   // max this many top inferers by score are rewarded for a topic
-		MaxTopForecastersToReward:           uint64(6),                                    // max this many top forecasters by score are rewarded for a topic
-		MaxTopReputersToReward:              uint64(6),                                    // max this many top reputers by score are rewarded for a topic
-		CreateTopicFee:                      cosmosMath.NewInt(75000),                     // topic registration fee
-		RegistrationFee:                     cosmosMath.NewInt(200),                       // how much workers and reputers must pay to register per topic
-		DefaultPageLimit:                    uint64(100),                                  // how many topics to return per page during churn of requests
-		MaxPageLimit:                        uint64(1000),                                 // max limit for pagination
-		MinEpochLengthRecordLimit:           int64(3),                                     // minimum number of epochs to keep records for a topic
-		MaxSerializedMsgLength:              int64(1000 * 1000),                           // maximum size of data to msg and query server in bytes
-		BlocksPerMonth:                      uint64(864000),                               // ~3 seconds block time, assuming 30 days in a month 60 * 60 * 24 * 30 / 3
-		PRewardInference:                    alloraMath.NewDecFromInt64(3),                // fiducial value for rewards calculation
-		PRewardForecast:                     alloraMath.NewDecFromInt64(3),                // fiducial value for rewards calculation
-		PRewardReputer:                      alloraMath.NewDecFromInt64(1),                // fiducial value for rewards calculation
-		CRewardInference:                    alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
-		CRewardForecast:                     alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
-		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                   // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
-		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
-		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
-		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
-		MaxStringLength:                     uint64(255),                                  // maximum length of strings uploaded to the chain
-		InitialRegretQuantile:               alloraMath.MustNewDecFromString("0.25"),      // quantile value for getting initial regret during network regret calculation
-		PNormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),      // pnorm divide value to calculate offset with cnorm
-		GlobalWhitelistEnabled:              true,                                         // global whitelist enabled => all global whitelisted actors can create topics and participate in all topics as workers and reputers
-		TopicCreatorWhitelistEnabled:        true,                                         // topic creator whitelist enabled => all topic creator whitelisted actors can create topics
-		MinExperiencedWorkerRegrets:         uint64(10),                                   // minimum number of experienced workers required to use their regrets for calculating the topic initial regret
-		InferenceOutlierDetectionThreshold:  alloraMath.MustNewDecFromString("11"),        // threshold for inference outlier detection
-		InferenceOutlierDetectionAlpha:      alloraMath.MustNewDecFromString("0.2"),       // alpha for inference outlier detection
-		LambdaInitialScore:                  alloraMath.MustNewDecFromString("2"),         // lambda for new participant score initialization
-		GlobalWorkerWhitelistEnabled:        true,                                         // global worker whitelist enabled => the global worker whitelist determines which workers can participate in all topics
-		GlobalReputerWhitelistEnabled:       true,                                         // global reputer whitelist enabled => the global reputer whitelist determines which reputers can participate in all topics
-		GlobalAdminWhitelistAppended:        true,                                         // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
-		MaxWhitelistInputArrayLength:        uint64(2000),                                 // maximum length of input arrays for whitelist operations
-		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),  // minimum weight threshold for stdnorm calculation
+		Version:                         "v10",                                        // version of the protocol should be in lockstep with github release tag version
+		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),       // total weight for a topic < this => don't run inference solicitation or loss update
+		RequiredMinimumStake:            cosmosMath.NewInt(10000),                     // minimum stake required to be a worker or reputer
+		RemoveStakeDelayWindow:          int64((60 * 60 * 24 * 7 * 3) / 3),            // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
+		MinEpochLength:                  12,                                           // shortest number of blocks per epoch topics are allowed to set as their cadence
+		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),      // controls resilience of reward payouts against copycat workers
+		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),      // speed of gradient descent
+		GradientDescentMaxIters:         uint64(10),                                   // max iterations on gradient descent
+		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),     // gradient descent stops when gradient falls below this
+		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),       // minimum fraction of stake that should be listened to when setting consensus listening coefficients
+		EpsilonReputer:                  alloraMath.MustNewDecFromString("0.01"),      // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
+		EpsilonSafeDiv:                  alloraMath.MustNewDecFromString("0.0000001"), // a small tolerance quantity used to cap division by zero
+		MaxUnfulfilledWorkerRequests:    uint64(100),                                  // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
+		MaxUnfulfilledReputerRequests:   uint64(100),                                  // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
+		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),       // importance of stake in determining rewards for a topic
+		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),       // importance of fee revenue in determining rewards for a topic
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),       // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
+		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),       // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
+		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),      // 25% rewards go to cosmos network validators
+		MaxSamplesToScaleScores:         uint64(10),                                   // maximum number of previous scores to store and use for standard deviation calculation
+		MaxTopInferersToReward:          uint64(32),                                   // max this many top inferers by score are rewarded for a topic
+		MaxTopForecastersToReward:       uint64(6),                                    // max this many top forecasters by score are rewarded for a topic
+		MaxTopReputersToReward:          uint64(6),                                    // max this many top reputers by score are rewarded for a topic
+		CreateTopicFee:                  cosmosMath.NewInt(75000),                     // topic registration fee
+		RegistrationFee:                 cosmosMath.NewInt(200),                       // how much workers and reputers must pay to register per topic
+		DefaultPageLimit:                uint64(100),                                  // how many topics to return per page during churn of requests
+		MaxPageLimit:                    uint64(1000),                                 // max limit for pagination
+		MinEpochLengthRecordLimit:       int64(3),                                     // minimum number of epochs to keep records for a topic
+		MaxSerializedMsgLength:          int64(1000 * 1000),                           // maximum size of data to msg and query server in bytes
+		BlocksPerMonth:                  uint64(864000),                               // ~3 seconds block time, assuming 30 days in a month 60 * 60 * 24 * 30 / 3
+		PRewardInference:                alloraMath.NewDecFromInt64(3),                // fiducial value for rewards calculation
+		PRewardForecast:                 alloraMath.NewDecFromInt64(3),                // fiducial value for rewards calculation
+		PRewardReputer:                  alloraMath.NewDecFromInt64(1),                // fiducial value for rewards calculation
+		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
+		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
+		// Deprecated: kept for backwards compatibility, ignored by chain logic (now per-topic).
+		CNorm:                               alloraMath.MustNewDecFromString("0.75"),
+		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                  // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
+		DataSendingFee:                      cosmosMath.NewInt(10),                       // how much workers and reputers must pay to send payload
+		MaxElementsPerForecast:              uint64(12),                                  // top forecast elements by score
+		MaxActiveTopicsPerBlock:             uint64(1),                                   // maximum number of active topics per block
+		MaxStringLength:                     uint64(255),                                 // maximum length of strings uploaded to the chain
+		InitialRegretQuantile:               alloraMath.MustNewDecFromString("0.25"),     // quantile value for getting initial regret during network regret calculation
+		PNormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),     // pnorm divide value to calculate offset with cnorm
+		GlobalWhitelistEnabled:              true,                                        // global whitelist enabled => all global whitelisted actors can create topics and participate in all topics as workers and reputers
+		TopicCreatorWhitelistEnabled:        true,                                        // topic creator whitelist enabled => all topic creator whitelisted actors can create topics
+		MinExperiencedWorkerRegrets:         uint64(10),                                  // minimum number of experienced workers required to use their regrets for calculating the topic initial regret
+		InferenceOutlierDetectionThreshold:  alloraMath.MustNewDecFromString("11"),       // threshold for inference outlier detection
+		InferenceOutlierDetectionAlpha:      alloraMath.MustNewDecFromString("0.2"),      // alpha for inference outlier detection
+		LambdaInitialScore:                  alloraMath.MustNewDecFromString("2"),        // lambda for new participant score initialization
+		GlobalWorkerWhitelistEnabled:        true,                                        // global worker whitelist enabled => the global worker whitelist determines which workers can participate in all topics
+		GlobalReputerWhitelistEnabled:       true,                                        // global reputer whitelist enabled => the global reputer whitelist determines which reputers can participate in all topics
+		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
+		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
+		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // minimum weight threshold for stdnorm calculation
 	}
 }
 

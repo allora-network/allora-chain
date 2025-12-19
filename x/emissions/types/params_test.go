@@ -45,6 +45,7 @@ func TestDefaultParams(t *testing.T) {
 		PRewardReputer:                      alloraMath.NewDecFromInt64(1),
 		CRewardInference:                    alloraMath.MustNewDecFromString("0.75"),
 		CRewardForecast:                     alloraMath.MustNewDecFromString("0.75"),
+		CNorm:                               alloraMath.MustNewDecFromString("0.75"),
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),
 		DataSendingFee:                      cosmosMath.NewInt(10),
 		MaxElementsPerForecast:              uint64(12),
