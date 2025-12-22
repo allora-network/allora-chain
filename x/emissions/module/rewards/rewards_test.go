@@ -12,7 +12,6 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -1400,130 +1399,6 @@ func (s *RewardsTestSuite) compareRewards(actual, expected map[uint64]*alloraMat
 		}
 	}
 	return true
-}
-
-func (s *RewardsTestSuite) TestMonthlyPercentageRewardCalculation() {
-	// 1. Setup Params
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	blocksPerMonth := int64(10)
-	params.BlocksPerMonth = uint64(blocksPerMonth)
-	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
-	s.Require().NoError(err)
-
-	// 2. Fund Rewards Module (required for EndBlocker checks)
-	initialRewardAmount := cosmosMath.NewInt(1000000)
-	s.MintTokensToModule(types.AlloraRewardsAccountName, initialRewardAmount)
-
-	// 3. Define simulated reward increments per block
-	reputerIncrement := cosmosMath.NewInt(10)
-	topicIncrement := cosmosMath.NewInt(50)
-
-	// 4. Simulate Block Progression and Reward Accumulation
-	for i := int64(1); i < blocksPerMonth; i++ {
-		loopCtx := s.Ctx().WithBlockHeight(i)
-		// Run EndBlocker (simulates standard block processing)
-		err = module.EndBlocker(loopCtx, s.EmissionsAppModule())
-		s.Require().NoError(err, "EndBlocker failed during block %d", i)
-
-		// Manually add rewards to simulate accumulation during the month
-		err = s.EmissionsKeeper().AddMonthlyRewards(loopCtx, reputerIncrement, topicIncrement)
-		s.Require().NoError(err, "Failed to add rewards at block %d", i)
-	}
-
-	// 5. Calculate Expected Totals and Percentage *before* the reset block
-	totalReputerRewards := reputerIncrement.MulRaw(blocksPerMonth - 1)
-	totalTopicRewards := topicIncrement.MulRaw(blocksPerMonth - 1)
-
-	expectedPercentage := alloraMath.ZeroDec()
-	if !totalTopicRewards.IsZero() {
-		reputersDec, err := alloraMath.NewDecFromSdkInt(totalReputerRewards)
-		s.Require().NoError(err)
-		topicDec, err := alloraMath.NewDecFromSdkInt(totalTopicRewards)
-		s.Require().NoError(err)
-		expectedPercentage, err = reputersDec.Quo(topicDec)
-		s.Require().NoError(err)
-	}
-
-	// Sanity check the accumulated values before the final EndBlocker call
-	reputerRewardsBeforeFinal, err := s.EmissionsKeeper().GetMonthlyReputerRewards(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().True(totalReputerRewards.Equal(reputerRewardsBeforeFinal), "Mismatch in accumulated reputer rewards before reset")
-	topicRewardsBeforeFinal, err := s.EmissionsKeeper().GetMonthlyTopicRewards(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().True(totalTopicRewards.Equal(topicRewardsBeforeFinal), "Mismatch in accumulated topic rewards before reset")
-
-	// 6. Trigger End Blocker execution at the end of the month
-	endOfMonthCtx := s.Ctx().WithBlockHeight(blocksPerMonth)
-	err = module.EndBlocker(endOfMonthCtx, s.EmissionsAppModule())
-	s.Require().NoError(err, "EndBlocker execution failed at month boundary %d", blocksPerMonth)
-
-	// 7. Verify State After End Blocker
-	// Verify percentage calculated and stored by EndBlocker
-	actualPercentageAfter, err := s.EmissionsKeeper().GetPreviousPercentageRewardToStakedReputers(s.Ctx())
-	s.Require().NoError(err)
-	s.T().Logf("Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
-	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
-
-	// Verify counters reset by EndBlocker
-	reputerRewardsAfter, err := s.EmissionsKeeper().GetMonthlyReputerRewards(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by EndBlocker")
-
-	topicRewardsAfter, err := s.EmissionsKeeper().GetMonthlyTopicRewards(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by EndBlocker")
-}
-
-func (s *RewardsTestSuite) TestMonthlyPercentageRewardCalculation_ZeroTopicRewards() {
-	// 1. Setup Params
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	blocksPerMonth := int64(10)
-	params.BlocksPerMonth = uint64(blocksPerMonth)
-	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
-	s.Require().NoError(err)
-
-	// 2. Fund Rewards Module (required for EndBlocker checks)
-	initialRewardAmount := cosmosMath.NewInt(1000000)
-	s.MintTokensToModule(types.AlloraRewardsAccountName, initialRewardAmount)
-
-	// 3. Ensure No Topics or Reward Activity
-	// No topics created, no workers/reputers registered, no data submitted.
-	// This ensures EmitRewards calculates zero rewards throughout the month.
-
-	// 4. Simulate Block Progression up to the Monthly Boundary
-	for i := int64(1); i < blocksPerMonth; i++ {
-		loopCtx := s.Ctx().WithBlockHeight(i)
-		err = module.EndBlocker(loopCtx, s.EmissionsAppModule())
-		s.Require().NoError(err, "EndBlocker failed during block %d", i)
-
-		// Sanity check: Verify topic rewards remain zero during the month
-		topicRewards, err := s.EmissionsKeeper().GetMonthlyTopicRewards(loopCtx)
-		s.Require().NoError(err)
-		s.Require().True(topicRewards.IsZero(), "Topic rewards became non-zero before month end at block %d", i)
-	}
-
-	// 5. Trigger End Blocker execution at the end of the month
-	endOfMonthCtx := s.Ctx().WithBlockHeight(blocksPerMonth)
-	err = module.EndBlocker(endOfMonthCtx, s.EmissionsAppModule())
-	s.Require().NoError(err, "EndBlocker execution failed at month boundary %d", blocksPerMonth)
-
-	// 6. Verify State After End Blocker
-	// Verify percentage is zero due to zero topic rewards
-	expectedPercentage := alloraMath.ZeroDec()
-	actualPercentageAfter, err := s.EmissionsKeeper().GetPreviousPercentageRewardToStakedReputers(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().True(expectedPercentage.Equal(actualPercentageAfter), "Expected percentage %s, got %s", expectedPercentage.String(), actualPercentageAfter.String())
-
-	// Verify counters reset by EndBlocker
-	reputerRewardsAfter, err := s.EmissionsKeeper().GetMonthlyReputerRewards(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().True(reputerRewardsAfter.IsZero(), "Monthly reputer rewards not reset by EndBlocker")
-
-	topicRewardsAfter, err := s.EmissionsKeeper().GetMonthlyTopicRewards(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().True(topicRewardsAfter.IsZero(), "Monthly topic rewards not reset by EndBlocker")
 }
 
 func (s *RewardsTestSuite) TestNoActiveParticipantsNoRewardsForTopic() {

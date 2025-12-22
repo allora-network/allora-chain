@@ -122,3 +122,15 @@ func (m *MockEmissionsKeeper) SetRewardCurrentBlockEmission(ctx context.Context,
 	ret0, _ := ret[0].(error)
 	return ret0
 }
+
+func (mr *MockEmissionsKeeperMockRecorder) HandleMonthlyRewardsReset(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleMonthlyRewardsReset", reflect.TypeOf((*MockEmissionsKeeper)(nil).HandleMonthlyRewardsReset), ctx)
+}
+
+func (m *MockEmissionsKeeper) HandleMonthlyRewardsReset(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HandleMonthlyRewardsReset", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}

@@ -44,6 +44,7 @@ type EmissionsKeeper interface {
 	SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error
 	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
 	SetParams(ctx context.Context, params emissionstypes.Params) error
+	HandleMonthlyRewardsReset(ctx context.Context) error
 }
 
 // used for testing
