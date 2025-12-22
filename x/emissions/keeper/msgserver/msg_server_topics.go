@@ -121,6 +121,7 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.AlphaRegret = msg.AlphaRegret
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
+	updatedTopic.CNorm = msg.CNorm
 
 	updatedTopic, err = ms.k.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {
