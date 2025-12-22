@@ -7,14 +7,22 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
+// OLD TEST - COMMENTED OUT DUE TO ALGORITHM CHANGE
+// This test was designed for the old bounds-based algorithm with complex threshold logic.
+// The expected values are no longer valid since we switched to the Exp1DivExp1-based algorithm.
+/*
+func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret_OLD_BOUNDS_ALGORITHM() {
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
+	// NOTE: These expected values were computed using the old algorithm:
+	// - Complex bounds with upperBound=6.75, lowerBound=8.25, threshold=17.25
+	// - Multiple conditional logic branches with capping and anchoring
+	// - Final gradient calculation: φ'_p(normalized_regret)
 	testCases := []struct {
 		regretFrac     string
 		maxRegret      string
-		expectedWeight string
+		expectedWeight string // OLD ALGORITHM EXPECTED VALUES
 	}{
 		{"-24.5", "-24.5", "0.0007835709572871582"},
 		{"-20.0", "-19.5", "0.00017487379698341595"},
@@ -40,6 +48,418 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
 
 		testutil.InEpsilon5(s.T(), weight, tc.expectedWeight)
 	}
+}
+*/
+
+// NEW COMPREHENSIVE TESTS FOR EXP1DIVEXP1-BASED ALGORITHM
+// These tests cover the new algorithm: weight = Exp1DivExp1(-p*(max_regret-c), -p*(regret-c))
+
+func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1DivExp1_Basic() {
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	testCases := []struct {
+		name           string
+		regretFrac     string
+		maxRegret      string
+		expectedWeight string
+		tolerance      string
+	}{
+		// Core test cases - covering various regret scenarios
+		{
+			name:           "Equal very negative regrets",
+			regretFrac:     "-24.5",
+			maxRegret:      "-24.5",
+			expectedWeight: "1", // When regret == maxRegret, result is always 1
+			tolerance:      "1e-15",
+		},
+		{
+			name:           "Different negative regrets - regret worse than max",
+			regretFrac:     "-20.0",
+			maxRegret:      "-19.5",
+			expectedWeight: "0.2231301601484298",
+			tolerance:      "1e-10",
+		},
+		{
+			name:           "Moderate negative regrets with gap",
+			regretFrac:     "-15.0",
+			maxRegret:      "-14.0",
+			expectedWeight: "0.04978706836786394",
+			tolerance:      "1e-10",
+		},
+		{
+			name:           "Large negative regret, slightly better max",
+			regretFrac:     "-10.5",
+			maxRegret:      "-10.0",
+			expectedWeight: "0.2231301601484315",
+			tolerance:      "1e-10",
+		},
+		{
+			name:           "Moderate negative regret, better max",
+			regretFrac:     "-5.75",
+			maxRegret:      "-5.0",
+			expectedWeight: "0.1053992276019573",
+			tolerance:      "1e-10",
+		},
+		{
+			name:           "Small negative regret, better max",
+			regretFrac:     "-1.0",
+			maxRegret:      "-0.5",
+			expectedWeight: "0.2271855183599896",
+			tolerance:      "1e-10",
+		},
+		{
+			name:           "Near-zero regret, zero max",
+			regretFrac:     "-0.25",
+			maxRegret:      "0.0",
+			expectedWeight: "0.4973900296949617",
+			tolerance:      "1e-10",
+		},
+		{
+			name:           "Zero regret and max",
+			regretFrac:     "0.0",
+			maxRegret:      "0.0",
+			expectedWeight: "1", // Identity case
+			tolerance:      "1e-15",
+		},
+		{
+			name:           "Small positive regret and max",
+			regretFrac:     "0.5",
+			maxRegret:      "0.5",
+			expectedWeight: "1", // Identity case
+			tolerance:      "1e-15",
+		},
+		{
+			name:           "Positive regret and max",
+			regretFrac:     "1.0",
+			maxRegret:      "1.0",
+			expectedWeight: "1", // Identity case
+			tolerance:      "1e-15",
+		},
+		{
+			name:           "Complex decimal regret, better decimal max",
+			regretFrac:     "-1.32345",
+			maxRegret:      "0.1238729",
+			expectedWeight: "0.0149696696173212",
+			tolerance:      "1e-10",
+		},
+		{
+			name:           "Equal negative decimal regrets",
+			regretFrac:     "-0.8712641",
+			maxRegret:      "-0.8712641",
+			expectedWeight: "1", // Identity case
+			tolerance:      "1e-15",
+		},
+		{
+			name:           "Small positive decimal regret and max",
+			regretFrac:     "0.01987392",
+			maxRegret:      "0.01987392",
+			expectedWeight: "1", // Identity case
+			tolerance:      "1e-15",
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
+			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
+
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+			s.Require().NoError(err, "Failed to calculate weight for case: %s", tc.name)
+
+			expected := alloraMath.MustNewDecFromString(tc.expectedWeight)
+			tolerance := alloraMath.MustNewDecFromString(tc.tolerance)
+
+			withinTolerance, err := alloraMath.InDelta(expected, weight, tolerance)
+			s.Require().NoError(err, "Error in tolerance check for case: %s", tc.name)
+			s.Require().True(withinTolerance,
+				"Case %s: Expected %s, got %s, tolerance %s",
+				tc.name, expected.String(), weight.String(), tolerance.String())
+
+			// Additional sanity checks
+			s.Require().True(weight.IsFinite(), "Weight should be finite for case: %s", tc.name)
+			s.Require().False(weight.IsNaN(), "Weight should not be NaN for case: %s", tc.name)
+			s.Require().True(weight.IsPositive(), "Weight should be positive for case: %s", tc.name)
+		})
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1DivExp1_EdgeCases() {
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	testCases := []struct {
+		name           string
+		regretFrac     string
+		maxRegret      string
+		expectedWeight string
+		tolerance      string
+		description    string
+	}{
+		{
+			name:           "Very negative both - extreme case",
+			regretFrac:     "-50",
+			maxRegret:      "-50",
+			expectedWeight: "1",
+			tolerance:      "1e-15",
+			description:    "Extreme negative values should still follow identity rule",
+		},
+		{
+			name:           "Large positive both - extreme case",
+			regretFrac:     "10",
+			maxRegret:      "10",
+			expectedWeight: "1",
+			tolerance:      "1e-15",
+			description:    "Extreme positive values should still follow identity rule",
+		},
+		{
+			name:           "Zero regret, positive max",
+			regretFrac:     "0",
+			maxRegret:      "1",
+			expectedWeight: "0.1403893629392022",
+			tolerance:      "1e-10",
+			description:    "Zero regret with positive max should give reasonable weight",
+		},
+		{
+			name:           "Negative regret, zero max",
+			regretFrac:     "-1",
+			maxRegret:      "0",
+			expectedWeight: "0.05474729930662831",
+			tolerance:      "1e-10",
+			description:    "Negative regret with zero max",
+		},
+		{
+			name:           "Small positive regret, much larger positive max",
+			regretFrac:     "0.1",
+			maxRegret:      "2",
+			expectedWeight: "0.1274825724107806",
+			tolerance:      "1e-10",
+			description:    "Small regret with much larger max",
+		},
+		{
+			name:           "Large negative regret, small negative max",
+			regretFrac:     "-10",
+			maxRegret:      "-0.1",
+			expectedWeight: "1.361775598712234e-13",
+			tolerance:      "1e-20",
+			description:    "Very small weight when regret much worse than max",
+		},
+		{
+			name:           "Equal regrets near zero - negative",
+			regretFrac:     "-0.001",
+			maxRegret:      "-0.001",
+			expectedWeight: "1",
+			tolerance:      "1e-15",
+			description:    "Very small negative equal regrets",
+		},
+		{
+			name:           "Equal regrets near zero - positive",
+			regretFrac:     "0.001",
+			maxRegret:      "0.001",
+			expectedWeight: "1",
+			tolerance:      "1e-15",
+			description:    "Very small positive equal regrets",
+		},
+		{
+			name:           "Regret much smaller than max - cross-zero",
+			regretFrac:     "-5",
+			maxRegret:      "2",
+			expectedWeight: "3.300012235137296e-08",
+			tolerance:      "1e-15",
+			description:    "Very small weight when regret much worse and across zero",
+		},
+		{
+			name:           "Regret much larger than max - extreme weight",
+			regretFrac:     "2",
+			maxRegret:      "-5",
+			expectedWeight: "30302917.95140558",
+			tolerance:      "1e-2",
+			description:    "Very large weight when regret much better than max",
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
+			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
+
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+			s.Require().NoError(err, "Failed to calculate weight for case: %s", tc.name)
+
+			expected := alloraMath.MustNewDecFromString(tc.expectedWeight)
+			tolerance := alloraMath.MustNewDecFromString(tc.tolerance)
+
+			withinTolerance, err := alloraMath.InDelta(expected, weight, tolerance)
+			s.Require().NoError(err, "Error in tolerance check for case: %s", tc.name)
+			s.Require().True(withinTolerance,
+				"Case %s: %s\nExpected %s, got %s, tolerance %s",
+				tc.name, tc.description, expected.String(), weight.String(), tolerance.String())
+
+			// Additional sanity checks
+			s.Require().True(weight.IsFinite(), "Weight should be finite for case: %s", tc.name)
+			s.Require().False(weight.IsNaN(), "Weight should not be NaN for case: %s", tc.name)
+			s.Require().True(weight.IsPositive(), "Weight should be positive for case: %s", tc.name)
+		})
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1DivExp1_DifferentParameters() {
+	testCases := []struct {
+		name        string
+		pNorm       string
+		cNorm       string
+		regretFrac  string
+		maxRegret   string
+		description string
+	}{
+		{
+			name:        "Low p, low c parameters",
+			pNorm:       "1.0",
+			cNorm:       "0.1",
+			regretFrac:  "-1.0",
+			maxRegret:   "-1.0",
+			description: "With lower parameters, identity should still hold",
+		},
+		{
+			name:        "High p, high c parameters",
+			pNorm:       "5.0",
+			cNorm:       "1.5",
+			regretFrac:  "0.0",
+			maxRegret:   "0.0",
+			description: "With higher parameters, identity should still hold",
+		},
+		{
+			name:        "Low p, high c parameters",
+			pNorm:       "1.5",
+			cNorm:       "2.0",
+			regretFrac:  "1.0",
+			maxRegret:   "1.0",
+			description: "With mixed parameters, identity should still hold",
+		},
+		{
+			name:        "High p, low c parameters",
+			pNorm:       "4.0",
+			cNorm:       "0.25",
+			regretFrac:  "-0.5",
+			maxRegret:   "-0.5",
+			description: "With opposite mixed parameters, identity should still hold",
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			pNorm := alloraMath.MustNewDecFromString(tc.pNorm)
+			cNorm := alloraMath.MustNewDecFromString(tc.cNorm)
+			regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
+			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
+
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+			s.Require().NoError(err, "Failed to calculate weight for case: %s", tc.name)
+
+			// For identity cases (regret == maxRegret), result should always be 1
+			expectedOne := alloraMath.OneDec()
+			tolerance := alloraMath.MustNewDecFromString("1e-15")
+
+			withinTolerance, err := alloraMath.InDelta(expectedOne, weight, tolerance)
+			s.Require().NoError(err, "Error in tolerance check for case: %s", tc.name)
+			s.Require().True(withinTolerance,
+				"Case %s: %s\nExpected 1, got %s (p=%s, c=%s)",
+				tc.name, tc.description, weight.String(), tc.pNorm, tc.cNorm)
+		})
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1DivExp1_MathematicalProperties() {
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	s.Run("Identity Property: regret == maxRegret => weight == 1", func() {
+		testValues := []string{"-10", "-1", "-0.5", "0", "0.5", "1", "5"}
+		for _, val := range testValues {
+			regret := alloraMath.MustNewDecFromString(val)
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, regret, pNorm, cNorm)
+			s.Require().NoError(err)
+
+			one := alloraMath.OneDec()
+			tolerance := alloraMath.MustNewDecFromString("1e-15")
+			withinTolerance, err := alloraMath.InDelta(one, weight, tolerance)
+			s.Require().NoError(err)
+			s.Require().True(withinTolerance, "For regret=%s, expected weight=1, got %s", val, weight.String())
+		}
+	})
+
+	s.Run("Monotonicity: better regret (closer to max) => higher weight", func() {
+		maxRegret := alloraMath.MustNewDecFromString("1.0")
+
+		// Test points from worst to best regret
+		regrets := []string{"-5", "-2", "-1", "0", "0.5", "1.0"}
+		weights := make([]alloraMath.Dec, len(regrets))
+
+		for i, regretStr := range regrets {
+			regret := alloraMath.MustNewDecFromString(regretStr)
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm)
+			s.Require().NoError(err)
+			weights[i] = weight
+		}
+
+		// Check that weights are monotonically increasing (better regret => higher weight)
+		for i := 1; i < len(weights); i++ {
+			s.Require().True(weights[i].Gte(weights[i-1]),
+				"Weight should increase with better regret: regret[%d]=%s gave weight=%s, regret[%d]=%s gave weight=%s",
+				i-1, regrets[i-1], weights[i-1].String(), i, regrets[i], weights[i].String())
+		}
+	})
+
+	s.Run("Positivity: all weights should be positive", func() {
+		testCases := []struct{ regret, maxRegret string }{
+			{"-10", "-5"},
+			{"-1", "1"},
+			{"0", "2"},
+			{"1", "1"},
+			{"5", "-2"}, // Even when regret > max
+		}
+
+		for _, tc := range testCases {
+			regret := alloraMath.MustNewDecFromString(tc.regret)
+			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm)
+			s.Require().NoError(err)
+			s.Require().True(weight.IsPositive(),
+				"Weight should be positive for regret=%s, maxRegret=%s, got %s",
+				tc.regret, tc.maxRegret, weight.String())
+		}
+	})
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1DivExp1_ErrorCases() {
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	s.Run("NaN inputs should return error", func() {
+		nan := alloraMath.NewNaN()
+		regret := alloraMath.MustNewDecFromString("1.0")
+		maxRegret := alloraMath.MustNewDecFromString("1.0")
+
+		// Test NaN regret
+		_, err := inferencesynthesis.CalcWeightFromNormalizedRegret(nan, maxRegret, pNorm, cNorm)
+		s.Require().Error(err)
+		s.Require().Contains(err.Error(), "NaN")
+
+		// Test NaN maxRegret
+		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, nan, pNorm, cNorm)
+		s.Require().Error(err)
+		s.Require().Contains(err.Error(), "NaN")
+
+		// Test NaN pNorm
+		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, nan, cNorm)
+		s.Require().Error(err)
+		s.Require().Contains(err.Error(), "NaN")
+
+		// Test NaN cNorm
+		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, nan)
+		s.Require().Error(err)
+		s.Require().Contains(err.Error(), "NaN")
+	})
 }
 
 func (s *InferenceSynthesisTestSuite) TestIncreasingPNormIncreasesRegretSpread() {
