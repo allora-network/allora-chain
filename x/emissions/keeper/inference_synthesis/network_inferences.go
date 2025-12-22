@@ -34,19 +34,20 @@ func GetNetworkInferences(
 		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
 
-	// Enable math helper cache for this function's scope
-	enableMathCache()
+	// Create and enable math helper cache for this function's scope
+	cache := NewMathHelperCache()
+	cache.Enable()
 
 	// Disable math helper cache and clear cache when function exits
 	defer func() {
-		disableMathCache()
-		clearMathCache()
+		cache.Disable()
+		cache.Clear()
 		ctx.Logger().Debug("Math helper cache cleared after network inference calculation")
 	}()
 
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:
-		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce)
+		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce, cache)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
 		return calcNetworkInferencesSingle(*inferencesNonce, topicId, inferences), nil
@@ -62,6 +63,7 @@ func calcNetworkInferencesMultiple(
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
 	inferenceBlockHeight BlockHeight,
+	cache *MathHelperCache,
 ) (*GetNetworkInferencesResult, error) {
 	// Set forecasts to nil if there are no forecasts
 	if forecasts == nil {
@@ -103,6 +105,7 @@ func calcNetworkInferencesMultiple(
 		previousNetworkCombinedLoss,
 		moduleParams,
 		inferenceBlockHeight,
+		cache,
 	)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting network inference args")
@@ -180,6 +183,7 @@ func GetCalcNetworkInferenceArgs(
 	previousLossesCombinedValue *alloraMath.Dec,
 	moduleParams emissions.Params,
 	inferenceBlockHeight BlockHeight,
+	cache *MathHelperCache,
 ) (
 	calcArgs CalcNetworkInferencesArgs,
 	err error,
@@ -235,6 +239,7 @@ func GetCalcNetworkInferenceArgs(
 		CNorm:                                moduleParams.CNorm,
 		StdDevPlusEpsilon:                    stdDevPlusEpsilon,
 		InferenceBlockHeight:                 inferenceBlockHeight,
+		Cache:                                cache,
 	}
 
 	if previousLossesCombinedValue != nil {
@@ -271,6 +276,7 @@ func GetCalcNetworkInferenceArgs(
 				PNorm:                topic.PNorm,
 				CNorm:                moduleParams.CNorm,
 				StdDevPlusEpsilon:    stdDevPlusEpsilon,
+				Cache:                cache,
 			},
 		)
 		if err != nil {

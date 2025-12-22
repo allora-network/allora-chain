@@ -24,6 +24,7 @@ type CalcWeightsGivenWorkersArgs struct {
 	PNorm              alloraMath.Dec
 	CNorm              alloraMath.Dec
 	StdDevPlusEpsilon  alloraMath.Dec
+	Cache              *MathHelperCache
 }
 
 type CalcRegretStdDevFilteredByWeightsArgs struct {
@@ -39,33 +40,44 @@ type CalcRegretStdDevFilteredByWeightsArgs struct {
 	EpsilonTopic        alloraMath.Dec
 }
 
-// Math helper cache implementation
-// Used to memoize expensive helper computations like Gradient and Exp1DivExp1.
-var (
-	mathHelperCache  = make(map[string]alloraMath.Dec)
-	mathCacheEnabled = false
-)
-
-func enableMathCache() {
-	mathCacheEnabled = true
+// MathHelperCache is used to memoize expensive helper computations like Gradient and Exp1DivExp1.
+type MathHelperCache struct {
+	cache   map[string]alloraMath.Dec
+	enabled bool
 }
 
-func disableMathCache() {
-	mathCacheEnabled = false
+// NewMathHelperCache creates a new MathHelperCache instance with cache disabled by default.
+func NewMathHelperCache() *MathHelperCache {
+	return &MathHelperCache{
+		cache:   make(map[string]alloraMath.Dec),
+		enabled: false,
+	}
 }
 
-func clearMathCache() {
-	mathHelperCache = make(map[string]alloraMath.Dec)
+// Enable enables the cache for this instance.
+func (c *MathHelperCache) Enable() {
+	c.enabled = true
 }
 
-func cachedExp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
-	if !mathCacheEnabled {
+// Disable disables the cache for this instance.
+func (c *MathHelperCache) Disable() {
+	c.enabled = false
+}
+
+// Clear clears all cached values.
+func (c *MathHelperCache) Clear() {
+	c.cache = make(map[string]alloraMath.Dec)
+}
+
+// Exp1DivExp1 calculates Exp1DivExp1 with caching if enabled.
+func (c *MathHelperCache) Exp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
+	if !c.enabled {
 		return alloraMath.Exp1DivExp1(a, b)
 	}
 
 	key := fmt.Sprintf("exp1divexp1:%s:%s", a.String(), b.String())
 
-	if cachedValue, exists := mathHelperCache[key]; exists {
+	if cachedValue, exists := c.cache[key]; exists {
 		return cachedValue, nil
 	}
 
@@ -74,7 +86,7 @@ func cachedExp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "error calculating Exp1DivExp1")
 	}
 
-	mathHelperCache[key] = result
+	c.cache[key] = result
 	return result, nil
 }
 
@@ -250,7 +262,7 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 	// Calculate the weights from the normalized regrets
 	for _, worker := range args.Inferers {
 		// If there is more than one not-new inferer, calculate the weight for the ones that are not new
-		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, args.PNorm, args.CNorm)
+		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, args.PNorm, args.CNorm, args.Cache)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 		}
@@ -260,7 +272,7 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 
 	if len(forecasterRegrets) > 0 {
 		for _, worker := range args.Forecasters {
-			forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, args.PNorm, args.CNorm)
+			forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, args.PNorm, args.CNorm, args.Cache)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
 			}
@@ -476,6 +488,7 @@ func CalcWeightFromNormalizedRegret(
 	maxNormalizedRegret alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
+	cache *MathHelperCache,
 ) (alloraMath.Dec, error) {
 	// Calculate exponent_regret = -p_norm * (normalized_regret - c_norm)
 	regretMinusC, err := normalizedRegret.Sub(cNorm)
@@ -506,7 +519,10 @@ func CalcWeightFromNormalizedRegret(
 	}
 
 	// Calculate weight = exp1_div_exp1(exponent_max_regret, exponent_regret)
-	weight, err := cachedExp1DivExp1(exponentMaxRegret, exponentRegret)
+	if cache == nil {
+		cache = NewMathHelperCache()
+	}
+	weight, err := cache.Exp1DivExp1(exponentMaxRegret, exponentRegret)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating Exp1DivExp1")
 	}

@@ -27,6 +27,7 @@ type GetCombinedInferenceArgs struct {
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
 	StdDevPlusEpsilon                    alloraMath.Dec
+	Cache                                *MathHelperCache
 }
 
 // Calculates the network combined inference I_i, Equation 9
@@ -45,6 +46,7 @@ func GetCombinedInference(args GetCombinedInferenceArgs) (
 			PNorm:              args.PNorm,
 			CNorm:              args.CNorm,
 			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Cache:              args.Cache,
 		},
 	)
 	if err != nil {
@@ -123,6 +125,7 @@ type GetOneOutInfererForecastImpliedInferencesArgs struct {
 	PNorm                alloraMath.Dec
 	CNorm                alloraMath.Dec
 	StdDevPlusEpsilon    alloraMath.Dec
+	Cache                *MathHelperCache
 }
 
 // GetOneOutInfererForecastImpliedInferences calculates what each forecaster's implied inference
@@ -220,6 +223,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 					PNorm:                args.PNorm,
 					CNorm:                args.CNorm,
 					StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+					Cache:                args.Cache,
 				},
 			)
 			if calcErr != nil {
@@ -272,6 +276,7 @@ type GetNaiveInferenceArgs struct {
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
 	StdDevPlusEpsilon                    alloraMath.Dec
+	Cache                                *MathHelperCache
 }
 
 // Calculates the network naive inference I^-_i
@@ -299,6 +304,7 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.De
 			PNorm:              args.PNorm,
 			CNorm:              args.CNorm,
 			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Cache:              args.Cache,
 		},
 	)
 	if err != nil {
@@ -345,6 +351,7 @@ type CalcOneOutInfererInferenceArgs struct {
 	CNorm                alloraMath.Dec
 	WithheldInferer      Inferer
 	StdDevPlusEpsilon    alloraMath.Dec
+	Cache                *MathHelperCache
 }
 
 // Calculate the one-out inference given a withheld inferer
@@ -399,6 +406,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 				PNorm:                args.PNorm,
 				CNorm:                args.CNorm,
 				StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+				Cache:                args.Cache,
 			},
 		)
 		if err != nil {
@@ -425,6 +433,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 			PNorm:              args.PNorm,
 			CNorm:              args.CNorm,
 			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Cache:              args.Cache,
 		},
 	)
 	if err != nil {
@@ -539,6 +548,7 @@ type CalcOneOutForecasterInferenceArgs struct {
 	CNorm                                alloraMath.Dec
 	WithheldForecaster                   Forecaster
 	StdDevPlusEpsilon                    alloraMath.Dec
+	Cache                                *MathHelperCache
 }
 
 // Calculate the one-out inference given a withheld forecaster
@@ -591,6 +601,7 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 			PNorm:              args.PNorm,
 			CNorm:              args.CNorm,
 			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Cache:              args.Cache,
 		},
 	)
 	if err != nil {
@@ -701,6 +712,7 @@ type calcOneInValueArgs struct {
 	CNorm                                alloraMath.Dec
 	OneInForecaster                      Forecaster
 	StdDevPlusEpsilon                    alloraMath.Dec
+	Cache                                *MathHelperCache
 }
 
 // Calculate the one-in inference given a withheld forecaster
@@ -758,6 +770,7 @@ func calcOneInValue(args calcOneInValueArgs) (
 			PNorm:              args.PNorm,
 			CNorm:              args.CNorm,
 			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Cache:              args.Cache,
 		},
 	)
 	if err != nil {
@@ -866,6 +879,7 @@ type CalcNetworkInferencesArgs struct {
 	CNorm                                alloraMath.Dec
 	StdDevPlusEpsilon                    alloraMath.Dec
 	InferenceBlockHeight                 BlockHeight
+	Cache                                *MathHelperCache
 }
 
 // Calculates all network inferences in the set I_i given historical state (e.g. regrets)
@@ -898,6 +912,7 @@ func CalcNetworkInferences(
 			PNorm:                                args.PNorm,
 			CNorm:                                args.CNorm,
 			StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+			Cache:                                args.Cache,
 		})
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating combined inference")

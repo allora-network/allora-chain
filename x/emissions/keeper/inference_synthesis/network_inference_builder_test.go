@@ -397,6 +397,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		&networkCombinedLoss,
 		moduleParams,
 		blockHeight,
+		inferencesynthesis.NewMathHelperCache(),
 	)
 	s.Require().NoError(err)
 	return ctx, k, ctx.Logger(), topicId, calcArgs.AllInferersAreNew,
@@ -447,6 +448,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 		&networkCombinedLoss,
 		moduleParams,
 		blockHeight,
+		inferencesynthesis.NewMathHelperCache(),
 	)
 	s.Require().NoError(err)
 	return calcArgs.Inferers, calcArgs.InfererToInference, calcArgs.InfererToRegret, calcArgs.AllInferersAreNew,

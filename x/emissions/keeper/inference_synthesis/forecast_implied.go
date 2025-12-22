@@ -23,6 +23,7 @@ type CalcForecastImpliedInferencesArgs struct {
 	PNorm                alloraMath.Dec
 	CNorm                alloraMath.Dec
 	StdDevPlusEpsilon    alloraMath.Dec
+	Cache                *MathHelperCache
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
@@ -143,6 +144,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 							PNorm:              args.PNorm,
 							CNorm:              args.CNorm,
 							StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+							Cache:              args.Cache,
 						},
 					)
 					if err != nil {
