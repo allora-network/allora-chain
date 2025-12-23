@@ -1,4 +1,4 @@
-package v14_test
+package v13_test
 
 import (
 	"testing"
@@ -7,24 +7,24 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	v14 "github.com/allora-network/allora-chain/x/emissions/migrations/v14"
-	oldV11Types "github.com/allora-network/allora-chain/x/emissions/migrations/v14/oldtypes"
+	v13 "github.com/allora-network/allora-chain/x/emissions/migrations/v13"
+	oldV11Types "github.com/allora-network/allora-chain/x/emissions/migrations/v13/oldtypes"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-type EmissionsV14MigrationTestSuite struct {
+type EmissionsV13MigrationTestSuite struct {
 	testutil.TestSuite
 }
 
-func TestEmissionsV14MigrationTestSuite(t *testing.T) {
-	suite.Run(t, &EmissionsV14MigrationTestSuite{
-		testutil.NewTestSuite("emissions_V14Migrations"),
+func TestEmissionsV13MigrationTestSuite(t *testing.T) {
+	suite.Run(t, &EmissionsV13MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V13Migrations"),
 	})
 }
 
 // TestMigrateParams tests that CNorm is removed from params
-func (s *EmissionsV14MigrationTestSuite) TestMigrateParams() {
+func (s *EmissionsV13MigrationTestSuite) TestMigrateParams() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
@@ -92,7 +92,7 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateParams() {
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
-	err := v14.MigrateParams(store, cdc)
+	err := v13.MigrateParams(store, cdc)
 	s.Require().NoError(err)
 
 	// Verify params after migration
@@ -156,7 +156,7 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateParams() {
 }
 
 // TestMigrateTopics tests that CNorm is added to all existing topics
-func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
+func (s *EmissionsV13MigrationTestSuite) TestMigrateTopics() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
@@ -186,7 +186,7 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
 	oldCNorm := alloraMath.MustNewDecFromString("0.85")
 
 	// Run migration
-	err = v14.MigrateTopics(s.Ctx(), store, cdc, oldCNorm)
+	err = v13.MigrateTopics(s.Ctx(), store, cdc, oldCNorm)
 	s.Require().NoError(err)
 
 	// Verify that all topics now have the CNorm value
@@ -204,7 +204,7 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
 }
 
 // TestFullMigration tests the complete migration.
-func (s *EmissionsV14MigrationTestSuite) TestFullMigration() {
+func (s *EmissionsV13MigrationTestSuite) TestFullMigration() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
@@ -288,7 +288,7 @@ func (s *EmissionsV14MigrationTestSuite) TestFullMigration() {
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run full migration
-	err = v14.MigrateStore(s.Ctx(), *keeper)
+	err = v13.MigrateStore(s.Ctx(), *keeper)
 	s.Require().NoError(err)
 
 	// Verify params after migration (CNorm should be removed)

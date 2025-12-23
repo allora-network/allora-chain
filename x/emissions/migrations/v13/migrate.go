@@ -1,4 +1,4 @@
-package v14
+package v13
 
 import (
 	"cosmossdk.io/store/prefix"
@@ -7,7 +7,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldV11Types "github.com/allora-network/allora-chain/x/emissions/migrations/v14/oldtypes"
+	oldV11Types "github.com/allora-network/allora-chain/x/emissions/migrations/v13/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -15,13 +15,13 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-// MigrateStore migrates the store from version 13 to version 14.
+// MigrateStore migrates the store from version 12 to version 13.
 // It does the following:
 // - Keep deprecated params.CNorm for backwards compatibility (ignored by logic; now per-topic)
 // - Migrate all topics to add CNorm field with the old global value
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
-	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 13 TO VERSION 14")
-	ctx.Logger().Info("MIGRATING STORE FROM VERSION 13 TO VERSION 14")
+	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 12 TO VERSION 13")
+	ctx.Logger().Info("MIGRATING STORE FROM VERSION 12 TO VERSION 13")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
@@ -34,19 +34,19 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 	ctx.Logger().Info("OLD C_NORM VALUE", "cNorm", oldCNorm)
 
-	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 13 TO VERSION 14")
+	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 12 TO VERSION 13")
 	if err := MigrateParams(store, cdc); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 13 TO VERSION 14")
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 12 TO VERSION 13")
 		return err
 	}
 
-	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 13 TO VERSION 14")
+	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 12 TO VERSION 13")
 	if err := MigrateTopics(ctx, store, cdc, oldCNorm); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 13 TO VERSION 14")
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 12 TO VERSION 13")
 		return err
 	}
 
-	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 13 TO VERSION 14 COMPLETE")
+	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 12 TO VERSION 13 COMPLETE")
 	return nil
 }
 
@@ -153,7 +153,7 @@ func MigrateTopics(
 	iterator := topicStore.Iterator(nil, nil)
 	defer iterator.Close()
 
-	ctx.Logger().Info("MIGRATION V14: Migrating topics to add CNorm", "cNorm", oldCNorm)
+	ctx.Logger().Info("MIGRATION V13: Migrating topics to add CNorm", "cNorm", oldCNorm)
 
 	topicsToChange := make(map[string]emissionstypes.Topic)
 	for ; iterator.Valid(); iterator.Next() {
@@ -163,7 +163,7 @@ func MigrateTopics(
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
-		ctx.Logger().Debug("MIGRATION V14: Updating topic", "topicId", topic.Id)
+		ctx.Logger().Debug("MIGRATION V13: Updating topic", "topicId", topic.Id)
 
 		topic.CNorm = oldCNorm
 
@@ -172,9 +172,9 @@ func MigrateTopics(
 
 	for key, topic := range topicsToChange {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&topic))
-		ctx.Logger().Debug("MIGRATION V14: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
+		ctx.Logger().Debug("MIGRATION V13: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
 	}
 
-	ctx.Logger().Info("MIGRATION V14: Topics migration complete", "topicsUpdated", len(topicsToChange))
+	ctx.Logger().Info("MIGRATION V13: Topics migration complete", "topicsUpdated", len(topicsToChange))
 	return nil
 }
