@@ -69,6 +69,17 @@ func (c *MathHelperCache) Clear() {
 	c.cache = make(map[string]alloraMath.Dec)
 }
 
+// IsInCache checks if a specific Exp1DivExp1 result is cached.
+// This is useful for testing and debugging.
+func (c *MathHelperCache) IsInCache(a, b alloraMath.Dec) bool {
+	if !c.enabled {
+		return false
+	}
+	key := fmt.Sprintf("exp1divexp1:%s:%s", a.String(), b.String())
+	_, exists := c.cache[key]
+	return exists
+}
+
 // Exp1DivExp1 calculates Exp1DivExp1 with caching if enabled.
 func (c *MathHelperCache) Exp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
 	if !c.enabled {
