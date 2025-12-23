@@ -479,6 +479,7 @@ type GetOneOutInfererInferencesArgs struct {
 	PNorm                alloraMath.Dec
 	CNorm                alloraMath.Dec
 	StdDevPlusEpsilon    alloraMath.Dec
+	Cache                *MathHelperCache
 }
 
 // Set all one-out-inferer inferences that are possible given the provided input
@@ -514,6 +515,7 @@ func GetOneOutInfererInferences(args GetOneOutInfererInferencesArgs) (
 				CNorm:                args.CNorm,
 				WithheldInferer:      worker,
 				StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+				Cache:                args.Cache,
 			})
 		if err != nil {
 			return []*emissions.WithheldWorkerAttributedValue{}, errorsmod.Wrapf(err, "GetOneOutInfererInferences() error calculating one-out inferer inferences")
@@ -647,6 +649,7 @@ type GetOneOutForecasterInferencesArgs struct {
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
 	StdDevPlusEpsilon                    alloraMath.Dec
+	Cache                                *MathHelperCache
 }
 
 // Set all one-out-forecaster inferences that are possible given the provided input
@@ -681,6 +684,7 @@ func GetOneOutForecasterInferences(args GetOneOutForecasterInferencesArgs) (
 					CNorm:                                args.CNorm,
 					WithheldForecaster:                   worker,
 					StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+					Cache:                                args.Cache,
 				})
 			if err != nil {
 				return []*emissions.WithheldWorkerAttributedValue{}, errorsmod.Wrapf(err, "GetOneOutForecasterInferences() error calculating one-out forecaster inferences")
@@ -813,6 +817,7 @@ type GetOneInForecasterInferencesArgs struct {
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
 	StdDevPlusEpsilon                    alloraMath.Dec
+	Cache                                *MathHelperCache
 }
 
 // Set all one-in inferences that are possible given the provided input
@@ -845,6 +850,7 @@ func GetOneInForecasterInferences(args GetOneInForecasterInferencesArgs) (
 					CNorm:                                args.CNorm,
 					OneInForecaster:                      oneInForecaster,
 					StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+					Cache:                                args.Cache,
 				})
 			if err != nil {
 				return []*emissions.WorkerAttributedValue{}, errorsmod.Wrapf(err, "GetOneInForecasterInferences() error calculating one-in inferences")
@@ -947,6 +953,7 @@ func CalcNetworkInferences(
 			PNorm:                                args.PNorm,
 			CNorm:                                args.CNorm,
 			StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+			Cache:                                args.Cache,
 		})
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating naive inference")
@@ -978,6 +985,7 @@ func CalcNetworkInferences(
 			PNorm:                args.PNorm,
 			CNorm:                args.CNorm,
 			StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+			Cache:                args.Cache,
 		})
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out inferer inferences")
@@ -1013,6 +1021,7 @@ func CalcNetworkInferences(
 				PNorm:                                args.PNorm,
 				CNorm:                                args.CNorm,
 				StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+				Cache:                                args.Cache,
 			})
 		if err != nil {
 			return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out forecaster inferences")
@@ -1040,6 +1049,7 @@ func CalcNetworkInferences(
 				PNorm:                                args.PNorm,
 				CNorm:                                args.CNorm,
 				StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+				Cache:                                args.Cache,
 			})
 		if err != nil {
 			return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-in inferences")
@@ -1064,6 +1074,7 @@ func CalcNetworkInferences(
 				PNorm:                args.PNorm,
 				CNorm:                args.CNorm,
 				StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+				Cache:                args.Cache,
 			},
 		)
 		if err != nil {

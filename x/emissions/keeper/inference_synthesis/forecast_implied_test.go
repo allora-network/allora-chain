@@ -853,6 +853,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -946,6 +947,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
