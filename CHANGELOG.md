@@ -68,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * [#851](https://github.com/allora-network/allora-chain/pull/851) Enforce recommended settings
-* [#835](https://github.com/allora-network/allora-chain/pull/835): Introduce the `x/scheduler` module to manage tasks scheduling
+* [#835](https://github.com/allora-network/allora-chain/pull/835) Introduce the `x/scheduler` module to manage tasks scheduling
+* [#897](https://github.com/allora-network/allora-chain/pull/897) Turn math cache into its own object + use in closing reputer window
 
 ### Changed
 
