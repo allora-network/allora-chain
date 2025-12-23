@@ -182,6 +182,7 @@ func createTestTopic(m testCommon.TestConfig, creator string, metadata string, e
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    false, // Simplification for testing
 		EnableReputerWhitelist:   false, // Simplification for testing
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

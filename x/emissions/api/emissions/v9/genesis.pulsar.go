@@ -13300,7 +13300,7 @@ func (x *fastReflection_TopicIdAndTopic) Set(fd protoreflect.FieldDescriptor, va
 	case "emissions.v9.TopicIdAndTopic.topic_id":
 		x.TopicId = value.Uint()
 	case "emissions.v9.TopicIdAndTopic.topic":
-		x.Topic = value.Message().Interface().(*v3.Topic)
+		x.Topic = value.Message().Interface().(*Topic)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.TopicIdAndTopic"))
@@ -13323,7 +13323,7 @@ func (x *fastReflection_TopicIdAndTopic) Mutable(fd protoreflect.FieldDescriptor
 	switch fd.FullName() {
 	case "emissions.v9.TopicIdAndTopic.topic":
 		if x.Topic == nil {
-			x.Topic = new(v3.Topic)
+			x.Topic = new(Topic)
 		}
 		return protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
 	case "emissions.v9.TopicIdAndTopic.topic_id":
@@ -13344,7 +13344,7 @@ func (x *fastReflection_TopicIdAndTopic) NewField(fd protoreflect.FieldDescripto
 	case "emissions.v9.TopicIdAndTopic.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v9.TopicIdAndTopic.topic":
-		m := new(v3.Topic)
+		m := new(Topic)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -13568,7 +13568,7 @@ func (x *fastReflection_TopicIdAndTopic) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Topic == nil {
-					x.Topic = &v3.Topic{}
+					x.Topic = &Topic{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topic); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -28230,7 +28230,7 @@ func (x *fastReflection_TopicIdTimestampedActorNonce) Set(fd protoreflect.FieldD
 	case "emissions.v9.TopicIdTimestampedActorNonce.topic_id":
 		x.TopicId = value.Uint()
 	case "emissions.v9.TopicIdTimestampedActorNonce.timestamped_actor_nonce":
-		x.TimestampedActorNonce = value.Message().Interface().(*v3.TimestampedActorNonce)
+		x.TimestampedActorNonce = value.Message().Interface().(*TimestampedActorNonce)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.TopicIdTimestampedActorNonce"))
@@ -28253,7 +28253,7 @@ func (x *fastReflection_TopicIdTimestampedActorNonce) Mutable(fd protoreflect.Fi
 	switch fd.FullName() {
 	case "emissions.v9.TopicIdTimestampedActorNonce.timestamped_actor_nonce":
 		if x.TimestampedActorNonce == nil {
-			x.TimestampedActorNonce = new(v3.TimestampedActorNonce)
+			x.TimestampedActorNonce = new(TimestampedActorNonce)
 		}
 		return protoreflect.ValueOfMessage(x.TimestampedActorNonce.ProtoReflect())
 	case "emissions.v9.TopicIdTimestampedActorNonce.topic_id":
@@ -28274,7 +28274,7 @@ func (x *fastReflection_TopicIdTimestampedActorNonce) NewField(fd protoreflect.F
 	case "emissions.v9.TopicIdTimestampedActorNonce.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v9.TopicIdTimestampedActorNonce.timestamped_actor_nonce":
-		m := new(v3.TimestampedActorNonce)
+		m := new(TimestampedActorNonce)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -28498,7 +28498,7 @@ func (x *fastReflection_TopicIdTimestampedActorNonce) ProtoMethods() *protoiface
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.TimestampedActorNonce == nil {
-					x.TimestampedActorNonce = &v3.TimestampedActorNonce{}
+					x.TimestampedActorNonce = &TimestampedActorNonce{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TimestampedActorNonce); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -28713,7 +28713,7 @@ func (x *fastReflection_BlockHeightTopicIds) Set(fd protoreflect.FieldDescriptor
 	case "emissions.v9.BlockHeightTopicIds.block_height":
 		x.BlockHeight = value.Int()
 	case "emissions.v9.BlockHeightTopicIds.topic_ids":
-		x.TopicIds = value.Message().Interface().(*v3.TopicIds)
+		x.TopicIds = value.Message().Interface().(*TopicIds)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BlockHeightTopicIds"))
@@ -28736,7 +28736,7 @@ func (x *fastReflection_BlockHeightTopicIds) Mutable(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	case "emissions.v9.BlockHeightTopicIds.topic_ids":
 		if x.TopicIds == nil {
-			x.TopicIds = new(v3.TopicIds)
+			x.TopicIds = new(TopicIds)
 		}
 		return protoreflect.ValueOfMessage(x.TopicIds.ProtoReflect())
 	case "emissions.v9.BlockHeightTopicIds.block_height":
@@ -28757,7 +28757,7 @@ func (x *fastReflection_BlockHeightTopicIds) NewField(fd protoreflect.FieldDescr
 	case "emissions.v9.BlockHeightTopicIds.block_height":
 		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v9.BlockHeightTopicIds.topic_ids":
-		m := new(v3.TopicIds)
+		m := new(TopicIds)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -28981,7 +28981,7 @@ func (x *fastReflection_BlockHeightTopicIds) ProtoMethods() *protoiface.Methods 
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.TopicIds == nil {
-					x.TopicIds = &v3.TopicIds{}
+					x.TopicIds = &TopicIds{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TopicIds); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -29196,7 +29196,7 @@ func (x *fastReflection_BlockHeightTopicIdWeightPair) Set(fd protoreflect.FieldD
 	case "emissions.v9.BlockHeightTopicIdWeightPair.block_height":
 		x.BlockHeight = value.Int()
 	case "emissions.v9.BlockHeightTopicIdWeightPair.topic_weight":
-		x.TopicWeight = value.Message().Interface().(*v3.TopicIdWeightPair)
+		x.TopicWeight = value.Message().Interface().(*TopicIdWeightPair)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.BlockHeightTopicIdWeightPair"))
@@ -29219,7 +29219,7 @@ func (x *fastReflection_BlockHeightTopicIdWeightPair) Mutable(fd protoreflect.Fi
 	switch fd.FullName() {
 	case "emissions.v9.BlockHeightTopicIdWeightPair.topic_weight":
 		if x.TopicWeight == nil {
-			x.TopicWeight = new(v3.TopicIdWeightPair)
+			x.TopicWeight = new(TopicIdWeightPair)
 		}
 		return protoreflect.ValueOfMessage(x.TopicWeight.ProtoReflect())
 	case "emissions.v9.BlockHeightTopicIdWeightPair.block_height":
@@ -29240,7 +29240,7 @@ func (x *fastReflection_BlockHeightTopicIdWeightPair) NewField(fd protoreflect.F
 	case "emissions.v9.BlockHeightTopicIdWeightPair.block_height":
 		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v9.BlockHeightTopicIdWeightPair.topic_weight":
-		m := new(v3.TopicIdWeightPair)
+		m := new(TopicIdWeightPair)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -29464,7 +29464,7 @@ func (x *fastReflection_BlockHeightTopicIdWeightPair) ProtoMethods() *protoiface
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.TopicWeight == nil {
-					x.TopicWeight = &v3.TopicIdWeightPair{}
+					x.TopicWeight = &TopicIdWeightPair{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TopicWeight); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -30964,8 +30964,8 @@ type TopicIdAndTopic struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId uint64    `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Topic   *v3.Topic `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Topic   *Topic `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
 }
 
 func (x *TopicIdAndTopic) Reset() {
@@ -30995,7 +30995,7 @@ func (x *TopicIdAndTopic) GetTopicId() uint64 {
 	return 0
 }
 
-func (x *TopicIdAndTopic) GetTopic() *v3.Topic {
+func (x *TopicIdAndTopic) GetTopic() *Topic {
 	if x != nil {
 		return x.Topic
 	}
@@ -32368,8 +32368,8 @@ type TopicIdTimestampedActorNonce struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId               uint64                    `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	TimestampedActorNonce *v3.TimestampedActorNonce `protobuf:"bytes,2,opt,name=timestamped_actor_nonce,json=timestampedActorNonce,proto3" json:"timestamped_actor_nonce,omitempty"`
+	TopicId               uint64                 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	TimestampedActorNonce *TimestampedActorNonce `protobuf:"bytes,2,opt,name=timestamped_actor_nonce,json=timestampedActorNonce,proto3" json:"timestamped_actor_nonce,omitempty"`
 }
 
 func (x *TopicIdTimestampedActorNonce) Reset() {
@@ -32399,7 +32399,7 @@ func (x *TopicIdTimestampedActorNonce) GetTopicId() uint64 {
 	return 0
 }
 
-func (x *TopicIdTimestampedActorNonce) GetTimestampedActorNonce() *v3.TimestampedActorNonce {
+func (x *TopicIdTimestampedActorNonce) GetTimestampedActorNonce() *TimestampedActorNonce {
 	if x != nil {
 		return x.TimestampedActorNonce
 	}
@@ -32411,8 +32411,8 @@ type BlockHeightTopicIds struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BlockHeight int64        `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	TopicIds    *v3.TopicIds `protobuf:"bytes,2,opt,name=topic_ids,json=topicIds,proto3" json:"topic_ids,omitempty"`
+	BlockHeight int64     `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	TopicIds    *TopicIds `protobuf:"bytes,2,opt,name=topic_ids,json=topicIds,proto3" json:"topic_ids,omitempty"`
 }
 
 func (x *BlockHeightTopicIds) Reset() {
@@ -32442,7 +32442,7 @@ func (x *BlockHeightTopicIds) GetBlockHeight() int64 {
 	return 0
 }
 
-func (x *BlockHeightTopicIds) GetTopicIds() *v3.TopicIds {
+func (x *BlockHeightTopicIds) GetTopicIds() *TopicIds {
 	if x != nil {
 		return x.TopicIds
 	}
@@ -32454,8 +32454,8 @@ type BlockHeightTopicIdWeightPair struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BlockHeight int64                 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	TopicWeight *v3.TopicIdWeightPair `protobuf:"bytes,2,opt,name=topic_weight,json=topicWeight,proto3" json:"topic_weight,omitempty"`
+	BlockHeight int64              `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	TopicWeight *TopicIdWeightPair `protobuf:"bytes,2,opt,name=topic_weight,json=topicWeight,proto3" json:"topic_weight,omitempty"`
 }
 
 func (x *BlockHeightTopicIdWeightPair) Reset() {
@@ -32485,7 +32485,7 @@ func (x *BlockHeightTopicIdWeightPair) GetBlockHeight() int64 {
 	return 0
 }
 
-func (x *BlockHeightTopicIdWeightPair) GetTopicWeight() *v3.TopicIdWeightPair {
+func (x *BlockHeightTopicIdWeightPair) GetTopicWeight() *TopicIdWeightPair {
 	if x != nil {
 		return x.TopicWeight
 	}
@@ -32560,12 +32560,12 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f,
 	0x73, 0x74, 0x61, 0x6b, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2f, 0x76, 0x33, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
-	0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x77, 0x6f,
-	0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2f, 0x76, 0x33, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70,
+	0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xfb, 0x45, 0x0a, 0x0c,
 	0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x32, 0x0a, 0x06,
@@ -33132,7 +33132,7 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
 	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x29, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70,
+	0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x22, 0x47, 0x0a, 0x0f, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x41, 0x6e, 0x64, 0x41, 0x63,
 	0x74, 0x6f, 0x72, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
 	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
@@ -33386,7 +33386,7 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x69, 0x63, 0x49, 0x64, 0x12, 0x5b, 0x0a, 0x17, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
 	0x70, 0x65, 0x64, 0x5f, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18,
 	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x65, 0x64,
+	0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x65, 0x64,
 	0x41, 0x63, 0x74, 0x6f, 0x72, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x15, 0x74, 0x69, 0x6d, 0x65,
 	0x73, 0x74, 0x61, 0x6d, 0x70, 0x65, 0x64, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x4e, 0x6f, 0x6e, 0x63,
 	0x65, 0x22, 0x6d, 0x0a, 0x13, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
@@ -33394,7 +33394,7 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b,
 	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x33, 0x0a, 0x09, 0x74,
 	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16,
-	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x6f,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x6f,
 	0x70, 0x69, 0x63, 0x49, 0x64, 0x73, 0x52, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x73,
 	0x22, 0x85, 0x01, 0x0a, 0x1c, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
 	0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x50, 0x61, 0x69,
@@ -33402,7 +33402,7 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
 	0x69, 0x67, 0x68, 0x74, 0x12, 0x42, 0x0a, 0x0c, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x77, 0x65,
 	0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49,
 	0x64, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x50, 0x61, 0x69, 0x72, 0x52, 0x0b, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xab, 0x01, 0x0a, 0x20, 0x54, 0x6f, 0x70,
 	0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74,
@@ -33479,7 +33479,7 @@ var file_emissions_v9_genesis_proto_goTypes = []interface{}{
 	(*BlockHeightTopicIdWeightPair)(nil),                               // 31: emissions.v9.BlockHeightTopicIdWeightPair
 	(*TopicIdReputerReputerValueBundle)(nil),                           // 32: emissions.v9.TopicIdReputerReputerValueBundle
 	(*v8.Params)(nil),                                                  // 33: emissions.v8.Params
-	(*v3.Topic)(nil),                                                   // 34: emissions.v3.Topic
+	(*Topic)(nil),                                                      // 34: emissions.v9.Topic
 	(*v3.Scores)(nil),                                                  // 35: emissions.v3.Scores
 	(*v3.Score)(nil),                                                   // 36: emissions.v3.Score
 	(*v3.ListeningCoefficient)(nil),                                    // 37: emissions.v3.ListeningCoefficient
@@ -33496,9 +33496,9 @@ var file_emissions_v9_genesis_proto_goTypes = []interface{}{
 	(*v3.Nonces)(nil),                                                  // 48: emissions.v3.Nonces
 	(*v3.ReputerRequestNonces)(nil),                                    // 49: emissions.v3.ReputerRequestNonces
 	(*v3.TimestampedValue)(nil),                                        // 50: emissions.v3.TimestampedValue
-	(*v3.TimestampedActorNonce)(nil),                                   // 51: emissions.v3.TimestampedActorNonce
-	(*v3.TopicIds)(nil),                                                // 52: emissions.v3.TopicIds
-	(*v3.TopicIdWeightPair)(nil),                                       // 53: emissions.v3.TopicIdWeightPair
+	(*TimestampedActorNonce)(nil),                                      // 51: emissions.v9.TimestampedActorNonce
+	(*TopicIds)(nil),                                                   // 52: emissions.v9.TopicIds
+	(*TopicIdWeightPair)(nil),                                          // 53: emissions.v9.TopicIdWeightPair
 	(*v3.ReputerValueBundle)(nil),                                      // 54: emissions.v3.ReputerValueBundle
 }
 var file_emissions_v9_genesis_proto_depIdxs = []int32{
@@ -33579,7 +33579,7 @@ var file_emissions_v9_genesis_proto_depIdxs = []int32{
 	9,  // 74: emissions.v9.GenesisState.latest_forecaster_weights:type_name -> emissions.v9.TopicIdActorIdDec
 	24, // 75: emissions.v9.GenesisState.network_inferences:type_name -> emissions.v9.TopicIdBlockHeightValueBundles
 	24, // 76: emissions.v9.GenesisState.outlier_resistant_network_inferences:type_name -> emissions.v9.TopicIdBlockHeightValueBundles
-	34, // 77: emissions.v9.TopicIdAndTopic.topic:type_name -> emissions.v3.Topic
+	34, // 77: emissions.v9.TopicIdAndTopic.topic:type_name -> emissions.v9.Topic
 	35, // 78: emissions.v9.TopicIdBlockHeightScores.scores:type_name -> emissions.v3.Scores
 	36, // 79: emissions.v9.TopicIdActorIdScore.score:type_name -> emissions.v3.Score
 	37, // 80: emissions.v9.TopicIdActorIdListeningCoefficient.listening_coefficient:type_name -> emissions.v3.ListeningCoefficient
@@ -33597,9 +33597,9 @@ var file_emissions_v9_genesis_proto_depIdxs = []int32{
 	49, // 92: emissions.v9.TopicIdAndReputerRequestNonces.reputer_request_nonces:type_name -> emissions.v3.ReputerRequestNonces
 	50, // 93: emissions.v9.TopicIdActorIdTimeStampedValue.timestamped_value:type_name -> emissions.v3.TimestampedValue
 	50, // 94: emissions.v9.TopicIdActorIdActorIdTimeStampedValue.timestamped_value:type_name -> emissions.v3.TimestampedValue
-	51, // 95: emissions.v9.TopicIdTimestampedActorNonce.timestamped_actor_nonce:type_name -> emissions.v3.TimestampedActorNonce
-	52, // 96: emissions.v9.BlockHeightTopicIds.topic_ids:type_name -> emissions.v3.TopicIds
-	53, // 97: emissions.v9.BlockHeightTopicIdWeightPair.topic_weight:type_name -> emissions.v3.TopicIdWeightPair
+	51, // 95: emissions.v9.TopicIdTimestampedActorNonce.timestamped_actor_nonce:type_name -> emissions.v9.TimestampedActorNonce
+	52, // 96: emissions.v9.BlockHeightTopicIds.topic_ids:type_name -> emissions.v9.TopicIds
+	53, // 97: emissions.v9.BlockHeightTopicIdWeightPair.topic_weight:type_name -> emissions.v9.TopicIdWeightPair
 	54, // 98: emissions.v9.TopicIdReputerReputerValueBundle.reputer_value_bundle:type_name -> emissions.v3.ReputerValueBundle
 	99, // [99:99] is the sub-list for method output_type
 	99, // [99:99] is the sub-list for method input_type
@@ -33613,6 +33613,7 @@ func file_emissions_v9_genesis_proto_init() {
 	if File_emissions_v9_genesis_proto != nil {
 		return
 	}
+	file_emissions_v9_topic_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v9_genesis_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GenesisState); i {

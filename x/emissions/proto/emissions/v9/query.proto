@@ -9,11 +9,11 @@ import "emissions/v3/nonce.proto";
 import "emissions/v3/reputer.proto";
 import "emissions/v3/score.proto";
 import "emissions/v3/stake.proto";
-import "emissions/v3/topic.proto";
 import "emissions/v3/types.proto";
 import "emissions/v3/worker.proto";
 // v8
 import "emissions/v8/params.proto";
+import "emissions/v9/topic.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
@@ -910,7 +910,7 @@ message GetTopicRequest {
 }
 
 message GetTopicResponse {
-  emissions.v3.Topic topic = 1;
+  emissions.v9.Topic topic = 1;
   string weight = 2;
   string effective_revenue = 3;
   string topic_stake = 4;
@@ -921,7 +921,7 @@ message GetActiveTopicsRequest {
 }
 
 message GetActiveTopicsResponse {
-  repeated emissions.v3.Topic topics = 1;
+  repeated emissions.v9.Topic topics = 1;
   emissions.v3.SimpleCursorPaginationResponse pagination = 2;
 }
 
@@ -1166,7 +1166,7 @@ message GetTopicLastWorkerCommitInfoRequest {
 }
 
 message GetTopicLastWorkerCommitInfoResponse {
-  emissions.v3.TimestampedActorNonce last_commit = 1;
+  emissions.v9.TimestampedActorNonce last_commit = 1;
 }
 
 message GetTopicLastReputerCommitInfoRequest {
@@ -1174,7 +1174,7 @@ message GetTopicLastReputerCommitInfoRequest {
 }
 
 message GetTopicLastReputerCommitInfoResponse {
-  emissions.v3.TimestampedActorNonce last_commit = 1;
+  emissions.v9.TimestampedActorNonce last_commit = 1;
 }
 
 message GetTopicRewardNonceRequest {
@@ -1514,7 +1514,7 @@ message GetActiveTopicsAtBlockRequest {
 }
 
 message GetActiveTopicsAtBlockResponse {
-  repeated emissions.v3.Topic topics = 1;
+  repeated emissions.v9.Topic topics = 1;
   emissions.v3.SimpleCursorPaginationResponse pagination = 2;
 }
 

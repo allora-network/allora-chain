@@ -5,6 +5,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV7Types "github.com/allora-network/allora-chain/x/emissions/migrations/v8/oldtypes"
+	v8Types "github.com/allora-network/allora-chain/x/emissions/migrations/v9/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -53,7 +54,7 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//       MinWeightThresholdForStdnorm
-	newParams := emissionstypes.Params{ //nolint: exhaustruct
+	newParams := v8Types.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

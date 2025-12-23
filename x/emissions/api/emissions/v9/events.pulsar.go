@@ -6583,7 +6583,7 @@ func (x *fastReflection_EventCreateNewTopic) Get(descriptor protoreflect.FieldDe
 func (x *fastReflection_EventCreateNewTopic) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "emissions.v9.EventCreateNewTopic.topic":
-		x.Topic = value.Message().Interface().(*v3.Topic)
+		x.Topic = value.Message().Interface().(*Topic)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventCreateNewTopic"))
@@ -6606,7 +6606,7 @@ func (x *fastReflection_EventCreateNewTopic) Mutable(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	case "emissions.v9.EventCreateNewTopic.topic":
 		if x.Topic == nil {
-			x.Topic = new(v3.Topic)
+			x.Topic = new(Topic)
 		}
 		return protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
 	default:
@@ -6623,7 +6623,7 @@ func (x *fastReflection_EventCreateNewTopic) Mutable(fd protoreflect.FieldDescri
 func (x *fastReflection_EventCreateNewTopic) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.EventCreateNewTopic.topic":
-		m := new(v3.Topic)
+		m := new(Topic)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -6820,7 +6820,7 @@ func (x *fastReflection_EventCreateNewTopic) ProtoMethods() *protoiface.Methods 
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Topic == nil {
-					x.Topic = &v3.Topic{}
+					x.Topic = &Topic{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topic); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -7035,7 +7035,7 @@ func (x *fastReflection_EventTopicUpdated) Set(fd protoreflect.FieldDescriptor, 
 	case "emissions.v9.EventTopicUpdated.topic_id":
 		x.TopicId = value.Uint()
 	case "emissions.v9.EventTopicUpdated.topic":
-		x.Topic = value.Message().Interface().(*v3.Topic)
+		x.Topic = value.Message().Interface().(*Topic)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventTopicUpdated"))
@@ -7058,7 +7058,7 @@ func (x *fastReflection_EventTopicUpdated) Mutable(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	case "emissions.v9.EventTopicUpdated.topic":
 		if x.Topic == nil {
-			x.Topic = new(v3.Topic)
+			x.Topic = new(Topic)
 		}
 		return protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
 	case "emissions.v9.EventTopicUpdated.topic_id":
@@ -7079,7 +7079,7 @@ func (x *fastReflection_EventTopicUpdated) NewField(fd protoreflect.FieldDescrip
 	case "emissions.v9.EventTopicUpdated.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v9.EventTopicUpdated.topic":
-		m := new(v3.Topic)
+		m := new(Topic)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -7303,7 +7303,7 @@ func (x *fastReflection_EventTopicUpdated) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Topic == nil {
-					x.Topic = &v3.Topic{}
+					x.Topic = &Topic{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topic); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -42648,7 +42648,7 @@ type EventCreateNewTopic struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Topic *v3.Topic `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	Topic *Topic `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
 }
 
 func (x *EventCreateNewTopic) Reset() {
@@ -42671,7 +42671,7 @@ func (*EventCreateNewTopic) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *EventCreateNewTopic) GetTopic() *v3.Topic {
+func (x *EventCreateNewTopic) GetTopic() *Topic {
 	if x != nil {
 		return x.Topic
 	}
@@ -42683,8 +42683,8 @@ type EventTopicUpdated struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId uint64    `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Topic   *v3.Topic `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Topic   *Topic `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty"`
 }
 
 func (x *EventTopicUpdated) Reset() {
@@ -42714,7 +42714,7 @@ func (x *EventTopicUpdated) GetTopicId() uint64 {
 	return 0
 }
 
-func (x *EventTopicUpdated) GetTopic() *v3.Topic {
+func (x *EventTopicUpdated) GetTopic() *Topic {
 	if x != nil {
 		return x.Topic
 	}
@@ -45867,10 +45867,10 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
 	0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f,
-	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f,
+	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61,
+	0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
 	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf5, 0x01, 0x0a, 0x0e, 0x45, 0x76, 0x65,
 	0x6e, 0x74, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x53, 0x65, 0x74, 0x12, 0x36, 0x0a, 0x0a, 0x61,
@@ -46043,13 +46043,13 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x44, 0x61, 0x74, 0x61, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x40, 0x0a, 0x13, 0x45, 0x76,
 	0x65, 0x6e, 0x74, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69,
 	0x63, 0x12, 0x29, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e,
+	0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e,
 	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0x59, 0x0a, 0x11,
 	0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
 	0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x29, 0x0a, 0x05,
 	0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63,
 	0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0xac, 0x01, 0x0a, 0x0d, 0x45, 0x76, 0x65, 0x6e,
 	0x74, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
@@ -46727,7 +46727,7 @@ var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(*EventReputerSubmissionWindowOpened)(nil),               // 74: emissions.v9.EventReputerSubmissionWindowOpened
 	(*EventReputerSubmissionWindowClosed)(nil),               // 75: emissions.v9.EventReputerSubmissionWindowClosed
 	(*v3.ValueBundle)(nil),                                   // 76: emissions.v3.ValueBundle
-	(*v3.Topic)(nil),                                         // 77: emissions.v3.Topic
+	(*Topic)(nil),                                            // 77: emissions.v9.Topic
 	(*v8.Params)(nil),                                        // 78: emissions.v8.Params
 	(*v3.Nonce)(nil),                                         // 79: emissions.v3.Nonce
 }
@@ -46739,8 +46739,8 @@ var file_emissions_v9_events_proto_depIdxs = []int32{
 	76, // 4: emissions.v9.EventNetworkInferences.value_bundle:type_name -> emissions.v3.ValueBundle
 	6,  // 5: emissions.v9.EventNetworkInferences.bundle:type_name -> emissions.v9.EventValueBundle
 	6,  // 6: emissions.v9.EventOutlierResistantNetworkInferences.bundle:type_name -> emissions.v9.EventValueBundle
-	77, // 7: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v3.Topic
-	77, // 8: emissions.v9.EventTopicUpdated.topic:type_name -> emissions.v3.Topic
+	77, // 7: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v9.Topic
+	77, // 8: emissions.v9.EventTopicUpdated.topic:type_name -> emissions.v9.Topic
 	6,  // 9: emissions.v9.EventInsertReputerPayload.bundle:type_name -> emissions.v9.EventValueBundle
 	78, // 10: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
 	79, // 11: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
@@ -46760,6 +46760,7 @@ func file_emissions_v9_events_proto_init() {
 	if File_emissions_v9_events_proto != nil {
 		return
 	}
+	file_emissions_v9_topic_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v9_events_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventScoresSet); i {

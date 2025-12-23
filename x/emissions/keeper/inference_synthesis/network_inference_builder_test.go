@@ -378,12 +378,12 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 
 	moduleParams := emissionstypes.DefaultParams()
 	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
-	moduleParams.CNorm = cNorm
 
 	topic := s.MockTopic()
 	topic.Id = topicId
 	topic.PNorm = pNorm
 	topic.Epsilon = epsilonTopic
+	topic.CNorm = cNorm
 
 	var err error
 	var calcArgs inferencesynthesis.CalcNetworkInferencesArgs
@@ -430,9 +430,9 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	topic.Id = topicId
 	topic.Epsilon = epsilonTopic
 	topic.PNorm = pNorm
+	topic.CNorm = cNorm
 
 	moduleParams := emissionstypes.DefaultParams()
-	moduleParams.CNorm = cNorm
 	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
 
 	var err error

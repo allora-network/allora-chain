@@ -44,6 +44,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			// These are set for subsequent tests
 			MaxTopReputersToReward: []uint64{24},
 			MinEpochLength:         []int64{1},
+			CNorm:                  nil, // deprecated: keep for exhaustruct; ignored by chain
 			// don't update the following fields
 			Version:                             nil,
 			MaxSerializedMsgLength:              nil,
@@ -76,7 +77,6 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			PRewardReputer:                      nil,
 			CRewardInference:                    nil,
 			CRewardForecast:                     nil,
-			CNorm:                               nil,
 			HalfMaxProcessStakeRemovalsEndBlock: nil,
 			DataSendingFee:                      nil,
 			EpsilonSafeDiv:                      nil,
@@ -109,6 +109,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 		Sender: m.BobAddr,
 		Params: &emissionstypes.OptionalParams{
 			EpsilonReputer: input,
+			CNorm:          nil, // deprecated: keep for exhaustruct; ignored by chain
 			// don't update the following fields
 			Version:                             nil,
 			MaxTopReputersToReward:              nil,
@@ -143,7 +144,6 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			PRewardReputer:                      nil,
 			CRewardInference:                    nil,
 			CRewardForecast:                     nil,
-			CNorm:                               nil,
 			HalfMaxProcessStakeRemovalsEndBlock: nil,
 			DataSendingFee:                      nil,
 			EpsilonSafeDiv:                      nil,
@@ -180,6 +180,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
 			EpsilonReputer: input,
+			CNorm:          nil, // deprecated: keep for exhaustruct; ignored by chain
 			// don't update the following fields
 			Version:                             nil,
 			MaxTopReputersToReward:              nil,
@@ -214,7 +215,6 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			PRewardReputer:                      nil,
 			CRewardInference:                    nil,
 			CRewardForecast:                     nil,
-			CNorm:                               nil,
 			HalfMaxProcessStakeRemovalsEndBlock: nil,
 			DataSendingFee:                      nil,
 			EpsilonSafeDiv:                      nil,

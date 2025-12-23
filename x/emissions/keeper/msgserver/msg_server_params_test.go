@@ -54,7 +54,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		PRewardReputer:                      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		CRewardInference:                    []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		CRewardForecast:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		CNorm:                               []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		BlocksPerMonth:                      []uint64{1234},
 		HalfMaxProcessStakeRemovalsEndBlock: []uint64{1234},
 		DataSendingFee:                      []cosmosMath.Int{cosmosMath.NewInt(1234)},
@@ -122,7 +121,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.PRewardReputer[0], updatedParams.PRewardReputer)
 	require.Equal(newParams.CRewardInference[0], updatedParams.CRewardInference)
 	require.Equal(newParams.CRewardForecast[0], updatedParams.CRewardForecast)
-	require.Equal(newParams.CNorm[0], updatedParams.CNorm)
 	require.Equal(newParams.BlocksPerMonth[0], updatedParams.BlocksPerMonth)
 	require.Equal(newParams.HalfMaxProcessStakeRemovalsEndBlock[0], updatedParams.HalfMaxProcessStakeRemovalsEndBlock)
 	require.Equal(newParams.DataSendingFee[0], updatedParams.DataSendingFee)

@@ -135,6 +135,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -185,6 +186,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -340,6 +342,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)

@@ -69,6 +69,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		ActiveInfererQuantile:    msg.ActiveInfererQuantile,
 		ActiveForecasterQuantile: msg.ActiveForecasterQuantile,
 		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
+		CNorm:                    msg.CNorm,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -120,6 +121,7 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.AlphaRegret = msg.AlphaRegret
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
+	updatedTopic.CNorm = msg.CNorm
 
 	updatedTopic, err = ms.k.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {
