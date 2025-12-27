@@ -478,7 +478,7 @@ func (s *KeeperTestSuite) TestGetOpenReputerSubmissionWindowsWithNonExistentTopi
 
 	_, err := k.GetOpenReputerSubmissionWindows(s.Ctx(), nonExistentTopicId)
 	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "error getting topic")
+	s.Require().ErrorIs(err, types.ErrTopicDoesNotExist, "Retrieving a non-existent topic should result in an error")
 }
 
 func (s *KeeperTestSuite) TestGetOpenWorkerSubmissionWindowsWithNonExistentTopic() {
@@ -487,7 +487,7 @@ func (s *KeeperTestSuite) TestGetOpenWorkerSubmissionWindowsWithNonExistentTopic
 
 	_, err := k.GetOpenWorkerSubmissionWindows(s.Ctx(), nonExistentTopicId)
 	s.Require().Error(err)
-	s.Require().Contains(err.Error(), "error getting topic")
+	s.Require().ErrorIs(err, types.ErrTopicDoesNotExist, "Retrieving a non-existent topic should result in an error")
 }
 
 func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
