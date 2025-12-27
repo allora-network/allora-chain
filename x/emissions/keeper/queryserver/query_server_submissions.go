@@ -33,4 +33,3 @@ func (qs queryServer) GetOpenWorkerSubmissionWindows(ctx context.Context, req *t
 		Nonces: &openNonces,
 	}, nil
 }
-

@@ -194,4 +194,3 @@ func (s *QueryServerTestSuite) TestGetOpenWorkerSubmissionWindowsWithNonExistent
 	s.Require().Error(err)
 	s.Require().Nil(response)
 }
-
