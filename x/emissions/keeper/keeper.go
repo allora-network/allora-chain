@@ -816,13 +816,13 @@ func (k *Keeper) GetOpenReputerSubmissionWindows(ctx context.Context, topicId To
 	// Get topic to access window parameters
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
-		return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, errorsmod.Wrapf(err, "error getting topic %v", topicId)
+		return types.ReputerRequestNonces{Nonces: nil}, errorsmod.Wrapf(err, "error getting topic %v", topicId)
 	}
 
 	// Get all unfulfilled reputer nonces
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
+		return types.ReputerRequestNonces{Nonces: nil}, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 
 	// Filter nonces that are within the open submission window
@@ -833,7 +833,7 @@ func (k *Keeper) GetOpenReputerSubmissionWindows(ctx context.Context, topicId To
 		}
 		isOpen, err := BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, currentBlockHeight)
 		if err != nil {
-			return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, errorsmod.Wrap(err, "error checking reputer submission window")
+			return types.ReputerRequestNonces{Nonces: nil}, errorsmod.Wrap(err, "error checking reputer submission window")
 		}
 		if isOpen {
 			openNonces = append(openNonces, nonce)
@@ -853,13 +853,13 @@ func (k *Keeper) GetOpenWorkerSubmissionWindows(ctx context.Context, topicId Top
 	// Get topic to access window parameters
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
-		return types.Nonces{Nonces: []*types.Nonce{}}, errorsmod.Wrapf(err, "error getting topic %v", topicId)
+		return types.Nonces{Nonces: nil}, errorsmod.Wrapf(err, "error getting topic %v", topicId)
 	}
 
 	// Get all unfulfilled worker nonces
 	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
-		return types.Nonces{Nonces: []*types.Nonce{}}, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
+		return types.Nonces{Nonces: nil}, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
 	// Filter nonces that are within the open submission window
@@ -870,7 +870,7 @@ func (k *Keeper) GetOpenWorkerSubmissionWindows(ctx context.Context, topicId Top
 		}
 		isOpen, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, currentBlockHeight)
 		if err != nil {
-			return types.Nonces{Nonces: []*types.Nonce{}}, errorsmod.Wrap(err, "error checking worker submission window")
+			return types.Nonces{Nonces: nil}, errorsmod.Wrap(err, "error checking worker submission window")
 		}
 		if isOpen {
 			openNonces = append(openNonces, nonce)
