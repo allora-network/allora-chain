@@ -43,7 +43,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret_OLD_BOUNDS_ALGORI
 		regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
 		maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 
-		weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+		cache := inferencesynthesis.NewMathHelperCache()
+		weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm, cache)
 		s.Require().NoError(err)
 
 		testutil.InEpsilon5(s.T(), weight, tc.expectedWeight)
@@ -164,7 +165,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
 			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 
-			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+			cache := inferencesynthesis.NewMathHelperCache()
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm, cache)
 			s.Require().NoError(err, "Failed to calculate weight for case: %s", tc.name)
 
 			expected := alloraMath.MustNewDecFromString(tc.expectedWeight)
@@ -283,7 +285,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
 			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 
-			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+			cache := inferencesynthesis.NewMathHelperCache()
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm, cache)
 			s.Require().NoError(err, "Failed to calculate weight for case: %s", tc.name)
 
 			expected := alloraMath.MustNewDecFromString(tc.expectedWeight)
@@ -353,7 +356,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
 			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 
-			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+			cache := inferencesynthesis.NewMathHelperCache()
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm, cache)
 			s.Require().NoError(err, "Failed to calculate weight for case: %s", tc.name)
 
 			// For identity cases (regret == maxRegret), result should always be 1
@@ -375,9 +379,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 
 	s.Run("Identity Property: regret == maxRegret => weight == 1", func() {
 		testValues := []string{"-10", "-1", "-0.5", "0", "0.5", "1", "5"}
+		cache := inferencesynthesis.NewMathHelperCache()
 		for _, val := range testValues {
 			regret := alloraMath.MustNewDecFromString(val)
-			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, regret, pNorm, cNorm)
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, regret, pNorm, cNorm, cache)
 			s.Require().NoError(err)
 
 			one := alloraMath.OneDec()
@@ -390,6 +395,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 
 	s.Run("Monotonicity: better regret (closer to max) => higher weight", func() {
 		maxRegret := alloraMath.MustNewDecFromString("1.0")
+		cache := inferencesynthesis.NewMathHelperCache()
 
 		// Test points from worst to best regret
 		regrets := []string{"-5", "-2", "-1", "0", "0.5", "1.0"}
@@ -397,7 +403,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 
 		for i, regretStr := range regrets {
 			regret := alloraMath.MustNewDecFromString(regretStr)
-			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm)
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm, cache)
 			s.Require().NoError(err)
 			weights[i] = weight
 		}
@@ -418,11 +424,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 			{"1", "1"},
 			{"5", "-2"}, // Even when regret > max
 		}
+		cache := inferencesynthesis.NewMathHelperCache()
 
 		for _, tc := range testCases {
 			regret := alloraMath.MustNewDecFromString(tc.regret)
 			maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
-			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm)
+			weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, cNorm, cache)
 			s.Require().NoError(err)
 			s.Require().True(weight.IsPositive(),
 				"Weight should be positive for regret=%s, maxRegret=%s, got %s",
@@ -441,22 +448,23 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromNormalizedRegret_Exp1Div
 		maxRegret := alloraMath.MustNewDecFromString("1.0")
 
 		// Test NaN regret
-		_, err := inferencesynthesis.CalcWeightFromNormalizedRegret(nan, maxRegret, pNorm, cNorm)
+		cache := inferencesynthesis.NewMathHelperCache()
+		_, err := inferencesynthesis.CalcWeightFromNormalizedRegret(nan, maxRegret, pNorm, cNorm, cache)
 		s.Require().Error(err)
 		s.Require().Contains(err.Error(), "NaN")
 
 		// Test NaN maxRegret
-		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, nan, pNorm, cNorm)
+		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, nan, pNorm, cNorm, cache)
 		s.Require().Error(err)
 		s.Require().Contains(err.Error(), "NaN")
 
 		// Test NaN pNorm
-		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, nan, cNorm)
+		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, nan, cNorm, cache)
 		s.Require().Error(err)
 		s.Require().Contains(err.Error(), "NaN")
 
 		// Test NaN cNorm
-		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, nan)
+		_, err = inferencesynthesis.CalcWeightFromNormalizedRegret(regret, maxRegret, pNorm, nan, cache)
 		s.Require().Error(err)
 		s.Require().Contains(err.Error(), "NaN")
 	})
@@ -493,13 +501,14 @@ func (s *InferenceSynthesisTestSuite) TestIncreasingPNormIncreasesRegretSpread()
 		pNorm2_point_5 := alloraMath.MustNewDecFromString("2.5")
 		pNorm4_point_5 := alloraMath.MustNewDecFromString("4.5")
 
-		weght2_point_5, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm2_point_5, cNorm)
+		cache := inferencesynthesis.NewMathHelperCache()
+		weight2_point_5, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm2_point_5, cNorm, cache)
 		s.Require().NoError(err)
-		weightWithPNorm2_point_5[i] = weght2_point_5
+		weightWithPNorm2_point_5[i] = weight2_point_5
 
-		weght4_point_5, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm4_point_5, cNorm)
+		weight4_point_5, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm4_point_5, cNorm, cache)
 		s.Require().NoError(err)
-		weightWithPNorm4_point_5[i] = weght4_point_5
+		weightWithPNorm4_point_5[i] = weight4_point_5
 	}
 
 	stdDev2_point_5, err := alloraMath.StdDev(weightWithPNorm2_point_5)
@@ -568,6 +577,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                inferencesynthesis.NewMathHelperCache(),
 		},
 	)
 	s.Require().NoError(err)
@@ -645,6 +655,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                inferencesynthesis.NewMathHelperCache(),
 		},
 	)
 	s.Require().NoError(err)
@@ -740,6 +751,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                inferencesynthesis.NewMathHelperCache(),
 		},
 	)
 	s.Require().NoError(err)
@@ -841,6 +853,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -934,6 +947,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -1007,6 +1021,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                inferencesynthesis.NewMathHelperCache(),
 		},
 	)
 	s.Require().NoError(err)
@@ -1066,6 +1081,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                inferencesynthesis.NewMathHelperCache(),
 		},
 	)
 	s.Require().NoError(err)
@@ -1164,6 +1180,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                inferencesynthesis.NewMathHelperCache(),
 		},
 	)
 	s.Require().NoError(err)

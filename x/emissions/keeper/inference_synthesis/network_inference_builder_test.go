@@ -397,6 +397,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		&networkCombinedLoss,
 		moduleParams,
 		blockHeight,
+		inferencesynthesis.NewMathHelperCache(),
 	)
 	s.Require().NoError(err)
 	return ctx, k, ctx.Logger(), topicId, calcArgs.AllInferersAreNew,
@@ -447,6 +448,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 		&networkCombinedLoss,
 		moduleParams,
 		blockHeight,
+		inferencesynthesis.NewMathHelperCache(),
 	)
 	s.Require().NoError(err)
 	return calcArgs.Inferers, calcArgs.InfererToInference, calcArgs.InfererToRegret, calcArgs.AllInferersAreNew,
@@ -492,6 +494,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(ep
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
 			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			Cache:                                nil,
 		})
 	s.Require().NoError(err)
 	alloratestutil.InEpsilon5(s.T(), combinedValue, epochGet[epoch]("network_inference").String())
@@ -531,6 +534,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
 			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			Cache:                                nil,
 		})
 	s.Require().NoError(err)
 	alloratestutil.InEpsilon5(s.T(), naiveValue, epochGet[epoch]("network_naive_inference").String())
@@ -583,6 +587,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 
@@ -630,6 +635,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
 			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			Cache:                                nil,
 		})
 	s.Require().NoError(err)
 
@@ -689,6 +695,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
 			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			Cache:                                nil,
 		})
 	s.Require().NoError(err)
 
@@ -798,6 +805,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeightInferences,
+		Cache:                                nil,
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
@@ -912,6 +920,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
+		Cache:                                nil,
 	}
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
 	s.Require().NoError(err)
@@ -1056,6 +1065,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
+		Cache:                                nil,
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(
@@ -1204,6 +1214,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
+		Cache:                                nil,
 	}
 
 	valueBundle, weights, err := inferencesynthesis.CalcNetworkInferences(
@@ -1313,6 +1324,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTw
 		CNorm:                                cNorm,
 		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
+		Cache:                                nil,
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
@@ -1407,6 +1419,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 
@@ -1448,6 +1461,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(emptyResult)
@@ -1471,6 +1485,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(singleInfererResult)
@@ -1548,6 +1563,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 			PNorm:                pNorm,
 			CNorm:                cNorm,
 			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Cache:                nil,
 		})
 	s.Require().NoError(err)
 

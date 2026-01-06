@@ -397,6 +397,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				PNorm:             alloraMath.MustNewDecFromString("3.0"),
 				CNorm:             alloraMath.MustNewDecFromString("0.75"),
 				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				Cache:             nil,
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -421,6 +422,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				PNorm:             alloraMath.MustNewDecFromString("3.0"),
 				CNorm:             alloraMath.MustNewDecFromString("0.75"),
 				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				Cache:             nil,
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -446,6 +448,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				PNorm:             alloraMath.MustNewDecFromString("3.0"),
 				CNorm:             alloraMath.MustNewDecFromString("0.75"),
 				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				Cache:             nil,
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -472,6 +475,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				PNorm:             alloraMath.MustNewDecFromString("3.0"),
 				CNorm:             alloraMath.MustNewDecFromString("0.75"),
 				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				Cache:             nil,
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -499,6 +503,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				PNorm:              alloraMath.MustNewDecFromString("3.0"),
 				CNorm:              alloraMath.MustNewDecFromString("0.75"),
 				StdDevPlusEpsilon:  alloraMath.MustNewDecFromString("1.0"),
+				Cache:              nil,
 			},
 			expectedError: true,
 		},
@@ -514,6 +519,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				PNorm:              alloraMath.MustNewDecFromString("3.0"),
 				CNorm:              alloraMath.MustNewDecFromString("0.75"),
 				StdDevPlusEpsilon:  alloraMath.MustNewDecFromString("1.0"),
+				Cache:              nil,
 			},
 			expectedError: true,
 		},

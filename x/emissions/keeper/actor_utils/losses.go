@@ -28,6 +28,17 @@ func CloseReputerNonce(
 ) (err error) {
 	blockHeight := ctx.BlockHeight()
 
+	// Create and enable math helper cache for this function's scope
+	cache := synth.NewMathHelperCache()
+	cache.Enable()
+
+	// Disable math helper cache and clear cache when function exits
+	defer func() {
+		cache.Disable()
+		cache.Clear()
+		ctx.Logger().Debug("Math helper cache cleared after CloseReputerNonce")
+	}()
+
 	// All filters should be done in order of increasing computational complexity
 	// Check if the worker nonce is unfulfilled
 	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
@@ -250,6 +261,7 @@ func CloseReputerNonce(
 			PNorm:              topic.PNorm,
 			CNorm:              params.CNorm,
 			StdDevPlusEpsilon:  stdDevPlusEpsilon,
+			Cache:              cache,
 		},
 	)
 	if err != nil {
