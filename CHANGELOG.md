@@ -69,8 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#851](https://github.com/allora-network/allora-chain/pull/851) Enforce recommended settings
 * [#835](https://github.com/allora-network/allora-chain/pull/835): Introduce the `x/scheduler` module to manage tasks scheduling
+* [#831](https://github.com/allora-network/allora-chain/pull/831) Allow topic creators to update topic configs
+* [#893](https://github.com/allora-network/allora-chain/pull/893) Make `c_norm` editable per topic and add migration v13
 
 ### Changed
+
+* [#893](https://github.com/allora-network/allora-chain/pull/893) Move `c_norm` from being *used* as a global param to being a per-topic `Topic` field (keep deprecated `Params.c_norm` for client backwards compatibility)
 
 ### Deprecated
 
@@ -703,4 +707,3 @@ Refactors to adapt to single transaction insertions from workers and reputers.
 ## v0.1.0
 
 *Versions below `v0.2.14` were associated with our "Alpha Testnet" and "Edgenet" deployments, before formal versioning was adopted.*
-

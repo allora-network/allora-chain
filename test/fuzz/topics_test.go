@@ -38,6 +38,7 @@ func createTopic(
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 
 	ctx := context.Background()

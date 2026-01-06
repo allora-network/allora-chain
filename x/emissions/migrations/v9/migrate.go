@@ -5,6 +5,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV8Types "github.com/allora-network/allora-chain/x/emissions/migrations/v8/oldtypes"
+	v8Types "github.com/allora-network/allora-chain/x/emissions/migrations/v9/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -38,7 +39,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // Migrate params for this new version
 // The changes are the addition of GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
 func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV8Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
+	oldParams := oldV8Types.Params{} //nolint: exhaustruct
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -48,10 +49,8 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 		return errorsmod.Wrapf(err, "failed to unmarshal old parameters")
 	}
 
-	// defaultParams := emissionstypes.DefaultParams()
-
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
-	newParams := emissionstypes.Params{ //nolint: exhaustruct
+	newParams := v8Types.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

@@ -232,7 +232,7 @@ func GetCalcNetworkInferenceArgs(
 		EpsilonTopic:                         topic.Epsilon,
 		EpsilonSafeDiv:                       moduleParams.EpsilonSafeDiv,
 		PNorm:                                topic.PNorm,
-		CNorm:                                moduleParams.CNorm,
+		CNorm:                                topic.CNorm,
 		StdDevPlusEpsilon:                    stdDevPlusEpsilon,
 		InferenceBlockHeight:                 inferenceBlockHeight,
 	}
@@ -269,7 +269,7 @@ func GetCalcNetworkInferenceArgs(
 				NetworkCombinedLoss:  previousLossesCombinedValue,
 				EpsilonTopic:         topic.Epsilon,
 				PNorm:                topic.PNorm,
-				CNorm:                moduleParams.CNorm,
+				CNorm:                topic.CNorm,
 				StdDevPlusEpsilon:    stdDevPlusEpsilon,
 			},
 		)

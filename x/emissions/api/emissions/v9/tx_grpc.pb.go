@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	MsgService_UpdateParams_FullMethodName                         = "/emissions.v9.MsgService/UpdateParams"
 	MsgService_CreateNewTopic_FullMethodName                       = "/emissions.v9.MsgService/CreateNewTopic"
+	MsgService_UpdateTopic_FullMethodName                          = "/emissions.v9.MsgService/UpdateTopic"
 	MsgService_Register_FullMethodName                             = "/emissions.v9.MsgService/Register"
 	MsgService_RemoveRegistration_FullMethodName                   = "/emissions.v9.MsgService/RemoveRegistration"
 	MsgService_AddStake_FullMethodName                             = "/emissions.v9.MsgService/AddStake"
@@ -71,6 +72,7 @@ const (
 type MsgServiceClient interface {
 	UpdateParams(ctx context.Context, in *UpdateParamsRequest, opts ...grpc.CallOption) (*UpdateParamsResponse, error)
 	CreateNewTopic(ctx context.Context, in *CreateNewTopicRequest, opts ...grpc.CallOption) (*CreateNewTopicResponse, error)
+	UpdateTopic(ctx context.Context, in *UpdateTopicRequest, opts ...grpc.CallOption) (*UpdateTopicResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	RemoveRegistration(ctx context.Context, in *RemoveRegistrationRequest, opts ...grpc.CallOption) (*RemoveRegistrationResponse, error)
 	AddStake(ctx context.Context, in *AddStakeRequest, opts ...grpc.CallOption) (*AddStakeResponse, error)
@@ -135,6 +137,16 @@ func (c *msgServiceClient) CreateNewTopic(ctx context.Context, in *CreateNewTopi
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateNewTopicResponse)
 	err := c.cc.Invoke(ctx, MsgService_CreateNewTopic_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgServiceClient) UpdateTopic(ctx context.Context, in *UpdateTopicRequest, opts ...grpc.CallOption) (*UpdateTopicResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateTopicResponse)
+	err := c.cc.Invoke(ctx, MsgService_UpdateTopic_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -549,6 +561,7 @@ func (c *msgServiceClient) RemoveFromTopicReputerWhitelist(ctx context.Context, 
 type MsgServiceServer interface {
 	UpdateParams(context.Context, *UpdateParamsRequest) (*UpdateParamsResponse, error)
 	CreateNewTopic(context.Context, *CreateNewTopicRequest) (*CreateNewTopicResponse, error)
+	UpdateTopic(context.Context, *UpdateTopicRequest) (*UpdateTopicResponse, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	RemoveRegistration(context.Context, *RemoveRegistrationRequest) (*RemoveRegistrationResponse, error)
 	AddStake(context.Context, *AddStakeRequest) (*AddStakeResponse, error)
@@ -604,6 +617,9 @@ func (UnimplementedMsgServiceServer) UpdateParams(context.Context, *UpdateParams
 }
 func (UnimplementedMsgServiceServer) CreateNewTopic(context.Context, *CreateNewTopicRequest) (*CreateNewTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewTopic not implemented")
+}
+func (UnimplementedMsgServiceServer) UpdateTopic(context.Context, *UpdateTopicRequest) (*UpdateTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTopic not implemented")
 }
 func (UnimplementedMsgServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
@@ -778,6 +794,24 @@ func _MsgService_CreateNewTopic_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServiceServer).CreateNewTopic(ctx, req.(*CreateNewTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MsgService_UpdateTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServiceServer).UpdateTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MsgService_UpdateTopic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServiceServer).UpdateTopic(ctx, req.(*UpdateTopicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1516,6 +1550,10 @@ var MsgService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateNewTopic",
 			Handler:    _MsgService_CreateNewTopic_Handler,
+		},
+		{
+			MethodName: "UpdateTopic",
+			Handler:    _MsgService_UpdateTopic_Handler,
 		},
 		{
 			MethodName: "Register",

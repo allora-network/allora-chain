@@ -3253,6 +3253,50 @@ func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error)
 	return k.topics.Has(ctx, topicId)
 }
 
+// UpdateTopic applies allowed changes to a topic.
+func (k *Keeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "error getting params")
+	}
+
+	if err := updatedTopic.Validate(params); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
+	}
+
+	// Check merit_sortition_alpha update restriction when topic is active and worker window is open
+	if !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha) {
+		isActive, err := k.IsTopicActive(ctx, topic.Id)
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
+		}
+		if isActive {
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			blockHeight := sdkCtx.BlockHeight()
+			nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topic.Id)
+			if err != nil {
+				return types.Topic{}, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
+			}
+			if len(nonces.Nonces) > 0 {
+				lastNonce := nonces.Nonces[0]
+				withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *lastNonce, blockHeight)
+				if err != nil {
+					return types.Topic{}, errorsmod.Wrap(err, "failed to check worker submission window")
+				}
+				if withinWindow {
+					return types.Topic{}, errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable, "cannot update merit_sortition_alpha while worker window is open")
+				}
+			}
+		}
+	}
+
+	if err := k.SetTopic(ctx, topic.Id, updatedTopic); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "failed to apply topic update")
+	}
+
+	return updatedTopic, nil
+}
+
 // Returns the number of topics that are active in the network
 func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)

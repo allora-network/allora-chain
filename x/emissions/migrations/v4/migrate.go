@@ -15,6 +15,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	oldV3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
+	v4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v5/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -73,7 +74,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      MaxStringLength
-	newParams := emissionstypes.Params{ //nolint: exhaustruct
+	newParams := v4Types.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,
@@ -227,7 +228,7 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 
 // copyTopic duplicates a topic into a new struct
 func copyTopic(original emissionstypes.Topic) emissionstypes.Topic {
-	return emissionstypes.Topic{
+	return emissionstypes.Topic{ //nolint:exhaustruct
 		Id:                       original.Id,
 		Creator:                  original.Creator,
 		Metadata:                 original.Metadata,

@@ -156,8 +156,9 @@ func GetAndUpdateActiveTopicWeights(
 	for _, topicId := range topicids.TopicIds {
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			continue
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
 		}
+
 		// Calc weight and related data per topic
 		weight, topicFeeRevenue, topicStake, err := k.GetCurrentTopicWeight(
 			ctx,

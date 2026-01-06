@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	cosmosMath "cosmossdk.io/math"
@@ -205,6 +206,58 @@ func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)
+}
+
+func TestEmitNewTopicUpdatedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+
+	topic := types.Topic{
+		Id:                       1,
+		Creator:                  "creator",
+		EpochLastEnded:           100,
+		InitialRegret:            alloraMath.MustNewDecFromString("0.01"),
+		Metadata:                 "updated metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	types.EmitNewTopicUpdatedEvent(ctx, topic)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+	require.Equal(t, "emissions.v9.EventTopicUpdated", events[0].Type)
+
+	attributes := events[0].Attributes
+	val, exists := events[0].GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	foundTopicId := false
+	foundTopic := false
+	for _, attr := range attributes {
+		if strings.Contains(attr.Key, "topic_id") {
+			require.Equal(t, "\"1\"", attr.Value)
+			foundTopicId = true
+		}
+		if attr.Key == "topic" {
+			require.Contains(t, attr.Value, "updated metadata")
+			require.Contains(t, attr.Value, "\"id\":\"1\"")
+			foundTopic = true
+		}
+	}
+	require.True(t, foundTopic, "expected topic attribute to be present in event")
+	require.True(t, foundTopicId, "expected topic_id attribute to be present in event")
 }
 
 func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {

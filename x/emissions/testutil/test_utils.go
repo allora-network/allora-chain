@@ -875,6 +875,7 @@ func (s *TestSuite) MockTopic() types.Topic {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 	}
 }
 
@@ -897,6 +898,7 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		ActiveReputerQuantile:    topic.ActiveReputerQuantile,
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
+		CNorm:                    topic.CNorm,
 	}
 }
 

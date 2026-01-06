@@ -7,6 +7,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
+	v6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -60,7 +61,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-	newParams := emissionstypes.Params{ //nolint: exhaustruct
+	newParams := v6Types.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

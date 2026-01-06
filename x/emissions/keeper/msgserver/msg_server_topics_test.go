@@ -5,6 +5,7 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Topics tests
@@ -113,6 +114,49 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			expectedError: "loss method invalid",
 			expectSuccess: false,
 		},
+		{
+			name: "Fails with CNorm below -100",
+			setup: func() *types.CreateNewTopicRequest {
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.CNorm = alloraMath.MustNewDecFromString("-101")
+				return msg
+			},
+			expectedError: "c_norm must be between -100 and 100",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails with CNorm above 100",
+			setup: func() *types.CreateNewTopicRequest {
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.CNorm = alloraMath.MustNewDecFromString("101")
+				return msg
+			},
+			expectedError: "c_norm must be between -100 and 100",
+			expectSuccess: false,
+		},
+		{
+			name: "Success with valid CNorm value",
+			setup: func() *types.CreateNewTopicRequest {
+				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.CNorm = alloraMath.MustNewDecFromString("0.75")
+				return msg
+			},
+			postCheck: func(topicId uint64) {
+				topic, err := keeper.GetTopic(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().Equal(alloraMath.MustNewDecFromString("0.75"), topic.CNorm)
+			},
+			expectSuccess: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -152,4 +196,579 @@ func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
 	s.Require().NoError(err)
 	s.Require().NotNil(topic)
 	s.Require().Equal(inferenceTs, topic.EpochLastEnded)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	// Create a topic first
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	require.NotNil(createResult)
+	topicId := createResult.TopicId
+
+	// Update topic with new values
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Updated metadata",
+		LossMethod:          "mae",
+		AlphaRegret:         alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.NewDecFromInt64(3),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+	require.NotNil(updateResult)
+
+	// Verify topic updated
+	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal("Updated metadata", updatedTopic.Metadata)
+	require.Equal("mae", updatedTopic.LossMethod)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+	otherUser := s.AddrsStr(1)
+
+	// Create a topic
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	// Try to update topic with different user
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              otherUser,
+		TopicId:             topicId,
+		Metadata:            "Updated metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.NewDecFromInt64(3),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
+	require.Nil(updateResult)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	nonexistentTopicId := uint64(999)
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             nonexistentTopicId,
+		Metadata:            "Updated metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorIs(err, types.ErrTopicDoesNotExist)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	topicId := s.CreateTopic()
+
+	// Test empty loss method
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "valid metadata",
+		LossMethod:          "",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "loss method invalid")
+
+	// Test too long loss method
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "valid metadata",
+		LossMethod:          strings.Repeat("a", 257),
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "loss method invalid")
+
+	// Test too long metadata
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            strings.Repeat("a", 257),
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "metadata invalid")
+
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	// Fund the sender
+	s.FundAccount(1000000, senderAddr)
+
+	// Create a topic first
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "original metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	// Get original topic to verify initial state
+	originalTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal("original metadata", originalTopic.Metadata)
+	require.Equal("mse", originalTopic.LossMethod)
+
+	// Test successful update
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "updated metadata",
+		LossMethod:          "mae",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+	require.NotNil(updateResult)
+
+	// Verify topic updated and only allowed fields changed
+	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal("updated metadata", updatedTopic.Metadata)
+	require.Equal("mae", updatedTopic.LossMethod)
+	// Verify restricted fields remain unchanged
+	require.Equal(originalTopic.GroundTruthLag, updatedTopic.GroundTruthLag)
+	require.Equal(originalTopic.WorkerSubmissionWindow, updatedTopic.WorkerSubmissionWindow)
+	require.Equal(originalTopic.EpochLength, updatedTopic.EpochLength)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.25"), updatedTopic.AlphaRegret)
+	require.Equal(alloraMath.MustNewDecFromString("0.3"), updatedTopic.MeritSortitionAlpha)
+	require.Equal(alloraMath.MustNewDecFromString("3.5"), updatedTopic.PNorm)
+
+	// Test updating CNorm with valid values
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("50.5"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("50.5"), updatedTopic.CNorm)
+
+	// Test updating CNorm to boundary value -100
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("-100"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("-100"), updatedTopic.CNorm)
+
+	// Test updating CNorm to boundary value 100
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("100"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("100"), updatedTopic.CNorm)
+
+	// Add a fulfilled nonce (window closed) and ensure updates still allowed
+	s.Require().NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 1}))
+	// Close window by moving block height beyond worker submission window
+	s.WithBlockHeight(50)
+	ctx = s.Ctx()
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.4"),
+		PNorm:               alloraMath.MustNewDecFromString("3.5"),
+		CNorm:               alloraMath.MustNewDecFromString("100"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	topicId := s.CreateTopic()
+
+	// Invalid alpha_regret (<=0)
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.ZeroDec(),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "alpha regret")
+
+	// Invalid merit_sortition_alpha (>1)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("1.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "merit sortition alpha")
+
+	// Invalid p_norm (below range)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("2.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "p-norm")
+
+	// Invalid c_norm (below -100)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("-101"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "c_norm")
+
+	// Invalid c_norm (above 100)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("101"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "c_norm")
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.WithBlockHeight(10)
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
+
+	// Add a nonce whose window covers the current block.
+	newerNonce := &types.Nonce{BlockHeight: 5}
+	require.NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, newerNonce))
+
+	// Ensure current block is within the nonce window
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+
+	// Verify no changes were applied
+	current, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.1"), current.MeritSortitionAlpha)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	// Topic inactive by default
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Original metadata",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	topicId := createResult.TopicId
+
+	// Add a nonce whose window covers current block
+	nonce := &types.Nonce{BlockHeight: 5}
+	require.NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, nonce))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "Original metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.NoError(err)
+
+	current, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.3"), current.MeritSortitionAlpha)
 }

@@ -126,9 +126,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.CRewardForecast) == 1 {
 		existingParams.CRewardForecast = newParams.CRewardForecast[0]
 	}
-	if len(newParams.CNorm) == 1 {
-		existingParams.CNorm = newParams.CNorm[0]
-	}
 	if len(newParams.EpsilonReputer) == 1 {
 		existingParams.EpsilonReputer = newParams.EpsilonReputer[0]
 	}

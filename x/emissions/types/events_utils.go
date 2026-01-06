@@ -89,6 +89,13 @@ func NewCreateNewTopicEventBase(topic *Topic) proto.Message {
 	}
 }
 
+func NewTopicUpdatedEventBase(topic *Topic) proto.Message {
+	return &EventTopicUpdated{
+		TopicId: topic.Id,
+		Topic:   topic,
+	}
+}
+
 func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount math.Int) proto.Message {
 	return &EventAddStake{
 		TopicId:   topicId,

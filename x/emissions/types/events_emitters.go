@@ -89,6 +89,14 @@ func EmitNewCreateNewTopicEvent(ctx context.Context, topic *Topic) {
 	}
 }
 
+func EmitNewTopicUpdatedEvent(ctx context.Context, topic Topic) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_UPDATED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if err := sdkCtx.EventManager().EmitTypedEvent(NewTopicUpdatedEventBase(&topic)); err != nil {
+		sdkCtx.Logger().Warn("Error emitting NewTopicUpdatedEvent", "error", err)
+	}
+}
+
 func EmitNewAddStakeEvent(ctx context.Context, topicId TopicId, reputer, delegator string, amount, totalStake cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.ADD_STAKE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

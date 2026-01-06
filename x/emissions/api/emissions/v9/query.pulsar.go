@@ -31022,7 +31022,7 @@ func (x *fastReflection_GetTopicResponse) Get(descriptor protoreflect.FieldDescr
 func (x *fastReflection_GetTopicResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicResponse.topic":
-		x.Topic = value.Message().Interface().(*v3.Topic)
+		x.Topic = value.Message().Interface().(*Topic)
 	case "emissions.v9.GetTopicResponse.weight":
 		x.Weight = value.Interface().(string)
 	case "emissions.v9.GetTopicResponse.effective_revenue":
@@ -31051,7 +31051,7 @@ func (x *fastReflection_GetTopicResponse) Mutable(fd protoreflect.FieldDescripto
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicResponse.topic":
 		if x.Topic == nil {
-			x.Topic = new(v3.Topic)
+			x.Topic = new(Topic)
 		}
 		return protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
 	case "emissions.v9.GetTopicResponse.weight":
@@ -31074,7 +31074,7 @@ func (x *fastReflection_GetTopicResponse) Mutable(fd protoreflect.FieldDescripto
 func (x *fastReflection_GetTopicResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicResponse.topic":
-		m := new(v3.Topic)
+		m := new(Topic)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "emissions.v9.GetTopicResponse.weight":
 		return protoreflect.ValueOfString("")
@@ -31310,7 +31310,7 @@ func (x *fastReflection_GetTopicResponse) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Topic == nil {
-					x.Topic = &v3.Topic{}
+					x.Topic = &Topic{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topic); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -31885,7 +31885,7 @@ func (x *fastReflection_GetActiveTopicsRequest) ProtoMethods() *protoiface.Metho
 var _ protoreflect.List = (*_GetActiveTopicsResponse_1_list)(nil)
 
 type _GetActiveTopicsResponse_1_list struct {
-	list *[]*v3.Topic
+	list *[]*Topic
 }
 
 func (x *_GetActiveTopicsResponse_1_list) Len() int {
@@ -31901,18 +31901,18 @@ func (x *_GetActiveTopicsResponse_1_list) Get(i int) protoreflect.Value {
 
 func (x *_GetActiveTopicsResponse_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v3.Topic)
+	concreteValue := valueUnwrapped.Interface().(*Topic)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GetActiveTopicsResponse_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v3.Topic)
+	concreteValue := valueUnwrapped.Interface().(*Topic)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GetActiveTopicsResponse_1_list) AppendMutable() protoreflect.Value {
-	v := new(v3.Topic)
+	v := new(Topic)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -31925,7 +31925,7 @@ func (x *_GetActiveTopicsResponse_1_list) Truncate(n int) {
 }
 
 func (x *_GetActiveTopicsResponse_1_list) NewElement() protoreflect.Value {
-	v := new(v3.Topic)
+	v := new(Topic)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -32135,7 +32135,7 @@ func (x *fastReflection_GetActiveTopicsResponse) Mutable(fd protoreflect.FieldDe
 	switch fd.FullName() {
 	case "emissions.v9.GetActiveTopicsResponse.topics":
 		if x.Topics == nil {
-			x.Topics = []*v3.Topic{}
+			x.Topics = []*Topic{}
 		}
 		value := &_GetActiveTopicsResponse_1_list{list: &x.Topics}
 		return protoreflect.ValueOfList(value)
@@ -32158,7 +32158,7 @@ func (x *fastReflection_GetActiveTopicsResponse) Mutable(fd protoreflect.FieldDe
 func (x *fastReflection_GetActiveTopicsResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.GetActiveTopicsResponse.topics":
-		list := []*v3.Topic{}
+		list := []*Topic{}
 		return protoreflect.ValueOfList(&_GetActiveTopicsResponse_1_list{list: &list})
 	case "emissions.v9.GetActiveTopicsResponse.pagination":
 		m := new(v3.SimpleCursorPaginationResponse)
@@ -32379,7 +32379,7 @@ func (x *fastReflection_GetActiveTopicsResponse) ProtoMethods() *protoiface.Meth
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Topics = append(x.Topics, &v3.Topic{})
+				x.Topics = append(x.Topics, &Topic{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topics[len(x.Topics)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -54265,7 +54265,7 @@ func (x *fastReflection_GetTopicLastWorkerCommitInfoResponse) Get(descriptor pro
 func (x *fastReflection_GetTopicLastWorkerCommitInfoResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicLastWorkerCommitInfoResponse.last_commit":
-		x.LastCommit = value.Message().Interface().(*v3.TimestampedActorNonce)
+		x.LastCommit = value.Message().Interface().(*TimestampedActorNonce)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GetTopicLastWorkerCommitInfoResponse"))
@@ -54288,7 +54288,7 @@ func (x *fastReflection_GetTopicLastWorkerCommitInfoResponse) Mutable(fd protore
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicLastWorkerCommitInfoResponse.last_commit":
 		if x.LastCommit == nil {
-			x.LastCommit = new(v3.TimestampedActorNonce)
+			x.LastCommit = new(TimestampedActorNonce)
 		}
 		return protoreflect.ValueOfMessage(x.LastCommit.ProtoReflect())
 	default:
@@ -54305,7 +54305,7 @@ func (x *fastReflection_GetTopicLastWorkerCommitInfoResponse) Mutable(fd protore
 func (x *fastReflection_GetTopicLastWorkerCommitInfoResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicLastWorkerCommitInfoResponse.last_commit":
-		m := new(v3.TimestampedActorNonce)
+		m := new(TimestampedActorNonce)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -54502,7 +54502,7 @@ func (x *fastReflection_GetTopicLastWorkerCommitInfoResponse) ProtoMethods() *pr
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.LastCommit == nil {
-					x.LastCommit = &v3.TimestampedActorNonce{}
+					x.LastCommit = &TimestampedActorNonce{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.LastCommit); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -55104,7 +55104,7 @@ func (x *fastReflection_GetTopicLastReputerCommitInfoResponse) Get(descriptor pr
 func (x *fastReflection_GetTopicLastReputerCommitInfoResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicLastReputerCommitInfoResponse.last_commit":
-		x.LastCommit = value.Message().Interface().(*v3.TimestampedActorNonce)
+		x.LastCommit = value.Message().Interface().(*TimestampedActorNonce)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GetTopicLastReputerCommitInfoResponse"))
@@ -55127,7 +55127,7 @@ func (x *fastReflection_GetTopicLastReputerCommitInfoResponse) Mutable(fd protor
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicLastReputerCommitInfoResponse.last_commit":
 		if x.LastCommit == nil {
-			x.LastCommit = new(v3.TimestampedActorNonce)
+			x.LastCommit = new(TimestampedActorNonce)
 		}
 		return protoreflect.ValueOfMessage(x.LastCommit.ProtoReflect())
 	default:
@@ -55144,7 +55144,7 @@ func (x *fastReflection_GetTopicLastReputerCommitInfoResponse) Mutable(fd protor
 func (x *fastReflection_GetTopicLastReputerCommitInfoResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.GetTopicLastReputerCommitInfoResponse.last_commit":
-		m := new(v3.TimestampedActorNonce)
+		m := new(TimestampedActorNonce)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -55341,7 +55341,7 @@ func (x *fastReflection_GetTopicLastReputerCommitInfoResponse) ProtoMethods() *p
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.LastCommit == nil {
-					x.LastCommit = &v3.TimestampedActorNonce{}
+					x.LastCommit = &TimestampedActorNonce{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.LastCommit); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -84671,7 +84671,7 @@ func (x *fastReflection_GetActiveTopicsAtBlockRequest) ProtoMethods() *protoifac
 var _ protoreflect.List = (*_GetActiveTopicsAtBlockResponse_1_list)(nil)
 
 type _GetActiveTopicsAtBlockResponse_1_list struct {
-	list *[]*v3.Topic
+	list *[]*Topic
 }
 
 func (x *_GetActiveTopicsAtBlockResponse_1_list) Len() int {
@@ -84687,18 +84687,18 @@ func (x *_GetActiveTopicsAtBlockResponse_1_list) Get(i int) protoreflect.Value {
 
 func (x *_GetActiveTopicsAtBlockResponse_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v3.Topic)
+	concreteValue := valueUnwrapped.Interface().(*Topic)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GetActiveTopicsAtBlockResponse_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v3.Topic)
+	concreteValue := valueUnwrapped.Interface().(*Topic)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GetActiveTopicsAtBlockResponse_1_list) AppendMutable() protoreflect.Value {
-	v := new(v3.Topic)
+	v := new(Topic)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -84711,7 +84711,7 @@ func (x *_GetActiveTopicsAtBlockResponse_1_list) Truncate(n int) {
 }
 
 func (x *_GetActiveTopicsAtBlockResponse_1_list) NewElement() protoreflect.Value {
-	v := new(v3.Topic)
+	v := new(Topic)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -84921,7 +84921,7 @@ func (x *fastReflection_GetActiveTopicsAtBlockResponse) Mutable(fd protoreflect.
 	switch fd.FullName() {
 	case "emissions.v9.GetActiveTopicsAtBlockResponse.topics":
 		if x.Topics == nil {
-			x.Topics = []*v3.Topic{}
+			x.Topics = []*Topic{}
 		}
 		value := &_GetActiveTopicsAtBlockResponse_1_list{list: &x.Topics}
 		return protoreflect.ValueOfList(value)
@@ -84944,7 +84944,7 @@ func (x *fastReflection_GetActiveTopicsAtBlockResponse) Mutable(fd protoreflect.
 func (x *fastReflection_GetActiveTopicsAtBlockResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.GetActiveTopicsAtBlockResponse.topics":
-		list := []*v3.Topic{}
+		list := []*Topic{}
 		return protoreflect.ValueOfList(&_GetActiveTopicsAtBlockResponse_1_list{list: &list})
 	case "emissions.v9.GetActiveTopicsAtBlockResponse.pagination":
 		m := new(v3.SimpleCursorPaginationResponse)
@@ -85165,7 +85165,7 @@ func (x *fastReflection_GetActiveTopicsAtBlockResponse) ProtoMethods() *protoifa
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Topics = append(x.Topics, &v3.Topic{})
+				x.Topics = append(x.Topics, &Topic{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topics[len(x.Topics)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -96357,10 +96357,10 @@ type GetTopicResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Topic            *v3.Topic `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	Weight           string    `protobuf:"bytes,2,opt,name=weight,proto3" json:"weight,omitempty"`
-	EffectiveRevenue string    `protobuf:"bytes,3,opt,name=effective_revenue,json=effectiveRevenue,proto3" json:"effective_revenue,omitempty"`
-	TopicStake       string    `protobuf:"bytes,4,opt,name=topic_stake,json=topicStake,proto3" json:"topic_stake,omitempty"`
+	Topic            *Topic `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
+	Weight           string `protobuf:"bytes,2,opt,name=weight,proto3" json:"weight,omitempty"`
+	EffectiveRevenue string `protobuf:"bytes,3,opt,name=effective_revenue,json=effectiveRevenue,proto3" json:"effective_revenue,omitempty"`
+	TopicStake       string `protobuf:"bytes,4,opt,name=topic_stake,json=topicStake,proto3" json:"topic_stake,omitempty"`
 }
 
 func (x *GetTopicResponse) Reset() {
@@ -96383,7 +96383,7 @@ func (*GetTopicResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_query_proto_rawDescGZIP(), []int{71}
 }
 
-func (x *GetTopicResponse) GetTopic() *v3.Topic {
+func (x *GetTopicResponse) GetTopic() *Topic {
 	if x != nil {
 		return x.Topic
 	}
@@ -96451,7 +96451,7 @@ type GetActiveTopicsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Topics     []*v3.Topic                        `protobuf:"bytes,1,rep,name=topics,proto3" json:"topics,omitempty"`
+	Topics     []*Topic                           `protobuf:"bytes,1,rep,name=topics,proto3" json:"topics,omitempty"`
 	Pagination *v3.SimpleCursorPaginationResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -96475,7 +96475,7 @@ func (*GetActiveTopicsResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_query_proto_rawDescGZIP(), []int{73}
 }
 
-func (x *GetActiveTopicsResponse) GetTopics() []*v3.Topic {
+func (x *GetActiveTopicsResponse) GetTopics() []*Topic {
 	if x != nil {
 		return x.Topics
 	}
@@ -98371,7 +98371,7 @@ type GetTopicLastWorkerCommitInfoResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	LastCommit *v3.TimestampedActorNonce `protobuf:"bytes,1,opt,name=last_commit,json=lastCommit,proto3" json:"last_commit,omitempty"`
+	LastCommit *TimestampedActorNonce `protobuf:"bytes,1,opt,name=last_commit,json=lastCommit,proto3" json:"last_commit,omitempty"`
 }
 
 func (x *GetTopicLastWorkerCommitInfoResponse) Reset() {
@@ -98394,7 +98394,7 @@ func (*GetTopicLastWorkerCommitInfoResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_query_proto_rawDescGZIP(), []int{123}
 }
 
-func (x *GetTopicLastWorkerCommitInfoResponse) GetLastCommit() *v3.TimestampedActorNonce {
+func (x *GetTopicLastWorkerCommitInfoResponse) GetLastCommit() *TimestampedActorNonce {
 	if x != nil {
 		return x.LastCommit
 	}
@@ -98441,7 +98441,7 @@ type GetTopicLastReputerCommitInfoResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	LastCommit *v3.TimestampedActorNonce `protobuf:"bytes,1,opt,name=last_commit,json=lastCommit,proto3" json:"last_commit,omitempty"`
+	LastCommit *TimestampedActorNonce `protobuf:"bytes,1,opt,name=last_commit,json=lastCommit,proto3" json:"last_commit,omitempty"`
 }
 
 func (x *GetTopicLastReputerCommitInfoResponse) Reset() {
@@ -98464,7 +98464,7 @@ func (*GetTopicLastReputerCommitInfoResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_query_proto_rawDescGZIP(), []int{125}
 }
 
-func (x *GetTopicLastReputerCommitInfoResponse) GetLastCommit() *v3.TimestampedActorNonce {
+func (x *GetTopicLastReputerCommitInfoResponse) GetLastCommit() *TimestampedActorNonce {
 	if x != nil {
 		return x.LastCommit
 	}
@@ -101002,7 +101002,7 @@ type GetActiveTopicsAtBlockResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Topics     []*v3.Topic                        `protobuf:"bytes,1,rep,name=topics,proto3" json:"topics,omitempty"`
+	Topics     []*Topic                           `protobuf:"bytes,1,rep,name=topics,proto3" json:"topics,omitempty"`
 	Pagination *v3.SimpleCursorPaginationResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
@@ -101026,7 +101026,7 @@ func (*GetActiveTopicsAtBlockResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_query_proto_rawDescGZIP(), []int{193}
 }
 
-func (x *GetActiveTopicsAtBlockResponse) GetTopics() []*v3.Topic {
+func (x *GetActiveTopicsAtBlockResponse) GetTopics() []*Topic {
 	if x != nil {
 		return x.Topics
 	}
@@ -101849,12 +101849,12 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x2f, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d,
 	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x73, 0x74, 0x61, 0x6b, 0x65,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74,
-	0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x77,
+	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2f, 0x76, 0x39, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1c, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x61,
 	0x70, 0x69, 0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70,
@@ -102277,7 +102277,7 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0xa3, 0x01, 0x0a, 0x10,
 	0x47, 0x65, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
 	0x12, 0x29, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54,
+	0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54,
 	0x6f, 0x70, 0x69, 0x63, 0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x16, 0x0a, 0x06, 0x77,
 	0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x65, 0x69,
 	0x67, 0x68, 0x74, 0x12, 0x2b, 0x0a, 0x11, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65,
@@ -102295,7 +102295,7 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x52, 0x65, 0x73, 0x70,
 	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01,
 	0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x76, 0x33, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x2e, 0x76, 0x39, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63,
 	0x73, 0x12, 0x4c, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18,
 	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
 	0x73, 0x2e, 0x76, 0x33, 0x2e, 0x53, 0x69, 0x6d, 0x70, 0x6c, 0x65, 0x43, 0x75, 0x72, 0x73, 0x6f,
@@ -102625,7 +102625,7 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x65, 0x72, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65, 0x73, 0x70,
 	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x44, 0x0a, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x63, 0x6f, 0x6d,
 	0x6d, 0x69, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
 	0x6d, 0x70, 0x65, 0x64, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x0a,
 	0x6c, 0x61, 0x73, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x22, 0x41, 0x0a, 0x24, 0x47, 0x65,
 	0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65,
@@ -102636,7 +102636,7 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x75, 0x74, 0x65, 0x72, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x65,
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x44, 0x0a, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x63,
 	0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73,
 	0x74, 0x61, 0x6d, 0x70, 0x65, 0x64, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x4e, 0x6f, 0x6e, 0x63, 0x65,
 	0x52, 0x0a, 0x6c, 0x61, 0x73, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x22, 0x37, 0x0a, 0x1a,
 	0x47, 0x65, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x4e, 0x6f,
@@ -103043,7 +103043,7 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x41, 0x74, 0x42, 0x6c,
 	0x6f, 0x63, 0x6b, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x06, 0x74,
 	0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63,
 	0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x12, 0x4c, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69,
 	0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2c, 0x2e, 0x65,
 	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x33, 0x2e, 0x53, 0x69, 0x6d, 0x70,
@@ -104773,7 +104773,7 @@ var file_emissions_v9_query_proto_goTypes = []interface{}{
 	(*v8.Params)(nil),                                           // 213: emissions.v8.Params
 	(*v3.StakeInfo)(nil),                                        // 214: emissions.v3.StakeInfo
 	(*v3.ValueBundle)(nil),                                      // 215: emissions.v3.ValueBundle
-	(*v3.Topic)(nil),                                            // 216: emissions.v3.Topic
+	(*Topic)(nil),                                               // 216: emissions.v9.Topic
 	(*v3.SimpleCursorPaginationRequest)(nil),                    // 217: emissions.v3.SimpleCursorPaginationRequest
 	(*v3.SimpleCursorPaginationResponse)(nil),                   // 218: emissions.v3.SimpleCursorPaginationResponse
 	(*v3.Inferences)(nil),                                       // 219: emissions.v3.Inferences
@@ -104784,7 +104784,7 @@ var file_emissions_v9_query_proto_goTypes = []interface{}{
 	(*v3.Nonces)(nil),                                           // 224: emissions.v3.Nonces
 	(*v3.StakeRemovalInfo)(nil),                                 // 225: emissions.v3.StakeRemovalInfo
 	(*v3.DelegateStakeRemovalInfo)(nil),                         // 226: emissions.v3.DelegateStakeRemovalInfo
-	(*v3.TimestampedActorNonce)(nil),                            // 227: emissions.v3.TimestampedActorNonce
+	(*TimestampedActorNonce)(nil),                               // 227: emissions.v9.TimestampedActorNonce
 	(*v3.ReputerValueBundles)(nil),                              // 228: emissions.v3.ReputerValueBundles
 	(*v3.DelegatorInfo)(nil),                                    // 229: emissions.v3.DelegatorInfo
 	(*v3.Score)(nil),                                            // 230: emissions.v3.Score
@@ -104800,9 +104800,9 @@ var file_emissions_v9_query_proto_depIdxs = []int32{
 	213, // 5: emissions.v9.GetParamsResponse.params:type_name -> emissions.v8.Params
 	214, // 6: emissions.v9.GetMultiReputerStakeInTopicResponse.amounts:type_name -> emissions.v3.StakeInfo
 	215, // 7: emissions.v9.GetNetworkLossBundleAtBlockResponse.loss_bundle:type_name -> emissions.v3.ValueBundle
-	216, // 8: emissions.v9.GetTopicResponse.topic:type_name -> emissions.v3.Topic
+	216, // 8: emissions.v9.GetTopicResponse.topic:type_name -> emissions.v9.Topic
 	217, // 9: emissions.v9.GetActiveTopicsRequest.pagination:type_name -> emissions.v3.SimpleCursorPaginationRequest
-	216, // 10: emissions.v9.GetActiveTopicsResponse.topics:type_name -> emissions.v3.Topic
+	216, // 10: emissions.v9.GetActiveTopicsResponse.topics:type_name -> emissions.v9.Topic
 	218, // 11: emissions.v9.GetActiveTopicsResponse.pagination:type_name -> emissions.v3.SimpleCursorPaginationResponse
 	219, // 12: emissions.v9.GetInferencesAtBlockResponse.inferences:type_name -> emissions.v3.Inferences
 	219, // 13: emissions.v9.GetLatestTopicInferencesResponse.inferences:type_name -> emissions.v3.Inferences
@@ -104823,8 +104823,8 @@ var file_emissions_v9_query_proto_depIdxs = []int32{
 	226, // 28: emissions.v9.GetDelegateStakeRemovalsUpUntilBlockResponse.removals:type_name -> emissions.v3.DelegateStakeRemovalInfo
 	225, // 29: emissions.v9.GetStakeRemovalInfoResponse.removal:type_name -> emissions.v3.StakeRemovalInfo
 	226, // 30: emissions.v9.GetDelegateStakeRemovalInfoResponse.removal:type_name -> emissions.v3.DelegateStakeRemovalInfo
-	227, // 31: emissions.v9.GetTopicLastWorkerCommitInfoResponse.last_commit:type_name -> emissions.v3.TimestampedActorNonce
-	227, // 32: emissions.v9.GetTopicLastReputerCommitInfoResponse.last_commit:type_name -> emissions.v3.TimestampedActorNonce
+	227, // 31: emissions.v9.GetTopicLastWorkerCommitInfoResponse.last_commit:type_name -> emissions.v9.TimestampedActorNonce
+	227, // 32: emissions.v9.GetTopicLastReputerCommitInfoResponse.last_commit:type_name -> emissions.v9.TimestampedActorNonce
 	228, // 33: emissions.v9.GetReputerLossBundlesAtBlockResponse.loss_bundles:type_name -> emissions.v3.ReputerValueBundles
 	229, // 34: emissions.v9.GetDelegateStakePlacementResponse.delegator_info:type_name -> emissions.v3.DelegatorInfo
 	225, // 35: emissions.v9.GetStakeRemovalForReputerAndTopicIdResponse.stake_removal_info:type_name -> emissions.v3.StakeRemovalInfo
@@ -104841,7 +104841,7 @@ var file_emissions_v9_query_proto_depIdxs = []int32{
 	231, // 46: emissions.v9.GetReputersScoresAtBlockResponse.scores:type_name -> emissions.v3.Scores
 	230, // 47: emissions.v9.GetCurrentLowestReputerScoreResponse.score:type_name -> emissions.v3.Score
 	232, // 48: emissions.v9.GetListeningCoefficientResponse.listening_coefficient:type_name -> emissions.v3.ListeningCoefficient
-	216, // 49: emissions.v9.GetActiveTopicsAtBlockResponse.topics:type_name -> emissions.v3.Topic
+	216, // 49: emissions.v9.GetActiveTopicsAtBlockResponse.topics:type_name -> emissions.v9.Topic
 	218, // 50: emissions.v9.GetActiveTopicsAtBlockResponse.pagination:type_name -> emissions.v3.SimpleCursorPaginationResponse
 	48,  // 51: emissions.v9.QueryService.GetParams:input_type -> emissions.v9.GetParamsRequest
 	68,  // 52: emissions.v9.QueryService.GetNextTopicId:input_type -> emissions.v9.GetNextTopicIdRequest
@@ -105065,6 +105065,7 @@ func file_emissions_v9_query_proto_init() {
 	if File_emissions_v9_query_proto != nil {
 		return
 	}
+	file_emissions_v9_topic_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v9_query_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*IsWhitelistedGlobalWorkerRequest); i {

@@ -71,7 +71,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 		PRewardReputer:                      defaultParams.PRewardReputer,
 		CRewardInference:                    defaultParams.CRewardInference,
 		CRewardForecast:                     defaultParams.CRewardForecast,
-		CNorm:                               defaultParams.CNorm,
+		CNorm:                               alloraMath.MustNewDecFromString("0.75"),
 		EpsilonReputer:                      defaultParams.EpsilonReputer,
 		HalfMaxProcessStakeRemovalsEndBlock: defaultParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      defaultParams.EpsilonSafeDiv,
@@ -126,7 +126,6 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 	s.Require().True(paramsExpected.PRewardReputer.Equal(params.PRewardReputer), "%s!=%s", paramsExpected.PRewardReputer, params.PRewardReputer)
 	s.Require().True(paramsExpected.CRewardInference.Equal(params.CRewardInference), "%s!=%s", paramsExpected.CRewardInference, params.CRewardInference)
 	s.Require().True(paramsExpected.CRewardForecast.Equal(params.CRewardForecast), "%s!=%s", paramsExpected.CRewardForecast, params.CRewardForecast)
-	s.Require().True(paramsExpected.CNorm.Equal(params.CNorm), "%s!=%s", paramsExpected.CNorm, params.CNorm)
 	s.Require().True(paramsExpected.EpsilonReputer.Equal(params.EpsilonReputer), "%s!=%s", paramsExpected.EpsilonReputer, params.EpsilonReputer)
 	s.Require().Equal(paramsExpected.HalfMaxProcessStakeRemovalsEndBlock, params.HalfMaxProcessStakeRemovalsEndBlock)
 	s.Require().True(paramsExpected.EpsilonSafeDiv.Equal(params.EpsilonSafeDiv), "%s!=%s", paramsExpected.EpsilonSafeDiv, params.EpsilonSafeDiv)
@@ -146,7 +145,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 
 	topicId := uint64(2)
 
-	migratedOldTopic := emissionstypes.Topic{
+	migratedOldTopic := emissionstypes.Topic{ //nolint:exhaustruct
 		Id:                       topicId,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
@@ -221,7 +220,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
-	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{
+	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{ //nolint:exhaustruct
 		Id:                       1,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
