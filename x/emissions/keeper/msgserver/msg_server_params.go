@@ -126,10 +126,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.CRewardForecast) == 1 {
 		existingParams.CRewardForecast = newParams.CRewardForecast[0]
 	}
-	// NOTE: `c_norm` is deprecated as a global param and is now per-topic (Topic.CNorm).
-	// We keep the field in protobuf types for backwards compatibility, but ignore it here.
-	// If a client attempts to set it via UpdateParams, it will be a no-op.
-	_ = newParams.CNorm
 	if len(newParams.EpsilonReputer) == 1 {
 		existingParams.EpsilonReputer = newParams.EpsilonReputer[0]
 	}
