@@ -760,7 +760,6 @@ func (s *MintModuleTestSuite) TestEcosystemRefundReducesMintingInSubsequentBlock
 
 	// 4. Run BeginBlocker at block 2
 	s.ctx = s.ctx.WithBlockHeight(2) // Advance block height, avoid recalculation
-	s.recalculateEmission()
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
