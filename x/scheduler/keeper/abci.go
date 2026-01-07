@@ -81,7 +81,7 @@ func (k *Keeper) executeTask(ctx context.Context, task types.Task, handler types
 	if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskExecutedEvent{
 		Id:       task.Id,
 		Typename: task.Typename,
-		At:       task.NextRunAt,
+		At:       task.ScheduledFor,
 	}); err != nil {
 		return err
 	}

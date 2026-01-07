@@ -18,7 +18,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			func(ctx context.Context, tasks []schedulertypes.Invocation[*types.EmissionRecalculationTaskArgs]) (map[schedulertypes.TaskID]schedulertypes.ArbitrageDecision, error) {
 				return nil, nil // No arbitrage logic needed for now
 			},
-			func(ctx context.Context, id schedulertypes.TaskID, args *types.EmissionRecalculationTaskArgs, runCount uint64) error {
+			func(ctx context.Context, _ schedulertypes.Task, _ *types.EmissionRecalculationTaskArgs) error {
 				return k.executeEmissionRecalculationTask(ctx)
 			},
 		),

@@ -174,7 +174,7 @@ func (k *Keeper) programTask(ctx context.Context, task types.Task) error {
 		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskScheduledEvent{
 			Id:       task.Id,
 			Typename: task.Typename,
-			At:       task.NextRunAt,
+			At:       task.ScheduledFor,
 		}); err != nil {
 			return err
 		}
@@ -200,7 +200,7 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 		if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
 			Id:       task.Id,
 			Typename: task.Typename,
-			At:       task.NextRunAt,
+			At:       task.ScheduledFor,
 		}); err != nil {
 			return err
 		}
@@ -241,7 +241,7 @@ func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOp
 		}
 
 		// if the task no longer has a next run time, it has been unscheduled
-		if task.NextRunAt == nil {
+		if task.ScheduledFor == nil {
 			prevSchedule := oldScheduleKey.K2()
 			if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
 				Id:       task.Id,
