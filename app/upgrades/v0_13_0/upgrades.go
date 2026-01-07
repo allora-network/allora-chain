@@ -79,12 +79,16 @@ func CreateUpgradeHandler(
 
 				// Convert the remaining block count into real time so the scheduler can use a relative delay.
 				monthNanoseconds := oneMonthDuration.Nanoseconds()
-				perBlockNanoseconds := monthNanoseconds / int64(blocksPerMonth) //nolint:gosec // blocksPerMonth is validated to be > 0 and within safe bounds
-				remainingNanoseconds := perBlockNanoseconds * int64(blocksRemaining) //nolint:gosec // blocksRemaining <= blocksPerMonth, safe conversion
+				//nolint:gosec // blocksPerMonth is validated to be > 0 and within safe bounds
+				perBlockNanoseconds := monthNanoseconds / int64(blocksPerMonth)
+				//nolint:gosec // blocksRemaining <= blocksPerMonth, safe conversion
+				remainingNanoseconds := perBlockNanoseconds * int64(blocksRemaining)
 
 				// Carry the fractional part of the division to avoid monthly drift.
-				if remainder := monthNanoseconds % int64(blocksPerMonth); remainder > 0 { //nolint:gosec // same as above
-					remainingNanoseconds += remainder * int64(blocksRemaining) / int64(blocksPerMonth) //nolint:gosec // same as above
+				//nolint:gosec // same as above
+				if remainder := monthNanoseconds % int64(blocksPerMonth); remainder > 0 {
+					//nolint:gosec // same as above
+					remainingNanoseconds += remainder * int64(blocksRemaining) / int64(blocksPerMonth)
 				}
 
 				initialDelay = time.Duration(remainingNanoseconds)
