@@ -3130,7 +3130,7 @@ func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.Offc
 
 // UpdateReputerOwner updates the payout owner associated with a reputer node.
 // Returns:
-//     - (string) old owner
+//   - (string) old owner
 func (k *Keeper) UpdateReputerOwner(ctx context.Context, reputer ActorId, newOwner string) (string, error) {
 	if err := types.ValidateBech32(reputer); err != nil {
 		return "", errorsmod.Wrap(err, "reputer validation failed")
@@ -3139,11 +3139,11 @@ func (k *Keeper) UpdateReputerOwner(ctx context.Context, reputer ActorId, newOwn
 		return "", errorsmod.Wrap(err, "new owner validation failed")
 	}
 	nodeInfo, err := k.reputers.Get(ctx, reputer)
-    if errors.Is(err, collections.ErrNotFound) {
-        return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", reputer)
-    } else if err != nil {
-        return "", errorsmod.Wrap(err, "error getting reputer info")
-    }
+	if errors.Is(err, collections.ErrNotFound) {
+		return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", reputer)
+	} else if err != nil {
+		return "", errorsmod.Wrap(err, "error getting reputer info")
+	}
 	oldOwner := nodeInfo.Owner
 	nodeInfo.Owner = newOwner
 	if err := nodeInfo.Validate(); err != nil {
@@ -3195,6 +3195,8 @@ func (k *Keeper) GetWorkerInfo(ctx sdk.Context, workerKey ActorId) (types.Offcha
 }
 
 // UpdateWorkerOwner updates the payout owner associated with a worker node.
+// Returns:
+//   - (string) old owner
 func (k *Keeper) UpdateWorkerOwner(ctx context.Context, worker ActorId, newOwner string) (string, error) {
 	if err := types.ValidateBech32(worker); err != nil {
 		return "", errorsmod.Wrap(err, "worker validation failed")
@@ -3203,10 +3205,10 @@ func (k *Keeper) UpdateWorkerOwner(ctx context.Context, worker ActorId, newOwner
 		return "", errorsmod.Wrap(err, "new owner validation failed")
 	}
 	nodeInfo, err := k.workers.Get(ctx, worker)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker %s", worker)
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker %s", worker)
+	} else if err != nil {
 		return "", errorsmod.Wrap(err, "error getting worker info")
 	}
 	oldOwner := nodeInfo.Owner

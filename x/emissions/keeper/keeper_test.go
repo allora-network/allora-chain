@@ -2257,13 +2257,15 @@ func (s *KeeperTestSuite) TestUpdateWorkerOwner() {
 	topicId := uint64(402)
 	worker := s.AddrsStr(0)
 	initialOwner := s.AddrsStr(1)
+	newOwner := s.AddrsStr(2)
+	nonRegisteredWorker := s.AddrsStr(3)
+
 	err := k.InsertWorker(ctx, topicId, worker, types.OffchainNode{
 		NodeAddress: worker,
 		Owner:       initialOwner,
 	})
 	s.Require().NoError(err)
 
-	newOwner := s.AddrsStr(2)
 	oldOwner, err := k.UpdateWorkerOwner(ctx, worker, newOwner)
 	s.Require().NoError(err)
 	s.Require().Equal(initialOwner, oldOwner)
@@ -2272,7 +2274,7 @@ func (s *KeeperTestSuite) TestUpdateWorkerOwner() {
 	s.Require().NoError(err)
 	s.Require().Equal(newOwner, node.Owner)
 
-	_, err = k.UpdateWorkerOwner(ctx, s.AddrsStr(3), newOwner)
+	_, err = k.UpdateWorkerOwner(ctx, nonRegisteredWorker, newOwner)
 	s.Require().ErrorIs(err, types.ErrAddressNotRegistered)
 }
 
@@ -2335,6 +2337,8 @@ func (s *KeeperTestSuite) TestUpdateReputerOwner() {
 	topicId := uint64(502)
 	reputer := s.AddrsStr(4)
 	initialOwner := s.AddrsStr(5)
+	newOwner := s.AddrsStr(6)
+	nonRegisteredReputer := s.AddrsStr(7)
 
 	err := k.InsertReputer(ctx, topicId, reputer, types.OffchainNode{
 		NodeAddress: reputer,
@@ -2342,7 +2346,6 @@ func (s *KeeperTestSuite) TestUpdateReputerOwner() {
 	})
 	s.Require().NoError(err)
 
-	newOwner := s.AddrsStr(6)
 	oldOwner, err := k.UpdateReputerOwner(ctx, reputer, newOwner)
 	s.Require().NoError(err)
 	s.Require().Equal(initialOwner, oldOwner)
@@ -2351,7 +2354,7 @@ func (s *KeeperTestSuite) TestUpdateReputerOwner() {
 	s.Require().NoError(err)
 	s.Require().Equal(newOwner, stored.Owner)
 
-	_, err = k.UpdateReputerOwner(ctx, s.AddrsStr(7), newOwner)
+	_, err = k.UpdateReputerOwner(ctx, nonRegisteredReputer, newOwner)
 	s.Require().ErrorIs(err, types.ErrAddressNotRegistered)
 }
 
