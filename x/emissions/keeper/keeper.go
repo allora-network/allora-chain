@@ -3055,6 +3055,8 @@ func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.Offc
 }
 
 // UpdateReputerOwner updates the payout owner associated with a reputer node.
+// Returns:
+//     - (string) old owner
 func (k *Keeper) UpdateReputerOwner(ctx context.Context, reputer ActorId, newOwner string) (string, error) {
 	if err := types.ValidateBech32(reputer); err != nil {
 		return "", errorsmod.Wrap(err, "reputer validation failed")
