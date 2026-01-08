@@ -9,7 +9,7 @@ import (
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
-	schedulerKeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
+	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -46,7 +46,7 @@ type AppKeepers struct {
 	SlashingKeeper        slashingkeeper.Keeper
 	FeeGrantKeeper        feegrantkeeper.Keeper
 	EvidenceKeeper        evidencekeeper.Keeper
-	SchedulerKeeper       *schedulerKeeper.Keeper
+	SchedulerKeeper       *schedulerkeeper.Keeper
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
