@@ -78,14 +78,6 @@ func (k *Keeper) executeTask(ctx context.Context, task types.Task, handler types
 		return errors.Wrapf(types.ErrTaskExecution, "run func failed for task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 	}
 
-	if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskExecutedEvent{
-		Id:       task.Id,
-		Typename: task.Typename,
-		At:       task.ScheduledFor,
-	}); err != nil {
-		return err
-	}
-
 	oldScheduleKey := getTaskScheduleKey(task)
 	if oldScheduleKey == nil {
 		// should never occur
@@ -103,8 +95,10 @@ func (k *Keeper) executeTask(ctx context.Context, task types.Task, handler types
 			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 		}
 
-		if err := k.programTask(ctx, task); err != nil {
-			return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
+		if key := getTaskScheduleKey(task); key != nil {
+			if err := k.tasksSchedule.Set(ctx, *key); err != nil {
+				return errors.Wrapf(types.ErrTaskExecution, "couldn't reschedule periodic task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
+			}
 		}
 	} else {
 		if err := k.tasks.Remove(ctx, task.Id); err != nil {

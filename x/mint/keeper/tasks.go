@@ -13,10 +13,10 @@ import (
 func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 	return schedulertypes.TaskHandlers{
 		schedulertypes.NewTaskHandler(
-			types.TaskEmissionRecalculation, // Task type name
-			nil,                             // Dependencies, if any
+			types.TaskEmissionRecalculation,
+			nil,
 			func(ctx context.Context, tasks []schedulertypes.Invocation[*types.EmissionRecalculationTaskArgs]) (map[schedulertypes.TaskID]schedulertypes.ArbitrageDecision, error) {
-				return nil, nil // No arbitrage logic needed for now
+				return nil, nil
 			},
 			func(ctx context.Context, _ schedulertypes.Task, _ *types.EmissionRecalculationTaskArgs) error {
 				return k.executeEmissionRecalculationTask(ctx)
