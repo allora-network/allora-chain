@@ -3137,12 +3137,11 @@ func (k *Keeper) UpdateReputerOwner(ctx context.Context, reputer ActorId, newOwn
 		return "", errorsmod.Wrap(err, "new owner validation failed")
 	}
 	nodeInfo, err := k.reputers.Get(ctx, reputer)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", reputer)
-		}
-		return "", errorsmod.Wrap(err, "error getting reputer info")
-	}
+    if errors.Is(err, collections.ErrNotFound) {
+        return "", errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", reputer)
+    } else if err != nil {
+        return "", errorsmod.Wrap(err, "error getting reputer info")
+    }
 	oldOwner := nodeInfo.Owner
 	nodeInfo.Owner = newOwner
 	if err := nodeInfo.Validate(); err != nil {
