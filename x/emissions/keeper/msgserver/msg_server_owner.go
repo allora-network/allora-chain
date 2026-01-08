@@ -26,10 +26,10 @@ func (ms msgServer) UpdateOwner(ctx context.Context, msg *types.UpdateOwnerReque
 	var oldOwner string
 	if msg.IsReputer {
 		nodeInfo, getErr := ms.k.GetReputerInfo(sdkCtx, msg.Sender)
-		if getErr != nil {
-			if errors.Is(getErr, collections.ErrNotFound) {
-				return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", msg.Sender)
-			}
+
+		if errors.Is(getErr, collections.ErrNotFound) {
+			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer %s", msg.Sender)
+		} else if getErr != nil {
 			return nil, errorsmod.Wrap(getErr, "error getting reputer info")
 		}
 		if nodeInfo.NodeAddress != msg.Sender {
@@ -43,10 +43,10 @@ func (ms msgServer) UpdateOwner(ctx context.Context, msg *types.UpdateOwnerReque
 		oldOwner, err = ms.k.UpdateReputerOwner(ctx, msg.Sender, msg.NewOwner)
 	} else {
 		nodeInfo, getErr := ms.k.GetWorkerInfo(sdkCtx, msg.Sender)
-		if getErr != nil {
-			if errors.Is(getErr, collections.ErrNotFound) {
-				return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker %s", msg.Sender)
-			}
+
+		if errors.Is(getErr, collections.ErrNotFound) {
+			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker %s", msg.Sender)
+		} else if getErr != nil {
 			return nil, errorsmod.Wrap(getErr, "error getting worker info")
 		}
 		if nodeInfo.NodeAddress != msg.Sender {
