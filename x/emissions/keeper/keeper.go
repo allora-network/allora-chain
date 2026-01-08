@@ -789,9 +789,9 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
 	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
-		return types.Nonces{Nonces: []*types.Nonce{}}, nil
+		return types.Nonces{Nonces: nil}, nil
 	} else if err != nil {
-		return types.Nonces{Nonces: []*types.Nonce{}}, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
+		return types.Nonces{Nonces: nil}, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 	return nonces, nil
 }
@@ -799,9 +799,9 @@ func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId
 func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.ReputerRequestNonces, error) {
 	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
-		return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, nil
+		return types.ReputerRequestNonces{Nonces: nil}, nil
 	} else if err != nil {
-		return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
+		return types.ReputerRequestNonces{Nonces: nil}, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 	return nonces, nil
 }
