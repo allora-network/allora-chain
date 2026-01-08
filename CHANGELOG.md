@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#851](https://github.com/allora-network/allora-chain/pull/851) Enforce recommended settings
 * [#835](https://github.com/allora-network/allora-chain/pull/835): Introduce the `x/scheduler` module to manage tasks scheduling
+* [#881](https://github.com/allora-network/allora-chain/pull/881) Integrate `x/mint` with `x/scheduler` for periodic emission recalculation
 
 ### Changed
 

@@ -1,11 +1,11 @@
 package app
 
 import (
-	"strings"
+	"fmt"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/pkg/errors"
 
+	cosmoserrors "cosmossdk.io/errors"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 )
 
@@ -17,15 +17,17 @@ func (app *AlloraApp) InitializeRecurringTasks() {
 
 	mintTaskHandlers := app.MintKeeper.TaskHandlers()
 	if err := app.SchedulerKeeper.RegisterTaskHandlers(mintTaskHandlers); err != nil {
-		if !errors.Is(err, schedulertypes.ErrInvalidTaskHandler) || !strings.Contains(err.Error(), "duplicate task handler") {
-			app.Logger().Error("failed to register mint task handlers", "err", err)
-			return
+		if !cosmoserrors.IsOf(err, schedulertypes.ErrTaskHandlerAlreadyExists) {
+			panic(fmt.Sprintf("failed to register mint task handlers: %v", err))
 		}
 	}
 
 	if err := app.MintKeeper.ScheduleEmissionRecalculationTask(ctx, app.SchedulerKeeper, 0); err != nil {
-		app.Logger().Error("failed to schedule emission recalculation task", "err", err)
-		return
+		if cosmoserrors.IsOf(err, schedulertypes.ErrTaskAlreadyExists) {
+			app.Logger().Info("emission recalculation task already scheduled")
+			return
+		}
+		panic(fmt.Sprintf("failed to schedule emission recalculation task: %v", err))
 	}
 
 	app.Logger().Info("scheduled emission recalculation task")
