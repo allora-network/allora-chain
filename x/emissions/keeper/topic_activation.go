@@ -2,9 +2,10 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/errors"
+	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,10 +17,9 @@ const RESERVED_BLOCK = 0
 func (k *Keeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context, topicId TopicId) (BlockHeight, bool, error) {
 	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	block, err := k.topicToNextPossibleChurningBlock.Get(ctx, topicId)
-	if err != nil {
-		if errors.IsOf(err, collections.ErrNotFound) {
-			return RESERVED_BLOCK, false, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return RESERVED_BLOCK, false, nil
+	} else if err != nil {
 		return RESERVED_BLOCK, false, err
 	}
 	return block, block >= currentBlock, nil
@@ -29,11 +29,10 @@ func (k *Keeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context, topi
 // => can be safely handled in memory.
 func (k *Keeper) GetActiveTopicIdsAtBlock(ctx context.Context, block BlockHeight) (types.TopicIds, error) {
 	idsOfActiveTopics, err := k.blockToActiveTopics.Get(ctx, block)
-	if err != nil {
-		if errors.IsOf(err, collections.ErrNotFound) {
-			topicIds := []TopicId{}
-			return types.TopicIds{TopicIds: topicIds}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		topicIds := []TopicId{}
+		return types.TopicIds{TopicIds: topicIds}, nil
+	} else if err != nil {
 		return types.TopicIds{}, err
 	}
 	return idsOfActiveTopics, nil
@@ -45,13 +44,12 @@ func (k *Keeper) GetLowestActiveTopicWeightAtBlock(
 	block BlockHeight,
 ) (topicIdAndWeight types.TopicIdWeightPair, noPrior bool, err error) {
 	topicIdAndWeight, err = k.blockToLowestActiveTopicWeight.Get(ctx, block)
-	if err != nil {
-		if errors.IsOf(err, collections.ErrNotFound) {
-			return types.TopicIdWeightPair{
-				TopicId: 0,
-				Weight:  alloraMath.NewDecFromInt64(0),
-			}, true, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.TopicIdWeightPair{
+			TopicId: 0,
+			Weight:  alloraMath.NewDecFromInt64(0),
+		}, true, nil
+	} else if err != nil {
 		return types.TopicIdWeightPair{}, false, err
 	}
 	return topicIdAndWeight, false, nil
@@ -64,12 +62,12 @@ func (k *Keeper) GetLowestActiveTopicWeightAtBlock(
 func (k *Keeper) PruneTopicActivationDataAtBlock(ctx context.Context, block BlockHeight) error {
 	err := k.blockToActiveTopics.Remove(ctx, block)
 	if err != nil {
-		return errors.Wrap(err, "failed to remove block to active topics")
+		return errorsmod.Wrap(err, "failed to remove block to active topics")
 	}
 
 	err = k.blockToLowestActiveTopicWeight.Remove(ctx, block)
 	if err != nil {
-		return errors.Wrap(err, "failed to remove block to lowest active topic weight")
+		return errorsmod.Wrap(err, "failed to remove block to lowest active topic weight")
 	}
 
 	return nil
@@ -78,7 +76,7 @@ func (k *Keeper) PruneTopicActivationDataAtBlock(ctx context.Context, block Bloc
 func (k *Keeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, block BlockHeight) error {
 	activeTopicIds, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
-		return errors.Wrap(err, "failed to get active topic ids at block")
+		return errorsmod.Wrap(err, "failed to get active topic ids at block")
 	}
 
 	if len(activeTopicIds.TopicIds) == 0 {
@@ -103,7 +101,7 @@ func (k *Keeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, block 
 	data := types.TopicIdWeightPair{Weight: lowestWeight, TopicId: idOfLowestWeightTopic}
 	err = k.SetBlockToLowestActiveTopicWeight(ctx, block, data)
 	if err != nil {
-		return errors.Wrap(err, "failed to set block to lowest active topic weight")
+		return errorsmod.Wrap(err, "failed to set block to lowest active topic weight")
 	}
 	return nil
 }
@@ -112,7 +110,7 @@ func (k *Keeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, block 
 func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topicId TopicId) error {
 	topicExists, err := k.topics.Has(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to check if topic exists")
+		return errorsmod.Wrap(err, "failed to check if topic exists")
 	}
 	if !topicExists {
 		return types.ErrTopicDoesNotExist
@@ -121,7 +119,7 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 	// Check if this topic is activated or not
 	block, topicIsActive, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to get next possible churning block by topic id")
+		return errorsmod.Wrap(err, "failed to get next possible churning block by topic id")
 	}
 	if !topicIsActive {
 		return nil
@@ -129,7 +127,7 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 
 	topicIdsActiveAtBlock, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
-		return errors.Wrap(err, "failed to get active topic ids at block")
+		return errorsmod.Wrap(err, "failed to get active topic ids at block")
 	}
 	topicFound := false
 	// Remove the topic from the active topics at the block
@@ -142,7 +140,7 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 			)
 			err = k.SetBlockToActiveTopics(ctx, block, types.TopicIds{TopicIds: newActiveTopicIds})
 			if err != nil {
-				return errors.Wrap(err, "failed to set block to active topics")
+				return errorsmod.Wrap(err, "failed to set block to active topics")
 			}
 			topicFound = true
 			break
@@ -150,23 +148,23 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 	}
 
 	if !topicFound {
-		return errors.Wrap(types.ErrNotFound, "active topic expected to be found in block's active topics list")
+		return errorsmod.Wrap(types.ErrNotFound, "active topic expected to be found in block's active topics list")
 	}
 
 	err = k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to remove topic to next possible churning block")
+		return errorsmod.Wrap(err, "failed to remove topic to next possible churning block")
 	}
 
 	// Set inactive for this topic
 	err = k.activeTopics.Remove(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to remove active topics")
+		return errorsmod.Wrap(err, "failed to remove active topics")
 	}
 
 	err = k.RemoveTopicFromPreviousTopicWeights(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to remove topic from previous topic weights")
+		return errorsmod.Wrap(err, "failed to remove topic from previous topic weights")
 	}
 
 	// Emit topic deactivation event
@@ -180,7 +178,7 @@ func (k *Keeper) RemoveTopicFromPreviousTopicWeights(ctx context.Context, topicI
 
 	previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to get previous topic weight")
+		return errorsmod.Wrap(err, "failed to get previous topic weight")
 	}
 	if noPrior {
 		return nil
@@ -188,16 +186,16 @@ func (k *Keeper) RemoveTopicFromPreviousTopicWeights(ctx context.Context, topicI
 
 	totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to get total sum of previous topic weights")
+		return errorsmod.Wrap(err, "failed to get total sum of previous topic weights")
 	}
 
 	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Sub(previousTopicWeight)
 	if err != nil {
-		return errors.Wrap(err, "failed to subtract previous topic weight from total sum of previous topic weights")
+		return errorsmod.Wrap(err, "failed to subtract previous topic weight from total sum of previous topic weights")
 	}
 	err = k.SetTotalSumPreviousTopicWeights(ctx, totalSumPreviousTopicWeights)
 	if err != nil {
-		return errors.Wrap(err, "failed to set total sum of previous topic weights")
+		return errorsmod.Wrap(err, "failed to set total sum of previous topic weights")
 	}
 
 	return nil
@@ -275,7 +273,7 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 	topicExists, err := k.topics.Has(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to check if topic exists")
+		return errorsmod.Wrap(err, "failed to check if topic exists")
 	}
 	if !topicExists {
 		return nil
@@ -284,7 +282,7 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 	// Check topic activation with next possible churning block
 	_, topicIsActive, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to get next possible churning block by topic id")
+		return errorsmod.Wrap(err, "failed to get next possible churning block by topic id")
 	}
 	if topicIsActive {
 		return nil
@@ -292,45 +290,45 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to get topic")
+		return errorsmod.Wrap(err, "failed to get topic")
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	currentBlock := sdkCtx.BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if errors.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
+	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
 		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
 		return nil
 	}
 	if err != nil {
-		return errors.Wrap(err, "failed to activate topic and reset lowest weight at block")
+		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
 	}
 
 	// Set active for this topic
 	err = k.SetActiveTopics(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to set active topics")
+		return errorsmod.Wrap(err, "failed to set active topics")
 	}
 
 	sdkCtx.Logger().Info("Topic activated at block", "topicId", topicId, "block", currentBlock)
 	// This topic was activated, so we need to add its previous weight if any to the total sum of previous topic weights
 	topicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to get topic weight from topic id")
+		return errorsmod.Wrap(err, "failed to get topic weight from topic id")
 	}
 	if !noPrior && !topicWeight.IsZero() {
 		totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 		if err != nil {
-			return errors.Wrap(err, "failed to get total sum of previous topic weights")
+			return errorsmod.Wrap(err, "failed to get total sum of previous topic weights")
 		}
 		totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Add(topicWeight)
 		if err != nil {
-			return errors.Wrap(err, "failed to add weight to total sum of previous topic weights")
+			return errorsmod.Wrap(err, "failed to add weight to total sum of previous topic weights")
 		}
 		err = k.SetTotalSumPreviousTopicWeights(ctx, totalSumPreviousTopicWeights)
 		if err != nil {
-			return errors.Wrap(err, "failed to set total sum of previous topic weights")
+			return errorsmod.Wrap(err, "failed to set total sum of previous topic weights")
 		}
 	}
 	return nil
@@ -340,7 +338,7 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
 	err := k.inactivateTopicWithoutMinWeightReset(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to inactivate topic without min weight reset")
+		return errorsmod.Wrap(err, "failed to inactivate topic without min weight reset")
 	}
 	return nil
 }
@@ -350,7 +348,7 @@ func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to get topic")
+		return errorsmod.Wrap(err, "failed to get topic")
 	}
 	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
@@ -359,15 +357,15 @@ func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) 
 	err = k.removeCurrentTopicFromBlock(ctx, topicId, currentBlock)
 	if err != nil {
 		sdkCtx.Logger().Warn("Failed to remove current active topic", "topicId", topicId, "block", currentBlock, "error", err)
-		return errors.Wrap(err, "failed to remove current active topic from block")
+		return errorsmod.Wrap(err, "failed to remove current active topic from block")
 	}
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if errors.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
+	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
 		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
 		return nil
 	} else if err != nil {
-		return errors.Wrap(err, "failed to activate topic and reset lowest weight at block")
+		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
 	}
 
 	sdkCtx.Logger().Debug("Topic reactivated at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock)
@@ -377,7 +375,7 @@ func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) 
 func (k *Keeper) removeCurrentTopicFromBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
 	activeTopicIds, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
-		return errors.Wrap(err, "failed to get active topic ids at block")
+		return errorsmod.Wrap(err, "failed to get active topic ids at block")
 	}
 	existingActiveTopics := activeTopicIds.TopicIds
 	// Remove the lowest weight topic from the active topics at the block
@@ -390,11 +388,11 @@ func (k *Keeper) removeCurrentTopicFromBlock(ctx context.Context, topicId TopicI
 	newActiveTopicIds := types.TopicIds{TopicIds: existingActiveTopics}
 	err = k.SetBlockToActiveTopics(ctx, block, newActiveTopicIds)
 	if err != nil {
-		return errors.Wrap(err, "failed to set block to active topics")
+		return errorsmod.Wrap(err, "failed to set block to active topics")
 	}
 	err = k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
 	if err != nil {
-		return errors.Wrap(err, "failed to remove topic to next possible churning block")
+		return errorsmod.Wrap(err, "failed to remove topic to next possible churning block")
 	}
 	return nil
 }
@@ -404,19 +402,19 @@ func (k *Keeper) activateTopicAndResetLowestWeightAtBlock(ctx context.Context, t
 	// Add to next epoch end block if greater than lowest weight
 	err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
 	if err != nil {
-		return errors.Wrap(err, "failed to add topic to active set respecting limits without min weight reset")
+		return errorsmod.Wrap(err, "failed to add topic to active set respecting limits without min weight reset")
 	}
 
 	err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId, epochEndBlock)
 	if err != nil {
-		return errors.Wrap(err, "failed to set topic to next possible churning block")
+		return errorsmod.Wrap(err, "failed to set topic to next possible churning block")
 	}
 
 	// Reset lowest weight
 	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
 	if err != nil {
 		sdkCtx.Logger().Warn("Failed to reset lowest weight at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
-		return errors.Wrap(err, "failed to reset lowest weight at block")
+		return errorsmod.Wrap(err, "failed to reset lowest weight at block")
 	}
 
 	return nil
