@@ -1,9 +1,10 @@
 package inferencesynthesis
 
 import (
+	"errors"
+
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/pkg/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -28,10 +29,10 @@ func GetNetworkInferences(
 	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
 	if inferencesNonce == nil {
-		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences nonce provided")
+		return nil, errorsmod.Wrap(emissions.ErrNotFound, "no inferences nonce provided")
 	}
 	if inferences == nil {
-		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
+		return nil, errorsmod.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
 
 	// Enable math helper cache for this function's scope
@@ -51,7 +52,7 @@ func GetNetworkInferences(
 		// If we only have a single inference, simply return it as is.
 		return calcNetworkInferencesSingle(*inferencesNonce, topicId, inferences), nil
 	} else {
-		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
+		return nil, errorsmod.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
 }
 
