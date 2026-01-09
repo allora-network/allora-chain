@@ -30,8 +30,7 @@ func (k *Keeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context, topi
 func (k *Keeper) GetActiveTopicIdsAtBlock(ctx context.Context, block BlockHeight) (types.TopicIds, error) {
 	idsOfActiveTopics, err := k.blockToActiveTopics.Get(ctx, block)
 	if errors.Is(err, collections.ErrNotFound) {
-		topicIds := []TopicId{}
-		return types.TopicIds{TopicIds: topicIds}, nil
+		return types.TopicIds{TopicIds: nil}, nil
 	} else if err != nil {
 		return types.TopicIds{}, err
 	}
