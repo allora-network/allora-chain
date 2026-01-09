@@ -13,9 +13,9 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// UpdateOwner updates the payout owner for a registered node.
-func (ms msgServer) UpdateOwner(ctx context.Context, msg *types.UpdateOwnerRequest) (_ *types.UpdateOwnerResponse, err error) {
-	defer metrics.RecordMetrics("UpdateOwner", time.Now(), &err)
+// TransferActorOwnership updates the payout owner for a registered node.
+func (ms msgServer) TransferActorOwnership(ctx context.Context, msg *types.TransferActorOwnershipRequest) (_ *types.TransferActorOwnershipResponse, err error) {
+	defer metrics.RecordMetrics("TransferActorOwnership", time.Now(), &err)
 
 	if err := msg.Validate(); err != nil {
 		return nil, err
@@ -65,5 +65,5 @@ func (ms msgServer) UpdateOwner(ctx context.Context, msg *types.UpdateOwnerReque
 
 	types.EmitNodeOwnerUpdatedEvent(ctx, msg.Sender, oldOwner, msg.NewOwner, msg.IsReputer)
 
-	return &types.UpdateOwnerResponse{}, nil
+	return &types.TransferActorOwnershipResponse{}, nil
 }

@@ -1103,8 +1103,8 @@ func (msg *RegisterRequest) Validate() error {
 	return nil
 }
 
-// validate that an update owner request follows the expected format
-func (msg *UpdateOwnerRequest) Validate() error {
+// validate that a transfer actor ownership request follows the expected format
+func (msg *TransferActorOwnershipRequest) Validate() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Sender); err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
 	}

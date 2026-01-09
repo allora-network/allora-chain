@@ -4,7 +4,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *MsgServerTestSuite) TestUpdateOwnerSuccess() {
+func (s *MsgServerTestSuite) TestTransferActorOwnershipSuccess() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
 
@@ -37,7 +37,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerSuccess() {
 				s.Require().NoError(err)
 			}
 
-			_, err := msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+			_, err := msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 				Sender:    sender,
 				NewOwner:  newOwner,
 				IsReputer: tc.isReputer,
@@ -57,17 +57,17 @@ func (s *MsgServerTestSuite) TestUpdateOwnerSuccess() {
 	}
 }
 
-func (s *MsgServerTestSuite) TestUpdateOwnerValidationErrors() {
+func (s *MsgServerTestSuite) TestTransferActorOwnershipValidationErrors() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
 
 	testCases := []struct {
 		name string
-		msg  *types.UpdateOwnerRequest
+		msg  *types.TransferActorOwnershipRequest
 	}{
 		{
 			name: "invalid sender address",
-			msg: &types.UpdateOwnerRequest{
+			msg: &types.TransferActorOwnershipRequest{
 				Sender:    "invalid",
 				NewOwner:  s.AddrsStr(1),
 				IsReputer: true,
@@ -75,7 +75,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerValidationErrors() {
 		},
 		{
 			name: "invalid new owner",
-			msg: &types.UpdateOwnerRequest{
+			msg: &types.TransferActorOwnershipRequest{
 				Sender:    s.AddrsStr(1),
 				NewOwner:  "invalid",
 				IsReputer: true,
@@ -85,14 +85,14 @@ func (s *MsgServerTestSuite) TestUpdateOwnerValidationErrors() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			_, err := msgServer.UpdateOwner(ctx, tc.msg)
+			_, err := msgServer.TransferActorOwnership(ctx, tc.msg)
 			s.Require().Error(err)
 			s.Require().ErrorContains(err, "invalid")
 		})
 	}
 }
 
-func (s *MsgServerTestSuite) TestUpdateOwnerAddressNotRegistered() {
+func (s *MsgServerTestSuite) TestTransferActorOwnershipAddressNotRegistered() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
 
@@ -107,7 +107,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerAddressNotRegistered() {
 	})
 	s.Require().NoError(err)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    addr,
 		NewOwner:  s.AddrsStr(7),
 		IsReputer: true,
@@ -122,7 +122,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerAddressNotRegistered() {
 	})
 	s.Require().NoError(err)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    addr2,
 		NewOwner:  s.AddrsStr(9),
 		IsReputer: false,
@@ -130,7 +130,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerAddressNotRegistered() {
 	s.Require().ErrorIs(err, types.ErrAddressNotRegistered)
 }
 
-func (s *MsgServerTestSuite) TestUpdateOwnerInvariantMismatch() {
+func (s *MsgServerTestSuite) TestTransferActorOwnershipInvariantMismatch() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
 
@@ -142,7 +142,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerInvariantMismatch() {
 	})
 	s.Require().NoError(err)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    reputerAddr,
 		NewOwner:  s.AddrsStr(14),
 		IsReputer: true,
@@ -157,7 +157,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerInvariantMismatch() {
 	})
 	s.Require().NoError(err)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    workerAddr,
 		NewOwner:  s.AddrsStr(18),
 		IsReputer: false,
@@ -165,7 +165,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerInvariantMismatch() {
 	s.Require().ErrorIs(err, types.ErrInvariantFailure)
 }
 
-func (s *MsgServerTestSuite) TestUpdateOwnerRoleSpecificity() {
+func (s *MsgServerTestSuite) TestTransferActorOwnershipRoleSpecificity() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
 
@@ -187,7 +187,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerRoleSpecificity() {
 	})
 	s.Require().NoError(err)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    addr,
 		NewOwner:  newReputerOwner,
 		IsReputer: true,
@@ -203,7 +203,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerRoleSpecificity() {
 	s.Require().NoError(err)
 	s.Require().Equal(workerOwner, storedWorker.Owner)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    addr,
 		NewOwner:  newWorkerOwner,
 		IsReputer: false,
@@ -220,7 +220,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerRoleSpecificity() {
 	s.Require().Equal(newReputerOwner, storedReputer.Owner)
 }
 
-func (s *MsgServerTestSuite) TestUpdateOwnerSenderMismatch() {
+func (s *MsgServerTestSuite) TestTransferActorOwnershipSenderMismatch() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
 
@@ -235,7 +235,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerSenderMismatch() {
 	})
 	s.Require().NoError(err)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    reputerAddr,
 		NewOwner:  s.AddrsStr(33),
 		IsReputer: true,
@@ -257,7 +257,7 @@ func (s *MsgServerTestSuite) TestUpdateOwnerSenderMismatch() {
 	})
 	s.Require().NoError(err)
 
-	_, err = msgServer.UpdateOwner(ctx, &types.UpdateOwnerRequest{
+	_, err = msgServer.TransferActorOwnership(ctx, &types.TransferActorOwnershipRequest{
 		Sender:    workerAddr,
 		NewOwner:  s.AddrsStr(37),
 		IsReputer: false,
