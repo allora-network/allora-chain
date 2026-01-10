@@ -5,7 +5,7 @@ on: [pull_request]
 jobs:
   gofmt: 
     name: "Go Format Check"
-    runs-on: ubuntu-latest
+    runs-on: arc-allora-network-default
     steps:
     - uses: actions/checkout@v4
     - name: Check code formatting using gofmt
@@ -15,7 +15,7 @@ jobs:
           gofmt-flags: '-l -d'
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: arc-allora-network-default
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
       uses: robherley/go-test-action@v0.4.1
 
   integration-test:
-    runs-on: ubuntu-latest
+    runs-on: arc-allora-network-default
     timeout-minutes: 25
 
     steps:

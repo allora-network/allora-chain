@@ -15,7 +15,7 @@ permissions:
 jobs:
   golangci:
     name: lint
-    runs-on: ubuntu-latest
+    runs-on: arc-allora-network-default
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -29,7 +29,7 @@ jobs:
 
   custom-linters:
     name: custom-linters
-    runs-on: ubuntu-latest
+    runs-on: arc-allora-network-default
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

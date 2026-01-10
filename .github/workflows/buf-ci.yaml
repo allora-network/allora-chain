@@ -11,7 +11,7 @@ permissions:
   pull-requests: write
 jobs:
   buf:
-    runs-on: ubuntu-latest
+    runs-on: arc-allora-network-default
     steps:
       - uses: actions/checkout@v4
       - uses: bufbuild/buf-action@v1
