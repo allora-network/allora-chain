@@ -444,6 +444,22 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetOpenReputerSubmissionWindows",
+					Use:       "open-reputer-submission-windows [topic_id]",
+					Short:     "Return topic reputer nonces that are currently open for submission",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetOpenWorkerSubmissionWindows",
+					Use:       "open-worker-submission-windows [topic_id]",
+					Short:     "Return topic worker nonces that are currently open for submission",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetWorkerForecastScoresAtBlock",
 					Use:       "forecast-scores [topic_id] [block_height]",
 					Short:     "Return scores for topic worker at a block height. Default is empty. May not exist if it was already pruned",

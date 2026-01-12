@@ -181,6 +181,16 @@ service QueryService {
     option (google.api.http).get = "/emissions/v9/unfulfilled_reputer_nonces/{topic_id}";
   }
 
+  rpc GetOpenReputerSubmissionWindows(GetOpenReputerSubmissionWindowsRequest) returns (GetOpenReputerSubmissionWindowsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v9/open_reputer_submission_windows/{topic_id}";
+  }
+
+  rpc GetOpenWorkerSubmissionWindows(GetOpenWorkerSubmissionWindowsRequest) returns (GetOpenWorkerSubmissionWindowsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v9/open_worker_submission_windows/{topic_id}";
+  }
+
   rpc GetInfererNetworkRegret(GetInfererNetworkRegretRequest) returns (GetInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v9/inferer_network_regret/{topic_id}/{actor_id}";
@@ -1036,6 +1046,22 @@ message GetUnfulfilledWorkerNoncesRequest {
 }
 
 message GetUnfulfilledWorkerNoncesResponse {
+  emissions.v3.Nonces nonces = 1;
+}
+
+message GetOpenReputerSubmissionWindowsRequest {
+  uint64 topic_id = 1;
+}
+
+message GetOpenReputerSubmissionWindowsResponse {
+  emissions.v3.ReputerRequestNonces nonces = 1;
+}
+
+message GetOpenWorkerSubmissionWindowsRequest {
+  uint64 topic_id = 1;
+}
+
+message GetOpenWorkerSubmissionWindowsResponse {
   emissions.v3.Nonces nonces = 1;
 }
 

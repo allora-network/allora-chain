@@ -11,6 +11,27 @@ Key Features:
 - Performance Metrics: Tracking of worker, reputer, and forecaster scores
 - Fee Collection: Management of network fees and revenue distribution
 
+## Queries
+
+### Nonce Submission Windows
+
+The module provides queries to check which nonces are currently open for submission:
+
+- **`GetOpenReputerSubmissionWindows`**: Returns only the reputer nonces that are currently open for submission. A nonce is considered open if the current block height is within its submission window (from when ground truth is revealed until the window closes).
+  
+  - Endpoint: `/emissions/v9/open_reputer_submission_windows/{topic_id}`
+  - CLI: `allorad query emissions open-reputer-submission-windows [topic_id]`
+  
+  This query filters the results from `GetUnfulfilledReputerNonces` to only include nonces that are currently within their submission window. Typically, only one nonce will be open at a time.
+
+- **`GetOpenWorkerSubmissionWindows`**: Returns only the worker nonces that are currently open for submission. A nonce is considered open if the current block height is within its submission window (from the nonce block height until the window closes).
+  
+  - Endpoint: `/emissions/v9/open_worker_submission_windows/{topic_id}`
+  - CLI: `allorad query emissions open-worker-submission-windows [topic_id]`
+  
+  This query filters the results from `GetUnfulfilledWorkerNonces` to only include nonces that are currently within their submission window. Typically, only one nonce will be open at a time.
+
+**Note**: These queries are more specific than `GetUnfulfilledReputerNonces` and `GetUnfulfilledWorkerNonces`, which return all unfulfilled nonces regardless of whether they are currently open for submission.
 
 ## Monitoring
 

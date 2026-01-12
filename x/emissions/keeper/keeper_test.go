@@ -309,6 +309,338 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	}
 }
 
+func (s *KeeperTestSuite) TestGetOpenReputerSubmissionWindows() {
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(50),
+	)
+
+	// Initially, no open nonces
+	openNonces, err := k.GetOpenReputerSubmissionWindows(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Initially should have no open nonces")
+
+	// Add nonces at different block heights
+	// Nonce 1: block 1000, will be open at block 1100-1200 (1000 + 100 GTLag to 1000 + 100 + 0 + 100)
+	nonce1 := &types.Nonce{BlockHeight: 1000}
+	err = k.AddReputerNonce(ctx, topicId, nonce1)
+	s.Require().NoError(err)
+
+	// Nonce 2: block 2000, will be open at block 2100-2200
+	nonce2 := &types.Nonce{BlockHeight: 2000}
+	err = k.AddReputerNonce(ctx, topicId, nonce2)
+	s.Require().NoError(err)
+
+	tests := []struct {
+		name           string
+		blockHeight    int64
+		expectedNonces []int64
+		description    string
+	}{
+		{
+			name:           "before_window_opens_nonce1",
+			blockHeight:    1050,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces before window opens for nonce1",
+		},
+		{
+			name:           "one_block_before_window_opens_nonce1",
+			blockHeight:    1099,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces one block before window opens (tests exclusive lower bound)",
+		},
+		{
+			name:           "exactly_at_window_start_nonce1",
+			blockHeight:    1100,
+			expectedNonces: []int64{1000},
+			description:    "Should have nonce1 open exactly at window start (tests inclusive lower bound)",
+		},
+		{
+			name:           "within_window_nonce1",
+			blockHeight:    1150,
+			expectedNonces: []int64{1000},
+			description:    "Should have nonce1 open within window, nonce2 closed",
+		},
+		{
+			name:           "exactly_at_window_end_nonce1",
+			blockHeight:    1200,
+			expectedNonces: []int64{1000},
+			description:    "Should have nonce1 open exactly at window end (tests inclusive upper bound)",
+		},
+		{
+			name:           "after_window_closes_nonce1",
+			blockHeight:    1201,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces after window closes for nonce1",
+		},
+		{
+			name:           "one_block_before_window_opens_nonce2",
+			blockHeight:    2099,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces one block before window opens for nonce2 (tests exclusive lower bound)",
+		},
+		{
+			name:           "exactly_at_window_start_nonce2",
+			blockHeight:    2100,
+			expectedNonces: []int64{2000},
+			description:    "Should have nonce2 open exactly at window start (tests inclusive lower bound)",
+		},
+		{
+			name:           "within_window_nonce2",
+			blockHeight:    2150,
+			expectedNonces: []int64{2000},
+			description:    "Should have nonce2 open within window, nonce1 closed",
+		},
+		{
+			name:           "exactly_at_window_end_nonce2",
+			blockHeight:    2200,
+			expectedNonces: []int64{2000},
+			description:    "Should have nonce2 open exactly at window end (tests inclusive upper bound)",
+		},
+		{
+			name:           "after_window_closes_nonce2",
+			blockHeight:    2201,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces after window closes for nonce2",
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			s.WithBlockHeight(tt.blockHeight)
+			openNonces, err := k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+			s.Require().NoError(err, tt.description)
+			s.Require().Len(openNonces.Nonces, len(tt.expectedNonces), tt.description)
+
+			// Verify the expected nonces are present
+			actualNonceHeights := make([]int64, len(openNonces.Nonces))
+			for i, nonce := range openNonces.Nonces {
+				actualNonceHeights[i] = nonce.ReputerNonce.BlockHeight
+			}
+
+			s.Require().ElementsMatch(tt.expectedNonces, actualNonceHeights, tt.description)
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestGetOpenWorkerSubmissionWindows() {
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(50),
+	)
+
+	// Initially, no open nonces
+	openNonces, err := k.GetOpenWorkerSubmissionWindows(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(openNonces.Nonces, "Initially should have no open nonces")
+
+	// Add nonces at different block heights
+	// Nonce 1: block 1000, will be open at block 1000-1050
+	nonce1 := &types.Nonce{BlockHeight: 1000}
+	err = k.AddWorkerNonce(ctx, topicId, nonce1)
+	s.Require().NoError(err)
+
+	// Nonce 2: block 2000, will be open at block 2000-2050
+	nonce2 := &types.Nonce{BlockHeight: 2000}
+	err = k.AddWorkerNonce(ctx, topicId, nonce2)
+	s.Require().NoError(err)
+
+	tests := []struct {
+		name           string
+		blockHeight    int64
+		expectedNonces []int64
+		description    string
+	}{
+		{
+			name:           "one_block_before_window_opens_nonce1",
+			blockHeight:    999,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces one block before window opens (tests exclusive lower bound)",
+		},
+		{
+			name:           "exactly_at_window_start_nonce1",
+			blockHeight:    1000,
+			expectedNonces: []int64{1000},
+			description:    "Should have nonce1 open exactly at window start (tests inclusive lower bound)",
+		},
+		{
+			name:           "within_window_nonce1",
+			blockHeight:    1025,
+			expectedNonces: []int64{1000},
+			description:    "Should have nonce1 open within window, nonce2 closed",
+		},
+		{
+			name:           "exactly_at_window_end_nonce1",
+			blockHeight:    1050,
+			expectedNonces: []int64{1000},
+			description:    "Should have nonce1 open exactly at window end (tests inclusive upper bound)",
+		},
+		{
+			name:           "after_window_closes_nonce1",
+			blockHeight:    1051,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces after window closes for nonce1",
+		},
+		{
+			name:           "one_block_before_window_opens_nonce2",
+			blockHeight:    1999,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces one block before window opens for nonce2 (tests exclusive lower bound)",
+		},
+		{
+			name:           "exactly_at_window_start_nonce2",
+			blockHeight:    2000,
+			expectedNonces: []int64{2000},
+			description:    "Should have nonce2 open exactly at window start (tests inclusive lower bound)",
+		},
+		{
+			name:           "within_window_nonce2",
+			blockHeight:    2025,
+			expectedNonces: []int64{2000},
+			description:    "Should have nonce2 open within window, nonce1 closed",
+		},
+		{
+			name:           "exactly_at_window_end_nonce2",
+			blockHeight:    2050,
+			expectedNonces: []int64{2000},
+			description:    "Should have nonce2 open exactly at window end (tests inclusive upper bound)",
+		},
+		{
+			name:           "after_window_closes_nonce2",
+			blockHeight:    2051,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces after window closes for nonce2",
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			s.WithBlockHeight(tt.blockHeight)
+			openNonces, err := k.GetOpenWorkerSubmissionWindows(s.Ctx(), topicId)
+			s.Require().NoError(err, tt.description)
+			s.Require().Len(openNonces.Nonces, len(tt.expectedNonces), tt.description)
+
+			// Verify the expected nonces are present
+			actualNonceHeights := make([]int64, len(openNonces.Nonces))
+			for i, nonce := range openNonces.Nonces {
+				actualNonceHeights[i] = nonce.BlockHeight
+			}
+
+			s.Require().ElementsMatch(tt.expectedNonces, actualNonceHeights, tt.description)
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestGetOpenReputerSubmissionWindowsWithMultipleNoncesInWindow() {
+	k := s.EmissionsKeeper()
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(50),
+	)
+
+	// Add multiple nonces that will be open at the same time
+	// nonce1: BlockHeight 1000, opens at 1100 (1000 + 100 GTLag), closes at 1200 (1100 + 100 epoch)
+	// nonce2: BlockHeight 1100, opens at 1200 (1100 + 100 GTLag), closes at 1300 (1200 + 100 epoch)
+	nonce1 := &types.Nonce{BlockHeight: 1000} // Open at 1100-1200
+	nonce2 := &types.Nonce{BlockHeight: 1100} // Open at 1200-1300
+	err := k.AddReputerNonce(s.Ctx(), topicId, nonce1)
+	s.Require().NoError(err)
+	err = k.AddReputerNonce(s.Ctx(), topicId, nonce2)
+	s.Require().NoError(err)
+
+	tests := []struct {
+		name           string
+		blockHeight    int64
+		expectedNonces []int64
+		description    string
+	}{
+		{
+			name:           "before_nonce1_opens",
+			blockHeight:    1099,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces before nonce1 window opens",
+		},
+		{
+			name:           "exactly_when_nonce1_opens",
+			blockHeight:    1100,
+			expectedNonces: []int64{1000},
+			description:    "Should have only nonce1 open exactly when its window opens",
+		},
+		{
+			name:           "middle_of_nonce1_only",
+			blockHeight:    1150,
+			expectedNonces: []int64{1000},
+			description:    "Should have only nonce1 open in the middle of its window",
+		},
+		{
+			name:           "exactly_when_both_overlap",
+			blockHeight:    1200,
+			expectedNonces: []int64{1000, 1100},
+			description:    "Should have both nonces open exactly when windows overlap (nonce1 at end, nonce2 at start)",
+		},
+		{
+			name:           "middle_of_both_windows",
+			blockHeight:    1250,
+			expectedNonces: []int64{1100},
+			description:    "Should have only nonce2 open in the middle of its window (nonce1 closed)",
+		},
+		{
+			name:           "exactly_when_nonce2_closes",
+			blockHeight:    1300,
+			expectedNonces: []int64{1100},
+			description:    "Should have only nonce2 open exactly when its window closes (inclusive upper bound)",
+		},
+		{
+			name:           "after_both_close",
+			blockHeight:    1301,
+			expectedNonces: []int64{},
+			description:    "Should have no open nonces after both windows close",
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			s.WithBlockHeight(tt.blockHeight)
+			openNonces, err := k.GetOpenReputerSubmissionWindows(s.Ctx(), topicId)
+			s.Require().NoError(err, tt.description)
+			s.Require().Len(openNonces.Nonces, len(tt.expectedNonces), tt.description)
+
+			// Verify the expected nonces are present
+			actualNonceHeights := make([]int64, len(openNonces.Nonces))
+			for i, nonce := range openNonces.Nonces {
+				actualNonceHeights[i] = nonce.ReputerNonce.BlockHeight
+			}
+
+			s.Require().ElementsMatch(tt.expectedNonces, actualNonceHeights, tt.description)
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestGetOpenReputerSubmissionWindowsWithNonExistentTopic() {
+	k := s.EmissionsKeeper()
+	nonExistentTopicId := uint64(99999)
+
+	_, err := k.GetOpenReputerSubmissionWindows(s.Ctx(), nonExistentTopicId)
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, types.ErrTopicDoesNotExist, "Retrieving a non-existent topic should result in an error")
+}
+
+func (s *KeeperTestSuite) TestGetOpenWorkerSubmissionWindowsWithNonExistentTopic() {
+	k := s.EmissionsKeeper()
+	nonExistentTopicId := uint64(99999)
+
+	_, err := k.GetOpenWorkerSubmissionWindows(s.Ctx(), nonExistentTopicId)
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, types.ErrTopicDoesNotExist, "Retrieving a non-existent topic should result in an error")
+}
+
 func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
