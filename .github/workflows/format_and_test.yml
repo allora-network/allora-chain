@@ -3,7 +3,7 @@ name: Run Format, Unit Tests, and Integration Tests
 on: [pull_request]
 
 jobs:
-  gofmt: 
+  gofmt:
     name: "Go Format Check"
     runs-on: ubuntu-latest
     steps:
@@ -37,6 +37,30 @@ jobs:
     - uses: actions/setup-go@v5
       with:
         go-version: 1.22.x
+
+    - name: Disk usage (before)
+      shell: bash
+      run: |
+        df -h
+        echo "Workspace: $GITHUB_WORKSPACE"
+
+    # Clean FIRST (before pulling/building/running chain)
+    - name: Free Disk Space (Ubuntu)
+      uses: insightsengineering/disk-space-reclaimer@v1
+      with:
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
+        docker-images: true
+        tools-cache: false
+
+    - name: Disk usage (after reclaim)
+      shell: bash
+      run: |
+        df -h
+        docker system df || true
 
     - name: Apply Invariants Patch
       run: git apply ./test/fuzz/invariants.patch
