@@ -2250,6 +2250,34 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	s.Require().Equal(workerInfo.NodeAddress, node.NodeAddress)
 }
 
+func (s *KeeperTestSuite) TestUpdateWorkerOwner() {
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+
+	topicId := uint64(402)
+	worker := s.AddrsStr(0)
+	initialOwner := s.AddrsStr(1)
+	newOwner := s.AddrsStr(2)
+	nonRegisteredWorker := s.AddrsStr(3)
+
+	err := k.InsertWorker(ctx, topicId, worker, types.OffchainNode{
+		NodeAddress: worker,
+		Owner:       initialOwner,
+	})
+	s.Require().NoError(err)
+
+	oldOwner, err := k.UpdateWorkerOwner(ctx, worker, newOwner)
+	s.Require().NoError(err)
+	s.Require().Equal(initialOwner, oldOwner)
+
+	node, err := k.GetWorkerInfo(ctx, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(newOwner, node.Owner)
+
+	_, err = k.UpdateWorkerOwner(ctx, nonRegisteredWorker, newOwner)
+	s.Require().ErrorIs(err, types.ErrAddressNotRegistered)
+}
+
 func (s *KeeperTestSuite) TestRemoveWorker() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -2301,6 +2329,33 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 	isRegistered, regErr := k.IsReputerRegisteredInTopic(ctx, topicId, reputer)
 	s.Require().NoError(regErr, "Checking reputer registration should not fail")
 	s.Require().True(isRegistered, "Reputer should be registered in each topic")
+}
+
+func (s *KeeperTestSuite) TestUpdateReputerOwner() {
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+	topicId := uint64(502)
+	reputer := s.AddrsStr(4)
+	initialOwner := s.AddrsStr(5)
+	newOwner := s.AddrsStr(6)
+	nonRegisteredReputer := s.AddrsStr(7)
+
+	err := k.InsertReputer(ctx, topicId, reputer, types.OffchainNode{
+		NodeAddress: reputer,
+		Owner:       initialOwner,
+	})
+	s.Require().NoError(err)
+
+	oldOwner, err := k.UpdateReputerOwner(ctx, reputer, newOwner)
+	s.Require().NoError(err)
+	s.Require().Equal(initialOwner, oldOwner)
+
+	stored, err := k.GetReputerInfo(ctx, reputer)
+	s.Require().NoError(err)
+	s.Require().Equal(newOwner, stored.Owner)
+
+	_, err = k.UpdateReputerOwner(ctx, nonRegisteredReputer, newOwner)
+	s.Require().ErrorIs(err, types.ErrAddressNotRegistered)
 }
 
 func (s *KeeperTestSuite) TestGetReputerInfo() {

@@ -99,6 +99,8 @@ service MsgService {
   rpc AddToTopicReputerWhitelist(AddToTopicReputerWhitelistRequest) returns (AddToTopicReputerWhitelistResponse);
 
   rpc RemoveFromTopicReputerWhitelist(RemoveFromTopicReputerWhitelistRequest) returns (RemoveFromTopicReputerWhitelistResponse);
+
+  rpc TransferActorOwnership(TransferActorOwnershipRequest) returns (TransferActorOwnershipResponse);
 }
 
 /// PARAMS
@@ -379,6 +381,15 @@ message InsertWorkerPayloadRequest {
 message InsertWorkerPayloadResponse {}
 ///  Inference Node Registration
 
+message TransferActorOwnershipRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  string new_owner = 2;
+  bool is_reputer = 3;
+}
+
+message TransferActorOwnershipResponse {}
+
 message RegisterRequest {
   reserved 2, 3;
   reserved "lib_p2p_key", "multi_address";
@@ -392,8 +403,8 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-  bool success = 1;
-  string message = 2;
+  bool success = 1 [deprecated = true];
+  string message = 2 [deprecated = true];
 }
 
 message RemoveRegistrationRequest {
@@ -405,8 +416,8 @@ message RemoveRegistrationRequest {
 }
 
 message RemoveRegistrationResponse {
-  bool success = 1;
-  string message = 2;
+  bool success = 1 [deprecated = true];
+  string message = 2 [deprecated = true];
 }
 
 ///  Staking

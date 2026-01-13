@@ -1011,6 +1011,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "TransferActorOwnership",
+					Use:       "transfer-actor-ownership [sender] [new_owner] [is_reputer]",
+					Short:     "Transfer the payout owner for a registered actor",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "new_owner"},
+						{ProtoField: "is_reputer"},
+					},
+				},
+				{
 					RpcMethod: "RemoveRegistration",
 					Use:       "remove-registration [sender] [owner] [is_reputer]",
 					Short:     "Remove a reputer or worker from a topic",

@@ -72,6 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#831](https://github.com/allora-network/allora-chain/pull/831) Allow topic creators to update topic configs
 * [#893](https://github.com/allora-network/allora-chain/pull/893) Make `c_norm` editable per topic and add migration v13
 * [#896](https://github.com/allora-network/allora-chain/pull/896) New queries on open submission windows
+* [#892](https://github.com/allora-network/allora-chain/pull/892) Ability for an actor to transfer ownership
+
 
 ### Changed
 

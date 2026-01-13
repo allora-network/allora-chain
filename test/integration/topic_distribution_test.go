@@ -124,7 +124,6 @@ func registerActor(m testCommon.TestConfig, account cosmosaccount.Account, topic
 	registerResponse := &types.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerResponse)
 	require.NoError(m.T, err)
-	require.True(m.T, registerResponse.Success)
 }
 
 // Helper function to add stake for a reputer in a topic

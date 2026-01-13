@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -13,7 +12,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// Register registers a new network participant to the network for the first time for worker or reputer
+// Register registers a new network participant to the network as worker or reputer
 func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_ *types.RegisterResponse, err error) {
 	defer metrics.RecordMetrics("Register", time.Now(), &err)
 
@@ -76,10 +75,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		types.EmitNewWorkerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	}
 
-	return &types.RegisterResponse{
-		Success: true,
-		Message: "Node successfully registered",
-	}, nil
+	return &types.RegisterResponse{}, nil // nolint:exhaustruct // due to deprecated fields
 }
 
 // RemoveRegistration removes registration from a topic for worker or reputer
@@ -135,10 +131,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 	}
 
 	// Return a successful response
-	return &types.RemoveRegistrationResponse{
-		Success: true,
-		Message: fmt.Sprintf("Node successfully removed from topic %d", msg.TopicId),
-	}, nil
+	return &types.RemoveRegistrationResponse{}, nil // nolint:exhaustruct // due to deprecated fields
 }
 
 // CheckBalanceForRegistration checks if the account has enough balance to register
