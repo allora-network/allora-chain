@@ -726,10 +726,7 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 	lenNonces := uint64(len(nonces.Nonces))
 	if lenNonces > maxUnfulfilledRequests {
-		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
-		if diff > 0 {
-			nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
-		}
+		nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
 	}
 
 	if err := nonces.Validate(); err != nil {
@@ -775,10 +772,7 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledReputerRequests
 	lenNonces := uint64(len(nonces.Nonces))
 	if lenNonces > maxUnfulfilledRequests {
-		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
-		if diff > 0 {
-			nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
-		}
+		nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
 	}
 	if err := nonces.Validate(); err != nil {
 		return errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
@@ -2776,9 +2770,6 @@ func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 		return errorsmod.Wrap(err, "share is not valid")
 	}
 	key := collections.Join(topicId, reputer)
-	if err := types.ValidateDec(share); err != nil { // Added error check
-		return errorsmod.Wrapf(err, "SetDelegateRewardPerShare: invalid share")
-	}
 	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
 
@@ -2933,9 +2924,6 @@ func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 			BlockRemovalCompleted: 0,
 		}, false, nil
 	}
-	if keysLen < 0 {
-		return types.StakeRemovalInfo{}, false, errorsmod.Wrapf(types.ErrInvariantFailure, "Why is golang len function returning negative values?")
-	}
 	key := keys[0]
 	byBlockKey := collections.Join3(key.K3(), topicId, reputer)
 	ret, err := k.stakeRemovalsByBlock.Get(ctx, byBlockKey)
@@ -3072,9 +3060,6 @@ func (k *Keeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 			Amount:                cosmosMath.ZeroInt(),
 			BlockRemovalCompleted: 0,
 		}, false, nil
-	}
-	if keysLen < 0 {
-		return types.DelegateStakeRemovalInfo{}, false, errorsmod.Wrapf(types.ErrInvariantFailure, "Why is golang len function returning negative values?")
 	}
 	key := keys[0]
 	byBlockKey := Join4(key.K4(), topicId, delegator, reputer)
@@ -3963,10 +3948,7 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockH
 	maxNumScores := moduleParams.MaxSamplesToScaleScores
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
-		diff := lenScores - maxNumScores
-		if diff > 0 {
-			scores.Scores = scores.Scores[diff:]
-		}
+		scores.Scores = scores.Scores[lenScores-maxNumScores:]
 	}
 	key := collections.Join(topicId, blockHeight)
 	if err := scores.Validate(); err != nil {
