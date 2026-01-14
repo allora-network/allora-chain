@@ -34,7 +34,7 @@ enum ActorType {
 message EventScoresSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  int64 nonce_block_height = 3;
   repeated string addresses = 4;
   repeated string scores = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -45,7 +45,7 @@ message EventScoresSet {
 message EventRewardsSettled {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  int64 nonce_block_height = 3;
   repeated string addresses = 4;
   repeated string rewards = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -366,13 +366,13 @@ message EventForecastTaskScoreSet {
 
 message EventWorkerLastCommitSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 block_height = 2 [deprecated = true];
   emissions.v3.Nonce nonce = 3;
 }
 
 message EventReputerLastCommitSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 block_height = 2 [deprecated = true];
   emissions.v3.Nonce nonce = 3;
 }
 
@@ -399,7 +399,7 @@ message EventEMAScoresSet {
 message EventListeningCoefficientsSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  int64 nonce_block_height = 3;
   repeated string addresses = 4;
   repeated string coefficients = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -409,7 +409,7 @@ message EventListeningCoefficientsSet {
 
 message EventInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce_block_height = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -419,7 +419,7 @@ message EventInfererNetworkRegretSet {
 
 message EventForecasterNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce_block_height = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -429,7 +429,7 @@ message EventForecasterNetworkRegretSet {
 
 message EventNaiveInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce_block_height = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -439,7 +439,7 @@ message EventNaiveInfererNetworkRegretSet {
 
 message EventTopicInitialRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce_block_height = 2;
   string regret = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -449,7 +449,7 @@ message EventTopicInitialRegretSet {
 message EventTopicInitialEmaScoreSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  int64 nonce_block_height = 3;
   string score = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -458,7 +458,7 @@ message EventTopicInitialEmaScoreSet {
 
 message EventRegretStdNormSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce_block_height = 2;
   string stdnorm = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -467,7 +467,7 @@ message EventRegretStdNormSet {
 
 message EventInfererWeightsSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce_block_height = 2;
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -477,7 +477,7 @@ message EventInfererWeightsSet {
 
 message EventForecasterWeightsSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce_block_height = 2;
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -486,7 +486,7 @@ message EventForecasterWeightsSet {
 }
 
 message EventPreviousPercentageRewardToStakedReputersSet {
-  int64 block_height = 1;
+  int64 block_height = 1 [deprecated = true];
   string percentage = 2 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false

@@ -649,13 +649,13 @@ func EmitNewReputerLastCommitSetEvent(ctx context.Context, topicId TopicId, heig
 
 // Listening Coefficients
 
-func EmitNewListeningCoefficientsSetEvent(ctx context.Context, actorType ActorType, topicId uint64, blockHeight int64, addresses []string, coefficients []alloraMath.Dec) {
+func EmitNewListeningCoefficientsSetEvent(ctx context.Context, actorType ActorType, topicId uint64, nonceBlockHeight int64, addresses []string, coefficients []alloraMath.Dec) {
 	if len(addresses) == 0 || len(coefficients) == 0 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.LISTENING_COEFFICIENTS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewListeningCoefficientsSetEventBase(topicId, blockHeight, addresses, actorType, coefficients))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewListeningCoefficientsSetEventBase(topicId, nonceBlockHeight, addresses, actorType, coefficients))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewListeningCoefficientsSetEvent", "error", err)
 	}
@@ -663,89 +663,89 @@ func EmitNewListeningCoefficientsSetEvent(ctx context.Context, actorType ActorTy
 
 // Regrets
 
-func EmitNewInfererNetworkRegretSetEvent(ctx context.Context, topicId uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) {
+func EmitNewInfererNetworkRegretSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, addresses []string, regrets []alloraMath.Dec) {
 	if len(addresses) == 0 || len(regrets) == 0 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.INFERER_NETWORK_REGRET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewInfererNetworkRegretSetEventBase(topicId, blockHeight, addresses, regrets))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInfererNetworkRegretSetEventBase(topicId, nonceBlockHeight, addresses, regrets))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewInfererNetworkRegretSetEvent", "error", err)
 	}
 }
 
-func EmitNewForecasterNetworkRegretSetEvent(ctx context.Context, topicId uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) {
+func EmitNewForecasterNetworkRegretSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, addresses []string, regrets []alloraMath.Dec) {
 	if len(addresses) == 0 || len(regrets) == 0 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.FORECASTER_NETWORK_REGRET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewForecasterNetworkRegretSetEventBase(topicId, blockHeight, addresses, regrets))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewForecasterNetworkRegretSetEventBase(topicId, nonceBlockHeight, addresses, regrets))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewForecasterNetworkRegretSetEvent", "error", err)
 	}
 }
 
-func EmitNewNaiveInfererNetworkRegretSetEvent(ctx context.Context, topicId uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) {
+func EmitNewNaiveInfererNetworkRegretSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, addresses []string, regrets []alloraMath.Dec) {
 	if len(addresses) == 0 || len(regrets) == 0 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.NAIVE_INFERER_NETWORK_REGRET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewNaiveInfererNetworkRegretSetEventBase(topicId, blockHeight, addresses, regrets))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewNaiveInfererNetworkRegretSetEventBase(topicId, nonceBlockHeight, addresses, regrets))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewNaiveInfererNetworkRegretSetEvent", "error", err)
 	}
 }
 
-func EmitNewTopicInitialRegretSetEvent(ctx context.Context, topicId uint64, blockHeight int64, regret alloraMath.Dec) {
+func EmitNewTopicInitialRegretSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, regret alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_INITIAL_REGRET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialRegretSetEventBase(topicId, blockHeight, regret))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialRegretSetEventBase(topicId, nonceBlockHeight, regret))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewTopicInitialRegretSetEvent", "error", err)
 	}
 }
 
-func EmitNewTopicInitialEmaScoreSetEvent(ctx context.Context, actorType ActorType, topicId uint64, blockHeight int64, score alloraMath.Dec) {
+func EmitNewTopicInitialEmaScoreSetEvent(ctx context.Context, actorType ActorType, topicId uint64, nonceBlockHeight int64, score alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_INITIAL_EMA_SCORE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialEmaScoreSetEventBase(actorType, topicId, blockHeight, score))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialEmaScoreSetEventBase(actorType, topicId, nonceBlockHeight, score))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewTopicInitialEmaScoreSetEvent", "error", err)
 	}
 }
 
 // Individual events
-func EmitNewRegretStdNormSetEvent(ctx context.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
+func EmitNewRegretStdNormSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, stdNorm alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.REGRET_STDNORM_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, blockHeight, stdNorm))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, nonceBlockHeight, stdNorm))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewRegretStdNormSetEvent", "error", err)
 	}
 }
 
-func EmitNewInfererWeightsSetEvent(ctx context.Context, topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) {
+func EmitNewInfererWeightsSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, addresses []string, weights []alloraMath.Dec) {
 	if len(addresses) == 0 || len(weights) == 0 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.INFERER_WEIGHTS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewInfererWeightsSetEventBase(topicId, blockHeight, addresses, weights))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewInfererWeightsSetEventBase(topicId, nonceBlockHeight, addresses, weights))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewInfererWeightsSetEvent", "error", err)
 	}
 }
 
-func EmitNewForecasterWeightsSetEvent(ctx context.Context, topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) {
+func EmitNewForecasterWeightsSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, addresses []string, weights []alloraMath.Dec) {
 	if len(addresses) == 0 || len(weights) == 0 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.FORECASTER_WEIGHTS_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewForecasterWeightsSetEventBase(topicId, blockHeight, addresses, weights))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewForecasterWeightsSetEventBase(topicId, nonceBlockHeight, addresses, weights))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewForecasterWeightsSetEvent", "error", err)
 	}

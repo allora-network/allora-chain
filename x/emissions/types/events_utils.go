@@ -12,7 +12,7 @@ import (
 // Assumes length of `scores` is at least 1
 func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 	topicId := scores[0].TopicId
-	blockHeight := scores[0].BlockHeight
+	nonceBlockHeight := scores[0].BlockHeight
 	addresses := make([]string, len(scores))
 	scoreValues := make([]alloraMath.Dec, len(scores))
 	for i, score := range scores {
@@ -20,11 +20,11 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 		scoreValues[i] = score.Score
 	}
 	return &EventScoresSet{
-		ActorType:   actorType,
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Scores:      scoreValues,
+		ActorType:        actorType,
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Scores:           scoreValues,
 	}
 }
 
@@ -424,7 +424,7 @@ func NewEMAScoresSetEventBase(actorType ActorType, nonceBlockHeight BlockHeight,
 // Rewards
 
 // Assumes length of `rewards` is at least 1
-func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx BlockHeight, rewards []TaskReward) proto.Message {
+func NewRewardsSetEventBase(actorType ActorType, nonceBlockHeight, blockHeightTx BlockHeight, rewards []TaskReward) proto.Message {
 	topicId := rewards[0].TopicId
 	addresses := make([]string, len(rewards))
 	rewardValues := make([]alloraMath.Dec, len(rewards))
@@ -433,12 +433,12 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx Bloc
 		rewardValues[i] = reward.Reward
 	}
 	return &EventRewardsSettled{
-		ActorType:     actorType,
-		TopicId:       topicId,
-		BlockHeight:   blockHeight,
-		Addresses:     addresses,
-		Rewards:       rewardValues,
-		BlockHeightTx: blockHeightTx,
+		ActorType:        actorType,
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Rewards:          rewardValues,
+		BlockHeightTx:    blockHeightTx,
 	}
 }
 
@@ -474,85 +474,85 @@ func NewReputerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, 
 
 // Listening Coefficients
 
-func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, addresses []string, actorType ActorType, coefficients []alloraMath.Dec) proto.Message {
+func NewListeningCoefficientsSetEventBase(topicID uint64, nonceBlockHeight int64, addresses []string, actorType ActorType, coefficients []alloraMath.Dec) proto.Message {
 	return &EventListeningCoefficientsSet{
-		ActorType:    actorType,
-		TopicId:      topicID,
-		BlockHeight:  blockHeight,
-		Addresses:    addresses,
-		Coefficients: coefficients,
+		ActorType:        actorType,
+		TopicId:          topicID,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Coefficients:     coefficients,
 	}
 }
 
 // Regrets
 
-func NewInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
+func NewInfererNetworkRegretSetEventBase(topicID uint64, nonceBlockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventInfererNetworkRegretSet{
-		TopicId:     topicID,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Regrets:     regrets,
+		TopicId:          topicID,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Regrets:          regrets,
 	}
 }
 
-func NewForecasterNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
+func NewForecasterNetworkRegretSetEventBase(topicID uint64, nonceBlockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventForecasterNetworkRegretSet{
-		TopicId:     topicID,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Regrets:     regrets,
+		TopicId:          topicID,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Regrets:          regrets,
 	}
 }
 
-func NewNaiveInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
+func NewNaiveInfererNetworkRegretSetEventBase(topicID uint64, nonceBlockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventNaiveInfererNetworkRegretSet{
-		TopicId:     topicID,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Regrets:     regrets,
+		TopicId:          topicID,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Regrets:          regrets,
 	}
 }
 
-func NewTopicInitialRegretSetEventBase(topicID uint64, blockHeight int64, regret alloraMath.Dec) proto.Message {
+func NewTopicInitialRegretSetEventBase(topicID uint64, nonceBlockHeight int64, regret alloraMath.Dec) proto.Message {
 	return &EventTopicInitialRegretSet{
-		TopicId:     topicID,
-		BlockHeight: blockHeight,
-		Regret:      regret,
+		TopicId:          topicID,
+		NonceBlockHeight: nonceBlockHeight,
+		Regret:           regret,
 	}
 }
 
-func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, blockHeight int64, score alloraMath.Dec) proto.Message {
+func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, nonceBlockHeight int64, score alloraMath.Dec) proto.Message {
 	return &EventTopicInitialEmaScoreSet{
-		ActorType:   actorType,
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Score:       score,
+		ActorType:        actorType,
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		Score:            score,
 	}
 }
 
-func NewRegretStdNormSetEventBase(topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) proto.Message {
+func NewRegretStdNormSetEventBase(topicId uint64, nonceBlockHeight int64, stdNorm alloraMath.Dec) proto.Message {
 	return &EventRegretStdNormSet{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Stdnorm:     stdNorm,
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		Stdnorm:          stdNorm,
 	}
 }
 
-func NewInfererWeightsSetEventBase(topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
+func NewInfererWeightsSetEventBase(topicId uint64, nonceBlockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
 	return &EventInfererWeightsSet{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Weights:     weights,
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Weights:          weights,
 	}
 }
 
-func NewForecasterWeightsSetEventBase(topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
+func NewForecasterWeightsSetEventBase(topicId uint64, nonceBlockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
 	return &EventForecasterWeightsSet{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Weights:     weights,
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		Addresses:        addresses,
+		Weights:          weights,
 	}
 }
 
