@@ -17,18 +17,18 @@ import (
 )
 
 const (
-	AttributeKeyActorType        = "actor_type"
-	AttributeKeyTopicId          = "topic_id"
-	AttributeKeyNonceBlockHeight = "nonce_block_height"
-	AttributeKeyNonceBlockHeightTx    = "block_height_tx"
-	AttributeKeyAddresses        = "addresses"
-	AttributeKeyScores           = "scores"
-	AttributeKeyRewards          = "rewards"
-	AttributeKeyValueBundle      = "bundle"
-	AttributeKeyCoefficients     = "coefficients"
-	AttributeKeyRegrets          = "regrets"
-	AttributeKeyRegret           = "regret"
-	AttributeKeyWeights          = "weights"
+	AttributeKeyActorType          = "actor_type"
+	AttributeKeyTopicId            = "topic_id"
+	AttributeKeyNonceBlockHeight   = "nonce_block_height"
+	AttributeKeyNonceBlockHeightTx = "block_height_tx"
+	AttributeKeyAddresses          = "addresses"
+	AttributeKeyScores             = "scores"
+	AttributeKeyRewards            = "rewards"
+	AttributeKeyValueBundle        = "bundle"
+	AttributeKeyCoefficients       = "coefficients"
+	AttributeKeyRegrets            = "regrets"
+	AttributeKeyRegret             = "regret"
+	AttributeKeyWeights            = "weights"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
