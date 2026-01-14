@@ -1,4 +1,4 @@
-<!--
+2222<!--
 Guiding Principles:
 
 Changelogs are for humans, not machines.
@@ -127,6 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * [#893](https://github.com/allora-network/allora-chain/pull/893) Move `c_norm` from being *used* as a global param to being a per-topic `Topic` field (keep deprecated `Params.c_norm` for client backwards compatibility)
+* [#900](https://github.com/allora-network/allora-chain/pull/900) Standardize nonce properties in events: rename `block_height` to `nonce_block_height` in 11 events where the field represents a nonce reference
 
 ### Deprecated
 
@@ -146,10 +147,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Removed
 
-#### Added 
+#### Added
 
 #### Changed
 
+* [#900](https://github.com/allora-network/allora-chain/pull/900) Standardize nonce properties in events: rename `block_height` to `nonce_block_height.
+
+# [Released]
 
 # v0.14.1
 
