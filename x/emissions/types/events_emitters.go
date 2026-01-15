@@ -207,12 +207,12 @@ func EmitNewFundTopicEvent(ctx context.Context, topicId TopicId, funder string, 
 	}
 }
 
-func EmitNewParamsSetEvent(ctx context.Context, params Params) {
+func EmitNewParamsEvent(ctx context.Context, params Params) {
 	metrics.IncrProducerEventCount(metrics.PARAMS_SET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewParamsSetEventBase(params))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewParamsEventBase(params))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewParamsSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewParamsEvent", "error", err)
 	}
 }
 
@@ -306,12 +306,12 @@ func EmitNewGlobalAdminWhitelistRemovedEvent(ctx context.Context, address string
 	}
 }
 
-func EmitNewForecastTaskUtilityScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec, nonce int64) {
+func EmitNewForecastTaskUtilityScoreEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec, nonce int64) {
 	metrics.IncrProducerEventCount(metrics.FORECAST_TASK_SCORE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score, nonce))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewForecastTaskScoreEventBase(topicId, score, nonce))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewForecastTaskUtilityScoreSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewForecastTaskUtilityScoreEvent", "error", err)
 	}
 }
 
@@ -629,21 +629,21 @@ func EmitNewReputerSubmissionWindowClosedEvent(ctx context.Context, topicId Topi
 
 // / Commits
 
-func EmitNewWorkerLastCommitSetEvent(ctx context.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
+func EmitNewWorkerLastCommitEvent(ctx context.Context, topicId TopicId, nonce *Nonce) {
 	metrics.IncrProducerEventCount(metrics.WORKER_LAST_COMMIT_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewWorkerLastCommitSetEventBase(topicId, height, nonce))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewWorkerLastCommitEventBase(topicId, nonce))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewWorkerLastCommitSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewWorkerLastCommitEvent", "error", err)
 	}
 }
 
-func EmitNewReputerLastCommitSetEvent(ctx context.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
+func EmitNewReputerLastCommitEvent(ctx context.Context, topicId TopicId, nonce *Nonce) {
 	metrics.IncrProducerEventCount(metrics.REPUTER_LAST_COMMIT_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerLastCommitSetEventBase(topicId, height, nonce))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewReputerLastCommitEventBase(topicId, nonce))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewReputerLastCommitSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewReputerLastCommitEvent", "error", err)
 	}
 }
 
@@ -699,31 +699,31 @@ func EmitNewNaiveInfererNetworkRegretSetEvent(ctx context.Context, topicId uint6
 	}
 }
 
-func EmitNewTopicInitialRegretSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, regret alloraMath.Dec) {
+func EmitNewTopicInitialRegretEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, regret alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_INITIAL_REGRET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialRegretSetEventBase(topicId, nonceBlockHeight, regret))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialRegretEventBase(topicId, nonceBlockHeight, regret))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewTopicInitialRegretSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewTopicInitialRegretEvent", "error", err)
 	}
 }
 
-func EmitNewTopicInitialEmaScoreSetEvent(ctx context.Context, actorType ActorType, topicId uint64, nonceBlockHeight int64, score alloraMath.Dec) {
+func EmitNewTopicInitialEmaScoreEvent(ctx context.Context, actorType ActorType, topicId uint64, nonceBlockHeight int64, score alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_INITIAL_EMA_SCORE_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialEmaScoreSetEventBase(actorType, topicId, nonceBlockHeight, score))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicInitialEmaScoreEventBase(actorType, topicId, nonceBlockHeight, score))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewTopicInitialEmaScoreSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewTopicInitialEmaScoreEvent", "error", err)
 	}
 }
 
 // Individual events
-func EmitNewRegretStdNormSetEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, stdNorm alloraMath.Dec) {
+func EmitNewRegretStdNormEvent(ctx context.Context, topicId uint64, nonceBlockHeight int64, stdNorm alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.REGRET_STDNORM_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, nonceBlockHeight, stdNorm))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRegretStdNormEventBase(topicId, nonceBlockHeight, stdNorm))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewRegretStdNormSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewRegretStdNormEvent", "error", err)
 	}
 }
 
@@ -753,12 +753,12 @@ func EmitNewForecasterWeightsSetEvent(ctx context.Context, topicId uint64, nonce
 
 // Previous Percentage Reward
 
-func EmitNewPreviousPercentageRewardToStakedReputersSetEvent(ctx context.Context, blockHeight int64, percentage alloraMath.Dec) {
+func EmitNewPreviousPercentageRewardToStakedReputersEvent(ctx context.Context, percentage alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.PREVIOUS_PERCENTAGE_REWARD_TO_STAKED_REPUTERS_SET_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight, percentage))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewPreviousPercentageRewardToStakedReputersEventBase(percentage))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting PreviousPercentageRewardToStakedReputersSetEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting PreviousPercentageRewardToStakedReputersEvent", "error", err)
 	}
 }
 

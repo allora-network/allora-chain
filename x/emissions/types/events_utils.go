@@ -262,8 +262,8 @@ func NewFundTopicEventBase(topicId TopicId, funder string, amount math.Int) prot
 	}
 }
 
-func NewParamsSetEventBase(params Params) proto.Message {
-	return &EventParamsSet{
+func NewParamsEventBase(params Params) proto.Message {
+	return &EventParams{
 		Params: &params,
 	}
 }
@@ -392,8 +392,8 @@ func NewTopicReputerWhitelistRemovedEventBase(topicId TopicId, address string) p
 	}
 }
 
-func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec, nonce int64) proto.Message {
-	return &EventForecastTaskScoreSet{
+func NewForecastTaskScoreEventBase(topicId TopicId, score alloraMath.Dec, nonce int64) proto.Message {
+	return &EventForecastTaskScore{
 		TopicId:          topicId,
 		Score:            score,
 		NonceBlockHeight: nonce,
@@ -456,19 +456,17 @@ func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.M
 
 // Commits
 
-func NewWorkerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, nonce *Nonce) proto.Message {
-	return &EventWorkerLastCommitSet{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Nonce:       nonce,
+func NewWorkerLastCommitEventBase(topicId TopicId, nonce *Nonce) proto.Message {
+	return &EventWorkerLastCommit{
+		TopicId: topicId,
+		Nonce:   nonce,
 	}
 }
 
-func NewReputerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, nonce *Nonce) proto.Message {
-	return &EventReputerLastCommitSet{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Nonce:       nonce,
+func NewReputerLastCommitEventBase(topicId TopicId, nonce *Nonce) proto.Message {
+	return &EventReputerLastCommit{
+		TopicId: topicId,
+		Nonce:   nonce,
 	}
 }
 
@@ -513,16 +511,16 @@ func NewNaiveInfererNetworkRegretSetEventBase(topicID uint64, nonceBlockHeight i
 	}
 }
 
-func NewTopicInitialRegretSetEventBase(topicID uint64, nonceBlockHeight int64, regret alloraMath.Dec) proto.Message {
-	return &EventTopicInitialRegretSet{
+func NewTopicInitialRegretEventBase(topicID uint64, nonceBlockHeight int64, regret alloraMath.Dec) proto.Message {
+	return &EventTopicInitialRegret{
 		TopicId:          topicID,
 		NonceBlockHeight: nonceBlockHeight,
 		Regret:           regret,
 	}
 }
 
-func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, nonceBlockHeight int64, score alloraMath.Dec) proto.Message {
-	return &EventTopicInitialEmaScoreSet{
+func NewTopicInitialEmaScoreEventBase(actorType ActorType, topicId uint64, nonceBlockHeight int64, score alloraMath.Dec) proto.Message {
+	return &EventTopicInitialEmaScore{
 		ActorType:        actorType,
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
@@ -530,8 +528,8 @@ func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, no
 	}
 }
 
-func NewRegretStdNormSetEventBase(topicId uint64, nonceBlockHeight int64, stdNorm alloraMath.Dec) proto.Message {
-	return &EventRegretStdNormSet{
+func NewRegretStdNormEventBase(topicId uint64, nonceBlockHeight int64, stdNorm alloraMath.Dec) proto.Message {
+	return &EventRegretStdNorm{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
 		Stdnorm:          stdNorm,
@@ -558,10 +556,9 @@ func NewForecasterWeightsSetEventBase(topicId uint64, nonceBlockHeight int64, ad
 
 // Previous Percentage Reward
 
-func NewPreviousPercentageRewardToStakedReputersSetEventBase(blockHeight int64, percentage alloraMath.Dec) proto.Message {
-	return &EventPreviousPercentageRewardToStakedReputersSet{
-		BlockHeight: blockHeight,
-		Percentage:  percentage,
+func NewPreviousPercentageRewardToStakedReputersEventBase(percentage alloraMath.Dec) proto.Message {
+	return &EventPreviousPercentageRewardToStakedReputers{
+		Percentage: percentage,
 	}
 }
 

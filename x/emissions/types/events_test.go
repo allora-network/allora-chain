@@ -945,7 +945,7 @@ func assertEventValueBundle(t *testing.T, val string, bundle types.ValueBundle) 
 	}
 }
 
-func TestEmitNewForecastTaskSetEvent(t *testing.T) {
+func TestEmitNewForecastTaskEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)
 	nonce := int64(10)
@@ -955,13 +955,13 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	score, err := NaiveValue.Sub(CombinedValue)
 	require.NoError(t, err)
 
-	types.EmitNewForecastTaskUtilityScoreSetEvent(ctx, topicId, score, nonce)
+	types.EmitNewForecastTaskUtilityScoreEvent(ctx, topicId, score, nonce)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventForecastTaskScoreSet", event.Type)
+	require.Equal(t, "emissions.v9.EventForecastTaskScore", event.Type)
 
 	// Check that we have the expected number of attributes
 	require.Len(t, event.Attributes, 3)
@@ -983,44 +983,38 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Equal(t, "\"10\"", attributes["nonce_block_height"])
 }
 
-func TestNewLastCommitSetEvent(t *testing.T) {
+func TestNewLastCommitEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId1 := uint64(1)
 	topicId2 := uint64(2)
 	workerHeight := int64(10)
 	worker2Height := int64(20)
 	reputerHeight := int64(30)
-	types.EmitNewWorkerLastCommitSetEvent(ctx, topicId1, workerHeight, &types.Nonce{BlockHeight: workerHeight - 5})
-	types.EmitNewWorkerLastCommitSetEvent(ctx, topicId1, worker2Height, &types.Nonce{BlockHeight: worker2Height - 5})
-	types.EmitNewReputerLastCommitSetEvent(ctx, topicId2, reputerHeight, &types.Nonce{BlockHeight: reputerHeight - 5})
+	types.EmitNewWorkerLastCommitEvent(ctx, topicId1, &types.Nonce{BlockHeight: workerHeight - 5})
+	types.EmitNewWorkerLastCommitEvent(ctx, topicId1, &types.Nonce{BlockHeight: worker2Height - 5})
+	types.EmitNewReputerLastCommitEvent(ctx, topicId2, &types.Nonce{BlockHeight: reputerHeight - 5})
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 3)
 
-	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[0].Type)
-	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[1].Type)
-	require.Equal(t, "emissions.v9.EventReputerLastCommitSet", events[2].Type)
+	require.Equal(t, "emissions.v9.EventWorkerLastCommit", events[0].Type)
+	require.Equal(t, "emissions.v9.EventWorkerLastCommit", events[1].Type)
+	require.Equal(t, "emissions.v9.EventReputerLastCommit", events[2].Type)
 
-	require.Contains(t, events[0].Attributes[0].Key, "block_height")
-	require.Contains(t, events[0].Attributes[1].Key, "nonce")
-	require.Contains(t, events[0].Attributes[2].Key, "topic_id")
-	require.Contains(t, events[0].Attributes[0].Value, "10")
-	require.Contains(t, events[0].Attributes[1].Value, "{\"block_height\":\"5\"}")
-	require.Contains(t, events[0].Attributes[2].Value, "1")
+	require.Contains(t, events[0].Attributes[0].Key, "nonce")
+	require.Contains(t, events[0].Attributes[1].Key, "topic_id")
+	require.Contains(t, events[0].Attributes[0].Value, "{\"block_height\":\"5\"}")
+	require.Contains(t, events[0].Attributes[1].Value, "1")
 
-	require.Contains(t, events[1].Attributes[0].Key, "block_height")
-	require.Contains(t, events[1].Attributes[1].Key, "nonce")
-	require.Contains(t, events[1].Attributes[2].Key, "topic_id")
-	require.Contains(t, events[1].Attributes[0].Value, "20")
-	require.Contains(t, events[1].Attributes[1].Value, "{\"block_height\":\"15\"}")
-	require.Contains(t, events[1].Attributes[2].Value, "1")
+	require.Contains(t, events[1].Attributes[0].Key, "nonce")
+	require.Contains(t, events[1].Attributes[1].Key, "topic_id")
+	require.Contains(t, events[1].Attributes[0].Value, "{\"block_height\":\"15\"}")
+	require.Contains(t, events[1].Attributes[1].Value, "1")
 
-	require.Contains(t, events[2].Attributes[0].Key, "block_height")
-	require.Contains(t, events[2].Attributes[1].Key, "nonce")
-	require.Contains(t, events[2].Attributes[2].Key, "topic_id")
-	require.Contains(t, events[2].Attributes[0].Value, "30")
-	require.Contains(t, events[2].Attributes[1].Value, "{\"block_height\":\"25\"}")
-	require.Contains(t, events[2].Attributes[2].Value, "2")
+	require.Contains(t, events[2].Attributes[0].Key, "nonce")
+	require.Contains(t, events[2].Attributes[1].Key, "topic_id")
+	require.Contains(t, events[2].Attributes[0].Value, "{\"block_height\":\"25\"}")
+	require.Contains(t, events[2].Attributes[1].Value, "2")
 }
 
 func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
@@ -1339,19 +1333,19 @@ func TestEmitNewNaiveInfererNetworkRegretSetEventWithNoRegrets(t *testing.T) {
 	require.Empty(t, events)
 }
 
-func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
+func TestEmitNewTopicInitialRegretEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicID := uint64(1)
 	blockHeight := int64(10)
 	regret := alloraMath.NewDecFromInt64(100)
 
-	types.EmitNewTopicInitialRegretSetEvent(ctx, topicID, blockHeight, regret)
+	types.EmitNewTopicInitialRegretEvent(ctx, topicID, blockHeight, regret)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventTopicInitialRegretSet", event.Type)
+	require.Equal(t, "emissions.v9.EventTopicInitialRegret", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1366,25 +1360,19 @@ func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), "100")
 }
 
-func TestEmitPreviousPercentageRewardToStakedReputersSetEvent(t *testing.T) {
+func TestEmitPreviousPercentageRewardToStakedReputersEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	blockHeight := int64(10)
 	percentage := alloraMath.MustNewDecFromString("0.75")
 
-	types.EmitNewPreviousPercentageRewardToStakedReputersSetEvent(ctx, blockHeight, percentage)
+	types.EmitNewPreviousPercentageRewardToStakedReputersEvent(ctx, percentage)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventPreviousPercentageRewardToStakedReputersSet", event.Type)
+	require.Equal(t, "emissions.v9.EventPreviousPercentageRewardToStakedReputers", event.Type)
 
-	// This event uses deprecated block_height field (not nonce_block_height)
-	val, exists := event.GetAttribute("block_height")
-	require.True(t, exists)
-	require.Contains(t, val.GetValue(), strconv.FormatInt(blockHeight, 10))
-
-	val, exists = event.GetAttribute("percentage")
+	val, exists := event.GetAttribute("percentage")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), percentage.String())
 }

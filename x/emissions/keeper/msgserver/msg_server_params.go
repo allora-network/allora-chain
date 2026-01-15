@@ -195,6 +195,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 		return nil, err
 	}
 
-	types.EmitNewParamsSetEvent(ctx, existingParams)
+	types.EmitNewParamsEvent(ctx, existingParams)
 	return &types.UpdateParamsResponse{}, nil
 }

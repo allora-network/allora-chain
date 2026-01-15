@@ -4952,7 +4952,7 @@ func (k Keeper) HandleMonthlyRewardsReset(ctx context.Context) (err error) {
 	}
 
 	// Emit the event
-	types.EmitNewPreviousPercentageRewardToStakedReputersSetEvent(sdkCtx, sdkCtx.BlockHeight(), percentageToStakedReputersDec)
+	types.EmitNewPreviousPercentageRewardToStakedReputersEvent(sdkCtx, percentageToStakedReputersDec)
 
 	// Reset monthly reputer rewards
 	err = k.ResetMonthlyRewards(ctx)

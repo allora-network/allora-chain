@@ -1512,22 +1512,22 @@ func (m *EventFundTopic) GetFunder() string {
 	return ""
 }
 
-type EventParamsSet struct {
+type EventParams struct {
 	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 }
 
-func (m *EventParamsSet) Reset()         { *m = EventParamsSet{} }
-func (m *EventParamsSet) String() string { return proto.CompactTextString(m) }
-func (*EventParamsSet) ProtoMessage()    {}
-func (*EventParamsSet) Descriptor() ([]byte, []int) {
+func (m *EventParams) Reset()         { *m = EventParams{} }
+func (m *EventParams) String() string { return proto.CompactTextString(m) }
+func (*EventParams) ProtoMessage()    {}
+func (*EventParams) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{23}
 }
-func (m *EventParamsSet) XXX_Unmarshal(b []byte) error {
+func (m *EventParams) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventParamsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventParamsSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventParams.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -1537,19 +1537,19 @@ func (m *EventParamsSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
-func (m *EventParamsSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventParamsSet.Merge(m, src)
+func (m *EventParams) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventParams.Merge(m, src)
 }
-func (m *EventParamsSet) XXX_Size() int {
+func (m *EventParams) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventParamsSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventParamsSet.DiscardUnknown(m)
+func (m *EventParams) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventParams.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventParamsSet proto.InternalMessageInfo
+var xxx_messageInfo_EventParams proto.InternalMessageInfo
 
-func (m *EventParamsSet) GetParams() *Params {
+func (m *EventParams) GetParams() *Params {
 	if m != nil {
 		return m.Params
 	}
@@ -2468,24 +2468,24 @@ func (m *EventTopicReputerWhitelistRemoved) GetAddress() string {
 	return ""
 }
 
-type EventForecastTaskScoreSet struct {
+type EventForecastTaskScore struct {
 	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	Score            github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
 	NonceBlockHeight int64                                           `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
 }
 
-func (m *EventForecastTaskScoreSet) Reset()         { *m = EventForecastTaskScoreSet{} }
-func (m *EventForecastTaskScoreSet) String() string { return proto.CompactTextString(m) }
-func (*EventForecastTaskScoreSet) ProtoMessage()    {}
-func (*EventForecastTaskScoreSet) Descriptor() ([]byte, []int) {
+func (m *EventForecastTaskScore) Reset()         { *m = EventForecastTaskScore{} }
+func (m *EventForecastTaskScore) String() string { return proto.CompactTextString(m) }
+func (*EventForecastTaskScore) ProtoMessage()    {}
+func (*EventForecastTaskScore) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{44}
 }
-func (m *EventForecastTaskScoreSet) XXX_Unmarshal(b []byte) error {
+func (m *EventForecastTaskScore) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventForecastTaskScoreSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventForecastTaskScore) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventForecastTaskScoreSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventForecastTaskScore.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -2495,50 +2495,49 @@ func (m *EventForecastTaskScoreSet) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *EventForecastTaskScoreSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventForecastTaskScoreSet.Merge(m, src)
+func (m *EventForecastTaskScore) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventForecastTaskScore.Merge(m, src)
 }
-func (m *EventForecastTaskScoreSet) XXX_Size() int {
+func (m *EventForecastTaskScore) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventForecastTaskScoreSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventForecastTaskScoreSet.DiscardUnknown(m)
+func (m *EventForecastTaskScore) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventForecastTaskScore.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventForecastTaskScoreSet proto.InternalMessageInfo
+var xxx_messageInfo_EventForecastTaskScore proto.InternalMessageInfo
 
-func (m *EventForecastTaskScoreSet) GetTopicId() uint64 {
+func (m *EventForecastTaskScore) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *EventForecastTaskScoreSet) GetNonceBlockHeight() int64 {
+func (m *EventForecastTaskScore) GetNonceBlockHeight() int64 {
 	if m != nil {
 		return m.NonceBlockHeight
 	}
 	return 0
 }
 
-type EventWorkerLastCommitSet struct {
-	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"` // Deprecated: Do not use.
-	Nonce       *Nonce `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+type EventWorkerLastCommit struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce   *Nonce `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
-func (m *EventWorkerLastCommitSet) Reset()         { *m = EventWorkerLastCommitSet{} }
-func (m *EventWorkerLastCommitSet) String() string { return proto.CompactTextString(m) }
-func (*EventWorkerLastCommitSet) ProtoMessage()    {}
-func (*EventWorkerLastCommitSet) Descriptor() ([]byte, []int) {
+func (m *EventWorkerLastCommit) Reset()         { *m = EventWorkerLastCommit{} }
+func (m *EventWorkerLastCommit) String() string { return proto.CompactTextString(m) }
+func (*EventWorkerLastCommit) ProtoMessage()    {}
+func (*EventWorkerLastCommit) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{45}
 }
-func (m *EventWorkerLastCommitSet) XXX_Unmarshal(b []byte) error {
+func (m *EventWorkerLastCommit) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventWorkerLastCommitSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventWorkerLastCommit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventWorkerLastCommitSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventWorkerLastCommit.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -2548,58 +2547,49 @@ func (m *EventWorkerLastCommitSet) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *EventWorkerLastCommitSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventWorkerLastCommitSet.Merge(m, src)
+func (m *EventWorkerLastCommit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventWorkerLastCommit.Merge(m, src)
 }
-func (m *EventWorkerLastCommitSet) XXX_Size() int {
+func (m *EventWorkerLastCommit) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventWorkerLastCommitSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventWorkerLastCommitSet.DiscardUnknown(m)
+func (m *EventWorkerLastCommit) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventWorkerLastCommit.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventWorkerLastCommitSet proto.InternalMessageInfo
+var xxx_messageInfo_EventWorkerLastCommit proto.InternalMessageInfo
 
-func (m *EventWorkerLastCommitSet) GetTopicId() uint64 {
+func (m *EventWorkerLastCommit) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-// Deprecated: Do not use.
-func (m *EventWorkerLastCommitSet) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *EventWorkerLastCommitSet) GetNonce() *Nonce {
+func (m *EventWorkerLastCommit) GetNonce() *Nonce {
 	if m != nil {
 		return m.Nonce
 	}
 	return nil
 }
 
-type EventReputerLastCommitSet struct {
-	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"` // Deprecated: Do not use.
-	Nonce       *Nonce `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+type EventReputerLastCommit struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce   *Nonce `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
-func (m *EventReputerLastCommitSet) Reset()         { *m = EventReputerLastCommitSet{} }
-func (m *EventReputerLastCommitSet) String() string { return proto.CompactTextString(m) }
-func (*EventReputerLastCommitSet) ProtoMessage()    {}
-func (*EventReputerLastCommitSet) Descriptor() ([]byte, []int) {
+func (m *EventReputerLastCommit) Reset()         { *m = EventReputerLastCommit{} }
+func (m *EventReputerLastCommit) String() string { return proto.CompactTextString(m) }
+func (*EventReputerLastCommit) ProtoMessage()    {}
+func (*EventReputerLastCommit) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{46}
 }
-func (m *EventReputerLastCommitSet) XXX_Unmarshal(b []byte) error {
+func (m *EventReputerLastCommit) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventReputerLastCommitSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventReputerLastCommit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventReputerLastCommitSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventReputerLastCommit.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -2609,34 +2599,26 @@ func (m *EventReputerLastCommitSet) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *EventReputerLastCommitSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventReputerLastCommitSet.Merge(m, src)
+func (m *EventReputerLastCommit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventReputerLastCommit.Merge(m, src)
 }
-func (m *EventReputerLastCommitSet) XXX_Size() int {
+func (m *EventReputerLastCommit) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventReputerLastCommitSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventReputerLastCommitSet.DiscardUnknown(m)
+func (m *EventReputerLastCommit) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventReputerLastCommit.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventReputerLastCommitSet proto.InternalMessageInfo
+var xxx_messageInfo_EventReputerLastCommit proto.InternalMessageInfo
 
-func (m *EventReputerLastCommitSet) GetTopicId() uint64 {
+func (m *EventReputerLastCommit) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-// Deprecated: Do not use.
-func (m *EventReputerLastCommitSet) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *EventReputerLastCommitSet) GetNonce() *Nonce {
+func (m *EventReputerLastCommit) GetNonce() *Nonce {
 	if m != nil {
 		return m.Nonce
 	}
@@ -3017,24 +2999,24 @@ func (m *EventNaiveInfererNetworkRegretSet) GetAddresses() []string {
 	return nil
 }
 
-type EventTopicInitialRegretSet struct {
+type EventTopicInitialRegret struct {
 	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
 	Regret           github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=regret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regret"`
 }
 
-func (m *EventTopicInitialRegretSet) Reset()         { *m = EventTopicInitialRegretSet{} }
-func (m *EventTopicInitialRegretSet) String() string { return proto.CompactTextString(m) }
-func (*EventTopicInitialRegretSet) ProtoMessage()    {}
-func (*EventTopicInitialRegretSet) Descriptor() ([]byte, []int) {
+func (m *EventTopicInitialRegret) Reset()         { *m = EventTopicInitialRegret{} }
+func (m *EventTopicInitialRegret) String() string { return proto.CompactTextString(m) }
+func (*EventTopicInitialRegret) ProtoMessage()    {}
+func (*EventTopicInitialRegret) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{53}
 }
-func (m *EventTopicInitialRegretSet) XXX_Unmarshal(b []byte) error {
+func (m *EventTopicInitialRegret) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventTopicInitialRegretSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventTopicInitialRegret) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventTopicInitialRegretSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventTopicInitialRegret.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -3044,51 +3026,51 @@ func (m *EventTopicInitialRegretSet) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *EventTopicInitialRegretSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventTopicInitialRegretSet.Merge(m, src)
+func (m *EventTopicInitialRegret) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicInitialRegret.Merge(m, src)
 }
-func (m *EventTopicInitialRegretSet) XXX_Size() int {
+func (m *EventTopicInitialRegret) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventTopicInitialRegretSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventTopicInitialRegretSet.DiscardUnknown(m)
+func (m *EventTopicInitialRegret) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicInitialRegret.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventTopicInitialRegretSet proto.InternalMessageInfo
+var xxx_messageInfo_EventTopicInitialRegret proto.InternalMessageInfo
 
-func (m *EventTopicInitialRegretSet) GetTopicId() uint64 {
+func (m *EventTopicInitialRegret) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *EventTopicInitialRegretSet) GetNonceBlockHeight() int64 {
+func (m *EventTopicInitialRegret) GetNonceBlockHeight() int64 {
 	if m != nil {
 		return m.NonceBlockHeight
 	}
 	return 0
 }
 
-type EventTopicInitialEmaScoreSet struct {
+type EventTopicInitialEmaScore struct {
 	ActorType        ActorType                                       `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
 	TopicId          uint64                                          `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	NonceBlockHeight int64                                           `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
 	Score            github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
 }
 
-func (m *EventTopicInitialEmaScoreSet) Reset()         { *m = EventTopicInitialEmaScoreSet{} }
-func (m *EventTopicInitialEmaScoreSet) String() string { return proto.CompactTextString(m) }
-func (*EventTopicInitialEmaScoreSet) ProtoMessage()    {}
-func (*EventTopicInitialEmaScoreSet) Descriptor() ([]byte, []int) {
+func (m *EventTopicInitialEmaScore) Reset()         { *m = EventTopicInitialEmaScore{} }
+func (m *EventTopicInitialEmaScore) String() string { return proto.CompactTextString(m) }
+func (*EventTopicInitialEmaScore) ProtoMessage()    {}
+func (*EventTopicInitialEmaScore) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{54}
 }
-func (m *EventTopicInitialEmaScoreSet) XXX_Unmarshal(b []byte) error {
+func (m *EventTopicInitialEmaScore) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventTopicInitialEmaScoreSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventTopicInitialEmaScore) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventTopicInitialEmaScoreSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventTopicInitialEmaScore.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -3098,57 +3080,57 @@ func (m *EventTopicInitialEmaScoreSet) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-func (m *EventTopicInitialEmaScoreSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventTopicInitialEmaScoreSet.Merge(m, src)
+func (m *EventTopicInitialEmaScore) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTopicInitialEmaScore.Merge(m, src)
 }
-func (m *EventTopicInitialEmaScoreSet) XXX_Size() int {
+func (m *EventTopicInitialEmaScore) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventTopicInitialEmaScoreSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventTopicInitialEmaScoreSet.DiscardUnknown(m)
+func (m *EventTopicInitialEmaScore) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTopicInitialEmaScore.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventTopicInitialEmaScoreSet proto.InternalMessageInfo
+var xxx_messageInfo_EventTopicInitialEmaScore proto.InternalMessageInfo
 
-func (m *EventTopicInitialEmaScoreSet) GetActorType() ActorType {
+func (m *EventTopicInitialEmaScore) GetActorType() ActorType {
 	if m != nil {
 		return m.ActorType
 	}
 	return ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED
 }
 
-func (m *EventTopicInitialEmaScoreSet) GetTopicId() uint64 {
+func (m *EventTopicInitialEmaScore) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *EventTopicInitialEmaScoreSet) GetNonceBlockHeight() int64 {
+func (m *EventTopicInitialEmaScore) GetNonceBlockHeight() int64 {
 	if m != nil {
 		return m.NonceBlockHeight
 	}
 	return 0
 }
 
-type EventRegretStdNormSet struct {
+type EventRegretStdNorm struct {
 	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
 	Stdnorm          github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=stdnorm,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"stdnorm"`
 }
 
-func (m *EventRegretStdNormSet) Reset()         { *m = EventRegretStdNormSet{} }
-func (m *EventRegretStdNormSet) String() string { return proto.CompactTextString(m) }
-func (*EventRegretStdNormSet) ProtoMessage()    {}
-func (*EventRegretStdNormSet) Descriptor() ([]byte, []int) {
+func (m *EventRegretStdNorm) Reset()         { *m = EventRegretStdNorm{} }
+func (m *EventRegretStdNorm) String() string { return proto.CompactTextString(m) }
+func (*EventRegretStdNorm) ProtoMessage()    {}
+func (*EventRegretStdNorm) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{55}
 }
-func (m *EventRegretStdNormSet) XXX_Unmarshal(b []byte) error {
+func (m *EventRegretStdNorm) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventRegretStdNormSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventRegretStdNorm) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventRegretStdNormSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventRegretStdNorm.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -3158,26 +3140,26 @@ func (m *EventRegretStdNormSet) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *EventRegretStdNormSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventRegretStdNormSet.Merge(m, src)
+func (m *EventRegretStdNorm) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRegretStdNorm.Merge(m, src)
 }
-func (m *EventRegretStdNormSet) XXX_Size() int {
+func (m *EventRegretStdNorm) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventRegretStdNormSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventRegretStdNormSet.DiscardUnknown(m)
+func (m *EventRegretStdNorm) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRegretStdNorm.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventRegretStdNormSet proto.InternalMessageInfo
+var xxx_messageInfo_EventRegretStdNorm proto.InternalMessageInfo
 
-func (m *EventRegretStdNormSet) GetTopicId() uint64 {
+func (m *EventRegretStdNorm) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *EventRegretStdNormSet) GetNonceBlockHeight() int64 {
+func (m *EventRegretStdNorm) GetNonceBlockHeight() int64 {
 	if m != nil {
 		return m.NonceBlockHeight
 	}
@@ -3306,27 +3288,26 @@ func (m *EventForecasterWeightsSet) GetAddresses() []string {
 	return nil
 }
 
-type EventPreviousPercentageRewardToStakedReputersSet struct {
-	BlockHeight int64                                           `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"` // Deprecated: Do not use.
-	Percentage  github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=percentage,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"percentage"`
+type EventPreviousPercentageRewardToStakedReputers struct {
+	Percentage github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=percentage,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"percentage"`
 }
 
-func (m *EventPreviousPercentageRewardToStakedReputersSet) Reset() {
-	*m = EventPreviousPercentageRewardToStakedReputersSet{}
+func (m *EventPreviousPercentageRewardToStakedReputers) Reset() {
+	*m = EventPreviousPercentageRewardToStakedReputers{}
 }
-func (m *EventPreviousPercentageRewardToStakedReputersSet) String() string {
+func (m *EventPreviousPercentageRewardToStakedReputers) String() string {
 	return proto.CompactTextString(m)
 }
-func (*EventPreviousPercentageRewardToStakedReputersSet) ProtoMessage() {}
-func (*EventPreviousPercentageRewardToStakedReputersSet) Descriptor() ([]byte, []int) {
+func (*EventPreviousPercentageRewardToStakedReputers) ProtoMessage() {}
+func (*EventPreviousPercentageRewardToStakedReputers) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2d7671ca936dd333, []int{58}
 }
-func (m *EventPreviousPercentageRewardToStakedReputersSet) XXX_Unmarshal(b []byte) error {
+func (m *EventPreviousPercentageRewardToStakedReputers) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *EventPreviousPercentageRewardToStakedReputersSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventPreviousPercentageRewardToStakedReputers) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_EventPreviousPercentageRewardToStakedReputersSet.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventPreviousPercentageRewardToStakedReputers.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -3336,25 +3317,17 @@ func (m *EventPreviousPercentageRewardToStakedReputersSet) XXX_Marshal(b []byte,
 		return b[:n], nil
 	}
 }
-func (m *EventPreviousPercentageRewardToStakedReputersSet) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EventPreviousPercentageRewardToStakedReputersSet.Merge(m, src)
+func (m *EventPreviousPercentageRewardToStakedReputers) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventPreviousPercentageRewardToStakedReputers.Merge(m, src)
 }
-func (m *EventPreviousPercentageRewardToStakedReputersSet) XXX_Size() int {
+func (m *EventPreviousPercentageRewardToStakedReputers) XXX_Size() int {
 	return m.Size()
 }
-func (m *EventPreviousPercentageRewardToStakedReputersSet) XXX_DiscardUnknown() {
-	xxx_messageInfo_EventPreviousPercentageRewardToStakedReputersSet.DiscardUnknown(m)
+func (m *EventPreviousPercentageRewardToStakedReputers) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventPreviousPercentageRewardToStakedReputers.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_EventPreviousPercentageRewardToStakedReputersSet proto.InternalMessageInfo
-
-// Deprecated: Do not use.
-func (m *EventPreviousPercentageRewardToStakedReputersSet) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
+var xxx_messageInfo_EventPreviousPercentageRewardToStakedReputers proto.InternalMessageInfo
 
 type EventPruneRecords struct {
 	BlockHeight int64  `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
@@ -4347,7 +4320,7 @@ func init() {
 	proto.RegisterType((*EventReputerUnregistered)(nil), "emissions.v9.EventReputerUnregistered")
 	proto.RegisterType((*EventWorkerUnregistered)(nil), "emissions.v9.EventWorkerUnregistered")
 	proto.RegisterType((*EventFundTopic)(nil), "emissions.v9.EventFundTopic")
-	proto.RegisterType((*EventParamsSet)(nil), "emissions.v9.EventParamsSet")
+	proto.RegisterType((*EventParams)(nil), "emissions.v9.EventParams")
 	proto.RegisterType((*EventWhitelistAdminAdded)(nil), "emissions.v9.EventWhitelistAdminAdded")
 	proto.RegisterType((*EventWhitelistAdminRemoved)(nil), "emissions.v9.EventWhitelistAdminRemoved")
 	proto.RegisterType((*EventGlobalWhitelistAdded)(nil), "emissions.v9.EventGlobalWhitelistAdded")
@@ -4368,21 +4341,21 @@ func init() {
 	proto.RegisterType((*EventTopicWorkerWhitelistRemoved)(nil), "emissions.v9.EventTopicWorkerWhitelistRemoved")
 	proto.RegisterType((*EventTopicReputerWhitelistAdded)(nil), "emissions.v9.EventTopicReputerWhitelistAdded")
 	proto.RegisterType((*EventTopicReputerWhitelistRemoved)(nil), "emissions.v9.EventTopicReputerWhitelistRemoved")
-	proto.RegisterType((*EventForecastTaskScoreSet)(nil), "emissions.v9.EventForecastTaskScoreSet")
-	proto.RegisterType((*EventWorkerLastCommitSet)(nil), "emissions.v9.EventWorkerLastCommitSet")
-	proto.RegisterType((*EventReputerLastCommitSet)(nil), "emissions.v9.EventReputerLastCommitSet")
+	proto.RegisterType((*EventForecastTaskScore)(nil), "emissions.v9.EventForecastTaskScore")
+	proto.RegisterType((*EventWorkerLastCommit)(nil), "emissions.v9.EventWorkerLastCommit")
+	proto.RegisterType((*EventReputerLastCommit)(nil), "emissions.v9.EventReputerLastCommit")
 	proto.RegisterType((*EventTopicRewardsSet)(nil), "emissions.v9.EventTopicRewardsSet")
 	proto.RegisterType((*EventEMAScoresSet)(nil), "emissions.v9.EventEMAScoresSet")
 	proto.RegisterType((*EventListeningCoefficientsSet)(nil), "emissions.v9.EventListeningCoefficientsSet")
 	proto.RegisterType((*EventInfererNetworkRegretSet)(nil), "emissions.v9.EventInfererNetworkRegretSet")
 	proto.RegisterType((*EventForecasterNetworkRegretSet)(nil), "emissions.v9.EventForecasterNetworkRegretSet")
 	proto.RegisterType((*EventNaiveInfererNetworkRegretSet)(nil), "emissions.v9.EventNaiveInfererNetworkRegretSet")
-	proto.RegisterType((*EventTopicInitialRegretSet)(nil), "emissions.v9.EventTopicInitialRegretSet")
-	proto.RegisterType((*EventTopicInitialEmaScoreSet)(nil), "emissions.v9.EventTopicInitialEmaScoreSet")
-	proto.RegisterType((*EventRegretStdNormSet)(nil), "emissions.v9.EventRegretStdNormSet")
+	proto.RegisterType((*EventTopicInitialRegret)(nil), "emissions.v9.EventTopicInitialRegret")
+	proto.RegisterType((*EventTopicInitialEmaScore)(nil), "emissions.v9.EventTopicInitialEmaScore")
+	proto.RegisterType((*EventRegretStdNorm)(nil), "emissions.v9.EventRegretStdNorm")
 	proto.RegisterType((*EventInfererWeightsSet)(nil), "emissions.v9.EventInfererWeightsSet")
 	proto.RegisterType((*EventForecasterWeightsSet)(nil), "emissions.v9.EventForecasterWeightsSet")
-	proto.RegisterType((*EventPreviousPercentageRewardToStakedReputersSet)(nil), "emissions.v9.EventPreviousPercentageRewardToStakedReputersSet")
+	proto.RegisterType((*EventPreviousPercentageRewardToStakedReputers)(nil), "emissions.v9.EventPreviousPercentageRewardToStakedReputers")
 	proto.RegisterType((*EventPruneRecords)(nil), "emissions.v9.EventPruneRecords")
 	proto.RegisterType((*EventDelegateRewardShareUpdated)(nil), "emissions.v9.EventDelegateRewardShareUpdated")
 	proto.RegisterType((*EventDelegateRewardDistributed)(nil), "emissions.v9.EventDelegateRewardDistributed")
@@ -5993,7 +5966,7 @@ func (m *EventFundTopic) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *EventParamsSet) Marshal() (dAtA []byte, err error) {
+func (m *EventParams) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -6003,12 +5976,12 @@ func (m *EventParamsSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventParamsSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventParams) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventParamsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -6640,7 +6613,7 @@ func (m *EventTopicReputerWhitelistRemoved) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 
-func (m *EventForecastTaskScoreSet) Marshal() (dAtA []byte, err error) {
+func (m *EventForecastTaskScore) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -6650,12 +6623,12 @@ func (m *EventForecastTaskScoreSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventForecastTaskScoreSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventForecastTaskScore) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventForecastTaskScoreSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventForecastTaskScore) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -6683,7 +6656,7 @@ func (m *EventForecastTaskScoreSet) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *EventWorkerLastCommitSet) Marshal() (dAtA []byte, err error) {
+func (m *EventWorkerLastCommit) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -6693,12 +6666,12 @@ func (m *EventWorkerLastCommitSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventWorkerLastCommitSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventWorkerLastCommit) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventWorkerLastCommitSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventWorkerLastCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -6714,11 +6687,6 @@ func (m *EventWorkerLastCommitSet) MarshalToSizedBuffer(dAtA []byte) (int, error
 		}
 		i--
 		dAtA[i] = 0x1a
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x10
 	}
 	if m.TopicId != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
@@ -6728,7 +6696,7 @@ func (m *EventWorkerLastCommitSet) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
-func (m *EventReputerLastCommitSet) Marshal() (dAtA []byte, err error) {
+func (m *EventReputerLastCommit) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -6738,12 +6706,12 @@ func (m *EventReputerLastCommitSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventReputerLastCommitSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventReputerLastCommit) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventReputerLastCommitSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventReputerLastCommit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -6759,11 +6727,6 @@ func (m *EventReputerLastCommitSet) MarshalToSizedBuffer(dAtA []byte) (int, erro
 		}
 		i--
 		dAtA[i] = 0x1a
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x10
 	}
 	if m.TopicId != 0 {
 		i = encodeVarintEvents(dAtA, i, uint64(m.TopicId))
@@ -7131,7 +7094,7 @@ func (m *EventNaiveInfererNetworkRegretSet) MarshalToSizedBuffer(dAtA []byte) (i
 	return len(dAtA) - i, nil
 }
 
-func (m *EventTopicInitialRegretSet) Marshal() (dAtA []byte, err error) {
+func (m *EventTopicInitialRegret) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -7141,12 +7104,12 @@ func (m *EventTopicInitialRegretSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventTopicInitialRegretSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventTopicInitialRegret) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventTopicInitialRegretSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventTopicInitialRegret) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -7174,7 +7137,7 @@ func (m *EventTopicInitialRegretSet) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *EventTopicInitialEmaScoreSet) Marshal() (dAtA []byte, err error) {
+func (m *EventTopicInitialEmaScore) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -7184,12 +7147,12 @@ func (m *EventTopicInitialEmaScoreSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventTopicInitialEmaScoreSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventTopicInitialEmaScore) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventTopicInitialEmaScoreSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventTopicInitialEmaScore) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -7222,7 +7185,7 @@ func (m *EventTopicInitialEmaScoreSet) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *EventRegretStdNormSet) Marshal() (dAtA []byte, err error) {
+func (m *EventRegretStdNorm) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -7232,12 +7195,12 @@ func (m *EventRegretStdNormSet) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *EventRegretStdNormSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventRegretStdNorm) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventRegretStdNormSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventRegretStdNorm) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -7377,7 +7340,7 @@ func (m *EventForecasterWeightsSet) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *EventPreviousPercentageRewardToStakedReputersSet) Marshal() (dAtA []byte, err error) {
+func (m *EventPreviousPercentageRewardToStakedReputers) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -7387,12 +7350,12 @@ func (m *EventPreviousPercentageRewardToStakedReputersSet) Marshal() (dAtA []byt
 	return dAtA[:n], nil
 }
 
-func (m *EventPreviousPercentageRewardToStakedReputersSet) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventPreviousPercentageRewardToStakedReputers) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *EventPreviousPercentageRewardToStakedReputersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventPreviousPercentageRewardToStakedReputers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -7407,11 +7370,6 @@ func (m *EventPreviousPercentageRewardToStakedReputersSet) MarshalToSizedBuffer(
 	}
 	i--
 	dAtA[i] = 0x12
-	if m.BlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x8
-	}
 	return len(dAtA) - i, nil
 }
 
@@ -8749,7 +8707,7 @@ func (m *EventFundTopic) Size() (n int) {
 	return n
 }
 
-func (m *EventParamsSet) Size() (n int) {
+func (m *EventParams) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9030,7 +8988,7 @@ func (m *EventTopicReputerWhitelistRemoved) Size() (n int) {
 	return n
 }
 
-func (m *EventForecastTaskScoreSet) Size() (n int) {
+func (m *EventForecastTaskScore) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9047,7 +9005,7 @@ func (m *EventForecastTaskScoreSet) Size() (n int) {
 	return n
 }
 
-func (m *EventWorkerLastCommitSet) Size() (n int) {
+func (m *EventWorkerLastCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9055,9 +9013,6 @@ func (m *EventWorkerLastCommitSet) Size() (n int) {
 	_ = l
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
 	}
 	if m.Nonce != nil {
 		l = m.Nonce.Size()
@@ -9066,7 +9021,7 @@ func (m *EventWorkerLastCommitSet) Size() (n int) {
 	return n
 }
 
-func (m *EventReputerLastCommitSet) Size() (n int) {
+func (m *EventReputerLastCommit) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9074,9 +9029,6 @@ func (m *EventReputerLastCommitSet) Size() (n int) {
 	_ = l
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
 	}
 	if m.Nonce != nil {
 		l = m.Nonce.Size()
@@ -9251,7 +9203,7 @@ func (m *EventNaiveInfererNetworkRegretSet) Size() (n int) {
 	return n
 }
 
-func (m *EventTopicInitialRegretSet) Size() (n int) {
+func (m *EventTopicInitialRegret) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9268,7 +9220,7 @@ func (m *EventTopicInitialRegretSet) Size() (n int) {
 	return n
 }
 
-func (m *EventTopicInitialEmaScoreSet) Size() (n int) {
+func (m *EventTopicInitialEmaScore) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9288,7 +9240,7 @@ func (m *EventTopicInitialEmaScoreSet) Size() (n int) {
 	return n
 }
 
-func (m *EventRegretStdNormSet) Size() (n int) {
+func (m *EventRegretStdNorm) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9359,15 +9311,12 @@ func (m *EventForecasterWeightsSet) Size() (n int) {
 	return n
 }
 
-func (m *EventPreviousPercentageRewardToStakedReputersSet) Size() (n int) {
+func (m *EventPreviousPercentageRewardToStakedReputers) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.BlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.BlockHeight))
-	}
 	l = m.Percentage.Size()
 	n += 1 + l + sovEvents(uint64(l))
 	return n
@@ -13482,7 +13431,7 @@ func (m *EventFundTopic) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventParamsSet) Unmarshal(dAtA []byte) error {
+func (m *EventParams) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -13505,10 +13454,10 @@ func (m *EventParamsSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventParamsSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventParams: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventParamsSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventParams: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -15232,7 +15181,7 @@ func (m *EventTopicReputerWhitelistRemoved) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventForecastTaskScoreSet) Unmarshal(dAtA []byte) error {
+func (m *EventForecastTaskScore) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -15255,10 +15204,10 @@ func (m *EventForecastTaskScoreSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventForecastTaskScoreSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventForecastTaskScore: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventForecastTaskScoreSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventForecastTaskScore: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -15354,7 +15303,7 @@ func (m *EventForecastTaskScoreSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventWorkerLastCommitSet) Unmarshal(dAtA []byte) error {
+func (m *EventWorkerLastCommit) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -15377,10 +15326,10 @@ func (m *EventWorkerLastCommitSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventWorkerLastCommitSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventWorkerLastCommit: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventWorkerLastCommitSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventWorkerLastCommit: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -15398,25 +15347,6 @@ func (m *EventWorkerLastCommitSet) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.TopicId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -15478,7 +15408,7 @@ func (m *EventWorkerLastCommitSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventReputerLastCommitSet) Unmarshal(dAtA []byte) error {
+func (m *EventReputerLastCommit) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -15501,10 +15431,10 @@ func (m *EventReputerLastCommitSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventReputerLastCommitSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventReputerLastCommit: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventReputerLastCommitSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventReputerLastCommit: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -15522,25 +15452,6 @@ func (m *EventReputerLastCommitSet) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.TopicId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16652,7 +16563,7 @@ func (m *EventNaiveInfererNetworkRegretSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventTopicInitialRegretSet) Unmarshal(dAtA []byte) error {
+func (m *EventTopicInitialRegret) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -16675,10 +16586,10 @@ func (m *EventTopicInitialRegretSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventTopicInitialRegretSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventTopicInitialRegret: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventTopicInitialRegretSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventTopicInitialRegret: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -16774,7 +16685,7 @@ func (m *EventTopicInitialRegretSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventTopicInitialEmaScoreSet) Unmarshal(dAtA []byte) error {
+func (m *EventTopicInitialEmaScore) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -16797,10 +16708,10 @@ func (m *EventTopicInitialEmaScoreSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventTopicInitialEmaScoreSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventTopicInitialEmaScore: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventTopicInitialEmaScoreSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventTopicInitialEmaScore: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -16915,7 +16826,7 @@ func (m *EventTopicInitialEmaScoreSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventRegretStdNormSet) Unmarshal(dAtA []byte) error {
+func (m *EventRegretStdNorm) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -16938,10 +16849,10 @@ func (m *EventRegretStdNormSet) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventRegretStdNormSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventRegretStdNorm: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventRegretStdNormSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventRegretStdNorm: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -17349,7 +17260,7 @@ func (m *EventForecasterWeightsSet) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *EventPreviousPercentageRewardToStakedReputersSet) Unmarshal(dAtA []byte) error {
+func (m *EventPreviousPercentageRewardToStakedReputers) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -17372,31 +17283,12 @@ func (m *EventPreviousPercentageRewardToStakedReputersSet) Unmarshal(dAtA []byte
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: EventPreviousPercentageRewardToStakedReputersSet: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventPreviousPercentageRewardToStakedReputers: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: EventPreviousPercentageRewardToStakedReputersSet: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventPreviousPercentageRewardToStakedReputers: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowEvents
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Percentage", wireType)
