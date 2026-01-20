@@ -4,7 +4,6 @@ package emissionsv9
 import (
 	fmt "fmt"
 	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
-	v8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
 	_ "github.com/cosmos/cosmos-proto"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
@@ -6227,7 +6226,7 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "emissions.v9.GenesisState.params":
-		x.Params = value.Message().Interface().(*v8.Params)
+		x.Params = value.Message().Interface().(*Params)
 	case "emissions.v9.GenesisState.core_team_addresses":
 		lv := value.List()
 		clv := lv.(*_GenesisState_2_list)
@@ -6612,7 +6611,7 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 	switch fd.FullName() {
 	case "emissions.v9.GenesisState.params":
 		if x.Params == nil {
-			x.Params = new(v8.Params)
+			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
 	case "emissions.v9.GenesisState.core_team_addresses":
@@ -7165,7 +7164,7 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.GenesisState.params":
-		m := new(v8.Params)
+		m := new(Params)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "emissions.v9.GenesisState.core_team_addresses":
 		list := []string{}
@@ -9762,7 +9761,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Params == nil {
-					x.Params = &v8.Params{}
+					x.Params = &Params{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Params); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -30072,7 +30071,7 @@ type GenesisState struct {
 	unknownFields protoimpl.UnknownFields
 
 	// / PARAMS
-	Params *v8.Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 	// / WHITELISTS
 	CoreTeamAddresses []string `protobuf:"bytes,2,rep,name=core_team_addresses,json=coreTeamAddresses,proto3" json:"core_team_addresses,omitempty"`
 	// / TOPIC
@@ -30294,7 +30293,7 @@ func (*GenesisState) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_genesis_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GenesisState) GetParams() *v8.Params {
+func (x *GenesisState) GetParams() *Params {
 	if x != nil {
 		return x.Params
 	}
@@ -32563,14 +32562,14 @@ var file_emissions_v9_genesis_proto_rawDesc = []byte{
 	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
 	0x2f, 0x76, 0x33, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70,
+	0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x70,
 	0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69,
 	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xfb, 0x45, 0x0a, 0x0c,
 	0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x32, 0x0a, 0x06,
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x38, 0x2e, 0x50, 0x61, 0x72, 0x61,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x50, 0x61, 0x72, 0x61,
 	0x6d, 0x73, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
 	0x12, 0x2e, 0x0a, 0x13, 0x63, 0x6f, 0x72, 0x65, 0x5f, 0x74, 0x65, 0x61, 0x6d, 0x5f, 0x61, 0x64,
 	0x64, 0x72, 0x65, 0x73, 0x73, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x11, 0x63,
@@ -33478,7 +33477,7 @@ var file_emissions_v9_genesis_proto_goTypes = []interface{}{
 	(*BlockHeightTopicIds)(nil),                                        // 30: emissions.v9.BlockHeightTopicIds
 	(*BlockHeightTopicIdWeightPair)(nil),                               // 31: emissions.v9.BlockHeightTopicIdWeightPair
 	(*TopicIdReputerReputerValueBundle)(nil),                           // 32: emissions.v9.TopicIdReputerReputerValueBundle
-	(*v8.Params)(nil),                                                  // 33: emissions.v8.Params
+	(*Params)(nil),                                                     // 33: emissions.v9.Params
 	(*Topic)(nil),                                                      // 34: emissions.v9.Topic
 	(*v3.Scores)(nil),                                                  // 35: emissions.v3.Scores
 	(*v3.Score)(nil),                                                   // 36: emissions.v3.Score
@@ -33502,7 +33501,7 @@ var file_emissions_v9_genesis_proto_goTypes = []interface{}{
 	(*v3.ReputerValueBundle)(nil),                                      // 54: emissions.v3.ReputerValueBundle
 }
 var file_emissions_v9_genesis_proto_depIdxs = []int32{
-	33, // 0: emissions.v9.GenesisState.params:type_name -> emissions.v8.Params
+	33, // 0: emissions.v9.GenesisState.params:type_name -> emissions.v9.Params
 	1,  // 1: emissions.v9.GenesisState.topics:type_name -> emissions.v9.TopicIdAndTopic
 	2,  // 2: emissions.v9.GenesisState.topic_workers:type_name -> emissions.v9.TopicAndActorId
 	2,  // 3: emissions.v9.GenesisState.topic_reputers:type_name -> emissions.v9.TopicAndActorId
@@ -33613,6 +33612,7 @@ func file_emissions_v9_genesis_proto_init() {
 	if File_emissions_v9_genesis_proto != nil {
 		return
 	}
+	file_emissions_v9_params_proto_init()
 	file_emissions_v9_topic_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v9_genesis_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {

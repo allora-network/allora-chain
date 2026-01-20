@@ -4,7 +4,6 @@ package emissionsv9
 import (
 	fmt "fmt"
 	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
-	v8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
 	_ "github.com/cosmos/cosmos-proto"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/cosmos-sdk/types/query"
@@ -21365,7 +21364,7 @@ func (x *fastReflection_GetParamsResponse) Get(descriptor protoreflect.FieldDesc
 func (x *fastReflection_GetParamsResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "emissions.v9.GetParamsResponse.params":
-		x.Params = value.Message().Interface().(*v8.Params)
+		x.Params = value.Message().Interface().(*Params)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.GetParamsResponse"))
@@ -21388,7 +21387,7 @@ func (x *fastReflection_GetParamsResponse) Mutable(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	case "emissions.v9.GetParamsResponse.params":
 		if x.Params == nil {
-			x.Params = new(v8.Params)
+			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
 	default:
@@ -21405,7 +21404,7 @@ func (x *fastReflection_GetParamsResponse) Mutable(fd protoreflect.FieldDescript
 func (x *fastReflection_GetParamsResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.GetParamsResponse.params":
-		m := new(v8.Params)
+		m := new(Params)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -21602,7 +21601,7 @@ func (x *fastReflection_GetParamsResponse) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Params == nil {
-					x.Params = &v8.Params{}
+					x.Params = &Params{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Params); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -97214,7 +97213,7 @@ type GetParamsResponse struct {
 	unknownFields protoimpl.UnknownFields
 
 	// params defines the parameters of the module.
-	Params *v8.Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 }
 
 func (x *GetParamsResponse) Reset() {
@@ -97237,7 +97236,7 @@ func (*GetParamsResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_query_proto_rawDescGZIP(), []int{49}
 }
 
-func (x *GetParamsResponse) GetParams() *v8.Params {
+func (x *GetParamsResponse) GetParams() *Params {
 	if x != nil {
 		return x.Params
 	}
@@ -103670,7 +103669,7 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x73, 0x2f, 0x76, 0x33, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x77,
 	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
 	0x73, 0x2f, 0x76, 0x39, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f,
@@ -103966,7 +103965,7 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x65, 0x73, 0x74, 0x22, 0x4c, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x37, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61,
 	0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x38, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x09,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x09,
 	0xc8, 0xde, 0x1f, 0x00, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d,
 	0x73, 0x22, 0x16, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61,
 	0x6b, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x67, 0x0a, 0x15, 0x47, 0x65, 0x74,
@@ -106639,7 +106638,7 @@ var file_emissions_v9_query_proto_goTypes = []interface{}{
 	(*GetReputerSubmissionWindowStatusRequest)(nil),             // 214: emissions.v9.GetReputerSubmissionWindowStatusRequest
 	(*GetReputerSubmissionWindowStatusResponse)(nil),            // 215: emissions.v9.GetReputerSubmissionWindowStatusResponse
 	(*v3.TimestampedValue)(nil),                                 // 216: emissions.v3.TimestampedValue
-	(*v8.Params)(nil),                                           // 217: emissions.v8.Params
+	(*Params)(nil),                                              // 217: emissions.v9.Params
 	(*v3.StakeInfo)(nil),                                        // 218: emissions.v3.StakeInfo
 	(*v3.ValueBundle)(nil),                                      // 219: emissions.v3.ValueBundle
 	(*Topic)(nil),                                               // 220: emissions.v9.Topic
@@ -106666,7 +106665,7 @@ var file_emissions_v9_query_proto_depIdxs = []int32{
 	216, // 2: emissions.v9.GetOneOutInfererForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
 	216, // 3: emissions.v9.GetOneOutForecasterInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
 	216, // 4: emissions.v9.GetOneOutForecasterForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	217, // 5: emissions.v9.GetParamsResponse.params:type_name -> emissions.v8.Params
+	217, // 5: emissions.v9.GetParamsResponse.params:type_name -> emissions.v9.Params
 	218, // 6: emissions.v9.GetMultiReputerStakeInTopicResponse.amounts:type_name -> emissions.v3.StakeInfo
 	219, // 7: emissions.v9.GetNetworkLossBundleAtBlockResponse.loss_bundle:type_name -> emissions.v3.ValueBundle
 	220, // 8: emissions.v9.GetTopicResponse.topic:type_name -> emissions.v9.Topic
@@ -106940,6 +106939,7 @@ func file_emissions_v9_query_proto_init() {
 	if File_emissions_v9_query_proto != nil {
 		return
 	}
+	file_emissions_v9_params_proto_init()
 	file_emissions_v9_topic_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v9_query_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
