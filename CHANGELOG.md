@@ -67,6 +67,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
+
+# [Released]
+
+# v0.15.0
+
+### Added
+
 * [#851](https://github.com/allora-network/allora-chain/pull/851) Enforce recommended settings
 * [#835](https://github.com/allora-network/allora-chain/pull/835): Introduce the `x/scheduler` module to manage tasks scheduling
 * [#831](https://github.com/allora-network/allora-chain/pull/831) Allow topic creators to update topic configs
@@ -100,8 +125,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added 
 
 #### Changed
-
-# [Released]
 
 
 # v0.14.0
