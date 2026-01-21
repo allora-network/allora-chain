@@ -57,11 +57,11 @@ func (ActorType) EnumDescriptor() ([]byte, []int) {
 }
 
 type EventScoresSet struct {
-	ActorType        ActorType                                         `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
-	TopicId          uint64                                            `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,4,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Scores           []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=scores,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"scores"`
+	ActorType ActorType                                         `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
+	TopicId   uint64                                            `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,4,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Scores    []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=scores,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"scores"`
 }
 
 func (m *EventScoresSet) Reset()         { *m = EventScoresSet{} }
@@ -111,9 +111,9 @@ func (m *EventScoresSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventScoresSet) GetNonceBlockHeight() int64 {
+func (m *EventScoresSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -126,12 +126,12 @@ func (m *EventScoresSet) GetAddresses() []string {
 }
 
 type EventRewardsSettled struct {
-	ActorType        ActorType                                         `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
-	TopicId          uint64                                            `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,4,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Rewards          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=rewards,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"rewards"`
-	BlockHeightTx    int64                                             `protobuf:"varint,6,opt,name=block_height_tx,json=blockHeightTx,proto3" json:"block_height_tx,omitempty"`
+	ActorType     ActorType                                         `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
+	TopicId       uint64                                            `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce         int64                                             `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses     []string                                          `protobuf:"bytes,4,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Rewards       []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=rewards,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"rewards"`
+	BlockHeightTx int64                                             `protobuf:"varint,6,opt,name=block_height_tx,json=blockHeightTx,proto3" json:"block_height_tx,omitempty"`
 }
 
 func (m *EventRewardsSettled) Reset()         { *m = EventRewardsSettled{} }
@@ -181,9 +181,9 @@ func (m *EventRewardsSettled) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventRewardsSettled) GetNonceBlockHeight() int64 {
+func (m *EventRewardsSettled) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -2469,9 +2469,9 @@ func (m *EventTopicReputerWhitelistRemoved) GetAddress() string {
 }
 
 type EventForecastTaskScore struct {
-	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Score            github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
-	NonceBlockHeight int64                                           `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	TopicId uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Score   github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
+	Nonce   int64                                           `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
 func (m *EventForecastTaskScore) Reset()         { *m = EventForecastTaskScore{} }
@@ -2514,9 +2514,9 @@ func (m *EventForecastTaskScore) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventForecastTaskScore) GetNonceBlockHeight() int64 {
+func (m *EventForecastTaskScore) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -2748,11 +2748,11 @@ func (m *EventEMAScoresSet) GetIsActive() []bool {
 }
 
 type EventListeningCoefficientsSet struct {
-	ActorType        ActorType                                         `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
-	TopicId          uint64                                            `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,4,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Coefficients     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=coefficients,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"coefficients"`
+	ActorType    ActorType                                         `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
+	TopicId      uint64                                            `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce        int64                                             `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses    []string                                          `protobuf:"bytes,4,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Coefficients []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=coefficients,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"coefficients"`
 }
 
 func (m *EventListeningCoefficientsSet) Reset()         { *m = EventListeningCoefficientsSet{} }
@@ -2802,9 +2802,9 @@ func (m *EventListeningCoefficientsSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventListeningCoefficientsSet) GetNonceBlockHeight() int64 {
+func (m *EventListeningCoefficientsSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -2817,10 +2817,10 @@ func (m *EventListeningCoefficientsSet) GetAddresses() []string {
 }
 
 type EventInfererNetworkRegretSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Regrets          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
 }
 
 func (m *EventInfererNetworkRegretSet) Reset()         { *m = EventInfererNetworkRegretSet{} }
@@ -2863,9 +2863,9 @@ func (m *EventInfererNetworkRegretSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventInfererNetworkRegretSet) GetNonceBlockHeight() int64 {
+func (m *EventInfererNetworkRegretSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -2878,10 +2878,10 @@ func (m *EventInfererNetworkRegretSet) GetAddresses() []string {
 }
 
 type EventForecasterNetworkRegretSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Regrets          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
 }
 
 func (m *EventForecasterNetworkRegretSet) Reset()         { *m = EventForecasterNetworkRegretSet{} }
@@ -2924,9 +2924,9 @@ func (m *EventForecasterNetworkRegretSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventForecasterNetworkRegretSet) GetNonceBlockHeight() int64 {
+func (m *EventForecasterNetworkRegretSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -2939,10 +2939,10 @@ func (m *EventForecasterNetworkRegretSet) GetAddresses() []string {
 }
 
 type EventNaiveInfererNetworkRegretSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Regrets          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
 }
 
 func (m *EventNaiveInfererNetworkRegretSet) Reset()         { *m = EventNaiveInfererNetworkRegretSet{} }
@@ -2985,9 +2985,9 @@ func (m *EventNaiveInfererNetworkRegretSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventNaiveInfererNetworkRegretSet) GetNonceBlockHeight() int64 {
+func (m *EventNaiveInfererNetworkRegretSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -3000,9 +3000,9 @@ func (m *EventNaiveInfererNetworkRegretSet) GetAddresses() []string {
 }
 
 type EventTopicInitialRegret struct {
-	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Regret           github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=regret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regret"`
+	TopicId uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce   int64                                           `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Regret  github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=regret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regret"`
 }
 
 func (m *EventTopicInitialRegret) Reset()         { *m = EventTopicInitialRegret{} }
@@ -3045,18 +3045,18 @@ func (m *EventTopicInitialRegret) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventTopicInitialRegret) GetNonceBlockHeight() int64 {
+func (m *EventTopicInitialRegret) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
 
 type EventTopicInitialEmaScore struct {
-	ActorType        ActorType                                       `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
-	TopicId          uint64                                          `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                           `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Score            github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
+	ActorType ActorType                                       `protobuf:"varint,1,opt,name=actor_type,json=actorType,proto3,enum=emissions.v9.ActorType" json:"actor_type,omitempty"`
+	TopicId   uint64                                          `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                           `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Score     github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=score,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"score"`
 }
 
 func (m *EventTopicInitialEmaScore) Reset()         { *m = EventTopicInitialEmaScore{} }
@@ -3106,17 +3106,17 @@ func (m *EventTopicInitialEmaScore) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventTopicInitialEmaScore) GetNonceBlockHeight() int64 {
+func (m *EventTopicInitialEmaScore) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
 
 type EventRegretStdNorm struct {
-	TopicId          uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                           `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Stdnorm          github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=stdnorm,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"stdnorm"`
+	TopicId uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce   int64                                           `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Stdnorm github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=stdnorm,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"stdnorm"`
 }
 
 func (m *EventRegretStdNorm) Reset()         { *m = EventRegretStdNorm{} }
@@ -3159,18 +3159,18 @@ func (m *EventRegretStdNorm) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventRegretStdNorm) GetNonceBlockHeight() int64 {
+func (m *EventRegretStdNorm) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
 
 type EventInfererWeightsSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 }
 
 func (m *EventInfererWeightsSet) Reset()         { *m = EventInfererWeightsSet{} }
@@ -3213,9 +3213,9 @@ func (m *EventInfererWeightsSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventInfererWeightsSet) GetNonceBlockHeight() int64 {
+func (m *EventInfererWeightsSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -3228,10 +3228,10 @@ func (m *EventInfererWeightsSet) GetAddresses() []string {
 }
 
 type EventForecasterWeightsSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 }
 
 func (m *EventForecasterWeightsSet) Reset()         { *m = EventForecasterWeightsSet{} }
@@ -3274,9 +3274,9 @@ func (m *EventForecasterWeightsSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventForecasterWeightsSet) GetNonceBlockHeight() int64 {
+func (m *EventForecasterWeightsSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -3488,9 +3488,9 @@ func (m *EventDelegateRewardDistributed) GetReputer() string {
 }
 
 type EventActiveReputersSet struct {
-	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	TopicId   uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Nonce     int64    `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
 func (m *EventActiveReputersSet) Reset()         { *m = EventActiveReputersSet{} }
@@ -3540,17 +3540,17 @@ func (m *EventActiveReputersSet) GetAddresses() []string {
 	return nil
 }
 
-func (m *EventActiveReputersSet) GetNonceBlockHeight() int64 {
+func (m *EventActiveReputersSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
 
 type EventActiveInferersSet struct {
-	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	TopicId   uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Nonce     int64    `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
 func (m *EventActiveInferersSet) Reset()         { *m = EventActiveInferersSet{} }
@@ -3600,17 +3600,17 @@ func (m *EventActiveInferersSet) GetAddresses() []string {
 	return nil
 }
 
-func (m *EventActiveInferersSet) GetNonceBlockHeight() int64 {
+func (m *EventActiveInferersSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
 
 type EventActiveForecastersSet struct {
-	TopicId          uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Addresses        []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	NonceBlockHeight int64    `protobuf:"varint,3,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	TopicId   uint64   `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Addresses []string `protobuf:"bytes,2,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Nonce     int64    `protobuf:"varint,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
 func (m *EventActiveForecastersSet) Reset()         { *m = EventActiveForecastersSet{} }
@@ -3660,9 +3660,9 @@ func (m *EventActiveForecastersSet) GetAddresses() []string {
 	return nil
 }
 
-func (m *EventActiveForecastersSet) GetNonceBlockHeight() int64 {
+func (m *EventActiveForecastersSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -3720,10 +3720,10 @@ func (m *EventTopicStatusChanged) GetIsActive() bool {
 }
 
 type EventNetworkInferenceInfererWeightsSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 }
 
 func (m *EventNetworkInferenceInfererWeightsSet) Reset() {
@@ -3768,9 +3768,9 @@ func (m *EventNetworkInferenceInfererWeightsSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventNetworkInferenceInfererWeightsSet) GetNonceBlockHeight() int64 {
+func (m *EventNetworkInferenceInfererWeightsSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -3783,10 +3783,10 @@ func (m *EventNetworkInferenceInfererWeightsSet) GetAddresses() []string {
 }
 
 type EventNetworkInferenceForecasterWeightsSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Weights          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Weights   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=weights,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weights"`
 }
 
 func (m *EventNetworkInferenceForecasterWeightsSet) Reset() {
@@ -3833,9 +3833,9 @@ func (m *EventNetworkInferenceForecasterWeightsSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventNetworkInferenceForecasterWeightsSet) GetNonceBlockHeight() int64 {
+func (m *EventNetworkInferenceForecasterWeightsSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -3848,10 +3848,10 @@ func (m *EventNetworkInferenceForecasterWeightsSet) GetAddresses() []string {
 }
 
 type EventNetworkInferenceInfererRegretsUsedSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Regrets          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
 }
 
 func (m *EventNetworkInferenceInfererRegretsUsedSet) Reset() {
@@ -3898,9 +3898,9 @@ func (m *EventNetworkInferenceInfererRegretsUsedSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventNetworkInferenceInfererRegretsUsedSet) GetNonceBlockHeight() int64 {
+func (m *EventNetworkInferenceInfererRegretsUsedSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -3913,10 +3913,10 @@ func (m *EventNetworkInferenceInfererRegretsUsedSet) GetAddresses() []string {
 }
 
 type EventNetworkInferenceForecasterRegretsUsedSet struct {
-	TopicId          uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64                                             `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	Addresses        []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
-	Regrets          []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
+	TopicId   uint64                                            `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce     int64                                             `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	Addresses []string                                          `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	Regrets   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,rep,name=regrets,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"regrets"`
 }
 
 func (m *EventNetworkInferenceForecasterRegretsUsedSet) Reset() {
@@ -3963,9 +3963,9 @@ func (m *EventNetworkInferenceForecasterRegretsUsedSet) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventNetworkInferenceForecasterRegretsUsedSet) GetNonceBlockHeight() int64 {
+func (m *EventNetworkInferenceForecasterRegretsUsedSet) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -4072,9 +4072,9 @@ func (m *EventTopicFeeRevenueDripped) GetTopicId() uint64 {
 }
 
 type EventWorkerSubmissionWindowOpened struct {
-	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	WindowEndBlock   int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+	TopicId        uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce          int64  `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	WindowEndBlock int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
 }
 
 func (m *EventWorkerSubmissionWindowOpened) Reset()         { *m = EventWorkerSubmissionWindowOpened{} }
@@ -4117,9 +4117,9 @@ func (m *EventWorkerSubmissionWindowOpened) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventWorkerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+func (m *EventWorkerSubmissionWindowOpened) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -4132,8 +4132,8 @@ func (m *EventWorkerSubmissionWindowOpened) GetWindowEndBlock() int64 {
 }
 
 type EventWorkerSubmissionWindowClosed struct {
-	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce   int64  `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
 func (m *EventWorkerSubmissionWindowClosed) Reset()         { *m = EventWorkerSubmissionWindowClosed{} }
@@ -4176,17 +4176,17 @@ func (m *EventWorkerSubmissionWindowClosed) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventWorkerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+func (m *EventWorkerSubmissionWindowClosed) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
 
 type EventReputerSubmissionWindowOpened struct {
-	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
-	WindowEndBlock   int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+	TopicId        uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce          int64  `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	WindowEndBlock int64  `protobuf:"varint,3,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
 }
 
 func (m *EventReputerSubmissionWindowOpened) Reset()         { *m = EventReputerSubmissionWindowOpened{} }
@@ -4229,9 +4229,9 @@ func (m *EventReputerSubmissionWindowOpened) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventReputerSubmissionWindowOpened) GetNonceBlockHeight() int64 {
+func (m *EventReputerSubmissionWindowOpened) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -4244,8 +4244,8 @@ func (m *EventReputerSubmissionWindowOpened) GetWindowEndBlock() int64 {
 }
 
 type EventReputerSubmissionWindowClosed struct {
-	TopicId          uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	NonceBlockHeight int64  `protobuf:"varint,2,opt,name=nonce_block_height,json=nonceBlockHeight,proto3" json:"nonce_block_height,omitempty"`
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Nonce   int64  `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
 
 func (m *EventReputerSubmissionWindowClosed) Reset()         { *m = EventReputerSubmissionWindowClosed{} }
@@ -4288,9 +4288,9 @@ func (m *EventReputerSubmissionWindowClosed) GetTopicId() uint64 {
 	return 0
 }
 
-func (m *EventReputerSubmissionWindowClosed) GetNonceBlockHeight() int64 {
+func (m *EventReputerSubmissionWindowClosed) GetNonce() int64 {
 	if m != nil {
-		return m.NonceBlockHeight
+		return m.Nonce
 	}
 	return 0
 }
@@ -4754,8 +4754,8 @@ func (m *EventScoresSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x22
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -4820,8 +4820,8 @@ func (m *EventRewardsSettled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0x22
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -6633,8 +6633,8 @@ func (m *EventForecastTaskScore) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	_ = i
 	var l int
 	_ = l
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -6908,8 +6908,8 @@ func (m *EventListeningCoefficientsSet) MarshalToSizedBuffer(dAtA []byte) (int, 
 			dAtA[i] = 0x22
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -6969,8 +6969,8 @@ func (m *EventInfererNetworkRegretSet) MarshalToSizedBuffer(dAtA []byte) (int, e
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7025,8 +7025,8 @@ func (m *EventForecasterNetworkRegretSet) MarshalToSizedBuffer(dAtA []byte) (int
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7081,8 +7081,8 @@ func (m *EventNaiveInfererNetworkRegretSet) MarshalToSizedBuffer(dAtA []byte) (i
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7124,8 +7124,8 @@ func (m *EventTopicInitialRegret) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	}
 	i--
 	dAtA[i] = 0x1a
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7167,8 +7167,8 @@ func (m *EventTopicInitialEmaScore) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	}
 	i--
 	dAtA[i] = 0x22
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -7215,8 +7215,8 @@ func (m *EventRegretStdNorm) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x1a
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7271,8 +7271,8 @@ func (m *EventInfererWeightsSet) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7327,8 +7327,8 @@ func (m *EventForecasterWeightsSet) MarshalToSizedBuffer(dAtA []byte) (int, erro
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7516,8 +7516,8 @@ func (m *EventActiveReputersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	_ = i
 	var l int
 	_ = l
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -7558,8 +7558,8 @@ func (m *EventActiveInferersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	_ = i
 	var l int
 	_ = l
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -7600,8 +7600,8 @@ func (m *EventActiveForecastersSet) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	_ = i
 	var l int
 	_ = l
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x18
 	}
@@ -7703,8 +7703,8 @@ func (m *EventNetworkInferenceInfererWeightsSet) MarshalToSizedBuffer(dAtA []byt
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7759,8 +7759,8 @@ func (m *EventNetworkInferenceForecasterWeightsSet) MarshalToSizedBuffer(dAtA []
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7815,8 +7815,8 @@ func (m *EventNetworkInferenceInfererRegretsUsedSet) MarshalToSizedBuffer(dAtA [
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -7871,8 +7871,8 @@ func (m *EventNetworkInferenceForecasterRegretsUsedSet) MarshalToSizedBuffer(dAt
 			dAtA[i] = 0x1a
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -8025,8 +8025,8 @@ func (m *EventWorkerSubmissionWindowOpened) MarshalToSizedBuffer(dAtA []byte) (i
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -8058,8 +8058,8 @@ func (m *EventWorkerSubmissionWindowClosed) MarshalToSizedBuffer(dAtA []byte) (i
 	_ = i
 	var l int
 	_ = l
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -8096,8 +8096,8 @@ func (m *EventReputerSubmissionWindowOpened) MarshalToSizedBuffer(dAtA []byte) (
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -8129,8 +8129,8 @@ func (m *EventReputerSubmissionWindowClosed) MarshalToSizedBuffer(dAtA []byte) (
 	_ = i
 	var l int
 	_ = l
-	if m.NonceBlockHeight != 0 {
-		i = encodeVarintEvents(dAtA, i, uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		i = encodeVarintEvents(dAtA, i, uint64(m.Nonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -8165,8 +8165,8 @@ func (m *EventScoresSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -8195,8 +8195,8 @@ func (m *EventRewardsSettled) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -8999,8 +8999,8 @@ func (m *EventForecastTaskScore) Size() (n int) {
 	}
 	l = m.Score.Size()
 	n += 1 + l + sovEvents(uint64(l))
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	return n
 }
@@ -9104,8 +9104,8 @@ func (m *EventListeningCoefficientsSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9131,8 +9131,8 @@ func (m *EventInfererNetworkRegretSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9158,8 +9158,8 @@ func (m *EventForecasterNetworkRegretSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9185,8 +9185,8 @@ func (m *EventNaiveInfererNetworkRegretSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9212,8 +9212,8 @@ func (m *EventTopicInitialRegret) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	l = m.Regret.Size()
 	n += 1 + l + sovEvents(uint64(l))
@@ -9232,8 +9232,8 @@ func (m *EventTopicInitialEmaScore) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	l = m.Score.Size()
 	n += 1 + l + sovEvents(uint64(l))
@@ -9249,8 +9249,8 @@ func (m *EventRegretStdNorm) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	l = m.Stdnorm.Size()
 	n += 1 + l + sovEvents(uint64(l))
@@ -9266,8 +9266,8 @@ func (m *EventInfererWeightsSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9293,8 +9293,8 @@ func (m *EventForecasterWeightsSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9388,8 +9388,8 @@ func (m *EventActiveReputersSet) Size() (n int) {
 			n += 1 + l + sovEvents(uint64(l))
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	return n
 }
@@ -9409,8 +9409,8 @@ func (m *EventActiveInferersSet) Size() (n int) {
 			n += 1 + l + sovEvents(uint64(l))
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	return n
 }
@@ -9430,8 +9430,8 @@ func (m *EventActiveForecastersSet) Size() (n int) {
 			n += 1 + l + sovEvents(uint64(l))
 		}
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	return n
 }
@@ -9460,8 +9460,8 @@ func (m *EventNetworkInferenceInfererWeightsSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9487,8 +9487,8 @@ func (m *EventNetworkInferenceForecasterWeightsSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9514,8 +9514,8 @@ func (m *EventNetworkInferenceInfererRegretsUsedSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9541,8 +9541,8 @@ func (m *EventNetworkInferenceForecasterRegretsUsedSet) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if len(m.Addresses) > 0 {
 		for _, s := range m.Addresses {
@@ -9604,8 +9604,8 @@ func (m *EventWorkerSubmissionWindowOpened) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if m.WindowEndBlock != 0 {
 		n += 1 + sovEvents(uint64(m.WindowEndBlock))
@@ -9622,8 +9622,8 @@ func (m *EventWorkerSubmissionWindowClosed) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	return n
 }
@@ -9637,8 +9637,8 @@ func (m *EventReputerSubmissionWindowOpened) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	if m.WindowEndBlock != 0 {
 		n += 1 + sovEvents(uint64(m.WindowEndBlock))
@@ -9655,8 +9655,8 @@ func (m *EventReputerSubmissionWindowClosed) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovEvents(uint64(m.TopicId))
 	}
-	if m.NonceBlockHeight != 0 {
-		n += 1 + sovEvents(uint64(m.NonceBlockHeight))
+	if m.Nonce != 0 {
+		n += 1 + sovEvents(uint64(m.Nonce))
 	}
 	return n
 }
@@ -9736,9 +9736,9 @@ func (m *EventScoresSet) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -9748,7 +9748,7 @@ func (m *EventScoresSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -9911,9 +9911,9 @@ func (m *EventRewardsSettled) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -9923,7 +9923,7 @@ func (m *EventRewardsSettled) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -15265,9 +15265,9 @@ func (m *EventForecastTaskScore) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -15277,7 +15277,7 @@ func (m *EventForecastTaskScore) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -15989,9 +15989,9 @@ func (m *EventListeningCoefficientsSet) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -16001,7 +16001,7 @@ func (m *EventListeningCoefficientsSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16145,9 +16145,9 @@ func (m *EventInfererNetworkRegretSet) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -16157,7 +16157,7 @@ func (m *EventInfererNetworkRegretSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16301,9 +16301,9 @@ func (m *EventForecasterNetworkRegretSet) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -16313,7 +16313,7 @@ func (m *EventForecasterNetworkRegretSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16457,9 +16457,9 @@ func (m *EventNaiveInfererNetworkRegretSet) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -16469,7 +16469,7 @@ func (m *EventNaiveInfererNetworkRegretSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16613,9 +16613,9 @@ func (m *EventTopicInitialRegret) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -16625,7 +16625,7 @@ func (m *EventTopicInitialRegret) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16754,9 +16754,9 @@ func (m *EventTopicInitialEmaScore) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -16766,7 +16766,7 @@ func (m *EventTopicInitialEmaScore) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16876,9 +16876,9 @@ func (m *EventRegretStdNorm) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -16888,7 +16888,7 @@ func (m *EventRegretStdNorm) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -16998,9 +16998,9 @@ func (m *EventInfererWeightsSet) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -17010,7 +17010,7 @@ func (m *EventInfererWeightsSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -17154,9 +17154,9 @@ func (m *EventForecasterWeightsSet) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -17166,7 +17166,7 @@ func (m *EventForecasterWeightsSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -17784,9 +17784,9 @@ func (m *EventActiveReputersSet) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -17796,7 +17796,7 @@ func (m *EventActiveReputersSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -17904,9 +17904,9 @@ func (m *EventActiveInferersSet) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -17916,7 +17916,7 @@ func (m *EventActiveInferersSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -18024,9 +18024,9 @@ func (m *EventActiveForecastersSet) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -18036,7 +18036,7 @@ func (m *EventActiveForecastersSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -18201,9 +18201,9 @@ func (m *EventNetworkInferenceInfererWeightsSet) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -18213,7 +18213,7 @@ func (m *EventNetworkInferenceInfererWeightsSet) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -18357,9 +18357,9 @@ func (m *EventNetworkInferenceForecasterWeightsSet) Unmarshal(dAtA []byte) error
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -18369,7 +18369,7 @@ func (m *EventNetworkInferenceForecasterWeightsSet) Unmarshal(dAtA []byte) error
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -18513,9 +18513,9 @@ func (m *EventNetworkInferenceInfererRegretsUsedSet) Unmarshal(dAtA []byte) erro
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -18525,7 +18525,7 @@ func (m *EventNetworkInferenceInfererRegretsUsedSet) Unmarshal(dAtA []byte) erro
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -18669,9 +18669,9 @@ func (m *EventNetworkInferenceForecasterRegretsUsedSet) Unmarshal(dAtA []byte) e
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -18681,7 +18681,7 @@ func (m *EventNetworkInferenceForecasterRegretsUsedSet) Unmarshal(dAtA []byte) e
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -19167,9 +19167,9 @@ func (m *EventWorkerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -19179,7 +19179,7 @@ func (m *EventWorkerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -19274,9 +19274,9 @@ func (m *EventWorkerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -19286,7 +19286,7 @@ func (m *EventWorkerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -19362,9 +19362,9 @@ func (m *EventReputerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -19374,7 +19374,7 @@ func (m *EventReputerSubmissionWindowOpened) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -19469,9 +19469,9 @@ func (m *EventReputerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
 			}
-			m.NonceBlockHeight = 0
+			m.Nonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowEvents
@@ -19481,7 +19481,7 @@ func (m *EventReputerSubmissionWindowClosed) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NonceBlockHeight |= int64(b&0x7F) << shift
+				m.Nonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

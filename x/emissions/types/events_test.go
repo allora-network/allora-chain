@@ -17,18 +17,18 @@ import (
 )
 
 const (
-	AttributeKeyActorType          = "actor_type"
-	AttributeKeyTopicId            = "topic_id"
-	AttributeKeyNonceBlockHeight   = "nonce_block_height"
-	AttributeKeyNonceBlockHeightTx = "block_height_tx"
-	AttributeKeyAddresses          = "addresses"
-	AttributeKeyScores             = "scores"
-	AttributeKeyRewards            = "rewards"
-	AttributeKeyValueBundle        = "bundle"
-	AttributeKeyCoefficients       = "coefficients"
-	AttributeKeyRegrets            = "regrets"
-	AttributeKeyRegret             = "regret"
-	AttributeKeyWeights            = "weights"
+	AttributeKeyActorType    = "actor_type"
+	AttributeKeyTopicId      = "topic_id"
+	AttributeKeyNonce        = "nonce"
+	AttributeKeyNonceTx      = "block_height_tx"
+	AttributeKeyAddresses    = "addresses"
+	AttributeKeyScores       = "scores"
+	AttributeKeyRewards      = "rewards"
+	AttributeKeyValueBundle  = "bundle"
+	AttributeKeyCoefficients = "coefficients"
+	AttributeKeyRegrets      = "regrets"
+	AttributeKeyRegret       = "regret"
+	AttributeKeyWeights      = "weights"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -67,7 +67,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -126,7 +126,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -185,7 +185,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -296,7 +296,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -355,7 +355,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -414,11 +414,11 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeightTx)
+	val, exists = event.GetAttribute(AttributeKeyNonceTx)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "20")
 
@@ -979,8 +979,8 @@ func TestEmitNewForecastTaskEvent(t *testing.T) {
 	require.Contains(t, attributes, "score")
 	require.Equal(t, "\"10\"", attributes["score"])
 
-	require.Contains(t, attributes, "nonce_block_height")
-	require.Equal(t, "\"10\"", attributes["nonce_block_height"])
+	require.Contains(t, attributes, "nonce")
+	require.Equal(t, "\"10\"", attributes["nonce"])
 }
 
 func TestNewLastCommitEvent(t *testing.T) {
@@ -1123,7 +1123,7 @@ func TestEmitNewListeningCoefficientsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1183,7 +1183,7 @@ func TestEmitNewInfererNetworkRegretSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1240,7 +1240,7 @@ func TestEmitNewForecasterNetworkRegretSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1296,7 +1296,7 @@ func TestEmitNewNaiveInfererNetworkRegretSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1351,7 +1351,7 @@ func TestEmitNewTopicInitialRegretEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1396,7 +1396,7 @@ func TestEmitNewInfererWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1452,7 +1452,7 @@ func TestEmitNewForecasterWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute(AttributeKeyNonceBlockHeight)
+	val, exists = event.GetAttribute(AttributeKeyNonce)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1508,7 +1508,7 @@ func TestEmitNewNetworkInferenceInfererWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute("nonce_block_height")
+	val, exists = event.GetAttribute("nonce")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1540,7 +1540,7 @@ func TestEmitNewNetworkInferenceForecasterWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute("nonce_block_height")
+	val, exists = event.GetAttribute("nonce")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 

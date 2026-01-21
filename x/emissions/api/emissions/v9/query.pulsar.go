@@ -93267,23 +93267,23 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusRequest) ProtoMethods() *
 }
 
 var (
-	md_GetWorkerSubmissionWindowStatusResponse                            protoreflect.MessageDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_is_open                    protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_current_nonce_block_height protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_window_start_block         protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_window_end_block           protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_next_window_start_block    protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_next_window_end_block      protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_is_registered              protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_is_whitelisted             protoreflect.FieldDescriptor
-	fd_GetWorkerSubmissionWindowStatusResponse_is_topic_active            protoreflect.FieldDescriptor
+	md_GetWorkerSubmissionWindowStatusResponse                         protoreflect.MessageDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_is_open                 protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_current_nonce           protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_window_start_block      protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_window_end_block        protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_next_window_start_block protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_next_window_end_block   protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_is_registered           protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_is_whitelisted          protoreflect.FieldDescriptor
+	fd_GetWorkerSubmissionWindowStatusResponse_is_topic_active         protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_query_proto_init()
 	md_GetWorkerSubmissionWindowStatusResponse = File_emissions_v9_query_proto.Messages().ByName("GetWorkerSubmissionWindowStatusResponse")
 	fd_GetWorkerSubmissionWindowStatusResponse_is_open = md_GetWorkerSubmissionWindowStatusResponse.Fields().ByName("is_open")
-	fd_GetWorkerSubmissionWindowStatusResponse_current_nonce_block_height = md_GetWorkerSubmissionWindowStatusResponse.Fields().ByName("current_nonce_block_height")
+	fd_GetWorkerSubmissionWindowStatusResponse_current_nonce = md_GetWorkerSubmissionWindowStatusResponse.Fields().ByName("current_nonce")
 	fd_GetWorkerSubmissionWindowStatusResponse_window_start_block = md_GetWorkerSubmissionWindowStatusResponse.Fields().ByName("window_start_block")
 	fd_GetWorkerSubmissionWindowStatusResponse_window_end_block = md_GetWorkerSubmissionWindowStatusResponse.Fields().ByName("window_end_block")
 	fd_GetWorkerSubmissionWindowStatusResponse_next_window_start_block = md_GetWorkerSubmissionWindowStatusResponse.Fields().ByName("next_window_start_block")
@@ -93364,9 +93364,9 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) Range(f func(pr
 			return
 		}
 	}
-	if x.CurrentNonceBlockHeight != int64(0) {
-		value := protoreflect.ValueOfInt64(x.CurrentNonceBlockHeight)
-		if !f(fd_GetWorkerSubmissionWindowStatusResponse_current_nonce_block_height, value) {
+	if x.CurrentNonce != int64(0) {
+		value := protoreflect.ValueOfInt64(x.CurrentNonce)
+		if !f(fd_GetWorkerSubmissionWindowStatusResponse_current_nonce, value) {
 			return
 		}
 	}
@@ -93429,8 +93429,8 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) Has(fd protoref
 	switch fd.FullName() {
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.is_open":
 		return x.IsOpen != false
-	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce_block_height":
-		return x.CurrentNonceBlockHeight != int64(0)
+	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce":
+		return x.CurrentNonce != int64(0)
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_start_block":
 		return x.WindowStartBlock != int64(0)
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_end_block":
@@ -93463,8 +93463,8 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) Clear(fd protor
 	switch fd.FullName() {
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.is_open":
 		x.IsOpen = false
-	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce_block_height":
-		x.CurrentNonceBlockHeight = int64(0)
+	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce":
+		x.CurrentNonce = int64(0)
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_start_block":
 		x.WindowStartBlock = int64(0)
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_end_block":
@@ -93498,8 +93498,8 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) Get(descriptor 
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.is_open":
 		value := x.IsOpen
 		return protoreflect.ValueOfBool(value)
-	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce_block_height":
-		value := x.CurrentNonceBlockHeight
+	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce":
+		value := x.CurrentNonce
 		return protoreflect.ValueOfInt64(value)
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_start_block":
 		value := x.WindowStartBlock
@@ -93544,8 +93544,8 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) Set(fd protoref
 	switch fd.FullName() {
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.is_open":
 		x.IsOpen = value.Bool()
-	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce_block_height":
-		x.CurrentNonceBlockHeight = value.Int()
+	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce":
+		x.CurrentNonce = value.Int()
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_start_block":
 		x.WindowStartBlock = value.Int()
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_end_block":
@@ -93582,8 +93582,8 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) Mutable(fd prot
 	switch fd.FullName() {
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.is_open":
 		panic(fmt.Errorf("field is_open of message emissions.v9.GetWorkerSubmissionWindowStatusResponse is not mutable"))
-	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce_block_height":
-		panic(fmt.Errorf("field current_nonce_block_height of message emissions.v9.GetWorkerSubmissionWindowStatusResponse is not mutable"))
+	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce":
+		panic(fmt.Errorf("field current_nonce of message emissions.v9.GetWorkerSubmissionWindowStatusResponse is not mutable"))
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_start_block":
 		panic(fmt.Errorf("field window_start_block of message emissions.v9.GetWorkerSubmissionWindowStatusResponse is not mutable"))
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_end_block":
@@ -93613,7 +93613,7 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) NewField(fd pro
 	switch fd.FullName() {
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.is_open":
 		return protoreflect.ValueOfBool(false)
-	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce_block_height":
+	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.current_nonce":
 		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v9.GetWorkerSubmissionWindowStatusResponse.window_start_block":
 		return protoreflect.ValueOfInt64(int64(0))
@@ -93701,8 +93701,8 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) ProtoMethods() 
 		if x.IsOpen {
 			n += 2
 		}
-		if x.CurrentNonceBlockHeight != 0 {
-			n += 1 + runtime.Sov(uint64(x.CurrentNonceBlockHeight))
+		if x.CurrentNonce != 0 {
+			n += 1 + runtime.Sov(uint64(x.CurrentNonce))
 		}
 		if x.WindowStartBlock != 0 {
 			n += 1 + runtime.Sov(uint64(x.WindowStartBlock))
@@ -93804,8 +93804,8 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) ProtoMethods() 
 			i--
 			dAtA[i] = 0x18
 		}
-		if x.CurrentNonceBlockHeight != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.CurrentNonceBlockHeight))
+		if x.CurrentNonce != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.CurrentNonce))
 			i--
 			dAtA[i] = 0x10
 		}
@@ -93890,9 +93890,9 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) ProtoMethods() 
 				x.IsOpen = bool(v != 0)
 			case 2:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CurrentNonceBlockHeight", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CurrentNonce", wireType)
 				}
-				x.CurrentNonceBlockHeight = 0
+				x.CurrentNonce = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -93902,7 +93902,7 @@ func (x *fastReflection_GetWorkerSubmissionWindowStatusResponse) ProtoMethods() 
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.CurrentNonceBlockHeight |= int64(b&0x7F) << shift
+					x.CurrentNonce |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -94547,23 +94547,23 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusRequest) ProtoMethods() 
 }
 
 var (
-	md_GetReputerSubmissionWindowStatusResponse                            protoreflect.MessageDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_is_open                    protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_current_nonce_block_height protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_window_start_block         protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_window_end_block           protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_next_window_start_block    protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_next_window_end_block      protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_is_registered              protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_is_whitelisted             protoreflect.FieldDescriptor
-	fd_GetReputerSubmissionWindowStatusResponse_is_topic_active            protoreflect.FieldDescriptor
+	md_GetReputerSubmissionWindowStatusResponse                         protoreflect.MessageDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_is_open                 protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_current_nonce           protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_window_start_block      protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_window_end_block        protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_next_window_start_block protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_next_window_end_block   protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_is_registered           protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_is_whitelisted          protoreflect.FieldDescriptor
+	fd_GetReputerSubmissionWindowStatusResponse_is_topic_active         protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v9_query_proto_init()
 	md_GetReputerSubmissionWindowStatusResponse = File_emissions_v9_query_proto.Messages().ByName("GetReputerSubmissionWindowStatusResponse")
 	fd_GetReputerSubmissionWindowStatusResponse_is_open = md_GetReputerSubmissionWindowStatusResponse.Fields().ByName("is_open")
-	fd_GetReputerSubmissionWindowStatusResponse_current_nonce_block_height = md_GetReputerSubmissionWindowStatusResponse.Fields().ByName("current_nonce_block_height")
+	fd_GetReputerSubmissionWindowStatusResponse_current_nonce = md_GetReputerSubmissionWindowStatusResponse.Fields().ByName("current_nonce")
 	fd_GetReputerSubmissionWindowStatusResponse_window_start_block = md_GetReputerSubmissionWindowStatusResponse.Fields().ByName("window_start_block")
 	fd_GetReputerSubmissionWindowStatusResponse_window_end_block = md_GetReputerSubmissionWindowStatusResponse.Fields().ByName("window_end_block")
 	fd_GetReputerSubmissionWindowStatusResponse_next_window_start_block = md_GetReputerSubmissionWindowStatusResponse.Fields().ByName("next_window_start_block")
@@ -94644,9 +94644,9 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) Range(f func(p
 			return
 		}
 	}
-	if x.CurrentNonceBlockHeight != int64(0) {
-		value := protoreflect.ValueOfInt64(x.CurrentNonceBlockHeight)
-		if !f(fd_GetReputerSubmissionWindowStatusResponse_current_nonce_block_height, value) {
+	if x.CurrentNonce != int64(0) {
+		value := protoreflect.ValueOfInt64(x.CurrentNonce)
+		if !f(fd_GetReputerSubmissionWindowStatusResponse_current_nonce, value) {
 			return
 		}
 	}
@@ -94709,8 +94709,8 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) Has(fd protore
 	switch fd.FullName() {
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.is_open":
 		return x.IsOpen != false
-	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce_block_height":
-		return x.CurrentNonceBlockHeight != int64(0)
+	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce":
+		return x.CurrentNonce != int64(0)
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_start_block":
 		return x.WindowStartBlock != int64(0)
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_end_block":
@@ -94743,8 +94743,8 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) Clear(fd proto
 	switch fd.FullName() {
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.is_open":
 		x.IsOpen = false
-	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce_block_height":
-		x.CurrentNonceBlockHeight = int64(0)
+	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce":
+		x.CurrentNonce = int64(0)
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_start_block":
 		x.WindowStartBlock = int64(0)
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_end_block":
@@ -94778,8 +94778,8 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) Get(descriptor
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.is_open":
 		value := x.IsOpen
 		return protoreflect.ValueOfBool(value)
-	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce_block_height":
-		value := x.CurrentNonceBlockHeight
+	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce":
+		value := x.CurrentNonce
 		return protoreflect.ValueOfInt64(value)
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_start_block":
 		value := x.WindowStartBlock
@@ -94824,8 +94824,8 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) Set(fd protore
 	switch fd.FullName() {
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.is_open":
 		x.IsOpen = value.Bool()
-	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce_block_height":
-		x.CurrentNonceBlockHeight = value.Int()
+	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce":
+		x.CurrentNonce = value.Int()
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_start_block":
 		x.WindowStartBlock = value.Int()
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_end_block":
@@ -94862,8 +94862,8 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) Mutable(fd pro
 	switch fd.FullName() {
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.is_open":
 		panic(fmt.Errorf("field is_open of message emissions.v9.GetReputerSubmissionWindowStatusResponse is not mutable"))
-	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce_block_height":
-		panic(fmt.Errorf("field current_nonce_block_height of message emissions.v9.GetReputerSubmissionWindowStatusResponse is not mutable"))
+	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce":
+		panic(fmt.Errorf("field current_nonce of message emissions.v9.GetReputerSubmissionWindowStatusResponse is not mutable"))
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_start_block":
 		panic(fmt.Errorf("field window_start_block of message emissions.v9.GetReputerSubmissionWindowStatusResponse is not mutable"))
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_end_block":
@@ -94893,7 +94893,7 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) NewField(fd pr
 	switch fd.FullName() {
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.is_open":
 		return protoreflect.ValueOfBool(false)
-	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce_block_height":
+	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.current_nonce":
 		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v9.GetReputerSubmissionWindowStatusResponse.window_start_block":
 		return protoreflect.ValueOfInt64(int64(0))
@@ -94981,8 +94981,8 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) ProtoMethods()
 		if x.IsOpen {
 			n += 2
 		}
-		if x.CurrentNonceBlockHeight != 0 {
-			n += 1 + runtime.Sov(uint64(x.CurrentNonceBlockHeight))
+		if x.CurrentNonce != 0 {
+			n += 1 + runtime.Sov(uint64(x.CurrentNonce))
 		}
 		if x.WindowStartBlock != 0 {
 			n += 1 + runtime.Sov(uint64(x.WindowStartBlock))
@@ -95084,8 +95084,8 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) ProtoMethods()
 			i--
 			dAtA[i] = 0x18
 		}
-		if x.CurrentNonceBlockHeight != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.CurrentNonceBlockHeight))
+		if x.CurrentNonce != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.CurrentNonce))
 			i--
 			dAtA[i] = 0x10
 		}
@@ -95170,9 +95170,9 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) ProtoMethods()
 				x.IsOpen = bool(v != 0)
 			case 2:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CurrentNonceBlockHeight", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CurrentNonce", wireType)
 				}
-				x.CurrentNonceBlockHeight = 0
+				x.CurrentNonce = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -95182,7 +95182,7 @@ func (x *fastReflection_GetReputerSubmissionWindowStatusResponse) ProtoMethods()
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.CurrentNonceBlockHeight |= int64(b&0x7F) << shift
+					x.CurrentNonce |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -103411,15 +103411,15 @@ type GetWorkerSubmissionWindowStatusResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	IsOpen                  bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
-	CurrentNonceBlockHeight int64 `protobuf:"varint,2,opt,name=current_nonce_block_height,json=currentNonceBlockHeight,proto3" json:"current_nonce_block_height,omitempty"`
-	WindowStartBlock        int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
-	WindowEndBlock          int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
-	NextWindowStartBlock    int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
-	NextWindowEndBlock      int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
-	IsRegistered            bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`    // Only filled when address is provided
-	IsWhitelisted           bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"` // Only filled when address is provided
-	IsTopicActive           bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
+	IsOpen               bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
+	CurrentNonce         int64 `protobuf:"varint,2,opt,name=current_nonce,json=currentNonce,proto3" json:"current_nonce,omitempty"`
+	WindowStartBlock     int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
+	WindowEndBlock       int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+	NextWindowStartBlock int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
+	NextWindowEndBlock   int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
+	IsRegistered         bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`    // Only filled when address is provided
+	IsWhitelisted        bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"` // Only filled when address is provided
+	IsTopicActive        bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
 }
 
 func (x *GetWorkerSubmissionWindowStatusResponse) Reset() {
@@ -103449,9 +103449,9 @@ func (x *GetWorkerSubmissionWindowStatusResponse) GetIsOpen() bool {
 	return false
 }
 
-func (x *GetWorkerSubmissionWindowStatusResponse) GetCurrentNonceBlockHeight() int64 {
+func (x *GetWorkerSubmissionWindowStatusResponse) GetCurrentNonce() int64 {
 	if x != nil {
-		return x.CurrentNonceBlockHeight
+		return x.CurrentNonce
 	}
 	return 0
 }
@@ -103553,15 +103553,15 @@ type GetReputerSubmissionWindowStatusResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	IsOpen                  bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
-	CurrentNonceBlockHeight int64 `protobuf:"varint,2,opt,name=current_nonce_block_height,json=currentNonceBlockHeight,proto3" json:"current_nonce_block_height,omitempty"`
-	WindowStartBlock        int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
-	WindowEndBlock          int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
-	NextWindowStartBlock    int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
-	NextWindowEndBlock      int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
-	IsRegistered            bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`    // Only filled when address is provided
-	IsWhitelisted           bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"` // Only filled when address is provided
-	IsTopicActive           bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
+	IsOpen               bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
+	CurrentNonce         int64 `protobuf:"varint,2,opt,name=current_nonce,json=currentNonce,proto3" json:"current_nonce,omitempty"`
+	WindowStartBlock     int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
+	WindowEndBlock       int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+	NextWindowStartBlock int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
+	NextWindowEndBlock   int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
+	IsRegistered         bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`    // Only filled when address is provided
+	IsWhitelisted        bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"` // Only filled when address is provided
+	IsTopicActive        bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
 }
 
 func (x *GetReputerSubmissionWindowStatusResponse) Reset() {
@@ -103591,9 +103591,9 @@ func (x *GetReputerSubmissionWindowStatusResponse) GetIsOpen() bool {
 	return false
 }
 
-func (x *GetReputerSubmissionWindowStatusResponse) GetCurrentNonceBlockHeight() int64 {
+func (x *GetReputerSubmissionWindowStatusResponse) GetCurrentNonce() int64 {
 	if x != nil {
-		return x.CurrentNonceBlockHeight
+		return x.CurrentNonce
 	}
 	return 0
 }
@@ -104975,50 +104975,47 @@ var file_emissions_v9_query_proto_rawDesc = []byte{
 	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
 	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22,
-	0xd1, 0x03, 0x0a, 0x27, 0x47, 0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x53, 0x75, 0x62,
+	0xb9, 0x03, 0x0a, 0x27, 0x47, 0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x53, 0x75, 0x62,
 	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61,
 	0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1e, 0x0a, 0x07, 0x69,
 	0x73, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x42, 0x05, 0xa8, 0xe7,
-	0xb0, 0x2a, 0x01, 0x52, 0x06, 0x69, 0x73, 0x4f, 0x70, 0x65, 0x6e, 0x12, 0x3b, 0x0a, 0x1a, 0x63,
-	0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x5f, 0x62, 0x6c, 0x6f,
-	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
-	0x17, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x42, 0x6c, 0x6f,
-	0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x2c, 0x0a, 0x12, 0x77, 0x69, 0x6e, 0x64,
-	0x6f, 0x77, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61, 0x72,
-	0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x28, 0x0a, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77,
-	0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03,
-	0x52, 0x0e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
-	0x12, 0x35, 0x0a, 0x17, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f,
-	0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x03, 0x52, 0x14, 0x6e, 0x65, 0x78, 0x74, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61,
-	0x72, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x31, 0x0a, 0x15, 0x6e, 0x65, 0x78, 0x74, 0x5f,
-	0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
-	0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x12, 0x6e, 0x65, 0x78, 0x74, 0x57, 0x69, 0x6e, 0x64,
-	0x6f, 0x77, 0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x2a, 0x0a, 0x0d, 0x69, 0x73,
-	0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28,
-	0x08, 0x42, 0x05, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x69, 0x73, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x12, 0x2c, 0x0a, 0x0e, 0x69, 0x73, 0x5f, 0x77, 0x68, 0x69,
-	0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x65, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x08, 0x42, 0x05,
-	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0d, 0x69, 0x73, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69,
-	0x73, 0x74, 0x65, 0x64, 0x12, 0x2d, 0x0a, 0x0f, 0x69, 0x73, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x08, 0x42, 0x05, 0xa8,
-	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0d, 0x69, 0x73, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x41, 0x63, 0x74,
-	0x69, 0x76, 0x65, 0x22, 0x5e, 0x0a, 0x27, 0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65,
-	0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f,
-	0x77, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19,
-	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x22, 0xd2, 0x03, 0x0a, 0x28, 0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74,
-	0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64,
-	0x6f, 0x77, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x1e, 0x0a, 0x07, 0x69, 0x73, 0x5f, 0x6f, 0x70, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x08, 0x42, 0x05, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x69, 0x73, 0x4f, 0x70, 0x65, 0x6e,
-	0x12, 0x3b, 0x0a, 0x1a, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x6e, 0x6f, 0x6e, 0x63,
-	0x65, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x17, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x4e, 0x6f, 0x6e,
-	0x63, 0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x2c, 0x0a,
+	0xb0, 0x2a, 0x01, 0x52, 0x06, 0x69, 0x73, 0x4f, 0x70, 0x65, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x63,
+	0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x0c, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x4e, 0x6f, 0x6e, 0x63, 0x65,
+	0x12, 0x2c, 0x0a, 0x12, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74,
+	0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x77, 0x69,
+	0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x28,
+	0x0a, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f,
+	0x63, 0x6b, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77,
+	0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x35, 0x0a, 0x17, 0x6e, 0x65, 0x78, 0x74,
+	0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x6c,
+	0x6f, 0x63, 0x6b, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52, 0x14, 0x6e, 0x65, 0x78, 0x74, 0x57,
+	0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12,
+	0x31, 0x0a, 0x15, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x65,
+	0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x12,
+	0x6e, 0x65, 0x78, 0x74, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x45, 0x6e, 0x64, 0x42, 0x6c, 0x6f,
+	0x63, 0x6b, 0x12, 0x2a, 0x0a, 0x0d, 0x69, 0x73, 0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
+	0x72, 0x65, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x08, 0x42, 0x05, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x0c, 0x69, 0x73, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x12, 0x2c,
+	0x0a, 0x0e, 0x69, 0x73, 0x5f, 0x77, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x65, 0x64,
+	0x18, 0x08, 0x20, 0x01, 0x28, 0x08, 0x42, 0x05, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0d, 0x69,
+	0x73, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x65, 0x64, 0x12, 0x2d, 0x0a, 0x0f,
+	0x69, 0x73, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18,
+	0x09, 0x20, 0x01, 0x28, 0x08, 0x42, 0x05, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0d, 0x69, 0x73,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x22, 0x5e, 0x0a, 0x27, 0x47,
+	0x65, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
+	0x64, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0xba, 0x03, 0x0a, 0x28,
+	0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1e, 0x0a, 0x07, 0x69, 0x73, 0x5f, 0x6f,
+	0x70, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x42, 0x05, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x06, 0x69, 0x73, 0x4f, 0x70, 0x65, 0x6e, 0x12, 0x23, 0x0a, 0x0d, 0x63, 0x75, 0x72, 0x72,
+	0x65, 0x6e, 0x74, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x0c, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x2c, 0x0a,
 	0x12, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x6c,
 	0x6f, 0x63, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x10, 0x77, 0x69, 0x6e, 0x64, 0x6f,
 	0x77, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x28, 0x0a, 0x10, 0x77,

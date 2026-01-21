@@ -9996,15 +9996,15 @@ func (m *GetWorkerSubmissionWindowStatusRequest) GetAddress() string {
 }
 
 type GetWorkerSubmissionWindowStatusResponse struct {
-	IsOpen                  bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
-	CurrentNonceBlockHeight int64 `protobuf:"varint,2,opt,name=current_nonce_block_height,json=currentNonceBlockHeight,proto3" json:"current_nonce_block_height,omitempty"`
-	WindowStartBlock        int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
-	WindowEndBlock          int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
-	NextWindowStartBlock    int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
-	NextWindowEndBlock      int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
-	IsRegistered            bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`
-	IsWhitelisted           bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
-	IsTopicActive           bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
+	IsOpen               bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
+	CurrentNonce         int64 `protobuf:"varint,2,opt,name=current_nonce,json=currentNonce,proto3" json:"current_nonce,omitempty"`
+	WindowStartBlock     int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
+	WindowEndBlock       int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+	NextWindowStartBlock int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
+	NextWindowEndBlock   int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
+	IsRegistered         bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`
+	IsWhitelisted        bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
+	IsTopicActive        bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
 }
 
 func (m *GetWorkerSubmissionWindowStatusResponse) Reset() {
@@ -10049,9 +10049,9 @@ func (m *GetWorkerSubmissionWindowStatusResponse) GetIsOpen() bool {
 	return false
 }
 
-func (m *GetWorkerSubmissionWindowStatusResponse) GetCurrentNonceBlockHeight() int64 {
+func (m *GetWorkerSubmissionWindowStatusResponse) GetCurrentNonce() int64 {
 	if m != nil {
-		return m.CurrentNonceBlockHeight
+		return m.CurrentNonce
 	}
 	return 0
 }
@@ -10160,15 +10160,15 @@ func (m *GetReputerSubmissionWindowStatusRequest) GetAddress() string {
 }
 
 type GetReputerSubmissionWindowStatusResponse struct {
-	IsOpen                  bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
-	CurrentNonceBlockHeight int64 `protobuf:"varint,2,opt,name=current_nonce_block_height,json=currentNonceBlockHeight,proto3" json:"current_nonce_block_height,omitempty"`
-	WindowStartBlock        int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
-	WindowEndBlock          int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
-	NextWindowStartBlock    int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
-	NextWindowEndBlock      int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
-	IsRegistered            bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`
-	IsWhitelisted           bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
-	IsTopicActive           bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
+	IsOpen               bool  `protobuf:"varint,1,opt,name=is_open,json=isOpen,proto3" json:"is_open,omitempty"`
+	CurrentNonce         int64 `protobuf:"varint,2,opt,name=current_nonce,json=currentNonce,proto3" json:"current_nonce,omitempty"`
+	WindowStartBlock     int64 `protobuf:"varint,3,opt,name=window_start_block,json=windowStartBlock,proto3" json:"window_start_block,omitempty"`
+	WindowEndBlock       int64 `protobuf:"varint,4,opt,name=window_end_block,json=windowEndBlock,proto3" json:"window_end_block,omitempty"`
+	NextWindowStartBlock int64 `protobuf:"varint,5,opt,name=next_window_start_block,json=nextWindowStartBlock,proto3" json:"next_window_start_block,omitempty"`
+	NextWindowEndBlock   int64 `protobuf:"varint,6,opt,name=next_window_end_block,json=nextWindowEndBlock,proto3" json:"next_window_end_block,omitempty"`
+	IsRegistered         bool  `protobuf:"varint,7,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`
+	IsWhitelisted        bool  `protobuf:"varint,8,opt,name=is_whitelisted,json=isWhitelisted,proto3" json:"is_whitelisted,omitempty"`
+	IsTopicActive        bool  `protobuf:"varint,9,opt,name=is_topic_active,json=isTopicActive,proto3" json:"is_topic_active,omitempty"`
 }
 
 func (m *GetReputerSubmissionWindowStatusResponse) Reset() {
@@ -10213,9 +10213,9 @@ func (m *GetReputerSubmissionWindowStatusResponse) GetIsOpen() bool {
 	return false
 }
 
-func (m *GetReputerSubmissionWindowStatusResponse) GetCurrentNonceBlockHeight() int64 {
+func (m *GetReputerSubmissionWindowStatusResponse) GetCurrentNonce() int64 {
 	if m != nil {
-		return m.CurrentNonceBlockHeight
+		return m.CurrentNonce
 	}
 	return 0
 }
@@ -22238,8 +22238,8 @@ func (m *GetWorkerSubmissionWindowStatusResponse) MarshalToSizedBuffer(dAtA []by
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.CurrentNonceBlockHeight != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.CurrentNonceBlockHeight))
+	if m.CurrentNonce != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.CurrentNonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -22361,8 +22361,8 @@ func (m *GetReputerSubmissionWindowStatusResponse) MarshalToSizedBuffer(dAtA []b
 		i--
 		dAtA[i] = 0x18
 	}
-	if m.CurrentNonceBlockHeight != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.CurrentNonceBlockHeight))
+	if m.CurrentNonce != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.CurrentNonce))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -25275,8 +25275,8 @@ func (m *GetWorkerSubmissionWindowStatusResponse) Size() (n int) {
 	if m.IsOpen {
 		n += 2
 	}
-	if m.CurrentNonceBlockHeight != 0 {
-		n += 1 + sovQuery(uint64(m.CurrentNonceBlockHeight))
+	if m.CurrentNonce != 0 {
+		n += 1 + sovQuery(uint64(m.CurrentNonce))
 	}
 	if m.WindowStartBlock != 0 {
 		n += 1 + sovQuery(uint64(m.WindowStartBlock))
@@ -25327,8 +25327,8 @@ func (m *GetReputerSubmissionWindowStatusResponse) Size() (n int) {
 	if m.IsOpen {
 		n += 2
 	}
-	if m.CurrentNonceBlockHeight != 0 {
-		n += 1 + sovQuery(uint64(m.CurrentNonceBlockHeight))
+	if m.CurrentNonce != 0 {
+		n += 1 + sovQuery(uint64(m.CurrentNonce))
 	}
 	if m.WindowStartBlock != 0 {
 		n += 1 + sovQuery(uint64(m.WindowStartBlock))
@@ -43645,9 +43645,9 @@ func (m *GetWorkerSubmissionWindowStatusResponse) Unmarshal(dAtA []byte) error {
 			m.IsOpen = bool(v != 0)
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CurrentNonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CurrentNonce", wireType)
 			}
-			m.CurrentNonceBlockHeight = 0
+			m.CurrentNonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -43657,7 +43657,7 @@ func (m *GetWorkerSubmissionWindowStatusResponse) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.CurrentNonceBlockHeight |= int64(b&0x7F) << shift
+				m.CurrentNonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -43971,9 +43971,9 @@ func (m *GetReputerSubmissionWindowStatusResponse) Unmarshal(dAtA []byte) error 
 			m.IsOpen = bool(v != 0)
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CurrentNonceBlockHeight", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field CurrentNonce", wireType)
 			}
-			m.CurrentNonceBlockHeight = 0
+			m.CurrentNonce = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -43983,7 +43983,7 @@ func (m *GetReputerSubmissionWindowStatusResponse) Unmarshal(dAtA []byte) error 
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.CurrentNonceBlockHeight |= int64(b&0x7F) << shift
+				m.CurrentNonce |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

@@ -1630,7 +1630,7 @@ message GetWorkerSubmissionWindowStatusRequest {
 
 message GetWorkerSubmissionWindowStatusResponse {
   bool is_open = 1 [(amino.dont_omitempty) = true];
-  int64 current_nonce_block_height = 2;
+  int64 current_nonce = 2;
   int64 window_start_block = 3;
   int64 window_end_block = 4;
   int64 next_window_start_block = 5;
@@ -1647,7 +1647,7 @@ message GetReputerSubmissionWindowStatusRequest {
 
 message GetReputerSubmissionWindowStatusResponse {
   bool is_open = 1 [(amino.dont_omitempty) = true];
-  int64 current_nonce_block_height = 2;
+  int64 current_nonce = 2;
   int64 window_start_block = 3;
   int64 window_end_block = 4;
   int64 next_window_start_block = 5;

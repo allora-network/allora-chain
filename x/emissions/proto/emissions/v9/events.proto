@@ -34,7 +34,7 @@ enum ActorType {
 message EventScoresSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
   repeated string addresses = 4;
   repeated string scores = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -45,7 +45,7 @@ message EventScoresSet {
 message EventRewardsSettled {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
   repeated string addresses = 4;
   repeated string rewards = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -361,7 +361,7 @@ message EventForecastTaskScore {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
 }
 
 message EventWorkerLastCommit {
@@ -401,7 +401,7 @@ message EventEMAScoresSet {
 message EventListeningCoefficientsSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
   repeated string addresses = 4;
   repeated string coefficients = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -411,7 +411,7 @@ message EventListeningCoefficientsSet {
 
 message EventInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -421,7 +421,7 @@ message EventInfererNetworkRegretSet {
 
 message EventForecasterNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -431,7 +431,7 @@ message EventForecasterNetworkRegretSet {
 
 message EventNaiveInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -441,7 +441,7 @@ message EventNaiveInfererNetworkRegretSet {
 
 message EventTopicInitialRegret {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   string regret = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -451,7 +451,7 @@ message EventTopicInitialRegret {
 message EventTopicInitialEmaScore {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
   string score = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -460,7 +460,7 @@ message EventTopicInitialEmaScore {
 
 message EventRegretStdNorm {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   string stdnorm = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -469,7 +469,7 @@ message EventRegretStdNorm {
 
 message EventInfererWeightsSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -479,7 +479,7 @@ message EventInfererWeightsSet {
 
 message EventForecasterWeightsSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -524,19 +524,19 @@ message EventDelegateRewardDistributed {
 message EventActiveReputersSet {
   uint64 topic_id = 1;
   repeated string addresses = 2;
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
 }
 
 message EventActiveInferersSet {
   uint64 topic_id = 1;
   repeated string addresses = 2;
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
 }
 
 message EventActiveForecastersSet {
   uint64 topic_id = 1;
   repeated string addresses = 2;
-  int64 nonce_block_height = 3;
+  int64 nonce = 3;
 }
 
 message EventTopicStatusChanged {
@@ -546,7 +546,7 @@ message EventTopicStatusChanged {
 
 message EventNetworkInferenceInfererWeightsSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -556,7 +556,7 @@ message EventNetworkInferenceInfererWeightsSet {
 
 message EventNetworkInferenceForecasterWeightsSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -566,7 +566,7 @@ message EventNetworkInferenceForecasterWeightsSet {
 
 message EventNetworkInferenceInfererRegretsUsedSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -576,7 +576,7 @@ message EventNetworkInferenceInfererRegretsUsedSet {
 
 message EventNetworkInferenceForecasterRegretsUsedSet {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
@@ -628,22 +628,22 @@ message EventTopicFeeRevenueDripped {
 
 message EventWorkerSubmissionWindowOpened {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   int64 window_end_block = 3;
 }
 
 message EventWorkerSubmissionWindowClosed {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
 }
 
 message EventReputerSubmissionWindowOpened {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
   int64 window_end_block = 3;
 }
 
 message EventReputerSubmissionWindowClosed {
   uint64 topic_id = 1;
-  int64 nonce_block_height = 2;
+  int64 nonce = 2;
 }
