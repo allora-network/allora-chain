@@ -12,7 +12,7 @@ import "emissions/v3/stake.proto";
 import "emissions/v3/types.proto";
 import "emissions/v3/worker.proto";
 // v8
-import "emissions/v8/params.proto";
+import "emissions/v9/params.proto";
 import "emissions/v9/topic.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -778,7 +778,7 @@ message GetParamsRequest {}
 // GetParamsResponse is the response type for the Get/Params RPC method.
 message GetParamsResponse {
   // params defines the parameters of the module.
-  emissions.v8.Params params = 1 [
+  emissions.v9.Params params = 1 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];

@@ -4,7 +4,6 @@ package emissionsv9
 import (
 	fmt "fmt"
 	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
-	v8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
 	_ "github.com/cosmos/cosmos-proto"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
@@ -14726,7 +14725,7 @@ func (x *fastReflection_EventParamsSet) Get(descriptor protoreflect.FieldDescrip
 func (x *fastReflection_EventParamsSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "emissions.v9.EventParamsSet.params":
-		x.Params = value.Message().Interface().(*v8.Params)
+		x.Params = value.Message().Interface().(*Params)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v9.EventParamsSet"))
@@ -14749,7 +14748,7 @@ func (x *fastReflection_EventParamsSet) Mutable(fd protoreflect.FieldDescriptor)
 	switch fd.FullName() {
 	case "emissions.v9.EventParamsSet.params":
 		if x.Params == nil {
-			x.Params = new(v8.Params)
+			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
 	default:
@@ -14766,7 +14765,7 @@ func (x *fastReflection_EventParamsSet) Mutable(fd protoreflect.FieldDescriptor)
 func (x *fastReflection_EventParamsSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "emissions.v9.EventParamsSet.params":
-		m := new(v8.Params)
+		m := new(Params)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
@@ -14963,7 +14962,7 @@ func (x *fastReflection_EventParamsSet) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.Params == nil {
-					x.Params = &v8.Params{}
+					x.Params = &Params{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Params); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -44035,7 +44034,7 @@ type EventParamsSet struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Params *v8.Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 }
 
 func (x *EventParamsSet) Reset() {
@@ -44058,7 +44057,7 @@ func (*EventParamsSet) Descriptor() ([]byte, []int) {
 	return file_emissions_v9_events_proto_rawDescGZIP(), []int{23}
 }
 
-func (x *EventParamsSet) GetParams() *v8.Params {
+func (x *EventParamsSet) GetParams() *Params {
 	if x != nil {
 		return x.Params
 	}
@@ -46529,7 +46528,7 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x33, 0x2f,
 	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x38, 0x2f, 0x70, 0x61, 0x72, 0x61,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x70, 0x61, 0x72, 0x61,
 	0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
 	0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x39, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
@@ -46830,7 +46829,7 @@ var file_emissions_v9_events_proto_rawDesc = []byte{
 	0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x3e, 0x0a, 0x0e, 0x45, 0x76, 0x65, 0x6e, 0x74,
 	0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x53, 0x65, 0x74, 0x12, 0x2c, 0x0a, 0x06, 0x70, 0x61, 0x72,
 	0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x38, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x39, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52,
 	0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x30, 0x0a, 0x18, 0x45, 0x76, 0x65, 0x6e, 0x74,
 	0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x41, 0x64,
 	0x64, 0x65, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x64, 0x6d, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01,
@@ -47399,7 +47398,7 @@ var file_emissions_v9_events_proto_goTypes = []interface{}{
 	(*EventReputerSubmissionWindowClosed)(nil),               // 76: emissions.v9.EventReputerSubmissionWindowClosed
 	(*v3.ValueBundle)(nil),                                   // 77: emissions.v3.ValueBundle
 	(*Topic)(nil),                                            // 78: emissions.v9.Topic
-	(*v8.Params)(nil),                                        // 79: emissions.v8.Params
+	(*Params)(nil),                                           // 79: emissions.v9.Params
 	(*v3.Nonce)(nil),                                         // 80: emissions.v3.Nonce
 }
 var file_emissions_v9_events_proto_depIdxs = []int32{
@@ -47413,7 +47412,7 @@ var file_emissions_v9_events_proto_depIdxs = []int32{
 	78, // 7: emissions.v9.EventCreateNewTopic.topic:type_name -> emissions.v9.Topic
 	78, // 8: emissions.v9.EventTopicUpdated.topic:type_name -> emissions.v9.Topic
 	6,  // 9: emissions.v9.EventInsertReputerPayload.bundle:type_name -> emissions.v9.EventValueBundle
-	79, // 10: emissions.v9.EventParamsSet.params:type_name -> emissions.v8.Params
+	79, // 10: emissions.v9.EventParamsSet.params:type_name -> emissions.v9.Params
 	80, // 11: emissions.v9.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
 	80, // 12: emissions.v9.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
 	0,  // 13: emissions.v9.EventEMAScoresSet.actor_type:type_name -> emissions.v9.ActorType
@@ -47431,6 +47430,7 @@ func file_emissions_v9_events_proto_init() {
 	if File_emissions_v9_events_proto != nil {
 		return
 	}
+	file_emissions_v9_params_proto_init()
 	file_emissions_v9_topic_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v9_events_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
