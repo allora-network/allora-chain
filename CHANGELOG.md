@@ -77,6 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+* [#903](https://github.com/allora-network/allora-chain/pull/903) Fix CometBFT [GHSA-c32p-wcqj-j677](https://github.com/cometbft/cometbft/security/advisories/GHSA-c32p-wcqj-j677) vulnerability
+
 ### API Breaking Changes
 
 #### Removed
