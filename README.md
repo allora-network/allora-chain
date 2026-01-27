@@ -1,0 +1,427 @@
+# Allora Network
+<p align="center">
+<img src='assets/AlloraLogo.jpeg' width='200'>
+<a href="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
+    <img src="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
+</a>
+</p>
+
+![Docker!](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
+![Go!](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![Apache License](https://img.shields.io/badge/Apache%20License-D22128?style=for-the-badge&logo=Apache&logoColor=white)
+
+The [Allora Network](https://www.allora.network/) is a state-of-the-art protocol that uses decentralized AI and machine learning (ML) to build, extract, and deploy predictions among its participants. It offers actors who wish to use AI predictions a formalized way to obtain the output of state-of-the-art ML models on-chain and to pay the operators of AI/ML nodes who create these predictions. That way, Allora bridges the information gap between data owners, data processors, AI/ML predictors, market analysts, and the end-users or consumers who have the means to execute on these insights.
+
+The AI/ML agents within the Allora Network use their data and algorithms to broadcast their predictions across a peer-to-peer network, and they ingest these predictions to assess the predictions from all other agents. The network consensus mechanism combines these predictions and assessments, and distributes rewards to the agents according to the quality of their predictions and assessments. This carefully designed incentive mechanism enables Allora to continually learn and improve, adjusting to the market as it evolves.
+
+## Documentation
+For the latest documentation, please go to https://docs.allora.network/
+
+## Allorad Install
+
+Binary can be Installed for Linux or Mac (check releases for Windows)
+
+Specify a version to install if desired. 
+
+```bash
+curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash -s -- v0.7.0
+```
+
+Ensure `~/.local/bin` is in your PATH.
+
+`allorad` will be available.
+
+```sh
+git clone -b <latest-release-tag> https://github.com/allora-network/allora-chain.git
+cd allora-chain && make install
+```
+
+Note: Depending on your `go` setup you may need to add `$GOPATH/bin` to your `$PATH`.
+
+```
+export PATH=$PATH:$(go env GOPATH)/bin
+```
+
+## Run a Local Network
+To run a local node for testing purposes, execute the following commands:
+```
+make init
+allorad start
+```
+
+When you run a node you have 2 options:
+ - Run node and a Head, main advantage is - you can use the head for your workers and reputers
+ - Run only a node, in this case you will use Allora's heads.
+
+## Run a Fork of Testnet/Mainnet State
+To run a fork of a testnet or mainnet in order to check changes against the database state for those networks, first set up some local `$HOME/.allorad/` config genesis, etc:
+
+```bash
+allorad init devnet
+allorad keys add test
+```
+
+Then copy an existing node snapshot of the `$HOME/.allorad/data/` folder to your new validator's same allorad home folder. You might use `allorad snapshots dump` to get a tar.gz snapshot.
+
+Next get the local validator key for your new validator:
+```bash
+allorad comet show-address
+```
+
+Start the node with an in-place-testnet, swapping the state of the node for the snapshot state. Put the comet address from the previous step:
+
+```bash
+allorad in-place-testnet devnet allovaloper<comet address> --home $HOME/.allorad --minimum-gas-prices 0uallo --skip-confirmation
+```
+
+## Run a node with script
+`scripts/l1_node.sh`, you will see the log in the output of the script.
+
+*NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
+
+## Run a node
+
+### Run
+```
+docker compose pull
+docker compose up
+```
+
+run `docker compose up -d` to run detached.
+
+*NOTE:* Don't forget to pull the images first, to ensure that you're using the latest images.
+
+### See logs
+`docker compose logs -f`
+
+## Run a node with statesync enabled
+
+To speed up nodes syncing, you can enable statesync, so the node will download state snapshot and sync only the rest blocks (last \<1000 blocks).  
+Here is a [guide](https://blog.cosmos.network/cosmos-sdk-state-sync-guide-99e4cf43be2f)  from Cosmos SDK. 
+
+To use statesync, you need:
+
+1. Peers with state snapshots enabled. Allora [peers](https://github.com/allora-network/networks/blob/main/allora-testnet-1/peers.txt) have enabled snapshots for every 1000 blocks.
+2. 2 RPC endpoints, you can use any synced full nodes for this purpose.
+
+**NOTE:** To enable state snapshots, you just need to pass `--state-sync.snapshot-keep-recent=X` and `--state-sync.snapshot-interval=Y` to the `allorad start` command.
+
+### Enable statesync with docker compose
+
+Set in the docker compose file the following environment variables
+```
+      - STATE_SYNC_RPC1=synced_full_node_rpc_1
+      - STATE_SYNC_RPC2=synced_full_node_rpc_2
+```
+
+### Enable statesync with l1_node.sh script
+
+Just add to the script's environment the following variables:
+```
+export STATE_SYNC_RPC1=synced_full_node_rpc_1
+export STATE_SYNC_RPC2=synced_full_node_rpc_2
+scripts/l1_node.sh
+```
+
+## Call the node
+After the node is running you can exec RPC calls to it.
+
+For instance, check its status:
+`curl -so- http://localhost:26657/status | jq .`
+
+With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up` you can check if the node syncing or not.
+
+## Run a validator
+
+You can refer to the Allora documentation for detailed instructions on [running a full node](https://docs.allora.network/devs/validators/run-full-node) and [staking a validator](https://docs.allora.network/devs/validators/stake-a-validator).
+
+1. Run and sync a full Allora node following [the instructions](https://docs.allora.network/devs/validators/run-full-node).
+
+2. Wait until the node is fully synced
+
+Verify that your node has finished syncing and it is caught up with the network:
+
+`curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up`
+Wait until you see the output: "false"
+
+3. Fund account.
+
+`l1_node.sh` script generates keys, you can find created account information in `data/*.account_info`. Get the address from the file and fund, on testnets you can use faucet `https://faucet.${NETWORK}.allora.network`.
+
+4. Stake validator (detailed instructions [here](https://docs.allora.network/devs/validators/stake-a-validator))
+
+Here's an example with Values which starts with a stake of 10000000uallo.
+
+All the following command needs to be executed inside the validator container.
+Run `docker compose exec validator0 bash` to get shell of the validator.
+
+You can change `--moniker=...` with a human readable name you choose for your validator.
+and `--from=` - is the account name in the keyring, you can list all available keys with `allorad --home=$APP_HOME keys --keyring-backend=test list`
+
+Create stake info file:
+```bash
+cat > stake-validator.json << EOF
+{
+    "pubkey": $(allorad --home=$APP_HOME comet show-validator),
+    "amount": "1000000uallo",
+    "moniker": "validator0",
+    "commission-rate": "0.1",
+    "commission-max-rate": "0.2",
+    "commission-max-change-rate": "0.01",
+    "min-self-delegation": "1"
+}
+EOF
+```
+
+Stake the validator
+```bash
+allorad tx staking create-validator ./stake-validator.json \
+    --chain-id=testnet \
+    --home="$APP_HOME" \
+    --keyring-backend=test \
+    --from=validator0
+```
+The command will output tx hash, you can check its status in the explorer: `https://explorer.testnet.allora.network:8443/allora-testnet/tx/$TX_HASH`
+
+
+5. Verify validator setup
+
+### Check that the validator node is registered and staked
+
+```bash
+VAL_PUBKEY=$(allorad --home=$APP_HOME comet show-validator | jq -r .key)
+allorad --home=$APP_HOME q staking validators -o=json | \
+    jq '.validators[] | select(.consensus_pubkey.value=="'$VAL_PUBKEY'")'
+```
+
+- this command should return you all the information about the validator. Similar to the following:
+```
+{
+  "operator_address": "allovaloper1n8t4ffvwstysveuf3ccx9jqf3c6y7kte48qcxm",
+  "consensus_pubkey": {
+    "type": "tendermint/PubKeyEd25519",
+    "value": "gOl6fwPc19BtkmiOGjjharfe6eyniaxdkfyqiko3/cQ="
+  },
+  "status": 3,
+  "tokens": "1000000",
+  "delegator_shares": "1000000000000000000000000",
+  "description": {
+    "moniker": "val2"
+  },
+  "unbonding_time": "1970-01-01T00:00:00Z",
+  "commission": {
+    "commission_rates": {
+      "rate": "100000000000000000",
+      "max_rate": "200000000000000000",
+      "max_change_rate": "10000000000000000"
+    },
+    "update_time": "2024-02-26T22:50:31.187119394Z"
+  },
+  "min_self_delegation": "1"
+}
+```
+### Check the voting power of your validator node
+*NOTE:* please allow 30-60 seconds for the output to be updated
+
+`allorad --home=$APP_HOME status | jq -r '.validator_info.voting_power'`
+- Output should be > 0
+
+## Unstaking/unbounding  a validator
+
+If you need to delete a validator from the chain, you just need to unbound the stake.
+
+```bash
+
+allorad --home="$APP_HOME" \
+  tx staking unbond ${VALIDATOR_OPERATOR_ADDRESS} \
+  ${STAKE_AMOUNT}uallo --from ${VALIDATOR_ACCOUNT_KEY_NAME} \
+   --keyring-backend=test --chain-id ${NETWORK}
+```
+
+## Running a Local Network 
+
+To just run a local network, execute the following commands:
+
+```bash
+bash test/local_testnet_l1.sh
+```
+
+### GRPC nginx proxy 
+
+It is possible to add a GRPC proxy to local network, to configure an nginx proxy on a common GRPC port with TLS certificate, via setting the `TLS_PROXY` environment variable to `true`. It will use port 9443 for the proxy.
+
+```bash
+TLS_PROXY=true bash test/local_testnet_l1.sh
+```
+
+Certificate directory can be set via `CERT_DIR` environment variable.
+
+```bash
+CERT_DIR=/path/to/certs TLS_PROXY=true bash test/local_testnet_l1.sh
+```
+
+
+## Run Integration Tests
+
+To run integration tests, execute the following commands:
+
+```bash
+bash test/local_testnet_l1.sh
+INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
+```
+
+## Run Upgrade Tests
+
+To run upgrade tests, execute the following commands:
+
+```bash
+DO_UPGRADE="true" UPGRADE_VERSION="v0.6.0" bash test/local_testnet_l1.sh
+UPGRADE=TRUE go test -timeout 10m ./test/integration/ -v
+```
+
+## Run Stress Tests
+
+To run stress tests, execute the following commands:
+
+```bash
+bash test/local_testnet_l1.sh
+STRESS_TEST=true RPC_MODE="RandomBasedOnDeterministicSeed" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" SEED=1 MAX_REPUTERS_PER_TOPIC=2 REPUTERS_PER_ITERATION=2 EPOCH_LENGTH=12 FINAL_REPORT=TRUE MAX_WORKERS_PER_TOPIC=2 WORKERS_PER_ITERATION=1 TOPICS_MAX=2 TOPICS_PER_ITERATION=1 MAX_ITERATIONS=2 go test -v -timeout 0 -test.run TestStressTestSuite ./test/stress
+```
+
+options for RPC Modes include "RandomBasedOnDeterministicSeed" "RoundRobin" and "SingleRpc"
+
+## Remote debugging using Delve and Cursor
+
+1- Install Delve (dlv) at the server and at your computer:
+
+```bash
+go install github.com/go-delve/delve/cmd/dlv@latest
+```
+
+2- Configure Delve at Cursor
+
+- Go to settings and search for "Delve"
+- Click on "Edit in settings.json"
+- Add this to the file: 
+  ```json
+  "go.delveConfig": {
+    "dlvPath": "<absolute path to dlv binary>"
+  }
+  ```
+
+3- Build allorad with debug option:
+
+```bash
+DEBUG=on make build-all-platforms
+```
+
+4- Install the new binary on the server and restart the service
+
+5- Get the PID of `allorad` (Make sure you get the PID of `allorad`, not `cosmovisor`).
+
+6- Run dlv at the server and attach it to `allorad` using the PID:
+
+```bash
+dlv --listen=:2345 --headless=true --api-version=2 --accept-multiclient attach <PID>
+```
+
+7- Make sure you can access that port on the server from your computer. You can do it using port forward, for example:
+
+```bash
+ssh -NL 2345:localhost:2345 user@remote.ip
+```
+
+8- At your computer, edit `.vscode/launch.json` file and set the correct value for `host` and `port`: 
+
+```json
+{
+  "name": "Remote Debug",
+  "type": "go",
+  "debugAdapter": "dlv-dap",
+  "request": "attach",
+  "mode": "remote",
+  "port": 2345,
+  "host": "127.0.0.1",
+}
+```
+
+9- At Cursor, go to the debug panel, pick "Remote Debug" configuration and start debugging.
+
+## Data Submission Windows
+
+Data is submitted by workers and reputers within the allowed submission windows.
+
+For workers, the submission window is defined at the topic level, as the blocks starting at `nonce.BlockHeight` and ending at `nonce.BlockHeight + topic.WorkerSubmissionWindow`. 
+
+For reputers, the submission window starts at `(nonce.BlockHeight + topic.GroundTruthLag)` and it lasts 1 `topic.EpochLength` + any remaining additional lag until end of epoch, only applying when `topic.GroundTruthLag` and `topic.EpochLength` are not multiples, and calculated as `(topic.EpochLength - (topic.GroundTruthLag % topic.EpochLength))`.
+
+Both windows are inclusive of start and end boundaries.
+
+## Using PebbleDB as the backend database
+
+PebbleDB is a high-performance, RocksDB-inspired key-value store written in Go.  
+Allora binaries are compiled with the `pebbledb` build-tag (see the Makefile), so no extra steps are required at build time.  
+You only need to tell CometBFT which backend to use at runtime.
+
+### 1. One-off via CLI flag
+
+```bash
+allorad start --db-backend pebbledb
+```
+
+### 2. Persistently via `config.toml`
+
+Edit the node's configuration file (default path: `~/.allorad/config/config.toml`) and set:
+
+```toml
+# Database backend: goleveldb | pebbledb | rocksdb | boltdb | badgerdb
+db_backend = "pebbledb"
+```
+
+Restart the node after saving the file.
+
+### Migrating an existing node
+
+1. Stop the node.
+2. **Back up** your current data directory (`$HOME/.allorad/data/`).
+3. Change the backend using one of the methods above.
+4. Delete or rename the old data directory (Pebble cannot read an existing Goleveldb database).
+5. (Re)start the node – it will create a fresh Pebble database and begin catching up from genesis.  
+
+#### Using StateSync for a much faster catch-up
+
+Instead of syncing from genesis, you can enable StateSync so the node joins the network within minutes:
+
+1. Identify two healthy RPC endpoints that serve state-sync snapshots.  You can use the [public peer list](https://github.com/allora-network/networks) or your own full nodes.  
+2. Export them as environment variables **before** starting the node:
+
+   ```bash
+   export STATE_SYNC_RPC1=https://rpc1.allora.network:26657
+   export STATE_SYNC_RPC2=https://rpc2.allora.network:26657
+   ```
+   (Replace the URLs with the ones you wish to use.)
+3. Start the node with Pebble enabled:
+
+   ```bash
+   allorad start --db-backend pebbledb
+   ```
+
+   The node will automatically download the most recent snapshot, verify it, and then fast-sync the remaining ~1,000 blocks.
+
+Docker users can achieve the same by adding the two variables to the **validator** service in `docker-compose.yml`, as shown in the *Run a node with statesync enabled* section.
+
+### Why Pebble?
+
+• 2-3× faster I/O throughput on typical validator hardware.  
+• Lower write-amplification and reduced disk usage versus GolevelDB.  
+• Developed and actively maintained by CockroachDB engineers.
+
+*If you do not explicitly set a backend, Allora will continue to use the default `goleveldb` implementation.*
+
+## References
+
+- https://github.com/go-delve/delve/blob/master/Documentation/faq.md#remote
+- https://www.jetbrains.com/help/go/attach-to-running-go-processes-with-debugger.html#attach-to-a-process-on-a-remote-machine
+
+
+

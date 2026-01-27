@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Format proto files
+PROTO_FILES=$(git diff --cached --name-only --diff-filter=ACMR "*.proto")
+if [ -n "$PROTO_FILES" ]; then
+  clang-format -i $PROTO_FILES
+  git add $PROTO_FILES
+fi
+

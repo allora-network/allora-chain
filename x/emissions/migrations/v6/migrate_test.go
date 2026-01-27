@@ -1,0 +1,180 @@
+package v6_test
+
+import (
+	"testing"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/stretchr/testify/suite"
+
+	v5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
+	v6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
+	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+)
+
+type EmissionsV6MigrationTestSuite struct {
+	testutil.TestSuite
+}
+
+func TestEmissionsV6MigrationTestSuite(t *testing.T) {
+	suite.Run(t, &EmissionsV6MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V6Migrations"),
+	})
+}
+
+// In this test we check that the emissions module params have been migrated
+// and the expected new fields are added and set to true:
+// GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
+func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	defaultParams := emissionstypes.DefaultParams()
+	paramsOld := oldV5Types.Params{
+		Version:                             defaultParams.Version,
+		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
+		MinTopicWeight:                      defaultParams.MinTopicWeight,
+		RequiredMinimumStake:                defaultParams.RequiredMinimumStake,
+		RemoveStakeDelayWindow:              defaultParams.RemoveStakeDelayWindow,
+		MinEpochLength:                      defaultParams.MinEpochLength,
+		BetaEntropy:                         defaultParams.BetaEntropy,
+		LearningRate:                        defaultParams.LearningRate,
+		MaxGradientThreshold:                defaultParams.MaxGradientThreshold,
+		MinStakeFraction:                    defaultParams.MinStakeFraction,
+		MaxUnfulfilledWorkerRequests:        defaultParams.MaxUnfulfilledWorkerRequests,
+		MaxUnfulfilledReputerRequests:       defaultParams.MaxUnfulfilledReputerRequests,
+		TopicRewardStakeImportance:          defaultParams.TopicRewardStakeImportance,
+		TopicRewardFeeRevenueImportance:     defaultParams.TopicRewardFeeRevenueImportance,
+		TopicRewardAlpha:                    defaultParams.TopicRewardAlpha,
+		TaskRewardAlpha:                     defaultParams.TaskRewardAlpha,
+		ValidatorsVsAlloraPercentReward:     defaultParams.ValidatorsVsAlloraPercentReward,
+		MaxSamplesToScaleScores:             defaultParams.MaxSamplesToScaleScores,
+		MaxTopInferersToReward:              defaultParams.MaxTopInferersToReward,
+		MaxTopForecastersToReward:           defaultParams.MaxTopForecastersToReward,
+		MaxTopReputersToReward:              defaultParams.MaxTopReputersToReward,
+		CreateTopicFee:                      defaultParams.CreateTopicFee,
+		GradientDescentMaxIters:             defaultParams.GradientDescentMaxIters,
+		RegistrationFee:                     defaultParams.RegistrationFee,
+		DefaultPageLimit:                    defaultParams.DefaultPageLimit,
+		MaxPageLimit:                        defaultParams.MaxPageLimit,
+		MinEpochLengthRecordLimit:           defaultParams.MinEpochLengthRecordLimit,
+		BlocksPerMonth:                      defaultParams.BlocksPerMonth,
+		PRewardInference:                    defaultParams.PRewardInference,
+		PRewardForecast:                     defaultParams.PRewardForecast,
+		PRewardReputer:                      defaultParams.PRewardReputer,
+		CRewardInference:                    defaultParams.CRewardInference,
+		CRewardForecast:                     defaultParams.CRewardForecast,
+		CNorm:                               alloraMath.MustNewDecFromString("0.75"),
+		EpsilonReputer:                      defaultParams.EpsilonReputer,
+		HalfMaxProcessStakeRemovalsEndBlock: defaultParams.HalfMaxProcessStakeRemovalsEndBlock,
+		EpsilonSafeDiv:                      defaultParams.EpsilonSafeDiv,
+		DataSendingFee:                      defaultParams.DataSendingFee,
+		MaxElementsPerForecast:              defaultParams.MaxElementsPerForecast,
+		MaxActiveTopicsPerBlock:             defaultParams.MaxActiveTopicsPerBlock,
+		MaxStringLength:                     defaultParams.MaxStringLength,
+		InitialRegretQuantile:               defaultParams.InitialRegretQuantile,
+		PNormSafeDiv:                        defaultParams.PNormSafeDiv,
+	}
+
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
+
+	// Run migration
+	err := v5.MigrateParams(store, cdc)
+	s.Require().NoError(err)
+
+	// TO BE ADDED VIA DEFAULT PARAMS:
+	// - GlobalWhitelistEnabled
+	// - TopicCreatorWhitelistEnabled
+
+	paramsExpected := defaultParams
+
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(paramsExpected.Version, params.Version)
+	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
+	s.Require().True(paramsExpected.MinTopicWeight.Equal(params.MinTopicWeight), "%s!=%s", paramsExpected.MinTopicWeight.String(), params.MinTopicWeight.String())
+	s.Require().True(paramsExpected.RequiredMinimumStake.Equal(params.RequiredMinimumStake), "%s!=%s", paramsExpected.RequiredMinimumStake, params.RequiredMinimumStake)
+	s.Require().Equal(paramsExpected.RemoveStakeDelayWindow, params.RemoveStakeDelayWindow)
+	s.Require().Equal(paramsExpected.MinEpochLength, params.MinEpochLength)
+	s.Require().True(paramsExpected.BetaEntropy.Equal(params.BetaEntropy), "%s!=%s", paramsExpected.BetaEntropy, params.BetaEntropy)
+	s.Require().True(paramsExpected.LearningRate.Equal(params.LearningRate), "%s!=%s", paramsExpected.LearningRate, params.LearningRate)
+	s.Require().True(paramsExpected.MaxGradientThreshold.Equal(params.MaxGradientThreshold), "%s!=%s", paramsExpected.MaxGradientThreshold, params.MaxGradientThreshold)
+	s.Require().True(paramsExpected.MinStakeFraction.Equal(params.MinStakeFraction), "%s!=%s", paramsExpected.MinStakeFraction, params.MinStakeFraction)
+	s.Require().Equal(paramsExpected.MaxUnfulfilledWorkerRequests, params.MaxUnfulfilledWorkerRequests)
+	s.Require().Equal(paramsExpected.MaxUnfulfilledReputerRequests, params.MaxUnfulfilledReputerRequests)
+	s.Require().True(paramsExpected.TopicRewardStakeImportance.Equal(params.TopicRewardStakeImportance), "%s!=%s", paramsExpected.TopicRewardStakeImportance, params.TopicRewardStakeImportance)
+	s.Require().True(paramsExpected.TopicRewardFeeRevenueImportance.Equal(params.TopicRewardFeeRevenueImportance), "%s!=%s", paramsExpected.TopicRewardFeeRevenueImportance, params.TopicRewardFeeRevenueImportance)
+	s.Require().True(paramsExpected.TopicRewardAlpha.Equal(params.TopicRewardAlpha), "%s!=%s", paramsExpected.TopicRewardAlpha, params.TopicRewardAlpha)
+	s.Require().True(paramsExpected.TaskRewardAlpha.Equal(params.TaskRewardAlpha), "%s!=%s", paramsExpected.TaskRewardAlpha, params.TaskRewardAlpha)
+	s.Require().True(paramsExpected.ValidatorsVsAlloraPercentReward.Equal(params.ValidatorsVsAlloraPercentReward), "%s!=%s", paramsExpected.ValidatorsVsAlloraPercentReward, params.ValidatorsVsAlloraPercentReward)
+	s.Require().Equal(paramsExpected.MaxSamplesToScaleScores, params.MaxSamplesToScaleScores)
+	s.Require().Equal(paramsExpected.MaxTopInferersToReward, params.MaxTopInferersToReward)
+	s.Require().Equal(paramsExpected.MaxTopForecastersToReward, params.MaxTopForecastersToReward)
+	s.Require().Equal(paramsExpected.MaxTopReputersToReward, params.MaxTopReputersToReward)
+	s.Require().True(paramsExpected.CreateTopicFee.Equal(params.CreateTopicFee), "%s!=%s", paramsExpected.CreateTopicFee, params.CreateTopicFee)
+	s.Require().Equal(paramsExpected.GradientDescentMaxIters, params.GradientDescentMaxIters)
+	s.Require().True(paramsExpected.RegistrationFee.Equal(params.RegistrationFee), "%s!=%s", paramsExpected.RegistrationFee, params.RegistrationFee)
+	s.Require().Equal(paramsExpected.DefaultPageLimit, params.DefaultPageLimit)
+	s.Require().Equal(paramsExpected.MaxPageLimit, params.MaxPageLimit)
+	s.Require().Equal(paramsExpected.MinEpochLengthRecordLimit, params.MinEpochLengthRecordLimit)
+	s.Require().Equal(paramsExpected.BlocksPerMonth, params.BlocksPerMonth)
+	s.Require().True(paramsExpected.PRewardInference.Equal(params.PRewardInference), "%s!=%s", paramsExpected.PRewardInference, params.PRewardInference)
+	s.Require().True(paramsExpected.PRewardForecast.Equal(params.PRewardForecast), "%s!=%s", paramsExpected.PRewardForecast, params.PRewardForecast)
+	s.Require().True(paramsExpected.PRewardReputer.Equal(params.PRewardReputer), "%s!=%s", paramsExpected.PRewardReputer, params.PRewardReputer)
+	s.Require().True(paramsExpected.CRewardInference.Equal(params.CRewardInference), "%s!=%s", paramsExpected.CRewardInference, params.CRewardInference)
+	s.Require().True(paramsExpected.CRewardForecast.Equal(params.CRewardForecast), "%s!=%s", paramsExpected.CRewardForecast, params.CRewardForecast)
+	s.Require().True(paramsExpected.EpsilonReputer.Equal(params.EpsilonReputer), "%s!=%s", paramsExpected.EpsilonReputer, params.EpsilonReputer)
+	s.Require().Equal(paramsExpected.HalfMaxProcessStakeRemovalsEndBlock, params.HalfMaxProcessStakeRemovalsEndBlock)
+	s.Require().True(paramsExpected.EpsilonSafeDiv.Equal(params.EpsilonSafeDiv), "%s!=%s", paramsExpected.EpsilonSafeDiv, params.EpsilonSafeDiv)
+	s.Require().True(paramsExpected.DataSendingFee.Equal(params.DataSendingFee), "%s!=%s", paramsExpected.DataSendingFee, params.DataSendingFee)
+	s.Require().Equal(paramsExpected.MaxElementsPerForecast, params.MaxElementsPerForecast)
+	s.Require().Equal(paramsExpected.MaxActiveTopicsPerBlock, params.MaxActiveTopicsPerBlock)
+	s.Require().Equal(paramsExpected.MaxStringLength, params.MaxStringLength)
+	s.Require().Equal(paramsExpected.InitialRegretQuantile, params.InitialRegretQuantile)
+	s.Require().Equal(paramsExpected.PNormSafeDiv, params.PNormSafeDiv)
+	s.Require().True(paramsExpected.GlobalWhitelistEnabled)
+	s.Require().True(paramsExpected.TopicCreatorWhitelistEnabled)
+}
+
+// In this test we check that the topic worker and reputer whitelists
+// have been turned on for all topics.
+func (s *EmissionsV6MigrationTestSuite) TestFlipOnTopicWhitelists() {
+	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	const (
+		startTopicID = 2
+		numTopics    = 4
+	)
+
+	// Create 3 test topics
+	for i := uint64(startTopicID); i <= numTopics-startTopicID; i++ {
+		_, err := s.EmissionsKeeper().IncrementTopicId(s.Ctx())
+		s.Require().NoError(err)
+
+		s.CreateTopic()
+
+		_, err = s.EmissionsKeeper().IncrementTopicId(s.Ctx())
+		s.Require().NoError(err)
+	}
+
+	// Run the migration
+	err := v6.FlipOnTopicWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	// Verify each topic has whitelists enabled
+	for i := uint64(startTopicID); i <= numTopics-startTopicID; i++ {
+		// Check worker whitelist is enabled
+		workerWhitelistEnabled, err := s.EmissionsKeeper().IsTopicWorkerWhitelistEnabled(s.Ctx(), i)
+		s.Require().NoError(err)
+		s.Require().True(workerWhitelistEnabled)
+
+		// Check reputer whitelist is enabled
+		reputerWhitelistEnabled, err := s.EmissionsKeeper().IsTopicReputerWhitelistEnabled(s.Ctx(), i)
+		s.Require().NoError(err)
+		s.Require().True(reputerWhitelistEnabled)
+	}
+}

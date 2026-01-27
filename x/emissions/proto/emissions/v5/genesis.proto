@@ -1,0 +1,423 @@
+syntax = "proto3";
+package emissions.v5;
+
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
+import "emissions/v3/node.proto";
+import "emissions/v3/nonce.proto";
+import "emissions/v3/reputer.proto";
+import "emissions/v3/score.proto";
+import "emissions/v3/stake.proto";
+import "emissions/v3/topic.proto";
+import "emissions/v3/types.proto";
+import "emissions/v3/worker.proto";
+import "emissions/v5/params.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+// GenesisState is the state that must be provided at genesis.
+message GenesisState {
+  reserved 13, 14, 15;
+  reserved "latestInfererScoresByWorker", "latestForecasterScoresByWorker", "latestReputerScoresByReputer";
+
+  // params defines all the parameters of the module.
+  emissions.v5.Params params = 1 [(gogoproto.nullable) = false];
+
+  /// TOPIC
+  // the next topic id to be used, equal to the number of topics that have been
+  // created
+  uint64 next_topic_id = 3;
+  // every topic that has been created indexed by their topicId starting from 1
+  // (0 is reserved for the root network)
+  repeated TopicIdAndTopic topics = 4;
+  repeated uint64 active_topics = 5;
+  // every topic that has been churned and ready to be rewarded i.e. reputer
+  // losses have been committed
+  repeated uint64 rewardable_topics = 6;
+  // for a topic, what is every worker node that has registered to it?
+  repeated TopicAndActorId topic_workers = 7;
+  // for a topic, what is every reputer node that has registered to it?
+  repeated TopicAndActorId topic_reputers = 8;
+  // map of (topic) -> nonce/block height
+  repeated TopicIdAndBlockHeight topic_reward_nonce = 9;
+
+  /// SCORES
+  // map of (topic, block_height, worker) -> score
+  repeated TopicIdBlockHeightScores inferer_scores_by_block = 10;
+  // map of (topic, block_height, worker) -> score
+  repeated TopicIdBlockHeightScores forecaster_scores_by_block = 11;
+  // map of (topic, block_height, reputer) -> score
+  repeated TopicIdBlockHeightScores reputer_scores_by_block = 12;
+  // map of (topic, block_height, worker) -> score
+  repeated TopicIdActorIdScore inferer_score_emas = 60;
+  // map of (topic, block_height, worker) -> score
+  repeated TopicIdActorIdScore forecaster_score_emas = 61;
+  // map of (topic, block_height, reputer) -> score
+  repeated TopicIdActorIdScore reputer_score_emas = 62;
+  // map of (topic, reputer) -> listening coefficient
+  repeated TopicIdActorIdListeningCoefficient reputer_listening_coefficient = 16;
+  // map of (topic, reputer) -> previous reward (used for EMA)
+  repeated TopicIdActorIdDec previous_reputer_reward_fraction = 17;
+  // map of (topic, worker) -> previous reward for inference (used for EMA)
+  repeated TopicIdActorIdDec previous_inference_reward_fraction = 18;
+  // map of (topic, worker) -> previous reward for forecast (used for EMA)
+  repeated TopicIdActorIdDec previous_forecast_reward_fraction = 19;
+  // map of (topic, forecaster) -> ratio of forecaster score
+  repeated TopicIdAndDec previous_forecaster_score_ratio = 20;
+
+  /// STAKING
+
+  // total sum stake of all stakers on the network
+  string total_stake = 21 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // for every topic, how much total stake does that topic have accumulated?
+  repeated TopicIdAndInt topic_stake = 22;
+  // stake reputer placed in topic + delegate stake placed in them,
+  // signalling their total authority on the topic
+  // (topic Id, reputer) -> stake from reputer on self +
+  // stakeFromDelegatorsUponReputer
+  repeated TopicIdActorIdInt stake_reputer_authority = 23;
+  // map of (topic id, delegator) -> total amount of stake in that topic placed
+  // by that delegator
+  repeated TopicIdActorIdInt stake_sum_from_delegator = 24;
+  // map of (topic id, delegator, reputer) -> amount of stake that has been
+  // placed by that delegator on that target
+  repeated TopicIdDelegatorReputerDelegatorInfo delegated_stakes = 25;
+  // map of (topic id, reputer) -> total amount of stake that has been placed on
+  // that reputer by delegators
+  repeated TopicIdActorIdInt stake_from_delegators_upon_reputer = 26;
+  // map of (topicId, reputer) -> share of delegate reward
+  repeated TopicIdActorIdDec delegate_reward_per_share = 27;
+  // stake removals are double indexed to avoid O(n) lookups when removing stake
+  // map of (blockHeight, topic, reputer) -> removal information for that
+  // reputer
+  repeated BlockHeightTopicIdReputerStakeRemovalInfo stake_removals_by_block = 28;
+  // key set of (reputer, topic, blockHeight) to existence of a removal in the
+  // forwards map
+  repeated ActorIdTopicIdBlockHeight stake_removals_by_actor = 29;
+  // delegate stake removals are double indexed to avoid O(n) lookups when
+  // removing stake map of (blockHeight, topic, delegator, reputer staked upon)
+  // -> (list of reputers delegated upon and info) to have stake removed at that
+  // block
+  repeated BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo delegate_stake_removals_by_block = 30;
+  // key set of (delegator, reputer, topicId, blockHeight) to existence of a
+  // removal in the forwards map
+  repeated DelegatorReputerTopicIdBlockHeight delegate_stake_removals_by_actor = 31;
+
+  /// MISC GLOBAL STATE
+  // map of (topic, worker) -> inference
+  repeated TopicIdActorIdInference inferences = 32;
+  // map of (topic, worker) -> forecast[]
+  repeated TopicIdActorIdForecast forecasts = 33;
+  // map of worker id to node data about that worker
+  repeated LibP2pKeyAndOffchainNode workers = 34;
+  // map of reputer id to node data about that reputer
+  repeated LibP2pKeyAndOffchainNode reputers = 35;
+  // fee revenue collected by a topic over the course of the last reward cadence
+  repeated TopicIdAndInt topic_fee_revenue = 36;
+  // store previous weights for exponential moving average in rewards calc
+  repeated TopicIdAndDec previous_topic_weight = 37;
+  // map of (topic, block_height) -> Inference
+  repeated TopicIdBlockHeightInferences all_inferences = 38;
+  // map of (topic, block_height) -> Forecast
+  repeated TopicIdBlockHeightForecasts all_forecasts = 39;
+  // map of (topic, block_height) -> ReputerValueBundles (1 per reputer active
+  // at that time)
+  repeated TopicIdBlockHeightReputerValueBundles all_loss_bundles = 40;
+  // map of (topic, block_height) -> ValueBundle (1 network wide bundle per
+  // timestep)
+  repeated TopicIdBlockHeightValueBundles network_loss_bundles = 41;
+  // Percentage of all rewards, paid out to staked reputers, during the previous
+  // reward cadence. Used by mint module
+  string previous_percentage_reward_to_staked_reputers = 42 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  /// NONCES
+
+  // map of open worker nonce windows for topics on particular block heights
+  repeated BlockHeightAndTopicIds open_worker_windows = 55;
+  // map of (topic) -> unfulfilled nonces
+  repeated TopicIdAndNonces unfulfilled_worker_nonces = 43;
+  // map of (topic) -> unfulfilled nonces
+  repeated TopicIdAndReputerRequestNonces unfulfilled_reputer_nonces = 44;
+  // map of (topic) -> last dripped block
+  repeated TopicIdAndBlockHeight last_drip_block = 56;
+
+  /// REGRETS
+  // map of (topic, worker) -> regret of worker from comparing loss of worker
+  // relative to loss of other inferers
+  repeated TopicIdActorIdTimeStampedValue latest_inferer_network_regrets = 45;
+  // map of (topic, worker) -> regret of worker from comparing loss of worker
+  // relative to loss of other forecasters
+  repeated TopicIdActorIdTimeStampedValue latest_forecaster_network_regrets = 46;
+  // map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster
+  // loss from comparing one-in loss with all network inferer (3rd index)
+  // regrets L_ij made under the regime of the one-in forecaster (2nd index)
+  repeated TopicIdActorIdActorIdTimeStampedValue latest_one_in_forecaster_network_regrets = 47;
+  // the forecaster (2nd index) regrets made under the regime of the same
+  // forecaster as a one-in forecaster
+  repeated TopicIdActorIdTimeStampedValue latest_naive_inferer_network_regrets = 48;
+  repeated TopicIdActorIdActorIdTimeStampedValue latest_one_out_inferer_inferer_network_regrets = 49;
+  repeated TopicIdActorIdActorIdTimeStampedValue latest_one_out_inferer_forecaster_network_regrets = 50;
+  repeated TopicIdActorIdActorIdTimeStampedValue latest_one_out_forecaster_inferer_network_regrets = 51;
+  repeated TopicIdActorIdActorIdTimeStampedValue latest_one_out_forecaster_forecaster_network_regrets = 52;
+
+  /// WHITELISTS
+  repeated string core_team_addresses = 2;
+
+  /// RECORD COMMITS
+  repeated TopicIdTimestampedActorNonce topic_last_worker_commit = 53;
+  repeated TopicIdTimestampedActorNonce topic_last_reputer_commit = 54;
+
+  // ACTIVE TOPIC
+  repeated TopicIdAndBlockHeight topic_to_next_possible_churning_block = 57;
+  repeated BlockHeightTopicIds block_to_active_topics = 58;
+  repeated BlockHeightTopicIdWeightPair block_to_lowest_active_topic_weight = 59;
+
+  // EMA
+  repeated TopicIdAndDec previous_topic_quantile_inferer_score_ema = 63;
+  repeated TopicIdAndDec previous_topic_quantile_forecaster_score_ema = 64;
+  repeated TopicIdAndDec previous_topic_quantile_reputer_score_ema = 65;
+
+  // INCLUSIONS
+  repeated TopicIdActorIdUint64 count_inferer_inclusions_in_topic_active_set = 66;
+  repeated TopicIdActorIdUint64 count_forecaster_inclusions_in_topic_active_set = 67;
+
+  // active inferers for each topic
+  repeated TopicAndActorId active_inferers = 68;
+  // active forecasters for each topic
+  repeated TopicAndActorId active_forecasters = 69;
+  // lowest inferer score EMA for each topic
+  repeated TopicIdActorIdScore lowest_inferer_score_ema = 70;
+  // lowest forecaster score EMA for each topic
+  repeated TopicIdActorIdScore lowest_forecaster_score_ema = 71;
+  // active reputers for each topic
+  repeated TopicAndActorId active_reputers = 72;
+  // lowest reputer score EMA for each topic
+  repeated TopicIdActorIdScore lowest_reputer_score_ema = 73;
+  // map of (topic, reputer) -> reputer loss
+  repeated TopicIdReputerReputerValueBundle loss_bundles = 74;
+
+  // total sum of topic weights
+  string total_sum_previous_topic_weights = 75 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // reward emission on current block
+  string reward_current_block_emission = 76 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message TopicIdAndTopic {
+  uint64 topic_id = 1;
+  emissions.v3.Topic topic = 2;
+}
+
+message TopicAndActorId {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+}
+
+message TopicIdAndBlockHeight {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message BlockHeightAndTopicIds {
+  int64 block_height = 1;
+  repeated uint64 topic_ids = 2;
+}
+
+message TopicIdBlockHeightScores {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.Scores scores = 3;
+}
+
+message TopicIdActorIdScore {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  emissions.v3.Score score = 3;
+}
+
+message TopicIdActorIdUint64 {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  uint64 uint64 = 3;
+}
+
+message TopicIdActorIdListeningCoefficient {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  emissions.v3.ListeningCoefficient listening_coefficient = 3;
+}
+
+message TopicIdActorIdDec {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  string dec = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message TopicIdAndInt {
+  uint64 topic_id = 1;
+  string int = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message TopicIdActorIdInt {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  string int = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message TopicIdDelegatorReputerDelegatorInfo {
+  uint64 topic_id = 1;
+  string delegator = 2;
+  string reputer = 3;
+  emissions.v3.DelegatorInfo delegator_info = 4;
+}
+
+message BlockHeightTopicIdReputerStakeRemovalInfo {
+  int64 block_height = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
+  emissions.v3.StakeRemovalInfo stake_removal_info = 4;
+}
+
+message ActorIdTopicIdBlockHeight {
+  string actor_id = 1;
+  uint64 topic_id = 2;
+  int64 block_height = 3;
+}
+
+message BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo {
+  int64 block_height = 1;
+  uint64 topic_id = 2;
+  string delegator = 3;
+  string reputer = 4;
+  emissions.v3.DelegateStakeRemovalInfo delegate_stake_removal_info = 5;
+}
+
+message DelegatorReputerTopicIdBlockHeight {
+  string delegator = 1;
+  string reputer = 2;
+  uint64 topic_id = 3;
+  int64 block_height = 4;
+}
+
+message TopicIdActorIdInference {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  emissions.v3.Inference inference = 3;
+}
+
+message TopicIdActorIdForecast {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  emissions.v3.Forecast forecast = 3;
+}
+
+message LibP2pKeyAndOffchainNode {
+  string lib_p2p_key = 1;
+  emissions.v3.OffchainNode offchain_node = 2;
+}
+
+message TopicIdAndDec {
+  uint64 topic_id = 1;
+  string dec = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message TopicIdBlockHeightInferences {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.Inferences inferences = 3;
+}
+
+message TopicIdBlockHeightForecasts {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.Forecasts forecasts = 3;
+}
+
+message TopicIdBlockHeightReputerValueBundles {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.ReputerValueBundles reputer_value_bundles = 3;
+}
+
+message TopicIdBlockHeightValueBundles {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.ValueBundle value_bundle = 3;
+}
+
+message TopicIdAndNonces {
+  uint64 topic_id = 1;
+  emissions.v3.Nonces nonces = 2;
+}
+
+message TopicIdAndReputerRequestNonces {
+  uint64 topic_id = 1;
+  emissions.v3.ReputerRequestNonces reputer_request_nonces = 2;
+}
+
+message TopicIdActorIdTimeStampedValue {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+  emissions.v3.TimestampedValue timestamped_value = 3;
+}
+
+message TopicIdActorIdActorIdTimeStampedValue {
+  uint64 topic_id = 1;
+  string actor_id1 = 2;
+  string actor_id2 = 3;
+  emissions.v3.TimestampedValue timestamped_value = 4;
+}
+
+message TopicIdTimestampedActorNonce {
+  uint64 topic_id = 1;
+  emissions.v3.TimestampedActorNonce timestamped_actor_nonce = 2;
+}
+
+message BlockHeightTopicIds {
+  int64 block_height = 1;
+  emissions.v3.TopicIds topic_ids = 2;
+}
+
+message BlockHeightTopicIdWeightPair {
+  int64 block_height = 1;
+  emissions.v3.TopicIdWeightPair topic_weight = 2;
+}
+
+message TopicIdReputerReputerValueBundle {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  emissions.v3.ReputerValueBundle reputer_value_bundle = 3;
+}
