@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/fsm"
 	"github.com/pkg/errors"
 
 	cosmosMath "cosmossdk.io/math"
@@ -37,6 +38,8 @@ type Keeper struct {
 	storeService     coreStore.KVStoreService
 	addressCodec     address.Codec
 	feeCollectorName string
+
+	epochFSMEngine *fsm.Engine[*types.Epoch]
 
 	// / TYPES
 
@@ -400,6 +403,8 @@ func NewKeeper(
 	}
 
 	k.schema = schema
+
+	k.setupEpochFSMEngine()
 
 	return k
 }
