@@ -5,6 +5,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
@@ -33,11 +34,12 @@ func init() {
 type ModuleInputs struct {
 	depinject.In
 
-	Cdc           codec.Codec
-	StoreService  store.KVStoreService
-	AddressCodec  address.Codec
-	AccountKeeper keeper.AccountKeeper
-	BankKeeper    keeper.BankKeeper
+	Cdc             codec.Codec
+	StoreService    store.KVStoreService
+	AddressCodec    address.Codec
+	AccountKeeper   keeper.AccountKeeper
+	BankKeeper      keeper.BankKeeper
+	SchedulerKeeper keeper.SchedulerKeeper
 
 	Config *modulev1.Module
 }
@@ -45,8 +47,9 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	Module appmodule.AppModule
-	Keeper keeper.Keeper
+	Module       appmodule.AppModule
+	Keeper       keeper.Keeper
+	TaskHandlers schedulertypes.TaskHandlers
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -61,9 +64,10 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.StoreService,
 		in.AccountKeeper,
 		in.BankKeeper,
+		in.SchedulerKeeper,
 		feeCollectorName,
 	)
 	m := NewAppModule(in.Cdc, k)
 
-	return ModuleOutputs{Module: m, Keeper: k, Out: depinject.Out{}}
+	return ModuleOutputs{Module: m, Keeper: k, TaskHandlers: k.TaskHandlers(), Out: depinject.Out{}}
 }
