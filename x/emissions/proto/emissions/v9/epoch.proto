@@ -1,0 +1,46 @@
+syntax = "proto3";
+package emissions.v9;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+message Epoch {
+  // The epoch identifier, aka nonce. Uniqueness is only guaranteed per topic.
+  uint64 nonce = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "NonceV2"];
+
+  // The topic this epoch belongs to
+  uint64 topic_id = 2;
+
+  // The epoch current state in its lifecycle
+  EpochState state = 3;
+
+  // The worker submission window
+  Window worker_submission_window = 4;
+
+  // The reputer submission window
+  Window reputer_submission_window = 5;
+
+  // Potential other properties needed...
+  // The topic's epsilon at the time the epoch was created
+  string epsilon = 6;
+}
+
+enum EpochState {
+    INIT = 0;
+    WORKER_SUBMISSION = 1;
+    WAITING_GROUND_TRUTH = 2;
+    REPUTER_SUBMISSION = 3;
+    PENDING_COMPLETION = 4;
+    COMPLETED = 5;
+    CANCELLED = 6;
+}
+
+message Window {
+  // The window opening time, in unix timestamp
+  google.protobuf.Timestamp open_at = 1  [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+
+  // The window closing time, in unix timestamp
+  google.protobuf.Timestamp close_at = 2  [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+}
