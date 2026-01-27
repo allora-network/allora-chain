@@ -8,6 +8,11 @@ const (
 	AlloraStakingAccountName                   = "allorastaking"
 	AlloraRewardsAccountName                   = "allorarewards"
 	AlloraPendingRewardForDelegatorAccountName = "allorapendingrewards"
+
+	CloseEpochWorkerWindowTask  = ModuleName + ":close_epoch_worker_window"
+	OpenEpochReputerWindowTask  = ModuleName + ":open_epoch_reputer_window"
+	CloseEpochReputerWindowTask = ModuleName + ":close_epoch_reputer_window"
+	CompleteEpochTask           = ModuleName + ":complete_epoch"
 )
 
 var (
