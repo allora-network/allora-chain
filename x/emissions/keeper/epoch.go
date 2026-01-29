@@ -5,6 +5,7 @@ import (
 
 	"github.com/allora-network/allora-chain/fsm"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type EpochFSMSymbol int
@@ -70,6 +71,26 @@ func (k *Keeper) setupEpochFSMEngine() {
 	}
 
 	k.epochFSMEngine = epochFSMEngine
+}
+
+func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	topic, err := k.GetTopic(ctx, topicID)
+	if err != nil {
+		return err
+	}
+
+	epoch := types.NewEpoch(topic, sdkCtx.BlockTime())
+	// Unnecessary but more formal
+	k.epochFSMEngine.Init(&epoch)
+
+	// TODO: save epoch & topic?
+
+	if err := k.applyEpochTransition(ctx, topicID, epoch.Nonce, epochSymbolOpenWorkerWindow); err != nil {
+		return err
+	}
+
+	return k.scheduleEpochLifecycle(ctx, epoch)
 }
 
 func (k *Keeper) applyEpochTransition(ctx context.Context, topicID TopicId, nonce types.NonceV2, symbol EpochFSMSymbol) error {

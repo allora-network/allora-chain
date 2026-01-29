@@ -37,6 +37,11 @@ func NextNonce(n NonceV2) NonceV2 {
 	return newNonce(NonceVersionV1, n.Payload()+1)
 }
 
+// NextNonce returns the next nonce by incrementing the payload of the given nonce.
+func (n NonceV2) NextNonce() NonceV2 {
+	return NextNonce(n)
+}
+
 // Version returns the version of the nonce.
 func (n NonceV2) Version() uint8 {
 	return uint8(n >> 56)
