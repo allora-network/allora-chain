@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	"cosmossdk.io/collections"
 	"github.com/allora-network/allora-chain/fsm"
 )
 
@@ -18,12 +19,13 @@ func (e *Epoch) Advance(to fsm.State) {
 	e.State = to.(EpochState)
 }
 
-func NewEpoch(topic Topic, startAt time.Time) Epoch {
-	// TODO: fetch last topic epoch nonce, from topic?
-	lastNonce := ZeroNonce()
+func (e *Epoch) Key() collections.Pair[TopicId, NonceV2] {
+	return collections.Join(e.TopicId, e.Nonce)
+}
 
+func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 	return Epoch{
-		Nonce:   lastNonce.NextNonce(),
+		Nonce:   nonce,
 		TopicId: topic.Id,
 		State:   EpochState_INIT,
 		WorkerSubmissionWindow: &Window{
