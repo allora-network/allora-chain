@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"strings"
 
+	"cosmossdk.io/collections/indexes"
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/fsm"
 	"github.com/pkg/errors"
 
 	cosmosMath "cosmossdk.io/math"
@@ -32,18 +34,58 @@ type BlockHeight = int64
 type Reputer = string
 type Delegator = string
 
+func NewEpochsIndexes(sb *collections.SchemaBuilder) EpochsIndexes {
+	return EpochsIndexes{
+		ByState: indexes.NewMulti(
+			sb,
+			types.EpochsByStateKeyPrefix,
+			"epochs_by_state",
+			types.EpochStateKey,
+			collections.PairKeyCodec(collections.Uint64Key, types.NonceKey),
+			func(pk collections.Pair[TopicId, types.NonceV2], value types.Epoch) (types.EpochState, error) {
+				return value.State, nil
+			},
+		),
+		ByStateAndTopic: indexes.NewMulti(
+			sb,
+			types.EpochsByStateAndTopicKeyPrefix,
+			"epochs_by_state_and_topic",
+			collections.PairKeyCodec(types.EpochStateKey, collections.Uint64Key),
+			collections.PairKeyCodec(collections.Uint64Key, types.NonceKey),
+			func(pk collections.Pair[TopicId, types.NonceV2], value types.Epoch) (collections.Pair[types.EpochState, TopicId], error) {
+				return collections.Join(value.State, pk.K1()), nil
+			},
+		),
+	}
+}
+
+type EpochsIndexes struct {
+	ByState         *indexes.Multi[types.EpochState, collections.Pair[TopicId, types.NonceV2], types.Epoch]
+	ByStateAndTopic *indexes.Multi[collections.Pair[types.EpochState, TopicId], collections.Pair[TopicId, types.NonceV2], types.Epoch]
+}
+
+func (i EpochsIndexes) IndexesList() []collections.Index[collections.Pair[TopicId, types.NonceV2], types.Epoch] {
+	return []collections.Index[collections.Pair[TopicId, types.NonceV2], types.Epoch]{
+		i.ByState,
+		i.ByStateAndTopic,
+	}
+}
+
 type Keeper struct {
 	cdc              codec.BinaryCodec
 	storeService     coreStore.KVStoreService
 	addressCodec     address.Codec
 	feeCollectorName string
 
+	epochFSMEngine *fsm.Engine[*types.Epoch]
+
 	// / TYPES
 
-	schema     collections.Schema
-	params     collections.Item[types.Params]
-	authKeeper AccountKeeper
-	bankKeeper BankKeeper
+	schema          collections.Schema
+	params          collections.Item[types.Params]
+	authKeeper      AccountKeeper
+	bankKeeper      BankKeeper
+	schedulerKeeper SchedulerKeeper
 
 	// / TOPIC
 
@@ -80,6 +122,9 @@ type Keeper struct {
 	lowestForecasterScoreEma collections.Map[TopicId, types.Score]
 	// lowest reputer score ema for a topic
 	lowestReputerScoreEma collections.Map[TopicId, types.Score]
+
+	// / EPOCHS
+	epochs *collections.IndexedMap[collections.Pair[TopicId, types.NonceV2], types.Epoch, EpochsIndexes]
 
 	// / SCORES
 
@@ -287,6 +332,7 @@ func NewKeeper(
 	storeService coreStore.KVStoreService,
 	ak AccountKeeper,
 	bk BankKeeper,
+	sk SchedulerKeeper,
 	feeCollectorName string,
 ) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
@@ -299,6 +345,7 @@ func NewKeeper(
 		params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                               ak,
 		bankKeeper:                               bk,
+		schedulerKeeper:                          sk,
 		totalStake:                               collections.NewItem(sb, types.TotalStakeKey, "total_stake", sdk.IntValue),
 		topicStake:                               collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, sdk.IntValue),
 		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
@@ -392,6 +439,7 @@ func NewKeeper(
 		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		monthlyReputerRewards:                     collections.NewItem(sb, types.MonthlyReputerRewardsKey, "monthly_reputer_rewards", sdk.IntValue),
 		monthlyTopicRewards:                       collections.NewItem(sb, types.MonthlyTopicRewardsKey, "monthly_topic_rewards", sdk.IntValue),
+		epochs:                                    collections.NewIndexedMap(sb, types.EpochsKey, "epochs", collections.PairKeyCodec[TopicId, types.NonceV2](collections.Uint64Key, types.NonceKey), codec.CollValue[types.Epoch](cdc), NewEpochsIndexes(sb)),
 	}
 
 	schema, err := sb.Build()
@@ -400,6 +448,8 @@ func NewKeeper(
 	}
 
 	k.schema = schema
+
+	k.setupEpochFSMEngine()
 
 	return k
 }
