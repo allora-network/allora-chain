@@ -9,6 +9,7 @@ const (
 	AlloraRewardsAccountName                   = "allorarewards"
 	AlloraPendingRewardForDelegatorAccountName = "allorapendingrewards"
 
+	OpenEpochWorkerWindowTask   = ModuleName + ":open_epoch_worker_window"
 	CloseEpochWorkerWindowTask  = ModuleName + ":close_epoch_worker_window"
 	OpenEpochReputerWindowTask  = ModuleName + ":open_epoch_reputer_window"
 	CloseEpochReputerWindowTask = ModuleName + ":close_epoch_reputer_window"

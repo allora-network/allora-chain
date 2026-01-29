@@ -66,13 +66,15 @@ func (k *Keeper) setupEpochFSMEngine() {
 			},
 		},
 	)
+	
 	if err != nil {
-		panic("failed to setup epoch FSM engine: " + err.Error())
+		panic(err)
 	}
 
 	k.epochFSMEngine = epochFSMEngine
 }
 
+// StartEpoch initializes a new epoch for the given topic and schedules its lifecycle tasks.
 func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	topic, err := k.GetTopic(ctx, topicID)
@@ -85,10 +87,6 @@ func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
 	k.epochFSMEngine.Init(&epoch)
 
 	// TODO: save epoch & topic?
-
-	if err := k.applyEpochTransition(ctx, topicID, epoch.Nonce, epochSymbolOpenWorkerWindow); err != nil {
-		return err
-	}
 
 	return k.scheduleEpochLifecycle(ctx, epoch)
 }

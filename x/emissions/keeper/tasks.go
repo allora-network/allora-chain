@@ -12,8 +12,16 @@ import (
 func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 	return schedulertypes.TaskHandlers{
 		schedulertypes.NewTaskHandler(
-			types.CloseEpochWorkerWindowTask,
+			types.OpenEpochWorkerWindowTask,
 			nil,
+			nil,
+			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
+				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolOpenWorkerWindow)
+			},
+		),
+		schedulertypes.NewTaskHandler(
+			types.CloseEpochWorkerWindowTask,
+			[]string{types.OpenEpochWorkerWindowTask},
 			nil,
 			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
 				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolCloseWorkerWindow)
@@ -51,6 +59,16 @@ func (k *Keeper) scheduleEpochLifecycle(ctx context.Context, epoch types.Epoch) 
 	args := &types.EpochTransitionTaskArgs{
 		TopicId: epoch.TopicId,
 		Nonce:   epoch.Nonce,
+	}
+
+	if err := k.schedulerKeeper.ScheduleTask(
+		ctx,
+		types.OpenEpochWorkerWindowTask,
+		schedulertypes.TaskID(types.OpenEpochWorkerWindowTask+taskIDSuffix),
+		args,
+		schedulertypes.ScheduleAt(epoch.WorkerSubmissionWindow.OpenAt),
+	); err != nil {
+		return err
 	}
 
 	if err := k.schedulerKeeper.ScheduleTask(
