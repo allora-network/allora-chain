@@ -2,8 +2,10 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 )
@@ -108,4 +110,22 @@ func (k *Keeper) scheduleEpochLifecycle(ctx context.Context, epoch types.Epoch) 
 		args,
 		schedulertypes.ScheduleAt(epoch.ReputerSubmissionWindow.CloseAt),
 	)
+}
+
+func (k *Keeper) unscheduleEpochLifecycle(ctx context.Context, epoch types.Epoch) error {
+	taskIDSuffix := fmt.Sprintf(":%d-%d", epoch.TopicId, epoch.Nonce)
+	for _, taskType := range []string{
+		types.OpenEpochWorkerWindowTask,
+		types.CloseEpochWorkerWindowTask,
+		types.OpenEpochReputerWindowTask,
+		types.CloseEpochReputerWindowTask,
+		types.CompleteEpochTask,
+	} {
+		if err := k.schedulerKeeper.CancelTask(
+			ctx, schedulertypes.TaskID(taskType+taskIDSuffix),
+		); err != nil && !errors.Is(err, collections.ErrNotFound) {
+			return err
+		}
+	}
+	return nil
 }

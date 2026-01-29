@@ -121,27 +121,40 @@ func (k *Keeper) applyEpochTransition(ctx context.Context, topicID TopicId, nonc
 }
 
 func (k *Keeper) openWorkerWindow(ctx context.Context, epoch types.Epoch) error {
+	// TODO: emit evt
 	return nil
 }
 
 func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error {
+	// TODO: emit evt & compute network inference
 	return nil
 }
 
 func (k *Keeper) openReputerWindow(ctx context.Context, epoch types.Epoch) error {
+	// TODO: emit evt
 	return nil
 }
 
 func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) error {
+	// TODO: emit evt
 	return nil
 }
 
 func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
+	// TODO: compute loss, distribute reward, prune epoch data
 	return nil
 }
 
 func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
-	return nil
+	if epoch.State == types.EpochState_WORKER_SUBMISSION {
+		// TODO: emit closing worker window evt
+	} else if epoch.State == types.EpochState_REPUTER_SUBMISSION {
+		// TODO: emit closing reputer window evt
+	}
+
+	// TODO: prune epoch data
+
+	return k.unscheduleEpochLifecycle(ctx, epoch)
 }
 
 // wrapEpochTransitionFn is used to map epoch transition functions that take epoch by value to the signature required by
