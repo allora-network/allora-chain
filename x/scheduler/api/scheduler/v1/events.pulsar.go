@@ -16,29 +16,29 @@ import (
 )
 
 var (
-	md_TaskScheduledEvent          protoreflect.MessageDescriptor
-	fd_TaskScheduledEvent_id       protoreflect.FieldDescriptor
-	fd_TaskScheduledEvent_typename protoreflect.FieldDescriptor
-	fd_TaskScheduledEvent_at       protoreflect.FieldDescriptor
+	md_EventTaskScheduled          protoreflect.MessageDescriptor
+	fd_EventTaskScheduled_id       protoreflect.FieldDescriptor
+	fd_EventTaskScheduled_typename protoreflect.FieldDescriptor
+	fd_EventTaskScheduled_at       protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_scheduler_v1_events_proto_init()
-	md_TaskScheduledEvent = File_scheduler_v1_events_proto.Messages().ByName("TaskScheduledEvent")
-	fd_TaskScheduledEvent_id = md_TaskScheduledEvent.Fields().ByName("id")
-	fd_TaskScheduledEvent_typename = md_TaskScheduledEvent.Fields().ByName("typename")
-	fd_TaskScheduledEvent_at = md_TaskScheduledEvent.Fields().ByName("at")
+	md_EventTaskScheduled = File_scheduler_v1_events_proto.Messages().ByName("EventTaskScheduled")
+	fd_EventTaskScheduled_id = md_EventTaskScheduled.Fields().ByName("id")
+	fd_EventTaskScheduled_typename = md_EventTaskScheduled.Fields().ByName("typename")
+	fd_EventTaskScheduled_at = md_EventTaskScheduled.Fields().ByName("at")
 }
 
-var _ protoreflect.Message = (*fastReflection_TaskScheduledEvent)(nil)
+var _ protoreflect.Message = (*fastReflection_EventTaskScheduled)(nil)
 
-type fastReflection_TaskScheduledEvent TaskScheduledEvent
+type fastReflection_EventTaskScheduled EventTaskScheduled
 
-func (x *TaskScheduledEvent) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_TaskScheduledEvent)(x)
+func (x *EventTaskScheduled) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTaskScheduled)(x)
 }
 
-func (x *TaskScheduledEvent) slowProtoReflect() protoreflect.Message {
+func (x *EventTaskScheduled) slowProtoReflect() protoreflect.Message {
 	mi := &file_scheduler_v1_events_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -50,43 +50,43 @@ func (x *TaskScheduledEvent) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_TaskScheduledEvent_messageType fastReflection_TaskScheduledEvent_messageType
-var _ protoreflect.MessageType = fastReflection_TaskScheduledEvent_messageType{}
+var _fastReflection_EventTaskScheduled_messageType fastReflection_EventTaskScheduled_messageType
+var _ protoreflect.MessageType = fastReflection_EventTaskScheduled_messageType{}
 
-type fastReflection_TaskScheduledEvent_messageType struct{}
+type fastReflection_EventTaskScheduled_messageType struct{}
 
-func (x fastReflection_TaskScheduledEvent_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_TaskScheduledEvent)(nil)
+func (x fastReflection_EventTaskScheduled_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTaskScheduled)(nil)
 }
-func (x fastReflection_TaskScheduledEvent_messageType) New() protoreflect.Message {
-	return new(fastReflection_TaskScheduledEvent)
+func (x fastReflection_EventTaskScheduled_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTaskScheduled)
 }
-func (x fastReflection_TaskScheduledEvent_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_TaskScheduledEvent
+func (x fastReflection_EventTaskScheduled_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTaskScheduled
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_TaskScheduledEvent) Descriptor() protoreflect.MessageDescriptor {
-	return md_TaskScheduledEvent
+func (x *fastReflection_EventTaskScheduled) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTaskScheduled
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_TaskScheduledEvent) Type() protoreflect.MessageType {
-	return _fastReflection_TaskScheduledEvent_messageType
+func (x *fastReflection_EventTaskScheduled) Type() protoreflect.MessageType {
+	return _fastReflection_EventTaskScheduled_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_TaskScheduledEvent) New() protoreflect.Message {
-	return new(fastReflection_TaskScheduledEvent)
+func (x *fastReflection_EventTaskScheduled) New() protoreflect.Message {
+	return new(fastReflection_EventTaskScheduled)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_TaskScheduledEvent) Interface() protoreflect.ProtoMessage {
-	return (*TaskScheduledEvent)(x)
+func (x *fastReflection_EventTaskScheduled) Interface() protoreflect.ProtoMessage {
+	return (*EventTaskScheduled)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -94,22 +94,22 @@ func (x *fastReflection_TaskScheduledEvent) Interface() protoreflect.ProtoMessag
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_TaskScheduledEvent) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_EventTaskScheduled) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Id != "" {
 		value := protoreflect.ValueOfString(x.Id)
-		if !f(fd_TaskScheduledEvent_id, value) {
+		if !f(fd_EventTaskScheduled_id, value) {
 			return
 		}
 	}
 	if x.Typename != "" {
 		value := protoreflect.ValueOfString(x.Typename)
-		if !f(fd_TaskScheduledEvent_typename, value) {
+		if !f(fd_EventTaskScheduled_typename, value) {
 			return
 		}
 	}
 	if x.At != nil {
 		value := protoreflect.ValueOfMessage(x.At.ProtoReflect())
-		if !f(fd_TaskScheduledEvent_at, value) {
+		if !f(fd_EventTaskScheduled_at, value) {
 			return
 		}
 	}
@@ -126,19 +126,19 @@ func (x *fastReflection_TaskScheduledEvent) Range(f func(protoreflect.FieldDescr
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_TaskScheduledEvent) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_EventTaskScheduled) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskScheduledEvent.id":
+	case "scheduler.v1.EventTaskScheduled.id":
 		return x.Id != ""
-	case "scheduler.v1.TaskScheduledEvent.typename":
+	case "scheduler.v1.EventTaskScheduled.typename":
 		return x.Typename != ""
-	case "scheduler.v1.TaskScheduledEvent.at":
+	case "scheduler.v1.EventTaskScheduled.at":
 		return x.At != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskScheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskScheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskScheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskScheduled does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -148,19 +148,19 @@ func (x *fastReflection_TaskScheduledEvent) Has(fd protoreflect.FieldDescriptor)
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskScheduledEvent) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_EventTaskScheduled) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskScheduledEvent.id":
+	case "scheduler.v1.EventTaskScheduled.id":
 		x.Id = ""
-	case "scheduler.v1.TaskScheduledEvent.typename":
+	case "scheduler.v1.EventTaskScheduled.typename":
 		x.Typename = ""
-	case "scheduler.v1.TaskScheduledEvent.at":
+	case "scheduler.v1.EventTaskScheduled.at":
 		x.At = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskScheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskScheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskScheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskScheduled does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -170,22 +170,22 @@ func (x *fastReflection_TaskScheduledEvent) Clear(fd protoreflect.FieldDescripto
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_TaskScheduledEvent) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskScheduled) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "scheduler.v1.TaskScheduledEvent.id":
+	case "scheduler.v1.EventTaskScheduled.id":
 		value := x.Id
 		return protoreflect.ValueOfString(value)
-	case "scheduler.v1.TaskScheduledEvent.typename":
+	case "scheduler.v1.EventTaskScheduled.typename":
 		value := x.Typename
 		return protoreflect.ValueOfString(value)
-	case "scheduler.v1.TaskScheduledEvent.at":
+	case "scheduler.v1.EventTaskScheduled.at":
 		value := x.At
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskScheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskScheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskScheduledEvent does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskScheduled does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -199,19 +199,19 @@ func (x *fastReflection_TaskScheduledEvent) Get(descriptor protoreflect.FieldDes
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskScheduledEvent) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_EventTaskScheduled) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskScheduledEvent.id":
+	case "scheduler.v1.EventTaskScheduled.id":
 		x.Id = value.Interface().(string)
-	case "scheduler.v1.TaskScheduledEvent.typename":
+	case "scheduler.v1.EventTaskScheduled.typename":
 		x.Typename = value.Interface().(string)
-	case "scheduler.v1.TaskScheduledEvent.at":
+	case "scheduler.v1.EventTaskScheduled.at":
 		x.At = value.Message().Interface().(*timestamppb.Timestamp)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskScheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskScheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskScheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskScheduled does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -225,52 +225,52 @@ func (x *fastReflection_TaskScheduledEvent) Set(fd protoreflect.FieldDescriptor,
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskScheduledEvent) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskScheduled) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskScheduledEvent.at":
+	case "scheduler.v1.EventTaskScheduled.at":
 		if x.At == nil {
 			x.At = new(timestamppb.Timestamp)
 		}
 		return protoreflect.ValueOfMessage(x.At.ProtoReflect())
-	case "scheduler.v1.TaskScheduledEvent.id":
-		panic(fmt.Errorf("field id of message scheduler.v1.TaskScheduledEvent is not mutable"))
-	case "scheduler.v1.TaskScheduledEvent.typename":
-		panic(fmt.Errorf("field typename of message scheduler.v1.TaskScheduledEvent is not mutable"))
+	case "scheduler.v1.EventTaskScheduled.id":
+		panic(fmt.Errorf("field id of message scheduler.v1.EventTaskScheduled is not mutable"))
+	case "scheduler.v1.EventTaskScheduled.typename":
+		panic(fmt.Errorf("field typename of message scheduler.v1.EventTaskScheduled is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskScheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskScheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskScheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskScheduled does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_TaskScheduledEvent) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskScheduled) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskScheduledEvent.id":
+	case "scheduler.v1.EventTaskScheduled.id":
 		return protoreflect.ValueOfString("")
-	case "scheduler.v1.TaskScheduledEvent.typename":
+	case "scheduler.v1.EventTaskScheduled.typename":
 		return protoreflect.ValueOfString("")
-	case "scheduler.v1.TaskScheduledEvent.at":
+	case "scheduler.v1.EventTaskScheduled.at":
 		m := new(timestamppb.Timestamp)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskScheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskScheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskScheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskScheduled does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_TaskScheduledEvent) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_EventTaskScheduled) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in scheduler.v1.TaskScheduledEvent", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in scheduler.v1.EventTaskScheduled", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -278,7 +278,7 @@ func (x *fastReflection_TaskScheduledEvent) WhichOneof(d protoreflect.OneofDescr
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_TaskScheduledEvent) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_EventTaskScheduled) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -289,7 +289,7 @@ func (x *fastReflection_TaskScheduledEvent) GetUnknown() protoreflect.RawFields 
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskScheduledEvent) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_EventTaskScheduled) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -301,7 +301,7 @@ func (x *fastReflection_TaskScheduledEvent) SetUnknown(fields protoreflect.RawFi
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_TaskScheduledEvent) IsValid() bool {
+func (x *fastReflection_EventTaskScheduled) IsValid() bool {
 	return x != nil
 }
 
@@ -311,9 +311,9 @@ func (x *fastReflection_TaskScheduledEvent) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_TaskScheduledEvent) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_EventTaskScheduled) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*TaskScheduledEvent)
+		x := input.Message.Interface().(*EventTaskScheduled)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -347,7 +347,7 @@ func (x *fastReflection_TaskScheduledEvent) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*TaskScheduledEvent)
+		x := input.Message.Interface().(*EventTaskScheduled)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -405,7 +405,7 @@ func (x *fastReflection_TaskScheduledEvent) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*TaskScheduledEvent)
+		x := input.Message.Interface().(*EventTaskScheduled)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -437,10 +437,10 @@ func (x *fastReflection_TaskScheduledEvent) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TaskScheduledEvent: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTaskScheduled: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TaskScheduledEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTaskScheduled: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -579,29 +579,29 @@ func (x *fastReflection_TaskScheduledEvent) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_TaskUnscheduledEvent          protoreflect.MessageDescriptor
-	fd_TaskUnscheduledEvent_id       protoreflect.FieldDescriptor
-	fd_TaskUnscheduledEvent_typename protoreflect.FieldDescriptor
-	fd_TaskUnscheduledEvent_at       protoreflect.FieldDescriptor
+	md_EventTaskUnscheduled          protoreflect.MessageDescriptor
+	fd_EventTaskUnscheduled_id       protoreflect.FieldDescriptor
+	fd_EventTaskUnscheduled_typename protoreflect.FieldDescriptor
+	fd_EventTaskUnscheduled_at       protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_scheduler_v1_events_proto_init()
-	md_TaskUnscheduledEvent = File_scheduler_v1_events_proto.Messages().ByName("TaskUnscheduledEvent")
-	fd_TaskUnscheduledEvent_id = md_TaskUnscheduledEvent.Fields().ByName("id")
-	fd_TaskUnscheduledEvent_typename = md_TaskUnscheduledEvent.Fields().ByName("typename")
-	fd_TaskUnscheduledEvent_at = md_TaskUnscheduledEvent.Fields().ByName("at")
+	md_EventTaskUnscheduled = File_scheduler_v1_events_proto.Messages().ByName("EventTaskUnscheduled")
+	fd_EventTaskUnscheduled_id = md_EventTaskUnscheduled.Fields().ByName("id")
+	fd_EventTaskUnscheduled_typename = md_EventTaskUnscheduled.Fields().ByName("typename")
+	fd_EventTaskUnscheduled_at = md_EventTaskUnscheduled.Fields().ByName("at")
 }
 
-var _ protoreflect.Message = (*fastReflection_TaskUnscheduledEvent)(nil)
+var _ protoreflect.Message = (*fastReflection_EventTaskUnscheduled)(nil)
 
-type fastReflection_TaskUnscheduledEvent TaskUnscheduledEvent
+type fastReflection_EventTaskUnscheduled EventTaskUnscheduled
 
-func (x *TaskUnscheduledEvent) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_TaskUnscheduledEvent)(x)
+func (x *EventTaskUnscheduled) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTaskUnscheduled)(x)
 }
 
-func (x *TaskUnscheduledEvent) slowProtoReflect() protoreflect.Message {
+func (x *EventTaskUnscheduled) slowProtoReflect() protoreflect.Message {
 	mi := &file_scheduler_v1_events_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -613,43 +613,43 @@ func (x *TaskUnscheduledEvent) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_TaskUnscheduledEvent_messageType fastReflection_TaskUnscheduledEvent_messageType
-var _ protoreflect.MessageType = fastReflection_TaskUnscheduledEvent_messageType{}
+var _fastReflection_EventTaskUnscheduled_messageType fastReflection_EventTaskUnscheduled_messageType
+var _ protoreflect.MessageType = fastReflection_EventTaskUnscheduled_messageType{}
 
-type fastReflection_TaskUnscheduledEvent_messageType struct{}
+type fastReflection_EventTaskUnscheduled_messageType struct{}
 
-func (x fastReflection_TaskUnscheduledEvent_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_TaskUnscheduledEvent)(nil)
+func (x fastReflection_EventTaskUnscheduled_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTaskUnscheduled)(nil)
 }
-func (x fastReflection_TaskUnscheduledEvent_messageType) New() protoreflect.Message {
-	return new(fastReflection_TaskUnscheduledEvent)
+func (x fastReflection_EventTaskUnscheduled_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTaskUnscheduled)
 }
-func (x fastReflection_TaskUnscheduledEvent_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_TaskUnscheduledEvent
+func (x fastReflection_EventTaskUnscheduled_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTaskUnscheduled
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_TaskUnscheduledEvent) Descriptor() protoreflect.MessageDescriptor {
-	return md_TaskUnscheduledEvent
+func (x *fastReflection_EventTaskUnscheduled) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTaskUnscheduled
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_TaskUnscheduledEvent) Type() protoreflect.MessageType {
-	return _fastReflection_TaskUnscheduledEvent_messageType
+func (x *fastReflection_EventTaskUnscheduled) Type() protoreflect.MessageType {
+	return _fastReflection_EventTaskUnscheduled_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_TaskUnscheduledEvent) New() protoreflect.Message {
-	return new(fastReflection_TaskUnscheduledEvent)
+func (x *fastReflection_EventTaskUnscheduled) New() protoreflect.Message {
+	return new(fastReflection_EventTaskUnscheduled)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_TaskUnscheduledEvent) Interface() protoreflect.ProtoMessage {
-	return (*TaskUnscheduledEvent)(x)
+func (x *fastReflection_EventTaskUnscheduled) Interface() protoreflect.ProtoMessage {
+	return (*EventTaskUnscheduled)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -657,22 +657,22 @@ func (x *fastReflection_TaskUnscheduledEvent) Interface() protoreflect.ProtoMess
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_TaskUnscheduledEvent) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_EventTaskUnscheduled) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Id != "" {
 		value := protoreflect.ValueOfString(x.Id)
-		if !f(fd_TaskUnscheduledEvent_id, value) {
+		if !f(fd_EventTaskUnscheduled_id, value) {
 			return
 		}
 	}
 	if x.Typename != "" {
 		value := protoreflect.ValueOfString(x.Typename)
-		if !f(fd_TaskUnscheduledEvent_typename, value) {
+		if !f(fd_EventTaskUnscheduled_typename, value) {
 			return
 		}
 	}
 	if x.At != nil {
 		value := protoreflect.ValueOfMessage(x.At.ProtoReflect())
-		if !f(fd_TaskUnscheduledEvent_at, value) {
+		if !f(fd_EventTaskUnscheduled_at, value) {
 			return
 		}
 	}
@@ -689,19 +689,19 @@ func (x *fastReflection_TaskUnscheduledEvent) Range(f func(protoreflect.FieldDes
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_TaskUnscheduledEvent) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_EventTaskUnscheduled) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskUnscheduledEvent.id":
+	case "scheduler.v1.EventTaskUnscheduled.id":
 		return x.Id != ""
-	case "scheduler.v1.TaskUnscheduledEvent.typename":
+	case "scheduler.v1.EventTaskUnscheduled.typename":
 		return x.Typename != ""
-	case "scheduler.v1.TaskUnscheduledEvent.at":
+	case "scheduler.v1.EventTaskUnscheduled.at":
 		return x.At != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskUnscheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskUnscheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskUnscheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskUnscheduled does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -711,19 +711,19 @@ func (x *fastReflection_TaskUnscheduledEvent) Has(fd protoreflect.FieldDescripto
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskUnscheduledEvent) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_EventTaskUnscheduled) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskUnscheduledEvent.id":
+	case "scheduler.v1.EventTaskUnscheduled.id":
 		x.Id = ""
-	case "scheduler.v1.TaskUnscheduledEvent.typename":
+	case "scheduler.v1.EventTaskUnscheduled.typename":
 		x.Typename = ""
-	case "scheduler.v1.TaskUnscheduledEvent.at":
+	case "scheduler.v1.EventTaskUnscheduled.at":
 		x.At = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskUnscheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskUnscheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskUnscheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskUnscheduled does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -733,22 +733,22 @@ func (x *fastReflection_TaskUnscheduledEvent) Clear(fd protoreflect.FieldDescrip
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_TaskUnscheduledEvent) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskUnscheduled) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "scheduler.v1.TaskUnscheduledEvent.id":
+	case "scheduler.v1.EventTaskUnscheduled.id":
 		value := x.Id
 		return protoreflect.ValueOfString(value)
-	case "scheduler.v1.TaskUnscheduledEvent.typename":
+	case "scheduler.v1.EventTaskUnscheduled.typename":
 		value := x.Typename
 		return protoreflect.ValueOfString(value)
-	case "scheduler.v1.TaskUnscheduledEvent.at":
+	case "scheduler.v1.EventTaskUnscheduled.at":
 		value := x.At
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskUnscheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskUnscheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskUnscheduledEvent does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskUnscheduled does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -762,19 +762,19 @@ func (x *fastReflection_TaskUnscheduledEvent) Get(descriptor protoreflect.FieldD
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskUnscheduledEvent) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_EventTaskUnscheduled) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskUnscheduledEvent.id":
+	case "scheduler.v1.EventTaskUnscheduled.id":
 		x.Id = value.Interface().(string)
-	case "scheduler.v1.TaskUnscheduledEvent.typename":
+	case "scheduler.v1.EventTaskUnscheduled.typename":
 		x.Typename = value.Interface().(string)
-	case "scheduler.v1.TaskUnscheduledEvent.at":
+	case "scheduler.v1.EventTaskUnscheduled.at":
 		x.At = value.Message().Interface().(*timestamppb.Timestamp)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskUnscheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskUnscheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskUnscheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskUnscheduled does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -788,52 +788,52 @@ func (x *fastReflection_TaskUnscheduledEvent) Set(fd protoreflect.FieldDescripto
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskUnscheduledEvent) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskUnscheduled) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskUnscheduledEvent.at":
+	case "scheduler.v1.EventTaskUnscheduled.at":
 		if x.At == nil {
 			x.At = new(timestamppb.Timestamp)
 		}
 		return protoreflect.ValueOfMessage(x.At.ProtoReflect())
-	case "scheduler.v1.TaskUnscheduledEvent.id":
-		panic(fmt.Errorf("field id of message scheduler.v1.TaskUnscheduledEvent is not mutable"))
-	case "scheduler.v1.TaskUnscheduledEvent.typename":
-		panic(fmt.Errorf("field typename of message scheduler.v1.TaskUnscheduledEvent is not mutable"))
+	case "scheduler.v1.EventTaskUnscheduled.id":
+		panic(fmt.Errorf("field id of message scheduler.v1.EventTaskUnscheduled is not mutable"))
+	case "scheduler.v1.EventTaskUnscheduled.typename":
+		panic(fmt.Errorf("field typename of message scheduler.v1.EventTaskUnscheduled is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskUnscheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskUnscheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskUnscheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskUnscheduled does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_TaskUnscheduledEvent) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskUnscheduled) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskUnscheduledEvent.id":
+	case "scheduler.v1.EventTaskUnscheduled.id":
 		return protoreflect.ValueOfString("")
-	case "scheduler.v1.TaskUnscheduledEvent.typename":
+	case "scheduler.v1.EventTaskUnscheduled.typename":
 		return protoreflect.ValueOfString("")
-	case "scheduler.v1.TaskUnscheduledEvent.at":
+	case "scheduler.v1.EventTaskUnscheduled.at":
 		m := new(timestamppb.Timestamp)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskUnscheduledEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskUnscheduled"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskUnscheduledEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskUnscheduled does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_TaskUnscheduledEvent) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_EventTaskUnscheduled) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in scheduler.v1.TaskUnscheduledEvent", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in scheduler.v1.EventTaskUnscheduled", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -841,7 +841,7 @@ func (x *fastReflection_TaskUnscheduledEvent) WhichOneof(d protoreflect.OneofDes
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_TaskUnscheduledEvent) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_EventTaskUnscheduled) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -852,7 +852,7 @@ func (x *fastReflection_TaskUnscheduledEvent) GetUnknown() protoreflect.RawField
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskUnscheduledEvent) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_EventTaskUnscheduled) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -864,7 +864,7 @@ func (x *fastReflection_TaskUnscheduledEvent) SetUnknown(fields protoreflect.Raw
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_TaskUnscheduledEvent) IsValid() bool {
+func (x *fastReflection_EventTaskUnscheduled) IsValid() bool {
 	return x != nil
 }
 
@@ -874,9 +874,9 @@ func (x *fastReflection_TaskUnscheduledEvent) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_TaskUnscheduledEvent) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_EventTaskUnscheduled) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*TaskUnscheduledEvent)
+		x := input.Message.Interface().(*EventTaskUnscheduled)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -910,7 +910,7 @@ func (x *fastReflection_TaskUnscheduledEvent) ProtoMethods() *protoiface.Methods
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*TaskUnscheduledEvent)
+		x := input.Message.Interface().(*EventTaskUnscheduled)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -968,7 +968,7 @@ func (x *fastReflection_TaskUnscheduledEvent) ProtoMethods() *protoiface.Methods
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*TaskUnscheduledEvent)
+		x := input.Message.Interface().(*EventTaskUnscheduled)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1000,10 +1000,10 @@ func (x *fastReflection_TaskUnscheduledEvent) ProtoMethods() *protoiface.Methods
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TaskUnscheduledEvent: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTaskUnscheduled: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TaskUnscheduledEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTaskUnscheduled: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -1142,29 +1142,29 @@ func (x *fastReflection_TaskUnscheduledEvent) ProtoMethods() *protoiface.Methods
 }
 
 var (
-	md_TaskExecutedEvent          protoreflect.MessageDescriptor
-	fd_TaskExecutedEvent_id       protoreflect.FieldDescriptor
-	fd_TaskExecutedEvent_typename protoreflect.FieldDescriptor
-	fd_TaskExecutedEvent_at       protoreflect.FieldDescriptor
+	md_EventTaskExecuted          protoreflect.MessageDescriptor
+	fd_EventTaskExecuted_id       protoreflect.FieldDescriptor
+	fd_EventTaskExecuted_typename protoreflect.FieldDescriptor
+	fd_EventTaskExecuted_at       protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_scheduler_v1_events_proto_init()
-	md_TaskExecutedEvent = File_scheduler_v1_events_proto.Messages().ByName("TaskExecutedEvent")
-	fd_TaskExecutedEvent_id = md_TaskExecutedEvent.Fields().ByName("id")
-	fd_TaskExecutedEvent_typename = md_TaskExecutedEvent.Fields().ByName("typename")
-	fd_TaskExecutedEvent_at = md_TaskExecutedEvent.Fields().ByName("at")
+	md_EventTaskExecuted = File_scheduler_v1_events_proto.Messages().ByName("EventTaskExecuted")
+	fd_EventTaskExecuted_id = md_EventTaskExecuted.Fields().ByName("id")
+	fd_EventTaskExecuted_typename = md_EventTaskExecuted.Fields().ByName("typename")
+	fd_EventTaskExecuted_at = md_EventTaskExecuted.Fields().ByName("at")
 }
 
-var _ protoreflect.Message = (*fastReflection_TaskExecutedEvent)(nil)
+var _ protoreflect.Message = (*fastReflection_EventTaskExecuted)(nil)
 
-type fastReflection_TaskExecutedEvent TaskExecutedEvent
+type fastReflection_EventTaskExecuted EventTaskExecuted
 
-func (x *TaskExecutedEvent) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_TaskExecutedEvent)(x)
+func (x *EventTaskExecuted) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTaskExecuted)(x)
 }
 
-func (x *TaskExecutedEvent) slowProtoReflect() protoreflect.Message {
+func (x *EventTaskExecuted) slowProtoReflect() protoreflect.Message {
 	mi := &file_scheduler_v1_events_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1176,43 +1176,43 @@ func (x *TaskExecutedEvent) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_TaskExecutedEvent_messageType fastReflection_TaskExecutedEvent_messageType
-var _ protoreflect.MessageType = fastReflection_TaskExecutedEvent_messageType{}
+var _fastReflection_EventTaskExecuted_messageType fastReflection_EventTaskExecuted_messageType
+var _ protoreflect.MessageType = fastReflection_EventTaskExecuted_messageType{}
 
-type fastReflection_TaskExecutedEvent_messageType struct{}
+type fastReflection_EventTaskExecuted_messageType struct{}
 
-func (x fastReflection_TaskExecutedEvent_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_TaskExecutedEvent)(nil)
+func (x fastReflection_EventTaskExecuted_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTaskExecuted)(nil)
 }
-func (x fastReflection_TaskExecutedEvent_messageType) New() protoreflect.Message {
-	return new(fastReflection_TaskExecutedEvent)
+func (x fastReflection_EventTaskExecuted_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTaskExecuted)
 }
-func (x fastReflection_TaskExecutedEvent_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_TaskExecutedEvent
+func (x fastReflection_EventTaskExecuted_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTaskExecuted
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_TaskExecutedEvent) Descriptor() protoreflect.MessageDescriptor {
-	return md_TaskExecutedEvent
+func (x *fastReflection_EventTaskExecuted) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTaskExecuted
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_TaskExecutedEvent) Type() protoreflect.MessageType {
-	return _fastReflection_TaskExecutedEvent_messageType
+func (x *fastReflection_EventTaskExecuted) Type() protoreflect.MessageType {
+	return _fastReflection_EventTaskExecuted_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_TaskExecutedEvent) New() protoreflect.Message {
-	return new(fastReflection_TaskExecutedEvent)
+func (x *fastReflection_EventTaskExecuted) New() protoreflect.Message {
+	return new(fastReflection_EventTaskExecuted)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_TaskExecutedEvent) Interface() protoreflect.ProtoMessage {
-	return (*TaskExecutedEvent)(x)
+func (x *fastReflection_EventTaskExecuted) Interface() protoreflect.ProtoMessage {
+	return (*EventTaskExecuted)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -1220,22 +1220,22 @@ func (x *fastReflection_TaskExecutedEvent) Interface() protoreflect.ProtoMessage
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_TaskExecutedEvent) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_EventTaskExecuted) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Id != "" {
 		value := protoreflect.ValueOfString(x.Id)
-		if !f(fd_TaskExecutedEvent_id, value) {
+		if !f(fd_EventTaskExecuted_id, value) {
 			return
 		}
 	}
 	if x.Typename != "" {
 		value := protoreflect.ValueOfString(x.Typename)
-		if !f(fd_TaskExecutedEvent_typename, value) {
+		if !f(fd_EventTaskExecuted_typename, value) {
 			return
 		}
 	}
 	if x.At != nil {
 		value := protoreflect.ValueOfMessage(x.At.ProtoReflect())
-		if !f(fd_TaskExecutedEvent_at, value) {
+		if !f(fd_EventTaskExecuted_at, value) {
 			return
 		}
 	}
@@ -1252,19 +1252,19 @@ func (x *fastReflection_TaskExecutedEvent) Range(f func(protoreflect.FieldDescri
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_TaskExecutedEvent) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_EventTaskExecuted) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskExecutedEvent.id":
+	case "scheduler.v1.EventTaskExecuted.id":
 		return x.Id != ""
-	case "scheduler.v1.TaskExecutedEvent.typename":
+	case "scheduler.v1.EventTaskExecuted.typename":
 		return x.Typename != ""
-	case "scheduler.v1.TaskExecutedEvent.at":
+	case "scheduler.v1.EventTaskExecuted.at":
 		return x.At != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskExecutedEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskExecuted"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskExecutedEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskExecuted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1274,19 +1274,19 @@ func (x *fastReflection_TaskExecutedEvent) Has(fd protoreflect.FieldDescriptor) 
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskExecutedEvent) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_EventTaskExecuted) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskExecutedEvent.id":
+	case "scheduler.v1.EventTaskExecuted.id":
 		x.Id = ""
-	case "scheduler.v1.TaskExecutedEvent.typename":
+	case "scheduler.v1.EventTaskExecuted.typename":
 		x.Typename = ""
-	case "scheduler.v1.TaskExecutedEvent.at":
+	case "scheduler.v1.EventTaskExecuted.at":
 		x.At = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskExecutedEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskExecuted"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskExecutedEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskExecuted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1296,22 +1296,22 @@ func (x *fastReflection_TaskExecutedEvent) Clear(fd protoreflect.FieldDescriptor
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_TaskExecutedEvent) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskExecuted) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "scheduler.v1.TaskExecutedEvent.id":
+	case "scheduler.v1.EventTaskExecuted.id":
 		value := x.Id
 		return protoreflect.ValueOfString(value)
-	case "scheduler.v1.TaskExecutedEvent.typename":
+	case "scheduler.v1.EventTaskExecuted.typename":
 		value := x.Typename
 		return protoreflect.ValueOfString(value)
-	case "scheduler.v1.TaskExecutedEvent.at":
+	case "scheduler.v1.EventTaskExecuted.at":
 		value := x.At
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskExecutedEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskExecuted"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskExecutedEvent does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskExecuted does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1325,19 +1325,19 @@ func (x *fastReflection_TaskExecutedEvent) Get(descriptor protoreflect.FieldDesc
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskExecutedEvent) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_EventTaskExecuted) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskExecutedEvent.id":
+	case "scheduler.v1.EventTaskExecuted.id":
 		x.Id = value.Interface().(string)
-	case "scheduler.v1.TaskExecutedEvent.typename":
+	case "scheduler.v1.EventTaskExecuted.typename":
 		x.Typename = value.Interface().(string)
-	case "scheduler.v1.TaskExecutedEvent.at":
+	case "scheduler.v1.EventTaskExecuted.at":
 		x.At = value.Message().Interface().(*timestamppb.Timestamp)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskExecutedEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskExecuted"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskExecutedEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskExecuted does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1351,52 +1351,52 @@ func (x *fastReflection_TaskExecutedEvent) Set(fd protoreflect.FieldDescriptor, 
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskExecutedEvent) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskExecuted) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskExecutedEvent.at":
+	case "scheduler.v1.EventTaskExecuted.at":
 		if x.At == nil {
 			x.At = new(timestamppb.Timestamp)
 		}
 		return protoreflect.ValueOfMessage(x.At.ProtoReflect())
-	case "scheduler.v1.TaskExecutedEvent.id":
-		panic(fmt.Errorf("field id of message scheduler.v1.TaskExecutedEvent is not mutable"))
-	case "scheduler.v1.TaskExecutedEvent.typename":
-		panic(fmt.Errorf("field typename of message scheduler.v1.TaskExecutedEvent is not mutable"))
+	case "scheduler.v1.EventTaskExecuted.id":
+		panic(fmt.Errorf("field id of message scheduler.v1.EventTaskExecuted is not mutable"))
+	case "scheduler.v1.EventTaskExecuted.typename":
+		panic(fmt.Errorf("field typename of message scheduler.v1.EventTaskExecuted is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskExecutedEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskExecuted"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskExecutedEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskExecuted does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_TaskExecutedEvent) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_EventTaskExecuted) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "scheduler.v1.TaskExecutedEvent.id":
+	case "scheduler.v1.EventTaskExecuted.id":
 		return protoreflect.ValueOfString("")
-	case "scheduler.v1.TaskExecutedEvent.typename":
+	case "scheduler.v1.EventTaskExecuted.typename":
 		return protoreflect.ValueOfString("")
-	case "scheduler.v1.TaskExecutedEvent.at":
+	case "scheduler.v1.EventTaskExecuted.at":
 		m := new(timestamppb.Timestamp)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.TaskExecutedEvent"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: scheduler.v1.EventTaskExecuted"))
 		}
-		panic(fmt.Errorf("message scheduler.v1.TaskExecutedEvent does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message scheduler.v1.EventTaskExecuted does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_TaskExecutedEvent) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_EventTaskExecuted) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in scheduler.v1.TaskExecutedEvent", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in scheduler.v1.EventTaskExecuted", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1404,7 +1404,7 @@ func (x *fastReflection_TaskExecutedEvent) WhichOneof(d protoreflect.OneofDescri
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_TaskExecutedEvent) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_EventTaskExecuted) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -1415,7 +1415,7 @@ func (x *fastReflection_TaskExecutedEvent) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TaskExecutedEvent) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_EventTaskExecuted) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -1427,7 +1427,7 @@ func (x *fastReflection_TaskExecutedEvent) SetUnknown(fields protoreflect.RawFie
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_TaskExecutedEvent) IsValid() bool {
+func (x *fastReflection_EventTaskExecuted) IsValid() bool {
 	return x != nil
 }
 
@@ -1437,9 +1437,9 @@ func (x *fastReflection_TaskExecutedEvent) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_TaskExecutedEvent) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_EventTaskExecuted) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*TaskExecutedEvent)
+		x := input.Message.Interface().(*EventTaskExecuted)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1473,7 +1473,7 @@ func (x *fastReflection_TaskExecutedEvent) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*TaskExecutedEvent)
+		x := input.Message.Interface().(*EventTaskExecuted)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1531,7 +1531,7 @@ func (x *fastReflection_TaskExecutedEvent) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*TaskExecutedEvent)
+		x := input.Message.Interface().(*EventTaskExecuted)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1563,10 +1563,10 @@ func (x *fastReflection_TaskExecutedEvent) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TaskExecutedEvent: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTaskExecuted: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TaskExecutedEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTaskExecuted: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -1717,11 +1717,11 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// TaskScheduledEvent is emitted when a task is scheduled or rescheduled at a specific time.
+// EventTaskScheduled is emitted when a task is scheduled or rescheduled at a specific time.
 // If a task is created with no scheduling (i.e. scheduled_for is empty), this event is not emitted until the task is scheduled.
 // If an arbitrage decision is made to reschedule a task, this event is emitted.
 // For a periodic task, this event is emitted at each execution.
-type TaskScheduledEvent struct {
+type EventTaskScheduled struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -1734,8 +1734,8 @@ type TaskScheduledEvent struct {
 	At *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=at,proto3" json:"at,omitempty"`
 }
 
-func (x *TaskScheduledEvent) Reset() {
-	*x = TaskScheduledEvent{}
+func (x *EventTaskScheduled) Reset() {
+	*x = EventTaskScheduled{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_scheduler_v1_events_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1743,42 +1743,42 @@ func (x *TaskScheduledEvent) Reset() {
 	}
 }
 
-func (x *TaskScheduledEvent) String() string {
+func (x *EventTaskScheduled) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TaskScheduledEvent) ProtoMessage() {}
+func (*EventTaskScheduled) ProtoMessage() {}
 
-// Deprecated: Use TaskScheduledEvent.ProtoReflect.Descriptor instead.
-func (*TaskScheduledEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use EventTaskScheduled.ProtoReflect.Descriptor instead.
+func (*EventTaskScheduled) Descriptor() ([]byte, []int) {
 	return file_scheduler_v1_events_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *TaskScheduledEvent) GetId() string {
+func (x *EventTaskScheduled) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *TaskScheduledEvent) GetTypename() string {
+func (x *EventTaskScheduled) GetTypename() string {
 	if x != nil {
 		return x.Typename
 	}
 	return ""
 }
 
-func (x *TaskScheduledEvent) GetAt() *timestamppb.Timestamp {
+func (x *EventTaskScheduled) GetAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.At
 	}
 	return nil
 }
 
-// TaskUnscheduledEvent is emitted when a task that was scheduled, is cancelled or unscheduled.
+// EventTaskUnscheduled is emitted when a task that was scheduled, is cancelled or unscheduled.
 // This can happen when a task is cancelled, or rescheduled with no next run time set.
 // When an arbitrage decision is made, this event may also be emitted.
-type TaskUnscheduledEvent struct {
+type EventTaskUnscheduled struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -1791,8 +1791,8 @@ type TaskUnscheduledEvent struct {
 	At *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=at,proto3" json:"at,omitempty"`
 }
 
-func (x *TaskUnscheduledEvent) Reset() {
-	*x = TaskUnscheduledEvent{}
+func (x *EventTaskUnscheduled) Reset() {
+	*x = EventTaskUnscheduled{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_scheduler_v1_events_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1800,41 +1800,41 @@ func (x *TaskUnscheduledEvent) Reset() {
 	}
 }
 
-func (x *TaskUnscheduledEvent) String() string {
+func (x *EventTaskUnscheduled) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TaskUnscheduledEvent) ProtoMessage() {}
+func (*EventTaskUnscheduled) ProtoMessage() {}
 
-// Deprecated: Use TaskUnscheduledEvent.ProtoReflect.Descriptor instead.
-func (*TaskUnscheduledEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use EventTaskUnscheduled.ProtoReflect.Descriptor instead.
+func (*EventTaskUnscheduled) Descriptor() ([]byte, []int) {
 	return file_scheduler_v1_events_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *TaskUnscheduledEvent) GetId() string {
+func (x *EventTaskUnscheduled) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *TaskUnscheduledEvent) GetTypename() string {
+func (x *EventTaskUnscheduled) GetTypename() string {
 	if x != nil {
 		return x.Typename
 	}
 	return ""
 }
 
-func (x *TaskUnscheduledEvent) GetAt() *timestamppb.Timestamp {
+func (x *EventTaskUnscheduled) GetAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.At
 	}
 	return nil
 }
 
-// TaskExecutedEvent is emitted when a task is executed.
+// EventTaskExecuted is emitted when a task is executed.
 // This event is emitted regardless of whether the task execution was successful or failed.
-type TaskExecutedEvent struct {
+type EventTaskExecuted struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -1847,8 +1847,8 @@ type TaskExecutedEvent struct {
 	At *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=at,proto3" json:"at,omitempty"`
 }
 
-func (x *TaskExecutedEvent) Reset() {
-	*x = TaskExecutedEvent{}
+func (x *EventTaskExecuted) Reset() {
+	*x = EventTaskExecuted{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_scheduler_v1_events_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1856,32 +1856,32 @@ func (x *TaskExecutedEvent) Reset() {
 	}
 }
 
-func (x *TaskExecutedEvent) String() string {
+func (x *EventTaskExecuted) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TaskExecutedEvent) ProtoMessage() {}
+func (*EventTaskExecuted) ProtoMessage() {}
 
-// Deprecated: Use TaskExecutedEvent.ProtoReflect.Descriptor instead.
-func (*TaskExecutedEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use EventTaskExecuted.ProtoReflect.Descriptor instead.
+func (*EventTaskExecuted) Descriptor() ([]byte, []int) {
 	return file_scheduler_v1_events_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *TaskExecutedEvent) GetId() string {
+func (x *EventTaskExecuted) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *TaskExecutedEvent) GetTypename() string {
+func (x *EventTaskExecuted) GetTypename() string {
 	if x != nil {
 		return x.Typename
 	}
 	return ""
 }
 
-func (x *TaskExecutedEvent) GetAt() *timestamppb.Timestamp {
+func (x *EventTaskExecuted) GetAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.At
 	}
@@ -1899,8 +1899,8 @@ var file_scheduler_v1_events_proto_rawDesc = []byte{
 	0x2f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x1e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
 	0x66, 0x2f, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x22, 0x88, 0x01, 0x0a, 0x12, 0x54, 0x61, 0x73, 0x6b, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c,
-	0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x1e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x22, 0x88, 0x01, 0x0a, 0x12, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x61, 0x73, 0x6b, 0x53, 0x63,
+	0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x64, 0x12, 0x1e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x09, 0x42, 0x0e, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x06, 0x54, 0x61, 0x73,
 	0x6b, 0x49, 0x44, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x74, 0x79, 0x70, 0x65, 0x6e,
 	0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x74, 0x79, 0x70, 0x65, 0x6e,
@@ -1908,16 +1908,16 @@ var file_scheduler_v1_events_proto_rawDesc = []byte{
 	0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
 	0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x04, 0x90, 0xdf, 0x1f,
 	0x01, 0x52, 0x02, 0x61, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x8a, 0x01, 0x0a, 0x14,
-	0x54, 0x61, 0x73, 0x6b, 0x55, 0x6e, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x64, 0x45,
-	0x76, 0x65, 0x6e, 0x74, 0x12, 0x1e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x61, 0x73, 0x6b, 0x55, 0x6e, 0x73, 0x63, 0x68, 0x65, 0x64,
+	0x75, 0x6c, 0x65, 0x64, 0x12, 0x1e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x42, 0x0e, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x06, 0x54, 0x61, 0x73, 0x6b, 0x49, 0x44,
 	0x52, 0x02, 0x69, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x74, 0x79, 0x70, 0x65, 0x6e, 0x61, 0x6d, 0x65,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x74, 0x79, 0x70, 0x65, 0x6e, 0x61, 0x6d, 0x65,
 	0x12, 0x30, 0x0a, 0x02, 0x61, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67,
 	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54,
 	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x04, 0x90, 0xdf, 0x1f, 0x01, 0x52, 0x02,
-	0x61, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x87, 0x01, 0x0a, 0x11, 0x54, 0x61, 0x73,
-	0x6b, 0x45, 0x78, 0x65, 0x63, 0x75, 0x74, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x12, 0x1e,
+	0x61, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x87, 0x01, 0x0a, 0x11, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x54, 0x61, 0x73, 0x6b, 0x45, 0x78, 0x65, 0x63, 0x75, 0x74, 0x65, 0x64, 0x12, 0x1e,
 	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x0e, 0xc8, 0xde, 0x1f, 0x00,
 	0xda, 0xde, 0x1f, 0x06, 0x54, 0x61, 0x73, 0x6b, 0x49, 0x44, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1a,
 	0x0a, 0x08, 0x74, 0x79, 0x70, 0x65, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
@@ -1954,15 +1954,15 @@ func file_scheduler_v1_events_proto_rawDescGZIP() []byte {
 
 var file_scheduler_v1_events_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_scheduler_v1_events_proto_goTypes = []interface{}{
-	(*TaskScheduledEvent)(nil),    // 0: scheduler.v1.TaskScheduledEvent
-	(*TaskUnscheduledEvent)(nil),  // 1: scheduler.v1.TaskUnscheduledEvent
-	(*TaskExecutedEvent)(nil),     // 2: scheduler.v1.TaskExecutedEvent
+	(*EventTaskScheduled)(nil),    // 0: scheduler.v1.EventTaskScheduled
+	(*EventTaskUnscheduled)(nil),  // 1: scheduler.v1.EventTaskUnscheduled
+	(*EventTaskExecuted)(nil),     // 2: scheduler.v1.EventTaskExecuted
 	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
 }
 var file_scheduler_v1_events_proto_depIdxs = []int32{
-	3, // 0: scheduler.v1.TaskScheduledEvent.at:type_name -> google.protobuf.Timestamp
-	3, // 1: scheduler.v1.TaskUnscheduledEvent.at:type_name -> google.protobuf.Timestamp
-	3, // 2: scheduler.v1.TaskExecutedEvent.at:type_name -> google.protobuf.Timestamp
+	3, // 0: scheduler.v1.EventTaskScheduled.at:type_name -> google.protobuf.Timestamp
+	3, // 1: scheduler.v1.EventTaskUnscheduled.at:type_name -> google.protobuf.Timestamp
+	3, // 2: scheduler.v1.EventTaskExecuted.at:type_name -> google.protobuf.Timestamp
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
@@ -1977,7 +1977,7 @@ func file_scheduler_v1_events_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_scheduler_v1_events_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TaskScheduledEvent); i {
+			switch v := v.(*EventTaskScheduled); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1989,7 +1989,7 @@ func file_scheduler_v1_events_proto_init() {
 			}
 		}
 		file_scheduler_v1_events_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TaskUnscheduledEvent); i {
+			switch v := v.(*EventTaskUnscheduled); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2001,7 +2001,7 @@ func file_scheduler_v1_events_proto_init() {
 			}
 		}
 		file_scheduler_v1_events_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TaskExecutedEvent); i {
+			switch v := v.(*EventTaskExecuted); i {
 			case 0:
 				return &v.state
 			case 1:

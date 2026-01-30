@@ -153,7 +153,7 @@ func TestScheduleTask(t *testing.T) {
 			},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskScheduledEvent{
+				&types.EventTaskScheduled{
 					Id:       "task1",
 					Typename: "noargs",
 					At:       &at,
@@ -180,7 +180,7 @@ func TestScheduleTask(t *testing.T) {
 			},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskScheduledEvent{
+				&types.EventTaskScheduled{
 					Id:       "task2",
 					Typename: "withargs",
 					At:       &at,
@@ -209,7 +209,7 @@ func TestScheduleTask(t *testing.T) {
 			},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskScheduledEvent{
+				&types.EventTaskScheduled{
 					Id:       "task",
 					Typename: "withargs",
 					At:       &at,
@@ -366,7 +366,7 @@ func TestCancelTask(t *testing.T) {
 			id:          "task1",
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskUnscheduledEvent{
+				&types.EventTaskUnscheduled{
 					Id:       "task1",
 					Typename: "noargs",
 					At:       &at,
@@ -469,7 +469,7 @@ func TestRescheduleTask(t *testing.T) {
 			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskScheduledEvent{
+				&types.EventTaskScheduled{
 					Id:       "task1",
 					Typename: "noargs",
 					At:       &at,
@@ -492,7 +492,7 @@ func TestRescheduleTask(t *testing.T) {
 			newSchedule: []types.SchedulingOption{types.ScheduleAt(at)},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskScheduledEvent{
+				&types.EventTaskScheduled{
 					Id:       "task2",
 					Typename: "noargs",
 					At:       &at,
@@ -515,7 +515,7 @@ func TestRescheduleTask(t *testing.T) {
 			newSchedule: []types.SchedulingOption{types.Unschedule()},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskUnscheduledEvent{
+				&types.EventTaskUnscheduled{
 					Id:       "task1",
 					Typename: "noargs",
 					At:       &in10Min,

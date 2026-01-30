@@ -28,11 +28,11 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// TaskScheduledEvent is emitted when a task is scheduled or rescheduled at a specific time.
+// EventTaskScheduled is emitted when a task is scheduled or rescheduled at a specific time.
 // If a task is created with no scheduling (i.e. scheduled_for is empty), this event is not emitted until the task is scheduled.
 // If an arbitrage decision is made to reschedule a task, this event is emitted.
 // For a periodic task, this event is emitted at each execution.
-type TaskScheduledEvent struct {
+type EventTaskScheduled struct {
 	// Id is the unique identifier for the task.
 	Id TaskID `protobuf:"bytes,1,opt,name=id,proto3,customtype=TaskID" json:"id"`
 	// Typename is the type of the task.
@@ -41,18 +41,18 @@ type TaskScheduledEvent struct {
 	At *time.Time `protobuf:"bytes,3,opt,name=at,proto3,stdtime" json:"at,omitempty"`
 }
 
-func (m *TaskScheduledEvent) Reset()         { *m = TaskScheduledEvent{} }
-func (m *TaskScheduledEvent) String() string { return proto.CompactTextString(m) }
-func (*TaskScheduledEvent) ProtoMessage()    {}
-func (*TaskScheduledEvent) Descriptor() ([]byte, []int) {
+func (m *EventTaskScheduled) Reset()         { *m = EventTaskScheduled{} }
+func (m *EventTaskScheduled) String() string { return proto.CompactTextString(m) }
+func (*EventTaskScheduled) ProtoMessage()    {}
+func (*EventTaskScheduled) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d5277773a989a729, []int{0}
 }
-func (m *TaskScheduledEvent) XXX_Unmarshal(b []byte) error {
+func (m *EventTaskScheduled) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TaskScheduledEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventTaskScheduled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TaskScheduledEvent.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventTaskScheduled.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -62,36 +62,36 @@ func (m *TaskScheduledEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *TaskScheduledEvent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TaskScheduledEvent.Merge(m, src)
+func (m *EventTaskScheduled) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTaskScheduled.Merge(m, src)
 }
-func (m *TaskScheduledEvent) XXX_Size() int {
+func (m *EventTaskScheduled) XXX_Size() int {
 	return m.Size()
 }
-func (m *TaskScheduledEvent) XXX_DiscardUnknown() {
-	xxx_messageInfo_TaskScheduledEvent.DiscardUnknown(m)
+func (m *EventTaskScheduled) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTaskScheduled.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TaskScheduledEvent proto.InternalMessageInfo
+var xxx_messageInfo_EventTaskScheduled proto.InternalMessageInfo
 
-func (m *TaskScheduledEvent) GetTypename() string {
+func (m *EventTaskScheduled) GetTypename() string {
 	if m != nil {
 		return m.Typename
 	}
 	return ""
 }
 
-func (m *TaskScheduledEvent) GetAt() *time.Time {
+func (m *EventTaskScheduled) GetAt() *time.Time {
 	if m != nil {
 		return m.At
 	}
 	return nil
 }
 
-// TaskUnscheduledEvent is emitted when a task that was scheduled, is cancelled or unscheduled.
+// EventTaskUnscheduled is emitted when a task that was scheduled, is cancelled or unscheduled.
 // This can happen when a task is cancelled, or rescheduled with no next run time set.
 // When an arbitrage decision is made, this event may also be emitted.
-type TaskUnscheduledEvent struct {
+type EventTaskUnscheduled struct {
 	// Id is the unique identifier for the task.
 	Id TaskID `protobuf:"bytes,1,opt,name=id,proto3,customtype=TaskID" json:"id"`
 	// Typename is the type of the task.
@@ -100,18 +100,18 @@ type TaskUnscheduledEvent struct {
 	At *time.Time `protobuf:"bytes,3,opt,name=at,proto3,stdtime" json:"at,omitempty"`
 }
 
-func (m *TaskUnscheduledEvent) Reset()         { *m = TaskUnscheduledEvent{} }
-func (m *TaskUnscheduledEvent) String() string { return proto.CompactTextString(m) }
-func (*TaskUnscheduledEvent) ProtoMessage()    {}
-func (*TaskUnscheduledEvent) Descriptor() ([]byte, []int) {
+func (m *EventTaskUnscheduled) Reset()         { *m = EventTaskUnscheduled{} }
+func (m *EventTaskUnscheduled) String() string { return proto.CompactTextString(m) }
+func (*EventTaskUnscheduled) ProtoMessage()    {}
+func (*EventTaskUnscheduled) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d5277773a989a729, []int{1}
 }
-func (m *TaskUnscheduledEvent) XXX_Unmarshal(b []byte) error {
+func (m *EventTaskUnscheduled) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TaskUnscheduledEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventTaskUnscheduled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TaskUnscheduledEvent.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventTaskUnscheduled.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -121,35 +121,35 @@ func (m *TaskUnscheduledEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *TaskUnscheduledEvent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TaskUnscheduledEvent.Merge(m, src)
+func (m *EventTaskUnscheduled) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTaskUnscheduled.Merge(m, src)
 }
-func (m *TaskUnscheduledEvent) XXX_Size() int {
+func (m *EventTaskUnscheduled) XXX_Size() int {
 	return m.Size()
 }
-func (m *TaskUnscheduledEvent) XXX_DiscardUnknown() {
-	xxx_messageInfo_TaskUnscheduledEvent.DiscardUnknown(m)
+func (m *EventTaskUnscheduled) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTaskUnscheduled.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TaskUnscheduledEvent proto.InternalMessageInfo
+var xxx_messageInfo_EventTaskUnscheduled proto.InternalMessageInfo
 
-func (m *TaskUnscheduledEvent) GetTypename() string {
+func (m *EventTaskUnscheduled) GetTypename() string {
 	if m != nil {
 		return m.Typename
 	}
 	return ""
 }
 
-func (m *TaskUnscheduledEvent) GetAt() *time.Time {
+func (m *EventTaskUnscheduled) GetAt() *time.Time {
 	if m != nil {
 		return m.At
 	}
 	return nil
 }
 
-// TaskExecutedEvent is emitted when a task is executed.
+// EventTaskExecuted is emitted when a task is executed.
 // This event is emitted regardless of whether the task execution was successful or failed.
-type TaskExecutedEvent struct {
+type EventTaskExecuted struct {
 	// Id is the unique identifier for the task.
 	Id TaskID `protobuf:"bytes,1,opt,name=id,proto3,customtype=TaskID" json:"id"`
 	// Typename is the type of the task.
@@ -158,18 +158,18 @@ type TaskExecutedEvent struct {
 	At *time.Time `protobuf:"bytes,3,opt,name=at,proto3,stdtime" json:"at,omitempty"`
 }
 
-func (m *TaskExecutedEvent) Reset()         { *m = TaskExecutedEvent{} }
-func (m *TaskExecutedEvent) String() string { return proto.CompactTextString(m) }
-func (*TaskExecutedEvent) ProtoMessage()    {}
-func (*TaskExecutedEvent) Descriptor() ([]byte, []int) {
+func (m *EventTaskExecuted) Reset()         { *m = EventTaskExecuted{} }
+func (m *EventTaskExecuted) String() string { return proto.CompactTextString(m) }
+func (*EventTaskExecuted) ProtoMessage()    {}
+func (*EventTaskExecuted) Descriptor() ([]byte, []int) {
 	return fileDescriptor_d5277773a989a729, []int{2}
 }
-func (m *TaskExecutedEvent) XXX_Unmarshal(b []byte) error {
+func (m *EventTaskExecuted) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TaskExecutedEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *EventTaskExecuted) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TaskExecutedEvent.Marshal(b, m, deterministic)
+		return xxx_messageInfo_EventTaskExecuted.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -179,26 +179,26 @@ func (m *TaskExecutedEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, e
 		return b[:n], nil
 	}
 }
-func (m *TaskExecutedEvent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TaskExecutedEvent.Merge(m, src)
+func (m *EventTaskExecuted) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventTaskExecuted.Merge(m, src)
 }
-func (m *TaskExecutedEvent) XXX_Size() int {
+func (m *EventTaskExecuted) XXX_Size() int {
 	return m.Size()
 }
-func (m *TaskExecutedEvent) XXX_DiscardUnknown() {
-	xxx_messageInfo_TaskExecutedEvent.DiscardUnknown(m)
+func (m *EventTaskExecuted) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventTaskExecuted.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TaskExecutedEvent proto.InternalMessageInfo
+var xxx_messageInfo_EventTaskExecuted proto.InternalMessageInfo
 
-func (m *TaskExecutedEvent) GetTypename() string {
+func (m *EventTaskExecuted) GetTypename() string {
 	if m != nil {
 		return m.Typename
 	}
 	return ""
 }
 
-func (m *TaskExecutedEvent) GetAt() *time.Time {
+func (m *EventTaskExecuted) GetAt() *time.Time {
 	if m != nil {
 		return m.At
 	}
@@ -206,45 +206,45 @@ func (m *TaskExecutedEvent) GetAt() *time.Time {
 }
 
 func init() {
-	proto.RegisterType((*TaskScheduledEvent)(nil), "scheduler.v1.TaskScheduledEvent")
-	proto.RegisterType((*TaskUnscheduledEvent)(nil), "scheduler.v1.TaskUnscheduledEvent")
-	proto.RegisterType((*TaskExecutedEvent)(nil), "scheduler.v1.TaskExecutedEvent")
+	proto.RegisterType((*EventTaskScheduled)(nil), "scheduler.v1.EventTaskScheduled")
+	proto.RegisterType((*EventTaskUnscheduled)(nil), "scheduler.v1.EventTaskUnscheduled")
+	proto.RegisterType((*EventTaskExecuted)(nil), "scheduler.v1.EventTaskExecuted")
 }
 
 func init() { proto.RegisterFile("scheduler/v1/events.proto", fileDescriptor_d5277773a989a729) }
 
 var fileDescriptor_d5277773a989a729 = []byte{
-	// 316 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x92, 0xb1, 0x4e, 0xc2, 0x40,
-	0x1c, 0x87, 0x7b, 0x95, 0x10, 0x3d, 0x8d, 0x89, 0x0d, 0x03, 0x76, 0xb8, 0x12, 0x26, 0x16, 0xef,
-	0x44, 0x17, 0xe3, 0x48, 0x64, 0x70, 0xad, 0xb8, 0xb8, 0x1d, 0xed, 0x59, 0x2e, 0xb4, 0x77, 0xa4,
-	0x77, 0x45, 0x7c, 0x02, 0x8d, 0x13, 0x8f, 0xe0, 0xe3, 0x30, 0x32, 0x1a, 0x07, 0x34, 0x74, 0xf1,
-	0x31, 0xcc, 0xb5, 0x14, 0x13, 0x5f, 0x80, 0xed, 0xfe, 0xf9, 0x7d, 0xc9, 0xf7, 0x0d, 0x07, 0x4f,
-	0x55, 0x30, 0x62, 0x61, 0x16, 0xb3, 0x94, 0x4c, 0xbb, 0x84, 0x4d, 0x99, 0xd0, 0x0a, 0x4f, 0x52,
-	0xa9, 0xa5, 0x73, 0xb4, 0x9d, 0xf0, 0xb4, 0xeb, 0x36, 0x22, 0x19, 0xc9, 0x62, 0x20, 0xe6, 0x55,
-	0x32, 0xae, 0x17, 0x49, 0x19, 0xc5, 0x8c, 0x14, 0xd7, 0x30, 0x7b, 0x24, 0x9a, 0x27, 0x4c, 0x69,
-	0x9a, 0x4c, 0x36, 0x00, 0xfa, 0x0f, 0x84, 0x59, 0x4a, 0x35, 0x97, 0xa2, 0xdc, 0xdb, 0xaf, 0x00,
-	0x3a, 0x03, 0xaa, 0xc6, 0x77, 0x1b, 0x57, 0xd8, 0x37, 0x09, 0x0e, 0x82, 0x36, 0x0f, 0x9b, 0xa0,
-	0x05, 0x3a, 0x07, 0xbd, 0xe3, 0xc5, 0xca, 0xb3, 0x3e, 0x57, 0x5e, 0xdd, 0x70, 0xb7, 0x37, 0xbe,
-	0xcd, 0x43, 0xc7, 0x85, 0xfb, 0xfa, 0x79, 0xc2, 0x04, 0x4d, 0x58, 0xd3, 0x36, 0x94, 0xbf, 0xbd,
-	0x9d, 0x73, 0x68, 0x53, 0xdd, 0xdc, 0x6b, 0x81, 0xce, 0xe1, 0x85, 0x8b, 0x4b, 0x3f, 0xae, 0xfc,
-	0x78, 0x50, 0x05, 0xf6, 0x6a, 0xf3, 0x2f, 0x0f, 0xf8, 0x36, 0xd5, 0xd7, 0xb5, 0x9f, 0x77, 0x0f,
-	0xb4, 0xdf, 0x00, 0x6c, 0x18, 0xc5, 0xbd, 0x50, 0xbb, 0x8f, 0x79, 0x01, 0xf0, 0xc4, 0x28, 0xfa,
-	0x33, 0x16, 0x64, 0x7a, 0x87, 0x25, 0x3d, 0x7f, 0xb1, 0x46, 0x60, 0xb9, 0x46, 0xe0, 0x7b, 0x8d,
-	0xc0, 0x3c, 0x47, 0xd6, 0x32, 0x47, 0xd6, 0x47, 0x8e, 0xac, 0x87, 0xab, 0x88, 0xeb, 0x51, 0x36,
-	0xc4, 0x81, 0x4c, 0x08, 0x8d, 0x63, 0x99, 0xd2, 0x33, 0xc1, 0xf4, 0x93, 0x4c, 0xc7, 0xd5, 0x19,
-	0x8c, 0x28, 0x17, 0x64, 0x46, 0xfe, 0x3e, 0x99, 0xc9, 0x51, 0xc3, 0x7a, 0xe1, 0xbd, 0xfc, 0x0d,
-	0x00, 0x00, 0xff, 0xff, 0xd4, 0xa5, 0x9c, 0x9e, 0x7e, 0x02, 0x00, 0x00,
+	// 317 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x92, 0x31, 0x4e, 0xc3, 0x30,
+	0x18, 0x46, 0xe3, 0x50, 0x55, 0x60, 0x10, 0x12, 0x51, 0x87, 0x92, 0xc1, 0xa9, 0x3a, 0x75, 0xc1,
+	0xa6, 0xb0, 0x20, 0xc6, 0x8a, 0x0e, 0xac, 0xa1, 0x2c, 0x6c, 0x6e, 0x62, 0x52, 0xab, 0x89, 0x5d,
+	0xc5, 0x4e, 0x29, 0x27, 0x00, 0x31, 0xf5, 0x08, 0x1c, 0xa7, 0x63, 0x47, 0xc4, 0x50, 0x50, 0xb2,
+	0x70, 0x0c, 0x94, 0xa4, 0x09, 0x12, 0x17, 0xe8, 0xe6, 0x5f, 0xdf, 0x93, 0xde, 0x1b, 0x0c, 0x4f,
+	0x95, 0x37, 0x61, 0x7e, 0x12, 0xb2, 0x98, 0xcc, 0xfb, 0x84, 0xcd, 0x99, 0xd0, 0x0a, 0xcf, 0x62,
+	0xa9, 0xa5, 0x75, 0x54, 0x4f, 0x78, 0xde, 0xb7, 0x5b, 0x81, 0x0c, 0x64, 0x31, 0x90, 0xfc, 0x55,
+	0x32, 0xb6, 0x13, 0x48, 0x19, 0x84, 0x8c, 0x14, 0xd7, 0x38, 0x79, 0x24, 0x9a, 0x47, 0x4c, 0x69,
+	0x1a, 0xcd, 0xb6, 0x00, 0xfa, 0x0f, 0xf8, 0x49, 0x4c, 0x35, 0x97, 0xa2, 0xdc, 0xbb, 0xaf, 0x00,
+	0x5a, 0xc3, 0xdc, 0x3a, 0xa2, 0x6a, 0x7a, 0xb7, 0x15, 0xfa, 0x16, 0x82, 0x26, 0xf7, 0xdb, 0xa0,
+	0x03, 0x7a, 0x07, 0x83, 0xe3, 0xd5, 0xc6, 0x31, 0x3e, 0x37, 0x4e, 0x33, 0x47, 0x6e, 0x6f, 0x5c,
+	0x93, 0xfb, 0x96, 0x0d, 0xf7, 0xf5, 0xf3, 0x8c, 0x09, 0x1a, 0xb1, 0xb6, 0x99, 0x53, 0x6e, 0x7d,
+	0x5b, 0xe7, 0xd0, 0xa4, 0xba, 0xbd, 0xd7, 0x01, 0xbd, 0xc3, 0x0b, 0x1b, 0x97, 0x7e, 0x5c, 0xf9,
+	0xf1, 0xa8, 0x0a, 0x1c, 0x34, 0x96, 0x5f, 0x0e, 0x70, 0x4d, 0xaa, 0xaf, 0x1b, 0x3f, 0xef, 0x0e,
+	0xe8, 0xbe, 0x01, 0xd8, 0xaa, 0x53, 0xee, 0x85, 0xda, 0x69, 0xcc, 0x0b, 0x80, 0x27, 0x75, 0xcc,
+	0x70, 0xc1, 0xbc, 0x44, 0xef, 0xa6, 0x64, 0xe0, 0xae, 0x52, 0x04, 0xd6, 0x29, 0x02, 0xdf, 0x29,
+	0x02, 0xcb, 0x0c, 0x19, 0xeb, 0x0c, 0x19, 0x1f, 0x19, 0x32, 0x1e, 0xae, 0x02, 0xae, 0x27, 0xc9,
+	0x18, 0x7b, 0x32, 0x22, 0x34, 0x0c, 0x65, 0x4c, 0xcf, 0x04, 0xd3, 0x4f, 0x32, 0x9e, 0x56, 0xa7,
+	0x37, 0xa1, 0x5c, 0x90, 0x05, 0xf9, 0xfb, 0x64, 0x79, 0x8e, 0x1a, 0x37, 0x0b, 0xef, 0xe5, 0x6f,
+	0x00, 0x00, 0x00, 0xff, 0xff, 0x2e, 0x14, 0x9a, 0x0e, 0x7e, 0x02, 0x00, 0x00,
 }
 
-func (this *TaskScheduledEvent) Equal(that interface{}) bool {
+func (this *EventTaskScheduled) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*TaskScheduledEvent)
+	that1, ok := that.(*EventTaskScheduled)
 	if !ok {
-		that2, ok := that.(TaskScheduledEvent)
+		that2, ok := that.(EventTaskScheduled)
 		if ok {
 			that1 = &that2
 		} else {
@@ -271,14 +271,14 @@ func (this *TaskScheduledEvent) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *TaskUnscheduledEvent) Equal(that interface{}) bool {
+func (this *EventTaskUnscheduled) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*TaskUnscheduledEvent)
+	that1, ok := that.(*EventTaskUnscheduled)
 	if !ok {
-		that2, ok := that.(TaskUnscheduledEvent)
+		that2, ok := that.(EventTaskUnscheduled)
 		if ok {
 			that1 = &that2
 		} else {
@@ -305,14 +305,14 @@ func (this *TaskUnscheduledEvent) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *TaskExecutedEvent) Equal(that interface{}) bool {
+func (this *EventTaskExecuted) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*TaskExecutedEvent)
+	that1, ok := that.(*EventTaskExecuted)
 	if !ok {
-		that2, ok := that.(TaskExecutedEvent)
+		that2, ok := that.(EventTaskExecuted)
 		if ok {
 			that1 = &that2
 		} else {
@@ -339,7 +339,7 @@ func (this *TaskExecutedEvent) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (m *TaskScheduledEvent) Marshal() (dAtA []byte, err error) {
+func (m *EventTaskScheduled) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -349,12 +349,12 @@ func (m *TaskScheduledEvent) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TaskScheduledEvent) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventTaskScheduled) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TaskScheduledEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventTaskScheduled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -389,7 +389,7 @@ func (m *TaskScheduledEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *TaskUnscheduledEvent) Marshal() (dAtA []byte, err error) {
+func (m *EventTaskUnscheduled) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -399,12 +399,12 @@ func (m *TaskUnscheduledEvent) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TaskUnscheduledEvent) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventTaskUnscheduled) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TaskUnscheduledEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventTaskUnscheduled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -439,7 +439,7 @@ func (m *TaskUnscheduledEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *TaskExecutedEvent) Marshal() (dAtA []byte, err error) {
+func (m *EventTaskExecuted) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -449,12 +449,12 @@ func (m *TaskExecutedEvent) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TaskExecutedEvent) MarshalTo(dAtA []byte) (int, error) {
+func (m *EventTaskExecuted) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TaskExecutedEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *EventTaskExecuted) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -500,7 +500,7 @@ func encodeVarintEvents(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *TaskScheduledEvent) Size() (n int) {
+func (m *EventTaskScheduled) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -519,7 +519,7 @@ func (m *TaskScheduledEvent) Size() (n int) {
 	return n
 }
 
-func (m *TaskUnscheduledEvent) Size() (n int) {
+func (m *EventTaskUnscheduled) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -538,7 +538,7 @@ func (m *TaskUnscheduledEvent) Size() (n int) {
 	return n
 }
 
-func (m *TaskExecutedEvent) Size() (n int) {
+func (m *EventTaskExecuted) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -563,7 +563,7 @@ func sovEvents(x uint64) (n int) {
 func sozEvents(x uint64) (n int) {
 	return sovEvents(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *TaskScheduledEvent) Unmarshal(dAtA []byte) error {
+func (m *EventTaskScheduled) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -586,10 +586,10 @@ func (m *TaskScheduledEvent) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TaskScheduledEvent: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventTaskScheduled: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TaskScheduledEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventTaskScheduled: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -715,7 +715,7 @@ func (m *TaskScheduledEvent) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *TaskUnscheduledEvent) Unmarshal(dAtA []byte) error {
+func (m *EventTaskUnscheduled) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -738,10 +738,10 @@ func (m *TaskUnscheduledEvent) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TaskUnscheduledEvent: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventTaskUnscheduled: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TaskUnscheduledEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventTaskUnscheduled: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -867,7 +867,7 @@ func (m *TaskUnscheduledEvent) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *TaskExecutedEvent) Unmarshal(dAtA []byte) error {
+func (m *EventTaskExecuted) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -890,10 +890,10 @@ func (m *TaskExecutedEvent) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TaskExecutedEvent: wiretype end group for non-group")
+			return fmt.Errorf("proto: EventTaskExecuted: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TaskExecutedEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: EventTaskExecuted: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
