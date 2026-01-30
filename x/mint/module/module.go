@@ -13,6 +13,7 @@ import (
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	migrationsV5 "github.com/allora-network/allora-chain/x/mint/migrations/v5"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -210,8 +211,9 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	MintKeeper keeper.Keeper
-	Module     appmodule.AppModule
+	MintKeeper   keeper.Keeper
+	Module       appmodule.AppModule
+	TaskHandlers schedulertypes.TaskHandlers
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -233,5 +235,10 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	// when no inflation calculation function is provided it will use the default types.DefaultInflationCalculationFn
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper)
 
-	return ModuleOutputs{MintKeeper: k, Module: m, Out: depinject.Out{}}
+	return ModuleOutputs{
+		MintKeeper:   k,
+		Module:       m,
+		TaskHandlers: k.TaskHandlers(),
+		Out:          depinject.Out{},
+	}
 }

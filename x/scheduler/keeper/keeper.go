@@ -87,7 +87,7 @@ func (k *Keeper) RegisterTaskHandlers(taskHandlers types.TaskHandlers) error {
 		}
 
 		if _, exists := k.handlersByTypename[typename]; exists {
-			return errors.Wrapf(types.ErrInvalidTaskHandler, "duplicate task handler: '%s'", typename)
+			return errors.Wrapf(types.ErrTaskHandlerAlreadyExists, "typename '%s'", typename)
 		}
 
 		k.handlersByTypename[typename] = taskHandler
@@ -151,7 +151,7 @@ func (k *Keeper) ScheduleTask(ctx context.Context, typename string, id types.Tas
 		return err
 	}
 	if exists {
-		return errors.Wrapf(types.ErrInvalidTask, "task '%s' already exists", id)
+		return errors.Wrapf(types.ErrTaskAlreadyExists, "task '%s'", id)
 	}
 
 	task, err := types.NewTask(ctx, id, typename, packedArgs, scheduleOpts...)
