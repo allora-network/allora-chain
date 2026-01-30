@@ -78,7 +78,7 @@ func (k *Keeper) executeTask(ctx context.Context, task types.Task, handler types
 		return errors.Wrapf(types.ErrTaskExecution, "run func failed for task '%s' of type '%s': %s", task.Id, handler.Typename(), err)
 	}
 
-	if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskExecutedEvent{
+	if err := sdkCtx.EventManager().EmitTypedEvent(&types.EventTaskExecuted{
 		Id:       task.Id,
 		Typename: task.Typename,
 		At:       task.ScheduledFor,

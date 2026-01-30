@@ -236,7 +236,7 @@ func TestApplyArbitrageDecision(t *testing.T) {
 			},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskUnscheduledEvent{
+				&types.EventTaskUnscheduled{
 					Id:       "task1",
 					Typename: "noargs",
 					At:       &in5min,
@@ -255,7 +255,7 @@ func TestApplyArbitrageDecision(t *testing.T) {
 			},
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskScheduledEvent{
+				&types.EventTaskScheduled{
 					Id:       "task1",
 					Typename: "noargs",
 					At:       &in10min,
@@ -368,7 +368,7 @@ func TestExecuteTask(t *testing.T) {
 			runFail:     false,
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskExecutedEvent{
+				&types.EventTaskExecuted{
 					Id:       "task1",
 					Typename: "withargs",
 					At:       &now,
@@ -383,12 +383,12 @@ func TestExecuteTask(t *testing.T) {
 			runFail:     false,
 			expectError: false,
 			expectEvents: []proto.Message{
-				&types.TaskExecutedEvent{
+				&types.EventTaskExecuted{
 					Id:       "task2",
 					Typename: "withargs",
 					At:       &now,
 				},
-				&types.TaskScheduledEvent{
+				&types.EventTaskScheduled{
 					Id:       "task2",
 					Typename: "withargs",
 					At:       &in10Min,

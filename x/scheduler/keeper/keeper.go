@@ -175,7 +175,7 @@ func (k *Keeper) programTask(ctx context.Context, task types.Task) error {
 			return err
 		}
 
-		return sdkCtx.EventManager().EmitTypedEvent(&types.TaskScheduledEvent{
+		return sdkCtx.EventManager().EmitTypedEvent(&types.EventTaskScheduled{
 			Id:       task.Id,
 			Typename: task.Typename,
 			At:       task.ScheduledFor,
@@ -201,7 +201,7 @@ func (k *Keeper) CancelTask(ctx context.Context, taskID types.TaskID) error {
 			return err
 		}
 
-		return sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
+		return sdkCtx.EventManager().EmitTypedEvent(&types.EventTaskUnscheduled{
 			Id:       task.Id,
 			Typename: task.Typename,
 			At:       task.ScheduledFor,
@@ -243,7 +243,7 @@ func (k *Keeper) RescheduleTask(ctx context.Context, id types.TaskID, scheduleOp
 		// if the task no longer has a next run time, it has been unscheduled
 		if task.ScheduledFor == nil {
 			prevSchedule := oldScheduleKey.K2()
-			if err := sdkCtx.EventManager().EmitTypedEvent(&types.TaskUnscheduledEvent{
+			if err := sdkCtx.EventManager().EmitTypedEvent(&types.EventTaskUnscheduled{
 				Id:       task.Id,
 				Typename: task.Typename,
 				At:       &prevSchedule,
