@@ -131,7 +131,9 @@ func expectedAlignedDelay(blockHeight uint64, blocksPerMonth uint64, oneMonthDur
 		return time.Second
 	}
 
+	//nolint:gosec // bounds checked above
 	blocksPerMonthInt := int64(blocksPerMonth)
+	//nolint:gosec // bounds checked above
 	blocksRemainingInt := int64(blocksRemaining)
 	perBlockNanoseconds := monthNanoseconds / blocksPerMonthInt
 	remainingNanoseconds := perBlockNanoseconds * blocksRemainingInt
