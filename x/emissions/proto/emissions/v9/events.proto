@@ -267,7 +267,7 @@ message EventFundTopic {
   ];
 }
 
-message EventParamsSet {
+message EventParams {
   emissions.v9.Params params = 1;
 }
 
