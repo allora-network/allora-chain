@@ -12,6 +12,7 @@ import (
 	v1beta1 "github.com/allora-network/allora-chain/x/mint/api/mint/v1beta1"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	migrationsV5 "github.com/allora-network/allora-chain/x/mint/migrations/v5"
+	migrationsV7 "github.com/allora-network/allora-chain/x/mint/migrations/v7"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -25,7 +26,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/mint module consensus version.
-const ConsensusVersion = 6
+const ConsensusVersion = 7
 
 var (
 	_ module.AppModuleBasic = AppModule{} //nolint:exhaustruct
@@ -151,6 +152,12 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	if err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 5 to 6: %v", types.ModuleName, err))
 	}
+	err = cfg.RegisterMigration(types.ModuleName, 6, func(ctx sdk.Context) error {
+		return migrationsV7.MigrateStore(ctx, am.keeper)
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 6 to 7: %v", types.ModuleName, err))
+	}
 }
 
 // InitGenesis performs genesis initialization for the mint module. It returns
@@ -206,6 +213,7 @@ type ModuleInputs struct {
 	BankKeeper      types.BankKeeper
 	StakingKeeper   types.StakingKeeper
 	EmissionsKeeper types.EmissionsKeeper
+	SchedulerKeeper types.SchedulerKeeper
 }
 
 type ModuleOutputs struct {
@@ -229,6 +237,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.AccountKeeper,
 		in.BankKeeper,
 		in.EmissionsKeeper,
+		in.SchedulerKeeper,
 		feeCollectorName,
 	)
 

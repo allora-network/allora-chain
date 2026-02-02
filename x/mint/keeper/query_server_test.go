@@ -52,6 +52,7 @@ func (suite *MintTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		nil,
 		authtypes.FeeCollectorName,
 	)
 

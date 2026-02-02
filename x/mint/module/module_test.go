@@ -153,6 +153,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		nil,
 		authtypes.FeeCollectorName,
 	)
 

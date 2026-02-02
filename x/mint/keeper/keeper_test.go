@@ -64,7 +64,7 @@ func (s *MintKeeperTestSuite) SetupTest() {
 	stakingKeeper := minttestutil.NewMockStakingKeeper(s.ctrl)
 	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(s.ctrl)
 
-	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.AccAddress{})
+	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.AccAddress{}).AnyTimes()
 
 	s.mintKeeper = keeper.NewKeeper(
 		encCfg.Codec,
@@ -73,6 +73,7 @@ func (s *MintKeeperTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		nil,
 		authtypes.FeeCollectorName,
 	)
 	s.stakingKeeper = stakingKeeper

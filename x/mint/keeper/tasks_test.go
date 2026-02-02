@@ -5,13 +5,15 @@ import (
 
 	"cosmossdk.io/core/header"
 	storetypes "cosmossdk.io/store/types"
+	"github.com/allora-network/allora-chain/x/mint/keeper"
+	"github.com/allora-network/allora-chain/x/mint/types"
 	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
-	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 // setupSchedulerKeeper creates a scheduler keeper for testing task scheduling.
@@ -34,22 +36,36 @@ func setupSchedulerKeeper() (schedulerkeeper.Keeper, sdk.Context) {
 	return keeper, ctx
 }
 
+func (s *MintKeeperTestSuite) mintKeeperWithScheduler(schedulerKeeper *schedulerkeeper.Keeper) keeper.Keeper {
+	return keeper.NewKeeper(
+		s.mintKeeper.GetBinaryCodec(),
+		s.mintKeeper.GetStorageService(),
+		s.stakingKeeper,
+		s.accountKeeper,
+		s.bankKeeper,
+		s.emissionsKeeper,
+		schedulerKeeper,
+		authtypes.FeeCollectorName,
+	)
+}
+
 func (s *MintKeeperTestSuite) TestScheduleEmissionRecalculationTask_Success() {
 	schedulerKeeper, ctx := setupSchedulerKeeper()
 	now := ctx.BlockTime()
+	mintKeeper := s.mintKeeperWithScheduler(&schedulerKeeper)
 
 	// Register mint task handlers with scheduler
-	mintHandlers := s.mintKeeper.TaskHandlers()
+	mintHandlers := mintKeeper.TaskHandlers()
 	err := schedulerKeeper.RegisterTaskHandlers(mintHandlers)
 	s.Require().NoError(err)
 
 	// Schedule the emission recalculation task
 	initialDelay := 10 * time.Minute
-	err = s.mintKeeper.ScheduleEmissionRecalculationTask(ctx, &schedulerKeeper, initialDelay)
+	err = mintKeeper.ScheduleEmissionRecalculationTask(ctx, initialDelay)
 	s.Require().NoError(err)
 
 	// Verify the task was scheduled
-	task, err := schedulerKeeper.GetTask(ctx, schedulertypes.TaskID("emission_recalculation"))
+	task, err := schedulerKeeper.GetTask(ctx, schedulertypes.TaskID(types.TaskEmissionRecalculation))
 	s.Require().NoError(err)
 	s.Require().Equal(types.TaskEmissionRecalculation, task.Typename)
 	s.Require().NotNil(task.ScheduledFor)
@@ -61,36 +77,38 @@ func (s *MintKeeperTestSuite) TestScheduleEmissionRecalculationTask_Success() {
 
 func (s *MintKeeperTestSuite) TestScheduleEmissionRecalculationTask_DuplicateTaskFails() {
 	schedulerKeeper, ctx := setupSchedulerKeeper()
+	mintKeeper := s.mintKeeperWithScheduler(&schedulerKeeper)
 
 	// Register mint task handlers with scheduler
-	mintHandlers := s.mintKeeper.TaskHandlers()
+	mintHandlers := mintKeeper.TaskHandlers()
 	err := schedulerKeeper.RegisterTaskHandlers(mintHandlers)
 	s.Require().NoError(err)
 
 	// Schedule the emission recalculation task - first time should succeed
-	err = s.mintKeeper.ScheduleEmissionRecalculationTask(ctx, &schedulerKeeper, 0)
+	err = mintKeeper.ScheduleEmissionRecalculationTask(ctx, 0)
 	s.Require().NoError(err)
 
 	// Schedule again - should fail with ErrTaskAlreadyExists
-	err = s.mintKeeper.ScheduleEmissionRecalculationTask(ctx, &schedulerKeeper, 0)
+	err = mintKeeper.ScheduleEmissionRecalculationTask(ctx, 0)
 	s.Require().Error(err)
 	s.Require().ErrorIs(err, schedulertypes.ErrTaskAlreadyExists)
 }
 
 func (s *MintKeeperTestSuite) TestScheduleEmissionRecalculationTask_PeriodicSchedule() {
 	schedulerKeeper, ctx := setupSchedulerKeeper()
+	mintKeeper := s.mintKeeperWithScheduler(&schedulerKeeper)
 
 	// Register mint task handlers with scheduler
-	mintHandlers := s.mintKeeper.TaskHandlers()
+	mintHandlers := mintKeeper.TaskHandlers()
 	err := schedulerKeeper.RegisterTaskHandlers(mintHandlers)
 	s.Require().NoError(err)
 
 	// Schedule the emission recalculation task
-	err = s.mintKeeper.ScheduleEmissionRecalculationTask(ctx, &schedulerKeeper, 0)
+	err = mintKeeper.ScheduleEmissionRecalculationTask(ctx, 0)
 	s.Require().NoError(err)
 
 	// Verify the task has periodic scheduling (Interval field should be set)
-	task, err := schedulerKeeper.GetTask(ctx, schedulertypes.TaskID("emission_recalculation"))
+	task, err := schedulerKeeper.GetTask(ctx, schedulertypes.TaskID(types.TaskEmissionRecalculation))
 	s.Require().NoError(err)
 	s.Require().NotNil(task.Interval, "Task should have periodic scheduling")
 

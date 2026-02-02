@@ -59,6 +59,7 @@ func (s *MintV5MigrationTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		nil,
 		authtypes.FeeCollectorName,
 	)
 

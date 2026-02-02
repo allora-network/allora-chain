@@ -15,6 +15,12 @@ import (
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
+	if sdkCtx.BlockHeight() == 1 {
+		if err := k.EnsureEmissionRecalculationTaskScheduled(ctx, 0); err != nil {
+			return errorsmod.Wrap(err, "failed to schedule emission recalculation task")
+		}
+	}
+
 	// Calculate blockCountSinceTGE early - needed for monthly reset check
 	// This must happen BEFORE the emission enabled check so monthly reset always runs
 	blockHeight := uint64(sdkCtx.BlockHeight())

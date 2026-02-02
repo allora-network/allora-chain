@@ -259,11 +259,6 @@ func NewAlloraApp(
 		return nil, err
 	}
 
-	// Initialize recurring tasks after state is loaded
-	if loadLatest {
-		app.InitializeRecurringTasks()
-	}
-
 	return app, nil
 }
 
