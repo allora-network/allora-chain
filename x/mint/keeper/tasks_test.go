@@ -29,7 +29,13 @@ func setupSchedulerKeeper() (schedulerkeeper.Keeper, sdk.Context) {
 		map[string]*storetypes.KVStoreKey{"scheduler": storeKey},
 		map[string]*storetypes.TransientStoreKey{"transient_test": storetypes.NewTransientStoreKey("transient_test")},
 		nil,
-	).WithHeaderInfo(header.Info{Height: 1, Time: now}).
+	).WithHeaderInfo(header.Info{
+		Height:  1,
+		Time:    now,
+		Hash:    nil,
+		ChainID: "test-chain",
+		AppHash: nil,
+	}).
 		WithBlockHeight(1).
 		WithBlockTime(now)
 

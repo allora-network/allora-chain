@@ -15,6 +15,7 @@ import (
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -74,11 +75,21 @@ func (s *MintModuleTestSuite) SetupTest() {
 	}
 	s.addrs = addrs
 	s.addrsStr = addrsStr
-	key := storetypes.NewKVStoreKey(types.StoreKey)
-	storeService := runtime.NewKVStoreService(key)
+	mintKey := storetypes.NewKVStoreKey(types.StoreKey)
+	schedulerKey := storetypes.NewKVStoreKey("scheduler")
+	storeService := runtime.NewKVStoreService(mintKey)
+	schedulerStoreService := runtime.NewKVStoreService(schedulerKey)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
+	ctx := testutil.DefaultContextWithKeys(
+		map[string]*storetypes.KVStoreKey{
+			types.StoreKey: mintKey,
+			"scheduler":    schedulerKey,
+		},
+		map[string]*storetypes.TransientStoreKey{
+			"transient_test": storetypes.NewTransientStoreKey("transient_test"),
+		},
+		nil,
+	).WithHeaderInfo(header.Info{
 		Height:  1,
 		Hash:    []byte("test"),
 		ChainID: "localnet",
@@ -146,6 +157,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		"fee_collector",
 	)
 
+	schedulerKeeper := schedulerkeeper.NewKeeper(schedulerStoreService, encCfg.Codec)
 	mintKeeper := keeper.NewKeeper(
 		encCfg.Codec,
 		storeService,
@@ -153,9 +165,10 @@ func (s *MintModuleTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
-		nil,
+		&schedulerKeeper,
 		authtypes.FeeCollectorName,
 	)
+	s.Require().NoError(schedulerKeeper.RegisterTaskHandlers(mintKeeper.TaskHandlers()))
 
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper

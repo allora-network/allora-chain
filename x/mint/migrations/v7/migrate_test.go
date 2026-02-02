@@ -1,6 +1,7 @@
 package v7_test
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -8,20 +9,21 @@ import (
 
 	"cosmossdk.io/core/header"
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/testutil"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/golang/mock/gomock"
+
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
-	mint "github.com/allora-network/allora-chain/x/mint/module"
 	v7 "github.com/allora-network/allora-chain/x/mint/migrations/v7"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
 	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/testutil"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/golang/mock/gomock"
 )
 
 type MintV7MigrationTestSuite struct {
@@ -58,7 +60,13 @@ func (s *MintV7MigrationTestSuite) setupMigrationEnv(
 			"transient_test": storetypes.NewTransientStoreKey("transient_test"),
 		},
 		nil,
-	).WithHeaderInfo(header.Info{Height: blockHeight, Time: blockTime}).
+	).WithHeaderInfo(header.Info{
+		Height:  blockHeight,
+		Time:    blockTime,
+		Hash:    nil,
+		ChainID: "test-chain",
+		AppHash: nil,
+	}).
 		WithBlockHeight(blockHeight).
 		WithBlockTime(blockTime)
 
@@ -73,7 +81,11 @@ func (s *MintV7MigrationTestSuite) setupMigrationEnv(
 		AnyTimes()
 	emissionsKeeper.EXPECT().
 		GetParams(gomock.Any()).
-		Return(emissionstypes.Params{BlocksPerMonth: blocksPerMonth}, nil).
+		Return(func() emissionstypes.Params {
+			params := emissionstypes.DefaultParams()
+			params.BlocksPerMonth = blocksPerMonth
+			return params
+		}(), nil).
 		AnyTimes()
 
 	schedulerKeeper := schedulerkeeper.NewKeeper(schedulerStoreService, encCfg.Codec)
@@ -111,10 +123,20 @@ func expectedAlignedDelay(blockHeight uint64, blocksPerMonth uint64, oneMonthDur
 	}
 
 	monthNanoseconds := oneMonthDuration.Nanoseconds()
-	perBlockNanoseconds := monthNanoseconds / int64(blocksPerMonth)
-	remainingNanoseconds := perBlockNanoseconds * int64(blocksRemaining)
-	if remainder := monthNanoseconds % int64(blocksPerMonth); remainder > 0 {
-		remainingNanoseconds += remainder * int64(blocksRemaining) / int64(blocksPerMonth)
+	if monthNanoseconds <= 0 {
+		return time.Second
+	}
+
+	if blocksPerMonth > math.MaxInt64 || blocksRemaining > math.MaxInt64 {
+		return time.Second
+	}
+
+	blocksPerMonthInt := int64(blocksPerMonth)
+	blocksRemainingInt := int64(blocksRemaining)
+	perBlockNanoseconds := monthNanoseconds / blocksPerMonthInt
+	remainingNanoseconds := perBlockNanoseconds * blocksRemainingInt
+	if remainder := monthNanoseconds % blocksPerMonthInt; remainder > 0 {
+		remainingNanoseconds += remainder * blocksRemainingInt / blocksPerMonthInt
 	}
 
 	initialDelay = time.Duration(remainingNanoseconds)
