@@ -186,15 +186,15 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	}
 
 	response := &types.GetWorkerSubmissionWindowStatusResponse{
-		IsOpen:                  false,
-		CurrentNonce: 0,
-		WindowStartBlock:        0,
-		WindowEndBlock:          0,
-		NextWindowStartBlock:    0,
-		NextWindowEndBlock:      0,
-		IsRegistered:            false,
-		IsWhitelisted:           false,
-		IsTopicActive:           false,
+		IsOpen:               false,
+		CurrentNonce:         0,
+		WindowStartBlock:     0,
+		WindowEndBlock:       0,
+		NextWindowStartBlock: 0,
+		NextWindowEndBlock:   0,
+		IsRegistered:         false,
+		IsWhitelisted:        false,
+		IsTopicActive:        false,
 	}
 
 	// Check registration and whitelist status if address is provided
@@ -267,15 +267,15 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	}
 
 	response := &types.GetReputerSubmissionWindowStatusResponse{
-		IsOpen:                  false,
-		CurrentNonce: 0,
-		WindowStartBlock:        0,
-		WindowEndBlock:          0,
-		NextWindowStartBlock:    0,
-		NextWindowEndBlock:      0,
-		IsRegistered:            false,
-		IsWhitelisted:           false,
-		IsTopicActive:           false,
+		IsOpen:               false,
+		CurrentNonce:         0,
+		WindowStartBlock:     0,
+		WindowEndBlock:       0,
+		NextWindowStartBlock: 0,
+		NextWindowEndBlock:   0,
+		IsRegistered:         false,
+		IsWhitelisted:        false,
+		IsTopicActive:        false,
 	}
 
 	// Check registration and whitelist status if address is provided
