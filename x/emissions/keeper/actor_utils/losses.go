@@ -269,7 +269,7 @@ func CloseReputerNonce(
 	}
 
 	// Emit events: the regret stdnorm set event
-	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
+	types.EmitNewRegretStdNormEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
 	if len(inferers) > 0 {
 		infererWeights := make([]alloraMath.Dec, len(inferers))
 		for i, inferer := range inferers {
@@ -310,7 +310,7 @@ func CloseReputerNonce(
 		)
 		return err
 	}
-	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
+	types.EmitNewReputerLastCommitEvent(ctx, topic.Id, &nonce)
 
 	return nil
 }

@@ -186,15 +186,15 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	}
 
 	response := &types.GetWorkerSubmissionWindowStatusResponse{
-		IsOpen:                  false,
-		CurrentNonceBlockHeight: 0,
-		WindowStartBlock:        0,
-		WindowEndBlock:          0,
-		NextWindowStartBlock:    0,
-		NextWindowEndBlock:      0,
-		IsRegistered:            false,
-		IsWhitelisted:           false,
-		IsTopicActive:           false,
+		IsOpen:               false,
+		CurrentNonce:         0,
+		WindowStartBlock:     0,
+		WindowEndBlock:       0,
+		NextWindowStartBlock: 0,
+		NextWindowEndBlock:   0,
+		IsRegistered:         false,
+		IsWhitelisted:        false,
+		IsTopicActive:        false,
 	}
 
 	// Check registration and whitelist status if address is provided
@@ -226,7 +226,7 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 
 		if currentBlockHeight >= windowStart && currentBlockHeight <= windowEnd {
 			response.IsOpen = true
-			response.CurrentNonceBlockHeight = nonce.BlockHeight
+			response.CurrentNonce = nonce.BlockHeight
 			response.WindowStartBlock = windowStart
 			response.WindowEndBlock = windowEnd
 			break
@@ -267,15 +267,15 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	}
 
 	response := &types.GetReputerSubmissionWindowStatusResponse{
-		IsOpen:                  false,
-		CurrentNonceBlockHeight: 0,
-		WindowStartBlock:        0,
-		WindowEndBlock:          0,
-		NextWindowStartBlock:    0,
-		NextWindowEndBlock:      0,
-		IsRegistered:            false,
-		IsWhitelisted:           false,
-		IsTopicActive:           false,
+		IsOpen:               false,
+		CurrentNonce:         0,
+		WindowStartBlock:     0,
+		WindowEndBlock:       0,
+		NextWindowStartBlock: 0,
+		NextWindowEndBlock:   0,
+		IsRegistered:         false,
+		IsWhitelisted:        false,
+		IsTopicActive:        false,
 	}
 
 	// Check registration and whitelist status if address is provided
@@ -316,7 +316,7 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 			if latestActiveNonce == nil || nonce.ReputerNonce.BlockHeight > latestActiveNonce.ReputerNonce.BlockHeight {
 				latestActiveNonce = nonce
 				response.IsOpen = true
-				response.CurrentNonceBlockHeight = nonce.ReputerNonce.BlockHeight
+				response.CurrentNonce = nonce.ReputerNonce.BlockHeight
 				response.WindowStartBlock = windowStart
 				response.WindowEndBlock = windowEnd
 			}

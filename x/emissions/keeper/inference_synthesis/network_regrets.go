@@ -437,7 +437,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 		}
 
 		// For batch event emission
-		emissions.EmitNewTopicInitialRegretSetEvent(args.Ctx, args.TopicId, blockHeight, updatedTopicInitialRegret)
+		emissions.EmitNewTopicInitialRegretEvent(args.Ctx, args.TopicId, blockHeight, updatedTopicInitialRegret)
 	}
 
 	return out, nil

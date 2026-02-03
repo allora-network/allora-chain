@@ -382,7 +382,7 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	response, err = queryServer.GetWorkerSubmissionWindowStatus(ctx, req)
 	s.Require().NoError(err)
 	s.Require().True(response.IsOpen)
-	s.Require().Equal(nonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
+	s.Require().Equal(nonce2.BlockHeight, response.CurrentNonce) // Should be latest active
 
 	// Verify window calculations for the latest active window
 	expectedWindowStart := nonce2.BlockHeight
@@ -514,9 +514,9 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	response, err = queryServer.GetReputerSubmissionWindowStatus(ctx, req)
 	s.Require().NoError(err)
 	s.Require().True(response.IsOpen)
-	s.Require().Equal(reputerNonce2.BlockHeight, response.CurrentNonceBlockHeight) // Should be latest active
-	s.Require().Equal(int64(35), response.WindowStartBlock)                        // 5 + 30
-	s.Require().Equal(int64(65), response.WindowEndBlock)                          // 35 + 10 + 20
+	s.Require().Equal(reputerNonce2.BlockHeight, response.CurrentNonce) // Should be latest active
+	s.Require().Equal(int64(35), response.WindowStartBlock)             // 5 + 30
+	s.Require().Equal(int64(65), response.WindowEndBlock)               // 35 + 10 + 20
 
 	// Next window: [20+30, 20+30+10+20] = [50, 80]
 	expectedNextStart := int64(50) // From reputerNonce3 (BlockHeight=20)
