@@ -7,9 +7,10 @@ import (
 
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
@@ -39,7 +40,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			return errors.Wrap(err, "error setting next topic ID")
 		}
 	}
-	//Topics       []*TopicIdAndTopic
+	// Topics       []*TopicIdAndTopic
 	for _, topic := range data.Topics {
 		if topic != nil {
 			if err := k.SetTopic(ctx, topic.TopicId, *topic.Topic); err != nil {
@@ -47,7 +48,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//ActiveTopics []uint64
+	// ActiveTopics []uint64
 	for _, topicId := range data.ActiveTopics {
 		if err := types.ValidateTopicId(topicId); err != nil {
 			return errors.Wrapf(err, "error setting activeTopics %v", data.ActiveTopics)
@@ -56,13 +57,13 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			return errors.Wrap(err, "error setting activeTopics")
 		}
 	}
-	//RewardableTopics []uint64
+	// RewardableTopics []uint64
 	for _, topicId := range data.RewardableTopics {
 		if err := k.rewardableTopics.Set(ctx, topicId); err != nil {
 			return errors.Wrap(err, "error setting rewardableTopics")
 		}
 	}
-	//TopicWorkers []*TopicAndActorId
+	// TopicWorkers []*TopicAndActorId
 	for _, topicAndActorId := range data.TopicWorkers {
 		if topicAndActorId != nil {
 			if err := types.ValidateTopicId(topicAndActorId.TopicId); err != nil {
@@ -76,7 +77,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//TopicReputers []*TopicAndActorId
+	// TopicReputers []*TopicAndActorId
 	for _, topicAndActorId := range data.TopicReputers {
 		if topicAndActorId != nil {
 			if err := types.ValidateTopicId(topicAndActorId.TopicId); err != nil {
@@ -90,7 +91,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//TopicRewardNonce []*TopicIdAndBlockHeight
+	// TopicRewardNonce []*TopicIdAndBlockHeight
 	for _, topicIdAndBlockHeight := range data.TopicRewardNonce {
 		if topicIdAndBlockHeight != nil {
 			if err := k.SetTopicRewardNonce(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
@@ -99,7 +100,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//InfererScoresByBlock []*TopicIdBlockHeightScores
+	// InfererScoresByBlock []*TopicIdBlockHeightScores
 	for _, topicIdBlockHeightScores := range data.InfererScoresByBlock {
 		if topicIdBlockHeightScores != nil {
 			if err := types.ValidateTopicId(topicIdBlockHeightScores.TopicId); err != nil {
@@ -118,7 +119,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//ForecasterScoresByBlock []*TopicIdBlockHeightScores
+	// ForecasterScoresByBlock []*TopicIdBlockHeightScores
 	for _, topicIdBlockHeightScores := range data.ForecasterScoresByBlock {
 		if topicIdBlockHeightScores != nil {
 			if err := types.ValidateTopicId(topicIdBlockHeightScores.TopicId); err != nil {
@@ -139,7 +140,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//ReputerScoresByBlock []*TopicIdBlockHeightScores
+	// ReputerScoresByBlock []*TopicIdBlockHeightScores
 	for _, topicIdBlockHeightScores := range data.ReputerScoresByBlock {
 		if topicIdBlockHeightScores != nil {
 			if err := types.ValidateTopicId(topicIdBlockHeightScores.TopicId); err != nil {
@@ -160,7 +161,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//LatestInfererScoresByWorker []*TopicIdActorIdScore
+	// LatestInfererScoresByWorker []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.InfererScoreEmas {
 		if topicIdActorIdScore != nil {
 			if err := k.SetInfererScoreEma(ctx,
@@ -170,7 +171,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//LatestForecasterScoresByWorker []*TopicIdActorIdScore
+	// LatestForecasterScoresByWorker []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.ForecasterScoreEmas {
 		if topicIdActorIdScore != nil {
 			if err := k.SetForecasterScoreEma(ctx,
@@ -180,7 +181,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//LatestReputerScoresByReputer []*TopicIdActorIdScore
+	// LatestReputerScoresByReputer []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.ReputerScoreEmas {
 		if topicIdActorIdScore != nil {
 			if err := k.SetReputerScoreEma(ctx,
@@ -190,7 +191,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//ReputerListeningCoefficient []*TopicIdActorIdListeningCoefficient
+	// ReputerListeningCoefficient []*TopicIdActorIdListeningCoefficient
 	for _, topicIdActorIdListeningCoefficient := range data.ReputerListeningCoefficient {
 		if topicIdActorIdListeningCoefficient != nil {
 			if err := k.SetListeningCoefficient(ctx,
@@ -200,7 +201,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//PreviousReputerRewardFraction []*TopicIdActorIdDec
+	// PreviousReputerRewardFraction []*TopicIdActorIdDec
 	for _, topicIdActorIdDec := range data.PreviousReputerRewardFraction {
 		if topicIdActorIdDec != nil {
 			if err := k.SetPreviousReputerRewardFraction(ctx,
@@ -210,7 +211,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//PreviousInferenceRewardFraction []*TopicIdActorIdDec
+	// PreviousInferenceRewardFraction []*TopicIdActorIdDec
 	for _, topicIdActorIdDec := range data.PreviousInferenceRewardFraction {
 		if topicIdActorIdDec != nil {
 			if err := k.SetPreviousInferenceRewardFraction(ctx,
@@ -220,7 +221,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//PreviousForecastRewardFraction []*TopicIdActorIdDec
+	// PreviousForecastRewardFraction []*TopicIdActorIdDec
 	for _, topicIdActorIdDec := range data.PreviousForecastRewardFraction {
 		if topicIdActorIdDec != nil {
 			if err := k.SetPreviousForecastRewardFraction(ctx,
@@ -240,7 +241,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			return errors.Wrap(err, "error setting totalStake to zero int")
 		}
 	}
-	//TopicStake []*TopicIdAndInt
+	// TopicStake []*TopicIdAndInt
 	for _, topicIdAndInt := range data.TopicStake {
 		if topicIdAndInt != nil {
 			if err := k.SetTopicStake(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
@@ -248,7 +249,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//StakeReputerAuthority []*TopicIdActorIdInt
+	// StakeReputerAuthority []*TopicIdActorIdInt
 	for _, topicIdActorIdInt := range data.StakeReputerAuthority {
 		if topicIdActorIdInt != nil {
 			if err := k.SetStakeReputerAuthority(ctx,
@@ -258,7 +259,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//StakeSumFromDelegator []*TopicIdActorIdInt
+	// StakeSumFromDelegator []*TopicIdActorIdInt
 	for _, topicIdActorIdInt := range data.StakeSumFromDelegator {
 		if topicIdActorIdInt != nil {
 			if err := k.SetStakeFromDelegator(ctx,
@@ -268,7 +269,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//DelegatedStakes []*TopicIdDelegatorReputerDelegatorInfo
+	// DelegatedStakes []*TopicIdDelegatorReputerDelegatorInfo
 	for _, topicIdDelegatorReputerDelegatorInfo := range data.DelegatedStakes {
 		if topicIdDelegatorReputerDelegatorInfo != nil {
 			if err := k.SetDelegateStakePlacement(ctx,
@@ -280,7 +281,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//StakeFromDelegatorsUponReputer []*TopicIdActorIdInt
+	// StakeFromDelegatorsUponReputer []*TopicIdActorIdInt
 	for _, topicIdActorIdInt := range data.StakeFromDelegatorsUponReputer {
 		if topicIdActorIdInt != nil {
 			if err := k.SetDelegateStakeUponReputer(ctx,
@@ -290,7 +291,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//DelegateRewardPerShare []*TopicIdActorIdDec
+	// DelegateRewardPerShare []*TopicIdActorIdDec
 	for _, topicIdActorIdDec := range data.DelegateRewardPerShare {
 		if topicIdActorIdDec != nil {
 			if err := k.SetDelegateRewardPerShare(ctx,
@@ -300,8 +301,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//StakeRemovalsByBlock []*BlockHeightTopicIdReputerStakeRemovalInfo
-	//StakeRemovalsByActor []*ActorIdTopicIdBlockHeight
+	// StakeRemovalsByBlock []*BlockHeightTopicIdReputerStakeRemovalInfo
+	// StakeRemovalsByActor []*ActorIdTopicIdBlockHeight
 	for _, blockHeightTopicIdReputerStakeRemovalInfo := range data.StakeRemovalsByBlock {
 		if blockHeightTopicIdReputerStakeRemovalInfo != nil {
 			if err := k.SetStakeRemoval(ctx,
@@ -312,8 +313,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//DelegateStakeRemovalsByBlock []*BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo
-	//DelegateStakeRemovalsByActor []*DelegatorReputerTopicIdBlockHeight
+	// DelegateStakeRemovalsByBlock []*BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo
+	// DelegateStakeRemovalsByActor []*DelegatorReputerTopicIdBlockHeight
 	for _, blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo := range data.DelegateStakeRemovalsByBlock {
 		if blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo != nil {
 			if err := k.SetDelegateStakeRemoval(ctx,
@@ -322,7 +323,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//Inferences []*TopicIdActorIdInference
+	// Inferences []*TopicIdActorIdInference
 	for _, topicIdActorIdInference := range data.Inferences {
 		if topicIdActorIdInference != nil {
 			if err := topicIdActorIdInference.Inference.Validate(); err != nil {
@@ -411,7 +412,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//AllInferences []*TopicIdBlockHeightInferences
+	// AllInferences []*TopicIdBlockHeightInferences
 	for _, topicIdBlockHeightInferences := range data.AllInferences {
 		if topicIdBlockHeightInferences != nil {
 			for _, inference := range topicIdBlockHeightInferences.Inferences.Inferences {
@@ -428,7 +429,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//AllForecasts []*TopicIdBlockHeightForecasts
+	// AllForecasts []*TopicIdBlockHeightForecasts
 	for _, topicIdBlockHeightForecasts := range data.AllForecasts {
 		if topicIdBlockHeightForecasts != nil {
 			for _, forecast := range topicIdBlockHeightForecasts.Forecasts.Forecasts {
@@ -446,21 +447,22 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//AllLossBundles []*TopicIdBlockHeightReputerValueBundles
+	// AllLossBundles []*TopicIdBlockHeightReputerValueBundles
 	for _, topicIdBlockHeightReputerValueBundles := range data.AllLossBundles {
+		lossBundles := types.LossBundles(topicIdBlockHeightReputerValueBundles.GetReputerValueBundles())
 		if topicIdBlockHeightReputerValueBundles != nil {
-			if err := topicIdBlockHeightReputerValueBundles.ReputerValueBundles.Validate(); err != nil {
+			if err := lossBundles.Validate(); err != nil {
 				return errors.Wrap(err, "reputer value bundles validation failed")
 			}
 			if err := k.allLossBundles.Set(ctx,
 				collections.Join(topicIdBlockHeightReputerValueBundles.TopicId, topicIdBlockHeightReputerValueBundles.BlockHeight),
-				*topicIdBlockHeightReputerValueBundles.ReputerValueBundles); err != nil {
+				types.ReputerLossBundles{LossBundles: lossBundles}); err != nil {
 				return errors.Wrap(err, "error setting allLossBundles")
 			}
 		}
 	}
 
-	//NetworkLossBundles []*TopicIdBlockHeightValueBundles
+	// NetworkLossBundles []*TopicIdBlockHeightValueBundles
 	for _, topicIdBlockHeightValueBundles := range data.NetworkLossBundles {
 		if topicIdBlockHeightValueBundles != nil {
 			if err := topicIdBlockHeightValueBundles.ValueBundle.Validate(); err != nil {
@@ -474,7 +476,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//PreviousPercentageRewardToStakedReputers github_com_allora_network_allora_chain_math.Dec
+	// PreviousPercentageRewardToStakedReputers github_com_allora_network_allora_chain_math.Dec
 	if data.PreviousPercentageRewardToStakedReputers != alloraMath.ZeroDec() {
 		if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, data.PreviousPercentageRewardToStakedReputers); err != nil {
 			return errors.Wrap(err, "error setting previousPercentageRewardToStakedReputers")
@@ -486,7 +488,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			return errors.Wrap(err, "error setting previousPercentageRewardToStakedReputers to 0.3")
 		}
 	}
-	//openWorkerWindows []*BlockHeightAndListOfTopicIds
+	// openWorkerWindows []*BlockHeightAndListOfTopicIds
 	for _, blockHeightAndListOfTopicIds := range data.OpenWorkerWindows {
 		if blockHeightAndListOfTopicIds != nil {
 			topicIds := types.TopicIds{TopicIds: blockHeightAndListOfTopicIds.TopicIds}
@@ -508,7 +510,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//UnfulfilledWorkerNonces []*TopicIdAndNonces
+	// UnfulfilledWorkerNonces []*TopicIdAndNonces
 
 	for _, topicIdAndNonces := range data.UnfulfilledWorkerNonces {
 		if topicIdAndNonces != nil {
@@ -520,7 +522,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//UnfulfilledReputerNonces []*TopicIdAndReputerRequestNonces
+	// UnfulfilledReputerNonces []*TopicIdAndReputerRequestNonces
 
 	for _, topicIdAndReputerRequestNonces := range data.UnfulfilledReputerNonces {
 		if topicIdAndReputerRequestNonces != nil {
@@ -533,7 +535,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//lastDripBlock []*TopicIdAndBlockHeight
+	// lastDripBlock []*TopicIdAndBlockHeight
 	for _, topicIdAndBlockHeight := range data.LastDripBlock {
 		if topicIdAndBlockHeight != nil {
 			if err := k.SetLastDripBlock(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
@@ -542,7 +544,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//LatestInfererNetworkRegrets []*TopicIdActorIdTimeStampedValue
+	// LatestInfererNetworkRegrets []*TopicIdActorIdTimeStampedValue
 	for _, topicIdActorIdTimeStampedValue := range data.LatestInfererNetworkRegrets {
 		if topicIdActorIdTimeStampedValue != nil {
 			if err := k.SetInfererNetworkRegret(ctx,
@@ -564,7 +566,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//LatestForecasterNetworkRegrets []*TopicIdActorIdTimeStampedValue
+	// LatestForecasterNetworkRegrets []*TopicIdActorIdTimeStampedValue
 	for _, topicIdActorIdTimeStampedValue := range data.LatestForecasterNetworkRegrets {
 		if topicIdActorIdTimeStampedValue != nil {
 			if err := k.SetForecasterNetworkRegret(ctx,
@@ -625,7 +627,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//LatestOneInForecasterNetworkRegrets []*TopicIdActorIdActorIdTimeStampedValue
+	// LatestOneInForecasterNetworkRegrets []*TopicIdActorIdActorIdTimeStampedValue
 	for _, topicIdActorIdActorIdTimeStampedValue := range data.LatestOneInForecasterNetworkRegrets {
 		if topicIdActorIdActorIdTimeStampedValue != nil {
 			if err := k.SetOneInForecasterNetworkRegret(ctx,
@@ -661,7 +663,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//TopicLastWorkerCommit   []*TopicIdTimestampedActorNonce
+	// TopicLastWorkerCommit   []*TopicIdTimestampedActorNonce
 	for _, topicIdTimestampedActorNonce := range data.TopicLastWorkerCommit {
 		if topicIdTimestampedActorNonce != nil {
 			if err := k.SetWorkerTopicLastCommit(ctx,
@@ -672,7 +674,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//TopicLastReputerCommit  []*TopicIdTimestampedActorNonce
+	// TopicLastReputerCommit  []*TopicIdTimestampedActorNonce
 	for _, topicIdTimestampedActorNonce := range data.TopicLastReputerCommit {
 		if topicIdTimestampedActorNonce != nil {
 			if err := k.SetReputerTopicLastCommit(ctx,
@@ -684,7 +686,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//TopicToNextPossibleChurningBlock []*topicBlock
+	// TopicToNextPossibleChurningBlock []*topicBlock
 	for _, topicBlock := range data.TopicToNextPossibleChurningBlock {
 		if topicBlock != nil {
 			if err := k.SetTopicToNextPossibleChurningBlock(ctx,
@@ -695,7 +697,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//BlockToActiveTopics []*blockToActiveTopics
+	// BlockToActiveTopics []*blockToActiveTopics
 	for _, blockToActiveTopics := range data.BlockToActiveTopics {
 		if blockToActiveTopics != nil {
 			if err := k.blockToActiveTopics.Set(ctx,
@@ -706,7 +708,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//BlockToLowestActiveTopicWeight []*blockToLowestActiveTopicWeight
+	// BlockToLowestActiveTopicWeight []*blockToLowestActiveTopicWeight
 	for _, lowestActiveTopicWeight := range data.BlockToLowestActiveTopicWeight {
 		if lowestActiveTopicWeight != nil {
 			if err := k.blockToLowestActiveTopicWeight.Set(ctx,
@@ -744,7 +746,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//InitialInfererEmaScore []*TopicIdAndDec
+	// InitialInfererEmaScore []*TopicIdAndDec
 	for _, topicIdAndDec := range data.InitialInfererEmaScore {
 		if topicIdAndDec != nil {
 			if err := k.initialInfererEmaScore.Set(ctx, topicIdAndDec.TopicId, topicIdAndDec.Dec); err != nil {
@@ -753,7 +755,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//InitialForecasterEmaScore []*TopicIdAndDec
+	// InitialForecasterEmaScore []*TopicIdAndDec
 	for _, topicIdAndDec := range data.InitialForecasterEmaScore {
 		if topicIdAndDec != nil {
 			if err := k.initialForecasterEmaScore.Set(ctx, topicIdAndDec.TopicId, topicIdAndDec.Dec); err != nil {
@@ -762,7 +764,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	//InitialReputerEmaScore []*TopicIdAndDec
+	// InitialReputerEmaScore []*TopicIdAndDec
 	for _, topicIdAndDec := range data.InitialReputerEmaScore {
 		if topicIdAndDec != nil {
 			if err := k.initialReputerEmaScore.Set(ctx, topicIdAndDec.TopicId, topicIdAndDec.Dec); err != nil {
@@ -1803,7 +1805,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		topicIdBlockHeightValueBundles := types.TopicIdBlockHeightReputerValueBundles{
 			TopicId:             keyValue.Key.K1(),
 			BlockHeight:         keyValue.Key.K2(),
-			ReputerValueBundles: &value,
+			ReputerValueBundles: value.GetLossBundles(),
 		}
 		allLossBundles = append(allLossBundles, &topicIdBlockHeightValueBundles)
 	}

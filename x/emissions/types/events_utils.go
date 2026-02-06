@@ -149,12 +149,12 @@ func NewRewardDelegateStakeEventBase(topicId TopicId, reputer, delegator string,
 	}
 }
 
-func NewInsertReputerPayloadEventBase(bundle *ReputerValueBundle) proto.Message {
+func NewInsertReputerPayloadEventBase(bundle *LossBundle) proto.Message {
 	return &EventInsertReputerPayload{
-		TopicId: bundle.ValueBundle.TopicId,
-		Nonce:   bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Reputer: bundle.ValueBundle.Reputer,
-		Bundle:  ValueBundleToEventValueBundleBase(bundle.ValueBundle),
+		TopicId: bundle.TopicId,
+		Nonce:   bundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Reputer: bundle.Reputer,
+		Bundle:  ValueBundleToEventValueBundleBase(bundle),
 	}
 }
 

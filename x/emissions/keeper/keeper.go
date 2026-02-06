@@ -150,7 +150,9 @@ type Keeper struct {
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 
 	// map of (topic, reputer) -> reputer loss
-	lossBundles collections.Map[collections.Pair[TopicId, Reputer], types.ReputerValueBundle]
+	// lossBundlesOld collections.Map[collections.Pair[TopicId, Reputer], types.ReputerValueBundle]
+
+	lossBundles collections.Map[collections.Pair[TopicId, Reputer], types.LossBundle]
 
 	// map of worker id to node data about that worker
 	workers collections.Map[ActorId, types.OffchainNode]
@@ -174,7 +176,9 @@ type Keeper struct {
 	allForecasts collections.Map[collections.Pair[TopicId, BlockHeight], types.Forecasts]
 
 	// map of (topic, block_height) -> ReputerValueBundles (1 per reputer active at that time)
-	allLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ReputerValueBundles]
+	// allLossBundlesOld collections.Map[collections.Pair[TopicId, BlockHeight], types.ReputerValueBundles]
+
+	allLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ReputerLossBundles]
 
 	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
 	networkLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
@@ -323,12 +327,12 @@ func NewKeeper(
 		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
-		lossBundles:                              collections.NewMap(sb, types.LossBundlesKey, "loss_bundles", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ReputerValueBundle](cdc)),
+		lossBundles:                              collections.NewMap(sb, types.LossBundlesKey, "loss_bundles", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.LossBundle](cdc)),
 		workers:                                  collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		reputers:                                 collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		allInferences:                            collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
 		allForecasts:                             collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:                           collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
+		allLossBundles:                           collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerLossBundles](cdc)),
 		networkLossBundles:                       collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		previousPercentageRewardToStakedReputers: collections.NewItem(sb, types.PreviousPercentageRewardToStakedReputersKey, "previous_percentage_reward_to_staked_reputers", alloraMath.DecValue),
 		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
@@ -1910,21 +1914,21 @@ func (k *Keeper) AppendReputerLoss(
 	topic types.Topic,
 	moduleParams types.Params,
 	nonceBlockHeight BlockHeight,
-	reputerLoss *types.ReputerValueBundle,
+	reputerLoss *types.LossBundle,
 ) error {
-	if reputerLoss == nil || reputerLoss.ValueBundle == nil {
+	if reputerLoss == nil {
 		return errors.New("invalid reputerLoss bundle: reputer is empty or nil")
 	}
 
 	// Check if the reputer already submitted the loss
-	isActive, err := k.IsActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
+	isActive, err := k.IsActiveReputer(ctx, topic.Id, reputerLoss.Reputer)
 	if err != nil {
 		return errorsmod.Wrap(err, "error checking if reputer already submitted loss")
 	} else if isActive {
 		return errors.New("reputer loss already submitted")
 	}
 
-	previousEmaScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
+	previousEmaScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputerLoss.Reputer)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting reputer score ema")
 	}
@@ -1941,9 +1945,9 @@ func (k *Keeper) AppendReputerLoss(
 		if err != nil {
 			return errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
-		err = k.SetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer, types.Score{
+		err = k.SetReputerScoreEma(ctx, topic.Id, reputerLoss.Reputer, types.Score{
 			TopicId:     topic.Id,
-			Address:     reputerLoss.ValueBundle.Reputer,
+			Address:     reputerLoss.Reputer,
 			BlockHeight: nonceBlockHeight,
 			Score:       initialEmaScore,
 		})
@@ -1983,7 +1987,7 @@ func (k *Keeper) AppendReputerLoss(
 			}
 		}
 
-		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
+		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.Reputer)
 		if err != nil {
 			return errorsmod.Wrap(err, "error adding active reputer")
 		}
@@ -2022,12 +2026,12 @@ func (k *Keeper) AppendReputerLoss(
 			return errorsmod.Wrap(err, "error removing reputer loss from reputer")
 		}
 		// Add new active reputer
-		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
+		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.Reputer)
 		if err != nil {
 			return errorsmod.Wrap(err, "error adding active reputer")
 		}
 		// Calculate new lowest score with updated reputerAddresses
-		err = UpdateLowestScoreFromReputerAddresses(ctx, k, topic.Id, reputerAddresses, reputerLoss.ValueBundle.Reputer, lowestEmaScore.Address)
+		err = UpdateLowestScoreFromReputerAddresses(ctx, k, topic.Id, reputerAddresses, reputerLoss.Reputer, lowestEmaScore.Address)
 		if err != nil {
 			return errorsmod.Wrap(err, "error getting low score from all reputer losses")
 		}
@@ -2049,7 +2053,7 @@ func (k *Keeper) GetReputerLatestLossByTopicId(
 	ctx context.Context,
 	topicId TopicId,
 	reputer ActorId,
-) (types.ReputerValueBundle, error) {
+) (types.LossBundle, error) {
 	key := collections.Join(topicId, reputer)
 	return k.lossBundles.Get(ctx, key)
 }
@@ -2058,7 +2062,7 @@ func (k *Keeper) GetReputerLatestLossByTopicId(
 func (k *Keeper) InsertReputerLoss(
 	ctx context.Context,
 	topicId TopicId,
-	reputerLoss types.ReputerValueBundle,
+	reputerLoss types.LossBundle,
 ) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -2067,7 +2071,7 @@ func (k *Keeper) InsertReputerLoss(
 	if err != nil {
 		return errorsmod.Wrap(err, "reputer loss is invalid")
 	}
-	key := collections.Join(topicId, reputerLoss.ValueBundle.Reputer)
+	key := collections.Join(topicId, reputerLoss.Reputer)
 	return k.lossBundles.Set(ctx, key, reputerLoss)
 }
 
@@ -2087,7 +2091,7 @@ func (k *Keeper) InsertActiveReputerLosses(
 	ctx context.Context,
 	topicId TopicId,
 	block BlockHeight,
-	reputerLossBundles types.ReputerValueBundles,
+	reputerLossBundles types.LossBundles,
 ) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -2105,20 +2109,20 @@ func (k *Keeper) InsertActiveReputerLosses(
 		}
 	}
 	key := collections.Join(topicId, block)
-	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
+	return k.allLossBundles.Set(ctx, key, types.ReputerLossBundles{LossBundles: reputerLossBundles})
 }
 
 // Get loss bundles for a topic/timestamp
-func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ReputerValueBundles, error) {
+func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.LossBundles, error) {
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		return &types.ReputerValueBundles{ReputerValueBundles: []*types.ReputerValueBundle{}}, nil
+		return nil, nil
 	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
 	}
-	return &reputerLossBundles, nil
+	return reputerLossBundles.LossBundles, nil
 }
 
 // Insert a network loss bundle for a topic and block.

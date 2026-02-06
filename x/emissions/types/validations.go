@@ -5,11 +5,12 @@ import (
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
 
-/// EXTERNAL TYPE VALIDATIONS
+// / EXTERNAL TYPE VALIDATIONS
 
 // ValidateDec checks if the given value is a valid Dec by our standards
 func ValidateDec(value alloraMath.Dec) error {
@@ -66,7 +67,7 @@ func ValidateBech32(value string) error {
 	return nil
 }
 
-/// PRIMITIVE TYPE VALIDATIONS
+// / PRIMITIVE TYPE VALIDATIONS
 
 // ValidateBlockHeight checks if the given value is a valid block height
 func ValidateBlockHeight(value BlockHeight) error {
@@ -84,7 +85,7 @@ func ValidateTopicId(value TopicId) error {
 	return nil
 }
 
-/// EMISSIONS TYPES PACKAGE VALIDATIONS
+// / EMISSIONS TYPES PACKAGE VALIDATIONS
 
 // Validate performs basic genesis state validation returning an error upon any
 func (gs *GenesisState) Validate() error {
@@ -671,43 +672,6 @@ func (bundle *InputReputerValueBundle) Validate() error {
 	return nil
 }
 
-// validate that a reputer value bundle follows the expected format
-func (bundle *ReputerValueBundle) Validate() error {
-	if bundle == nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer value bundle cannot be nil")
-	}
-	if bundle.ValueBundle == nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
-	}
-	pk, err := hex.DecodeString(bundle.Pubkey)
-	if err != nil || len(pk) != secp256k1.PubKeySize {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid pubkey %d", len(pk))
-	}
-	pubkey := secp256k1.PubKey(pk)
-	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
-
-	if bundle.ValueBundle.Reputer != pubKeyConvertedToAddress {
-		return errors.Wrapf(sdkerrors.ErrUnauthorized, "Reputer does not match pubkey")
-	}
-
-	// validate the value bundle
-	if err := bundle.ValueBundle.Validate(); err != nil {
-		return errors.Wrap(err, "value bundle is invalid")
-	}
-
-	buf := reputerValueBundleBufferPool.Get()
-	defer reputerValueBundleBufferPool.Put(buf)
-	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)
-	}
-	if !pubkey.VerifySignature(marshaled, bundle.Signature) {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
-	}
-
-	return nil
-}
-
 // validate that a worker attributed value follows the expected format
 func (inputWorkerValue *InputWorkerAttributedValue) Validate() error {
 	if inputWorkerValue == nil {
@@ -818,13 +782,13 @@ func (inputReputerValueBundles *InputReputerValueBundles) Validate() error {
 }
 
 // validate that a types.ReputerValueBundles follows the expected format
-func (bundle *ReputerValueBundles) Validate() error {
-	if bundle.ReputerValueBundles == nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidType, "reputer value bundles cannot be nil")
+func (bundle LossBundles) Validate() error {
+	if bundle == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidType, "loss bundles cannot be nil")
 	}
-	for i, reputerValueBundle := range bundle.ReputerValueBundles {
+	for i, reputerValueBundle := range bundle {
 		if err := reputerValueBundle.Validate(); err != nil {
-			return errors.Wrapf(err, "reputer value bundle at index %d is invalid", i)
+			return errors.Wrapf(err, "loss bundle at index %d is invalid", i)
 		}
 	}
 	return nil
@@ -1087,7 +1051,7 @@ func (oc *OffchainNode) Validate() error {
 	return nil
 }
 
-/// PROTOBUF MESSAGE VALIDATIONS
+// / PROTOBUF MESSAGE VALIDATIONS
 
 // validate that a register request follows the expected format
 func (msg *RegisterRequest) Validate() error {

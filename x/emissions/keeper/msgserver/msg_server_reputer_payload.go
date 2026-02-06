@@ -29,7 +29,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 			"Reputer bad data format for block: %d", blockHeight)
 	}
 
-	canSubmit, err := ms.k.CanSubmitReputerPayload(ctx, rvb.ValueBundle.TopicId, rvb.ValueBundle.Reputer)
+	canSubmit, err := ms.k.CanSubmitReputerPayload(ctx, rvb.TopicId, rvb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !canSubmit {
@@ -41,8 +41,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	nonce := rvb.ValueBundle.ReputerRequestNonce
-	topicId := rvb.ValueBundle.TopicId
+	nonce := rvb.ReputerRequestNonce
+	topicId := rvb.TopicId
 
 	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
@@ -74,7 +74,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		)
 	}
 
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, rvb.ValueBundle.Reputer)
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, rvb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !isRegistered {
@@ -82,7 +82,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	// Check that the reputer enough stake in the topic
-	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, rvb.ValueBundle.Reputer)
+	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, rvb.Reputer)
 	if err != nil {
 		return nil, err
 	}

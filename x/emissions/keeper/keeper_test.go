@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	testutil "github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -1466,26 +1466,16 @@ func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 		InfererValues: s.createDefaultInfererValues(),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
 	}
-	signature := s.SignValueBundle(valueBundle, s.PrivKeys(0))
-	reputerLossBundles := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: valueBundle,
-				Signature:   signature,
-				Pubkey:      s.PubKeyHexStr(0),
-			},
-		},
-	}
 
 	// Test inserting data
-	err := s.EmissionsKeeper().InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
+	err := s.EmissionsKeeper().InsertActiveReputerLosses(ctx, topicId, block, types.LossBundles{valueBundle})
 	require.NoError(err, "InsertActiveReputerLosses should not return an error")
 
 	// Retrieve data to verify insertion
 	result, err := s.EmissionsKeeper().GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	require.NoError(err)
 	require.NotNil(result)
-	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+	require.Equal(types.LossBundles{valueBundle}, result, "Retrieved data should match inserted data")
 }
 
 func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
@@ -1497,7 +1487,7 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 	// Test getting data before any insert, should return error or nil
 	result, err := s.EmissionsKeeper().GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	require.NoError(err)
-	require.Empty(result.ReputerValueBundles, "Result should be empty for non-existent data")
+	require.Empty(result, "Result should be empty for non-existent data")
 }
 
 func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
@@ -3412,12 +3402,6 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	err = s.EmissionsKeeper().InsertActiveForecasts(s.Ctx(), topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
-	reputerLossBundles := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{},
-	}
-	err = s.EmissionsKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, reputerLossBundles)
-	s.Require().NoError(err, "InsertActiveReputerLosses should not return an error")
-
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: &types.Nonce{BlockHeight: block},
 	}
@@ -3430,6 +3414,11 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		InfererValues:       s.createDefaultInfererValues(),
 		NaiveValue:          alloraMath.MustNewDecFromString("0.0"),
 	}
+
+	reputerLossBundles := types.LossBundles{&networkLosses}
+	err = s.EmissionsKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, reputerLossBundles)
+	s.Require().NoError(err, "InsertActiveReputerLosses should not return an error")
+
 	err = s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
 
@@ -3457,7 +3446,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().Empty(forecasts.Forecasts, "Must be pruned")
 	lossbundles, err := s.EmissionsKeeper().GetReputerLossBundlesAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
-	s.Require().Empty(lossbundles.ReputerValueBundles, "Must be pruned")
+	s.Require().Empty(lossbundles, "Must be pruned")
 	networkBundles, err := s.EmissionsKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting network loss bundle should not fail but be empty")
 	s.Require().Equal(topicId, networkBundles.TopicId, "topic id returned")
@@ -4678,10 +4667,10 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 
 	// Create value bundles for all reputers
-	reputerValueBundles := make([]*types.ReputerValueBundle, len(reputers))
+	reputerValueBundles := make(types.LossBundles, len(reputers))
 	for i, reputer := range reputers {
 		//nolint:exhaustruct
-		valueBundle := types.ValueBundle{
+		valueBundle := &types.ValueBundle{
 			Reputer:             reputer,
 			CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
 			ReputerRequestNonce: reputerRequestNonce,
@@ -4689,12 +4678,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			InfererValues:       s.createDefaultInfererValues(),
 			NaiveValue:          alloraMath.MustNewDecFromString("0.0"),
 		}
-		signature := s.SignValueBundle(&valueBundle, s.PrivKeys(i))
-		reputerValueBundles[i] = &types.ReputerValueBundle{
-			ValueBundle: &valueBundle,
-			Signature:   signature,
-			Pubkey:      s.PubKeyHexStr(i),
-		}
+		reputerValueBundles[i] = valueBundle
 	}
 
 	topic, err := k.GetTopic(ctx, topicId)
@@ -4753,7 +4737,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 	s.Require().NoError(err)
 
 	// Create reputer value bundles
-	reputerValueBundles := make([]*types.ReputerValueBundle, len(reputers))
+	allReputerLosses := make(types.LossBundles, len(reputers))
 	for i, reputer := range reputers {
 		//nolint:exhaustruct
 		valueBundle := types.ValueBundle{
@@ -4764,23 +4748,14 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 			InfererValues:       s.createDefaultInfererValues(),
 			NaiveValue:          alloraMath.MustNewDecFromString("0.0"),
 		}
-		signature := s.SignValueBundle(&valueBundle, s.PrivKeys(i))
-		reputerValueBundles[i] = &types.ReputerValueBundle{
-			ValueBundle: &valueBundle,
-			Signature:   signature,
-			Pubkey:      s.PubKeyHexStr(i),
-		}
-	}
-
-	allReputerLosses := types.ReputerValueBundles{
-		ReputerValueBundles: reputerValueBundles,
+		allReputerLosses[i] = &valueBundle
 	}
 
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// First round: append all reputer losses
-	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
+	for _, reputerValueBundle := range allReputerLosses {
 		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
 		s.Require().NoError(err)
 	}
@@ -4800,7 +4775,7 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 
 	// Second round: append all reputer losses again
 	nonce.BlockHeight++
-	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
+	for _, reputerValueBundle := range allReputerLosses {
 		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
 		s.Require().NoError(err)
 	}
@@ -5114,21 +5089,15 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 		InfererValues: s.createDefaultInfererValues(),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
 	}
-	signature := s.SignValueBundle(valueBundle, s.PrivKeys(0))
-	reputerLossBundle := types.ReputerValueBundle{
-		ValueBundle: valueBundle,
-		Signature:   signature,
-		Pubkey:      s.PubKeyHexStr(0),
-	}
 
 	// Insert the reputer loss bundle
-	err := k.InsertReputerLoss(ctx, topicId, reputerLossBundle)
+	err := k.InsertReputerLoss(ctx, topicId, *valueBundle)
 	s.Require().NoError(err)
 
 	// Verify the reputer loss was added
 	retrievedLoss, err := k.GetReputerLatestLossByTopicId(ctx, topicId, reputer)
 	s.Require().NoError(err)
-	s.Require().Equal(reputerLossBundle, retrievedLoss)
+	s.Require().Equal(*valueBundle, retrievedLoss)
 
 	// Remove the reputer loss
 	err = k.RemoveReputerLoss(ctx, topicId, reputer)
@@ -5590,19 +5559,13 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 		InfererValues: s.createDefaultInfererValues(),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.52"),
 	}
-	signature := s.SignValueBundle(valueBundle, s.PrivKeys(0))
-	reputerValueBundle := &types.ReputerValueBundle{
-		ValueBundle: valueBundle,
-		Signature:   signature,
-		Pubkey:      s.PubKeyHexStr(0),
-	}
 
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	params := types.DefaultParams()
 	// Append the reputer value bundle
-	err = k.AppendReputerLoss(ctx, topic, params, blockHeight, reputerValueBundle)
+	err = k.AppendReputerLoss(ctx, topic, params, blockHeight, valueBundle)
 	s.Require().NoError(err)
 
 	// Verify the reputer received the initial EMA score
@@ -5828,18 +5791,12 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 		InfererValues:       s.createDefaultInfererValues(),
 		NaiveValue:          alloraMath.MustNewDecFromString("0.0"),
 	}
-	signature := s.SignValueBundle(&valueBundleReputer, s.PrivKeys(0))
-	reputerValueBundle := types.ReputerValueBundle{
-		ValueBundle: &valueBundleReputer,
-		Signature:   signature,
-		Pubkey:      s.PubKeyHexStr(0),
-	}
 
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Append the reputer loss
-	err = k.AppendReputerLoss(ctx, topic, types.DefaultParams(), blockHeight, &reputerValueBundle)
+	err = k.AppendReputerLoss(ctx, topic, types.DefaultParams(), blockHeight, &valueBundleReputer)
 	s.Require().NoError(err)
 
 	// Verify the reputer's EMA score trended toward the topic initial score especially when there is a lapse in their

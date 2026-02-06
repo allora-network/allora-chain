@@ -11,6 +11,7 @@ import "emissions/v3/score.proto";
 import "emissions/v3/stake.proto";
 import "emissions/v3/types.proto";
 import "emissions/v3/worker.proto";
+import "emissions/v3/inference.proto";
 // v8
 import "emissions/v9/params.proto";
 import "emissions/v9/topic.proto";
@@ -1217,7 +1218,7 @@ message GetReputerLossBundlesAtBlockRequest {
 }
 
 message GetReputerLossBundlesAtBlockResponse {
-  emissions.v3.ReputerValueBundles loss_bundles = 1;
+  repeated emissions.v3.ValueBundle loss_bundles = 1;
 }
 
 message GetStakeReputerAuthorityRequest {

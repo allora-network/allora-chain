@@ -286,22 +286,16 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 }
 
 // NewInputReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
-func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*LossBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
+	}
+	if err := brvb.Validate(); err != nil {
+		return nil, errors.Wrap(err, "failed to validate reputer value bundle")
 	}
 	valueBundle, err := NewValueBundleFromInput(brvb.ValueBundle)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert value bundle")
 	}
-	reputerValueBundle := &ReputerValueBundle{
-		ValueBundle: valueBundle,
-		Signature:   brvb.Signature,
-		Pubkey:      brvb.Pubkey,
-	}
-	err = reputerValueBundle.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate reputer value bundle")
-	}
-	return reputerValueBundle, nil
+	return valueBundle, nil
 }

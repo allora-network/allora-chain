@@ -143,9 +143,9 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		{reputers[4], ".0000115363240547692"},
 	}
 
-	var reputerValueBundles []*types.ReputerValueBundle
-	for i, data := range valueBundleData {
-		valueBundle := types.ValueBundle{
+	var reputerValueBundles types.LossBundles
+	for _, data := range valueBundleData {
+		valueBundle := &types.ValueBundle{
 			TopicId:             topicId,
 			Reputer:             data.reputer,
 			ReputerRequestNonce: reputerRequestNonce,
@@ -158,19 +158,10 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 			},
 			NaiveValue: alloraMath.MustNewDecFromString(data.combinedValue),
 		}
-		signature := s.SignValueBundle(&valueBundle, s.PrivKeys(i+5))
-		reputerValueBundles = append(reputerValueBundles, &types.ReputerValueBundle{
-			ValueBundle: &valueBundle,
-			Signature:   signature,
-			Pubkey:      s.PubKeyHexStr(i + 5),
-		})
+		reputerValueBundles = append(reputerValueBundles, valueBundle)
 	}
 
-	reputerLossBundles := types.ReputerValueBundles{
-		ReputerValueBundles: reputerValueBundles,
-	}
-
-	err := keeper.InsertActiveReputerLosses(s.Ctx(), topicId, blockHeight, reputerLossBundles)
+	err := keeper.InsertActiveReputerLosses(s.Ctx(), topicId, blockHeight, reputerValueBundles)
 	require.NoError(err)
 
 	// Set stakes

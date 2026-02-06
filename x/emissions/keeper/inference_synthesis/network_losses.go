@@ -2,9 +2,10 @@ package inferencesynthesis
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type RunningWeightedLoss struct {
@@ -65,7 +66,7 @@ func CalcNetworkLosses(
 	topicId uint64,
 	blockHeight int64,
 	stakesByReputer map[Worker]Stake,
-	reputerReportedLosses emissions.ReputerValueBundles,
+	reputerReportedLosses emissions.LossBundles,
 ) (emissions.ValueBundle, error) {
 	// Make map from inferer to their running weighted-average loss
 	runningWeightedCombinedLoss := RunningWeightedLoss{alloraMath.ZeroDec(), alloraMath.ZeroDec()}
@@ -77,147 +78,148 @@ func CalcNetworkLosses(
 	runningWeightedOneOutForecasterLosses := make(map[Worker]*RunningWeightedLoss)
 	runningWeightedOneInForecasterLosses := make(map[Worker]*RunningWeightedLoss)
 
-	for _, report := range reputerReportedLosses.ReputerValueBundles {
-		if report.ValueBundle != nil {
-			if report.ValueBundle.TopicId != topicId {
-				// Log error and continue instead of returning
-				ctx.Logger().Warn("Reputer bundle has incorrect topic ID",
-					"expected", topicId,
-					"actual", report.ValueBundle.TopicId,
-					"reputer", report.ValueBundle.Reputer)
-				continue
-			}
-			if report.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != blockHeight {
-				// Log error and continue instead of returning
-				ctx.Logger().Warn("Reputer bundle has incorrect block height",
-					"expected", blockHeight,
-					"actual", report.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-					"reputer", report.ValueBundle.Reputer)
-				continue
+	for _, report := range reputerReportedLosses {
+		if report == nil {
+			continue
+		}
+		if report.TopicId != topicId {
+			// Log error and continue instead of returning
+			ctx.Logger().Warn("Reputer bundle has incorrect topic ID",
+				"expected", topicId,
+				"actual", report.TopicId,
+				"reputer", report.Reputer)
+			continue
+		}
+		if report.ReputerRequestNonce.ReputerNonce.BlockHeight != blockHeight {
+			// Log error and continue instead of returning
+			ctx.Logger().Warn("Reputer bundle has incorrect block height",
+				"expected", blockHeight,
+				"actual", report.ReputerRequestNonce.ReputerNonce.BlockHeight,
+				"reputer", report.Reputer)
+			continue
+		}
+
+		stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.Reputer])
+		if err != nil {
+			// Log error and continue
+			ctx.Logger().Warn("Error converting stake to Dec",
+				"error", err,
+				"reputer", report.Reputer)
+			continue
+		}
+
+		// Update combined loss with reputer reported loss and stake
+		runningWeightedCombinedLoss, err = RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.CombinedValue)
+		if err != nil {
+			return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for next combined loss")
+		}
+
+		// Not all reputers may have reported losses on the same set of inferers => important that the code below doesn't assume that!
+		// Update inferer losses
+		for _, loss := range report.InfererValues {
+			if runningWeightedInfererLosses[loss.Worker] == nil {
+				runningWeightedInfererLosses[loss.Worker] = &RunningWeightedLoss{
+					UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+					SumWeight:                alloraMath.ZeroDec(),
+				}
 			}
 
-			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
+			nextAvg, err := RunningWeightedAvgUpdate(runningWeightedInfererLosses[loss.Worker], stakeAmount, loss.Value)
 			if err != nil {
-				// Log error and continue
-				ctx.Logger().Warn("Error converting stake to Dec",
-					"error", err,
-					"reputer", report.ValueBundle.Reputer)
-				continue
+				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for inferer")
+			}
+			runningWeightedInfererLosses[loss.Worker] = &nextAvg
+		}
+
+		// Update forecaster losses
+		for _, loss := range report.ForecasterValues {
+			if runningWeightedForecasterLosses[loss.Worker] == nil {
+				runningWeightedForecasterLosses[loss.Worker] = &RunningWeightedLoss{
+					UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+					SumWeight:                alloraMath.ZeroDec(),
+				}
 			}
 
-			// Update combined loss with reputer reported loss and stake
-			runningWeightedCombinedLoss, err = RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue)
+			nextAvg, err := RunningWeightedAvgUpdate(runningWeightedForecasterLosses[loss.Worker], stakeAmount, loss.Value)
 			if err != nil {
-				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for next combined loss")
+				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for forecaster")
 			}
+			runningWeightedForecasterLosses[loss.Worker] = &nextAvg
+		}
 
-			// Not all reputers may have reported losses on the same set of inferers => important that the code below doesn't assume that!
-			// Update inferer losses
-			for _, loss := range report.ValueBundle.InfererValues {
-				if runningWeightedInfererLosses[loss.Worker] == nil {
-					runningWeightedInfererLosses[loss.Worker] = &RunningWeightedLoss{
+		// Update naive loss
+		runningWeightedNaiveLoss, err = RunningWeightedAvgUpdate(&runningWeightedNaiveLoss, stakeAmount, report.NaiveValue)
+		if err != nil {
+			return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for naive loss: ")
+		}
+
+		// Update one-out inferer forecaster losses
+		for _, losses := range report.OneOutInfererForecasterValues {
+			for _, loss := range losses.OneOutInfererValues {
+				if runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] == nil {
+					// initialize first map
+					if runningWeightedOneOutInfererForecasterLosses[losses.Forecaster] == nil {
+						runningWeightedOneOutInfererForecasterLosses[losses.Forecaster] = make(map[Worker]*RunningWeightedLoss)
+					}
+					runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] = &RunningWeightedLoss{
 						UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
 						SumWeight:                alloraMath.ZeroDec(),
 					}
 				}
 
-				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedInfererLosses[loss.Worker], stakeAmount, loss.Value)
+				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker], stakeAmount, loss.Value)
 				if err != nil {
-					return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for inferer")
+					return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-out inferer forecaster")
 				}
-				runningWeightedInfererLosses[loss.Worker] = &nextAvg
+				runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] = &nextAvg
 			}
+		}
 
-			// Update forecaster losses
-			for _, loss := range report.ValueBundle.ForecasterValues {
-				if runningWeightedForecasterLosses[loss.Worker] == nil {
-					runningWeightedForecasterLosses[loss.Worker] = &RunningWeightedLoss{
-						UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
-						SumWeight:                alloraMath.ZeroDec(),
-					}
+		// Update one-out inferer losses
+		for _, loss := range report.OneOutInfererValues {
+			if runningWeightedOneOutInfererLosses[loss.Worker] == nil {
+				runningWeightedOneOutInfererLosses[loss.Worker] = &RunningWeightedLoss{
+					UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+					SumWeight:                alloraMath.ZeroDec(),
 				}
-
-				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedForecasterLosses[loss.Worker], stakeAmount, loss.Value)
-				if err != nil {
-					return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for forecaster")
-				}
-				runningWeightedForecasterLosses[loss.Worker] = &nextAvg
 			}
-
-			// Update naive loss
-			runningWeightedNaiveLoss, err = RunningWeightedAvgUpdate(&runningWeightedNaiveLoss, stakeAmount, report.ValueBundle.NaiveValue)
+			nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutInfererLosses[loss.Worker], stakeAmount, loss.Value)
 			if err != nil {
-				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for naive loss: ")
+				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-out inferer")
 			}
+			runningWeightedOneOutInfererLosses[loss.Worker] = &nextAvg
+		}
 
-			// Update one-out inferer forecaster losses
-			for _, losses := range report.ValueBundle.OneOutInfererForecasterValues {
-				for _, loss := range losses.OneOutInfererValues {
-					if runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] == nil {
-						// initialize first map
-						if runningWeightedOneOutInfererForecasterLosses[losses.Forecaster] == nil {
-							runningWeightedOneOutInfererForecasterLosses[losses.Forecaster] = make(map[Worker]*RunningWeightedLoss)
-						}
-						runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] = &RunningWeightedLoss{
-							UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
-							SumWeight:                alloraMath.ZeroDec(),
-						}
-					}
-
-					nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker], stakeAmount, loss.Value)
-					if err != nil {
-						return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-out inferer forecaster")
-					}
-					runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] = &nextAvg
+		// Update one-out forecaster losses
+		for _, loss := range report.OneOutForecasterValues {
+			if runningWeightedOneOutForecasterLosses[loss.Worker] == nil {
+				runningWeightedOneOutForecasterLosses[loss.Worker] = &RunningWeightedLoss{
+					UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+					SumWeight:                alloraMath.ZeroDec(),
 				}
 			}
 
-			// Update one-out inferer losses
-			for _, loss := range report.ValueBundle.OneOutInfererValues {
-				if runningWeightedOneOutInfererLosses[loss.Worker] == nil {
-					runningWeightedOneOutInfererLosses[loss.Worker] = &RunningWeightedLoss{
-						UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
-						SumWeight:                alloraMath.ZeroDec(),
-					}
+			nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutForecasterLosses[loss.Worker], stakeAmount, loss.Value)
+			if err != nil {
+				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-out forecaster")
+			}
+			runningWeightedOneOutForecasterLosses[loss.Worker] = &nextAvg
+		}
+
+		// Update one-in forecaster losses
+		for _, loss := range report.OneInForecasterValues {
+			if runningWeightedOneInForecasterLosses[loss.Worker] == nil {
+				runningWeightedOneInForecasterLosses[loss.Worker] = &RunningWeightedLoss{
+					UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+					SumWeight:                alloraMath.ZeroDec(),
 				}
-				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutInfererLosses[loss.Worker], stakeAmount, loss.Value)
-				if err != nil {
-					return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-out inferer")
-				}
-				runningWeightedOneOutInfererLosses[loss.Worker] = &nextAvg
 			}
 
-			// Update one-out forecaster losses
-			for _, loss := range report.ValueBundle.OneOutForecasterValues {
-				if runningWeightedOneOutForecasterLosses[loss.Worker] == nil {
-					runningWeightedOneOutForecasterLosses[loss.Worker] = &RunningWeightedLoss{
-						UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
-						SumWeight:                alloraMath.ZeroDec(),
-					}
-				}
-
-				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutForecasterLosses[loss.Worker], stakeAmount, loss.Value)
-				if err != nil {
-					return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-out forecaster")
-				}
-				runningWeightedOneOutForecasterLosses[loss.Worker] = &nextAvg
+			nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneInForecasterLosses[loss.Worker], stakeAmount, loss.Value)
+			if err != nil {
+				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-in forecaster")
 			}
-
-			// Update one-in forecaster losses
-			for _, loss := range report.ValueBundle.OneInForecasterValues {
-				if runningWeightedOneInForecasterLosses[loss.Worker] == nil {
-					runningWeightedOneInForecasterLosses[loss.Worker] = &RunningWeightedLoss{
-						UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
-						SumWeight:                alloraMath.ZeroDec(),
-					}
-				}
-
-				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneInForecasterLosses[loss.Worker], stakeAmount, loss.Value)
-				if err != nil {
-					return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-in forecaster")
-				}
-				runningWeightedOneInForecasterLosses[loss.Worker] = &nextAvg
-			}
+			runningWeightedOneInForecasterLosses[loss.Worker] = &nextAvg
 		}
 	}
 

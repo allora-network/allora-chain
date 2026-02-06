@@ -10,6 +10,7 @@ import "emissions/v3/score.proto";
 import "emissions/v3/stake.proto";
 import "emissions/v3/types.proto";
 import "emissions/v3/worker.proto";
+import "emissions/v3/inference.proto";
 import "emissions/v9/params.proto";
 import "emissions/v9/topic.proto";
 import "gogoproto/gogo.proto";
@@ -436,7 +437,7 @@ message TopicIdBlockHeightForecasts {
 message TopicIdBlockHeightReputerValueBundles {
   uint64 topic_id = 1;
   int64 block_height = 2;
-  emissions.v3.ReputerValueBundles reputer_value_bundles = 3;
+  repeated emissions.v3.ValueBundle reputer_value_bundles = 3;
 }
 
 message TopicIdBlockHeightValueBundles {
@@ -486,5 +487,5 @@ message BlockHeightTopicIdWeightPair {
 message TopicIdReputerReputerValueBundle {
   uint64 topic_id = 1;
   string reputer = 2;
-  emissions.v3.ReputerValueBundle reputer_value_bundle = 3;
+  emissions.v3.ValueBundle reputer_value_bundle = 3;
 }

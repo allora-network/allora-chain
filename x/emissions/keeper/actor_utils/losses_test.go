@@ -155,22 +155,16 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			{Worker: forecaster5, Value: alloraMath.NewDecFromInt64(1300)}, // Should be filtered out
 		},
 	}
-	signature := a.signValueBundle(valueBundle, a.PrivKeys(40))
-	reputerValueBundle := &emissionstypes.ReputerValueBundle{
-		Signature:   signature,
-		Pubkey:      a.PubKeyHexStr(40),
-		ValueBundle: valueBundle,
-	}
 
-	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(a.EmissionsKeeper(), a.Ctx(), 1, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, reputerValueBundle)
+	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(a.EmissionsKeeper(), a.Ctx(), 1, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, valueBundle)
 	a.Require().NoError(err)
 
 	// Validate the bundle
-	a.Require().Len(acceptedBundle.ValueBundle.InfererValues, 2)
-	a.Require().Len(acceptedBundle.ValueBundle.ForecasterValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutInfererValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutForecasterValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutInfererForecasterValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutInfererForecasterValues[0].OneOutInfererValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneInForecasterValues, 1)
+	a.Require().Len(acceptedBundle.InfererValues, 2)
+	a.Require().Len(acceptedBundle.ForecasterValues, 1)
+	a.Require().Len(acceptedBundle.OneOutInfererValues, 1)
+	a.Require().Len(acceptedBundle.OneOutForecasterValues, 1)
+	a.Require().Len(acceptedBundle.OneOutInfererForecasterValues, 1)
+	a.Require().Len(acceptedBundle.OneOutInfererForecasterValues[0].OneOutInfererValues, 1)
+	a.Require().Len(acceptedBundle.OneInForecasterValues, 1)
 }

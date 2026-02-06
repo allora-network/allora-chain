@@ -70,127 +70,6 @@ func (m *TimestampedValue) GetBlockHeight() int64 {
 	return 0
 }
 
-type Inference struct {
-	TopicId     uint64                                          `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64                                           `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	Inferer     string                                          `protobuf:"bytes,3,opt,name=inferer,proto3" json:"inferer,omitempty"`
-	Value       github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,4,opt,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"value"`
-	ExtraData   []byte                                          `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
-	Proof       string                                          `protobuf:"bytes,6,opt,name=proof,proto3" json:"proof,omitempty"`
-}
-
-func (m *Inference) Reset()         { *m = Inference{} }
-func (m *Inference) String() string { return proto.CompactTextString(m) }
-func (*Inference) ProtoMessage()    {}
-func (*Inference) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{1}
-}
-func (m *Inference) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Inference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Inference.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Inference) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Inference.Merge(m, src)
-}
-func (m *Inference) XXX_Size() int {
-	return m.Size()
-}
-func (m *Inference) XXX_DiscardUnknown() {
-	xxx_messageInfo_Inference.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Inference proto.InternalMessageInfo
-
-func (m *Inference) GetTopicId() uint64 {
-	if m != nil {
-		return m.TopicId
-	}
-	return 0
-}
-
-func (m *Inference) GetBlockHeight() int64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *Inference) GetInferer() string {
-	if m != nil {
-		return m.Inferer
-	}
-	return ""
-}
-
-func (m *Inference) GetExtraData() []byte {
-	if m != nil {
-		return m.ExtraData
-	}
-	return nil
-}
-
-func (m *Inference) GetProof() string {
-	if m != nil {
-		return m.Proof
-	}
-	return ""
-}
-
-type Inferences struct {
-	Inferences []*Inference `protobuf:"bytes,1,rep,name=inferences,proto3" json:"inferences,omitempty"`
-}
-
-func (m *Inferences) Reset()         { *m = Inferences{} }
-func (m *Inferences) String() string { return proto.CompactTextString(m) }
-func (*Inferences) ProtoMessage()    {}
-func (*Inferences) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{2}
-}
-func (m *Inferences) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *Inferences) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_Inferences.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *Inferences) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Inferences.Merge(m, src)
-}
-func (m *Inferences) XXX_Size() int {
-	return m.Size()
-}
-func (m *Inferences) XXX_DiscardUnknown() {
-	xxx_messageInfo_Inferences.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Inferences proto.InternalMessageInfo
-
-func (m *Inferences) GetInferences() []*Inference {
-	if m != nil {
-		return m.Inferences
-	}
-	return nil
-}
-
 type ForecastElement struct {
 	Inferer string                                          `protobuf:"bytes,1,opt,name=inferer,proto3" json:"inferer,omitempty"`
 	Value   github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,2,opt,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"value"`
@@ -200,7 +79,7 @@ func (m *ForecastElement) Reset()         { *m = ForecastElement{} }
 func (m *ForecastElement) String() string { return proto.CompactTextString(m) }
 func (*ForecastElement) ProtoMessage()    {}
 func (*ForecastElement) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{3}
+	return fileDescriptor_60e5359cc895864b, []int{1}
 }
 func (m *ForecastElement) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -248,7 +127,7 @@ func (m *Forecast) Reset()         { *m = Forecast{} }
 func (m *Forecast) String() string { return proto.CompactTextString(m) }
 func (*Forecast) ProtoMessage()    {}
 func (*Forecast) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{4}
+	return fileDescriptor_60e5359cc895864b, []int{2}
 }
 func (m *Forecast) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -320,7 +199,7 @@ func (m *Forecasts) Reset()         { *m = Forecasts{} }
 func (m *Forecasts) String() string { return proto.CompactTextString(m) }
 func (*Forecasts) ProtoMessage()    {}
 func (*Forecasts) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{5}
+	return fileDescriptor_60e5359cc895864b, []int{3}
 }
 func (m *Forecasts) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -365,7 +244,7 @@ func (m *InferenceForecastBundle) Reset()         { *m = InferenceForecastBundle
 func (m *InferenceForecastBundle) String() string { return proto.CompactTextString(m) }
 func (*InferenceForecastBundle) ProtoMessage()    {}
 func (*InferenceForecastBundle) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{6}
+	return fileDescriptor_60e5359cc895864b, []int{4}
 }
 func (m *InferenceForecastBundle) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -421,7 +300,7 @@ func (m *WorkerDataBundle) Reset()         { *m = WorkerDataBundle{} }
 func (m *WorkerDataBundle) String() string { return proto.CompactTextString(m) }
 func (*WorkerDataBundle) ProtoMessage()    {}
 func (*WorkerDataBundle) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{7}
+	return fileDescriptor_60e5359cc895864b, []int{5}
 }
 func (m *WorkerDataBundle) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -500,7 +379,7 @@ func (m *WorkerDataBundles) Reset()         { *m = WorkerDataBundles{} }
 func (m *WorkerDataBundles) String() string { return proto.CompactTextString(m) }
 func (*WorkerDataBundles) ProtoMessage()    {}
 func (*WorkerDataBundles) Descriptor() ([]byte, []int) {
-	return fileDescriptor_60e5359cc895864b, []int{8}
+	return fileDescriptor_60e5359cc895864b, []int{6}
 }
 func (m *WorkerDataBundles) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -538,8 +417,6 @@ func (m *WorkerDataBundles) GetWorkerDataBundles() []*WorkerDataBundle {
 
 func init() {
 	proto.RegisterType((*TimestampedValue)(nil), "emissions.v3.TimestampedValue")
-	proto.RegisterType((*Inference)(nil), "emissions.v3.Inference")
-	proto.RegisterType((*Inferences)(nil), "emissions.v3.Inferences")
 	proto.RegisterType((*ForecastElement)(nil), "emissions.v3.ForecastElement")
 	proto.RegisterType((*Forecast)(nil), "emissions.v3.Forecast")
 	proto.RegisterType((*Forecasts)(nil), "emissions.v3.Forecasts")
@@ -551,48 +428,45 @@ func init() {
 func init() { proto.RegisterFile("emissions/v3/worker.proto", fileDescriptor_60e5359cc895864b) }
 
 var fileDescriptor_60e5359cc895864b = []byte{
-	// 647 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x55, 0x4f, 0x4f, 0x13, 0x41,
-	0x14, 0xef, 0xd0, 0x16, 0xe8, 0x83, 0x44, 0x18, 0x08, 0x2c, 0x24, 0x2c, 0xb5, 0x09, 0x49, 0x3d,
-	0xd8, 0x4d, 0x40, 0x83, 0xf1, 0x26, 0x01, 0x23, 0x26, 0x92, 0x38, 0x1a, 0x4d, 0xbc, 0x6c, 0xa6,
-	0xdb, 0x69, 0x3b, 0xa1, 0xdd, 0xd9, 0xec, 0x4c, 0xf9, 0x73, 0xf3, 0xec, 0xc9, 0x8f, 0xe0, 0xa7,
-	0x31, 0x1c, 0x39, 0xaa, 0x07, 0x62, 0xe0, 0xe2, 0xc5, 0xef, 0x60, 0x76, 0x76, 0x76, 0x97, 0x5d,
-	0xac, 0x9a, 0xc8, 0x6d, 0xdf, 0xdb, 0x5f, 0xdf, 0xfb, 0xfd, 0xd9, 0x99, 0xc2, 0x0a, 0x1b, 0x72,
-	0x29, 0xb9, 0xf0, 0xa5, 0x73, 0xb4, 0xe5, 0x1c, 0x8b, 0xf0, 0x90, 0x85, 0xad, 0x20, 0x14, 0x4a,
-	0xe0, 0xd9, 0xf4, 0x55, 0xeb, 0x68, 0x6b, 0xd5, 0xca, 0x01, 0x7d, 0xe1, 0x7b, 0x2c, 0xc6, 0xad,
-	0x2e, 0xf6, 0x44, 0x4f, 0xe8, 0x47, 0x27, 0x7a, 0x8a, 0xbb, 0x8d, 0x0f, 0x08, 0xe6, 0x5e, 0xf3,
-	0x21, 0x93, 0x8a, 0x0e, 0x03, 0xd6, 0x79, 0x43, 0x07, 0x23, 0x86, 0xef, 0xc2, 0x6c, 0x7b, 0x20,
-	0xbc, 0x43, 0xb7, 0xcf, 0x78, 0xaf, 0xaf, 0x2c, 0x54, 0x47, 0xcd, 0x32, 0x99, 0xd1, 0xbd, 0x67,
-	0xba, 0x85, 0x5f, 0x40, 0xf5, 0x28, 0xc2, 0x5a, 0x13, 0x75, 0xd4, 0xac, 0xed, 0x6c, 0x9f, 0x5d,
-	0xac, 0x97, 0xbe, 0x5d, 0xac, 0x3b, 0x3d, 0xae, 0xfa, 0xa3, 0x76, 0xcb, 0x13, 0x43, 0x87, 0x0e,
-	0x06, 0x22, 0xa4, 0xf7, 0x7d, 0xa6, 0x22, 0xbe, 0x49, 0xe9, 0xf5, 0x29, 0xf7, 0x9d, 0x21, 0x55,
-	0xfd, 0xd6, 0x2e, 0xf3, 0x48, 0x3c, 0xe5, 0x71, 0xe5, 0xc7, 0xa7, 0x75, 0xd4, 0xf8, 0x89, 0xa0,
-	0xb6, 0xef, 0x77, 0x59, 0xc8, 0x7c, 0x8f, 0xe1, 0x15, 0x98, 0x56, 0x22, 0xe0, 0x9e, 0xcb, 0x3b,
-	0x9a, 0x41, 0x85, 0x4c, 0xe9, 0x7a, 0xbf, 0x73, 0x83, 0xe0, 0xc4, 0x4d, 0x82, 0x16, 0x4c, 0x71,
-	0x3d, 0x2a, 0xb4, 0xca, 0x11, 0x45, 0x92, 0x94, 0x19, 0xf5, 0xca, 0x6d, 0x50, 0xc7, 0x6b, 0x00,
-	0xec, 0x44, 0x85, 0xd4, 0xed, 0x50, 0x45, 0xad, 0x6a, 0x1d, 0x35, 0x67, 0x49, 0x4d, 0x77, 0x76,
-	0xa9, 0xa2, 0x78, 0x11, 0xaa, 0x41, 0x28, 0x44, 0xd7, 0x9a, 0xd4, 0x2c, 0xe2, 0xc2, 0xe8, 0xdd,
-	0x03, 0x48, 0xe5, 0x4a, 0xbc, 0x0d, 0xc0, 0xd3, 0xca, 0x42, 0xf5, 0x72, 0x73, 0x66, 0x73, 0xb9,
-	0x75, 0x3d, 0xdd, 0x56, 0x8a, 0x26, 0xd7, 0xa0, 0x8d, 0xf7, 0x08, 0xee, 0x3c, 0x15, 0x21, 0xf3,
-	0xa8, 0x54, 0x7b, 0x03, 0x36, 0x64, 0x7e, 0x4e, 0x3e, 0x1a, 0x23, 0xff, 0x36, 0x93, 0xfb, 0x8a,
-	0x60, 0x3a, 0xa1, 0xf0, 0x9f, 0xc1, 0xd9, 0x00, 0x5d, 0x33, 0x29, 0xcd, 0xee, 0x5a, 0x07, 0x3f,
-	0x87, 0xf9, 0xa4, 0x72, 0x59, 0xac, 0x56, 0x5a, 0x15, 0xed, 0xd6, 0x5a, 0xde, 0xad, 0x82, 0x27,
-	0x64, 0xae, 0x9b, 0x6f, 0xc8, 0xbf, 0x64, 0x67, 0xb4, 0x3d, 0x81, 0x5a, 0x32, 0x49, 0xe2, 0x07,
-	0x50, 0x4b, 0xa6, 0x24, 0x19, 0x2d, 0xfd, 0x7e, 0x2b, 0xc9, 0x80, 0xd1, 0x29, 0x5b, 0x4e, 0xb3,
-	0x4b, 0x00, 0x3b, 0x23, 0xbf, 0x33, 0x60, 0xf8, 0x21, 0xd4, 0xd2, 0x2c, 0xb5, 0x5d, 0x7f, 0x48,
-	0x3d, 0x43, 0xe2, 0x4d, 0x98, 0x4e, 0xe6, 0x6b, 0x17, 0xc7, 0xf3, 0x48, 0x71, 0x46, 0xcf, 0xe7,
-	0x09, 0x98, 0x7b, 0xab, 0x6f, 0x90, 0x48, 0xa4, 0x61, 0xb1, 0x04, 0x93, 0xf1, 0xad, 0x62, 0x3e,
-	0x17, 0x53, 0xe1, 0x7b, 0x50, 0xd5, 0x97, 0x88, 0xd9, 0xb1, 0x90, 0xdf, 0x71, 0x10, 0xbd, 0x22,
-	0x31, 0x22, 0x17, 0x7b, 0x39, 0x1f, 0xbb, 0x07, 0xab, 0x29, 0x73, 0x37, 0xb5, 0xc5, 0x6d, 0xeb,
-	0xdd, 0xfa, 0x1c, 0xce, 0x6c, 0x6e, 0x8c, 0x11, 0x9d, 0xb7, 0x8b, 0x58, 0xbc, 0xf8, 0x42, 0x1a,
-	0x09, 0x2f, 0x61, 0x23, 0x3b, 0x14, 0x37, 0xb6, 0xb8, 0x92, 0xf7, 0x7c, 0xaa, 0x46, 0x21, 0x33,
-	0x39, 0x37, 0x32, 0x70, 0x61, 0xd2, 0xab, 0x04, 0x19, 0xb9, 0x12, 0x8c, 0xda, 0x87, 0xec, 0xd4,
-	0x9c, 0x5e, 0x53, 0x19, 0x23, 0x3d, 0x98, 0x2f, 0xfa, 0x28, 0xf1, 0x01, 0x2c, 0xc4, 0xd6, 0xe9,
-	0x6f, 0xca, 0x2c, 0x4f, 0x3e, 0x15, 0x3b, 0xaf, 0xb1, 0xf8, 0x6b, 0x32, 0x7f, 0x5c, 0x9c, 0xb7,
-	0x43, 0xce, 0x2e, 0x6d, 0x74, 0x7e, 0x69, 0xa3, 0xef, 0x97, 0x36, 0xfa, 0x78, 0x65, 0x97, 0xce,
-	0xaf, 0xec, 0xd2, 0x97, 0x2b, 0xbb, 0xf4, 0xee, 0xd1, 0x3f, 0x9e, 0xd8, 0x13, 0x27, 0xfb, 0x4f,
-	0x50, 0xa7, 0x01, 0x93, 0xed, 0x49, 0x7d, 0xf7, 0x6f, 0xfd, 0x0a, 0x00, 0x00, 0xff, 0xff, 0xae,
-	0x9e, 0x56, 0xa4, 0x56, 0x06, 0x00, 0x00,
+	// 606 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x54, 0x4f, 0x6f, 0xd3, 0x4e,
+	0x10, 0xcd, 0x36, 0xe9, 0x1f, 0x4f, 0x2b, 0xfd, 0xda, 0xed, 0x4f, 0xad, 0x1b, 0x51, 0x27, 0x44,
+	0xaa, 0x14, 0x0e, 0xd8, 0x52, 0x02, 0x02, 0x71, 0x23, 0x2a, 0x88, 0x22, 0x51, 0x89, 0x05, 0x81,
+	0xc4, 0xc5, 0xda, 0x38, 0x9b, 0xc4, 0x8a, 0xed, 0x8d, 0xbc, 0x9b, 0xb4, 0xbd, 0x71, 0xe6, 0xc4,
+	0x47, 0xe0, 0xd3, 0xa0, 0x1e, 0x7b, 0x04, 0x0e, 0x15, 0x4a, 0x2e, 0x7c, 0x0c, 0xe4, 0xf5, 0x9f,
+	0xd4, 0x0e, 0x95, 0xb8, 0x70, 0xf3, 0xcc, 0x3c, 0xbf, 0x99, 0xf7, 0x76, 0x76, 0xe1, 0x80, 0xf9,
+	0xae, 0x10, 0x2e, 0x0f, 0x84, 0x35, 0x6d, 0x5b, 0x67, 0x3c, 0x1c, 0xb1, 0xd0, 0x1c, 0x87, 0x5c,
+	0x72, 0xbc, 0x95, 0x95, 0xcc, 0x69, 0xbb, 0xaa, 0xe7, 0x80, 0x01, 0x0f, 0x1c, 0x16, 0xe3, 0xaa,
+	0x77, 0x72, 0x15, 0x37, 0xe8, 0xb3, 0x90, 0x2d, 0xaa, 0xff, 0x0f, 0xf8, 0x80, 0xab, 0x4f, 0x2b,
+	0xfa, 0x8a, 0xb3, 0x8d, 0x4f, 0x08, 0xb6, 0xdf, 0xba, 0x3e, 0x13, 0x92, 0xfa, 0x63, 0xd6, 0x7b,
+	0x47, 0xbd, 0x09, 0xc3, 0x77, 0x61, 0xab, 0xeb, 0x71, 0x67, 0x64, 0x0f, 0x99, 0x3b, 0x18, 0x4a,
+	0x1d, 0xd5, 0x51, 0xb3, 0x4c, 0x36, 0x55, 0xee, 0x85, 0x4a, 0xe1, 0x57, 0xb0, 0x3a, 0x8d, 0xb0,
+	0xfa, 0x4a, 0x1d, 0x35, 0xb5, 0xce, 0xa3, 0xcb, 0xeb, 0x5a, 0xe9, 0xc7, 0x75, 0xcd, 0x1a, 0xb8,
+	0x72, 0x38, 0xe9, 0x9a, 0x0e, 0xf7, 0x2d, 0xea, 0x79, 0x3c, 0xa4, 0xf7, 0x03, 0x26, 0x23, 0x35,
+	0x69, 0xe8, 0x0c, 0xa9, 0x1b, 0x58, 0x3e, 0x95, 0x43, 0xf3, 0x98, 0x39, 0x24, 0x66, 0x79, 0x52,
+	0xf9, 0xf5, 0xa5, 0x86, 0x1a, 0x1f, 0x11, 0xfc, 0xf7, 0x9c, 0x87, 0xcc, 0xa1, 0x42, 0x3e, 0xf3,
+	0x98, 0xcf, 0x02, 0x89, 0x75, 0x58, 0x8f, 0x95, 0x84, 0x6a, 0x0c, 0x8d, 0xa4, 0xe1, 0xbf, 0x19,
+	0xe1, 0x3b, 0x82, 0x8d, 0x74, 0x04, 0x7c, 0x00, 0x1b, 0x92, 0x8f, 0x5d, 0xc7, 0x76, 0x7b, 0xaa,
+	0x79, 0x85, 0xac, 0xab, 0xf8, 0xa4, 0xb7, 0x64, 0xd1, 0xca, 0xb2, 0x45, 0x06, 0x40, 0x3f, 0x61,
+	0x62, 0xa1, 0x5e, 0x56, 0xc3, 0xdf, 0xc8, 0xe0, 0x97, 0xb0, 0x93, 0x46, 0x36, 0x8b, 0xd5, 0x0a,
+	0xbd, 0x52, 0x2f, 0x37, 0x37, 0x5b, 0x87, 0xe6, 0xcd, 0x23, 0x37, 0x0b, 0x9e, 0x90, 0xed, 0x7e,
+	0x3e, 0x21, 0xf0, 0x21, 0x00, 0x3b, 0x97, 0x21, 0xb5, 0x7b, 0x54, 0x52, 0x7d, 0xb5, 0x8e, 0x9a,
+	0x5b, 0x44, 0x53, 0x99, 0x63, 0x2a, 0x69, 0xa2, 0xed, 0x29, 0x68, 0x29, 0x93, 0xc0, 0x0f, 0x40,
+	0x4b, 0x59, 0x84, 0x8e, 0x54, 0xd7, 0xbd, 0x3f, 0x77, 0x25, 0x0b, 0x60, 0xb4, 0x2e, 0xfb, 0x27,
+	0xe9, 0x62, 0xa5, 0x80, 0xce, 0x24, 0xe8, 0x79, 0x0c, 0x3f, 0x04, 0x2d, 0xdb, 0x39, 0x65, 0xd7,
+	0x66, 0x6b, 0x3f, 0xcf, 0x98, 0xfd, 0x49, 0x16, 0x48, 0xdc, 0x82, 0x8d, 0x94, 0x5f, 0xb9, 0x78,
+	0xfb, 0x1c, 0x19, 0x2e, 0xd1, 0xf3, 0x75, 0x05, 0xb6, 0xdf, 0xab, 0x8b, 0x12, 0x89, 0x4c, 0xa6,
+	0xd8, 0x83, 0xb5, 0xf8, 0xf2, 0x24, 0xeb, 0x92, 0x44, 0xf8, 0x1e, 0xac, 0xaa, 0xbb, 0x92, 0xf4,
+	0xd8, 0xcd, 0xf7, 0x38, 0x8d, 0x4a, 0x24, 0x46, 0xe4, 0x8e, 0xbd, 0x9c, 0x3f, 0x76, 0x07, 0xaa,
+	0xd9, 0xe4, 0x76, 0x66, 0x8b, 0xdd, 0x55, 0xbd, 0xf5, 0x8a, 0xa2, 0x3e, 0xba, 0x45, 0x74, 0xde,
+	0x2e, 0xa2, 0xbb, 0xc5, 0x82, 0x48, 0x24, 0xbc, 0x86, 0xa3, 0xac, 0x26, 0x96, 0xba, 0xd8, 0xc2,
+	0x1d, 0x04, 0x54, 0x4e, 0x42, 0x96, 0x9c, 0x73, 0x63, 0x01, 0x2e, 0x30, 0xbd, 0x49, 0x91, 0x91,
+	0x2b, 0xe3, 0x49, 0x77, 0xc4, 0x2e, 0xf4, 0xb5, 0xd8, 0x95, 0x38, 0x4a, 0x8c, 0x74, 0x60, 0xa7,
+	0xe8, 0xa3, 0xc0, 0xa7, 0xb0, 0x1b, 0x5b, 0xa7, 0x76, 0x2a, 0x69, 0x9e, 0xae, 0x8a, 0x91, 0xd7,
+	0x58, 0xfc, 0x9b, 0xec, 0x9c, 0x15, 0xf9, 0x3a, 0xe4, 0x72, 0x66, 0xa0, 0xab, 0x99, 0x81, 0x7e,
+	0xce, 0x0c, 0xf4, 0x79, 0x6e, 0x94, 0xae, 0xe6, 0x46, 0xe9, 0xdb, 0xdc, 0x28, 0x7d, 0x78, 0xfc,
+	0x97, 0x37, 0xf6, 0xdc, 0x5a, 0x3c, 0x70, 0xf2, 0x62, 0xcc, 0x44, 0x77, 0x4d, 0x3d, 0x62, 0xed,
+	0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xfe, 0xac, 0xcd, 0xbc, 0x3d, 0x05, 0x00, 0x00,
 }
 
 func (this *TimestampedValue) Equal(that interface{}) bool {
@@ -618,45 +492,6 @@ func (this *TimestampedValue) Equal(that interface{}) bool {
 		return false
 	}
 	if !this.Value.Equal(that1.Value) {
-		return false
-	}
-	return true
-}
-func (this *Inference) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*Inference)
-	if !ok {
-		that2, ok := that.(Inference)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.TopicId != that1.TopicId {
-		return false
-	}
-	if this.BlockHeight != that1.BlockHeight {
-		return false
-	}
-	if this.Inferer != that1.Inferer {
-		return false
-	}
-	if !this.Value.Equal(that1.Value) {
-		return false
-	}
-	if !bytes.Equal(this.ExtraData, that1.ExtraData) {
-		return false
-	}
-	if this.Proof != that1.Proof {
 		return false
 	}
 	return true
@@ -829,107 +664,6 @@ func (m *TimestampedValue) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintWorker(dAtA, i, uint64(m.BlockHeight))
 		i--
 		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Inference) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Inference) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *Inference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Proof) > 0 {
-		i -= len(m.Proof)
-		copy(dAtA[i:], m.Proof)
-		i = encodeVarintWorker(dAtA, i, uint64(len(m.Proof)))
-		i--
-		dAtA[i] = 0x32
-	}
-	if len(m.ExtraData) > 0 {
-		i -= len(m.ExtraData)
-		copy(dAtA[i:], m.ExtraData)
-		i = encodeVarintWorker(dAtA, i, uint64(len(m.ExtraData)))
-		i--
-		dAtA[i] = 0x2a
-	}
-	{
-		size := m.Value.Size()
-		i -= size
-		if _, err := m.Value.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintWorker(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x22
-	if len(m.Inferer) > 0 {
-		i -= len(m.Inferer)
-		copy(dAtA[i:], m.Inferer)
-		i = encodeVarintWorker(dAtA, i, uint64(len(m.Inferer)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintWorker(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.TopicId != 0 {
-		i = encodeVarintWorker(dAtA, i, uint64(m.TopicId))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *Inferences) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *Inferences) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *Inferences) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Inferences) > 0 {
-		for iNdEx := len(m.Inferences) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Inferences[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintWorker(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
 	}
 	return len(dAtA) - i, nil
 }
@@ -1254,50 +988,6 @@ func (m *TimestampedValue) Size() (n int) {
 	return n
 }
 
-func (m *Inference) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.TopicId != 0 {
-		n += 1 + sovWorker(uint64(m.TopicId))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovWorker(uint64(m.BlockHeight))
-	}
-	l = len(m.Inferer)
-	if l > 0 {
-		n += 1 + l + sovWorker(uint64(l))
-	}
-	l = m.Value.Size()
-	n += 1 + l + sovWorker(uint64(l))
-	l = len(m.ExtraData)
-	if l > 0 {
-		n += 1 + l + sovWorker(uint64(l))
-	}
-	l = len(m.Proof)
-	if l > 0 {
-		n += 1 + l + sovWorker(uint64(l))
-	}
-	return n
-}
-
-func (m *Inferences) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Inferences) > 0 {
-		for _, e := range m.Inferences {
-			l = e.Size()
-			n += 1 + l + sovWorker(uint64(l))
-		}
-	}
-	return n
-}
-
 func (m *ForecastElement) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1506,310 +1196,6 @@ func (m *TimestampedValue) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipWorker(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthWorker
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Inference) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowWorker
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Inference: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Inference: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-			}
-			m.TopicId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWorker
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TopicId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWorker
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Inferer", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWorker
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthWorker
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthWorker
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Inferer = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWorker
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthWorker
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthWorker
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExtraData", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWorker
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthWorker
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthWorker
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ExtraData = append(m.ExtraData[:0], dAtA[iNdEx:postIndex]...)
-			if m.ExtraData == nil {
-				m.ExtraData = []byte{}
-			}
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Proof", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWorker
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthWorker
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthWorker
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Proof = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipWorker(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthWorker
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *Inferences) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowWorker
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: Inferences: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Inferences: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Inferences", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowWorker
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthWorker
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthWorker
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Inferences = append(m.Inferences, &Inference{})
-			if err := m.Inferences[len(m.Inferences)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
