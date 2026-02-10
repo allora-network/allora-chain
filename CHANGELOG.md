@@ -69,6 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* [#910](https://github.com/allora-network/allora-chain/pull/910) Regret norm to use MAD
+
 ### Deprecated
 
 ### Removed
