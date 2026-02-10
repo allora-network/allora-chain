@@ -13,20 +13,21 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// args for calcWeightsGivenWorkers function
+// CalcWeightsGivenWorkersArgs holds inputs for CalcWeightsGivenWorkers.
 type CalcWeightsGivenWorkersArgs struct {
-	Logger             log.Logger
-	Inferers           []Worker
-	Forecasters        []Worker
-	InfererToRegret    map[Worker]*alloraMath.Dec
-	ForecasterToRegret map[Worker]*alloraMath.Dec
-	EpsilonTopic       alloraMath.Dec
-	PNorm              alloraMath.Dec
-	CNorm              alloraMath.Dec
-	StdDevPlusEpsilon  alloraMath.Dec
+	Logger                 log.Logger
+	Inferers               []Worker
+	Forecasters            []Worker
+	InfererToRegret        map[Worker]*alloraMath.Dec
+	ForecasterToRegret     map[Worker]*alloraMath.Dec
+	EpsilonTopic           alloraMath.Dec
+	PNorm                  alloraMath.Dec
+	CNorm                  alloraMath.Dec
+	RegretScalePlusEpsilon alloraMath.Dec
 }
 
-type CalcRegretStdDevFilteredByWeightsArgs struct {
+// CalcRegretScaleFilteredByWeightsArgs holds inputs for CalcRegretScaleFilteredByWeights.
+type CalcRegretScaleFilteredByWeightsArgs struct {
 	Ctx                 sdk.Context
 	K                   *keeper.Keeper
 	Logger              log.Logger
@@ -82,10 +83,10 @@ func cachedExp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
 	return result, nil
 }
 
-// Calculates the MAD-based scale (scaled to match stddev under normality) of the regrets provided plus epsilon.
-// It uses previous epoch's weights to filter the regrets of workers that had a negligible weight.
-// If there are less than 2 non-negligible weights, it uses all regrets.
-func CalcRegretStdDevFilteredByWeights(args CalcRegretStdDevFilteredByWeightsArgs) (alloraMath.Dec, error) {
+// CalcRegretScaleFilteredByWeights calculates the MAD-based scale (scaled to match stddev under normality)
+// of the regrets provided plus epsilon. It uses previous epoch's weights to filter the regrets of workers
+// that had a negligible weight. If there are less than 2 non-negligible weights, it uses all regrets.
+func CalcRegretScaleFilteredByWeights(args CalcRegretScaleFilteredByWeightsArgs) (alloraMath.Dec, error) {
 	// Combine all weights and regrets
 	var filteredRegrets []alloraMath.Dec
 	nonNegligibleCount := 0
@@ -128,13 +129,14 @@ func CalcRegretStdDevFilteredByWeights(args CalcRegretStdDevFilteredByWeightsArg
 		if err != nil {
 			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error gathering worker regrets")
 		}
-		return CalcStdDevPlusEpsilon(regrets, args.EpsilonTopic)
+		return CalcRegretScalePlusEpsilon(regrets, args.EpsilonTopic)
 	}
-	return CalcStdDevPlusEpsilon(filteredRegrets, args.EpsilonTopic)
+	return CalcRegretScalePlusEpsilon(filteredRegrets, args.EpsilonTopic)
 }
 
-// Calculates the MAD-based scale (scaled to match stddev under normality) of the regrets provided plus epsilon.
-func CalcStdDevPlusEpsilon(regrets []alloraMath.Dec, epsilonTopic alloraMath.Dec) (alloraMath.Dec, error) {
+// CalcRegretScalePlusEpsilon calculates the MAD-based scale (scaled to match stddev under normality)
+// of the regrets provided plus epsilon.
+func CalcRegretScalePlusEpsilon(regrets []alloraMath.Dec, epsilonTopic alloraMath.Dec) (alloraMath.Dec, error) {
 	// Calc MAD of regrets, scaled to match stddev under normality, + epsilon
 	// madToStdDevFactor * MAD(R_ijk) + ε
 	regretsCopy := append([]alloraMath.Dec(nil), regrets...)
@@ -195,14 +197,14 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 	}
 
 	var regretScalePlusEpsilon alloraMath.Dec
-	if args.StdDevPlusEpsilon.Gt(alloraMath.ZeroDec()) {
-		regretScalePlusEpsilon = args.StdDevPlusEpsilon
+	if args.RegretScalePlusEpsilon.Gt(alloraMath.ZeroDec()) {
+		regretScalePlusEpsilon = args.RegretScalePlusEpsilon
 	} else {
 		args.Logger.Debug("CalcWeightsGivenWorkers(): regretScalePlusEpsilon is not provided, calculating it")
 		// Calc MAD-based scale of regrets + epsilon
 		// madToStdDevFactor * MAD(R_ijk) + ε
 		var err error
-		regretScalePlusEpsilon, err = CalcStdDevPlusEpsilon(regrets, args.EpsilonTopic)
+		regretScalePlusEpsilon, err = CalcRegretScalePlusEpsilon(regrets, args.EpsilonTopic)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to regret scale")
 		}

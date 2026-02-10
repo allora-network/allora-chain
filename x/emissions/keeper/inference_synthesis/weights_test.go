@@ -251,7 +251,7 @@ func (s *WeightsTestSuite) TestCalcMadPlusEpsilon() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			result, err := synth.CalcStdDevPlusEpsilon(tc.regrets, tc.epsilon)
+			result, err := synth.CalcRegretScalePlusEpsilon(tc.regrets, tc.epsilon)
 			s.Require().NoError(err)
 			s.Require().True(result.Gte(tc.epsilon), "result should be greater than epsilon")
 			ok, err := alloraMath.InDelta(result, tc.expected, alloraMath.MustNewDecFromString("0.00000001"))
@@ -359,7 +359,7 @@ func (s *WeightsTestSuite) TestCalcMadForWeights() {
 				s.Require().NoError(err)
 			}
 
-			result, err := synth.CalcRegretStdDevFilteredByWeights(synth.CalcRegretStdDevFilteredByWeightsArgs{
+			result, err := synth.CalcRegretScaleFilteredByWeights(synth.CalcRegretScaleFilteredByWeightsArgs{
 				Ctx:                 s.Ctx(),
 				K:                   s.EmissionsKeeper(),
 				Logger:              s.Ctx().Logger(),
@@ -406,10 +406,10 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				ForecasterToRegret: map[string]*alloraMath.Dec{
 					s.AddrsStr(1): decPtr("2.0"),
 				},
-				EpsilonTopic:      alloraMath.MustNewDecFromString("0.01"),
-				PNorm:             alloraMath.MustNewDecFromString("3.0"),
-				CNorm:             alloraMath.MustNewDecFromString("0.75"),
-				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				EpsilonTopic:           alloraMath.MustNewDecFromString("0.01"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -430,10 +430,10 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				ForecasterToRegret: map[string]*alloraMath.Dec{
 					s.AddrsStr(1): decPtr("2.0"),
 				},
-				EpsilonTopic:      alloraMath.MustNewDecFromString("0.01"),
-				PNorm:             alloraMath.MustNewDecFromString("3.0"),
-				CNorm:             alloraMath.MustNewDecFromString("0.75"),
-				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				EpsilonTopic:           alloraMath.MustNewDecFromString("0.01"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -455,10 +455,10 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 				ForecasterToRegret: map[string]*alloraMath.Dec{
 					s.AddrsStr(1): decPtr("-2.0"),
 				},
-				EpsilonTopic:      alloraMath.MustNewDecFromString("0.01"),
-				PNorm:             alloraMath.MustNewDecFromString("3.0"),
-				CNorm:             alloraMath.MustNewDecFromString("0.75"),
-				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				EpsilonTopic:           alloraMath.MustNewDecFromString("0.01"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -481,10 +481,10 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 					s.AddrsStr(2): decPtr("1.5"),
 					s.AddrsStr(3): decPtr("-0.5"),
 				},
-				EpsilonTopic:      alloraMath.MustNewDecFromString("0.01"),
-				PNorm:             alloraMath.MustNewDecFromString("3.0"),
-				CNorm:             alloraMath.MustNewDecFromString("0.75"),
-				StdDevPlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+				EpsilonTopic:           alloraMath.MustNewDecFromString("0.01"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
@@ -503,30 +503,30 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 		{ // nolint: exhaustruct
 			name: "empty workers should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
-				Logger:             s.Ctx().Logger(),
-				Inferers:           []string{},
-				Forecasters:        []string{},
-				InfererToRegret:    map[string]*alloraMath.Dec{},
-				ForecasterToRegret: map[string]*alloraMath.Dec{},
-				EpsilonTopic:       alloraMath.MustNewDecFromString("0.01"),
-				PNorm:              alloraMath.MustNewDecFromString("3.0"),
-				CNorm:              alloraMath.MustNewDecFromString("0.75"),
-				StdDevPlusEpsilon:  alloraMath.MustNewDecFromString("1.0"),
+				Logger:                 s.Ctx().Logger(),
+				Inferers:               []string{},
+				Forecasters:            []string{},
+				InfererToRegret:        map[string]*alloraMath.Dec{},
+				ForecasterToRegret:     map[string]*alloraMath.Dec{},
+				EpsilonTopic:           alloraMath.MustNewDecFromString("0.01"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
 			},
 			expectedError: true,
 		},
 		{ // nolint: exhaustruct
 			name: "missing regret values should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
-				Logger:             s.Ctx().Logger(),
-				Inferers:           []string{s.AddrsStr(0)},
-				Forecasters:        []string{s.AddrsStr(1)},
-				InfererToRegret:    map[string]*alloraMath.Dec{},
-				ForecasterToRegret: map[string]*alloraMath.Dec{},
-				EpsilonTopic:       alloraMath.MustNewDecFromString("0.01"),
-				PNorm:              alloraMath.MustNewDecFromString("3.0"),
-				CNorm:              alloraMath.MustNewDecFromString("0.75"),
-				StdDevPlusEpsilon:  alloraMath.MustNewDecFromString("1.0"),
+				Logger:                 s.Ctx().Logger(),
+				Inferers:               []string{s.AddrsStr(0)},
+				Forecasters:            []string{s.AddrsStr(1)},
+				InfererToRegret:        map[string]*alloraMath.Dec{},
+				ForecasterToRegret:     map[string]*alloraMath.Dec{},
+				EpsilonTopic:           alloraMath.MustNewDecFromString("0.01"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
 			},
 			expectedError: true,
 		},

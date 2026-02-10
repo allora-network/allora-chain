@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Arguments for GetCombinedInference
+// GetCombinedInferenceArgs holds inputs for GetCombinedInference.
 type GetCombinedInferenceArgs struct {
 	Logger                               log.Logger
 	TopicId                              uint64
@@ -26,7 +26,7 @@ type GetCombinedInferenceArgs struct {
 	EpsilonSafeDiv                       alloraMath.Dec
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
-	StdDevPlusEpsilon                    alloraMath.Dec
+	RegretScalePlusEpsilon               alloraMath.Dec
 }
 
 // Calculates the network combined inference I_i, Equation 9
@@ -36,15 +36,15 @@ func GetCombinedInference(args GetCombinedInferenceArgs) (
 
 	weights, err = CalcWeightsGivenWorkers(
 		CalcWeightsGivenWorkersArgs{
-			Logger:             args.Logger,
-			Inferers:           args.Inferers,
-			Forecasters:        args.Forecasters,
-			InfererToRegret:    args.InfererToRegret,
-			ForecasterToRegret: args.ForecasterToRegret,
-			EpsilonTopic:       args.EpsilonTopic,
-			PNorm:              args.PNorm,
-			CNorm:              args.CNorm,
-			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Logger:                 args.Logger,
+			Inferers:               args.Inferers,
+			Forecasters:            args.Forecasters,
+			InfererToRegret:        args.InfererToRegret,
+			ForecasterToRegret:     args.ForecasterToRegret,
+			EpsilonTopic:           args.EpsilonTopic,
+			PNorm:                  args.PNorm,
+			CNorm:                  args.CNorm,
+			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 		},
 	)
 	if err != nil {
@@ -107,22 +107,22 @@ func getForecastImpliedInferences(
 }
 
 type GetOneOutInfererForecastImpliedInferencesArgs struct {
-	Ctx                  sdk.Context
-	K                    emissionskeeper.Keeper
-	Logger               log.Logger
-	TopicId              uint64
-	Inferers             []Inferer
-	InfererToInference   map[Inferer]*emissions.Inference
-	InfererToRegret      map[Inferer]*Regret
-	AllInferersAreNew    bool
-	Forecasters          []Forecaster
-	ForecasterToForecast map[Forecaster]*emissions.Forecast
-	ForecasterToRegret   map[Forecaster]*Regret
-	NetworkCombinedLoss  *alloraMath.Dec
-	EpsilonTopic         alloraMath.Dec
-	PNorm                alloraMath.Dec
-	CNorm                alloraMath.Dec
-	StdDevPlusEpsilon    alloraMath.Dec
+	Ctx                    sdk.Context
+	K                      emissionskeeper.Keeper
+	Logger                 log.Logger
+	TopicId                uint64
+	Inferers               []Inferer
+	InfererToInference     map[Inferer]*emissions.Inference
+	InfererToRegret        map[Inferer]*Regret
+	AllInferersAreNew      bool
+	Forecasters            []Forecaster
+	ForecasterToForecast   map[Forecaster]*emissions.Forecast
+	ForecasterToRegret     map[Forecaster]*Regret
+	NetworkCombinedLoss    *alloraMath.Dec
+	EpsilonTopic           alloraMath.Dec
+	PNorm                  alloraMath.Dec
+	CNorm                  alloraMath.Dec
+	RegretScalePlusEpsilon alloraMath.Dec
 }
 
 // GetOneOutInfererForecastImpliedInferences calculates what each forecaster's implied inference
@@ -206,20 +206,20 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 			// Calculate forecast-implied inference with the filtered data
 			forecastImpliedInferences, _, _, calcErr := CalcForecastImpliedInferences(
 				CalcForecastImpliedInferencesArgs{
-					Logger:               args.Logger,
-					TopicId:              args.TopicId,
-					AllInferersAreNew:    args.AllInferersAreNew,
-					Inferers:             filteredInferers,
-					InfererToInference:   filteredInfererToInference,
-					InfererToRegret:      filteredInfererToRegret,
-					Forecasters:          filteredForecasters,
-					ForecasterToForecast: filteredForecasterToForecast,
-					ForecasterToRegret:   filteredForecasterToRegret,
-					NetworkCombinedLoss:  args.NetworkCombinedLoss,
-					EpsilonTopic:         args.EpsilonTopic,
-					PNorm:                args.PNorm,
-					CNorm:                args.CNorm,
-					StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+					Logger:                 args.Logger,
+					TopicId:                args.TopicId,
+					AllInferersAreNew:      args.AllInferersAreNew,
+					Inferers:               filteredInferers,
+					InfererToInference:     filteredInfererToInference,
+					InfererToRegret:        filteredInfererToRegret,
+					Forecasters:            filteredForecasters,
+					ForecasterToForecast:   filteredForecasterToForecast,
+					ForecasterToRegret:     filteredForecasterToRegret,
+					NetworkCombinedLoss:    args.NetworkCombinedLoss,
+					EpsilonTopic:           args.EpsilonTopic,
+					PNorm:                  args.PNorm,
+					CNorm:                  args.CNorm,
+					RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 				},
 			)
 			if calcErr != nil {
@@ -271,7 +271,7 @@ type GetNaiveInferenceArgs struct {
 	EpsilonSafeDiv                       alloraMath.Dec
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
-	StdDevPlusEpsilon                    alloraMath.Dec
+	RegretScalePlusEpsilon               alloraMath.Dec
 }
 
 // Calculates the network naive inference I^-_i
@@ -290,15 +290,15 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.De
 
 	weights, err := CalcWeightsGivenWorkers(
 		CalcWeightsGivenWorkersArgs{
-			Logger:             args.Logger,
-			Inferers:           args.Inferers,
-			Forecasters:        args.Forecasters,
-			InfererToRegret:    infererToRegret,
-			ForecasterToRegret: make(map[Worker]*alloraMath.Dec, 0),
-			EpsilonTopic:       args.EpsilonTopic,
-			PNorm:              args.PNorm,
-			CNorm:              args.CNorm,
-			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Logger:                 args.Logger,
+			Inferers:               args.Inferers,
+			Forecasters:            args.Forecasters,
+			InfererToRegret:        infererToRegret,
+			ForecasterToRegret:     make(map[Worker]*alloraMath.Dec, 0),
+			EpsilonTopic:           args.EpsilonTopic,
+			PNorm:                  args.PNorm,
+			CNorm:                  args.CNorm,
+			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 		},
 	)
 	if err != nil {
@@ -327,24 +327,24 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.De
 
 // Arguments for calcOneOutInfererInference
 type CalcOneOutInfererInferenceArgs struct {
-	Ctx                  sdk.Context
-	K                    emissionskeeper.Keeper
-	Logger               log.Logger
-	TopicId              uint64
-	Inferers             []Inferer
-	InfererToInference   map[Inferer]*emissions.Inference
-	InfererToRegret      map[Inferer]*Regret
-	AllInferersAreNew    bool
-	Forecasters          []Forecaster
-	ForecasterToForecast map[Forecaster]*emissions.Forecast
-	ForecasterToRegret   map[Forecaster]*Regret
-	NetworkCombinedLoss  *alloraMath.Dec
-	EpsilonTopic         alloraMath.Dec
-	EpsilonSafeDiv       alloraMath.Dec
-	PNorm                alloraMath.Dec
-	CNorm                alloraMath.Dec
-	WithheldInferer      Inferer
-	StdDevPlusEpsilon    alloraMath.Dec
+	Ctx                    sdk.Context
+	K                      emissionskeeper.Keeper
+	Logger                 log.Logger
+	TopicId                uint64
+	Inferers               []Inferer
+	InfererToInference     map[Inferer]*emissions.Inference
+	InfererToRegret        map[Inferer]*Regret
+	AllInferersAreNew      bool
+	Forecasters            []Forecaster
+	ForecasterToForecast   map[Forecaster]*emissions.Forecast
+	ForecasterToRegret     map[Forecaster]*Regret
+	NetworkCombinedLoss    *alloraMath.Dec
+	EpsilonTopic           alloraMath.Dec
+	EpsilonSafeDiv         alloraMath.Dec
+	PNorm                  alloraMath.Dec
+	CNorm                  alloraMath.Dec
+	WithheldInferer        Inferer
+	RegretScalePlusEpsilon alloraMath.Dec
 }
 
 // Calculate the one-out inference given a withheld inferer
@@ -385,20 +385,20 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 		// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
 		forecasterToForecastImpliedInference, _, _, err = CalcForecastImpliedInferences(
 			CalcForecastImpliedInferencesArgs{
-				Logger:               args.Logger,
-				TopicId:              args.TopicId,
-				AllInferersAreNew:    args.AllInferersAreNew,
-				Inferers:             remainingInferers,
-				InfererToInference:   args.InfererToInference,
-				InfererToRegret:      args.InfererToRegret,
-				Forecasters:          args.Forecasters,
-				ForecasterToForecast: args.ForecasterToForecast,
-				ForecasterToRegret:   args.ForecasterToRegret,
-				NetworkCombinedLoss:  args.NetworkCombinedLoss,
-				EpsilonTopic:         args.EpsilonTopic,
-				PNorm:                args.PNorm,
-				CNorm:                args.CNorm,
-				StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+				Logger:                 args.Logger,
+				TopicId:                args.TopicId,
+				AllInferersAreNew:      args.AllInferersAreNew,
+				Inferers:               remainingInferers,
+				InfererToInference:     args.InfererToInference,
+				InfererToRegret:        args.InfererToRegret,
+				Forecasters:            args.Forecasters,
+				ForecasterToForecast:   args.ForecasterToForecast,
+				ForecasterToRegret:     args.ForecasterToRegret,
+				NetworkCombinedLoss:    args.NetworkCombinedLoss,
+				EpsilonTopic:           args.EpsilonTopic,
+				PNorm:                  args.PNorm,
+				CNorm:                  args.CNorm,
+				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 			},
 		)
 		if err != nil {
@@ -416,15 +416,15 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 	}
 	weights, err := CalcWeightsGivenWorkers(
 		CalcWeightsGivenWorkersArgs{
-			Logger:             args.Logger,
-			Inferers:           remainingInferers,
-			Forecasters:        args.Forecasters,
-			InfererToRegret:    remainingInfererRegrets,
-			ForecasterToRegret: remainingForecasterRegrets,
-			EpsilonTopic:       args.EpsilonTopic,
-			PNorm:              args.PNorm,
-			CNorm:              args.CNorm,
-			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Logger:                 args.Logger,
+			Inferers:               remainingInferers,
+			Forecasters:            args.Forecasters,
+			InfererToRegret:        remainingInfererRegrets,
+			ForecasterToRegret:     remainingForecasterRegrets,
+			EpsilonTopic:           args.EpsilonTopic,
+			PNorm:                  args.PNorm,
+			CNorm:                  args.CNorm,
+			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 		},
 	)
 	if err != nil {
@@ -453,23 +453,23 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 
 // args for GetOneOutInfererInferences
 type GetOneOutInfererInferencesArgs struct {
-	Ctx                  sdk.Context
-	K                    emissionskeeper.Keeper
-	Logger               log.Logger
-	TopicId              uint64
-	Inferers             []Inferer
-	InfererToInference   map[Inferer]*emissions.Inference
-	InfererToRegret      map[Inferer]*Regret
-	AllInferersAreNew    bool
-	Forecasters          []Forecaster
-	ForecasterToForecast map[Forecaster]*emissions.Forecast
-	ForecasterToRegret   map[Forecaster]*Regret
-	NetworkCombinedLoss  *alloraMath.Dec
-	EpsilonTopic         alloraMath.Dec
-	EpsilonSafeDiv       alloraMath.Dec
-	PNorm                alloraMath.Dec
-	CNorm                alloraMath.Dec
-	StdDevPlusEpsilon    alloraMath.Dec
+	Ctx                    sdk.Context
+	K                      emissionskeeper.Keeper
+	Logger                 log.Logger
+	TopicId                uint64
+	Inferers               []Inferer
+	InfererToInference     map[Inferer]*emissions.Inference
+	InfererToRegret        map[Inferer]*Regret
+	AllInferersAreNew      bool
+	Forecasters            []Forecaster
+	ForecasterToForecast   map[Forecaster]*emissions.Forecast
+	ForecasterToRegret     map[Forecaster]*Regret
+	NetworkCombinedLoss    *alloraMath.Dec
+	EpsilonTopic           alloraMath.Dec
+	EpsilonSafeDiv         alloraMath.Dec
+	PNorm                  alloraMath.Dec
+	CNorm                  alloraMath.Dec
+	RegretScalePlusEpsilon alloraMath.Dec
 }
 
 // Set all one-out-inferer inferences that are possible given the provided input
@@ -487,24 +487,24 @@ func GetOneOutInfererInferences(args GetOneOutInfererInferencesArgs) (
 	for _, worker := range args.Inferers {
 		oneOutInference, err := calcOneOutInfererInference(
 			CalcOneOutInfererInferenceArgs{
-				Ctx:                  args.Ctx,
-				K:                    args.K,
-				Logger:               args.Logger,
-				TopicId:              args.TopicId,
-				Inferers:             args.Inferers,
-				InfererToInference:   args.InfererToInference,
-				InfererToRegret:      args.InfererToRegret,
-				AllInferersAreNew:    args.AllInferersAreNew,
-				Forecasters:          args.Forecasters,
-				ForecasterToForecast: args.ForecasterToForecast,
-				ForecasterToRegret:   args.ForecasterToRegret,
-				NetworkCombinedLoss:  args.NetworkCombinedLoss,
-				EpsilonTopic:         args.EpsilonTopic,
-				EpsilonSafeDiv:       args.EpsilonSafeDiv,
-				PNorm:                args.PNorm,
-				CNorm:                args.CNorm,
-				WithheldInferer:      worker,
-				StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+				Ctx:                    args.Ctx,
+				K:                      args.K,
+				Logger:                 args.Logger,
+				TopicId:                args.TopicId,
+				Inferers:               args.Inferers,
+				InfererToInference:     args.InfererToInference,
+				InfererToRegret:        args.InfererToRegret,
+				AllInferersAreNew:      args.AllInferersAreNew,
+				Forecasters:            args.Forecasters,
+				ForecasterToForecast:   args.ForecasterToForecast,
+				ForecasterToRegret:     args.ForecasterToRegret,
+				NetworkCombinedLoss:    args.NetworkCombinedLoss,
+				EpsilonTopic:           args.EpsilonTopic,
+				EpsilonSafeDiv:         args.EpsilonSafeDiv,
+				PNorm:                  args.PNorm,
+				CNorm:                  args.CNorm,
+				WithheldInferer:        worker,
+				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 			})
 		if err != nil {
 			return []*emissions.WithheldWorkerAttributedValue{}, errorsmod.Wrapf(err, "GetOneOutInfererInferences() error calculating one-out inferer inferences")
@@ -538,7 +538,7 @@ type CalcOneOutForecasterInferenceArgs struct {
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
 	WithheldForecaster                   Forecaster
-	StdDevPlusEpsilon                    alloraMath.Dec
+	RegretScalePlusEpsilon               alloraMath.Dec
 }
 
 // Calculate the one-out inference given a withheld forecaster
@@ -582,15 +582,15 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 
 	weights, err := CalcWeightsGivenWorkers(
 		CalcWeightsGivenWorkersArgs{
-			Logger:             args.Logger,
-			Inferers:           args.Inferers,
-			Forecasters:        remainingForecasters,
-			InfererToRegret:    remainingInfererRegrets,
-			ForecasterToRegret: remainingForecasterRegrets,
-			EpsilonTopic:       args.EpsilonTopic,
-			PNorm:              args.PNorm,
-			CNorm:              args.CNorm,
-			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Logger:                 args.Logger,
+			Inferers:               args.Inferers,
+			Forecasters:            remainingForecasters,
+			InfererToRegret:        remainingInfererRegrets,
+			ForecasterToRegret:     remainingForecasterRegrets,
+			EpsilonTopic:           args.EpsilonTopic,
+			PNorm:                  args.PNorm,
+			CNorm:                  args.CNorm,
+			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 		},
 	)
 	if err != nil {
@@ -635,7 +635,7 @@ type GetOneOutForecasterInferencesArgs struct {
 	EpsilonSafeDiv                       alloraMath.Dec
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
-	StdDevPlusEpsilon                    alloraMath.Dec
+	RegretScalePlusEpsilon               alloraMath.Dec
 }
 
 // Set all one-out-forecaster inferences that are possible given the provided input
@@ -669,7 +669,7 @@ func GetOneOutForecasterInferences(args GetOneOutForecasterInferencesArgs) (
 					PNorm:                                args.PNorm,
 					CNorm:                                args.CNorm,
 					WithheldForecaster:                   worker,
-					StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+					RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 				})
 			if err != nil {
 				return []*emissions.WithheldWorkerAttributedValue{}, errorsmod.Wrapf(err, "GetOneOutForecasterInferences() error calculating one-out forecaster inferences")
@@ -700,7 +700,7 @@ type calcOneInValueArgs struct {
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
 	OneInForecaster                      Forecaster
-	StdDevPlusEpsilon                    alloraMath.Dec
+	RegretScalePlusEpsilon               alloraMath.Dec
 }
 
 // Calculate the one-in inference given a withheld forecaster
@@ -749,15 +749,15 @@ func calcOneInValue(args calcOneInValueArgs) (
 
 	weights, err := CalcWeightsGivenWorkers(
 		CalcWeightsGivenWorkersArgs{
-			Logger:             args.Logger,
-			Inferers:           args.Inferers,
-			Forecasters:        singleForecaster,
-			InfererToRegret:    infererToRegretForSingleForecaster,
-			ForecasterToRegret: singleForecasterRegret,
-			EpsilonTopic:       args.EpsilonTopic,
-			PNorm:              args.PNorm,
-			CNorm:              args.CNorm,
-			StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+			Logger:                 args.Logger,
+			Inferers:               args.Inferers,
+			Forecasters:            singleForecaster,
+			InfererToRegret:        infererToRegretForSingleForecaster,
+			ForecasterToRegret:     singleForecasterRegret,
+			EpsilonTopic:           args.EpsilonTopic,
+			PNorm:                  args.PNorm,
+			CNorm:                  args.CNorm,
+			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 		},
 	)
 	if err != nil {
@@ -799,7 +799,7 @@ type GetOneInForecasterInferencesArgs struct {
 	EpsilonSafeDiv                       alloraMath.Dec
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
-	StdDevPlusEpsilon                    alloraMath.Dec
+	RegretScalePlusEpsilon               alloraMath.Dec
 }
 
 // Set all one-in inferences that are possible given the provided input
@@ -831,7 +831,7 @@ func GetOneInForecasterInferences(args GetOneInForecasterInferencesArgs) (
 					PNorm:                                args.PNorm,
 					CNorm:                                args.CNorm,
 					OneInForecaster:                      oneInForecaster,
-					StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+					RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 				})
 			if err != nil {
 				return []*emissions.WorkerAttributedValue{}, errorsmod.Wrapf(err, "GetOneInForecasterInferences() error calculating one-in inferences")
@@ -864,7 +864,7 @@ type CalcNetworkInferencesArgs struct {
 	EpsilonSafeDiv                       alloraMath.Dec
 	PNorm                                alloraMath.Dec
 	CNorm                                alloraMath.Dec
-	StdDevPlusEpsilon                    alloraMath.Dec
+	RegretScalePlusEpsilon               alloraMath.Dec
 	InferenceBlockHeight                 BlockHeight
 }
 
@@ -897,7 +897,7 @@ func CalcNetworkInferences(
 			EpsilonSafeDiv:                       args.EpsilonSafeDiv,
 			PNorm:                                args.PNorm,
 			CNorm:                                args.CNorm,
-			StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+			RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 		})
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating combined inference")
@@ -931,7 +931,7 @@ func CalcNetworkInferences(
 			EpsilonSafeDiv:                       args.EpsilonSafeDiv,
 			PNorm:                                args.PNorm,
 			CNorm:                                args.CNorm,
-			StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+			RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 		})
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating naive inference")
@@ -946,23 +946,23 @@ func CalcNetworkInferences(
 	// calculate confidence intervals on the network inference I_i
 	oneOutInfererInferences, err := GetOneOutInfererInferences(
 		GetOneOutInfererInferencesArgs{
-			Ctx:                  args.Ctx,
-			K:                    args.K,
-			Logger:               args.Logger,
-			TopicId:              args.TopicId,
-			Inferers:             args.Inferers,
-			InfererToInference:   args.InfererToInference,
-			InfererToRegret:      args.InfererToRegret,
-			AllInferersAreNew:    args.AllInferersAreNew,
-			Forecasters:          args.Forecasters,
-			ForecasterToForecast: args.ForecasterToForecast,
-			ForecasterToRegret:   args.ForecasterToRegret,
-			NetworkCombinedLoss:  args.NetworkCombinedLoss,
-			EpsilonTopic:         args.EpsilonTopic,
-			EpsilonSafeDiv:       args.EpsilonSafeDiv,
-			PNorm:                args.PNorm,
-			CNorm:                args.CNorm,
-			StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+			Ctx:                    args.Ctx,
+			K:                      args.K,
+			Logger:                 args.Logger,
+			TopicId:                args.TopicId,
+			Inferers:               args.Inferers,
+			InfererToInference:     args.InfererToInference,
+			InfererToRegret:        args.InfererToRegret,
+			AllInferersAreNew:      args.AllInferersAreNew,
+			Forecasters:            args.Forecasters,
+			ForecasterToForecast:   args.ForecasterToForecast,
+			ForecasterToRegret:     args.ForecasterToRegret,
+			NetworkCombinedLoss:    args.NetworkCombinedLoss,
+			EpsilonTopic:           args.EpsilonTopic,
+			EpsilonSafeDiv:         args.EpsilonSafeDiv,
+			PNorm:                  args.PNorm,
+			CNorm:                  args.CNorm,
+			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 		})
 	if err != nil {
 		return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out inferer inferences")
@@ -997,7 +997,7 @@ func CalcNetworkInferences(
 				EpsilonSafeDiv:                       args.EpsilonSafeDiv,
 				PNorm:                                args.PNorm,
 				CNorm:                                args.CNorm,
-				StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+				RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 			})
 		if err != nil {
 			return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out forecaster inferences")
@@ -1024,7 +1024,7 @@ func CalcNetworkInferences(
 				EpsilonSafeDiv:                       args.EpsilonSafeDiv,
 				PNorm:                                args.PNorm,
 				CNorm:                                args.CNorm,
-				StdDevPlusEpsilon:                    args.StdDevPlusEpsilon,
+				RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 			})
 		if err != nil {
 			return &emissions.ValueBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-in inferences")
@@ -1033,22 +1033,22 @@ func CalcNetworkInferences(
 		// Calculate one-out inferer forecast implied values
 		oneOutInfererForecastImpliedValues, err = GetOneOutInfererForecastImpliedInferences(
 			GetOneOutInfererForecastImpliedInferencesArgs{
-				Ctx:                  args.Ctx,
-				K:                    args.K,
-				Logger:               args.Logger,
-				TopicId:              args.TopicId,
-				Inferers:             args.Inferers,
-				InfererToInference:   args.InfererToInference,
-				InfererToRegret:      args.InfererToRegret,
-				AllInferersAreNew:    args.AllInferersAreNew,
-				Forecasters:          args.Forecasters,
-				ForecasterToForecast: args.ForecasterToForecast,
-				ForecasterToRegret:   args.ForecasterToRegret,
-				NetworkCombinedLoss:  args.NetworkCombinedLoss,
-				EpsilonTopic:         args.EpsilonTopic,
-				PNorm:                args.PNorm,
-				CNorm:                args.CNorm,
-				StdDevPlusEpsilon:    args.StdDevPlusEpsilon,
+				Ctx:                    args.Ctx,
+				K:                      args.K,
+				Logger:                 args.Logger,
+				TopicId:                args.TopicId,
+				Inferers:               args.Inferers,
+				InfererToInference:     args.InfererToInference,
+				InfererToRegret:        args.InfererToRegret,
+				AllInferersAreNew:      args.AllInferersAreNew,
+				Forecasters:            args.Forecasters,
+				ForecasterToForecast:   args.ForecasterToForecast,
+				ForecasterToRegret:     args.ForecasterToRegret,
+				NetworkCombinedLoss:    args.NetworkCombinedLoss,
+				EpsilonTopic:           args.EpsilonTopic,
+				PNorm:                  args.PNorm,
+				CNorm:                  args.CNorm,
+				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 			},
 		)
 		if err != nil {

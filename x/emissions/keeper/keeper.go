@@ -227,7 +227,8 @@ type Keeper struct {
 
 	// WEIGHTS
 
-	// The latest stdnorm of regrets for a topic
+	// The latest regret normalization scale for a topic.
+	// NOTE: legacy name "stdnorm" is preserved for state compatibility (now MAD-based scale).
 	latestRegretStdNorm collections.Map[TopicId, alloraMath.Dec]
 	// The latest weights for a topic
 	latestInfererWeights    collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
@@ -4794,7 +4795,8 @@ func (k *Keeper) SetTopicInitialReputerEmaScore(ctx context.Context, topicId Top
 
 // WEIGHTS
 
-// GetLatestRegretStdNorm returns the latest regret standard norm for a topic
+// GetLatestRegretStdNorm returns the latest regret normalization scale for a topic.
+// NOTE: legacy name "stdnorm" is preserved for state compatibility (now MAD-based scale).
 func (k Keeper) GetLatestRegretStdNorm(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
 	regretStdNorm, err := k.latestRegretStdNorm.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -4803,7 +4805,8 @@ func (k Keeper) GetLatestRegretStdNorm(ctx context.Context, topicId TopicId) (al
 	return regretStdNorm, err
 }
 
-// SetLatestRegretStdNorm sets the latest regret standard norm for a topic
+// SetLatestRegretStdNorm sets the latest regret normalization scale for a topic.
+// NOTE: legacy name "stdnorm" is preserved for state compatibility (now MAD-based scale).
 func (k Keeper) SetLatestRegretStdNorm(ctx context.Context, topicId TopicId, regretStdNorm alloraMath.Dec) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")

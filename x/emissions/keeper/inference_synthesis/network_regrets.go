@@ -462,7 +462,7 @@ func CalcTopicInitialRegret(
 	pNormDiv alloraMath.Dec,
 ) (initialRegret alloraMath.Dec, err error) {
 	// Normal case with experienced workers - calculate with offset and MAD-based scale
-	denominator, err := CalcStdDevPlusEpsilon(regrets, epsilon)
+	denominator, err := CalcRegretScalePlusEpsilon(regrets, epsilon)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
