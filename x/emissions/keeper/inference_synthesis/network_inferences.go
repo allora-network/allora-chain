@@ -214,7 +214,7 @@ func GetCalcNetworkInferenceArgs(
 	if err != nil {
 		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret stdnorm")
 	}
-	logger.Info("GetCalcNetworkInferenceArgs: StdDevPlusEpsilon", "stdDevPlusEpsilon", stdDevPlusEpsilon)
+	logger.Info("GetCalcNetworkInferenceArgs: RegretScalePlusEpsilon", "regretScalePlusEpsilon", stdDevPlusEpsilon)
 
 	calcArgs = CalcNetworkInferencesArgs{
 		Ctx:                                  ctx,

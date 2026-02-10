@@ -749,7 +749,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
 		pnormDiv,
 	)
 	require.NoError(err)
-	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3354820760526412097325669544281814")
+	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.27421421030781964136")
 }
 
 // TestUpdateTopicInitialRegret tests the UpdateTopicInitialRegret function with a larger set of workers.

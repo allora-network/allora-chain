@@ -591,7 +591,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 		for _, workerAttributedValue := range oneOutInfererValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
-				alloratestutil.InEpsilon4(s.T(), expectedValue, workerAttributedValue.Value.String()) // Reduced to Epsilon4 after removal of regret boundaries
+				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String()) // Reduced to Epsilon4 after removal of regret boundaries
 			}
 		}
 		s.Require().True(found)

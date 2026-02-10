@@ -443,13 +443,13 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	return out, nil
 }
 
-// Calculate the initial regret for all new workers in the topic
+// Calculate the initial regret for all new workers in the topic.
 // When using experienced workers' regrets:
 //
-//	denominator = std(regrets) + epsilon
+//	denominator = (1.4826 * MAD(regrets)) + epsilon
 //	offset = cnorm - 8.25 / pnorm
 //	initialRegret = percentile(regrets, 25) + offset * denominator
-
+//
 // When using fallback regrets (not enough experienced workers / cold start):
 //
 //	initialRegret = percentile(regrets, 25)
@@ -461,14 +461,8 @@ func CalcTopicInitialRegret(
 	quantile alloraMath.Dec,
 	pNormDiv alloraMath.Dec,
 ) (initialRegret alloraMath.Dec, err error) {
-	// Normal case with experienced workers - calculate with offset and std dev
-	stdDevRegrets, err := alloraMath.StdDev(regrets)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-
-	// Calculate the Denominator
-	denominator, err := stdDevRegrets.Add(epsilon)
+	// Normal case with experienced workers - calculate with offset and MAD-based scale
+	denominator, err := CalcStdDevPlusEpsilon(regrets, epsilon)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}

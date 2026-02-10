@@ -206,7 +206,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// Calculate the regret_stdnorm and the weights (multistep process).
+	// Calculate the regret_stdnorm (MAD-based scale) and the weights (multistep process).
 	// 0. Get inferer and forecaster regrets
 	infererRegrets := regrets.InfererRegrets
 	inferers := alloraMath.GetSortedKeys(infererRegrets)
@@ -214,7 +214,7 @@ func CloseReputerNonce(
 	forecasters := alloraMath.GetSortedKeys(forecasterRegrets)
 
 	// 2. Calculate the regret_stdnorm to be used in
-	// 2.a Calculate the regret_stdnorm filtered by ∫the previous weights. If not, apply stddev.
+	// 2.a Calculate the regret_stdnorm filtered by the previous weights. If not, apply MAD-based scale.
 	stdDevPlusEpsilon, err := synth.CalcRegretStdDevFilteredByWeights(
 		synth.CalcRegretStdDevFilteredByWeightsArgs{
 			Ctx:                 ctx,

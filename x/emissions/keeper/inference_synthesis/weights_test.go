@@ -189,7 +189,7 @@ func (s *WeightsTestSuite) TestGatherWorkerRegrets() {
 	})
 }
 
-func (s *WeightsTestSuite) TestCalcStdDevPlusEpsilon() {
+func (s *WeightsTestSuite) TestCalcMadPlusEpsilon() {
 	testCases := []struct {
 		name     string
 		regrets  []alloraMath.Dec
@@ -204,7 +204,7 @@ func (s *WeightsTestSuite) TestCalcStdDevPlusEpsilon() {
 				alloraMath.MustNewDecFromString("0.3"),
 			},
 			epsilon:  alloraMath.MustNewDecFromString("0.01"),
-			expected: alloraMath.MustNewDecFromString("0.11"),
+			expected: alloraMath.MustNewDecFromString("0.15826"),
 		},
 		{
 			name: "all same values",
@@ -224,7 +224,7 @@ func (s *WeightsTestSuite) TestCalcStdDevPlusEpsilon() {
 				alloraMath.MustNewDecFromString("1.0"),
 			},
 			epsilon:  alloraMath.MustNewDecFromString("0.1"),
-			expected: alloraMath.MustNewDecFromString("0.6"),
+			expected: alloraMath.MustNewDecFromString("0.8413"),
 		},
 		{
 			name: "larger epsilon",
@@ -234,7 +234,18 @@ func (s *WeightsTestSuite) TestCalcStdDevPlusEpsilon() {
 				alloraMath.MustNewDecFromString("0.3"),
 			},
 			epsilon:  alloraMath.MustNewDecFromString("0.5"),
-			expected: alloraMath.MustNewDecFromString("0.6"),
+			expected: alloraMath.MustNewDecFromString("0.64826"),
+		},
+		{
+			name: "outlier dominated - MAD stays zero",
+			regrets: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("0.0"),
+				alloraMath.MustNewDecFromString("0.0"),
+				alloraMath.MustNewDecFromString("0.0"),
+				alloraMath.MustNewDecFromString("100.0"),
+			},
+			epsilon:  alloraMath.MustNewDecFromString("0.01"),
+			expected: alloraMath.MustNewDecFromString("0.01"),
 		},
 	}
 
@@ -243,13 +254,15 @@ func (s *WeightsTestSuite) TestCalcStdDevPlusEpsilon() {
 			result, err := synth.CalcStdDevPlusEpsilon(tc.regrets, tc.epsilon)
 			s.Require().NoError(err)
 			s.Require().True(result.Gte(tc.epsilon), "result should be greater than epsilon")
-			s.Require().True(result.Equal(tc.expected),
+			ok, err := alloraMath.InDelta(result, tc.expected, alloraMath.MustNewDecFromString("0.00000001"))
+			s.Require().NoError(err)
+			s.Require().True(ok,
 				"expected %s but got %s", tc.expected.String(), result.String())
 		})
 	}
 }
 
-func (s *WeightsTestSuite) TestCalcStdDevForWeights() {
+func (s *WeightsTestSuite) TestCalcMadForWeights() {
 	testCases := []struct {
 		name                string
 		inferers            []string
@@ -283,7 +296,7 @@ func (s *WeightsTestSuite) TestCalcStdDevForWeights() {
 			},
 			negligibleThreshold: alloraMath.MustNewDecFromString("0.1"),
 			epsilonTopic:        alloraMath.MustNewDecFromString("0.01"),
-			expectedResult:      alloraMath.MustNewDecFromString("0.11"),
+			expectedResult:      alloraMath.MustNewDecFromString("0.15826"),
 			expectFiltered:      true,
 		},
 		{
@@ -306,7 +319,7 @@ func (s *WeightsTestSuite) TestCalcStdDevForWeights() {
 			},
 			negligibleThreshold: alloraMath.MustNewDecFromString("0.1"),
 			epsilonTopic:        alloraMath.MustNewDecFromString("0.01"),
-			expectedResult:      alloraMath.MustNewDecFromString("0.08071067811865475"),
+			expectedResult:      alloraMath.MustNewDecFromString("0.08413"),
 			expectFiltered:      true,
 		},
 		{
@@ -329,7 +342,7 @@ func (s *WeightsTestSuite) TestCalcStdDevForWeights() {
 			},
 			negligibleThreshold: alloraMath.MustNewDecFromString("0.1"),
 			epsilonTopic:        alloraMath.MustNewDecFromString("0.01"),
-			expectedResult:      alloraMath.MustNewDecFromString("0.11"), // uses all regrets
+			expectedResult:      alloraMath.MustNewDecFromString("0.15826"), // uses all regrets
 			expectFiltered:      false,
 		},
 	}

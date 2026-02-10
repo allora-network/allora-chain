@@ -403,7 +403,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
-	testutil.InEpsilon4(s.T(), valueBundle.CombinedValue, "0.20059970801966293") // Reduced to Epsilon4 after removal of regret boundaries
+	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.2100479663822826573298331051338064") // Reduced to Epsilon4 after removal of regret boundaries
 
 	s.Require().Len(valueBundle.OneOutInfererValues, 5)
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
@@ -495,7 +495,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
 
-	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.09643700801928372")
+	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.08544549446163512297218163363212579")
 
 	s.Require().Len(valueBundle.InfererValues, 5)
 	for _, inference := range inferences.Inferences {
@@ -513,11 +513,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch forecasterValue.Worker {
 		case forecaster0:
-			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08475997300723974")
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08417981250377231000000000156440831")
 		case forecaster1:
-			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.0807110022144602")
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08053557320902984727861878040973876")
 		case forecaster2:
-			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.07851400736008668")
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08320720577281646212147147638158459")
 		default:
 			s.Require().Fail("Unexpected forecaster %v", forecasterValue.Worker)
 		}
@@ -527,15 +527,15 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch oneOutInfererValue.Worker {
 		case inferer0:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.10278833087892551")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.08880420843953547672461004934407537")
 		case inferer1:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.10309434130026068")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.09025460620218188686981996717472497")
 		case inferer2:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.10749347667557652")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.09088904124901555580534435460144128")
 		case inferer3:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.09957413455954356")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.08449295242130509658304313657595853")
 		case inferer4:
-			testutil.InEpsilon4(s.T(), oneOutInfererValue.Value, "0.23133130005198607") // Reduced to Epsilon4 after removal of regret boundaries
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.2419546430515666722602239503427539") // Reduced to Epsilon4 after removal of regret boundaries
 		default:
 			s.Require().Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
@@ -545,11 +545,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch oneOutForecasterValue.Worker {
 		case forecaster0:
-			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.19384484001403682")
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.2033019304257757729577540767782710")
 		case forecaster1:
-			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.13368285139309616")
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1342704282372765043030673539922846")
 		case forecaster2:
-			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1339967078008638")
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1338887664424498450398026831391638")
 		default:
 			s.Require().Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
@@ -559,11 +559,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
 		switch oneInForecasterValue.Worker {
 		case forecaster0:
-			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.086385958713291")
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.08418028346334906633636103769646398")
 		case forecaster1:
-			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.14220283026646785")
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1421735920988961008797697967349564")
 		case forecaster2:
-			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1418366644574056")
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1426188641928605366869119127302640")
 		default:
 			s.Require().Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
@@ -636,7 +636,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
 
-	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.20065795737590336")
+	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.1970743083036473884583302849865687")
 
 	s.Require().Len(valueBundle.InfererValues, 5)
 	for _, inference := range inferences.Inferences {
@@ -654,11 +654,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch forecasterValue.Worker {
 		case forecaster0:
-			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08475997300723974")
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08417981250377231000000000156440831")
 		case forecaster1:
-			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.0807110022144602")
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08053557320902984727861878040973876")
 		case forecaster2:
-			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.07851400736008668")
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, "0.08320720577281646212147147638158459")
 		default:
 			s.Require().Fail("Unexpected forecaster %v", forecasterValue.Worker)
 		}
@@ -668,15 +668,15 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch oneOutInfererValue.Worker {
 		case inferer0:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.195653799650153")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1822933198418518420989153312237969")
 		case inferer1:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1768775314107972")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1630127924409202728925207251605885")
 		case inferer2:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1931955480873375")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1861417615100021026625077403775478")
 		case inferer3:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.20197760150788802")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.2039992908309791931368020311311523")
 		case inferer4:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.21429866100721226")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.2108369372277919973243200567178403")
 		default:
 			s.Require().Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
@@ -686,11 +686,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch oneOutForecasterValue.Worker {
 		case forecaster0:
-			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.13310442699412764")
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1337498226237418667714414652559033")
 		case forecaster1:
-			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.13368285139309616")
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1342704282372765043030673539922846")
 		case forecaster2:
-			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1339967078008638")
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, "0.1338887664424498450398026831391638")
 		default:
 			s.Require().Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
@@ -700,11 +700,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
 		switch oneInForecasterValue.Worker {
 		case forecaster0:
-			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1428776587319311")
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1427809653146865113333333335940680")
 		case forecaster1:
-			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.14220283026646785")
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1421735920988961008797697967349564")
 		case forecaster2:
-			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1418366644574056")
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, "0.1426188641928605366869119127302640")
 		default:
 			s.Require().Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
