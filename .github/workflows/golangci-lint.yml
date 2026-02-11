@@ -1,0 +1,49 @@
+name: golangci-lint
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - release-*
+  pull_request:
+
+permissions:
+  contents: read
+  # Optional: allow write access to checks to allow the action to annotate code in the PR.
+  checks: write
+
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.6
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60.3
+          args: --timeout=10m
+
+  custom-linters:
+    name: custom-linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: check-defer-close
+        run: go run ./linter/check-defer-close .
+        timeout-minutes: 10
+      - name: check-fuzz-transitions
+        run: go run ./linter/fuzz-transitions
+        timeout-minutes: 10
+      - name: check-log-sprintf
+        run: go run ./linter/log-sprintf ./...
+        timeout-minutes: 10
+      - name: check-duplicate-routes
+        run: make duplicate-routes
+        timeout-minutes: 10

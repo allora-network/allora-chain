@@ -1,0 +1,146 @@
+syntax = "proto3";
+package emissions.v5;
+
+import "emissions/v3/nonce.proto";
+import "emissions/v3/reputer.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+// We choose a denormalized schema for events to balance the size and number of
+// events, as well as the complexity of likely downstream write and read
+// patterns. One likely cares about how the topic performs in totality and may
+// want to update topic state after all topic information is in, or in some
+// chronological order. If one normalizs by actor type, then the event volume is
+// likely to be much higher and one would have to wait an undetermined amount of
+// time (how many actors participated
+// == how many events to wait for) to update an topic state-level metric.
+// Furthermore, we know that the size of each of these messages is bounded by
+// the global parameters that bound the max number of actors and topics. If one
+// were to track per-actor-per-type metrics, then one immediately knows that
+// they were included and participated or not in the topic at a particular block
+// height as soon as one event from the topic is recorded.
+
+enum ActorType {
+  ACTOR_TYPE_INFERER_UNSPECIFIED = 0;
+  ACTOR_TYPE_FORECASTER = 1;
+  ACTOR_TYPE_REPUTER = 2;
+}
+
+message EventScoresSet {
+  ActorType actor_type = 1;
+  uint64 topic_id = 2;
+  int64 block_height = 3;
+  repeated string addresses = 4;
+  repeated string scores = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventRewardsSettled {
+  ActorType actor_type = 1;
+  uint64 topic_id = 2;
+  int64 block_height = 3;
+  repeated string addresses = 4;
+  repeated string rewards = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventNetworkLossSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.ValueBundle value_bundle = 3;
+}
+
+message EventForecastTaskScoreSet {
+  uint64 topic_id = 1;
+  string score = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventWorkerLastCommitSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.Nonce nonce = 3;
+}
+
+message EventReputerLastCommitSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v3.Nonce nonce = 3;
+}
+
+message EventTopicRewardsSet {
+  repeated uint64 topic_ids = 1;
+  repeated string rewards = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventEMAScoresSet {
+  ActorType actor_type = 1;
+  uint64 topic_id = 2;
+  int64 nonce = 3;
+  repeated string addresses = 4;
+  repeated string scores = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated bool is_active = 6;
+}
+
+message EventListeningCoefficientsSet {
+  ActorType actor_type = 1;
+  uint64 topic_id = 2;
+  int64 block_height = 3;
+  repeated string addresses = 4;
+  repeated string coefficients = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventInfererNetworkRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventForecasterNetworkRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventNaiveInfererNetworkRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventTopicInitialRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  string regret = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}

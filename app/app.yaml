@@ -1,0 +1,146 @@
+modules:
+  - name: runtime
+    config:
+      "@type": cosmos.app.runtime.v1alpha1.Module
+      app_name: AlloraApp
+
+      # Only modules providing a PreBlock func are listed here.
+      pre_blockers: [ upgrade ]
+
+      # Only modules providing an BeginBlock func are listed here.
+      begin_blockers:
+        # capability must come before any modules using capabilities (e.g. IBC)
+        - capability
+        # During begin block slashing happens after distribution so that there is nothing left over in the validator fee
+        # pool, so as to keep the CanWithdrawInvariant invariant.
+        - distribution
+        - slashing
+        - evidence
+        # staking module is required if HistoricalEntries param > 0
+        - staking
+        - mint
+        - feemarket
+        - ibc
+        - authz
+        - scheduler
+
+      # Only modules providing an EndBlock func are listed here.
+      end_blockers:
+        - gov
+        - feemarket
+        # staking must come after gov.
+        - staking
+        - emissions
+        - feegrant
+
+      # Only modules providing an InitGenesis func are listed here.
+      init_genesis:
+        # capability must come before any modules using capabilities (e.g. IBC)
+        - capability
+        - auth
+        - bank
+        - distribution
+        - staking
+        - slashing
+        - gov
+        - mint
+        - ibc
+        # The genutil module must occur:
+        # - after staking so that pools are properly initialized with tokens from genesis accounts;
+        # - after auth so that it can access the params from auth;
+        - genutil
+        - evidence
+        - authz
+        - feegrant
+        - transfer
+        - interchainaccounts
+        - feeibc
+        - upgrade
+        - consensus
+        - circuit
+        # feemarket must be after genutil to allow genesis transactions with 0fees
+        - feemarket
+        - emissions
+        - scheduler
+
+      override_store_keys:
+        - module_name: auth
+          kv_store_key: acc
+  - name: auth
+    config:
+      "@type": cosmos.auth.module.v1.Module
+      bech32_prefix: allo
+      module_account_permissions:
+        - account: fee_collector
+        - account: mint
+          permissions: [minter]
+        - account: bonded_tokens_pool
+          permissions: [burner, staking]
+        - account: not_bonded_tokens_pool
+          permissions: [burner, staking]
+        - account : allorastaking
+        - account : distribution
+        - account : allorarewards
+        - account : allorapendingrewards
+        - account : ecosystem
+        - account: transfer
+          permissions: [minter, burner]
+        - account: feeibc
+        - account: interchainaccounts
+        - account: gov
+          permissions: [burner]
+        - account: feemarket-fee-collector
+        - account: feemarket
+  - name: gov
+    config:
+      "@type": cosmos.gov.module.v1.Module
+  - name: bank
+    config:
+      "@type": cosmos.bank.module.v1.Module
+      blocked_module_accounts_override:
+        [auth, bonded_tokens_pool, not_bonded_tokens_pool, allorastaking, allorarewards, allorapendingrewards, distribution]
+  - name: circuit
+    config:
+      "@type": cosmos.circuit.module.v1.Module
+  - name: staking
+    config:
+      "@type": cosmos.staking.module.v1.Module
+  - name: consensus
+    config:
+      "@type": cosmos.consensus.module.v1.Module
+  - name: genutil
+    config:
+      "@type": cosmos.genutil.module.v1.Module
+  - name: authz
+    config:
+      "@type": cosmos.authz.module.v1.Module
+  - name: tx
+    config:
+      "@type": cosmos.tx.config.v1.Config
+  - name: mint
+    config:
+      "@type": mint.module.v1.Module
+  - name: emissions
+    config:
+      "@type": emissions.module.v1.Module
+  - name: distribution
+    config:
+      "@type": cosmos.distribution.module.v1.Module
+  - name: upgrade
+    config:
+      "@type": cosmos.upgrade.module.v1.Module
+  - name: params
+    config:
+      "@type": cosmos.params.module.v1.Module
+  - name: slashing
+    config:
+      "@type": cosmos.slashing.module.v1.Module
+  - name: feegrant
+    config:
+      "@type": cosmos.feegrant.module.v1.Module
+  - name: evidence
+    config:
+      "@type": cosmos.evidence.module.v1.Module
+  - name: scheduler
+    config:
+      "@type": scheduler.module.v1.Module

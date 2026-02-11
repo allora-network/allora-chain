@@ -1,0 +1,106 @@
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true
+  # Enable specific linter
+  # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  enable:
+    - asciicheck
+    - bidichk
+    - durationcheck
+    - errcheck
+    - errname
+    - copyloopvar
+    - exhaustruct
+    - forcetypeassert
+    - goconst
+    - gofmt
+    - goimports
+    - goheader
+    - gomodguard
+    - goprintffuncname
+    - gosimple
+    - govet
+    - importas
+    - ineffassign
+    - makezero
+    - misspell
+    - nakedret
+    - nilnil
+    - promlinter
+    - staticcheck
+    - stylecheck
+    - tenv
+    - thelper
+    - tparallel
+    - typecheck
+    - thelper
+    - unconvert
+    - unused
+    - unparam
+    - revive
+    - gosec
+    - testifylint
+
+linters-settings:
+  revive:
+    rules:
+      - name: var-naming
+        severity: warning
+        disabled: false
+        exclude: [""]
+        arguments:
+          - ["ID", "RPC", "IDS", "JSON"] # AllowList
+          - [] # DenyList
+          - - upperCaseConst: true
+  gosec:
+    config:
+      G101:
+        pattern: "(?i)passwd|pass|password|pwd|secret|private_key|token|pw|apiKey|bearer|cred|mneumonic|seed|seedphrase|entropy"
+        ignore_entropy: false
+        # Maximum allowed entropy of the string.
+        entropy_threshold: "80.0"
+        # Maximum allowed value of entropy/string length.
+        # Is taken into account if entropy >= entropy_threshold/2.
+        per_char_threshold: "3.0"
+        # Calculate entropy for first N chars of the string.
+        truncate: "32"
+
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1024: cutset contains duplicate characters" # proved to not provide much value, only false positives.
+    - linters:
+        - staticcheck
+      text: "SA9004: only the first constant in this group has an explicit type" # explicitly recommended in go syntax
+    - linters:
+        - stylecheck
+      text: "ST1003:" # requires identifiers with "id" to be "ID".
+    - linters:
+        - stylecheck
+      text: "ST1005:" # punctuation in error messages
+    - linters:
+        - staticcheck
+      text: "SA1019: \"github.com/cosmos/ibc-go/v8/modules/core/02-client/types\" is deprecated`"
+    - path: _test\.go
+      text: "var-naming: don't use underscores in Go names;"
+      linters:
+        - revive
+    - path: _test\.go
+      linters:
+        - goconst
+    - path: _test\.go
+      text: "G404: Use of weak random number generator"
+      linters:
+        - gosec
+      
+  max-issues-per-linter: 10000
+  max-same-issues: 10000
+
+  exclude-files:
+    - ".*\\.pb\\.go"
+    - ".*\\.pb\\.gw\\.go"
+    - ".*\\.pulsar\\.go"
+    - ".*_mocks\\.go"

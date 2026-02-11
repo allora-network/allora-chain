@@ -1,0 +1,73 @@
+name: Run Format, Unit Tests, and Integration Tests
+
+on: [pull_request]
+
+jobs:
+  gofmt:
+    name: "Go Format Check"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Check code formatting using gofmt
+      uses: Jerome1337/gofmt-action@v1.0.5
+      with:
+          gofmt-path: '.'
+          gofmt-flags: '-l -d'
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.22.x
+
+    - name: Test
+      uses: robherley/go-test-action@v0.4.1
+
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.22.x
+
+    - name: Disk usage (before)
+      shell: bash
+      run: |
+        df -h
+        echo "Workspace: $GITHUB_WORKSPACE"
+
+    # Clean FIRST (before pulling/building/running chain)
+    - name: Free Disk Space (Ubuntu)
+      uses: insightsengineering/disk-space-reclaimer@v1
+      with:
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        swap-storage: true
+        docker-images: true
+        tools-cache: false
+
+    - name: Disk usage (after reclaim)
+      shell: bash
+      run: |
+        df -h
+        docker system df || true
+
+    - name: Apply Invariants Patch
+      run: git apply ./test/fuzz/invariants.patch
+
+    - name: Run allora l1 chain
+      run: bash ./test/local_testnet_l1.sh
+
+    - name: IntegrationTest
+      run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 15m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/test/integration -v
+

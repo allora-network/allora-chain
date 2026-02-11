@@ -1,0 +1,20 @@
+# Change all occurrences of "sample_validator" to your prerferred name
+services:
+  node:
+    container_name: sample_validator
+    image: "alloranetwork/allora-chain:v0.6.0-docker-upgrade" # docker image without cosmovisor. use vx.x.x-docker-upgrade for upgrade image
+    environment:
+      - NETWORK=allora-testnet-1
+      - MONIKER=sample_validator
+      - APP_HOME=/data
+      - HOME=/data
+      # - STATE_SYNC_RPC1=https://allora-rpc.testnet.allora.network:443
+      # - STATE_SYNC_RPC2=https://allora-rpc.testnet.allora.network:443
+      - UPGRADE=true # set this to true for chain upgrade runs
+    volumes:
+      - ./data:/data
+      - ./scripts/:/scripts
+    ports:
+      - "26656-26657:26656-26657"
+    user: "0:0"
+    entrypoint: /scripts/l1_node.sh

@@ -1,0 +1,469 @@
+package keeper
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"cosmossdk.io/collections"
+	storetypes "cosmossdk.io/core/store"
+	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/log"
+	"cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/mint/types"
+
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+type BlockHeight = int64
+
+// Keeper of the mint store
+type Keeper struct {
+	cdc              codec.BinaryCodec
+	storeService     storetypes.KVStoreService
+	accountKeeper    types.AccountKeeper
+	stakingKeeper    types.StakingKeeper
+	bankKeeper       types.BankKeeper
+	emissionsKeeper  types.EmissionsKeeper
+	feeCollectorName string
+
+	Schema                                   collections.Schema
+	Params                                   collections.Item[types.Params]
+	PreviousRewardEmissionPerUnitStakedToken collections.Item[math.LegacyDec]
+	PreviousBlockEmission                    collections.Item[math.Int]
+	EcosystemTokensMinted                    collections.Item[math.Int]
+	MonthsUnlocked                           collections.Item[math.Int]
+	// Starting block height for emissions
+	StartingEmissionsBlockHeight collections.Item[BlockHeight]
+}
+
+// NewKeeper creates a new mint Keeper instance
+func NewKeeper(
+	cdc codec.BinaryCodec,
+	storeService storetypes.KVStoreService,
+	sk types.StakingKeeper,
+	ak types.AccountKeeper,
+	bk types.BankKeeper,
+	ek types.EmissionsKeeper,
+	feeCollectorName string,
+) Keeper {
+	// ensure mint module account is set
+	if addr := ak.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("the x/%s module account has not been set", types.ModuleName))
+	}
+
+	sb := collections.NewSchemaBuilder(storeService)
+	k := Keeper{
+		Schema:                                   collections.Schema{},
+		cdc:                                      cdc,
+		storeService:                             storeService,
+		stakingKeeper:                            sk,
+		accountKeeper:                            ak,
+		bankKeeper:                               bk,
+		emissionsKeeper:                          ek,
+		feeCollectorName:                         feeCollectorName,
+		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),
+		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
+		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
+		MonthsUnlocked:                           collections.NewItem(sb, types.MonthsUnlockedKey, "monthsunlocked", sdk.IntValue),
+		StartingEmissionsBlockHeight:             collections.NewItem(sb, types.StartingEmissionsBlockHeightKey, "startingemissionsblockheight", collections.Int64Value),
+	}
+
+	schema, err := sb.Build()
+	if err != nil {
+		panic(err)
+	}
+	k.Schema = schema
+	return k
+}
+
+// Logger returns a module-specific logger.
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
+}
+
+// getter for the storage service
+func (k Keeper) GetStorageService() storetypes.KVStoreService {
+	return k.storeService
+}
+
+// getter for the binary codec
+func (k Keeper) GetBinaryCodec() codec.BinaryCodec {
+	return k.cdc
+}
+
+// This function increases the ledger that tracks the total tokens minted by the ecosystem treasury
+// over the life of the blockchain.
+func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) error {
+	curr, err := k.EcosystemTokensMinted.Get(ctx)
+	if err != nil {
+		return err
+	}
+	newTotal := curr.Add(minted)
+	return k.EcosystemTokensMinted.Set(ctx, newTotal)
+}
+
+// Setter for the number of months unlocked
+// this function coerces values to be between 0 and 36
+func (k Keeper) SetMonthsAlreadyUnlocked(ctx context.Context, months math.Int) error {
+	if months.IsNegative() {
+		months = math.ZeroInt()
+	}
+	if months.GT(math.NewInt(36)) {
+		months = math.NewInt(36)
+	}
+	return k.MonthsUnlocked.Set(ctx, months)
+}
+
+/// STAKING KEEPER RELATED FUNCTIONS
+
+// StakingTokenSupply implements an alias call to the underlying staking keeper's
+// StakingTokenSupply to be used in BeginBlocker.
+func (k Keeper) CosmosValidatorStakedSupply(ctx context.Context) (math.Int, error) {
+	return k.stakingKeeper.TotalBondedTokens(ctx)
+}
+
+/// BANK KEEPER RELATED FUNCTIONS
+
+// MintCoins implements an alias call to the underlying supply keeper's
+// MintCoins to be used in BeginBlocker.
+func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
+	if newCoins.Empty() {
+		// skip as no coins need to be minted
+		return nil
+	}
+
+	return k.bankKeeper.MintCoins(ctx, types.ModuleName, newCoins)
+}
+
+// MoveCoinsFromMintToEcosystem moves freshly minted tokens from the mint module
+// which has permissions to create new tokens, to the ecosystem account which
+// only has permissions to hold tokens.
+func (k Keeper) MoveCoinsFromMintToEcosystem(ctx context.Context, mintedCoins sdk.Coins) error {
+	if mintedCoins.Empty() {
+		return nil
+	}
+	return k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.ModuleName,
+		types.EcosystemModuleName,
+		mintedCoins,
+	)
+}
+
+// PayValidatorsFromEcosystem sends funds from the ecosystem
+// treasury account to the cosmos network validators rewards account (fee collector)
+// PayValidatorsFromEcosystem to be used in BeginBlocker.
+func (k Keeper) PayValidatorsFromEcosystem(ctx context.Context, rewards sdk.Coins) error {
+	if rewards.Empty() {
+		return nil
+	}
+	return k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.EcosystemModuleName,
+		k.feeCollectorName,
+		rewards,
+	)
+}
+
+// PayAlloraRewardsFromEcosystem sends funds from the ecosystem
+// treasury account to the allora reward payout account used in the emissions module
+// PayAlloraRewardsFromEcosystem to be used in BeginBlocker.
+func (k Keeper) PayAlloraRewardsFromEcosystem(ctx context.Context, rewards sdk.Coins) error {
+	if rewards.Empty() {
+		return nil
+	}
+	err := k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.EcosystemModuleName,
+		emissionstypes.AlloraRewardsAccountName,
+		rewards,
+	)
+	if err != nil {
+		return err
+	}
+
+	return k.emissionsKeeper.SetRewardCurrentBlockEmission(ctx, rewards.AmountOf(params.BaseCoinUnit))
+}
+
+// GetTotalCurrTokenSupply implements an alias call to the underlying supply keeper's
+// GetTotalCurrTokenSupply to be used in BeginBlocker.
+func (k Keeper) GetTotalCurrTokenSupply(ctx context.Context) sdk.Coin {
+	return k.bankKeeper.GetSupply(ctx, params.BaseCoinUnit)
+}
+
+// returns the quantity of tokens currently stored in the "ecosystem" module account
+// this module account is paid by inference requests and is drained by this mint module
+// when forwarding rewards to fee collector and allorarewards accounts
+func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, error) {
+	ecosystemAddr := k.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
+	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, nil
+}
+
+// Params getter
+func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
+	return k.Params.Get(ctx)
+}
+
+// What split of the rewards should be given to cosmos validators vs
+// allora participants (reputers, forecaster workers, inferrer workers)
+func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
+	emissionsParams, err := k.emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return emissionsParams.ValidatorsVsAlloraPercentReward, nil
+}
+
+// The last time we paid out rewards, what was the percentage of those rewards that went to staked reputers
+// (as opposed to forecaster workers and inferrer workers)
+func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (math.LegacyDec, error) {
+	stakedPercent, err := k.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(ctx)
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
+	stakedPercentLegacyDec, err := stakedPercent.SdkLegacyDec()
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
+	return stakedPercentLegacyDec, nil
+}
+
+// wrapper around emissions keeper call to get the number of blocks expected in a month
+func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
+	emissionsParams, err := k.emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return emissionsParams.BlocksPerMonth, nil
+}
+
+// wrapper around emissions keeper call to set the number of blocks expected in a month
+func (k Keeper) SetEmissionsParamsBlocksPerMonth(ctx context.Context, blocksPerMonth uint64) error {
+	emissionsParams, err := k.emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params from emissions keeper")
+	}
+	emissionsParams.BlocksPerMonth = blocksPerMonth
+	return k.emissionsKeeper.SetParams(ctx, emissionsParams)
+}
+
+// wrapper around emissions keeper call to get if whitelist admin
+func (k Keeper) IsWhitelistAdmin(ctx context.Context, admin string) (bool, error) {
+	return k.emissionsKeeper.IsWhitelistAdmin(ctx, admin)
+}
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) GetPreviousRewardEmissionPerUnitStakedToken(ctx context.Context) (math.LegacyDec, error) {
+	return k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+}
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) GetEmissionsKeeperTotalStake(ctx context.Context) (math.Int, error) {
+	return k.emissionsKeeper.GetTotalStake(ctx)
+}
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+	return k.emissionsKeeper.SetRewardCurrentBlockEmission(ctx, emission)
+}
+
+// GetEmissionsKeeper returns the emissions keeper interface
+func (k Keeper) GetEmissionsKeeper() types.EmissionsKeeper {
+	return k.emissionsKeeper
+}
+
+// Getter for the number of months unlocked
+// this Getter coerces values to be between 0 and 36
+// rather than throwing errors for invalid values stored in the keeper
+func (k Keeper) GetMonthsAlreadyUnlocked(ctx context.Context) math.Int {
+	// 36 months is the maximum number of months that can be unlocked,
+	// since tokens are on a three year vesting cycle
+	thirtySix := math.NewInt(36)
+	val, err := k.MonthsUnlocked.Get(ctx)
+	if err != nil {
+		return math.ZeroInt()
+	}
+	if val.IsNegative() {
+		return math.ZeroInt()
+	}
+	if val.GT(thirtySix) {
+		return thirtySix
+	}
+	return val
+}
+
+// GetEmissionInfo calculates and returns comprehensive emission information
+// This function can be called from the query server or BeginBlocker to emit events
+func (k Keeper) GetEmissionInfo(ctx context.Context) (*types.Params, *types.EventEmissionInfo, error) {
+	moduleParams, err := k.Params.Get(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get module params")
+	}
+
+	ecosystemBalance, err := k.GetEcosystemBalance(ctx, moduleParams.MintDenom)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get ecosystem balance")
+	}
+
+	previousBlockEmission, err := k.PreviousBlockEmission.Get(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get previous block emission")
+	}
+
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, moduleParams)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get ecosystem mint supply remaining")
+	}
+
+	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get blocks per month")
+	}
+	startingEmissionsBlockHeight, err := k.GetStartingEmissionsBlockHeight(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get starting emissions block height")
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockCountSinceTGE := uint64(sdkCtx.BlockHeight()) - (uint64(startingEmissionsBlockHeight))
+	numberOfRecalcs := blockCountSinceTGE / blocksPerMonth
+	blockHeightTarget_e_i_LastCalculated := uint64(startingEmissionsBlockHeight) + numberOfRecalcs*blocksPerMonth + 1 //nolint:revive // var-naming: don't use underscores in Go names
+	blockHeightTarget_e_i_Next := blockHeightTarget_e_i_LastCalculated + blocksPerMonth                               //nolint:revive // var-naming: don't use underscores in Go names
+
+	networkStakedTokens, err := GetNumStakedTokens(ctx, k)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get number of staked tokens")
+	}
+	monthsAlreadyUnlocked := k.GetMonthsAlreadyUnlocked(ctx)
+	_, lockedVestingTokensPreseed,
+		lockedVestingTokensSeed, lockedVestingTokensTeam, lockedVestingTokensFoundation, _, _, err := GetLockedVestingTokens(
+		blocksPerMonth,
+		math.NewIntFromUint64(blockCountSinceTGE),
+		moduleParams,
+		monthsAlreadyUnlocked,
+	)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get locked vesting tokens")
+	}
+	circulatingSupply,
+		totalSupply,
+		lockedVestingTokensTotal,
+		ecosystemLocked,
+		updatedMonthsUnlocked,
+		err := GetCirculatingSupply(ctx, k, moduleParams, blockCountSinceTGE, blocksPerMonth, monthsAlreadyUnlocked)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get circulating supply")
+	}
+	targetRewardEmissionPerUnitStakedToken,
+		err := GetTargetRewardEmissionPerUnitStakedToken(
+		moduleParams.FEmission,
+		ecosystemLocked,
+		networkStakedTokens,
+		circulatingSupply,
+		moduleParams.MaxSupply,
+	)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get target reward emission per unit staked token")
+	}
+	reputersPercent, err := k.GetPreviousPercentageRewardToStakedReputers(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get previous percentage reward to staked reputers")
+	}
+	vPercentADec, err := k.GetValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get validators vs allora percent reward")
+	}
+	vPercent, err := vPercentADec.SdkLegacyDec()
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to convert validators vs allora percent reward to legacy dec")
+	}
+	maximumMonthlyEmissionPerUnitStakedToken := GetMaximumMonthlyEmissionPerUnitStakedToken(
+		moduleParams.MaximumMonthlyPercentageYield,
+		reputersPercent,
+		vPercent,
+	)
+	targetRewardEmissionPerUnitStakedToken = GetCappedTargetEmissionPerUnitStakedToken(
+		targetRewardEmissionPerUnitStakedToken,
+		maximumMonthlyEmissionPerUnitStakedToken,
+	)
+	var previousRewardEmissionPerUnitStakedToken math.LegacyDec
+	// if this is the first month/time we're calculating the target emission...
+	if blockCountSinceTGE < blocksPerMonth {
+		previousRewardEmissionPerUnitStakedToken = targetRewardEmissionPerUnitStakedToken
+	} else {
+		previousRewardEmissionPerUnitStakedToken, err = k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
+		if err != nil {
+			return nil, nil, errorsmod.Wrap(err, "failed to get previous reward emission per unit staked token")
+		}
+	}
+	emissionPerUnitStakedToken := GetExponentialMovingAverage(
+		targetRewardEmissionPerUnitStakedToken,
+		moduleParams.OneMonthSmoothingDegree,
+		previousRewardEmissionPerUnitStakedToken,
+	)
+	emissionPerMonth := GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStakedTokens)
+	blockEmission := emissionPerMonth.
+		Quo(math.NewIntFromUint64(blocksPerMonth))
+	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	alloraRewardsCut := blockEmission.Sub(validatorCut)
+
+	eventInfo := &types.EventEmissionInfo{
+		EcosystemBalance:                         ecosystemBalance,
+		PreviousBlockEmission:                    previousBlockEmission,
+		EcosystemMintSupplyRemaining:             ecosystemMintSupplyRemaining,
+		BlocksPerMonth:                           blocksPerMonth,
+		BlockHeightTargetEILastCalculated:        blockHeightTarget_e_i_LastCalculated,
+		BlockHeightTargetEINextCalculated:        blockHeightTarget_e_i_Next,
+		NetworkStakedTokens:                      networkStakedTokens,
+		LockedVestingTokensTotal:                 lockedVestingTokensTotal,
+		LockedVestingTokensInvestorsPreseed:      lockedVestingTokensPreseed,
+		LockedVestingTokensInvestorsSeed:         lockedVestingTokensSeed,
+		LockedVestingTokensTeam:                  lockedVestingTokensTeam,
+		LockedVestingTokensFoundation:            lockedVestingTokensFoundation,
+		EcosystemLocked:                          ecosystemLocked,
+		CirculatingSupply:                        circulatingSupply,
+		MaxSupply:                                totalSupply,
+		TargetEmissionRatePerUnitStakedToken:     targetRewardEmissionPerUnitStakedToken,
+		ReputersPercent:                          reputersPercent,
+		ValidatorsPercent:                        vPercent,
+		MaximumMonthlyEmissionPerUnitStakedToken: maximumMonthlyEmissionPerUnitStakedToken,
+		TargetRewardEmissionPerUnitStakedToken:   targetRewardEmissionPerUnitStakedToken,
+		EmissionPerUnitStakedToken:               emissionPerUnitStakedToken,
+		EmissionPerMonth:                         emissionPerMonth,
+		BlockEmission:                            blockEmission,
+		ValidatorCut:                             validatorCut,
+		AlloraRewardsCut:                         alloraRewardsCut,
+		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
+		MonthsAlreadyUnlocked:                    monthsAlreadyUnlocked,
+		UpdatedMonthsUnlocked:                    updatedMonthsUnlocked,
+		StartingEmissionsBlockHeight:             startingEmissionsBlockHeight,
+	}
+
+	return &moduleParams, eventInfo, nil
+}
+
+// GetStartingEmissionsBlockHeight gets the starting block height for emissions
+func (k Keeper) GetStartingEmissionsBlockHeight(ctx context.Context) (int64, error) {
+	ret, err := k.StartingEmissionsBlockHeight.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return 0, nil
+	} else if err != nil {
+		return 0, errorsmod.Wrap(err, "error getting starting emissions block height")
+	}
+	return ret, nil
+}
+
+// SetStartingEmissionsBlockHeight sets the starting block height for emissions
+func (k Keeper) SetStartingEmissionsBlockHeight(ctx context.Context, height int64) error {
+	if height < 0 {
+		return errorsmod.Wrap(errors.New("starting emissions block height must be positive"), "error setting starting emissions block height")
+	}
+	return k.StartingEmissionsBlockHeight.Set(ctx, height)
+}

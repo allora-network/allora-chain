@@ -1,0 +1,1032 @@
+package math_test
+
+import (
+	"fmt"
+	"strconv"
+	"testing"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
+	"github.com/stretchr/testify/require"
+)
+
+func TestCalcEmaSimple(t *testing.T) {
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	current := alloraMath.MustNewDecFromString("300")
+	previous := alloraMath.MustNewDecFromString("200")
+
+	// 0.1*300 + (1-0.1)*200
+	// 30 + 180 = 210
+	expected := alloraMath.MustNewDecFromString("210")
+
+	result, err := alloraMath.CalcEma(alpha, current, previous, false)
+	require.NoError(t, err)
+	inDelta, err := alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001"))
+	require.NoError(t, err)
+	require.True(t, inDelta)
+}
+
+func TestCalcEmaWithNoPrior(t *testing.T) {
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	current := alloraMath.MustNewDecFromString("300")
+	previous := alloraMath.MustNewDecFromString("200")
+
+	// Current value should be returned if there is no prior value
+	expected := alloraMath.MustNewDecFromString("300")
+
+	result, err := alloraMath.CalcEma(alpha, current, previous, true)
+	require.NoError(t, err)
+	inDelta, err := alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001"))
+	require.NoError(t, err)
+	require.True(t, inDelta)
+}
+
+func TestCalcEmaWithNaN(t *testing.T) {
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	current := alloraMath.MustNewDecFromString("300")
+	previous := alloraMath.NewNaN()
+
+	_, err := alloraMath.CalcEma(alpha, current, previous, false)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	previous = alloraMath.MustNewDecFromString("200")
+	current = alloraMath.NewNaN()
+	_, err = alloraMath.CalcEma(alpha, current, previous, false)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	current = alloraMath.MustNewDecFromString("300")
+	alpha = alloraMath.NewNaN()
+	_, err = alloraMath.CalcEma(alpha, current, previous, false)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestNCalcEma(t *testing.T) {
+	cases := []struct {
+		name           string
+		alpha          alloraMath.Dec
+		update         alloraMath.Dec
+		score          alloraMath.Dec
+		n              uint64
+		expectedResult alloraMath.Dec
+		expectedErr    error
+	}{
+		{
+			name:           "n=1",
+			alpha:          alloraMath.MustNewDecFromString("0.1"),
+			update:         alloraMath.MustNewDecFromString("300"),
+			score:          alloraMath.MustNewDecFromString("200"),
+			n:              1,
+			expectedResult: alloraMath.MustNewDecFromString("210"),
+			expectedErr:    nil,
+		},
+		{
+			name:           "n=4",
+			alpha:          alloraMath.MustNewDecFromString("0.1"),
+			update:         alloraMath.MustNewDecFromString("300"),
+			score:          alloraMath.MustNewDecFromString("200"),
+			n:              4,
+			expectedResult: alloraMath.MustNewDecFromString("234.39"),
+			expectedErr:    nil,
+		},
+		{
+			name:           "error alpha NaN",
+			alpha:          alloraMath.NewNaN(),
+			update:         alloraMath.MustNewDecFromString("300"),
+			score:          alloraMath.MustNewDecFromString("200"),
+			n:              3,
+			expectedResult: alloraMath.ZeroDec(),
+			expectedErr:    alloraMath.ErrNaN,
+		},
+		{
+			name:           "error update NaN",
+			alpha:          alloraMath.MustNewDecFromString("0.1"),
+			update:         alloraMath.NewNaN(),
+			score:          alloraMath.MustNewDecFromString("200"),
+			n:              3,
+			expectedResult: alloraMath.ZeroDec(),
+			expectedErr:    alloraMath.ErrNaN,
+		},
+		{
+			name:           "error score NaN",
+			alpha:          alloraMath.MustNewDecFromString("0.1"),
+			update:         alloraMath.MustNewDecFromString("300"),
+			score:          alloraMath.NewNaN(),
+			n:              3,
+			expectedResult: alloraMath.ZeroDec(),
+			expectedErr:    alloraMath.ErrNaN,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := alloraMath.NCalcEma(tc.alpha, tc.update, tc.score, tc.n)
+			if tc.expectedErr != nil {
+				require.ErrorIs(t, err, tc.expectedErr)
+			} else {
+				require.NoError(t, err)
+				inDelta, err := alloraMath.InDelta(tc.expectedResult, result, alloraMath.MustNewDecFromString("0.0001"))
+				require.NoError(t, err)
+				require.True(t, inDelta, "expected %s, got %s", tc.expectedResult.String(), result.String())
+			}
+		})
+	}
+}
+
+func TestStdDev(t *testing.T) {
+	tests := []struct {
+		name string
+		data []alloraMath.Dec
+		want alloraMath.Dec
+	}{
+		{
+			name: "basic",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("-0.00675"),
+				alloraMath.MustNewDecFromString("-0.00622"),
+				alloraMath.MustNewDecFromString("-0.01502"),
+				alloraMath.MustNewDecFromString("-0.01214"),
+				alloraMath.MustNewDecFromString("0.00392"),
+				alloraMath.MustNewDecFromString("0.00559"),
+				alloraMath.MustNewDecFromString("0.0438"),
+				alloraMath.MustNewDecFromString("0.04304"),
+				alloraMath.MustNewDecFromString("0.09719"),
+				alloraMath.MustNewDecFromString("0.09675"),
+			},
+			want: alloraMath.MustNewDecFromString("0.04323473788517746987174741957435394"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := alloraMath.StdDev(tt.data)
+			require.NoError(t, err)
+			inDelta, err := alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.0001"))
+			require.NoError(t, err)
+			require.True(t, inDelta)
+		})
+	}
+}
+
+func TestStdDevOneValueShouldBeZero(t *testing.T) {
+	stdDev, err := alloraMath.StdDev([]alloraMath.Dec{alloraMath.MustNewDecFromString("-0.00675")})
+
+	require.NoError(t, err)
+	inDelta, err := alloraMath.InDelta(
+		alloraMath.MustNewDecFromString("0"),
+		stdDev,
+		alloraMath.MustNewDecFromString("0.0001"),
+	)
+	require.NoError(t, err)
+	require.True(t, inDelta)
+}
+
+func TestStdDevWithNaN(t *testing.T) {
+	_, err := alloraMath.StdDev([]alloraMath.Dec{alloraMath.OneDec(), alloraMath.NewNaN(), alloraMath.ZeroDec()})
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestPhiSimple(t *testing.T) {
+	x := alloraMath.MustNewDecFromString("7.9997")
+	p := alloraMath.NewDecFromInt64(3)
+	c := alloraMath.MustNewDecFromString("0.75")
+	// we expect a value very very close to 64
+	result, err := alloraMath.Phi(p, c, x)
+	require.NoError(t, err)
+	inDelta, err := alloraMath.InDelta(alloraMath.NewDecFromInt64(64), result, alloraMath.MustNewDecFromString("0.001"))
+	require.NoError(t, err)
+	require.False(t, inDelta)
+}
+
+// φ'_p(x) = p / (exp(p * (c - x)) + 1)
+func TestGradient(t *testing.T) {
+	tests := []struct {
+		name        string
+		c           alloraMath.Dec
+		p           alloraMath.Dec
+		x           alloraMath.Dec
+		expected    alloraMath.Dec
+		expectedErr error
+	}{
+		{
+			name: "normal operation 1",
+			c:    alloraMath.MustNewDecFromString("0.75"),
+			p:    alloraMath.MustNewDecFromString("2"),
+			x:    alloraMath.MustNewDecFromString("1"),
+			// φ'_p(x) = 2 / (exp(2 * (0.75 - 1)) + 1)
+			// φ'_p(x) = 1.2449186624037092
+			expected:    alloraMath.MustNewDecFromString("1.2449186624037092"),
+			expectedErr: nil,
+		},
+		{
+			name: "normal operation 2",
+			c:    alloraMath.MustNewDecFromString("0.75"),
+			p:    alloraMath.MustNewDecFromString("10"),
+			x:    alloraMath.MustNewDecFromString("3"),
+			// φ'_p(x) = 10 / (exp(10 * (0.75 - 3)) + 1)
+			// φ'_p(x) = 9.999999998308102
+			expected:    alloraMath.MustNewDecFromString("9.999999998308102"),
+			expectedErr: nil,
+		},
+		{
+			name: "normal operation 3",
+			c:    alloraMath.MustNewDecFromString("0.75"),
+			p:    alloraMath.MustNewDecFromString("9.2"),
+			x:    alloraMath.MustNewDecFromString("3.4"),
+			// φ'_p(x) = 9.2 / (exp(9.2 * (0.75 - 3.4)) + 1)
+			expected:    alloraMath.MustNewDecFromString("9.199999999762486"),
+			expectedErr: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := alloraMath.Gradient(tc.p, tc.c, tc.x)
+
+			if tc.expectedErr != nil {
+				require.ErrorIs(t, err, tc.expectedErr)
+			} else {
+				require.NoError(t, err)
+				inDelta, err := alloraMath.InDelta(
+					tc.expected,
+					result,
+					alloraMath.MustNewDecFromString("0.00001"))
+				require.NoError(t, err)
+				require.True(
+					t,
+					inDelta,
+					"result should match expected value within epsilon",
+					tc.expected.String(),
+					result.String(),
+				)
+			}
+		})
+	}
+}
+
+func TestGradientWithNaN(t *testing.T) {
+	_, err := alloraMath.Gradient(alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1"))
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestMedian(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     []alloraMath.Dec
+		expected alloraMath.Dec
+	}{
+		{
+			name: "odd number of elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("3"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("7"),
+				alloraMath.MustNewDecFromString("9"),
+			},
+			expected: alloraMath.MustNewDecFromString("5"),
+		},
+		{
+			name: "even number of elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("3"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("7"),
+			},
+			expected: alloraMath.MustNewDecFromString("4"),
+		},
+		{
+			name: "complex large values",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("123456789.123456789"),
+				alloraMath.MustNewDecFromString("987654321.987654321"),
+				alloraMath.MustNewDecFromString("555555555.555555555"),
+				alloraMath.MustNewDecFromString("333333333.333333333"),
+				alloraMath.MustNewDecFromString("111111111.111111111"),
+			},
+			expected: alloraMath.MustNewDecFromString("333333333.333333333"),
+		},
+		{
+			name: "single element",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("7"),
+			},
+			expected: alloraMath.MustNewDecFromString("7"),
+		},
+		{
+			name:     "empty slice",
+			data:     []alloraMath.Dec{},
+			expected: alloraMath.ZeroDec(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := alloraMath.Median(tt.data)
+			require.NoError(t, err)
+			require.True(t, tt.expected.Equal(result))
+		})
+	}
+}
+
+func TestMedianWithNaN(t *testing.T) {
+	_, err := alloraMath.Median([]alloraMath.Dec{alloraMath.OneDec(), alloraMath.NewNaN(), alloraMath.ZeroDec()})
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestWeightedInferences(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("4"),
+		alloraMath.MustNewDecFromString("5"),
+	}
+	weights := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+	}
+	percentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("100"),
+	}
+	expected := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("5"),
+	}
+
+	result, err := alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.NoError(t, err)
+	require.Len(t, result, len(expected))
+	for i, r := range result {
+		inDelta, err := alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001"))
+		require.NoError(t, err)
+		require.True(t, inDelta)
+	}
+}
+
+func TestPhiWithNaN(t *testing.T) {
+	_, err := alloraMath.Phi(alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1"))
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestCumulativeSumWithNaN(t *testing.T) {
+	_, err := alloraMath.CumulativeSum([]alloraMath.Dec{alloraMath.OneDec(), alloraMath.NewNaN(), alloraMath.ZeroDec()})
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestLinearInterpolationWithNaN(t *testing.T) {
+	x := []alloraMath.Dec{alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1")}
+	xp := []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	fp := []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	_, err := alloraMath.LinearInterpolation(x, xp, fp)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	x = []alloraMath.Dec{alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("1")}
+	xp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("3")}
+	fp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	_, err = alloraMath.LinearInterpolation(x, xp, fp)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	x = []alloraMath.Dec{alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("1")}
+	xp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	fp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN()}
+	_, err = alloraMath.LinearInterpolation(x, xp, fp)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestWeightedInferences2(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("20"),
+		alloraMath.MustNewDecFromString("30"),
+		alloraMath.MustNewDecFromString("40"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+	weights := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	percentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("25"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("75"),
+		alloraMath.MustNewDecFromString("90"),
+	}
+	expected := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("16.666666666666664"),
+		alloraMath.MustNewDecFromString("27"),
+		alloraMath.MustNewDecFromString("38.57142857142857"),
+		alloraMath.MustNewDecFromString("47.22222222222222"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+
+	result, err := alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.NoError(t, err)
+	require.Len(t, result, len(expected))
+	for i, r := range result {
+		inDelta, err := alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001"))
+		require.NoError(t, err)
+		require.True(t, inDelta)
+	}
+}
+
+func TestWeightedPercentileWithNaN(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("20"),
+		alloraMath.NewNaN(),
+		alloraMath.MustNewDecFromString("40"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+	weights := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	percentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("25"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("75"),
+		alloraMath.MustNewDecFromString("90"),
+	}
+	_, err := alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	data = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("20"),
+		alloraMath.MustNewDecFromString("30"),
+		alloraMath.MustNewDecFromString("40"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+	weights = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.NewNaN(),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	_, err = alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	weights = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	percentiles = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("25"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.NewNaN(),
+		alloraMath.MustNewDecFromString("90"),
+	}
+	_, err = alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestGetSortedKeys(t *testing.T) {
+	m := map[int32]struct{}{
+		5: {},
+		3: {},
+		2: {},
+		4: {},
+		1: {},
+	}
+
+	expected := []int32{1, 2, 3, 4, 5}
+	keys := alloraMath.GetSortedKeys[int32](m)
+	require.Equal(t, expected, keys)
+
+	m2 := map[string]struct{}{
+		"5.5":  {},
+		"3.25": {},
+		"2.1":  {},
+		"4.75": {},
+		"1":    {},
+	}
+	expected2 := []string{
+		"1",
+		"2.1",
+		"3.25",
+		"4.75",
+		"5.5",
+	}
+	keys2 := alloraMath.GetSortedKeys(m2)
+	require.Equal(t, expected2, keys2)
+}
+
+func TestGetSortedKeysWithEmptyMap(t *testing.T) {
+	m := map[int32]struct{}{}
+	keys := alloraMath.GetSortedKeys(m)
+	require.Equal(t, []int32{}, keys)
+}
+
+func TestGetSortedElementsByDecWeightDesc(t *testing.T) {
+	dec1 := alloraMath.MustNewDecFromString("0.5")
+	dec2 := alloraMath.MustNewDecFromString("0.2")
+	dec3 := alloraMath.MustNewDecFromString("0.1")
+	dec4 := alloraMath.MustNewDecFromString("0.7")
+	dec5 := alloraMath.MustNewDecFromString("0.4")
+	m := map[int32]*alloraMath.Dec{
+		1: &dec1,
+		2: &dec2,
+		3: &dec3,
+		4: &dec4,
+		5: &dec5,
+	}
+
+	expected := []int32{4, 1, 5, 2, 3}
+	keys := alloraMath.GetSortedElementsByDecWeightDesc(m)
+	require.Equal(t, expected, keys)
+}
+
+// TestGetQuantileOfDecs tests the behavior of GetQuantileOfDecs
+func TestGetQuantileOfDecs(t *testing.T) {
+	// Test with positive data
+	m := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("4"),
+		alloraMath.MustNewDecFromString("5"),
+		alloraMath.MustNewDecFromString("6"),
+		alloraMath.MustNewDecFromString("7"),
+		alloraMath.MustNewDecFromString("8"),
+		alloraMath.MustNewDecFromString("9"),
+		alloraMath.MustNewDecFromString("10"),
+	}
+	// Test with negative data
+	negativeData := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("-5"),
+		alloraMath.MustNewDecFromString("-3"),
+		alloraMath.MustNewDecFromString("-1"),
+		alloraMath.MustNewDecFromString("-4"),
+		alloraMath.MustNewDecFromString("-2"),
+	}
+	// Test with mixed data
+	mixedData := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("-5"),
+		alloraMath.MustNewDecFromString("-3"),
+		alloraMath.MustNewDecFromString("0"),
+		alloraMath.MustNewDecFromString("-4"),
+		alloraMath.MustNewDecFromString("2"),
+	}
+
+	tests := []struct {
+		name        string
+		data        []alloraMath.Dec
+		quantile    alloraMath.Dec
+		expected    alloraMath.Dec
+		expectedErr error
+	}{
+		{
+			data:        m,
+			quantile:    alloraMath.MustNewDecFromString("0.25"),
+			expected:    alloraMath.MustNewDecFromString("3.25"),
+			expectedErr: nil,
+			name:        "0.25 quantile",
+		},
+		{
+			data:        m,
+			quantile:    alloraMath.MustNewDecFromString("0.5"),
+			expected:    alloraMath.MustNewDecFromString("5.5"),
+			expectedErr: nil,
+			name:        "0.5 quantile",
+		},
+		{
+			data:        m,
+			quantile:    alloraMath.MustNewDecFromString("0.75"),
+			expected:    alloraMath.MustNewDecFromString("7.75"),
+			expectedErr: nil,
+			name:        "0.75 quantile",
+		},
+		{
+			data:        []alloraMath.Dec{},
+			quantile:    alloraMath.MustNewDecFromString("0.5"),
+			expected:    alloraMath.ZeroDec(),
+			expectedErr: nil,
+			name:        "empty data",
+		},
+		{
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("42"),
+			},
+			quantile:    alloraMath.MustNewDecFromString("0.5"),
+			expected:    alloraMath.MustNewDecFromString("42"),
+			expectedErr: nil,
+			name:        "single data point",
+		},
+		{
+			data:        negativeData,
+			quantile:    alloraMath.MustNewDecFromString("0.5"),
+			expected:    alloraMath.MustNewDecFromString("-3"),
+			expectedErr: nil,
+			name:        "negative data",
+		},
+		{
+			data:        mixedData,
+			quantile:    alloraMath.MustNewDecFromString("0.5"),
+			expected:    alloraMath.MustNewDecFromString("-3"),
+			expectedErr: nil,
+			name:        "mixed data",
+		},
+		{
+			data: []alloraMath.Dec{
+				alloraMath.NewNaN(),
+				alloraMath.NewNaN(),
+				alloraMath.MustNewDecFromString("3"),
+			},
+			quantile:    alloraMath.MustNewDecFromString("0.5"),
+			expected:    alloraMath.NewNaN(),
+			expectedErr: nil,
+			name:        "data is NaN",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := alloraMath.GetQuantileOfDecs(tt.data, tt.quantile)
+
+			if tt.expectedErr != nil {
+				require.ErrorIs(t, err, tt.expectedErr)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, result)
+			}
+		})
+	}
+}
+
+// TestGetQuantileOfDecsWithInvalidQuantile tests the behavior of GetQuantileOfDecs
+// when given an invalid quantile, including NaN
+func TestGetQuantileOfDecsWithInvalidQuantile(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+	}
+
+	invalidQuantiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1.1"),
+		alloraMath.MustNewDecFromString("-0.1"),
+		alloraMath.NewNaN(),
+	}
+
+	for _, quantile := range invalidQuantiles {
+		_, err := alloraMath.GetQuantileOfDecs(data, quantile)
+		require.Error(t, err)
+	}
+}
+
+// TestGetQuantileOfDecsWithLargerAltDataset tests the behavior of GetQuantileOfDecs
+// when given a larger dataset.
+func TestGetQuantileOfDecsWithLargerAltDataset(t *testing.T) {
+	decsSorted := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.8"),
+		alloraMath.MustNewDecFromString("0.7"),
+		alloraMath.MustNewDecFromString("0.0"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.9"),
+		alloraMath.MustNewDecFromString("0.6"),
+		alloraMath.MustNewDecFromString("0.5"),
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+	}
+	quantile := alloraMath.MustNewDecFromString("0.2")
+	expectedResult := alloraMath.MustNewDecFromString("0.18")
+
+	result, err := alloraMath.GetQuantileOfDecs(decsSorted, quantile)
+	require.NoError(t, err)
+	alloratestutil.InEpsilon5Dec(t, result, expectedResult)
+}
+
+// TestGetQuantileOfDecsWithEmptySlice tests the behavior of GetQuantileOfDecs
+// when given an empty slice of Decs.
+func TestGetQuantileOfDecsWithEmptySlice(t *testing.T) {
+	// Create an empty slice of Decs
+	emptySlice := []alloraMath.Dec{}
+
+	// Define a valid quantile (any value between 0 and 1 is valid for this test)
+	quantile := alloraMath.MustNewDecFromString("0.5")
+
+	// Call GetQuantileOfDecs with the empty slice and quantile
+	result, err := alloraMath.GetQuantileOfDecs(emptySlice, quantile)
+
+	// We expect no error to be returned
+	require.NoError(t, err)
+
+	// We expect the result to be zero
+	// This is a design decision to ensure chain continuity in edge cases
+	expectedResult := alloraMath.ZeroDec()
+	require.True(t, result.Equal(expectedResult))
+}
+
+// TestGetQuantileOfDecsWithSingleElement tests the behavior of GetQuantileOfDecs
+// when given a slice with only one Dec.
+func TestGetQuantileOfDecsWithSingleElement(t *testing.T) {
+	// Create a slice with a single Dec
+	singleElementSlice := []alloraMath.Dec{alloraMath.MustNewDecFromString("42")}
+
+	// Test with different quantiles
+	quantiles := []string{"0", "0.3", "0.5", "0.7", "1"}
+
+	for _, q := range quantiles {
+		t.Run(fmt.Sprintf("Quantile_%s", q), func(t *testing.T) {
+			quantile := alloraMath.MustNewDecFromString(q)
+
+			// Call GetQuantileOfDecs with the single-element slice and quantile
+			result, err := alloraMath.GetQuantileOfDecs(singleElementSlice, quantile)
+
+			// We expect no error to be returned
+			require.NoError(t, err)
+
+			// We expect the result to always be the single element in the slice
+			// regardless of the quantile value
+			expectedResult := singleElementSlice[0]
+			require.True(t, result.Equal(expectedResult))
+		})
+	}
+}
+
+// TestGetQuantileOfScoresCsv tests the behavior of GetQuantileOfDecs
+// by comparing the result with the expected value from a CSV file.
+func TestGetQuantileOfScoresCsv(t *testing.T) {
+	// Iterate over epochs 301 to 399
+	for epoch := 301; epoch < 400; epoch++ {
+		epochGet := alloratestutil.GetSortitionSimulatorValuesGetterForEpochs()[epoch]
+
+		nParticipants, err := epochGet("n_participants").UInt64()
+		require.NoError(t, err)
+		nParticipantsDrawn, err := epochGet("n_participants_drawn").UInt64()
+		require.NoError(t, err)
+
+		// populate the data from the csv
+		decsSorted := make([]alloraMath.Dec, nParticipantsDrawn)
+		for i := uint64(0); i < nParticipants; i++ {
+			participantName := strconv.FormatUint(i, 10)
+			active := epochGet(fmt.Sprintf("%s_active", participantName))
+			if active.Equal(alloraMath.OneDec()) {
+				sortPosition := epochGet(fmt.Sprintf("%s_sort_position_quality_metrics", participantName))
+				sortPos, err := sortPosition.UInt64()
+				require.NoError(t, err)
+				qualityMetric := epochGet(fmt.Sprintf("%s_quality_metric", participantName))
+				decsSorted[sortPos] = qualityMetric
+			}
+		}
+		for _, dec := range decsSorted {
+			require.NotEmpty(t, dec)
+		}
+		expected := epochGet("quality_percentile")
+		percentile_to_use := epochGet("percentile")
+		quantile, err := percentile_to_use.Quo(alloraMath.NewDecFromInt64(int64(100)))
+		require.NoError(t, err)
+		result, err := alloraMath.GetQuantileOfDecs(decsSorted, quantile)
+		require.NoError(t, err)
+		alloratestutil.InEpsilon5Dec(t, result, expected)
+	}
+}
+
+func TestMedianAbsoluteDeviation(t *testing.T) {
+	tests := []struct {
+		name       string
+		input      []alloraMath.Dec
+		wantMad    alloraMath.Dec
+		wantMedian alloraMath.Dec
+		wantErr    bool
+	}{
+		{
+			name:       "empty slice",
+			input:      []alloraMath.Dec{},
+			wantMad:    alloraMath.ZeroDec(),
+			wantMedian: alloraMath.ZeroDec(),
+			wantErr:    false,
+		},
+		{
+			name:       "single value",
+			input:      []alloraMath.Dec{alloraMath.NewDecFromInt64(5)},
+			wantMad:    alloraMath.ZeroDec(),
+			wantMedian: alloraMath.NewDecFromInt64(5),
+			wantErr:    false,
+		},
+		{
+			name: "simple odd length array",
+			input: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(2),
+				alloraMath.NewDecFromInt64(3),
+				alloraMath.NewDecFromInt64(4),
+				alloraMath.NewDecFromInt64(5),
+			},
+			wantMad:    alloraMath.NewDecFromInt64(1), // deviations=[2,1,0,1,2], median of deviations=1
+			wantMedian: alloraMath.NewDecFromInt64(3), // median=3
+			wantErr:    false,
+		},
+		{
+			name: "simple even length array",
+			input: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewDecFromInt64(2),
+				alloraMath.NewDecFromInt64(4),
+				alloraMath.NewDecFromInt64(5),
+			},
+			wantMad:    alloraMath.MustNewDecFromString("1.5"),
+			wantMedian: alloraMath.NewDecFromInt64(3),
+			wantErr:    false,
+		},
+		{
+			name: "decimal values",
+			input: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1.5"),
+				alloraMath.MustNewDecFromString("2.3"),
+				alloraMath.MustNewDecFromString("3.7"),
+				alloraMath.MustNewDecFromString("4.2"),
+				alloraMath.MustNewDecFromString("5.8"),
+			},
+			// median = 3.7
+			// deviations = [2.2, 1.4, 0, 0.5, 2.1]
+			// median of deviations = 1.4
+			wantMad:    alloraMath.MustNewDecFromString("1.4"),
+			wantMedian: alloraMath.MustNewDecFromString("3.7"),
+			wantErr:    false,
+		},
+		{
+			name: "array with NaN",
+			input: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1),
+				alloraMath.NewNaN(),
+				alloraMath.NewDecFromInt64(3),
+			},
+			wantMad:    alloraMath.Dec{},
+			wantMedian: alloraMath.Dec{},
+			wantErr:    true,
+		},
+		{
+			name: "array with identical values",
+			input: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(5),
+				alloraMath.NewDecFromInt64(5),
+				alloraMath.NewDecFromInt64(5),
+			},
+			wantMad:    alloraMath.ZeroDec(),          // all deviations are 0
+			wantMedian: alloraMath.NewDecFromInt64(5), // median is 5
+			wantErr:    false,
+		},
+		{
+			name: "array with outliers",
+			input: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(1000),
+				alloraMath.NewDecFromInt64(11),
+				alloraMath.NewDecFromInt64(12),
+			},
+			wantMad:    alloraMath.MustNewDecFromString("1"),
+			wantMedian: alloraMath.MustNewDecFromString("12"),
+			wantErr:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotMad, gotMedian, err := alloraMath.MedianAbsoluteDeviation(tt.input)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.True(t, gotMad.Equal(tt.wantMad),
+				"mad: got %v want %v", gotMad, tt.wantMad)
+			require.True(t, gotMedian.Equal(tt.wantMedian),
+				"median: got %v want %v", gotMedian, tt.wantMedian)
+		})
+	}
+}
+
+func TestGetSmoothedAlpha(t *testing.T) {
+	testCases := []struct {
+		name         string
+		epochLength  int64
+		baseInterval alloraMath.Dec
+		baseAlpha    alloraMath.Dec
+		expected     alloraMath.Dec
+		expectError  bool
+		epsilon      alloraMath.Dec
+	}{
+		{
+			name:         "Standard case - weekly updates",
+			epochLength:  1000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.013"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Short epoch, updates fast",
+			epochLength:  100,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.0013"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Long epoch, slow updates",
+			epochLength:  100000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.75"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.01"),
+		},
+		{
+			name:         "Monthly-like smoothing",
+			epochLength:  100000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.9375"),
+			expected:     alloraMath.MustNewDecFromString("0.996"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Edge case - very short epoch",
+			epochLength:  1,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.0000198"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Edge case - very long epoch",
+			epochLength:  500000,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.MustNewDecFromString("0.999"),
+			expectError:  false,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Invalid input - zero epoch length",
+			epochLength:  0,
+			baseInterval: alloraMath.MustNewDecFromString("50000"),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.ZeroDec(),
+			expectError:  true,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+		{
+			name:         "Invalid input - zero base interval",
+			epochLength:  1000,
+			baseInterval: alloraMath.ZeroDec(),
+			baseAlpha:    alloraMath.MustNewDecFromString("0.5"),
+			expected:     alloraMath.ZeroDec(),
+			expectError:  true,
+			epsilon:      alloraMath.MustNewDecFromString("0.001"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := alloraMath.GetSmoothedAlpha(tc.epochLength, tc.baseInterval, tc.baseAlpha)
+			if tc.expectError {
+				require.Error(t, err, "Expected an error but got none")
+			} else {
+				require.NoError(t, err, "Unexpected error: %v", err)
+				inDelta, err := alloraMath.InDelta(tc.expected, result, tc.epsilon)
+				require.NoError(t, err)
+				require.True(t, inDelta,
+					"Unexpected result for %s: got %s, want %s", tc.name, result.String(), tc.expected.String())
+			}
+		})
+	}
+}

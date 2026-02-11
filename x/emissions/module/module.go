@@ -1,0 +1,212 @@
+package module
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"cosmossdk.io/core/appmodule"
+	v2 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v2"
+	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
+	v4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
+	v5 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v5"
+	v6 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v6"
+	v7 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v7"
+	v8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
+	migrationV10 "github.com/allora-network/allora-chain/x/emissions/migrations/v10"
+	migrationV11 "github.com/allora-network/allora-chain/x/emissions/migrations/v11"
+	migrationV13 "github.com/allora-network/allora-chain/x/emissions/migrations/v13"
+	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
+	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
+	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
+	migrationV5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
+	migrationV6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
+	migrationV7 "github.com/allora-network/allora-chain/x/emissions/migrations/v7"
+	migrationV8 "github.com/allora-network/allora-chain/x/emissions/migrations/v8"
+	migrationV9 "github.com/allora-network/allora-chain/x/emissions/migrations/v9"
+	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
+)
+
+var (
+	_ module.AppModuleBasic   = AppModule{} // nolint: exhaustruct
+	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
+	_ appmodule.AppModule     = AppModule{} // nolint: exhaustruct
+	_ appmodule.HasEndBlocker = AppModule{} // nolint: exhaustruct
+)
+
+// ConsensusVersion defines the current module consensus version.
+const ConsensusVersion = 13
+
+type AppModule struct {
+	cdc    codec.Codec
+	keeper keeper.Keeper
+}
+
+// NewAppModule creates a new AppModule object
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
+	return AppModule{
+		cdc:    cdc,
+		keeper: keeper,
+	}
+}
+
+// Name returns the state module's name.
+func (AppModule) Name() string { return types.ModuleName }
+
+// RegisterLegacyAminoCodec registers the state module's types on the LegacyAmino codec.
+func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	v2.RegisterTypes(cdc)
+	v3.RegisterTypes(cdc)
+	v4.RegisterTypes(cdc)
+	v5.RegisterTypes(cdc)
+	v6.RegisterTypes(cdc)
+	v7.RegisterTypes(cdc)
+	v8.RegisterTypes(cdc)
+}
+
+// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the state module.
+func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
+	if err := types.RegisterQueryServiceHandlerClient(context.Background(), mux, types.NewQueryServiceClient(clientCtx)); err != nil {
+		panic(err)
+	}
+}
+
+// RegisterInterfaces registers interfaces and implementations of the state module.
+func (AppModule) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
+	v2.RegisterInterfaces(registry)
+	v3.RegisterInterfaces(registry)
+	v4.RegisterInterfaces(registry)
+	v5.RegisterInterfaces(registry)
+	v6.RegisterInterfaces(registry)
+	v7.RegisterInterfaces(registry)
+	v8.RegisterInterfaces(registry)
+}
+
+// ConsensusVersion implements AppModule/ConsensusVersion.
+func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
+
+// RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterMsgServiceServer(cfg.MsgServer(), msgserver.NewMsgServerImpl(am.keeper))
+	types.RegisterQueryServiceServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
+
+	if err := cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
+		return migrationV2.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 2, func(ctx sdk.Context) error {
+		return migrationV3.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 2 to 3: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 3, func(ctx sdk.Context) error {
+		return migrationV4.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 3 to 4: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 4, func(ctx sdk.Context) error {
+		return migrationV5.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 4 to 5: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 5, func(ctx sdk.Context) error {
+		return migrationV6.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 5 to 6: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 6, func(ctx sdk.Context) error {
+		return migrationV7.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 6 to 7: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 7, func(ctx sdk.Context) error {
+		return migrationV8.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 7 to 8: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 8, func(ctx sdk.Context) error {
+		return migrationV9.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 8 to 9: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 9, func(ctx sdk.Context) error {
+		return migrationV10.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 9 to 10: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 10, func(ctx sdk.Context) error {
+		return migrationV11.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 10 to 11: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 11, func(ctx sdk.Context) error {
+		return nil
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 11 to 12: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 12, func(ctx sdk.Context) error {
+		return migrationV13.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 12 to 13: %v", types.ModuleName, err))
+	}
+}
+
+// DefaultGenesis returns default genesis state as raw bytes for the module.
+func (AppModule) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	return cdc.MustMarshalJSON(types.NewGenesisState())
+}
+
+// ValidateGenesis performs genesis state validation for the circuit module.
+func (AppModule) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
+	var data types.GenesisState
+	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+	}
+
+	return data.Validate()
+}
+
+// InitGenesis performs genesis initialization for the state module.
+// It returns no validator updates.
+func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) {
+	var genesisState types.GenesisState
+	cdc.MustUnmarshalJSON(data, &genesisState)
+
+	if err := am.keeper.InitGenesis(ctx, &genesisState); err != nil {
+		panic(fmt.Sprintf("failed to initialize %s genesis state: %v", types.ModuleName, err))
+	}
+}
+
+// ExportGenesis returns the exported genesis state as raw bytes for the circuit
+// module.
+func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
+	gs, err := am.keeper.ExportGenesis(ctx)
+	if err != nil {
+		panic(fmt.Sprintf("failed to export %s genesis state: %v", types.ModuleName, err))
+	}
+
+	return cdc.MustMarshalJSON(gs)
+}
+
+// EndBlock returns the end blocker for the emissions module.
+func (am AppModule) EndBlock(ctx context.Context) error {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, telemetry.Now(), telemetry.MetricKeyEndBlocker)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := EndBlocker(ctx, am)
+	if err != nil {
+		sdkCtx.Logger().Error("Emissions EndBlocker error! ", err)
+	}
+	return err
+}
