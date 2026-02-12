@@ -47,6 +47,6 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
 	// Verify that all topics now have TopicType and OutputArity values set to defaults
 	topic1, err := keeper.GetTopic(s.Ctx(), topicId1)
 	s.Require().NoError(err)
-	s.Require().Equal(topic1.TopicType, emissionstypes.TopicType_TOPIC_TYPE_REGRESSION,
+	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_REGRESSION, topic1.TopicType,
 		"Topic 1 TopicType should be %s, got %s", emissionstypes.TopicType_TOPIC_TYPE_REGRESSION.String(), topic1.TopicType.String())
 }
