@@ -1,7 +1,5 @@
 package types
 
-//nolint:gosec,unconvert
-
 import (
 	"testing"
 
@@ -20,9 +18,10 @@ func TestInputInference_Validate(t *testing.T) {
 			name: "valid inference",
 			input: &InputInference{
 				TopicId:     1,
-				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy", // valid bech32 address
 				BlockHeight: 100,
+				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy", // valid bech32 address
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -40,6 +39,7 @@ func TestInputInference_Validate(t *testing.T) {
 				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				BlockHeight: 100,
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -52,6 +52,7 @@ func TestInputInference_Validate(t *testing.T) {
 				Inferer:     "invalid",
 				BlockHeight: 100,
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -64,6 +65,7 @@ func TestInputInference_Validate(t *testing.T) {
 				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				BlockHeight: -1,
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -429,6 +431,7 @@ func TestInputInferenceForecastBundle_Validate(t *testing.T) {
 		Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		BlockHeight: 100,
 		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+		Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -494,6 +497,7 @@ func TestInputInferenceForecastBundle_Validate(t *testing.T) {
 					Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 					BlockHeight: 100,
 					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+					Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1"))},
 					ExtraData:   nil,
 					Proof:       "",
 				},
@@ -552,8 +556,9 @@ func TestTopicValidate(t *testing.T) {
 		errContains string
 	}{
 		{
-			name:   "ok",
-			mutate: func(_ *Topic, _ *Params) {},
+			name:    "ok",
+			mutate:  func(_ *Topic, _ *Params) {},
+			wantErr: false, errContains: "",
 		},
 		{
 			name:    "id zero reserved",
@@ -566,7 +571,8 @@ func TestTopicValidate(t *testing.T) {
 			wantErr: true, errContains: "topic creator address invalid",
 		},
 		{
-			name:    "metadata too long",
+			name: "metadata too long",
+			//nolint:gosec
 			mutate:  func(tp *Topic, p *Params) { tp.Metadata = longStr(int(p.MaxStringLength) + 1) },
 			wantErr: true, errContains: "topic metadata invalid",
 		},
@@ -613,6 +619,7 @@ func TestTopicValidate(t *testing.T) {
 		{
 			name: "ground truth lag too high",
 			mutate: func(tp *Topic, p *Params) {
+				//nolint:gosec
 				tp.GroundTruthLag = int64(p.MaxUnfulfilledReputerRequests)*tp.EpochLength + 1
 			},
 			wantErr: true, errContains: "topic ground truth lag cannot be higher than max unfulfilled reputer requests",
@@ -710,7 +717,7 @@ func TestTopicValidate(t *testing.T) {
 				tp.RequireUnity = false
 				tp.UnityTolerance = alloraMath.NewNaN()
 			},
-			wantErr: false,
+			wantErr: false, errContains: "",
 		},
 	}
 
@@ -744,24 +751,26 @@ func validTopic(p Params) Topic {
 		LossMethod:               "mse",
 		EpochLastEnded:           0,
 		EpochLength:              p.MinEpochLength,
-		GroundTruthLag:           int64(p.MinEpochLength) * 2,
+		GroundTruthLag:           p.MinEpochLength * 2,
 		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.5"),
 		AllowNegative:            false,
 		Epsilon:                  alloraMath.MustNewDecFromString("0.0001"),
 		InitialRegret:            alloraMath.MustNewDecFromString("0.0"),
-		WorkerSubmissionWindow:   int64(p.MinEpochLength / 2),
+		WorkerSubmissionWindow:   p.MinEpochLength / 2,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.5"),
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.5"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.5"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.5"),
 		CNorm:                    alloraMath.MustNewDecFromString("0"),
+		TopicType:                TopicType_TOPIC_TYPE_REGRESSION,
 		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
 	}
 }
 
+//nolint:exhaustruct
 func validParams() Params {
 	return Params{
 		MaxStringLength:               256,

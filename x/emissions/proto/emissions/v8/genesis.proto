@@ -3,16 +3,16 @@ package emissions.v8;
 
 import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
+import "emissions/v3/inference.proto";
 import "emissions/v3/node.proto";
 import "emissions/v3/nonce.proto";
 import "emissions/v3/reputer.proto";
-import "emissions/v3/value_bundle.proto";
 import "emissions/v3/score.proto";
 import "emissions/v3/stake.proto";
 import "emissions/v3/topic.proto";
 import "emissions/v3/types.proto";
+import "emissions/v3/value_bundle.proto";
 import "emissions/v3/worker.proto";
-import "emissions/v3/inference.proto";
 import "emissions/v8/params.proto";
 import "gogoproto/gogo.proto";
 

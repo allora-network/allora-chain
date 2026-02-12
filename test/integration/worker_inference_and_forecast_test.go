@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/stretchr/testify/require"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/stretchr/testify/require"
 )
 
 func waitForNextChurningBlock(m testCommon.TestConfig, topicId uint64) (*types.Topic, error) {
@@ -48,6 +49,7 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 					BlockHeight: blockHeight,
 					Inferer:     InfererAddress1,
 					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+					Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100))},
 					ExtraData:   nil,
 					Proof:       "",
 				},

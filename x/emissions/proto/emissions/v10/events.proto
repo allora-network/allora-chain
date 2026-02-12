@@ -3,11 +3,10 @@ package emissions.v10;
 
 import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
+import "emissions/v10/topic.proto";
 import "emissions/v3/nonce.proto";
-import "emissions/v3/reputer.proto";
 import "emissions/v3/value_bundle.proto";
 import "emissions/v9/params.proto";
-import "emissions/v10/topic.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
@@ -123,8 +122,8 @@ message EventNetworkInferenceBundle {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
-  int64  nonce = 2;
-  bytes  extra_data = 3;
+  int64 nonce = 2;
+  bytes extra_data = 3;
 
   repeated string label_names = 4;
 

@@ -6,11 +6,12 @@ import (
 	"math/rand"
 
 	cosmossdk_io_math "cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/stretchr/testify/require"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/stretchr/testify/require"
 )
 
 func doInferenceAndReputation(
@@ -203,6 +204,7 @@ func createWorkerDataBundle(
 	}
 	infererAddress := inferer.addr
 	infererValue := alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(300) + 3000)))
+	infererValues := []alloraMath.BoundedExp40Dec{infererValue}
 
 	workerDataBundle := &emissionstypes.InputWorkerDataBundle{
 		Worker: infererAddress,
@@ -216,6 +218,7 @@ func createWorkerDataBundle(
 				BlockHeight: blockHeight,
 				Inferer:     infererAddress,
 				Value:       infererValue,
+				Values:      infererValues,
 				ExtraData:   nil,
 				Proof:       "",
 			},

@@ -4,12 +4,13 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
+	"github.com/stretchr/testify/require"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
-	"github.com/stretchr/testify/require"
 )
 
 // TopicWeightDistributionChecks tests that topic weights are distributed correctly
@@ -170,11 +171,11 @@ func createTestTopic(m testCommon.TestConfig, creator string, metadata string, e
 		LossMethod:               "mse",
 		EpochLength:              epochLength, // Use the provided epoch length
 		GroundTruthLag:           epochLength,
-		WorkerSubmissionWindow:   4,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            true,
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		WorkerSubmissionWindow:   4,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
@@ -182,6 +183,10 @@ func createTestTopic(m testCommon.TestConfig, creator string, metadata string, e
 		EnableWorkerWhitelist:    false, // Simplification for testing
 		EnableReputerWhitelist:   false, // Simplification for testing
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

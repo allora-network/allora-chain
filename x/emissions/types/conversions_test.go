@@ -174,6 +174,7 @@ func TestInputInferenceForecastBundleConvert(t *testing.T) {
 		BlockHeight: 100,
 		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 		Value:       mustNewBoundedExp40Dec(t, "1.23"),
+		Values:      []math.BoundedExp40Dec{mustNewBoundedExp40Dec(t, "1.23")},
 		ExtraData:   []byte("extra"),
 		Proof:       "proof",
 	}

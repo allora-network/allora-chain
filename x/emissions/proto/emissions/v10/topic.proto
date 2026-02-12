@@ -71,7 +71,6 @@ enum TopicType {
   TOPIC_TYPE_UNSPECIFIED = 0;
   TOPIC_TYPE_REGRESSION = 1;
   TOPIC_TYPE_CLASSIFICATION = 2;
-  TOPIC_TYPE_RANKING = 3;
 }
 
 enum TopicOutputArity {
