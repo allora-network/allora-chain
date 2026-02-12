@@ -150,9 +150,7 @@ type Keeper struct {
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 
 	// map of (topic, reputer) -> reputer loss
-	// lossBundlesOld collections.Map[collections.Pair[TopicId, Reputer], types.ReputerValueBundle]
-
-	lossBundles collections.Map[collections.Pair[TopicId, Reputer], types.LossBundle]
+	lossBundles collections.Map[collections.Pair[TopicId, Reputer], types.ReputerValueBundle]
 
 	// map of worker id to node data about that worker
 	workers collections.Map[ActorId, types.OffchainNode]
@@ -176,9 +174,7 @@ type Keeper struct {
 	allForecasts collections.Map[collections.Pair[TopicId, BlockHeight], types.Forecasts]
 
 	// map of (topic, block_height) -> ReputerValueBundles (1 per reputer active at that time)
-	// allLossBundlesOld collections.Map[collections.Pair[TopicId, BlockHeight], types.ReputerValueBundles]
-
-	allLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ReputerLossBundles]
+	allLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ReputerValueBundles]
 
 	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
 	networkLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
@@ -327,12 +323,12 @@ func NewKeeper(
 		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
-		lossBundles:                              collections.NewMap(sb, types.LossBundlesKey, "loss_bundles", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.LossBundle](cdc)),
+		lossBundles:                              collections.NewMap(sb, types.LossBundlesKey, "loss_bundles", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ReputerValueBundle](cdc)),
 		workers:                                  collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		reputers:                                 collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		allInferences:                            collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
 		allForecasts:                             collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:                           collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerLossBundles](cdc)),
+		allLossBundles:                           collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
 		networkLossBundles:                       collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		previousPercentageRewardToStakedReputers: collections.NewItem(sb, types.PreviousPercentageRewardToStakedReputersKey, "previous_percentage_reward_to_staked_reputers", alloraMath.DecValue),
 		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
@@ -2055,7 +2051,11 @@ func (k *Keeper) GetReputerLatestLossByTopicId(
 	reputer ActorId,
 ) (types.LossBundle, error) {
 	key := collections.Join(topicId, reputer)
-	return k.lossBundles.Get(ctx, key)
+	valueBundle, err := k.lossBundles.Get(ctx, key)
+	if err != nil {
+		return types.LossBundle{}, err
+	}
+	return *valueBundle.GetValueBundle(), err
 }
 
 // InsertReputerLoss inserts a reputer loss for a specific topic
@@ -2072,7 +2072,9 @@ func (k *Keeper) InsertReputerLoss(
 		return errorsmod.Wrap(err, "reputer loss is invalid")
 	}
 	key := collections.Join(topicId, reputerLoss.Reputer)
-	return k.lossBundles.Set(ctx, key, reputerLoss)
+	return k.lossBundles.Set(ctx, key, types.ReputerValueBundle{
+		ValueBundle: &reputerLoss,
+	})
 }
 
 // RemoveReputerLoss removes a reputer loss for a specific topic
@@ -2109,7 +2111,13 @@ func (k *Keeper) InsertActiveReputerLosses(
 		}
 	}
 	key := collections.Join(topicId, block)
-	return k.allLossBundles.Set(ctx, key, types.ReputerLossBundles{LossBundles: reputerLossBundles})
+	valueBundles := make([]*types.ReputerValueBundle, len(reputerLossBundles))
+	for i := range reputerLossBundles {
+		valueBundles[i] = &types.ReputerValueBundle{
+			ValueBundle: reputerLossBundles[i],
+		}
+	}
+	return k.allLossBundles.Set(ctx, key, types.ReputerValueBundles{ReputerValueBundles: valueBundles})
 }
 
 // Get loss bundles for a topic/timestamp
@@ -2122,7 +2130,11 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId Topic
 	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
 	}
-	return reputerLossBundles.LossBundles, nil
+	lossBundles := make(types.LossBundles, len(reputerLossBundles.ReputerValueBundles))
+	for i := range reputerLossBundles.ReputerValueBundles {
+		lossBundles[i] = reputerLossBundles.ReputerValueBundles[i].GetValueBundle()
+	}
+	return lossBundles, nil
 }
 
 // Insert a network loss bundle for a topic and block.

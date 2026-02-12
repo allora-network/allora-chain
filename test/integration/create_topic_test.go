@@ -3,10 +3,11 @@ package integration_test
 import (
 	"context"
 
+	"github.com/stretchr/testify/require"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/stretchr/testify/require"
 )
 
 func addTopicCreator(m testCommon.TestConfig, address string) {
@@ -56,6 +57,10 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                emissionstypes.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
@@ -88,6 +93,10 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Equal(m.T, createTopicRequest.WorkerSubmissionWindow, storedTopic.WorkerSubmissionWindow)
 	require.Equal(m.T, createTopicRequest.PNorm, storedTopic.PNorm)
 	require.True(m.T, createTopicRequest.AlphaRegret.Equal(storedTopic.AlphaRegret), "Alpha Regret not equal %s != %s", createTopicRequest.AlphaRegret, storedTopic.AlphaRegret)
+	require.Equal(m.T, createTopicRequest.TopicType, storedTopic.TopicType)
+	require.Equal(m.T, createTopicRequest.OutputArity, storedTopic.OutputArity)
+	require.Equal(m.T, createTopicRequest.RequireUnity, storedTopic.RequireUnity)
+	require.Equal(m.T, createTopicRequest.UnityTolerance, storedTopic.UnityTolerance)
 
 	return topicId
 }

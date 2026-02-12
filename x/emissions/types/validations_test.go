@@ -1,5 +1,7 @@
 package types
 
+//nolint:gosec,unconvert
+
 import (
 	"testing"
 

@@ -91,6 +91,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		BlockHeight: blockHeight,
 		Inferer:     workerAddress,
 		Value:       alloraMath.MustNewDecFromString("123.456"),
+		Values:      nil,
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -505,6 +506,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		BlockHeight: blockHeight1,
 		Inferer:     s.AddrsStr(1),
 		Value:       alloraMath.MustNewDecFromString("10"),
+		Values:      nil,
 		ExtraData:   []byte("data1"),
 		Proof:       "proof1",
 	}
@@ -522,6 +524,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		BlockHeight: blockHeight2,
 		Inferer:     s.AddrsStr(2),
 		Value:       alloraMath.MustNewDecFromString("20"),
+		Values:      nil,
 		ExtraData:   []byte("data2"),
 		Proof:       "proof2",
 	}

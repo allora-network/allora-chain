@@ -5,14 +5,15 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/oldtypes"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/oldtypes"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
@@ -83,7 +84,7 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			newWorkerSubmissionWindow = max(1, oldMsg.EpochLength/2)
 		}
 
-		newMsg := types.Topic{ //nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
+		newMsg := types.Topic{ // nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
 			Id:                     oldMsg.Id,
 			Creator:                oldMsg.Creator,
 			Metadata:               oldMsg.Metadata,
@@ -271,8 +272,6 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 						OneOutForecasterValues:        valueBundle.ValueBundle.OneOutForecasterValues,
 						OneInForecasterValues:         valueBundle.ValueBundle.OneInForecasterValues,
 					},
-					Pubkey:    valueBundle.Pubkey,
-					Signature: valueBundle.Signature,
 				},
 			)
 		}

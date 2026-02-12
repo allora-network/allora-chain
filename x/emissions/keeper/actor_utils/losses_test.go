@@ -3,7 +3,6 @@ package actorutils_test
 import (
 	"testing"
 
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -20,18 +19,6 @@ func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, &ActorUtilsTestSuite{
 		testutil.NewTestSuite("actor_utils_losses"),
 	})
-}
-
-func (a *ActorUtilsTestSuite) signValueBundle(valueBundle *emissionstypes.ValueBundle, privateKey secp256k1.PrivKey) []byte {
-	require := a.Require()
-	src := make([]byte, 0)
-	src, err := valueBundle.XXX_Marshal(src, true)
-	require.NoError(err, "Marshall reputer value bundle should not return an error")
-
-	valueBundleSignature, err := privateKey.Sign(src)
-	require.NoError(err, "Sign should not return an error")
-
-	return valueBundleSignature
 }
 
 func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle() {

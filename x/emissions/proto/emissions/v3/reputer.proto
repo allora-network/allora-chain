@@ -10,11 +10,10 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 // For when the bundle is computed on a per-reputer basis (ie.. if there is an
 // index `m` in the above)
 message ReputerValueBundle {
+  reserved 2, 3;
   option (gogoproto.equal) = true;
 
   ValueBundle value_bundle = 1;
-  bytes signature = 2;
-  string pubkey = 3;
 }
 
 message ReputerValueBundles {

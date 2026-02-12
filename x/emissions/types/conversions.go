@@ -2,6 +2,8 @@ package types
 
 import (
 	"cosmossdk.io/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
 // NewInferenceFromInput converts InputInference to Inference
@@ -9,20 +11,21 @@ func NewInferenceFromInput(bi *InputInference) (*Inference, error) {
 	if bi == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, err := bi.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
+	dec, _ := bi.Value.ToDec()
+	decs := make([]alloraMath.Dec, len(bi.Values))
+	for i := range bi.Values {
+		decs[i], _ = bi.Values[i].ToDec()
 	}
 	inference := &Inference{
 		TopicId:     bi.TopicId,
 		BlockHeight: bi.BlockHeight,
 		Inferer:     bi.Inferer,
 		Value:       dec,
+		Values:      decs,
 		ExtraData:   bi.ExtraData,
 		Proof:       bi.Proof,
 	}
-	err = inference.Validate()
-	if err != nil {
+	if err := inference.Validate(); err != nil {
 		return nil, errors.Wrap(err, "failed to validate inference")
 	}
 	return inference, nil

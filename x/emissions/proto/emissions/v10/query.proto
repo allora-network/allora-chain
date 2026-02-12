@@ -6,7 +6,6 @@ import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "emissions/v3/node.proto";
 import "emissions/v3/nonce.proto";
-import "emissions/v3/reputer.proto";
 import "emissions/v3/value_bundle.proto";
 import "emissions/v3/score.proto";
 import "emissions/v3/stake.proto";
@@ -25,544 +24,544 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 service QueryService {
   // Params returns the module parameters.
   rpc GetParams(GetParamsRequest) returns (GetParamsResponse) {
-    option (google.api.http).get = "/emissions/v9/params";
+    option (google.api.http).get = "/emissions/v10/params";
   }
 
   rpc GetNextTopicId(GetNextTopicIdRequest) returns (GetNextTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/next_topic_id";
+    option (google.api.http).get = "/emissions/v10/next_topic_id";
   }
 
   rpc GetTopic(GetTopicRequest) returns (GetTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topics/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topics/{topic_id}";
   }
 
   rpc GetWorkerLatestInferenceByTopicId(GetWorkerLatestInferenceByTopicIdRequest) returns (GetWorkerLatestInferenceByTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topics/{topic_id}/workers/{worker_address}/latest_inference";
+    option (google.api.http).get = "/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_inference";
   }
 
   rpc GetInferencesAtBlock(GetInferencesAtBlockRequest) returns (GetInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/inferences/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/inferences/{topic_id}/{block_height}";
   }
 
   rpc GetLatestTopicInferences(GetLatestTopicInferencesRequest) returns (GetLatestTopicInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/latest_inferences/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/latest_inferences/{topic_id}";
   }
 
   rpc GetForecastsAtBlock(GetForecastsAtBlockRequest) returns (GetForecastsAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/forecasts/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/forecasts/{topic_id}/{block_height}";
   }
 
   rpc GetNetworkLossBundleAtBlock(GetNetworkLossBundleAtBlockRequest) returns (GetNetworkLossBundleAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/network_loss/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/network_loss/{topic_id}/{block_height}";
   }
 
   rpc GetTotalStake(GetTotalStakeRequest) returns (GetTotalStakeResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/total_stake";
+    option (google.api.http).get = "/emissions/v10/total_stake";
   }
 
   rpc GetReputerStakeInTopic(GetReputerStakeInTopicRequest) returns (GetReputerStakeInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer_stake/{address}/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/reputer_stake/{address}/{topic_id}";
   }
 
   rpc GetMultiReputerStakeInTopic(GetMultiReputerStakeInTopicRequest) returns (GetMultiReputerStakeInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputers_stakes/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/reputers_stakes/{topic_id}";
   }
 
   rpc GetStakeFromReputerInTopicInSelf(GetStakeFromReputerInTopicInSelfRequest) returns (GetStakeFromReputerInTopicInSelfResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer_stake_self/{reputer_address}/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/reputer_stake_self/{reputer_address}/{topic_id}";
   }
 
   rpc GetDelegateStakeInTopicInReputer(GetDelegateStakeInTopicInReputerRequest) returns (GetDelegateStakeInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer_delegate_stake/{reputer_address}/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/reputer_delegate_stake/{reputer_address}/{topic_id}";
   }
 
   rpc GetStakeFromDelegatorInTopicInReputer(GetStakeFromDelegatorInTopicInReputerRequest) returns (GetStakeFromDelegatorInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_stake/{delegator_address}/{reputer_address}/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/delegate_stake/{delegator_address}/{reputer_address}/{topic_id}";
   }
 
   rpc GetStakeFromDelegatorInTopic(GetStakeFromDelegatorInTopicRequest) returns (GetStakeFromDelegatorInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_stake/{delegator_address}/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/delegate_stake/{delegator_address}/{topic_id}";
   }
 
   rpc GetTopicStake(GetTopicStakeRequest) returns (GetTopicStakeResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/stake/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/stake/{topic_id}";
   }
 
   rpc GetStakeRemovalsUpUntilBlock(GetStakeRemovalsUpUntilBlockRequest) returns (GetStakeRemovalsUpUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/stake_removals/{block_height}";
+    option (google.api.http).get = "/emissions/v10/stake_removals/{block_height}";
   }
 
   rpc GetDelegateStakeRemovalsUpUntilBlock(GetDelegateStakeRemovalsUpUntilBlockRequest) returns (GetDelegateStakeRemovalsUpUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_stake_removals/{block_height}";
+    option (google.api.http).get = "/emissions/v10/delegate_stake_removals/{block_height}";
   }
 
   rpc GetStakeRemovalInfo(GetStakeRemovalInfoRequest) returns (GetStakeRemovalInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/stake_removal/{topic_id}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/stake_removal/{topic_id}/{reputer}";
   }
 
   rpc GetDelegateStakeRemovalInfo(GetDelegateStakeRemovalInfoRequest) returns (GetDelegateStakeRemovalInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_stake_removal/{topic_id}/{delegator}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/delegate_stake_removal/{topic_id}/{delegator}/{reputer}";
   }
 
   rpc GetWorkerNodeInfo(GetWorkerNodeInfoRequest) returns (GetWorkerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/worker/{address}";
+    option (google.api.http).get = "/emissions/v10/worker/{address}";
   }
 
   rpc GetReputerNodeInfo(GetReputerNodeInfoRequest) returns (GetReputerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer/{address}";
+    option (google.api.http).get = "/emissions/v10/reputer/{address}";
   }
 
   rpc IsWorkerRegisteredInTopicId(IsWorkerRegisteredInTopicIdRequest) returns (IsWorkerRegisteredInTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/worker_registered/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v10/worker_registered/{topic_id}/{address}";
   }
 
   rpc IsReputerRegisteredInTopicId(IsReputerRegisteredInTopicIdRequest) returns (IsReputerRegisteredInTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer_registered/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v10/reputer_registered/{topic_id}/{address}";
   }
 
   rpc GetNetworkInferencesAtBlock(GetNetworkInferencesAtBlockRequest) returns (GetNetworkInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/network_inferences/{topic_id}/last_inference/{block_height_last_inference}";
+    option (google.api.http).get = "/emissions/v10/network_inferences/{topic_id}/last_inference/{block_height_last_inference}";
   }
 
   rpc GetNetworkInferencesAtBlockOutlierResistant(GetNetworkInferencesAtBlockOutlierResistantRequest) returns (GetNetworkInferencesAtBlockOutlierResistantResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/network_inferences_outlier_resistant/{topic_id}/last_inference/{block_height_last_inference}";
+    option (google.api.http).get = "/emissions/v10/network_inferences_outlier_resistant/{topic_id}/last_inference/{block_height_last_inference}";
   }
 
   rpc GetLatestNetworkInferences(GetLatestNetworkInferencesRequest) returns (GetLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/latest_network_inferences/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/latest_network_inferences/{topic_id}";
   }
 
   rpc GetLatestNetworkInferencesOutlierResistant(GetLatestNetworkInferencesOutlierResistantRequest) returns (GetLatestNetworkInferencesOutlierResistantResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/latest_network_inferences_outlier_resistant/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/latest_network_inferences_outlier_resistant/{topic_id}";
   }
 
   rpc IsWorkerNonceUnfulfilled(IsWorkerNonceUnfulfilledRequest) returns (IsWorkerNonceUnfulfilledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
   }
 
   rpc IsReputerNonceUnfulfilled(IsReputerNonceUnfulfilledRequest) returns (IsReputerNonceUnfulfilledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_reputer_nonce_unfulfilled/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/is_reputer_nonce_unfulfilled/{topic_id}/{block_height}";
   }
 
   rpc GetUnfulfilledWorkerNonces(GetUnfulfilledWorkerNoncesRequest) returns (GetUnfulfilledWorkerNoncesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/unfulfilled_worker_nonces/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/unfulfilled_worker_nonces/{topic_id}";
   }
 
   rpc GetUnfulfilledReputerNonces(GetUnfulfilledReputerNoncesRequest) returns (GetUnfulfilledReputerNoncesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/unfulfilled_reputer_nonces/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/unfulfilled_reputer_nonces/{topic_id}";
   }
 
   rpc GetOpenReputerSubmissionWindows(GetOpenReputerSubmissionWindowsRequest) returns (GetOpenReputerSubmissionWindowsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/open_reputer_submission_windows/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/open_reputer_submission_windows/{topic_id}";
   }
 
   rpc GetOpenWorkerSubmissionWindows(GetOpenWorkerSubmissionWindowsRequest) returns (GetOpenWorkerSubmissionWindowsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/open_worker_submission_windows/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/open_worker_submission_windows/{topic_id}";
   }
 
   rpc GetInfererNetworkRegret(GetInfererNetworkRegretRequest) returns (GetInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/inferer_network_regret/{topic_id}/{actor_id}";
+    option (google.api.http).get = "/emissions/v10/inferer_network_regret/{topic_id}/{actor_id}";
   }
 
   rpc GetForecasterNetworkRegret(GetForecasterNetworkRegretRequest) returns (GetForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/forecaster_network_regret/{topic_id}/{worker}";
+    option (google.api.http).get = "/emissions/v10/forecaster_network_regret/{topic_id}/{worker}";
   }
 
   rpc GetOneInForecasterNetworkRegret(GetOneInForecasterNetworkRegretRequest) returns (GetOneInForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/one_in_forecaster_network_regret/{topic_id}/{forecaster}/{inferer}";
+    option (google.api.http).get = "/emissions/v10/one_in_forecaster_network_regret/{topic_id}/{forecaster}/{inferer}";
   }
 
   rpc IsWhitelistAdmin(IsWhitelistAdminRequest) returns (IsWhitelistAdminResponse) {
-    option (google.api.http).get = "/emissions/v9/whitelist_admin/{address}";
+    option (google.api.http).get = "/emissions/v10/whitelist_admin/{address}";
   }
 
   rpc GetTopicLastWorkerCommitInfo(GetTopicLastWorkerCommitInfoRequest) returns (GetTopicLastWorkerCommitInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_last_worker_commit_info/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_last_worker_commit_info/{topic_id}";
   }
 
   rpc GetTopicLastReputerCommitInfo(GetTopicLastReputerCommitInfoRequest) returns (GetTopicLastReputerCommitInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_last_reputer_commit_info/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_last_reputer_commit_info/{topic_id}";
   }
 
   rpc GetTopicRewardNonce(GetTopicRewardNonceRequest) returns (GetTopicRewardNonceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_reward_nonce/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_reward_nonce/{topic_id}";
   }
 
   rpc GetReputerLossBundlesAtBlock(GetReputerLossBundlesAtBlockRequest) returns (GetReputerLossBundlesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer_loss_bundles/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/reputer_loss_bundles/{topic_id}/{block_height}";
   }
 
   rpc GetStakeReputerAuthority(GetStakeReputerAuthorityRequest) returns (GetStakeReputerAuthorityResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/stake_reputer_authority/{topic_id}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/stake_reputer_authority/{topic_id}/{reputer}";
   }
 
   rpc GetDelegateStakePlacement(GetDelegateStakePlacementRequest) returns (GetDelegateStakePlacementResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_stake_placement/{topic_id}/{delegator}/{target}";
+    option (google.api.http).get = "/emissions/v10/delegate_stake_placement/{topic_id}/{delegator}/{target}";
   }
 
   rpc GetDelegateStakeUponReputer(GetDelegateStakeUponReputerRequest) returns (GetDelegateStakeUponReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_stake_upon_reputer/{topic_id}/{target}";
+    option (google.api.http).get = "/emissions/v10/delegate_stake_upon_reputer/{topic_id}/{target}";
   }
 
   rpc GetDelegateRewardPerShare(GetDelegateRewardPerShareRequest) returns (GetDelegateRewardPerShareResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_reward_per_share/{topic_id}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/delegate_reward_per_share/{topic_id}/{reputer}";
   }
 
   rpc GetStakeRemovalForReputerAndTopicId(GetStakeRemovalForReputerAndTopicIdRequest) returns (GetStakeRemovalForReputerAndTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/stake_removal/{reputer}/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/stake_removal/{reputer}/{topic_id}";
   }
 
   rpc GetDelegateStakeRemoval(GetDelegateStakeRemovalRequest) returns (GetDelegateStakeRemovalResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/delegate_stake_removal/{block_height}/{topic_id}/{delegator}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/delegate_stake_removal/{block_height}/{topic_id}/{delegator}/{reputer}";
   }
 
   rpc GetPreviousTopicWeight(GetPreviousTopicWeightRequest) returns (GetPreviousTopicWeightResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/previous_topic_weight/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/previous_topic_weight/{topic_id}";
   }
 
   rpc GetTotalSumPreviousTopicWeights(GetTotalSumPreviousTopicWeightsRequest) returns (GetTotalSumPreviousTopicWeightsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/sum_previous_total_topic_weight";
+    option (google.api.http).get = "/emissions/v10/sum_previous_total_topic_weight";
   }
 
   rpc TopicExists(TopicExistsRequest) returns (TopicExistsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_exists/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_exists/{topic_id}";
   }
 
   rpc IsTopicActive(IsTopicActiveRequest) returns (IsTopicActiveResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_topic_active/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/is_topic_active/{topic_id}";
   }
 
   rpc GetTopicFeeRevenue(GetTopicFeeRevenueRequest) returns (GetTopicFeeRevenueResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_fee_revenue/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_fee_revenue/{topic_id}";
   }
 
   rpc GetInfererScoreEma(GetInfererScoreEmaRequest) returns (GetInfererScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/inferer_score_ema/{topic_id}/{inferer}";
+    option (google.api.http).get = "/emissions/v10/inferer_score_ema/{topic_id}/{inferer}";
   }
 
   rpc GetForecasterScoreEma(GetForecasterScoreEmaRequest) returns (GetForecasterScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/forecaster_score_ema/{topic_id}/{forecaster}";
+    option (google.api.http).get = "/emissions/v10/forecaster_score_ema/{topic_id}/{forecaster}";
   }
 
   rpc GetReputerScoreEma(GetReputerScoreEmaRequest) returns (GetReputerScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer_score_ema/{topic_id}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/reputer_score_ema/{topic_id}/{reputer}";
   }
 
   rpc GetInferenceScoresUntilBlock(GetInferenceScoresUntilBlockRequest) returns (GetInferenceScoresUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/inference_scores_until_block/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/inference_scores_until_block/{topic_id}/{block_height}";
   }
 
   rpc GetPreviousTopicQuantileForecasterScoreEma(GetPreviousTopicQuantileForecasterScoreEmaRequest) returns (GetPreviousTopicQuantileForecasterScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_quantile_forecaster_score_ema/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_quantile_forecaster_score_ema/{topic_id}";
   }
 
   rpc GetPreviousTopicQuantileInfererScoreEma(GetPreviousTopicQuantileInfererScoreEmaRequest) returns (GetPreviousTopicQuantileInfererScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_quantile_inferer_score_ema/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_quantile_inferer_score_ema/{topic_id}";
   }
 
   rpc GetPreviousTopicQuantileReputerScoreEma(GetPreviousTopicQuantileReputerScoreEmaRequest) returns (GetPreviousTopicQuantileReputerScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/topic_quantile_reputer_score_ema/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/topic_quantile_reputer_score_ema/{topic_id}";
   }
 
   rpc GetWorkerInferenceScoresAtBlock(GetWorkerInferenceScoresAtBlockRequest) returns (GetWorkerInferenceScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/worker_inference_scores_at_block/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/worker_inference_scores_at_block/{topic_id}/{block_height}";
   }
 
   rpc GetCurrentLowestInfererScore(GetCurrentLowestInfererScoreRequest) returns (GetCurrentLowestInfererScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/current_lowest_inferer_score/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/current_lowest_inferer_score/{topic_id}";
   }
 
   rpc GetForecastScoresUntilBlock(GetForecastScoresUntilBlockRequest) returns (GetForecastScoresUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/forecast_scores_until_block/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/forecast_scores_until_block/{topic_id}/{block_height}";
   }
 
   rpc GetWorkerForecastScoresAtBlock(GetWorkerForecastScoresAtBlockRequest) returns (GetWorkerForecastScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/worker_forecast_scores_at_block/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/worker_forecast_scores_at_block/{topic_id}/{block_height}";
   }
 
   rpc GetCurrentLowestForecasterScore(GetCurrentLowestForecasterScoreRequest) returns (GetCurrentLowestForecasterScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/current_lowest_forecaster_score/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/current_lowest_forecaster_score/{topic_id}";
   }
 
   rpc GetReputersScoresAtBlock(GetReputersScoresAtBlockRequest) returns (GetReputersScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputers_scores_at_block/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v10/reputers_scores_at_block/{topic_id}/{block_height}";
   }
 
   rpc GetCurrentLowestReputerScore(GetCurrentLowestReputerScoreRequest) returns (GetCurrentLowestReputerScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/current_lowest_reputer_score/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/current_lowest_reputer_score/{topic_id}";
   }
 
   rpc GetListeningCoefficient(GetListeningCoefficientRequest) returns (GetListeningCoefficientResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/listening_coefficient/{topic_id}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/listening_coefficient/{topic_id}/{reputer}";
   }
 
   rpc GetPreviousReputerRewardFraction(GetPreviousReputerRewardFractionRequest) returns (GetPreviousReputerRewardFractionResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/previous_reputer_reward_fraction/{topic_id}/{reputer}";
+    option (google.api.http).get = "/emissions/v10/previous_reputer_reward_fraction/{topic_id}/{reputer}";
   }
 
   rpc GetPreviousInferenceRewardFraction(GetPreviousInferenceRewardFractionRequest) returns (GetPreviousInferenceRewardFractionResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/previous_inference_reward_fraction/{topic_id}/{worker}";
+    option (google.api.http).get = "/emissions/v10/previous_inference_reward_fraction/{topic_id}/{worker}";
   }
 
   rpc GetPreviousForecastRewardFraction(GetPreviousForecastRewardFractionRequest) returns (GetPreviousForecastRewardFractionResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/previous_forecast_reward_fraction/{topic_id}/{worker}";
+    option (google.api.http).get = "/emissions/v10/previous_forecast_reward_fraction/{topic_id}/{worker}";
   }
 
   rpc GetPreviousPercentageRewardToStakedReputers(GetPreviousPercentageRewardToStakedReputersRequest) returns (GetPreviousPercentageRewardToStakedReputersResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/previous_percentage_reward_to_staked_reputers";
+    option (google.api.http).get = "/emissions/v10/previous_percentage_reward_to_staked_reputers";
   }
 
   rpc GetTotalRewardToDistribute(GetTotalRewardToDistributeRequest) returns (GetTotalRewardToDistributeResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/total_reward_to_distribute";
+    option (google.api.http).get = "/emissions/v10/total_reward_to_distribute";
   }
 
   rpc GetNaiveInfererNetworkRegret(GetNaiveInfererNetworkRegretRequest) returns (GetNaiveInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/native_inferer_network_regret";
+    option (google.api.http).get = "/emissions/v10/native_inferer_network_regret";
   }
 
   rpc GetOneOutInfererInfererNetworkRegret(GetOneOutInfererInfererNetworkRegretRequest) returns (GetOneOutInfererInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/one_out_inferer_inferer_network_regret";
+    option (google.api.http).get = "/emissions/v10/one_out_inferer_inferer_network_regret";
   }
 
   rpc GetOneOutInfererForecasterNetworkRegret(GetOneOutInfererForecasterNetworkRegretRequest) returns (GetOneOutInfererForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/one_out_inferer_forecaster_network_regret";
+    option (google.api.http).get = "/emissions/v10/one_out_inferer_forecaster_network_regret";
   }
 
   rpc GetOneOutForecasterInfererNetworkRegret(GetOneOutForecasterInfererNetworkRegretRequest) returns (GetOneOutForecasterInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/one_out_forecaster_inferer_network_regret";
+    option (google.api.http).get = "/emissions/v10/one_out_forecaster_inferer_network_regret";
   }
 
   rpc GetOneOutForecasterForecasterNetworkRegret(GetOneOutForecasterForecasterNetworkRegretRequest) returns (GetOneOutForecasterForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/one_out_forecaster_forecaster_network_regret";
+    option (google.api.http).get = "/emissions/v10/one_out_forecaster_forecaster_network_regret";
   }
 
   rpc GetActiveTopicsAtBlock(GetActiveTopicsAtBlockRequest) returns (GetActiveTopicsAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/active_topics_at_block/{block_height}";
+    option (google.api.http).get = "/emissions/v10/active_topics_at_block/{block_height}";
   }
 
   rpc GetNextChurningBlockByTopicId(GetNextChurningBlockByTopicIdRequest) returns (GetNextChurningBlockByTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/next_churning_block_by_topic_id/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/next_churning_block_by_topic_id/{topic_id}";
   }
 
   rpc GetCountInfererInclusionsInTopic(GetCountInfererInclusionsInTopicRequest) returns (GetCountInfererInclusionsInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/count_inferer_inclusions_in_topic/{topic_id}/{inferer}";
+    option (google.api.http).get = "/emissions/v10/count_inferer_inclusions_in_topic/{topic_id}/{inferer}";
   }
 
   rpc GetCountForecasterInclusionsInTopic(GetCountForecasterInclusionsInTopicRequest) returns (GetCountForecasterInclusionsInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/count_forecaster_inclusions_in_topic/{topic_id}/{forecaster}";
+    option (google.api.http).get = "/emissions/v10/count_forecaster_inclusions_in_topic/{topic_id}/{forecaster}";
   }
 
   rpc IsWhitelistedGlobalWorker(IsWhitelistedGlobalWorkerRequest) returns (IsWhitelistedGlobalWorkerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_whitelisted_global_worker/{address}";
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_global_worker/{address}";
   }
 
   rpc IsWhitelistedGlobalReputer(IsWhitelistedGlobalReputerRequest) returns (IsWhitelistedGlobalReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_whitelisted_global_reputer/{address}";
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_global_reputer/{address}";
   }
 
   rpc IsWhitelistedGlobalAdmin(IsWhitelistedGlobalAdminRequest) returns (IsWhitelistedGlobalAdminResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_whitelisted_global_admin/{address}";
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_global_admin/{address}";
   }
 
   rpc IsTopicWorkerWhitelistEnabled(IsTopicWorkerWhitelistEnabledRequest) returns (IsTopicWorkerWhitelistEnabledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_topic_worker_whitelist_enabled/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/is_topic_worker_whitelist_enabled/{topic_id}";
   }
 
   rpc IsTopicReputerWhitelistEnabled(IsTopicReputerWhitelistEnabledRequest) returns (IsTopicReputerWhitelistEnabledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_topic_reputer_whitelist_enabled/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/is_topic_reputer_whitelist_enabled/{topic_id}";
   }
 
   rpc IsWhitelistedTopicCreator(IsWhitelistedTopicCreatorRequest) returns (IsWhitelistedTopicCreatorResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_whitelisted_topic_creator/{address}";
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_topic_creator/{address}";
   }
 
   rpc IsWhitelistedGlobalActor(IsWhitelistedGlobalActorRequest) returns (IsWhitelistedGlobalActorResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_whitelisted_global_actor/{address}";
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_global_actor/{address}";
   }
 
   rpc IsWhitelistedTopicWorker(IsWhitelistedTopicWorkerRequest) returns (IsWhitelistedTopicWorkerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_whitelisted_topic_worker/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_topic_worker/{topic_id}/{address}";
   }
 
   rpc IsWhitelistedTopicReputer(IsWhitelistedTopicReputerRequest) returns (IsWhitelistedTopicReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/is_whitelisted_topic_reputer/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v10/is_whitelisted_topic_reputer/{topic_id}/{address}";
   }
 
   rpc CanUpdateAllGlobalWhitelists(CanUpdateAllGlobalWhitelistsRequest) returns (CanUpdateAllGlobalWhitelistsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_update_all_global_whitelists/{address}";
+    option (google.api.http).get = "/emissions/v10/can_update_all_global_whitelists/{address}";
   }
 
   rpc CanUpdateGlobalWorkerWhitelist(CanUpdateGlobalWorkerWhitelistRequest) returns (CanUpdateGlobalWorkerWhitelistResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_update_global_worker_whitelist/{address}";
+    option (google.api.http).get = "/emissions/v10/can_update_global_worker_whitelist/{address}";
   }
 
   rpc CanUpdateGlobalReputerWhitelist(CanUpdateGlobalReputerWhitelistRequest) returns (CanUpdateGlobalReputerWhitelistResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_update_global_reputer_whitelist/{address}";
+    option (google.api.http).get = "/emissions/v10/can_update_global_reputer_whitelist/{address}";
   }
 
   rpc CanUpdateParams(CanUpdateParamsRequest) returns (CanUpdateParamsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_update_params/{address}";
+    option (google.api.http).get = "/emissions/v10/can_update_params/{address}";
   }
 
   rpc CanUpdateTopicWhitelist(CanUpdateTopicWhitelistRequest) returns (CanUpdateTopicWhitelistResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_update_topic_whitelist/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v10/can_update_topic_whitelist/{topic_id}/{address}";
   }
 
   rpc CanCreateTopic(CanCreateTopicRequest) returns (CanCreateTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_create_topic/{address}";
+    option (google.api.http).get = "/emissions/v10/can_create_topic/{address}";
   }
 
   rpc CanSubmitWorkerPayload(CanSubmitWorkerPayloadRequest) returns (CanSubmitWorkerPayloadResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_submit_worker_payload/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v10/can_submit_worker_payload/{topic_id}/{address}";
   }
 
   rpc CanSubmitReputerPayload(CanSubmitReputerPayloadRequest) returns (CanSubmitReputerPayloadResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/can_submit_reputer_payload/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v10/can_submit_reputer_payload/{topic_id}/{address}";
   }
 
   // GetTopicInitialInfererEmaScore returns the initial EMA score for inferers in a topic
   rpc GetTopicInitialInfererEmaScore(GetTopicInitialInfererEmaScoreRequest) returns (GetTopicInitialInfererEmaScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/initial_inferer_ema_score/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/initial_inferer_ema_score/{topic_id}";
   }
 
   // GetTopicInitialForecasterEmaScore returns the initial EMA score for forecasters in a topic
   rpc GetTopicInitialForecasterEmaScore(GetTopicInitialForecasterEmaScoreRequest) returns (GetTopicInitialForecasterEmaScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/initial_forecaster_ema_score/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/initial_forecaster_ema_score/{topic_id}";
   }
 
   // GetTopicInitialReputerEmaScore returns the initial EMA score for reputers in a topic
   rpc GetTopicInitialReputerEmaScore(GetTopicInitialReputerEmaScoreRequest) returns (GetTopicInitialReputerEmaScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/initial_reputer_ema_score/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/initial_reputer_ema_score/{topic_id}";
   }
 
   // Get latest regret stdnorm for a topic
   rpc GetLatestRegretStdNorm(GetLatestRegretStdNormRequest) returns (GetLatestRegretStdNormResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/latest_regret_stdnorm/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/latest_regret_stdnorm/{topic_id}";
   }
 
   // Get latest inferer weight for a topic and actor
   rpc GetLatestInfererWeight(GetLatestInfererWeightRequest) returns (GetLatestInfererWeightResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/latest_inferer_weight/{topic_id}/{actor_id}";
+    option (google.api.http).get = "/emissions/v10/latest_inferer_weight/{topic_id}/{actor_id}";
   }
 
   // Get latest forecaster weight for a topic and actor
   rpc GetLatestForecasterWeight(GetLatestForecasterWeightRequest) returns (GetLatestForecasterWeightResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/latest_forecaster_weight/{topic_id}/{actor_id}";
+    option (google.api.http).get = "/emissions/v10/latest_forecaster_weight/{topic_id}/{actor_id}";
   }
 
   // Get worker submission window status and timing
   rpc GetWorkerSubmissionWindowStatus(GetWorkerSubmissionWindowStatusRequest) returns (GetWorkerSubmissionWindowStatusResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/worker_submission_window_status/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/worker_submission_window_status/{topic_id}";
   }
 
   // Get reputer submission window status and timing
   rpc GetReputerSubmissionWindowStatus(GetReputerSubmissionWindowStatusRequest) returns (GetReputerSubmissionWindowStatusResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v9/reputer_submission_window_status/{topic_id}";
+    option (google.api.http).get = "/emissions/v10/reputer_submission_window_status/{topic_id}";
   }
 }
 

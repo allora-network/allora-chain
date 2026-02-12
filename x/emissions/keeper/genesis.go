@@ -454,9 +454,15 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := lossBundles.Validate(); err != nil {
 				return errors.Wrap(err, "reputer value bundles validation failed")
 			}
+			reputerValueBundles := make([]*types.ReputerValueBundle, len(lossBundles))
+			for i := range lossBundles {
+				reputerValueBundles[i] = &types.ReputerValueBundle{
+					ValueBundle: lossBundles[i],
+				}
+			}
 			if err := k.allLossBundles.Set(ctx,
 				collections.Join(topicIdBlockHeightReputerValueBundles.TopicId, topicIdBlockHeightReputerValueBundles.BlockHeight),
-				types.ReputerLossBundles{LossBundles: lossBundles}); err != nil {
+				types.ReputerValueBundles{ReputerValueBundles: reputerValueBundles}); err != nil {
 				return errors.Wrap(err, "error setting allLossBundles")
 			}
 		}
@@ -831,7 +837,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	for _, bundle := range data.LossBundles {
 		if bundle != nil {
 			key := collections.Join(bundle.TopicId, bundle.Reputer)
-			if err := k.lossBundles.Set(ctx, key, *bundle.ReputerValueBundle); err != nil {
+			if err := k.lossBundles.Set(ctx, key, types.ReputerValueBundle{
+				ValueBundle: bundle.ReputerValueBundle,
+			}); err != nil {
 				return errors.Wrap(err, "error setting loss bundle")
 			}
 		}
@@ -1802,10 +1810,14 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			return nil, errors.Wrap(err, "failed to get key value: allLossBundlesIter")
 		}
 		value := keyValue.Value
+		reputerValueBundles := make(types.LossBundles, len(value.ReputerValueBundles))
+		for i := range value.ReputerValueBundles {
+			reputerValueBundles[i] = value.ReputerValueBundles[i].GetValueBundle()
+		}
 		topicIdBlockHeightValueBundles := types.TopicIdBlockHeightReputerValueBundles{
 			TopicId:             keyValue.Key.K1(),
 			BlockHeight:         keyValue.Key.K2(),
-			ReputerValueBundles: value.GetLossBundles(),
+			ReputerValueBundles: reputerValueBundles,
 		}
 		allLossBundles = append(allLossBundles, &topicIdBlockHeightValueBundles)
 	}
@@ -2285,7 +2297,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		lossBundles = append(lossBundles, &types.TopicIdReputerReputerValueBundle{
 			TopicId:            keyValue.Key.K1(),
 			Reputer:            keyValue.Key.K2(),
-			ReputerValueBundle: &keyValue.Value,
+			ReputerValueBundle: keyValue.Value.GetValueBundle(),
 		})
 	}
 

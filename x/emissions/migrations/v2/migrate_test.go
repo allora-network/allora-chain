@@ -350,9 +350,6 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateAllLossBundles() {
 
 	defaultOneOutInfererForecasterValues := []*types.OneOutInfererForecasterValues{}
 	s.Require().Equal(len(defaultOneOutInfererForecasterValues), len(newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues))
-
-	s.Require().Equal(reputerValueBundle.Signature, newMsg.ReputerValueBundles[0].Signature)
-	s.Require().Equal(reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
 
 func (s *EmissionsV2MigrationTestSuite) TestMigrateAllRecordCommits() {

@@ -6,6 +6,14 @@ import (
 	"fmt"
 
 	"cosmossdk.io/core/appmodule"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
+
 	v2 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v2"
 	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
 	v4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
@@ -19,6 +27,7 @@ import (
 	migrationV10 "github.com/allora-network/allora-chain/x/emissions/migrations/v10"
 	migrationV11 "github.com/allora-network/allora-chain/x/emissions/migrations/v11"
 	migrationV13 "github.com/allora-network/allora-chain/x/emissions/migrations/v13"
+	migrationV14 "github.com/allora-network/allora-chain/x/emissions/migrations/v14"
 	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
 	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
@@ -28,13 +37,6 @@ import (
 	migrationV8 "github.com/allora-network/allora-chain/x/emissions/migrations/v8"
 	migrationV9 "github.com/allora-network/allora-chain/x/emissions/migrations/v9"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 )
 
 var (
@@ -160,6 +162,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV13.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 12 to 13: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 13, func(ctx sdk.Context) error {
+		return migrationV14.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 13 to 14: %v", types.ModuleName, err))
 	}
 }
 

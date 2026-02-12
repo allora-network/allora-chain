@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/log"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-
 	cosmosMath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,19 +26,6 @@ func TestInferenceSynthesisTestSuite(t *testing.T) {
 	suite.Run(t, &InferenceSynthesisTestSuite{
 		testutil.NewTestSuite("inference_synthesis"),
 	})
-}
-
-func (s *InferenceSynthesisTestSuite) signValueBundle(
-	reputerValueBundle *emissionstypes.ValueBundle,
-	privateKey secp256k1.PrivKey,
-) []byte {
-	require := s.Require()
-	src := make([]byte, 0)
-	src, err := reputerValueBundle.XXX_Marshal(src, true)
-	require.NoError(err, "Marshall reputer value bundle should not return an error")
-	valueBundleSignature, err := privateKey.Sign(src)
-	require.NoError(err, "Sign should not return an error")
-	return valueBundleSignature
 }
 
 // ConvertInferencesToWorkerAttributedValues converts an Inferences type to a slice of WorkerAttributedValue
@@ -342,6 +327,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		inferences.Inferences = append(inferences.Inferences, &emissionstypes.Inference{
 			Inferer:     s.AddrsStr(infererIndex),
 			Value:       epochGet("inference_" + strconv.Itoa(infererIndex)),
+			Values:      nil,
 			ExtraData:   nil,
 			Proof:       "",
 			BlockHeight: blockHeight,

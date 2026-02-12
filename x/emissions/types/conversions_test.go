@@ -4,9 +4,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/allora-network/allora-chain/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/allora-network/allora-chain/math"
 )
 
 func TestMain(m *testing.M) {
@@ -36,6 +37,7 @@ func TestInputInferenceConvert(t *testing.T) {
 				BlockHeight: 100,
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Value:       mustNewBoundedExp40Dec(t, "1.23"),
+				Values:      []math.BoundedExp40Dec{mustNewBoundedExp40Dec(t, "1.23")},
 				ExtraData:   []byte("extra"),
 				Proof:       "proof",
 			},
@@ -61,9 +63,12 @@ func TestInputInferenceConvert(t *testing.T) {
 			require.Equal(t, tt.input.ExtraData, got.ExtraData)
 			require.Equal(t, tt.input.Proof, got.Proof)
 			// Check value conversion
-			boundedDec, err := tt.input.Value.ToDec()
-			require.NoError(t, err)
-			require.True(t, boundedDec.Equal(got.Value))
+			dec, _ := tt.input.Value.ToDec()
+			require.True(t, dec.Equal(got.Value))
+			for i := range got.Values {
+				decv, _ := tt.input.Values[i].ToDec()
+				require.True(t, decv.Equal(got.Values[i]))
+			}
 		})
 	}
 }

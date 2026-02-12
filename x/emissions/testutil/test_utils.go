@@ -876,7 +876,8 @@ func (s *TestSuite) MockTopic() types.Topic {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
-		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
 	}

@@ -12,13 +12,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
-
-var valueBundleBufferPool = utils.NewBytesPool(1024, 0)
 
 func GenerateTestAccounts(count int) (
 	privKeys []secp256k1.PrivKey,

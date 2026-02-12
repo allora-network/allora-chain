@@ -1324,6 +1324,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		BlockHeight: blockHeight1,
 		Inferer:     "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
 		Value:       alloraMath.MustNewDecFromString("10"),
+		Values:      nil,
 		ExtraData:   []byte("data1"),
 		Proof:       "proof1",
 	}
@@ -1341,6 +1342,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		BlockHeight: blockHeight2,
 		Inferer:     "allo1dwxj49n0t5969uj4zfuemxg8a2ty85njn9xy9t",
 		Value:       alloraMath.MustNewDecFromString("20"),
+		Values:      nil,
 		ExtraData:   []byte("data2"),
 		Proof:       "proof2",
 	}
@@ -1374,6 +1376,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		BlockHeight: blockHeight1,
 		Inferer:     workerAccStr,
 		Value:       alloraMath.MustNewDecFromString("10"),
+		Values:      nil,
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
@@ -1386,6 +1389,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		BlockHeight: blockHeight2,
 		Inferer:     workerAccStr,
 		Value:       alloraMath.MustNewDecFromString("10"),
+		Values:      nil,
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
@@ -4209,6 +4213,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker4,
 		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      nil,
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4224,6 +4229,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker5,
 		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      nil,
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4276,6 +4282,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker2,
 		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      nil,
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -5161,6 +5168,7 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 		TopicId:     topicId,
 		BlockHeight: 100,
 		Value:       alloraMath.NewDecFromInt64(1),
+		Values:      nil,
 		Inferer:     inferer,
 		ExtraData:   []byte("data"),
 		Proof:       "",
@@ -5619,6 +5627,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 		BlockHeight: 2,
 		Inferer:     s.AddrsStr(9), // Using a different address
 		Value:       alloraMath.NewDecFromInt64(100),
+		Values:      nil,
 		ExtraData:   nil,
 		Proof:       "",
 	}

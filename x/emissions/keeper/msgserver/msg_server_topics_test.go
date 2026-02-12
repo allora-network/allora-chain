@@ -189,6 +189,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			setup: func() *types.CreateNewTopicRequest {
 				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				msg := s.MockTopicMsg()
+				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
 				msg.RequireUnity = true
 				msg.UnityTolerance, _ = alloraMath.MustNewDecFromString("0.01").Add(alloraMath.MustNewDecFromString("0.0000000001"))
 				return msg
@@ -201,6 +202,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			setup: func() *types.CreateNewTopicRequest {
 				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				msg := s.MockTopicMsg()
+				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
 				msg.RequireUnity = true
 				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
 				return msg
@@ -282,6 +284,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -302,6 +308,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.NewDecFromInt64(3),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -347,6 +355,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -363,6 +375,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.NewDecFromInt64(3),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -386,6 +400,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -411,6 +427,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -427,6 +445,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -443,6 +463,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -480,6 +502,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -502,6 +528,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -545,6 +573,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -559,6 +591,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.5"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -580,6 +614,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.5"),
 		CNorm:               alloraMath.MustNewDecFromString("50.5"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -598,6 +634,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.5"),
 		CNorm:               alloraMath.MustNewDecFromString("-100"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -616,6 +654,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.5"),
 		CNorm:               alloraMath.MustNewDecFromString("100"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -638,6 +678,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.4"),
 		PNorm:               alloraMath.MustNewDecFromString("3.5"),
 		CNorm:               alloraMath.MustNewDecFromString("100"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -660,6 +702,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "alpha regret")
@@ -674,6 +718,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("1.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "merit sortition alpha")
@@ -688,6 +734,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("2.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "p-norm")
@@ -702,6 +750,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("-101"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -716,6 +766,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("101"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -748,6 +800,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -771,6 +827,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -808,6 +866,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -828,6 +890,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
 		PNorm:               alloraMath.MustNewDecFromString("3.0"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.Dec{},
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)

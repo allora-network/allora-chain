@@ -3,6 +3,7 @@ package inferencesynthesis
 import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -92,6 +93,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					return nil, nil, nil, errorsmod.Wrapf(err, "error calculating median of inference values")
 				}
 
+				//nolint:exhaustruct
 				forecastImpliedInference := emissionstypes.Inference{
 					TopicId:     args.TopicId,
 					BlockHeight: blockHeight,
@@ -189,6 +191,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					if err != nil {
 						return nil, nil, nil, errorsmod.Wrapf(err, "error calculating forecast value")
 					}
+					//nolint:exhaustruct
 					forecastImpliedInference := emissionstypes.Inference{
 						TopicId:     args.TopicId,
 						BlockHeight: blockHeight,

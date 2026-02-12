@@ -66,12 +66,14 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 			{
 				Inferer:     worker0,
 				Value:       alloraMath.MustNewDecFromString("-0.035995138925040600"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     worker1,
 				Value:       alloraMath.MustNewDecFromString("-0.07333303938740420"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
@@ -136,6 +138,10 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -187,6 +193,10 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -207,24 +217,28 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 			{
 				Inferer:     worker0,
 				Value:       alloraMath.MustNewDecFromString("1.0"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     worker1,
 				Value:       alloraMath.MustNewDecFromString("1.1"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     worker2,
 				Value:       alloraMath.MustNewDecFromString("0.9"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     worker3,
 				Value:       alloraMath.MustNewDecFromString("100.0"), // Clear outlier
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
@@ -343,6 +357,10 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -363,24 +381,28 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 			{
 				Inferer:     worker0,
 				Value:       alloraMath.MustNewDecFromString("1.0"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     worker1,
 				Value:       alloraMath.MustNewDecFromString("1.1"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     worker2,
 				Value:       alloraMath.MustNewDecFromString("0.9"),
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     worker3,
 				Value:       alloraMath.MustNewDecFromString("1.2"), // Normal value, not an outlier
+				Values:      nil,
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
