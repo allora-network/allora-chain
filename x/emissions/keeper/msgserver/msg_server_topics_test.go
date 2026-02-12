@@ -3,9 +3,10 @@ package msgserver_test
 import (
 	"strings"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Topics tests
@@ -157,6 +158,62 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			},
 			expectSuccess: true,
 		},
+		{
+			name: "Fails when require_unity true with SINGLE output_arity",
+			setup: func() *types.CreateNewTopicRequest {
+				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				msg := s.MockTopicMsg()
+				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.1")
+				return msg
+			},
+			expectedError: "require_unity MUST be false when output_arity is SINGLE",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails when require_unity true and unity_tolerance <= 0",
+			setup: func() *types.CreateNewTopicRequest {
+				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				msg := s.MockTopicMsg()
+				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.ZeroDec()
+				return msg
+			},
+			expectedError: "unity_tolerance must be in",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails when require_unity true and unity_tolerance > max",
+			setup: func() *types.CreateNewTopicRequest {
+				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				msg := s.MockTopicMsg()
+				msg.RequireUnity = true
+				msg.UnityTolerance, _ = alloraMath.MustNewDecFromString("0.01").Add(alloraMath.MustNewDecFromString("0.0000000001"))
+				return msg
+			},
+			expectedError: "unity_tolerance must be in",
+			expectSuccess: false,
+		},
+		{
+			name: "Success when require_unity true and unity_tolerance valid",
+			setup: func() *types.CreateNewTopicRequest {
+				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				msg := s.MockTopicMsg()
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
+				return msg
+			},
+			postCheck: func(topicId uint64) {
+				topic, err := keeper.GetTopic(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().True(topic.RequireUnity)
+				s.Require().Equal(alloraMath.MustNewDecFromString("0.01"), topic.UnityTolerance)
+				s.Require().Equal(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, topic.OutputArity)
+			},
+			expectSuccess: true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -232,6 +289,9 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NotNil(createResult)
 	topicId := createResult.TopicId
 
+	originalTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
 		Sender:              sender,
@@ -253,6 +313,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NoError(err)
 	require.Equal("Updated metadata", updatedTopic.Metadata)
 	require.Equal("mae", updatedTopic.LossMethod)
+
+	require.Equal(originalTopic.OutputArity, updatedTopic.OutputArity)
+	require.Equal(originalTopic.RequireUnity, updatedTopic.RequireUnity)
+	require.Equal(originalTopic.UnityTolerance, updatedTopic.UnityTolerance)
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
@@ -771,4 +835,42 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	current, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("0.3"), current.MeritSortitionAlpha)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicUnityFields() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	senderAddr := s.Addrs(0)
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	create := s.MockTopicMsg()
+	create.Creator = sender
+	create.RequireUnity = false
+	create.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	create.UnityTolerance = alloraMath.MustNewDecFromString("0.1")
+	res, err := msgServer.CreateNewTopic(ctx, create)
+	require.NoError(err)
+	topicId := res.TopicId
+
+	// valid update
+	upd := &types.UpdateTopicRequest{
+		Sender: sender, TopicId: topicId,
+		Metadata: "x", LossMethod: "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+
+		RequireUnity:   true,
+		UnityTolerance: alloraMath.MustNewDecFromString("0.01"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, upd)
+	require.NoError(err)
+
+	topic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.True(topic.RequireUnity)
+	require.Equal(alloraMath.MustNewDecFromString("0.01"), topic.UnityTolerance)
 }

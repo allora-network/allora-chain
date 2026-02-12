@@ -54,7 +54,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -113,7 +113,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -172,7 +172,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -236,7 +236,7 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
-	require.Equal(t, "emissions.v9.EventTopicUpdated", events[0].Type)
+	require.Equal(t, "emissions.v10.EventTopicUpdated", events[0].Type)
 
 	attributes := events[0].Attributes
 	val, exists := events[0].GetAttribute(AttributeKeyTopicId)
@@ -283,7 +283,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -342,7 +342,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -401,7 +401,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -476,7 +476,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkLossSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -520,7 +520,7 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkInferences", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkInferences", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -961,7 +961,7 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventForecastTaskScoreSet", event.Type)
+	require.Equal(t, "emissions.v10.EventForecastTaskScoreSet", event.Type)
 
 	// Check that we have the expected number of attributes
 	require.Len(t, event.Attributes, 3)
@@ -997,9 +997,9 @@ func TestNewLastCommitSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 3)
 
-	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[0].Type)
-	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[1].Type)
-	require.Equal(t, "emissions.v9.EventReputerLastCommitSet", events[2].Type)
+	require.Equal(t, "emissions.v10.EventWorkerLastCommitSet", events[0].Type)
+	require.Equal(t, "emissions.v10.EventWorkerLastCommitSet", events[1].Type)
+	require.Equal(t, "emissions.v10.EventReputerLastCommitSet", events[2].Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "block_height")
 	require.Contains(t, events[0].Attributes[1].Key, "nonce")
@@ -1036,7 +1036,7 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	require.Equal(t, "emissions.v9.EventTopicRewardsSet", events[0].Type)
+	require.Equal(t, "emissions.v10.EventTopicRewardsSet", events[0].Type)
 	require.Contains(t, events[0].Attributes[0].Key, "rewards")
 	require.Contains(t, events[0].Attributes[0].Value, `["0","10","20","30","40"]`)
 	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
@@ -1075,7 +1075,7 @@ func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 3)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventEMAScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventEMAScoresSet", event.Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "actor_type")
 	require.Contains(t, events[0].Attributes[0].Value, "\"ACTOR_TYPE_INFERER_UNSPECIFIED\"")
@@ -1116,7 +1116,7 @@ func TestEmitNewListeningCoefficientsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventListeningCoefficientsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventListeningCoefficientsSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -1183,7 +1183,7 @@ func TestEmitNewInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1240,7 +1240,7 @@ func TestEmitNewForecasterNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventForecasterNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventForecasterNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1296,7 +1296,7 @@ func TestEmitNewNaiveInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNaiveInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNaiveInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1351,7 +1351,7 @@ func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventTopicInitialRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventTopicInitialRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1377,7 +1377,7 @@ func TestEmitPreviousPercentageRewardToStakedReputersSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventPreviousPercentageRewardToStakedReputersSet", event.Type)
+	require.Equal(t, "emissions.v10.EventPreviousPercentageRewardToStakedReputersSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyBlockHeight)
 	require.True(t, exists)
@@ -1401,7 +1401,7 @@ func TestEmitNewInfererWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventInfererWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventInfererWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1457,7 +1457,7 @@ func TestEmitNewForecasterWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventForecasterWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventForecasterWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1513,7 +1513,7 @@ func TestEmitNewNetworkInferenceInfererWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkInferenceInfererWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkInferenceInfererWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1545,7 +1545,7 @@ func TestEmitNewNetworkInferenceForecasterWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkInferenceForecasterWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkInferenceForecasterWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1577,7 +1577,7 @@ func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventTopicFeeRevenueDripped", event.Type)
+	require.Equal(t, "emissions.v10.EventTopicFeeRevenueDripped", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)

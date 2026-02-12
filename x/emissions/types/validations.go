@@ -794,6 +794,10 @@ func (bundle LossBundles) Validate() error {
 	return nil
 }
 
+const (
+	maxTopicUnityTolerance = "0.01"
+)
+
 // Validate checks if the given Topic is valid
 func (topic Topic) Validate(params Params) error {
 	if topic.Id == 0 {
@@ -816,9 +820,6 @@ func (topic Topic) Validate(params Params) error {
 	}
 	if topic.EpochLength < params.MinEpochLength {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epoch length must be greater than minimum epoch length")
-	}
-	if topic.WorkerSubmissionWindow == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic worker submission window must be greater than zero")
 	}
 	if topic.GroundTruthLag <= 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic ground truth lag must be greater than zero")
@@ -885,6 +886,16 @@ func (topic Topic) Validate(params Params) error {
 	}
 	if topic.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || topic.CNorm.Gt(alloraMath.MustNewDecFromString("100")) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
+	}
+	if topic.OutputArity == TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE && topic.RequireUnity {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic require_unity MUST be false when output_arity is SINGLE")
+	}
+	if topic.RequireUnity &&
+		(topic.UnityTolerance.IsNaN() ||
+			topic.UnityTolerance.Lte(alloraMath.ZeroDec()) ||
+			topic.UnityTolerance.Gt(alloraMath.MustNewDecFromString(maxTopicUnityTolerance))) {
+		return errors.Wrapf(sdkerrors.ErrInvalidType,
+			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
 	}
 
 	return nil

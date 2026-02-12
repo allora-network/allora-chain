@@ -13,7 +13,7 @@ import "emissions/v3/types.proto";
 import "emissions/v3/worker.proto";
 import "emissions/v10/inference.proto";
 import "emissions/v9/params.proto";
-import "emissions/v9/topic.proto";
+import "emissions/v10/topic.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
@@ -291,7 +291,7 @@ message GenesisState {
 
 message TopicIdAndTopic {
   uint64 topic_id = 1;
-  emissions.v9.Topic topic = 2;
+  Topic topic = 2;
 }
 
 message TopicAndActorId {
@@ -472,17 +472,17 @@ message TopicIdActorIdActorIdTimeStampedValue {
 
 message TopicIdTimestampedActorNonce {
   uint64 topic_id = 1;
-  emissions.v9.TimestampedActorNonce timestamped_actor_nonce = 2;
+  TimestampedActorNonce timestamped_actor_nonce = 2;
 }
 
 message BlockHeightTopicIds {
   int64 block_height = 1;
-  emissions.v9.TopicIds topic_ids = 2;
+  TopicIds topic_ids = 2;
 }
 
 message BlockHeightTopicIdWeightPair {
   int64 block_height = 1;
-  emissions.v9.TopicIdWeightPair topic_weight = 2;
+  TopicIdWeightPair topic_weight = 2;
 }
 
 message TopicIdReputerReputerValueBundle {

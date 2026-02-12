@@ -3,8 +3,9 @@ package types
 import (
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/stretchr/testify/require"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
 func TestInputInference_Validate(t *testing.T) {
@@ -526,5 +527,243 @@ func TestInputInferenceForecastBundle_Validate(t *testing.T) {
 				require.NoError(t, err)
 			}
 		})
+	}
+}
+
+func TestTopicValidate(t *testing.T) {
+	p := validParams()
+
+	longStr := func(n int) string {
+		b := make([]byte, n)
+		for i := range b {
+			b[i] = 'a'
+		}
+		return string(b)
+	}
+
+	maxTol := alloraMath.MustNewDecFromString(maxTopicUnityTolerance)
+
+	tests := []struct {
+		name        string
+		mutate      func(*Topic, *Params)
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:   "ok",
+			mutate: func(_ *Topic, _ *Params) {},
+		},
+		{
+			name:    "id zero reserved",
+			mutate:  func(tp *Topic, _ *Params) { tp.Id = 0 },
+			wantErr: true, errContains: "topic id zero is reserved",
+		},
+		{
+			name:    "creator invalid",
+			mutate:  func(tp *Topic, _ *Params) { tp.Creator = "not-bech32" },
+			wantErr: true, errContains: "topic creator address invalid",
+		},
+		{
+			name:    "metadata too long",
+			mutate:  func(tp *Topic, p *Params) { tp.Metadata = longStr(int(p.MaxStringLength) + 1) },
+			wantErr: true, errContains: "topic metadata invalid",
+		},
+		{
+			name:    "loss method empty",
+			mutate:  func(tp *Topic, _ *Params) { tp.LossMethod = "" },
+			wantErr: true, errContains: "topic loss method invalid",
+		},
+		{
+			name:    "epoch last ended negative",
+			mutate:  func(tp *Topic, _ *Params) { tp.EpochLastEnded = -1 },
+			wantErr: true, errContains: "topic epoch last ended cannot be negative",
+		},
+		{
+			name:    "epoch length <= 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.EpochLength = 0 },
+			wantErr: true, errContains: "topic epoch length must be greater than zero",
+		},
+		{
+			name:    "epoch length < min",
+			mutate:  func(tp *Topic, p *Params) { tp.EpochLength = p.MinEpochLength - 1 },
+			wantErr: true, errContains: "topic epoch length must be greater than minimum epoch length",
+		},
+		{
+			name:    "worker submission window zero",
+			mutate:  func(tp *Topic, _ *Params) { tp.WorkerSubmissionWindow = 0 },
+			wantErr: true, errContains: "topic worker submission window must be greater than zero",
+		},
+		{
+			name:    "worker submission window > epoch length",
+			mutate:  func(tp *Topic, _ *Params) { tp.WorkerSubmissionWindow = tp.EpochLength + 1 },
+			wantErr: true, errContains: "topic worker submission window cannot be higher than epoch length",
+		},
+		{
+			name:    "ground truth lag <= 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.GroundTruthLag = 0 },
+			wantErr: true, errContains: "topic ground truth lag must be greater than zero",
+		},
+		{
+			name:    "ground truth lag < epoch length",
+			mutate:  func(tp *Topic, _ *Params) { tp.GroundTruthLag = tp.EpochLength - 1 },
+			wantErr: true, errContains: "topic ground truth lag cannot be lower than epoch length",
+		},
+		{
+			name: "ground truth lag too high",
+			mutate: func(tp *Topic, p *Params) {
+				tp.GroundTruthLag = int64(p.MaxUnfulfilledReputerRequests)*tp.EpochLength + 1
+			},
+			wantErr: true, errContains: "topic ground truth lag cannot be higher than max unfulfilled reputer requests",
+		},
+		{
+			name:    "alpha regret NaN invalid",
+			mutate:  func(tp *Topic, _ *Params) { tp.AlphaRegret = alloraMath.NewNaN() },
+			wantErr: true, errContains: "topic alpha regret is invalid",
+		},
+		{
+			name:    "alpha regret out of range (<=0)",
+			mutate:  func(tp *Topic, _ *Params) { tp.AlphaRegret = alloraMath.MustNewDecFromString("0") },
+			wantErr: true, errContains: "topic alpha regret must be greater than 0 and less than or equal to 1",
+		},
+		{
+			name:    "alpha regret out of range (>1)",
+			mutate:  func(tp *Topic, _ *Params) { tp.AlphaRegret = alloraMath.MustNewDecFromString("1.0001") },
+			wantErr: true, errContains: "topic alpha regret must be greater than 0 and less than or equal to 1",
+		},
+		{
+			name:    "p-norm out of range low",
+			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("2.4") },
+			wantErr: true, errContains: "topic p-norm must be between 2.5 and 4.5",
+		},
+		{
+			name:    "p-norm out of range high",
+			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("4.6") },
+			wantErr: true, errContains: "topic p-norm must be between 2.5 and 4.5",
+		},
+		{
+			name:    "epsilon <= 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.Epsilon = alloraMath.MustNewDecFromString("0") },
+			wantErr: true, errContains: "topic epsilon must be greater than 0",
+		},
+		{
+			name:    "merit sortition alpha > 1",
+			mutate:  func(tp *Topic, _ *Params) { tp.MeritSortitionAlpha = alloraMath.MustNewDecFromString("1.1") },
+			wantErr: true, errContains: "topic merit sortition alpha must be between 0 and 1 inclusive",
+		},
+		{
+			name:    "active inferer quantile < 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.ActiveInfererQuantile = alloraMath.MustNewDecFromString("-0.1") },
+			wantErr: true, errContains: "topic active inferer quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name:    "active forecaster quantile > 1",
+			mutate:  func(tp *Topic, _ *Params) { tp.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("1.1") },
+			wantErr: true, errContains: "topic active forecaster quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name:    "active reputer quantile > 1",
+			mutate:  func(tp *Topic, _ *Params) { tp.ActiveReputerQuantile = alloraMath.MustNewDecFromString("1.1") },
+			wantErr: true, errContains: "topic active reputer quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name:    "c_norm out of range",
+			mutate:  func(tp *Topic, _ *Params) { tp.CNorm = alloraMath.MustNewDecFromString("100.1") },
+			wantErr: true, errContains: "topic c_norm must be between -100 and 100",
+		},
+		{
+			name: "require_unity not allowed for SINGLE arity",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+				tp.RequireUnity = true
+			},
+			wantErr: true, errContains: "topic require_unity MUST be false when output_arity is SINGLE",
+		},
+		{
+			name: "require_unity with unity tolerance NaN",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = true
+				tp.UnityTolerance = alloraMath.NewNaN()
+			},
+			wantErr: true, errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with unity tolerance <= 0",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = true
+				tp.UnityTolerance = alloraMath.MustNewDecFromString("0")
+			},
+			wantErr: true, errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with unity tolerance > max",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = true
+				tp.UnityTolerance, _ = maxTol.Add(alloraMath.MustNewDecFromString("0.0000000001"))
+			},
+			wantErr: true, errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity false ignores unity tolerance (even NaN)",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = false
+				tp.UnityTolerance = alloraMath.NewNaN()
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			pp := p
+			topic := validTopic(pp)
+
+			tc.mutate(&topic, &pp)
+
+			err := topic.Validate(pp)
+			if tc.wantErr {
+				require.Error(t, err)
+				if tc.errContains != "" {
+					require.ErrorContains(t, err, tc.errContains)
+				}
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func validTopic(p Params) Topic {
+	creator := "allo10ljt8c3nuky75nnca4gnt9sqaxrmmyaz4d520a"
+
+	return Topic{
+		Id:                       1,
+		Creator:                  creator,
+		Metadata:                 "meta",
+		LossMethod:               "mse",
+		EpochLastEnded:           0,
+		EpochLength:              p.MinEpochLength,
+		GroundTruthLag:           int64(p.MinEpochLength) * 2,
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.5"),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.0001"),
+		InitialRegret:            alloraMath.MustNewDecFromString("0.0"),
+		WorkerSubmissionWindow:   int64(p.MinEpochLength / 2),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.5"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.5"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.5"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.5"),
+		CNorm:                    alloraMath.MustNewDecFromString("0"),
+		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
+	}
+}
+
+func validParams() Params {
+	return Params{
+		MaxStringLength:               256,
+		MinEpochLength:                10,
+		MaxUnfulfilledReputerRequests: 5,
 	}
 }

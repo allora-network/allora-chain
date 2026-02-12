@@ -5,10 +5,11 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
@@ -70,6 +71,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		ActiveForecasterQuantile: msg.ActiveForecasterQuantile,
 		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
 		CNorm:                    msg.CNorm,
+		TopicType:                msg.TopicType,
+		OutputArity:              msg.OutputArity,
+		RequireUnity:             msg.RequireUnity,
+		UnityTolerance:           msg.UnityTolerance,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -122,6 +127,8 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
+	updatedTopic.RequireUnity = msg.RequireUnity
+	updatedTopic.UnityTolerance = msg.UnityTolerance
 
 	updatedTopic, err = ms.k.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {

@@ -876,6 +876,9 @@ func (s *TestSuite) MockTopic() types.Topic {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
 	}
 }
 
@@ -899,6 +902,9 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    topic.CNorm,
+		OutputArity:              topic.OutputArity,
+		RequireUnity:             topic.RequireUnity,
+		UnityTolerance:           topic.UnityTolerance,
 	}
 }
 
