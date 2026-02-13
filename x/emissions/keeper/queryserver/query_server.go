@@ -9,9 +9,23 @@ var _ types.QueryServiceServer = queryServer{k: keeper.Keeper{}}
 
 // NewQueryServerImpl returns an implementation of the module QueryServer.
 func NewQueryServerImpl(k keeper.Keeper) types.QueryServiceServer {
-	return queryServer{k}
+	return queryServer{
+		k: k,
+	}
 }
 
 type queryServer struct {
 	k keeper.Keeper
+
+	pk  *keeper.ParamsKeeper
+	tk  *keeper.TopicKeeper
+	wlk *keeper.WhitelistsKeeper
+	rlk *keeper.ReputerLossKeeper
+	bk  *keeper.BankingKeeper
+	sk  *keeper.StakingKeeper
+	sck *keeper.ScoresKeeper
+	wk  *keeper.WorkerKeeper
+	wtk *keeper.WeightsKeeper
+	nk  *keeper.NonceKeeper
+	rk  *keeper.RegretsKeeper
 }

@@ -19,7 +19,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 
-	moduleParams, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for reputer: %v", &msg.ReputerValueBundle.ValueBundle.Reputer)
 	}
@@ -29,7 +29,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 			"Reputer bad data format for block: %d", blockHeight)
 	}
 
-	canSubmit, err := ms.k.CanSubmitReputerPayload(ctx, rvb.TopicId, rvb.Reputer)
+	canSubmit, err := ms.wlk.CanSubmitReputerPayload(ctx, rvb.TopicId, rvb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !canSubmit {
@@ -44,19 +44,19 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	nonce := rvb.ReputerRequestNonce
 	topicId := rvb.TopicId
 
-	topic, err := ms.k.GetTopic(ctx, topicId)
+	topic, err := ms.tk.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
 
-	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	workerNonceUnfulfilled, err := ms.nk.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	} else if workerNonceUnfulfilled {
 		return nil, errorsmod.Wrapf(types.ErrNonceStillUnfulfilled, "worker nonce")
 	}
 
-	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	reputerNonceUnfulfilled, err := ms.nk.IsReputerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	} else if !reputerNonceUnfulfilled {
@@ -74,7 +74,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		)
 	}
 
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, rvb.Reputer)
+	isRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, topicId, rvb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !isRegistered {
@@ -82,7 +82,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	// Check that the reputer enough stake in the topic
-	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, rvb.Reputer)
+	stake, err := ms.sk.GetStakeReputerAuthority(ctx, topicId, rvb.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	err = ms.k.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, rvb)
+	err = ms.rlk.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, rvb)
 	if err != nil {
 		return nil, err
 	}
