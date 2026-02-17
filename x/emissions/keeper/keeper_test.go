@@ -5910,35 +5910,35 @@ func (s *KeeperTestSuite) TestLatestInfererWeightFunctions() {
 	s.Require().True(differentWeight.IsZero(), "Weight for different topic should be zero")
 }
 
-func (s *KeeperTestSuite) TestLatestRegretStdNormFunctions() {
+func (s *KeeperTestSuite) TestLatestRegretScaleFunctions() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
 	topicId := uint64(1)
-	stdNorm := alloraMath.NewDecFromInt64(50)
+	regretScale := alloraMath.NewDecFromInt64(50)
 
 	// Test initial state (should be zero)
-	initialStdNorm, err := k.GetLatestRegretStdNorm(ctx, topicId)
+	initialRegretScale, err := k.GetLatestRegretScale(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().True(initialStdNorm.IsZero(), "Initial stdNorm should be zero")
+	s.Require().True(initialRegretScale.IsZero(), "Initial regret scale should be zero")
 
-	// Set stdNorm
-	err = k.SetLatestRegretStdNorm(ctx, topicId, stdNorm)
-	s.Require().NoError(err, "Setting latest regret stdNorm should not fail")
+	// Set regret scale
+	err = k.SetLatestRegretScale(ctx, topicId, regretScale)
+	s.Require().NoError(err, "Setting latest regret scale should not fail")
 
-	// Get and verify stdNorm
-	retrievedStdNorm, err := k.GetLatestRegretStdNorm(ctx, topicId)
+	// Get and verify regret scale
+	retrievedRegretScale, err := k.GetLatestRegretScale(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(stdNorm, retrievedStdNorm, "Retrieved stdNorm should match set stdNorm")
+	s.Require().Equal(regretScale, retrievedRegretScale, "Retrieved regret scale should match set regret scale")
 
 	// Test with different topic ID
 	differentTopicId := uint64(2)
-	differentStdNorm, err := k.GetLatestRegretStdNorm(ctx, differentTopicId)
+	differentRegretScale, err := k.GetLatestRegretScale(ctx, differentTopicId)
 	s.Require().NoError(err)
-	s.Require().True(differentStdNorm.IsZero(), "StdNorm for different topic should be zero")
+	s.Require().True(differentRegretScale.IsZero(), "Regret scale for different topic should be zero")
 
 	// Test setting zero value (should fail)
-	err = k.SetLatestRegretStdNorm(ctx, topicId, alloraMath.ZeroDec())
-	s.Require().Error(err, "Setting zero regret stdNorm should fail")
+	err = k.SetLatestRegretScale(ctx, topicId, alloraMath.ZeroDec())
+	s.Require().Error(err, "Setting zero regret scale should fail")
 }
 
 // createDefaultInfererValues generates a set of inferer values including all test addresses

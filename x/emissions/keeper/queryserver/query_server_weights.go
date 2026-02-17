@@ -17,13 +17,13 @@ func (qs queryServer) GetLatestRegretStdNorm(ctx context.Context, req *types.Get
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	stdNorm, err := qs.k.GetLatestRegretStdNorm(ctx, req.TopicId)
+	regretScale, err := qs.k.GetLatestRegretScale(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &types.GetLatestRegretStdNormResponse{
-		Value: stdNorm,
+		Value: regretScale,
 	}, nil
 }
 

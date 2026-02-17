@@ -228,8 +228,8 @@ type Keeper struct {
 	// WEIGHTS
 
 	// The latest regret normalization scale for a topic.
-	// NOTE: legacy name "stdnorm" is preserved for state compatibility (now MAD-based scale).
-	latestRegretStdNorm collections.Map[TopicId, alloraMath.Dec]
+	// NOTE: legacy name "stdnorm" is preserved for state compatibility (MAD-based scale).
+	latestRegretScale collections.Map[TopicId, alloraMath.Dec]
 	// The latest weights for a topic
 	latestInfererWeights    collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	latestForecasterWeights collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
@@ -386,7 +386,7 @@ func NewKeeper(
 		initialInfererEmaScore:                    collections.NewMap(sb, types.InitialInfererEmaScoreKey, "initial_inferer_ema_score", collections.Uint64Key, alloraMath.DecValue),
 		initialForecasterEmaScore:                 collections.NewMap(sb, types.InitialForecasterEmaScoreKey, "initial_forecaster_ema_score", collections.Uint64Key, alloraMath.DecValue),
 		initialReputerEmaScore:                    collections.NewMap(sb, types.InitialReputerEmaScoreKey, "initial_reputer_ema_score", collections.Uint64Key, alloraMath.DecValue),
-		latestRegretStdNorm:                       collections.NewMap(sb, types.LatestRegretStdNormKey, "latest_regret_stdnorm", collections.Uint64Key, alloraMath.DecValue),
+		latestRegretScale:                         collections.NewMap(sb, types.LatestRegretStdNormKey, "latest_regret_stdnorm", collections.Uint64Key, alloraMath.DecValue),
 		latestInfererWeights:                      collections.NewMap(sb, types.LatestInfererWeightsKey, "latest_inferer_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		latestForecasterWeights:                   collections.NewMap(sb, types.LatestForecasterWeightsKey, "latest_forecaster_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
@@ -4795,29 +4795,29 @@ func (k *Keeper) SetTopicInitialReputerEmaScore(ctx context.Context, topicId Top
 
 // WEIGHTS
 
-// GetLatestRegretStdNorm returns the latest regret normalization scale for a topic.
-// NOTE: legacy name "stdnorm" is preserved for state compatibility (now MAD-based scale).
-func (k Keeper) GetLatestRegretStdNorm(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
-	regretStdNorm, err := k.latestRegretStdNorm.Get(ctx, topicId)
+// GetLatestRegretScale returns the latest regret normalization scale for a topic.
+// NOTE: legacy name "stdnorm" is preserved for state compatibility (MAD-based scale).
+func (k Keeper) GetLatestRegretScale(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	regretScale, err := k.latestRegretScale.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		return alloraMath.ZeroDec(), nil
 	}
-	return regretStdNorm, err
+	return regretScale, err
 }
 
-// SetLatestRegretStdNorm sets the latest regret normalization scale for a topic.
-// NOTE: legacy name "stdnorm" is preserved for state compatibility (now MAD-based scale).
-func (k Keeper) SetLatestRegretStdNorm(ctx context.Context, topicId TopicId, regretStdNorm alloraMath.Dec) error {
+// SetLatestRegretScale sets the latest regret normalization scale for a topic.
+// NOTE: legacy name "stdnorm" is preserved for state compatibility (MAD-based scale).
+func (k Keeper) SetLatestRegretScale(ctx context.Context, topicId TopicId, regretScale alloraMath.Dec) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
-	if err := types.ValidateDec(regretStdNorm); err != nil {
-		return errorsmod.Wrap(err, "regret standard norm validation failed")
+	if err := types.ValidateDec(regretScale); err != nil {
+		return errorsmod.Wrap(err, "regret scale validation failed")
 	}
-	if regretStdNorm.IsZero() {
-		return errorsmod.Wrap(types.ErrInvalidValue, "regret standard norm cannot be zero")
+	if regretScale.IsZero() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "regret scale cannot be zero")
 	}
-	return k.latestRegretStdNorm.Set(ctx, topicId, regretStdNorm)
+	return k.latestRegretScale.Set(ctx, topicId, regretScale)
 }
 
 // GetLatestInfererWeight returns the latest inferer weight for a topic and worker

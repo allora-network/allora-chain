@@ -111,6 +111,7 @@ var (
 	GlobalWorkerWhitelistKey                          = collections.NewPrefix(96)
 	GlobalReputerWhitelistKey                         = collections.NewPrefix(97)
 	GlobalAdminWhitelistKey                           = collections.NewPrefix(98)
+	// Latest regret scale; legacy "stdnorm" name preserved for state compatibility.
 	LatestRegretStdNormKey                            = collections.NewPrefix(99)
 	LatestInfererWeightsKey                           = collections.NewPrefix(100)
 	LatestForecasterWeightsKey                        = collections.NewPrefix(101)

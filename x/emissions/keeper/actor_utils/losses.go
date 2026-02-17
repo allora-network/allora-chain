@@ -233,7 +233,7 @@ func CloseReputerNonce(
 		return err
 	}
 	// 2.b ... and store it.
-	err = k.SetLatestRegretStdNorm(ctx, topic.Id, regretScalePlusEpsilon)
+	err = k.SetLatestRegretScale(ctx, topic.Id, regretScalePlusEpsilon)
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// Emit events: the regret stdnorm set event
+	// Emit events: the regret scale (legacy "stdnorm") set event
 	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, regretScalePlusEpsilon)
 	if len(inferers) > 0 {
 		infererWeights := make([]alloraMath.Dec, len(inferers))
