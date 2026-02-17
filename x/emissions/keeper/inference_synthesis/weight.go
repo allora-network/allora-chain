@@ -26,19 +26,6 @@ type CalcWeightsGivenWorkersArgs struct {
 	RegretScalePlusEpsilon alloraMath.Dec
 }
 
-// CalcRegretScaleFilteredByWeightsArgs holds inputs for CalcRegretScaleFilteredByWeights.
-type CalcRegretScaleFilteredByWeightsArgs struct {
-	Ctx                 sdk.Context
-	K                   *keeper.Keeper
-	Logger              log.Logger
-	TopicId             uint64
-	Inferers            []Worker
-	Forecasters         []Worker
-	InfererToRegret     map[Worker]*alloraMath.Dec
-	ForecasterToRegret  map[Worker]*alloraMath.Dec
-	NegligibleThreshold alloraMath.Dec
-	EpsilonTopic        alloraMath.Dec
-}
 
 // Scale factor to convert MAD to an estimate of standard deviation under a normal distribution.
 // 1 / Phi^-1(0.75) ~= 1.4826
@@ -83,56 +70,6 @@ func cachedExp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
 	return result, nil
 }
 
-// CalcRegretScaleFilteredByWeights calculates the MAD-based scale (scaled to match stddev under normality)
-// of the regrets provided plus epsilon. It uses previous epoch's weights to filter the regrets of workers
-// that had a negligible weight. If there are less than 2 non-negligible weights, it uses all regrets.
-func CalcRegretScaleFilteredByWeights(args CalcRegretScaleFilteredByWeightsArgs) (alloraMath.Dec, error) {
-	// Combine all weights and regrets
-	var filteredRegrets []alloraMath.Dec
-	nonNegligibleCount := 0
-
-	// Count non-negligible weights and gather corresponding regrets
-	for _, worker := range args.Inferers {
-		weight, err := args.K.GetLatestInfererWeight(args.Ctx, args.TopicId, worker)
-		if err != nil {
-			continue
-		}
-		if weight.Gt(args.NegligibleThreshold) {
-			nonNegligibleCount++
-			if regret, ok := args.InfererToRegret[worker]; ok {
-				filteredRegrets = append(filteredRegrets, *regret)
-			}
-		}
-	}
-	for _, worker := range args.Forecasters {
-		weight, err := args.K.GetLatestForecasterWeight(args.Ctx, args.TopicId, worker)
-		if err != nil {
-			continue
-		}
-		if weight.Gt(args.NegligibleThreshold) {
-			nonNegligibleCount++
-			if regret, ok := args.ForecasterToRegret[worker]; ok {
-				filteredRegrets = append(filteredRegrets, *regret)
-			}
-		}
-	}
-
-	// If fewer than 2 non-negligible weights, use all regrets
-	if nonNegligibleCount < 2 {
-		regrets, _, _, err := GatherWorkerRegrets(
-			args.Logger,
-			args.Inferers,
-			args.Forecasters,
-			args.InfererToRegret,
-			args.ForecasterToRegret,
-		)
-		if err != nil {
-			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error gathering worker regrets")
-		}
-		return CalcRegretScalePlusEpsilon(regrets, args.EpsilonTopic)
-	}
-	return CalcRegretScalePlusEpsilon(filteredRegrets, args.EpsilonTopic)
-}
 
 // CalcRegretScalePlusEpsilon calculates the MAD-based scale (scaled to match stddev under normality)
 // of the regrets provided plus epsilon.

@@ -214,21 +214,17 @@ func CloseReputerNonce(
 	forecasters := alloraMath.GetSortedKeys(forecasterRegrets)
 
 	// 2. Calculate the regret scale to be used.
-	// 2.a Calculate the regret scale filtered by the previous weights. If not, apply MAD-based scale.
-	regretScalePlusEpsilon, err := synth.CalcRegretScaleFilteredByWeights(
-		synth.CalcRegretScaleFilteredByWeightsArgs{
-			Ctx:                 ctx,
-			K:                   k,
-			Logger:              ctx.Logger(),
-			TopicId:             topic.Id,
-			Inferers:            inferers,
-			Forecasters:         forecasters,
-			InfererToRegret:     infererRegrets,
-			ForecasterToRegret:  forecasterRegrets,
-			NegligibleThreshold: params.MinWeightThresholdForStdnorm,
-			EpsilonTopic:        topic.Epsilon,
-		},
+	allRegrets, _, _, err := synth.GatherWorkerRegrets(
+		ctx.Logger(),
+		inferers,
+		forecasters,
+		infererRegrets,
+		forecasterRegrets,
 	)
+	if err != nil {
+		return err
+	}
+	regretScalePlusEpsilon, err := synth.CalcRegretScalePlusEpsilon(allRegrets, topic.Epsilon)
 	if err != nil {
 		return err
 	}
