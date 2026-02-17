@@ -139,8 +139,7 @@ func CalcRegretScaleFilteredByWeights(args CalcRegretScaleFilteredByWeightsArgs)
 func CalcRegretScalePlusEpsilon(regrets []alloraMath.Dec, epsilonTopic alloraMath.Dec) (alloraMath.Dec, error) {
 	// Calc MAD of regrets, scaled to match stddev under normality, + epsilon
 	// madToStdDevFactor * MAD(R_ijk) + ε
-	regretsCopy := append([]alloraMath.Dec(nil), regrets...)
-	madRegrets, _, err := alloraMath.MedianAbsoluteDeviation(regretsCopy)
+	madRegrets, _, err := alloraMath.MedianAbsoluteDeviation(regrets)
 	if err != nil {
 		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating MAD of regrets")
 	}
