@@ -26,7 +26,6 @@ type CalcWeightsGivenWorkersArgs struct {
 	RegretScalePlusEpsilon alloraMath.Dec
 }
 
-
 // Scale factor to convert MAD to an estimate of standard deviation under a normal distribution.
 // 1 / Phi^-1(0.75) ~= 1.4826
 var madToStdDevFactor = alloraMath.MustNewDecFromString("1.4826")
@@ -69,7 +68,6 @@ func cachedExp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
 	mathHelperCache[key] = result
 	return result, nil
 }
-
 
 // CalcRegretScalePlusEpsilon calculates the MAD-based scale (scaled to match stddev under normality)
 // of the regrets provided plus epsilon.
