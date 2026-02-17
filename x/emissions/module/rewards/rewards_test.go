@@ -508,7 +508,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		testutil.WithGroundTruthLag(groundTruthLag),
 	)
 
-	// Track weights and regret scale (legacy "stdnorm") over epochs
+	// Track weights and regret scale over epochs
 	var (
 		workerWeights = make(map[string][]alloraMath.Dec)
 		regretScales  []alloraMath.Dec

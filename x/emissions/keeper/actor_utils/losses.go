@@ -206,14 +206,14 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// Calculate the regret scale (legacy "stdnorm", MAD-based scale) and the weights (multistep process).
+	// Calculate the regret scale (MAD-based scale) and the weights (multistep process).
 	// 0. Get inferer and forecaster regrets
 	infererRegrets := regrets.InfererRegrets
 	inferers := alloraMath.GetSortedKeys(infererRegrets)
 	forecasterRegrets := regrets.ForecasterRegrets
 	forecasters := alloraMath.GetSortedKeys(forecasterRegrets)
 
-	// 2. Calculate the regret scale (legacy "stdnorm") to be used.
+	// 2. Calculate the regret scale to be used.
 	// 2.a Calculate the regret scale filtered by the previous weights. If not, apply MAD-based scale.
 	regretScalePlusEpsilon, err := synth.CalcRegretScaleFilteredByWeights(
 		synth.CalcRegretScaleFilteredByWeightsArgs{
@@ -268,7 +268,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// Emit events: the regret scale (legacy "stdnorm") set event
+	// Emit events: the regret scale set event
 	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, regretScalePlusEpsilon)
 	if len(inferers) > 0 {
 		infererWeights := make([]alloraMath.Dec, len(inferers))
@@ -286,7 +286,7 @@ func CloseReputerNonce(
 		types.EmitNewForecasterWeightsSetEvent(ctx, topic.Id, nonce.BlockHeight, forecasters, forecasterWeights)
 	}
 
-	// -- end of regret scale (legacy "stdnorm") and weights multistep process
+	// -- end of regret scale and weights multistep process
 
 	err = k.SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)
 	if err != nil {

@@ -209,7 +209,7 @@ func GetCalcNetworkInferenceArgs(
 		infererRegrets = append(infererRegrets, regret.Value)
 	}
 
-	// Get the latest regret scale (legacy "stdnorm") from the keeper. If zero, it will recalculate with provided data.
+	// Get the latest regret scale from the keeper. If zero, it will recalculate with provided data.
 	regretScalePlusEpsilon, err := k.GetLatestRegretScale(ctx, topicId)
 	if err != nil {
 		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret scale")

@@ -963,7 +963,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	// Initialize latest regret scale (legacy "stdnorm")
+	// Initialize latest regret scale from genesis data.
 	for _, regretScale := range data.LatestRegretStdNorm {
 		if regretScale != nil {
 			if err := k.SetLatestRegretScale(ctx, regretScale.TopicId, regretScale.Dec); err != nil {
@@ -2502,7 +2502,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		})
 	}
 
-	// Export latest regret scale (legacy "stdnorm")
+	// Export latest regret scale.
 	latestRegretScale := make([]*types.TopicIdAndDec, 0)
 	regretScaleIter, err := k.latestRegretScale.Iterate(ctx, nil)
 	if err != nil {
