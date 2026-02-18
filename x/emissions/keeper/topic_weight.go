@@ -13,7 +13,7 @@ import (
 
 // Return the target weight of a topic
 // ^w_{t,i} = S^{μ}_{t,i} * (P/C)^{ν}_{t,i}
-// where S_{t,i} is the stake of of topic t in the last reward epoch i
+// where S_{t,i} is the stake of topic t in the last reward epoch i
 // and (P/C)_{t,i} is the fee revenue collected for performing inference per topic epoch
 // requests for topic t in the last reward epoch i
 // μ, ν are global constants with fiduciary values of 0.5 and 0.5

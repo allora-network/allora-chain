@@ -1,14 +1,14 @@
 # Allora Network
 <p align="center">
 <img src='assets/AlloraLogo.jpeg' width='200'>
-<a href="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
+<a href="https://goreportcard.com/report/github.com/allora-network/allora-chain">
     <img src="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
 </a>
 </p>
 
-![Docker!](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
-![Go!](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
-![Apache License](https://img.shields.io/badge/Apache%20License-D22128?style=for-the-badge&logo=Apache&logoColor=white)
+[![Docker!](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Go!](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
+[![Apache License](https://img.shields.io/badge/Apache%20License-D22128?style=for-the-badge&logo=Apache&logoColor=white)](https://github.com/allora-network/allora-chain/blob/dev/LICENSE)
 
 The [Allora Network](https://www.allora.network/) is a state-of-the-art protocol that uses decentralized AI and machine learning (ML) to build, extract, and deploy predictions among its participants. It offers actors who wish to use AI predictions a formalized way to obtain the output of state-of-the-art ML models on-chain and to pay the operators of AI/ML nodes who create these predictions. That way, Allora bridges the information gap between data owners, data processors, AI/ML predictors, market analysts, and the end-users or consumers who have the means to execute on these insights.
 
@@ -50,7 +50,7 @@ allorad start
 ```
 
 When you run a node you have 2 options:
- - Run node and a Head, main advantage is - you can use the head for your workers and reputers
+ - Run node and a Head, the main advantage is - you can use the head for your workers and reputers
  - Run only a node, in this case you will use Allora's heads.
 
 ## Run a Fork of Testnet/Mainnet State
@@ -77,7 +77,7 @@ allorad in-place-testnet devnet allovaloper<comet address> --home $HOME/.allorad
 ## Run a node with script
 `scripts/l1_node.sh`, you will see the log in the output of the script.
 
-*NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
+*NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper key storage, and follow secrets management best practices.
 
 ## Run a node
 
@@ -129,7 +129,7 @@ After the node is running you can exec RPC calls to it.
 For instance, check its status:
 `curl -so- http://localhost:26657/status | jq .`
 
-With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up` you can check if the node syncing or not.
+With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up` you can check if the node is syncing or not.
 
 ## Run a validator
 
@@ -226,7 +226,7 @@ allorad --home=$APP_HOME q staking validators -o=json | \
 `allorad --home=$APP_HOME status | jq -r '.validator_info.voting_power'`
 - Output should be > 0
 
-## Unstaking/unbounding  a validator
+## Unstaking/unbonding  a validator
 
 If you need to delete a validator from the chain, you just need to unbound the stake.
 

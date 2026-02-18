@@ -42,7 +42,7 @@ func ValidateSdkInt(value cosmosMath.Int) error {
 	return nil
 }
 
-// ValidateSdkIntRepresentingMonetaryAmount checks if the given value is a valid cosmosMath.Int
+// ValidateSdkIntRepresentingMonetaryValue checks if the given value is a valid cosmosMath.Int
 // according to our needs / standards
 func ValidateSdkIntRepresentingMonetaryValue(value cosmosMath.Int) error {
 	if err := ValidateSdkInt(value); err != nil {
