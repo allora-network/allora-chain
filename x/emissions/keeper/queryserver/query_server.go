@@ -8,9 +8,22 @@ import (
 var _ types.QueryServiceServer = queryServer{k: keeper.Keeper{}}
 
 // NewQueryServerImpl returns an implementation of the module QueryServer.
-func NewQueryServerImpl(k keeper.Keeper) types.QueryServiceServer {
+func NewQueryServerImpl(
+	k keeper.Keeper,
+) types.QueryServiceServer {
 	return queryServer{
-		k: k,
+		k:   k,
+		pk:  k.GetParamsKeeper(),
+		tk:  k.GetTopicKeeper(),
+		wlk: k.GetWhitelistsKeeper(),
+		rlk: k.GetReputerLossKeeper(),
+		bk:  k.GetBankingKeeper(),
+		sk:  k.GetStakingKeeper(),
+		sck: k.GetScoresKeeper(),
+		wk:  k.GetWorkerKeeper(),
+		wtk: k.GetWeightsKeeper(),
+		nk:  k.GetNonceKeeper(),
+		rk:  k.GetRegretsKeeper(),
 	}
 }
 

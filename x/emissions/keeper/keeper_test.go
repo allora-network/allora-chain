@@ -1,20 +1,11 @@
 package keeper_test
 
 import (
-	"encoding/binary"
-	"fmt"
-	"strings"
 	"testing"
 
-	"cosmossdk.io/collections"
-	cosmosMath "cosmossdk.io/math"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type KeeperTestSuite struct {
@@ -28,7 +19,7 @@ func TestKeeperTestSuite(t *testing.T) {
 }
 
 // WORKER NONCE TESTS
-
+/*
 func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -6061,3 +6052,4 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
+*/

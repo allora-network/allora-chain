@@ -19,7 +19,7 @@ func NewStakingKeeper(
 	cdc codec.BinaryCodec,
 	sb *collections.SchemaBuilder,
 	topicKeeper *TopicKeeper,
-	bankKeeper BankingKeeper,
+	bankKeeper *BankingKeeper,
 ) *StakingKeeper {
 	return &StakingKeeper{
 		totalStake:                     collections.NewItem(sb, types.TotalStakeKey, "total_stake", sdk.IntValue),
@@ -68,7 +68,7 @@ type StakingKeeper struct {
 	// topic keeper
 	topicKeeper *TopicKeeper
 	// bank keeper
-	bankKeeper BankingKeeper
+	bankKeeper *BankingKeeper
 }
 
 // Gets the total sum of all stake in the network across all topics

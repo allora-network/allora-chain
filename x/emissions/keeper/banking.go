@@ -24,6 +24,10 @@ type BankingKeeper struct {
 	authKeeper AccountKeeper
 }
 
+func (k *BankingKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	return k.bankKeeper.GetBalance(ctx, addr, denom)
+}
+
 // wrapper around bank keeper SendCoinsFromModuleToAccount
 func (k *BankingKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipient ActorId, amt sdk.Coins) error {
 	recipientAddr, err := sdk.AccAddressFromBech32(recipient)

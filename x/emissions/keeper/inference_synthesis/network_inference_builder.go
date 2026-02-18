@@ -5,10 +5,11 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Arguments for GetCombinedInference
@@ -281,7 +282,7 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.De
 	// Get inferer naive regrets
 	infererToRegret := make(map[string]*alloraMath.Dec)
 	for _, inferer := range args.Inferers {
-		regret, _, err := args.K.GetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, inferer)
+		regret, _, err := args.K.GetRegretsKeeper().GetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "GetNaiveInference() error getting naive regret for inferer %s", inferer)
 		}
@@ -370,8 +371,8 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 			remainingInfererToInference[inferer] = inference
 		}
 
-		//over every inferer
-		regret, _, err := args.K.GetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, inferer)
+		// over every inferer
+		regret, _, err := args.K.GetRegretsKeeper().GetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error getting one-out inferer regret")
 		}
@@ -407,7 +408,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 
 		// Get regrets for the forecasters
 		for _, forecaster := range args.Forecasters {
-			regret, _, err := args.K.GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, forecaster)
+			regret, _, err := args.K.GetRegretsKeeper().GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, forecaster)
 			if err != nil {
 				return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error getting one-out forecaster regret")
 			}
@@ -556,7 +557,7 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 		if forecaster != args.WithheldForecaster {
 			remainingForecasters = append(remainingForecasters, forecaster)
 
-			regret, _, err := args.K.GetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, forecaster)
+			regret, _, err := args.K.GetRegretsKeeper().GetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, forecaster)
 			if err != nil {
 				return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutForecasterInference() error getting one-out forecaster regret")
 			}
@@ -573,7 +574,7 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 	// Get regrets for the remaining inferers
 	remainingInfererRegrets := make(map[Inferer]*Regret)
 	for _, inferer := range args.Inferers {
-		regret, _, err := args.K.GetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, inferer)
+		regret, _, err := args.K.GetRegretsKeeper().GetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutForecasterInference() error getting one-out inferer regret")
 		}
@@ -716,7 +717,7 @@ func calcOneInValue(args calcOneInValueArgs) (
 
 	// Get self regret for the forecaster
 	singleForecasterRegret := make(map[Worker]*Regret, 1)
-	regret, _, err := args.K.GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, args.OneInForecaster)
+	regret, _, err := args.K.GetRegretsKeeper().GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, args.OneInForecaster)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "CalcOneInValue() error getting one-in forecaster regret")
 	}
@@ -733,7 +734,7 @@ func calcOneInValue(args calcOneInValueArgs) (
 	infererToRegretForSingleForecaster := make(map[Inferer]*Regret)
 	infererToInferenceForSingleForecaster := make(map[Inferer]*emissions.Inference)
 	for _, inferer := range args.Inferers {
-		regret, _, err := args.K.GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, inferer)
+		regret, _, err := args.K.GetRegretsKeeper().GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "CalcOneInValue() error getting one-in forecaster regret")
 		}

@@ -67,23 +67,32 @@ type WorkerKeeper struct {
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
 func (k *WorkerKeeper) InsertWorker(ctx context.Context, topicId TopicId, worker ActorId, workerInfo types.OffchainNode) error {
-	if err := types.ValidateTopicId(topicId); err != nil {
-		return errorsmod.Wrap(err, "topic id validation failed")
-	}
-	if err := types.ValidateBech32(worker); err != nil {
-		return errorsmod.Wrap(err, "worker validation failed")
-	}
 	if err := workerInfo.Validate(); err != nil {
 		return errorsmod.Wrap(err, "worker info validation failed")
 	}
-	topicKey := collections.Join(topicId, worker)
-	err := k.topicWorkers.Set(ctx, topicKey)
+	err := k.SetTopicWorker(ctx, topicId, worker)
 	if err != nil {
 		return errorsmod.Wrap(err, "error setting topic worker")
 	}
 	err = k.workers.Set(ctx, worker, workerInfo)
 	if err != nil {
 		return errorsmod.Wrap(err, "error setting worker")
+	}
+	return nil
+}
+
+// Set a topic worker
+func (k *WorkerKeeper) SetTopicWorker(ctx context.Context, topicId TopicId, worker ActorId) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrap(err, "worker validation failed")
+	}
+	topicKey := collections.Join(topicId, worker)
+	err := k.topicWorkers.Set(ctx, topicKey)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting topic worker")
 	}
 	return nil
 }

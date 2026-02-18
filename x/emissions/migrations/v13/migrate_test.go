@@ -32,7 +32,7 @@ func (s *EmissionsV13MigrationTestSuite) TestMigrateParams() {
 	defaultParams := emissionstypes.DefaultParams()
 	oldCNorm := alloraMath.MustNewDecFromString("0.75")
 
-	paramsOld := oldV11Types.Params{ //nolint: exhaustruct // this is an old version of the params
+	paramsOld := oldV11Types.Params{ // nolint: exhaustruct // this is an old version of the params
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
@@ -96,7 +96,7 @@ func (s *EmissionsV13MigrationTestSuite) TestMigrateParams() {
 	s.Require().NoError(err)
 
 	// Verify params after migration
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 
 	// Check that all other params are preserved
@@ -160,7 +160,7 @@ func (s *EmissionsV13MigrationTestSuite) TestMigrateTopics() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 
 	// Create some topics first (without CNorm, as they would be before migration)
 	topicMsg1 := s.MockTopicMsg()
@@ -228,7 +228,7 @@ func (s *EmissionsV13MigrationTestSuite) TestFullMigration() {
 	defaultParams := emissionstypes.DefaultParams()
 	oldCNorm := alloraMath.MustNewDecFromString("0.65")
 
-	paramsOld := oldV11Types.Params{ //nolint: exhaustruct // this is an old version of the params
+	paramsOld := oldV11Types.Params{ // nolint: exhaustruct // this is an old version of the params
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
@@ -292,16 +292,16 @@ func (s *EmissionsV13MigrationTestSuite) TestFullMigration() {
 	s.Require().NoError(err)
 
 	// Verify params after migration (CNorm should be removed)
-	params, err := keeper.GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(defaultParams.Version, params.Version)
 
 	// Verify topics have CNorm set to the old global value
-	topic1, err := keeper.GetTopic(s.Ctx(), topicId1)
+	topic1, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId1)
 	s.Require().NoError(err)
 	s.Require().True(topic1.CNorm.Equal(oldCNorm), "Topic 1 CNorm should be %s, got %s", oldCNorm, topic1.CNorm)
 
-	topic2, err := keeper.GetTopic(s.Ctx(), topicId2)
+	topic2, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId2)
 	s.Require().NoError(err)
 	s.Require().True(topic2.CNorm.Equal(oldCNorm), "Topic 2 CNorm should be %s, got %s", oldCNorm, topic2.CNorm)
 }

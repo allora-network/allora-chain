@@ -112,7 +112,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	epoch3Get := epochGet[303]
 
 	require := s.Require()
-	keeper := *s.EmissionsKeeper()
 
 	topicId := uint64(1)
 	blockHeight := int64(300)
@@ -121,7 +120,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 
 	topic := s.MockTopic()
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	s.Require().NoError(err)
 
 	inferer0 := s.AddrsStr(0)
@@ -142,10 +141,10 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set Previous Loss
 	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"), infererValues)
-	err = keeper.InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, blockHeightPreviousLosses, valueBundlePrevious)
+	err = s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, blockHeightPreviousLosses, valueBundlePrevious)
 	require.NoError(err)
 
-	err = keeper.InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
+	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(
@@ -157,11 +156,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	)
 	s.Require().NoError(err)
 
-	err = keeper.InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
+	err = s.WorkerKeeper().InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testutil.SetRegretsFromPreviousEpoch(s.Ctx(), *s.EmissionsKeeper(), topicId,
+	err = testutil.SetRegretsFromPreviousEpoch(s.Ctx(), s.RegretsKeeper(), topicId,
 		blockHeight,
 		infererAddresses,
 		forecasterAddresses,
@@ -325,7 +324,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 
 	topic := s.MockTopic()
 	topic.InitialRegret = alloraMath.ZeroDec()
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	s.Require().NoError(err)
 
 	inferer0 := s.AddrsStr(0)
@@ -338,7 +337,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
+	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.GetNetworkInferences(
@@ -365,7 +364,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 
 	topic := s.MockTopic()
 	topic.InitialRegret = alloraMath.MustNewDecFromString("-1.8331309069480215")
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	s.Require().NoError(err)
 
 	inferer0 := s.AddrsStr(0)
@@ -380,16 +379,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	infererValues := s.ConvertInferencesToWorkerAttributedValues(inferences)
 	// Set Previous Loss
 	valueBundlePrevious := s.mockEmptyValueBundle(epoch1Get("network_loss"), infererValues)
-	err = s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(
+	err = s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(
 		s.Ctx(), topicId, blockHeightPreviousLosses, valueBundlePrevious)
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
+	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
 	err = testutil.SetRegretsFromPreviousEpoch(
-		s.Ctx(), *s.EmissionsKeeper(), topicId, blockHeight, []string{inferer0}, []string{}, epoch1Get)
+		s.Ctx(), s.RegretsKeeper(), topicId, blockHeight, []string{inferer0}, []string{}, epoch1Get)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.GetNetworkInferences(
@@ -437,7 +436,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	topic := s.MockTopic()
 	topic.InitialRegret = alloraMath.MustNewDecFromString("-3.7780955644806307")
 
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	s.Require().NoError(err)
 
 	inferer0 := s.AddrsStr(0)
@@ -458,22 +457,22 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 
 	// Set Previous Loss
 	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"), infererValues)
-	err = s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, blockHeightPreviousLosses, emptyValueBundle)
+	err = s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, blockHeightPreviousLosses, emptyValueBundle)
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
+	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
+	err = s.WorkerKeeper().InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
 	err = testutil.SetRegretsFromPreviousEpoch(
 		s.Ctx(),
-		*s.EmissionsKeeper(),
+		s.RegretsKeeper(),
 		topicId,
 		blockHeight,
 		infererAddresses,
@@ -583,7 +582,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 
 	topic := s.MockTopic()
 	topic.InitialRegret = alloraMath.MustNewDecFromString("-3.0557074373274475")
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	s.Require().NoError(err)
 
 	inferer0 := s.AddrsStr(0)
@@ -604,23 +603,23 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 
 	// Set Previous Loss
 	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"), infererValues)
-	err = s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(
+	err = s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(
 		s.Ctx(), topicId, blockHeightPreviousLosses,
 		emptyValueBundle,
 	)
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
+	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
+	err = s.WorkerKeeper().InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testutil.SetRegretsFromPreviousEpoch(s.Ctx(), *s.EmissionsKeeper(), topicId, blockHeight, infererAddresses, []string{}, epoch1Get)
+	err = testutil.SetRegretsFromPreviousEpoch(s.Ctx(), s.RegretsKeeper(), topicId, blockHeight, infererAddresses, []string{}, epoch1Get)
 	s.Require().NoError(err)
 
 	// Calculate
@@ -718,7 +717,6 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	epoch3Get := epochGet[303]
 
 	require := s.Require()
-	keeper := *s.EmissionsKeeper()
 
 	topicId := uint64(1)
 	blockHeightInferences := int64(300)
@@ -726,7 +724,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeightInferences}
 
 	topic := s.MockTopic()
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	require.NoError(err)
 
 	inferer0 := s.AddrsStr(0)
@@ -746,22 +744,22 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	infererValues := s.ConvertInferencesToWorkerAttributedValues(inferences)
 	// Set Previous Loss
 	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"), infererValues)
-	err = keeper.InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, blockHeightPreviousLosses, valueBundlePrevious)
+	err = s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, blockHeightPreviousLosses, valueBundlePrevious)
 	require.NoError(err)
 
-	err = keeper.InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
+	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	require.NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(
 		topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
 	require.NoError(err)
 
-	err = keeper.InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
+	err = s.WorkerKeeper().InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
 	require.NoError(err)
 
 	// Set regrets from the previous epoch
 	err = testutil.SetRegretsFromPreviousEpoch(
-		s.Ctx(), *s.EmissionsKeeper(), topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch2Get)
+		s.Ctx(), s.RegretsKeeper(), topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch2Get)
 	require.NoError(err)
 
 	// Calculate
@@ -887,7 +885,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 	}
 
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-	err := keeper.InsertActiveInferences(s.Ctx(), topicId, nonce.BlockHeight, inferences)
+	err := keeper.GetWorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, nonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.GetNetworkInferences(

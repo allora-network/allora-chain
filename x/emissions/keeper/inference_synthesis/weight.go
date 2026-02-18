@@ -7,10 +7,11 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // args for calcWeightsGivenWorkers function
@@ -88,7 +89,7 @@ func CalcRegretStdDevFilteredByWeights(args CalcRegretStdDevFilteredByWeightsArg
 
 	// Count non-negligible weights and gather corresponding regrets
 	for _, worker := range args.Inferers {
-		weight, err := args.K.GetLatestInfererWeight(args.Ctx, args.TopicId, worker)
+		weight, err := args.K.GetWeightsKeeper().GetLatestInfererWeight(args.Ctx, args.TopicId, worker)
 		if err != nil {
 			continue
 		}
@@ -100,7 +101,7 @@ func CalcRegretStdDevFilteredByWeights(args CalcRegretStdDevFilteredByWeightsArg
 		}
 	}
 	for _, worker := range args.Forecasters {
-		weight, err := args.K.GetLatestForecasterWeight(args.Ctx, args.TopicId, worker)
+		weight, err := args.K.GetWeightsKeeper().GetLatestForecasterWeight(args.Ctx, args.TopicId, worker)
 		if err != nil {
 			continue
 		}
@@ -568,7 +569,7 @@ func StoreLatestNormalizedWeights(ctx sdk.Context, k keeper.Keeper, topicId Topi
 	// Set inferer weights
 	infererWorkers := alloraMath.GetSortedKeys(weights.Inferers)
 	for _, worker := range infererWorkers {
-		err := k.SetLatestInfererWeight(ctx, topicId, worker, weights.Inferers[worker])
+		err := k.GetWeightsKeeper().SetLatestInfererWeight(ctx, topicId, worker, weights.Inferers[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error setting latest inferer weight for worker %s", worker)
 		}
@@ -577,7 +578,7 @@ func StoreLatestNormalizedWeights(ctx sdk.Context, k keeper.Keeper, topicId Topi
 	// Set forecaster weights
 	forecasterWorkers := alloraMath.GetSortedKeys(weights.Forecasters)
 	for _, worker := range forecasterWorkers {
-		err := k.SetLatestForecasterWeight(ctx, topicId, worker, weights.Forecasters[worker])
+		err := k.GetWeightsKeeper().SetLatestForecasterWeight(ctx, topicId, worker, weights.Forecasters[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error setting latest forecaster weight for worker %s", worker)
 		}

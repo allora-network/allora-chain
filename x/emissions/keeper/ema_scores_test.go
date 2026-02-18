@@ -11,7 +11,7 @@ import (
 
 func (s *KeeperTestSuite) TestCalcAndSaveScoreEmaForActiveSet() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.ScoresKeeper()
 	topic := s.MockTopic()
 
 	testCases := []struct {
@@ -90,7 +90,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveScoreEmaForActiveSet() {
 
 func (s *KeeperTestSuite) TestCalcAndSaveScoreEmaWithLastSavedTopicQuantile() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.ScoresKeeper()
 	topic := s.MockTopic()
 	previousQuantileScore := alloraMath.MustNewDecFromString("0.8")
 

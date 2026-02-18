@@ -72,19 +72,19 @@ func calcNetworkInferencesMultiple(
 	}
 
 	// Retrieve module params
-	moduleParams, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParamsKeeper().GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting params")
 	}
 
 	// Retrieve topic
-	topic, err := k.GetTopic(ctx, topicId)
+	topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting topic")
 	}
 
 	var previousNetworkCombinedLoss *alloraMath.Dec
-	networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
+	networkLosses, err := k.GetReputerLossKeeper().GetLatestNetworkLossBundle(ctx, topicId)
 	if err != nil && !errors.Is(err, emissions.ErrNotFound) {
 		return nil, errorsmod.Wrap(err, "while getting latest network loss bundle")
 	} else {
@@ -196,7 +196,7 @@ func GetCalcNetworkInferenceArgs(
 	infererAddresses := make([]string, 0, len(sortedInferers))
 	infererRegrets := make([]alloraMath.Dec, 0, len(sortedInferers))
 	for _, inferer := range sortedInferers {
-		regret, _, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
+		regret, _, err := k.GetRegretsKeeper().GetInfererNetworkRegret(ctx, topicId, inferer)
 		if err != nil {
 			return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting inferer regret")
 		}
@@ -210,7 +210,7 @@ func GetCalcNetworkInferenceArgs(
 	}
 
 	// Get the latest regret stdnorm from the keeper. If zero, it will recalculate with provided data.
-	stdDevPlusEpsilon, err := k.GetLatestRegretStdNorm(ctx, topicId)
+	stdDevPlusEpsilon, err := k.GetWeightsKeeper().GetLatestRegretStdNorm(ctx, topicId)
 	if err != nil {
 		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret stdnorm")
 	}
@@ -243,7 +243,7 @@ func GetCalcNetworkInferenceArgs(
 		forecasterAddresses := make([]string, 0, len(sortedForecasters))
 		forecasterRegrets := make([]alloraMath.Dec, 0, len(sortedForecasters))
 		for _, forecaster := range sortedForecasters {
-			regret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
+			regret, _, err := k.GetRegretsKeeper().GetForecasterNetworkRegret(ctx, topicId, forecaster)
 			if err != nil {
 				return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting forecaster regret")
 			}

@@ -65,10 +65,10 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 
 		s.MintTokensToAddress(addrBech, stakes[i])
 
-		err = s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, addr, stakes[i])
+		err = s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, addr, stakes[i])
 		s.Require().NoError(err)
 
-		err = s.EmissionsKeeper().SetListeningCoefficient(
+		err = s.ScoresKeeper().SetListeningCoefficient(
 			s.Ctx(),
 			topicId,
 			addr,
@@ -571,11 +571,11 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 	addrBech, err := sdk.AccAddressFromBech32(reputer)
 	s.Require().NoError(err)
 	s.MintTokensToAddress(addrBech, stake)
-	err = s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, reputer, stake)
+	err = s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, reputer, stake)
 	s.Require().NoError(err)
 
 	// Set zero listening coefficient
-	err = s.EmissionsKeeper().SetListeningCoefficient(
+	err = s.ScoresKeeper().SetListeningCoefficient(
 		s.Ctx(),
 		topicId,
 		reputer,
@@ -610,7 +610,7 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 	// Get params and set epsilon reputer
 	params := types.DefaultParams()
 	params.EpsilonReputer = alloraMath.MustNewDecFromString("0.1")
-	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
+	err = s.ParamsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err)
 
 	// Generate scores
@@ -625,7 +625,7 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 	s.Require().Len(scores, 1)
 
 	// Verify that the listening coefficient was updated to epsilon reputer value
-	coefficient, err := s.EmissionsKeeper().GetListeningCoefficient(s.Ctx(), topicId, reputer)
+	coefficient, err := s.ScoresKeeper().GetListeningCoefficient(s.Ctx(), topicId, reputer)
 	s.Require().NoError(err)
 	s.Require().True(coefficient.Coefficient.Equal(params.EpsilonReputer))
 }
@@ -666,11 +666,11 @@ func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScore() {
 	}
 
 	// Calculate initial EMA score
-	initialScore, err := rewards.CalculateTopicInitialEmaScore(s.Ctx(), *s.EmissionsKeeper(), scores)
+	initialScore, err := rewards.CalculateTopicInitialEmaScore(s.Ctx(), s.ParamsKeeper(), scores)
 	s.Require().NoError(err)
 
 	// Get lambda from params
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	lambda := params.LambdaInitialScore
 
@@ -718,7 +718,7 @@ func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScoreEdgeCases() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			initialScore, err := rewards.CalculateTopicInitialEmaScore(s.Ctx(), *s.EmissionsKeeper(), tc.scores)
+			initialScore, err := rewards.CalculateTopicInitialEmaScore(s.Ctx(), s.ParamsKeeper(), tc.scores)
 
 			if tc.expectedError {
 				s.Require().Error(err)

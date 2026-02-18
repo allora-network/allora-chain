@@ -63,23 +63,32 @@ func (k *ReputerLossKeeper) IsReputerRegisteredInTopic(ctx context.Context, topi
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
 func (k *ReputerLossKeeper) InsertReputer(ctx context.Context, topicId TopicId, reputer ActorId, reputerInfo types.OffchainNode) error {
-	if err := types.ValidateTopicId(topicId); err != nil {
-		return errorsmod.Wrap(err, "topic id validation failed")
-	}
-	if err := types.ValidateBech32(reputer); err != nil {
-		return errorsmod.Wrap(err, "reputer validation failed")
-	}
 	if err := reputerInfo.Validate(); err != nil {
 		return errorsmod.Wrap(err, "reputer info validation failed")
 	}
-	topicKey := collections.Join(topicId, reputer)
-	err := k.topicReputers.Set(ctx, topicKey)
+	err := k.SetTopicReputer(ctx, topicId, reputer)
 	if err != nil {
 		return errorsmod.Wrap(err, "error setting topic reputer")
 	}
 	err = k.reputers.Set(ctx, reputer, reputerInfo)
 	if err != nil {
 		return errorsmod.Wrap(err, "error setting reputer")
+	}
+	return nil
+}
+
+// Set topic reputer
+func (k *ReputerLossKeeper) SetTopicReputer(ctx context.Context, topicId TopicId, reputer ActorId) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBech32(reputer); err != nil {
+		return errorsmod.Wrap(err, "reputer validation failed")
+	}
+	topicKey := collections.Join(topicId, reputer)
+	err := k.topicReputers.Set(ctx, topicKey)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting topic reputer")
 	}
 	return nil
 }

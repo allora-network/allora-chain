@@ -215,6 +215,24 @@ func (k *ScoresKeeper) InsertWorkerInferenceScore(ctx context.Context, topicId T
 	return k.infererScoresByBlock.Set(ctx, key, scores)
 }
 
+func (k *ScoresKeeper) SetInfererScoresByBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight, scores types.Scores) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error setting infererScoresByBlock")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrap(err, "error setting infererScoresByBlock")
+	}
+	if err := scores.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error setting infererScoresByBlock")
+	}
+	if err := k.infererScoresByBlock.Set(ctx,
+		collections.Join(topicId, blockHeight),
+		scores); err != nil {
+		return errorsmod.Wrap(err, "error setting infererScoresByBlock")
+	}
+	return nil
+}
+
 func (k *ScoresKeeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
@@ -302,6 +320,22 @@ func (k *ScoresKeeper) InsertWorkerForecastScore(ctx context.Context, topicId To
 		return errorsmod.Wrapf(err, "InsertWorkerForecastScore: Error validating worker forecast scores")
 	}
 	return k.forecasterScoresByBlock.Set(ctx, key, scores)
+}
+
+func (k *ScoresKeeper) SetForecasterScoresByBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight, scores types.Scores) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error setting forecasterScoresByBlock")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrap(err, "error setting forecasterScoresByBlock")
+	}
+	if err := scores.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error setting forecasterScoresByBlock")
+	}
+	if err := k.forecasterScoresByBlock.Set(ctx, collections.Join(topicId, blockHeight), scores); err != nil {
+		return errorsmod.Wrap(err, "error setting forecasterScoresByBlock")
+	}
+	return nil
 }
 
 func (k *ScoresKeeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {

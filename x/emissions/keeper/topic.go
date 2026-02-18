@@ -160,6 +160,10 @@ func (k *TopicKeeper) SetMadInferences(ctx context.Context, topicId TopicId, mad
 	return k.madInferences.Set(ctx, topicId, madInferences)
 }
 
+func (k *TopicKeeper) SetRewardableTopic(ctx context.Context, topicId TopicId) error {
+	return k.rewardableTopics.Set(ctx, topicId)
+}
+
 // UpdateTotalSumPreviousTopicWeights updates the total sum of previous topic weights
 // by subtracting the old weight if any, and adding the new weight for the given topicId.
 func (k *TopicKeeper) UpdateTotalSumPreviousTopicWeights(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec) error {
@@ -215,6 +219,11 @@ func (k *TopicKeeper) SetTotalSumPreviousTopicWeights(ctx context.Context, weigh
 // Gets next topic id
 func (k *TopicKeeper) IncrementTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Next(ctx)
+}
+
+// Sets next topic id
+func (k *TopicKeeper) SetNextTopicId(ctx context.Context, topicId TopicId) error {
+	return k.nextTopicId.Set(ctx, topicId)
 }
 
 // Gets topic by topicId

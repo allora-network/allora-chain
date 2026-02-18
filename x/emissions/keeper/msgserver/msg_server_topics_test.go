@@ -15,7 +15,6 @@ import (
 func (s *MsgServerTestSuite) TestCreateNewTopic() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
 	senderAddr := s.Addrs(0)
 
 	testCases := []struct {
@@ -29,9 +28,9 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			name: "Fails when sender not whitelisted",
 			setup: func() *types.CreateNewTopicRequest {
 				// Ensure sender is not whitelisted
-				err := keeper.RemoveFromTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().RemoveFromTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
-				err = keeper.RemoveFromGlobalWhitelist(ctx, senderAddr.String())
+				err = s.WhitelistsKeeper().RemoveFromGlobalWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				return s.MockTopicMsg()
@@ -43,14 +42,14 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			name: "Success when sender is whitelisted",
 			setup: func() *types.CreateNewTopicRequest {
 				// Add sender to whitelist
-				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				return s.MockTopicMsg()
 			},
 			postCheck: func(topicId uint64) {
 				// Check topic is not in active topics yet
-				activeTopics, err := keeper.GetActiveTopicIdsAtBlock(ctx, 10800)
+				activeTopics, err := s.TopicKeeper().GetActiveTopicIdsAtBlock(ctx, 10800)
 				s.Require().NoError(err)
 				found := false
 				for _, id := range activeTopics.TopicIds {
@@ -62,12 +61,12 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 				s.Require().False(found, "Added topic found in active topics")
 
 				// Check worker whitelist is enabled
-				enabled, err := keeper.IsTopicWorkerWhitelistEnabled(ctx, topicId)
+				enabled, err := s.WhitelistsKeeper().IsTopicWorkerWhitelistEnabled(ctx, topicId)
 				s.Require().NoError(err)
 				s.Require().True(enabled, "Topic worker whitelist should be enabled")
 
 				// Check reputer whitelist is enabled
-				enabled, err = keeper.IsTopicReputerWhitelistEnabled(ctx, topicId)
+				enabled, err = s.WhitelistsKeeper().IsTopicReputerWhitelistEnabled(ctx, topicId)
 				s.Require().NoError(err)
 				s.Require().True(enabled, "Topic reputer whitelist should be enabled")
 			},
@@ -77,7 +76,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			name: "Fails with epsilon zero",
 			setup: func() *types.CreateNewTopicRequest {
 				// Add to whitelist to avoid that error
-				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				msg := s.MockTopicMsg()
@@ -91,7 +90,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			name: "Fails with too long metadata",
 			setup: func() *types.CreateNewTopicRequest {
 				// Add to whitelist
-				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				msg := s.MockTopicMsg()
@@ -105,7 +104,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			name: "Fails with too long loss method",
 			setup: func() *types.CreateNewTopicRequest {
 				// Add to whitelist
-				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				msg := s.MockTopicMsg()
@@ -118,7 +117,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 		{
 			name: "Fails with CNorm below -100",
 			setup: func() *types.CreateNewTopicRequest {
-				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				msg := s.MockTopicMsg()
@@ -131,7 +130,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 		{
 			name: "Fails with CNorm above 100",
 			setup: func() *types.CreateNewTopicRequest {
-				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				msg := s.MockTopicMsg()
@@ -144,7 +143,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 		{
 			name: "Success with valid CNorm value",
 			setup: func() *types.CreateNewTopicRequest {
-				err := keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				s.Require().NoError(err)
 
 				msg := s.MockTopicMsg()
@@ -152,7 +151,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 				return msg
 			},
 			postCheck: func(topicId uint64) {
-				topic, err := keeper.GetTopic(ctx, topicId)
+				topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 				s.Require().NoError(err)
 				s.Require().Equal(alloraMath.MustNewDecFromString("0.75"), topic.CNorm)
 			},
@@ -161,7 +160,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 		{
 			name: "Fails when require_unity true with SINGLE output_arity",
 			setup: func() *types.CreateNewTopicRequest {
-				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				msg := s.MockTopicMsg()
 				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
 				msg.RequireUnity = true
@@ -174,7 +173,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 		{
 			name: "Fails when require_unity true and unity_tolerance <= 0",
 			setup: func() *types.CreateNewTopicRequest {
-				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				msg := s.MockTopicMsg()
 				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
 				msg.RequireUnity = true
@@ -187,7 +186,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 		{
 			name: "Fails when require_unity true and unity_tolerance > max",
 			setup: func() *types.CreateNewTopicRequest {
-				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				msg := s.MockTopicMsg()
 				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
 				msg.RequireUnity = true
@@ -200,7 +199,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 		{
 			name: "Success when require_unity true and unity_tolerance valid",
 			setup: func() *types.CreateNewTopicRequest {
-				_ = keeper.AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
 				msg := s.MockTopicMsg()
 				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
 				msg.RequireUnity = true
@@ -208,7 +207,7 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 				return msg
 			},
 			postCheck: func(topicId uint64) {
-				topic, err := keeper.GetTopic(ctx, topicId)
+				topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 				s.Require().NoError(err)
 				s.Require().True(topic.RequireUnity)
 				s.Require().Equal(alloraMath.MustNewDecFromString("0.01"), topic.UnityTolerance)
@@ -244,14 +243,13 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 
 func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
 	topicId := uint64(1)
 	inferenceTs := int64(20)
 
-	err := keeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)
+	err := s.TopicKeeper().UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)
 	s.Require().NoError(err, "UpdateTopicEpochLastEnded should not return an error")
 
-	topic, err := keeper.GetTopic(ctx, topicId)
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().NotNil(topic)
 	s.Require().Equal(inferenceTs, topic.EpochLastEnded)
@@ -295,7 +293,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NotNil(createResult)
 	topicId := createResult.TopicId
 
-	originalTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	originalTopic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 
 	// Update topic with new values
@@ -317,7 +315,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.NotNil(updateResult)
 
 	// Verify topic updated
-	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	updatedTopic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal("Updated metadata", updatedTopic.Metadata)
 	require.Equal("mae", updatedTopic.LossMethod)
@@ -513,7 +511,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	topicId := createResult.TopicId
 
 	// Get original topic to verify initial state
-	originalTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	originalTopic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal("original metadata", originalTopic.Metadata)
 	require.Equal("mse", originalTopic.LossMethod)
@@ -537,7 +535,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 	require.NotNil(updateResult)
 
 	// Verify topic updated and only allowed fields changed
-	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	updatedTopic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal("updated metadata", updatedTopic.Metadata)
 	require.Equal("mae", updatedTopic.LossMethod)
@@ -598,7 +596,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
 
-	updatedTopic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	updatedTopic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("0.25"), updatedTopic.AlphaRegret)
 	require.Equal(alloraMath.MustNewDecFromString("0.3"), updatedTopic.MeritSortitionAlpha)
@@ -620,7 +618,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
 
-	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	updatedTopic, err = s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("50.5"), updatedTopic.CNorm)
 
@@ -640,7 +638,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
 
-	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	updatedTopic, err = s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("-100"), updatedTopic.CNorm)
 
@@ -660,12 +658,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
 
-	updatedTopic, err = s.EmissionsKeeper().GetTopic(ctx, topicId)
+	updatedTopic, err = s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("100"), updatedTopic.CNorm)
 
 	// Add a fulfilled nonce (window closed) and ensure updates still allowed
-	s.Require().NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 1}))
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 1}))
 	// Close window by moving block height beyond worker submission window
 	s.WithBlockHeight(50)
 	ctx = s.Ctx()
@@ -808,11 +806,11 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
 	topicId := createResult.TopicId
-	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
 
 	// Add a nonce whose window covers the current block.
 	newerNonce := &types.Nonce{BlockHeight: 5}
-	require.NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, newerNonce))
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, newerNonce))
 
 	// Ensure current block is within the nonce window
 	s.WithBlockHeight(6)
@@ -834,7 +832,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
 
 	// Verify no changes were applied
-	current, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	current, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("0.1"), current.MeritSortitionAlpha)
 }
@@ -877,7 +875,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 
 	// Add a nonce whose window covers current block
 	nonce := &types.Nonce{BlockHeight: 5}
-	require.NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, nonce))
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, nonce))
 	s.WithBlockHeight(6)
 	ctx = s.Ctx()
 
@@ -896,7 +894,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
 
-	current, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	current, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("0.3"), current.MeritSortitionAlpha)
 }
@@ -933,7 +931,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicUnityFields() {
 	_, err = msgServer.UpdateTopic(ctx, upd)
 	require.NoError(err)
 
-	topic, err := s.EmissionsKeeper().GetTopic(ctx, topicId)
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.True(topic.RequireUnity)
 	require.Equal(alloraMath.MustNewDecFromString("0.01"), topic.UnityTolerance)

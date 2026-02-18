@@ -26,7 +26,6 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
-	keeper := s.EmissionsKeeper()
 
 	// Create some topics first (without TopicType and OutputArity, as they would be before migration)
 	topicMsg1 := s.MockTopicMsg()
@@ -45,7 +44,7 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
 	s.Require().NoError(err)
 
 	// Verify that all topics now have TopicType and OutputArity values set to defaults
-	topic1, err := keeper.GetTopic(s.Ctx(), topicId1)
+	topic1, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId1)
 	s.Require().NoError(err)
 	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_REGRESSION, topic1.TopicType,
 		"Topic 1 TopicType should be %s, got %s", emissionstypes.TopicType_TOPIC_TYPE_REGRESSION.String(), topic1.TopicType.String())

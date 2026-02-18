@@ -18,7 +18,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	v3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
-	types "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 const maxPageSize = uint64(10000)
@@ -36,7 +36,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 2 TO VERSION 3")
-	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper); err != nil {
+	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper.GetParamsKeeper()); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 2 TO VERSION 3")
 		return err
 	}
@@ -52,7 +52,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 }
 
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldtypes.Params{} //nolint: exhaustruct // populated in unmarshal below
+	oldParams := oldtypes.Params{} // nolint: exhaustruct // populated in unmarshal below
 	oldParamsBytes := store.Get(types.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(types.ErrNotFound, "old parameters not found")
@@ -74,7 +74,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxRetriesToFulfilNoncesWorker
 	//      MaxRetriesToFulfilNoncesReputer
 	//      MaxTopicsPerBlock
-	newParams := v3Types.Params{ //nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
+	newParams := v3Types.Params{ // nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,
@@ -127,7 +127,7 @@ func MigrateTopics(
 	ctx sdk.Context,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
-	emissionsKeeper keeper.Keeper,
+	pk *keeper.ParamsKeeper,
 ) error {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	topicFeeRevStore := prefix.NewStore(store, types.TopicFeeRevenueKey)
@@ -136,7 +136,7 @@ func MigrateTopics(
 	churningBlockStore := prefix.NewStore(store, types.TopicToNextPossibleChurningBlockKey)
 	blockToActiveStore := prefix.NewStore(store, types.BlockToActiveTopicsKey)
 	blockLowestWeightStore := prefix.NewStore(store, types.BlockToLowestActiveTopicWeightKey)
-	params, err := emissionsKeeper.GetParams(ctx)
+	params, err := pk.GetParams(ctx)
 	if err != nil {
 		return errorsmod.Wrapf(err, "failed to get params for active topic migration")
 	}

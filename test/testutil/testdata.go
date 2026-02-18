@@ -1545,7 +1545,7 @@ func GetTotalRewardForTopicInEpoch(
 
 func SetRegretsFromPreviousEpoch(
 	ctx sdk.Context,
-	k keeper.Keeper,
+	k *keeper.RegretsKeeper,
 	topicId uint64,
 	blockHeight int64,
 	inferers []string,

@@ -92,7 +92,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputSameFractio
 	}
 	scores := make([]types.Score, 0)
 	for i, reputerAddr := range reputerAddrs {
-		err := s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, reputerAddr, stakes[i])
+		err := s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, reputerAddr, stakes[i])
 		s.Require().NoError(err)
 
 		scoreToAdd := types.Score{
@@ -185,7 +185,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	inicialBalance := s.BankKeeper().GetBalance(s.Ctx(), moduleAccAddr, params.DefaultBondDenom)
 
 	// Add delegator for the reputer 1
-	err = s.EmissionsKeeper().AddDelegateStake(s.Ctx(), topicId, s.AddrsStr(5), reputerAddrs[0], cosmosMath.NewInt(10000000000))
+	err = s.StakingKeeper().AddDelegateStake(s.Ctx(), topicId, s.AddrsStr(5), reputerAddrs[0], cosmosMath.NewInt(10000000000))
 	s.Require().NoError(err)
 
 	// Reputers fractions of total reward
@@ -228,7 +228,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	mockReputersData(s, topicId, block, reputerIndexes)
 
 	// Calculate and Set the reputer scores
-	scores, err := s.EmissionsKeeper().GetReputersScoresAtBlock(s.Ctx(), topicId, block)
+	scores, err := s.ScoresKeeper().GetReputersScoresAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err)
 
 	var reward_score []types.Score
@@ -289,7 +289,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	mockReputersData(s, topicId, block, reputerIndexes)
 
 	// Calculate and Set the reputer scores
-	scores, err = s.EmissionsKeeper().GetReputersScoresAtBlock(s.Ctx(), topicId, block)
+	scores, err = s.ScoresKeeper().GetReputersScoresAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err)
 
 	reward_score = make([]types.Score, 0)
@@ -357,7 +357,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 
 	// Increase stake for the first reputer
-	err = s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(0), cosmosMath.NewInt(1000000))
+	err = s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(0), cosmosMath.NewInt(1000000))
 	s.Require().NoError(err)
 
 	// Get new reputer rewards
@@ -387,7 +387,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 
 	// Remove stake for the first reputer
 	amount := cosmosMath.NewInt(1176644)
-	err := s.EmissionsKeeper().SetStakeRemoval(s.Ctx(), types.StakeRemovalInfo{
+	err := s.StakingKeeper().SetStakeRemoval(s.Ctx(), types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               s.AddrsStr(0),
 		Amount:                amount,
@@ -395,11 +395,11 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 		BlockRemovalCompleted: block,
 	})
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().RemoveReputerStake(s.Ctx(), block, topicId, s.AddrsStr(0), amount)
+	err = s.StakingKeeper().RemoveReputerStake(s.Ctx(), block, topicId, s.AddrsStr(0), amount)
 	s.Require().NoError(err)
 
 	// Check if stake is zero
-	stake, err := s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(0))
+	stake, err := s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(0))
 	s.Require().NoError(err)
 	s.Require().True(
 		stake.IsZero(),
@@ -480,7 +480,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsFromCsv() {
 	}
 	scoreStructs := make([]types.Score, 0)
 	for i, reputerAddr := range reputerAddresses {
-		err := s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, reputerAddr, stakes[i])
+		err := s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, reputerAddr, stakes[i])
 		s.Require().NoError(err)
 
 		scoreToAdd := types.Score{
@@ -543,7 +543,7 @@ func (s *RewardsTestSuite) TestGetReputerTaskEntropyFromCsv() {
 		epoch1Get("reputer_reward_fraction_smooth_4"),
 	}
 	for i, reputerAddr := range reputerAddresses {
-		err := s.EmissionsKeeper().SetPreviousReputerRewardFraction(s.Ctx(), topicId, reputerAddr, reputerFractionsEpoch1[i])
+		err := s.ScoresKeeper().SetPreviousReputerRewardFraction(s.Ctx(), topicId, reputerAddr, reputerFractionsEpoch1[i])
 		s.Require().NoError(err)
 	}
 
@@ -594,7 +594,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerI
 
 	var networkLosses types.LossBundles
 	for i, reputerIndex := range reputerIndexes {
-		err := s.EmissionsKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(reputerIndex), stakes[i])
+		err := s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(reputerIndex), stakes[i])
 		s.Require().NoError(err)
 
 		scoreToAdd := types.Score{
@@ -603,7 +603,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerI
 			Address:     s.AddrsStr(reputerIndex),
 			Score:       scores[i],
 		}
-		err = s.EmissionsKeeper().InsertReputerScore(s.Ctx(), topicId, block, scoreToAdd)
+		err = s.ScoresKeeper().InsertReputerScore(s.Ctx(), topicId, block, scoreToAdd)
 		s.Require().NoError(err)
 		valueBundle := &types.ValueBundle{ //nolint:exhaustruct
 			TopicId: topicId,
@@ -621,7 +621,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerI
 		networkLosses = append(networkLosses, valueBundle)
 	}
 
-	err := s.EmissionsKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, networkLosses)
+	err := s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, networkLosses)
 	s.Require().NoError(err)
 	return networkLosses
 }

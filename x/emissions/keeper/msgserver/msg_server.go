@@ -22,9 +22,19 @@ type msgServer struct {
 var _ types.MsgServiceServer = msgServer{}
 
 // NewMsgServerImpl returns an implementation of the module MsgServer interface.
-func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServiceServer {
+func NewMsgServerImpl(
+	k keeper.Keeper,
+) types.MsgServiceServer {
 	return &msgServer{
-		// TODO
+		pk:  k.GetParamsKeeper(),
+		tk:  k.GetTopicKeeper(),
+		wlk: k.GetWhitelistsKeeper(),
+		rlk: k.GetReputerLossKeeper(),
+		bk:  k.GetBankingKeeper(),
+		sk:  k.GetStakingKeeper(),
+		sck: k.GetScoresKeeper(),
+		wk:  k.GetWorkerKeeper(),
+		nk:  k.GetNonceKeeper(),
 	}
 }
 

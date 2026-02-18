@@ -33,9 +33,9 @@ type Keeper struct {
 	feeCollectorName string
 
 	// TYPES
-	schema     collections.Schema
-	authKeeper AccountKeeper
-	bankKeeper BankKeeper
+	schema        collections.Schema
+	authKeeper    AccountKeeper
+	bankingKeeper *BankingKeeper
 
 	// TOPIC
 	topicKeeper *TopicKeeper
@@ -52,6 +52,9 @@ type Keeper struct {
 	// REPUTERS AND LOSSES
 	reputerLossKeeper *ReputerLossKeeper
 
+	// ACTOR PENALTIES
+	actorPenaltiesKeeper *ActorPenaltiesKeeper
+
 	// WORKERS
 	workerKeeper *WorkerKeeper
 
@@ -61,21 +64,21 @@ type Keeper struct {
 	rewardCurrentBlockEmission collections.Item[cosmosMath.Int]
 
 	// / NONCES
-	nonceKeeper NonceKeeper
+	nonceKeeper *NonceKeeper
 
 	// / REGRETS
-	regretsKeeper RegretsKeeper
+	regretsKeeper *RegretsKeeper
 
 	// WEIGHTS
 	weightsKeeper *WeightsKeeper
+
+	// / WHITELISTS
+	whitelistsKeeper *WhitelistsKeeper
 
 	// / INCLUSIONS
 
 	countInfererInclusionsInTopicActiveSet    collections.Map[collections.Pair[TopicId, ActorId], uint64]
 	countForecasterInclusionsInTopicActiveSet collections.Map[collections.Pair[TopicId, ActorId], uint64]
-
-	// / WHITELISTS
-	whitelistsKeeper WhitelistsKeeper
 
 	// map of (topic, block_height) -> ValueBundle
 	networkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
@@ -88,25 +91,50 @@ func NewKeeper(
 	addressCodec address.Codec,
 	storeService coreStore.KVStoreService,
 	ak AccountKeeper,
-	bk BankKeeper,
+	bankKeeper BankKeeper,
 	feeCollectorName string,
 ) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
-	k := Keeper{
-		schema:           collections.Schema{},
-		cdc:              cdc,
-		storeService:     storeService,
-		addressCodec:     addressCodec,
-		feeCollectorName: feeCollectorName,
-		authKeeper:       ak,
-		bankKeeper:       bk,
 
+	bk := NewBankingKeeper(bankKeeper, ak)
+	pk := NewParamsKeeper(cdc, sb)
+	stk := NewStakingKeeper(cdc, sb, nil, bk) // set tk below
+	nk := NewNonceKeeper(cdc, sb, nil, pk)    // set tk below
+	tk := NewTopicKeeper(cdc, sb, pk, nk, stk)
+	stk.topicKeeper = tk
+	nk.topicKeeper = tk
+	sk := NewScoresKeeper(cdc, sb, pk)
+	apk := NewActorPenaltiesKeeper(sk)
+	rlk := NewReputerLossKeeper(cdc, sb, sk, tk, apk)
+	wk := NewWorkerKeeper(cdc, sb, tk, sk, pk, apk)
+	rk := NewRegretsKeeper(cdc, sb, tk)
+	wgk := NewWeightsKeeper(sb, sk)
+	wlk := NewWhitelistsKeeper(sb, pk, tk)
+	k := Keeper{
+		cdc:                  cdc,
+		schema:               collections.Schema{},
+		storeService:         storeService,
+		addressCodec:         addressCodec,
+		feeCollectorName:     feeCollectorName,
+		authKeeper:           ak,
+		bankingKeeper:        bk,
+		topicKeeper:          tk,
+		scoresKeeper:         sk,
+		stakingKeeper:        stk,
+		paramsKeeper:         pk,
+		reputerLossKeeper:    rlk,
+		actorPenaltiesKeeper: apk,
+		workerKeeper:         wk,
+		nonceKeeper:          nk,
+		regretsKeeper:        rk,
+		weightsKeeper:        wgk,
+		whitelistsKeeper:     wlk,
+		// emissionsMintKeeper:                    NewEmissionsMintKeeper(), TODO
+		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
 		countInfererInclusionsInTopicActiveSet:    collections.NewMap(sb, types.CountInfererInclusionsInTopicKey, "count_inferer_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 		countForecasterInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountForecasterInclusionsInTopicKey, "count_forecaster_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
-
-		rewardCurrentBlockEmission:        collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
-		networkInferences:                 collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
-		outlierResistantNetworkInferences: collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -373,6 +401,54 @@ func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission cosm
 		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
 	}
 	return k.rewardCurrentBlockEmission.Set(ctx, emission)
+}
+
+func (k *Keeper) GetScoresKeeper() *ScoresKeeper {
+	return k.scoresKeeper
+}
+
+func (k *Keeper) GetParamsKeeper() *ParamsKeeper {
+	return k.paramsKeeper
+}
+
+func (k *Keeper) GetTopicKeeper() *TopicKeeper {
+	return k.topicKeeper
+}
+
+func (k *Keeper) GetStakingKeeper() *StakingKeeper {
+	return k.stakingKeeper
+}
+
+func (k *Keeper) GetBankingKeeper() *BankingKeeper {
+	return k.bankingKeeper
+}
+
+func (k *Keeper) GetReputerLossKeeper() *ReputerLossKeeper {
+	return k.reputerLossKeeper
+}
+
+func (k *Keeper) GetNonceKeeper() *NonceKeeper {
+	return k.nonceKeeper
+}
+
+func (k *Keeper) GetWorkerKeeper() *WorkerKeeper {
+	return k.workerKeeper
+}
+
+func (k *Keeper) GetWeightsKeeper() *WeightsKeeper {
+	return k.weightsKeeper
+}
+
+func (k *Keeper) GetWhitelistsKeeper() *WhitelistsKeeper {
+	return k.whitelistsKeeper
+}
+
+func (k *Keeper) GetActorPenaltiesKeeper() *ActorPenaltiesKeeper {
+	return k.actorPenaltiesKeeper
+}
+
+func (k *Keeper) GetRegretsKeeper() *RegretsKeeper {
+	return k.regretsKeeper
 }
 
 // TODO: move elsewhere

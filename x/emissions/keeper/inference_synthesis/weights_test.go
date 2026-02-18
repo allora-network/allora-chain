@@ -151,7 +151,7 @@ func (s *WeightsTestSuite) TestStoreLatestNormalizedWeights() {
 
 		// Verify stored weights
 		for worker, expectedWeight := range weights.Inferers { // nolint: maprange // reason: order not relevant
-			storedWeight, err := s.EmissionsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, worker)
+			storedWeight, err := s.WeightstsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, worker)
 			s.Require().NoError(err)
 			s.Require().True(expectedWeight.Equal(storedWeight))
 		}
@@ -338,11 +338,11 @@ func (s *WeightsTestSuite) TestCalcStdDevForWeights() {
 		s.Run(tc.name, func() {
 			// Store weights in keeper
 			for worker, weight := range tc.infererWeights { // nolint: maprange // reason: order not relevant
-				err := s.EmissionsKeeper().SetLatestInfererWeight(s.Ctx(), 1, worker, weight)
+				err := s.WeightstsKeeper().SetLatestInfererWeight(s.Ctx(), 1, worker, weight)
 				s.Require().NoError(err)
 			}
 			for worker, weight := range tc.forecasterWeights { // nolint: maprange // reason: order not relevant
-				err := s.EmissionsKeeper().SetLatestForecasterWeight(s.Ctx(), 1, worker, weight)
+				err := s.WeightstsKeeper().SetLatestForecasterWeight(s.Ctx(), 1, worker, weight)
 				s.Require().NoError(err)
 			}
 

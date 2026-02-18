@@ -118,7 +118,14 @@ func TestRemoveStakes(t *testing.T) {
 				kMock.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), emissionstypes.AlloraStakingAccountName, removal.Reputer, types.NewCoins(types.NewCoin("uallo", removal.Amount))).Return(nil)
 			}
 
-			require.NoError(t, module.RemoveStakes(ctx, tc.currentBlock, kMock, 2))
+			require.NoError(t, module.RemoveStakes(
+				ctx,
+				tc.currentBlock,
+				kMock.GetStakeRemovalsUpUntilBlock,
+				kMock.RemoveReputerStake,
+				kMock.SendCoinsFromModuleToAccount,
+				2,
+			))
 		})
 	}
 }
@@ -233,7 +240,14 @@ func TestRemoveDelegateStakes(t *testing.T) {
 				kMock.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), emissionstypes.AlloraStakingAccountName, removal.Delegator, types.NewCoins(types.NewCoin("uallo", removal.Amount))).Return(nil)
 			}
 
-			require.NoError(t, module.RemoveDelegateStakes(ctx, tc.currentBlock, kMock, 2))
+			require.NoError(t, module.RemoveDelegateStakes(
+				ctx,
+				tc.currentBlock,
+				kMock.GetDelegateStakeRemovalsUpUntilBlock,
+				kMock.RemoveDelegateStake,
+				kMock.SendCoinsFromModuleToAccount,
+				2),
+			)
 		})
 	}
 }
