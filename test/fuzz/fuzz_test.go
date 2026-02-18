@@ -149,7 +149,7 @@ func simulateAutomatic(f *fuzzcommon.FuzzConfig, faucet Actor, data *SimulationD
 
 // for every iteration
 // pick a state transition to try
-// check that that state transition even makes sense based on what we know
+// check that state transition even makes sense based on what we know
 // try to pick some actors and a topic id that will work for this transition
 // if errors at any point, pick a new state transition to try
 func pickTransition(
