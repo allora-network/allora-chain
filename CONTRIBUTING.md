@@ -7,7 +7,7 @@ be under the Apache 2 License, as dictated by that
 [license](http://www.apache.org/licenses/LICENSE-2.0.html):
 
 ~~~
-5. Submission of Contributions. Unless You explicitly state otherwise,
+5. Submission of Contributions. Unless you explicitly state otherwise,
    any Contribution intentionally submitted for inclusion in the Work
    by You to the Licensor shall be under the terms and conditions of
    this License, without any additional terms or conditions.
@@ -109,7 +109,7 @@ It is critical to avoid performing network requests to external services since i
 
 Imagine a service that returns exchange rates when clients query its HTTP endpoint. This service might experience downtime or be restricted in some geographical areas.
 
-As a result, nodes may get diverging responses where some get successful responses while others errors, leading to state breakage.
+As a result, nodes may get diverging responses where some get successful responses while others get errors, leading to state breakage.
 
 #### Randomness
 
