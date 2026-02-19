@@ -63,17 +63,17 @@ func (s *QueryServerTestSuite) TestGetForecasterWeight() {
 	s.Require().Equal(alloraMath.ZeroDec(), response.Weight, "Non-existent forecaster should have zero weight")
 }
 
-func (s *QueryServerTestSuite) TestGetLatestStdnorm() {
+func (s *QueryServerTestSuite) TestGetLatestRegretStdNorm() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
 	keeper := s.EmissionsKeeper()
 
 	topicId := uint64(1)
-	stdnorm := alloraMath.NewDecFromInt64(100)
+	regretScale := alloraMath.NewDecFromInt64(100)
 
-	// Set initial stdnorm
-	err := keeper.SetLatestRegretStdNorm(ctx, topicId, stdnorm)
-	s.Require().NoError(err, "Setting latest stdnorm should not fail")
+	// Set initial regret scale
+	err := keeper.SetLatestRegretScale(ctx, topicId, regretScale)
+	s.Require().NoError(err, "Setting latest regret scale should not fail")
 
 	req := &types.GetLatestRegretStdNormRequest{
 		TopicId: topicId,
@@ -81,7 +81,7 @@ func (s *QueryServerTestSuite) TestGetLatestStdnorm() {
 	response, err := queryServer.GetLatestRegretStdNorm(ctx, req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(stdnorm, response.Value, "Retrieved stdnorm should match set stdnorm")
+	s.Require().Equal(regretScale, response.Value, "Retrieved regret scale should match set regret scale")
 
 	// Test non-existent topic
 	nonExistentTopicId := uint64(999)
@@ -91,5 +91,5 @@ func (s *QueryServerTestSuite) TestGetLatestStdnorm() {
 	response, err = queryServer.GetLatestRegretStdNorm(ctx, req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(alloraMath.ZeroDec(), response.Value, "Non-existent topic should return zero stdnorm")
+	s.Require().Equal(alloraMath.ZeroDec(), response.Value, "Non-existent topic should return zero regret scale")
 }

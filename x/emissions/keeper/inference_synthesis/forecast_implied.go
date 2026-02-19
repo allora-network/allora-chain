@@ -7,22 +7,22 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// Args for the CalcForecastImpliedInferences function
+// CalcForecastImpliedInferencesArgs holds inputs for CalcForecastImpliedInferences.
 type CalcForecastImpliedInferencesArgs struct {
-	Logger               log.Logger
-	TopicId              uint64
-	AllInferersAreNew    bool
-	Inferers             []Inferer
-	InfererToInference   map[Inferer]*emissionstypes.Inference
-	InfererToRegret      map[Inferer]*Regret
-	Forecasters          []Forecaster
-	ForecasterToForecast map[Forecaster]*emissionstypes.Forecast
-	ForecasterToRegret   map[Forecaster]*Regret
-	NetworkCombinedLoss  *alloraMath.Dec
-	EpsilonTopic         alloraMath.Dec
-	PNorm                alloraMath.Dec
-	CNorm                alloraMath.Dec
-	StdDevPlusEpsilon    alloraMath.Dec
+	Logger                 log.Logger
+	TopicId                uint64
+	AllInferersAreNew      bool
+	Inferers               []Inferer
+	InfererToInference     map[Inferer]*emissionstypes.Inference
+	InfererToRegret        map[Inferer]*Regret
+	Forecasters            []Forecaster
+	ForecasterToForecast   map[Forecaster]*emissionstypes.Forecast
+	ForecasterToRegret     map[Forecaster]*Regret
+	NetworkCombinedLoss    *alloraMath.Dec
+	EpsilonTopic           alloraMath.Dec
+	PNorm                  alloraMath.Dec
+	CNorm                  alloraMath.Dec
+	RegretScalePlusEpsilon alloraMath.Dec
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
@@ -134,15 +134,15 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 
 					weights, err := CalcWeightsGivenWorkers(
 						CalcWeightsGivenWorkersArgs{
-							Logger:             args.Logger,
-							Inferers:           args.Inferers,
-							Forecasters:        args.Forecasters,
-							InfererToRegret:    infererToRegretOut,
-							ForecasterToRegret: forecasterToRegretOut,
-							EpsilonTopic:       args.EpsilonTopic,
-							PNorm:              args.PNorm,
-							CNorm:              args.CNorm,
-							StdDevPlusEpsilon:  args.StdDevPlusEpsilon,
+							Logger:                 args.Logger,
+							Inferers:               args.Inferers,
+							Forecasters:            args.Forecasters,
+							InfererToRegret:        infererToRegretOut,
+							ForecasterToRegret:     forecasterToRegretOut,
+							EpsilonTopic:           args.EpsilonTopic,
+							PNorm:                  args.PNorm,
+							CNorm:                  args.CNorm,
+							RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 						},
 					)
 					if err != nil {

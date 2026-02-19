@@ -13,31 +13,22 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// args for calcWeightsGivenWorkers function
+// CalcWeightsGivenWorkersArgs holds inputs for CalcWeightsGivenWorkers.
 type CalcWeightsGivenWorkersArgs struct {
-	Logger             log.Logger
-	Inferers           []Worker
-	Forecasters        []Worker
-	InfererToRegret    map[Worker]*alloraMath.Dec
-	ForecasterToRegret map[Worker]*alloraMath.Dec
-	EpsilonTopic       alloraMath.Dec
-	PNorm              alloraMath.Dec
-	CNorm              alloraMath.Dec
-	StdDevPlusEpsilon  alloraMath.Dec
+	Logger                 log.Logger
+	Inferers               []Worker
+	Forecasters            []Worker
+	InfererToRegret        map[Worker]*alloraMath.Dec
+	ForecasterToRegret     map[Worker]*alloraMath.Dec
+	EpsilonTopic           alloraMath.Dec
+	PNorm                  alloraMath.Dec
+	CNorm                  alloraMath.Dec
+	RegretScalePlusEpsilon alloraMath.Dec
 }
 
-type CalcRegretStdDevFilteredByWeightsArgs struct {
-	Ctx                 sdk.Context
-	K                   *keeper.Keeper
-	Logger              log.Logger
-	TopicId             uint64
-	Inferers            []Worker
-	Forecasters         []Worker
-	InfererToRegret     map[Worker]*alloraMath.Dec
-	ForecasterToRegret  map[Worker]*alloraMath.Dec
-	NegligibleThreshold alloraMath.Dec
-	EpsilonTopic        alloraMath.Dec
-}
+// Scale factor to convert MAD to an estimate of standard deviation under a normal distribution.
+// 1 / Phi^-1(0.75) ~= 1.4826
+var madToStdDevFactor = alloraMath.MustNewDecFromString("1.4826")
 
 // Math helper cache implementation
 // Used to memoize expensive helper computations like Gradient and Exp1DivExp1.
@@ -78,71 +69,25 @@ func cachedExp1DivExp1(a, b alloraMath.Dec) (alloraMath.Dec, error) {
 	return result, nil
 }
 
-// Calculates the standard deviation of the regrets provided plus epsilon
-// It uses previous epoch's weights to filter the regrets of workers that had a negligible weight
-// If there are less than 2 non-negligible weights, it uses all regrets.
-func CalcRegretStdDevFilteredByWeights(args CalcRegretStdDevFilteredByWeightsArgs) (alloraMath.Dec, error) {
-	// Combine all weights and regrets
-	var filteredRegrets []alloraMath.Dec
-	nonNegligibleCount := 0
-
-	// Count non-negligible weights and gather corresponding regrets
-	for _, worker := range args.Inferers {
-		weight, err := args.K.GetLatestInfererWeight(args.Ctx, args.TopicId, worker)
-		if err != nil {
-			continue
-		}
-		if weight.Gt(args.NegligibleThreshold) {
-			nonNegligibleCount++
-			if regret, ok := args.InfererToRegret[worker]; ok {
-				filteredRegrets = append(filteredRegrets, *regret)
-			}
-		}
-	}
-	for _, worker := range args.Forecasters {
-		weight, err := args.K.GetLatestForecasterWeight(args.Ctx, args.TopicId, worker)
-		if err != nil {
-			continue
-		}
-		if weight.Gt(args.NegligibleThreshold) {
-			nonNegligibleCount++
-			if regret, ok := args.ForecasterToRegret[worker]; ok {
-				filteredRegrets = append(filteredRegrets, *regret)
-			}
-		}
-	}
-
-	// If fewer than 2 non-negligible weights, use all regrets
-	if nonNegligibleCount < 2 {
-		regrets, _, _, err := GatherWorkerRegrets(
-			args.Logger,
-			args.Inferers,
-			args.Forecasters,
-			args.InfererToRegret,
-			args.ForecasterToRegret,
-		)
-		if err != nil {
-			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error gathering worker regrets")
-		}
-		return CalcStdDevPlusEpsilon(regrets, args.EpsilonTopic)
-	}
-	return CalcStdDevPlusEpsilon(filteredRegrets, args.EpsilonTopic)
-}
-
-// Calculates the standard deviation of the regrets provided plus epsilon
-func CalcStdDevPlusEpsilon(regrets []alloraMath.Dec, epsilonTopic alloraMath.Dec) (alloraMath.Dec, error) {
-	// Calc std dev of regrets + epsilon
-	// σ(R_ijk) + ε
-	stdDevRegrets, err := alloraMath.StdDev(regrets)
+// CalcRegretScalePlusEpsilon calculates the MAD-based scale (scaled to match stddev under normality)
+// of the regrets provided plus epsilon.
+func CalcRegretScalePlusEpsilon(regrets []alloraMath.Dec, epsilonTopic alloraMath.Dec) (alloraMath.Dec, error) {
+	// Calc MAD of regrets, scaled to match stddev under normality, + epsilon
+	// madToStdDevFactor * MAD(R_ijk) + ε
+	madRegrets, _, err := alloraMath.MedianAbsoluteDeviation(regrets)
 	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating MAD of regrets")
 	}
-	// Add epsilon to standard deviation
-	absStdDevRegrets, err := stdDevRegrets.Abs()
+	scaledMadRegrets, err := madRegrets.Mul(madToStdDevFactor)
 	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating absolute value of standard deviation")
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error scaling MAD of regrets")
 	}
-	return absStdDevRegrets.Add(epsilonTopic)
+	// Add epsilon to scaled MAD
+	absScaledMadRegrets, err := scaledMadRegrets.Abs()
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating absolute value of scaled MAD")
+	}
+	return absScaledMadRegrets.Add(epsilonTopic)
 }
 
 // Gather regrets from workers and forecasters.
@@ -185,17 +130,17 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 		return RegretInformedWeights{}, err
 	}
 
-	var stdDevRegretsPlusEpsilon alloraMath.Dec
-	if args.StdDevPlusEpsilon.Gt(alloraMath.ZeroDec()) {
-		stdDevRegretsPlusEpsilon = args.StdDevPlusEpsilon
+	var regretScalePlusEpsilon alloraMath.Dec
+	if args.RegretScalePlusEpsilon.Gt(alloraMath.ZeroDec()) {
+		regretScalePlusEpsilon = args.RegretScalePlusEpsilon
 	} else {
-		args.Logger.Debug("CalcWeightsGivenWorkers(): stdDevRegretsPlusEpsilon is not provided, calculating it")
-		// Calc std dev of regrets + epsilon
-		// σ(R_ijk) + ε
+		args.Logger.Debug("CalcWeightsGivenWorkers(): regretScalePlusEpsilon is not provided, calculating it")
+		// Calc MAD-based scale of regrets + epsilon
+		// madToStdDevFactor * MAD(R_ijk) + ε
 		var err error
-		stdDevRegretsPlusEpsilon, err = CalcStdDevPlusEpsilon(regrets, args.EpsilonTopic)
+		regretScalePlusEpsilon, err = CalcRegretScalePlusEpsilon(regrets, args.EpsilonTopic)
 		if err != nil {
-			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
+			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to regret scale")
 		}
 	}
 
@@ -209,7 +154,7 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 			args.Logger.Debug("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers", "worker", worker)
 			continue
 		}
-		regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
+		regretFrac, err := regret.Quo(regretScalePlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
@@ -230,7 +175,7 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 				args.Logger.Debug("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers", "worker", worker)
 				continue
 			}
-			regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
+			regretFrac, err := regret.Quo(regretScalePlusEpsilon)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}

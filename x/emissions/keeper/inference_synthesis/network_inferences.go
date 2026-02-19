@@ -209,12 +209,12 @@ func GetCalcNetworkInferenceArgs(
 		infererRegrets = append(infererRegrets, regret.Value)
 	}
 
-	// Get the latest regret stdnorm from the keeper. If zero, it will recalculate with provided data.
-	stdDevPlusEpsilon, err := k.GetLatestRegretStdNorm(ctx, topicId)
+	// Get the latest regret scale from the keeper. If zero, it will recalculate with provided data.
+	regretScalePlusEpsilon, err := k.GetLatestRegretScale(ctx, topicId)
 	if err != nil {
-		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret stdnorm")
+		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret scale")
 	}
-	logger.Info("GetCalcNetworkInferenceArgs: StdDevPlusEpsilon", "stdDevPlusEpsilon", stdDevPlusEpsilon)
+	logger.Info("GetCalcNetworkInferenceArgs: RegretScalePlusEpsilon", "regretScalePlusEpsilon", regretScalePlusEpsilon)
 
 	calcArgs = CalcNetworkInferencesArgs{
 		Ctx:                                  ctx,
@@ -234,7 +234,7 @@ func GetCalcNetworkInferenceArgs(
 		EpsilonSafeDiv:                       moduleParams.EpsilonSafeDiv,
 		PNorm:                                topic.PNorm,
 		CNorm:                                topic.CNorm,
-		StdDevPlusEpsilon:                    stdDevPlusEpsilon,
+		RegretScalePlusEpsilon:               regretScalePlusEpsilon,
 		InferenceBlockHeight:                 inferenceBlockHeight,
 	}
 
@@ -258,20 +258,20 @@ func GetCalcNetworkInferenceArgs(
 
 		forecastImpliedInferencesByWorker, _, _, err := CalcForecastImpliedInferences(
 			CalcForecastImpliedInferencesArgs{
-				Logger:               logger,
-				TopicId:              topicId,
-				AllInferersAreNew:    allInferersAreNew,
-				Inferers:             sortedInferers,
-				InfererToInference:   infererToInference,
-				InfererToRegret:      infererToRegret,
-				Forecasters:          sortedForecasters,
-				ForecasterToForecast: forecasterToForecast,
-				ForecasterToRegret:   forecasterToRegret,
-				NetworkCombinedLoss:  previousLossesCombinedValue,
-				EpsilonTopic:         topic.Epsilon,
-				PNorm:                topic.PNorm,
-				CNorm:                topic.CNorm,
-				StdDevPlusEpsilon:    stdDevPlusEpsilon,
+				Logger:                 logger,
+				TopicId:                topicId,
+				AllInferersAreNew:      allInferersAreNew,
+				Inferers:               sortedInferers,
+				InfererToInference:     infererToInference,
+				InfererToRegret:        infererToRegret,
+				Forecasters:            sortedForecasters,
+				ForecasterToForecast:   forecasterToForecast,
+				ForecasterToRegret:     forecasterToRegret,
+				NetworkCombinedLoss:    previousLossesCombinedValue,
+				EpsilonTopic:           topic.Epsilon,
+				PNorm:                  topic.PNorm,
+				CNorm:                  topic.CNorm,
+				RegretScalePlusEpsilon: regretScalePlusEpsilon,
 			},
 		)
 		if err != nil {

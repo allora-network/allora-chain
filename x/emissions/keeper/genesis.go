@@ -963,11 +963,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	// Initialize latest regret stdnorm
-	for _, stdnorm := range data.LatestRegretStdNorm {
-		if stdnorm != nil {
-			if err := k.SetLatestRegretStdNorm(ctx, stdnorm.TopicId, stdnorm.Dec); err != nil {
-				return errors.Wrap(err, "error setting latest regret stdnorm")
+	// Initialize latest regret scale from genesis data.
+	for _, regretScale := range data.LatestRegretStdNorm {
+		if regretScale != nil {
+			if err := k.SetLatestRegretScale(ctx, regretScale.TopicId, regretScale.Dec); err != nil {
+				return errors.Wrap(err, "error setting latest regret scale")
 			}
 		}
 	}
@@ -2502,18 +2502,18 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		})
 	}
 
-	// Export latest regret stdnorm
-	latestRegretStdNorm := make([]*types.TopicIdAndDec, 0)
-	stdnormIter, err := k.latestRegretStdNorm.Iterate(ctx, nil)
+	// Export latest regret scale.
+	latestRegretScale := make([]*types.TopicIdAndDec, 0)
+	regretScaleIter, err := k.latestRegretScale.Iterate(ctx, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to iterate latest regret stdnorm")
+		return nil, errors.Wrap(err, "failed to iterate latest regret scale")
 	}
-	for ; stdnormIter.Valid(); stdnormIter.Next() {
-		keyValue, err := stdnormIter.KeyValue()
+	for ; regretScaleIter.Valid(); regretScaleIter.Next() {
+		keyValue, err := regretScaleIter.KeyValue()
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key value: stdnormIter")
+			return nil, errors.Wrap(err, "failed to get key value: regretScaleIter")
 		}
-		latestRegretStdNorm = append(latestRegretStdNorm, &types.TopicIdAndDec{
+		latestRegretScale = append(latestRegretScale, &types.TopicIdAndDec{
 			TopicId: keyValue.Key,
 			Dec:     keyValue.Value,
 		})
@@ -2692,7 +2692,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		TopicReputerWhitelistEnabled:                   topicReputerWhitelistEnabled,
 		LastMedianInferences:                           lastMedianInferences,
 		MadInferences:                                  madInferences,
-		LatestRegretStdNorm:                            latestRegretStdNorm,
+		LatestRegretStdNorm:                            latestRegretScale,
 		LatestInfererWeights:                           latestInfererWeights,
 		LatestForecasterWeights:                        latestForecasterWeights,
 		NetworkInferences:                              networkInferences,
