@@ -19,6 +19,7 @@ type msgServer struct {
 	nk  *keeper.NonceKeeper
 }
 
+//nolint:exhaustruct
 var _ types.MsgServiceServer = msgServer{}
 
 // NewMsgServerImpl returns an implementation of the module MsgServer interface.

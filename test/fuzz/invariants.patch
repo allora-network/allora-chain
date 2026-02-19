@@ -2,26 +2,29 @@ diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
 index e7fcf865..5bfb9d44 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -3,7 +3,10 @@ package module
+@@ -3,12 +3,16 @@ package module
  import (
  	"context"
  
 +	"fmt"
 +
  	"cosmossdk.io/errors"
-+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
- 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
- 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+-	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+-	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
  	sdk "github.com/cosmos/cosmos-sdk/types"
-@@ -11,6 +14,11 @@ import (
+
++	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
++	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
++	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+ )
  
  func EndBlocker(ctx context.Context, am AppModule) error {
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
-+	// Add invariant check logic
-+	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
-+	if invariantFailed {
-+		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
-+	}
+ 	// Add invariant check logic
+ 	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
+ 	if invariantFailed {
+ 		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
+ 	}
  	blockHeight := sdkCtx.BlockHeight()
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
