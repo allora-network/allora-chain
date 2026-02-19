@@ -1,38 +1,36 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index e7fcf865..5bfb9d44 100644
+index 80f171e4..7dc2ad15 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -3,12 +3,16 @@ package module
+@@ -3,15 +3,23 @@ package module
  import (
  	"context"
  
 +	"fmt"
 +
  	"cosmossdk.io/errors"
--	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
--	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
  	sdk "github.com/cosmos/cosmos-sdk/types"
-
+ 
 +	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-+	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
-+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+ 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+ 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
  )
  
  func EndBlocker(ctx context.Context, am AppModule) error {
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
- 	// Add invariant check logic
- 	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
- 	if invariantFailed {
- 		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
- 	}
++	// Add invariant check logic
++	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
++	if invariantFailed {
++		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
++	}
  	blockHeight := sdkCtx.BlockHeight()
  	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
  
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index 7cc8ee97..e99ddb32 100644
+index 006eed47..d8533e3b 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
-@@ -41,6 +41,7 @@ var (
+@@ -44,6 +44,7 @@ var (
  	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
  	_ appmodule.AppModule     = AppModule{} // nolint: exhaustruct
  	_ appmodule.HasEndBlocker = AppModule{} // nolint: exhaustruct
@@ -40,7 +38,7 @@ index 7cc8ee97..e99ddb32 100644
  )
  
  // ConsensusVersion defines the current module consensus version.
-@@ -204,3 +205,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
+@@ -217,3 +218,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
  	}
  	return err
  }
