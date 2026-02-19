@@ -531,7 +531,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.055841253742177320400327600231111")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.063129668414686004388530315977163")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
@@ -554,20 +554,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -631,20 +631,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -695,8 +695,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1.158380376510523897775902553985830")},
-		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("1.149124717287201046499545990921485")},
+		"worker0":     {Value: alloraMath.MustNewDecFromString("1.317025398914864082848526530373150")},
+		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("1.2974778440227044")},
 		s.AddrsStr(2): nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -726,20 +726,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -827,20 +827,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -920,20 +920,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -993,20 +993,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -1052,20 +1052,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -1150,20 +1150,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
-			Logger:               s.Ctx().Logger(),
-			TopicId:              topicId,
-			AllInferersAreNew:    allInferersAreNew,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilon,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Logger:                 s.Ctx().Logger(),
+			TopicId:                topicId,
+			AllInferersAreNew:      allInferersAreNew,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilon,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)

@@ -66,7 +66,7 @@ func DefaultParams() Params {
 		GlobalReputerWhitelistEnabled:       true,                                        // global reputer whitelist enabled => the global reputer whitelist determines which reputers can participate in all topics
 		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
-		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // minimum weight threshold for stdnorm calculation
+		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
 	}
 }
 

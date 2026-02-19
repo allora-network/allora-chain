@@ -477,7 +477,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(ep
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
-			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	alloratestutil.InEpsilon5(s.T(), combinedValue, epochGet[epoch]("network_inference").String())
@@ -516,7 +516,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
-			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	alloratestutil.InEpsilon5(s.T(), naiveValue, epochGet[epoch]("network_naive_inference").String())
@@ -552,23 +552,23 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 
 	oneOutInfererValues, err := inferencesynthesis.GetOneOutInfererInferences(
 		inferencesynthesis.GetOneOutInfererInferencesArgs{
-			Ctx:                  ctx,
-			K:                    k,
-			Logger:               logger,
-			TopicId:              topicId,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			AllInferersAreNew:    allInferersAreNew,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilonTopic,
-			EpsilonSafeDiv:       epsilonSafeDiv,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Ctx:                    ctx,
+			K:                      k,
+			Logger:                 logger,
+			TopicId:                topicId,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			AllInferersAreNew:      allInferersAreNew,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilonTopic,
+			EpsilonSafeDiv:         epsilonSafeDiv,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -577,7 +577,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 		for _, workerAttributedValue := range oneOutInfererValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
-				alloratestutil.InEpsilon4(s.T(), expectedValue, workerAttributedValue.Value.String()) // Reduced to Epsilon4 after removal of regret boundaries
+				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String()) // Reduced to Epsilon4 after removal of regret boundaries
 			}
 		}
 		s.Require().True(found)
@@ -615,7 +615,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
-			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -674,7 +674,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
-			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+			RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -782,7 +782,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
-		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeightInferences,
 	}
 
@@ -896,7 +896,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
-		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
 	}
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
@@ -1040,7 +1040,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
-		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
 	}
 
@@ -1188,7 +1188,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
-		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
 	}
 
@@ -1297,7 +1297,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTw
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
-		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
+		RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 		InferenceBlockHeight:                 blockHeight,
 	}
 
@@ -1377,22 +1377,22 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 
 	oneOutInfererForecastImpliedValues, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
 		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
-			Ctx:                  ctx,
-			K:                    k,
-			Logger:               ctx.Logger(),
-			TopicId:              topicId,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			AllInferersAreNew:    allInferersAreNew,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilonTopic,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Ctx:                    ctx,
+			K:                      k,
+			Logger:                 ctx.Logger(),
+			TopicId:                topicId,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			AllInferersAreNew:      allInferersAreNew,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilonTopic,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -1418,22 +1418,22 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 	// Test edge case: no forecasters
 	emptyResult, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
 		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
-			Ctx:                  ctx,
-			K:                    k,
-			Logger:               ctx.Logger(),
-			TopicId:              topicId,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			AllInferersAreNew:    allInferersAreNew,
-			Forecasters:          []string{}, // Empty forecasters
-			ForecasterToForecast: make(map[string]*emissionstypes.Forecast),
-			ForecasterToRegret:   make(map[string]*alloraMath.Dec),
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilonTopic,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Ctx:                    ctx,
+			K:                      k,
+			Logger:                 ctx.Logger(),
+			TopicId:                topicId,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			AllInferersAreNew:      allInferersAreNew,
+			Forecasters:            []string{}, // Empty forecasters
+			ForecasterToForecast:   make(map[string]*emissionstypes.Forecast),
+			ForecasterToRegret:     make(map[string]*alloraMath.Dec),
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilonTopic,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(emptyResult)
@@ -1441,22 +1441,22 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 	// Test edge case: single inferer (should return empty result as one-out requires at least 2 inferers)
 	singleInfererResult, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
 		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
-			Ctx:                  ctx,
-			K:                    k,
-			Logger:               ctx.Logger(),
-			TopicId:              topicId,
-			Inferers:             []string{worker1},
-			InfererToInference:   map[string]*emissionstypes.Inference{worker1: inferences.Inferences[0]},
-			InfererToRegret:      map[string]*alloraMath.Dec{},
-			AllInferersAreNew:    true,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilonTopic,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Ctx:                    ctx,
+			K:                      k,
+			Logger:                 ctx.Logger(),
+			TopicId:                topicId,
+			Inferers:               []string{worker1},
+			InfererToInference:     map[string]*emissionstypes.Inference{worker1: inferences.Inferences[0]},
+			InfererToRegret:        map[string]*alloraMath.Dec{},
+			AllInferersAreNew:      true,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilonTopic,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(singleInfererResult)
@@ -1518,22 +1518,22 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 
 	oneOutInfererForecastImpliedValues, err := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(
 		inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
-			Ctx:                  ctx,
-			K:                    k,
-			Logger:               ctx.Logger(),
-			TopicId:              topicId,
-			Inferers:             inferers,
-			InfererToInference:   inferenceByWorker,
-			InfererToRegret:      infererRegrets,
-			AllInferersAreNew:    allInferersAreNew,
-			Forecasters:          forecasters,
-			ForecasterToForecast: forecastByWorker,
-			ForecasterToRegret:   forecasterRegrets,
-			NetworkCombinedLoss:  &networkCombinedLoss,
-			EpsilonTopic:         epsilonTopic,
-			PNorm:                pNorm,
-			CNorm:                cNorm,
-			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
+			Ctx:                    ctx,
+			K:                      k,
+			Logger:                 ctx.Logger(),
+			TopicId:                topicId,
+			Inferers:               inferers,
+			InfererToInference:     inferenceByWorker,
+			InfererToRegret:        infererRegrets,
+			AllInferersAreNew:      allInferersAreNew,
+			Forecasters:            forecasters,
+			ForecasterToForecast:   forecastByWorker,
+			ForecasterToRegret:     forecasterRegrets,
+			NetworkCombinedLoss:    &networkCombinedLoss,
+			EpsilonTopic:           epsilonTopic,
+			PNorm:                  pNorm,
+			CNorm:                  cNorm,
+			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 

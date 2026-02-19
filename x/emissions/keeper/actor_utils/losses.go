@@ -203,34 +203,30 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// Calculate the regret_stdnorm and the weights (multistep process).
+	// Calculate the regret scale (MAD-based scale) and the weights (multistep process).
 	// 0. Get inferer and forecaster regrets
 	infererRegrets := regrets.InfererRegrets
 	inferers := alloraMath.GetSortedKeys(infererRegrets)
 	forecasterRegrets := regrets.ForecasterRegrets
 	forecasters := alloraMath.GetSortedKeys(forecasterRegrets)
 
-	// 2. Calculate the regret_stdnorm to be used in
-	// 2.a Calculate the regret_stdnorm filtered by ∫the previous weights. If not, apply stddev.
-	stdDevPlusEpsilon, err := synth.CalcRegretStdDevFilteredByWeights(
-		synth.CalcRegretStdDevFilteredByWeightsArgs{
-			Ctx:                 ctx,
-			K:                   k,
-			Logger:              ctx.Logger(),
-			TopicId:             topic.Id,
-			Inferers:            inferers,
-			Forecasters:         forecasters,
-			InfererToRegret:     infererRegrets,
-			ForecasterToRegret:  forecasterRegrets,
-			NegligibleThreshold: params.MinWeightThresholdForStdnorm,
-			EpsilonTopic:        topic.Epsilon,
-		},
+	// 2. Calculate the regret scale to be used.
+	allRegrets, _, _, err := synth.GatherWorkerRegrets(
+		ctx.Logger(),
+		inferers,
+		forecasters,
+		infererRegrets,
+		forecasterRegrets,
 	)
 	if err != nil {
 		return err
 	}
+	regretScalePlusEpsilon, err := synth.CalcRegretScalePlusEpsilon(allRegrets, topic.Epsilon)
+	if err != nil {
+		return err
+	}
 	// 2.b ... and store it.
-	err = k.SetLatestRegretStdNorm(ctx, topic.Id, stdDevPlusEpsilon)
+	err = k.SetLatestRegretScale(ctx, topic.Id, regretScalePlusEpsilon)
 	if err != nil {
 		return err
 	}
@@ -238,15 +234,15 @@ func CloseReputerNonce(
 	// 3. Calculate the new weights
 	newWeights, err := synth.CalcWeightsGivenWorkers(
 		synth.CalcWeightsGivenWorkersArgs{
-			Logger:             ctx.Logger(),
-			Inferers:           inferers,
-			Forecasters:        forecasters,
-			InfererToRegret:    infererRegrets,
-			ForecasterToRegret: forecasterRegrets,
-			EpsilonTopic:       topic.Epsilon,
-			PNorm:              topic.PNorm,
-			CNorm:              topic.CNorm,
-			StdDevPlusEpsilon:  stdDevPlusEpsilon,
+			Logger:                 ctx.Logger(),
+			Inferers:               inferers,
+			Forecasters:            forecasters,
+			InfererToRegret:        infererRegrets,
+			ForecasterToRegret:     forecasterRegrets,
+			EpsilonTopic:           topic.Epsilon,
+			PNorm:                  topic.PNorm,
+			CNorm:                  topic.CNorm,
+			RegretScalePlusEpsilon: regretScalePlusEpsilon,
 		},
 	)
 	if err != nil {
@@ -265,8 +261,8 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// Emit events: the regret stdnorm set event
-	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
+	// Emit events: the regret scale set event
+	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, regretScalePlusEpsilon)
 	if len(inferers) > 0 {
 		infererWeights := make([]alloraMath.Dec, len(inferers))
 		for i, inferer := range inferers {
@@ -283,7 +279,7 @@ func CloseReputerNonce(
 		types.EmitNewForecasterWeightsSetEvent(ctx, topic.Id, nonce.BlockHeight, forecasters, forecasterWeights)
 	}
 
-	// -- end of regrets_stdnorm and weights multistep process
+	// -- end of regret scale and weights multistep process
 
 	err = k.SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)
 	if err != nil {

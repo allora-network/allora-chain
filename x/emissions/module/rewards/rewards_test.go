@@ -508,10 +508,10 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		testutil.WithGroundTruthLag(groundTruthLag),
 	)
 
-	// Track weights and stdnorm over epochs
+	// Track weights and regret scale over epochs
 	var (
 		workerWeights = make(map[string][]alloraMath.Dec)
-		stdNorms      []alloraMath.Dec
+		regretScales  []alloraMath.Dec
 	)
 
 	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
@@ -528,10 +528,10 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 
 		topicId, block = s.FullTopicPass(workerIndexes, reputerIndexes, baseOptions...)
 
-		// Get current weight and stdnorm before processing
-		stdNorm, err := s.EmissionsKeeper().GetLatestRegretStdNorm(s.Ctx(), topicId)
+		// Get current weight and regret scale before processing
+		regretScale, err := s.EmissionsKeeper().GetLatestRegretScale(s.Ctx(), topicId)
 		require.NoError(err)
-		stdNorms = append(stdNorms, stdNorm)
+		regretScales = append(regretScales, regretScale)
 
 		// Mint rewards
 		s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
@@ -560,16 +560,16 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		s.T().Logf("Worker %d , %s Weight: %v", i, s.AddrsStr(i), currentWorkerWeights)
 	}
 
-	// Verify stdnorm evolution
-	require.Len(stdNorms, numEpochs)
-	for i := 1; i < len(stdNorms); i++ {
-		// StdNorm should adapt based on predictions
+	// Verify regret scale evolution
+	require.Len(regretScales, numEpochs)
+	for i := 1; i < len(regretScales); i++ {
+		// Regret scale should adapt based on predictions
 		require.NotEqual(
-			stdNorms[i].String(),
-			stdNorms[i-1].String(),
-			"StdNorm should change between epochs %d and %d", i-1, i,
+			regretScales[i].String(),
+			regretScales[i-1].String(),
+			"Regret scale should change between epochs %d and %d", i-1, i,
 		)
-		s.T().Logf("StdNorm: %v", stdNorms[i].String())
+		s.T().Logf("Regret scale: %v", regretScales[i].String())
 	}
 }
 
