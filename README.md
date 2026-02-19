@@ -49,9 +49,6 @@ make init
 allorad start
 ```
 
-When you run a node you have 2 options:
- - Run node and a Head, the main advantage is - you can use the head for your workers and reputers
- - Run only a node, in this case you will use Allora's heads.
 
 ## Run a Fork of Testnet/Mainnet State
 To run a fork of a testnet or mainnet in order to check changes against the database state for those networks, first set up some local `$HOME/.allorad/` config genesis, etc:
