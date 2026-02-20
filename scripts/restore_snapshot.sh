@@ -27,7 +27,8 @@ if [ ! -f "$RESTORED_FLAG" ]; then
   #* Download the archive from S3 and extract it to the /data directory
   mkdir -p "${APP_HOME}/data"
   touch "$LOGFILE"
-  rm -rf "${APP_HOME}/data"/*
+  rm -rf "${APP_HOME}/data"
+  mkdir -p "${APP_HOME}/data"
   rclone -v cat "$RCLONE_S3_NAME:$S3_BUCKET/$LATEST_BACKUP_FILE" | tar --zstd -xvf - -C "${APP_HOME}/data" > "$LOGFILE" 2>&1
   tail -n 50 "$LOGFILE"
 
