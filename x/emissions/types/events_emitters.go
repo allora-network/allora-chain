@@ -67,7 +67,7 @@ func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBun
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertInfererPayloadEventBase(bundle))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewForecasterPayloadEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewInsertInfererPayloadEvent", "error", err)
 	}
 }
 
@@ -76,7 +76,7 @@ func EmitNewInsertForecasterPayloadEvent(ctx context.Context, bundle *WorkerData
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertForecasterPayloadEventBase(bundle))
 	if err != nil {
-		sdkCtx.Logger().Warn("Error emitting NewInfererPayloadEvent", "error", err)
+		sdkCtx.Logger().Warn("Error emitting NewInsertForecasterPayloadEvent", "error", err)
 	}
 }
 
