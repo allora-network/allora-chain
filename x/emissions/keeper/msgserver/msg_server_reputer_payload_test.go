@@ -1,8 +1,6 @@
 package msgserver_test
 
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -61,35 +59,4 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhite
 	// Valid reputer nonce window, end
 	err = s.InsertReputerLossBundle(topic.GetId(), nonce, reputerIndexes)
 	s.Require().NoError(err)
-}
-
-func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature() {
-	reputerIndexes := testutil.ReturnIndexes(0, 1)
-	reputerAddr := s.Addrs(reputerIndexes[0])
-	reputerPrivateKey := s.PrivKeys(0)
-	reputerPublicKeyHex := s.PubKeyHexStr(0)
-	topicId := uint64(1)
-
-	unauthReputer := s.AddrsStr(3)
-	//nolint:exhaustruct
-	inputValueBundle := &types.InputValueBundle{
-		TopicId:             topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: 1}},
-		Reputer:             unauthReputer,
-		InfererValues:       []*types.InputWorkerAttributedValue{{Worker: s.AddrsStr(0)}},
-	}
-	valueBundleSignature := s.SignInputValueBundle(inputValueBundle, reputerPrivateKey)
-
-	// Create a InsertReputerPayloadRequest message
-	lossesMsg := &types.InsertReputerPayloadRequest{
-		Sender: reputerAddr.String(),
-		ReputerValueBundle: &types.InputReputerValueBundle{
-			ValueBundle: inputValueBundle,
-			Signature:   valueBundleSignature,
-			Pubkey:      reputerPublicKeyHex,
-		},
-	}
-
-	_, err := s.EmissionsMsgServer().InsertReputerPayload(s.Ctx(), lossesMsg)
-	s.Require().ErrorIs(err, sdkerrors.ErrUnauthorized)
 }

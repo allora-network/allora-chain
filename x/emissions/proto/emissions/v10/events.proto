@@ -181,6 +181,10 @@ message EventInsertInfererPayload {
     (gogoproto.nullable) = false
   ];
   bytes extra_data = 5;
+  repeated string values = 6 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message EventInsertForecasterPayload {

@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	reputerValueBundleBufferPool       = utils.NewBytesPool(1024, 0)
 	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
 
@@ -30,6 +29,16 @@ func ValidateDec(value alloraMath.Dec) error {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "value must be finite")
 	}
 
+	return nil
+}
+
+// ValidateDecs checks if the list of values are all valid Dec by our standards
+func ValidateDecs(values []alloraMath.Dec) error {
+	for i, val := range values {
+		if err := ValidateDec(val); err != nil {
+			return errors.Wrapf(err, "values[%d] cannot be %s", i, val.String())
+		}
+	}
 	return nil
 }
 
@@ -130,6 +139,9 @@ func (inference *Inference) Validate() error {
 	}
 	if err := ValidateDec(inference.Value); err != nil {
 		return errors.Wrap(err, "inference value is invalid")
+	}
+	if err := ValidateDecs(inference.Values); err != nil {
+		return errors.Wrap(err, "inference values are invalid")
 	}
 	// ExtraData not validated as it is not used by the chain
 	// Proof not validated as it is not used by the chain
@@ -643,30 +655,10 @@ func (bundle *InputReputerValueBundle) Validate() error {
 	if bundle.ValueBundle == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
-	pk, err := hex.DecodeString(bundle.Pubkey)
-	if err != nil || len(pk) != secp256k1.PubKeySize {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid pubkey %d", len(pk))
-	}
-	pubkey := secp256k1.PubKey(pk)
-	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
-
-	if bundle.ValueBundle.Reputer != pubKeyConvertedToAddress {
-		return errors.Wrapf(sdkerrors.ErrUnauthorized, "Reputer does not match pubkey")
-	}
 
 	// validate the value bundle
 	if err := bundle.ValueBundle.Validate(); err != nil {
 		return errors.Wrap(err, "value bundle is invalid")
-	}
-
-	buf := reputerValueBundleBufferPool.Get()
-	defer reputerValueBundleBufferPool.Put(buf)
-	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)
-	}
-	if !pubkey.VerifySignature(marshaled, bundle.Signature) {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
 	}
 
 	return nil
@@ -896,6 +888,9 @@ func (topic Topic) Validate(params Params) error {
 			topic.UnityTolerance.Gt(alloraMath.MustNewDecFromString(maxTopicUnityTolerance))) {
 		return errors.Wrapf(sdkerrors.ErrInvalidType,
 			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
+	}
+	if topic.TopicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topic.TopicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
 	}
 
 	return nil

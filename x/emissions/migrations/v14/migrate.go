@@ -10,7 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/migrations/v14/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -46,27 +48,48 @@ func MigrateTopics(
 
 	ctx.Logger().Info("MIGRATION V14: Migrating topics to add TopicType and OutputArity")
 
-	topicsToChange := make(map[string]emissionstypes.Topic)
+	topicCount := 0
 	for ; iterator.Valid(); iterator.Next() {
-		var topic emissionstypes.Topic
-		err := proto.Unmarshal(iterator.Value(), &topic)
+		var oldTopic oldtypes.Topic
+		err := proto.Unmarshal(iterator.Value(), &oldTopic)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
-		ctx.Logger().Debug("MIGRATION V14: Updating topic", "topicId", topic.Id)
+		ctx.Logger().Debug("MIGRATION V14: Updating topic", "topicId", oldTopic.Id)
 
-		topic.TopicType = emissionstypes.TopicType_TOPIC_TYPE_REGRESSION
-		topic.OutputArity = emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+		newTopic := emissionstypes.Topic{
+			Id:                       oldTopic.Id,
+			Creator:                  oldTopic.Creator,
+			Metadata:                 oldTopic.Metadata,
+			LossMethod:               oldTopic.LossMethod,
+			EpochLastEnded:           oldTopic.EpochLastEnded,
+			EpochLength:              oldTopic.EpochLength,
+			GroundTruthLag:           oldTopic.GroundTruthLag,
+			PNorm:                    oldTopic.PNorm,
+			AlphaRegret:              oldTopic.AlphaRegret,
+			AllowNegative:            oldTopic.AllowNegative,
+			Epsilon:                  oldTopic.Epsilon,
+			InitialRegret:            oldTopic.InitialRegret,
+			WorkerSubmissionWindow:   oldTopic.WorkerSubmissionWindow,
+			MeritSortitionAlpha:      oldTopic.MeritSortitionAlpha,
+			ActiveInfererQuantile:    oldTopic.ActiveInfererQuantile,
+			ActiveForecasterQuantile: oldTopic.ActiveForecasterQuantile,
+			ActiveReputerQuantile:    oldTopic.ActiveReputerQuantile,
+			CNorm:                    oldTopic.CNorm,
+			TopicType:                emissionstypes.TopicType_TOPIC_TYPE_REGRESSION,
+			OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			RequireUnity:             false,
+			UnityTolerance:           alloraMath.ZeroDec(),
+		}
 
-		topicsToChange[string(iterator.Key())] = topic
+		key := string(iterator.Key())
+
+		topicStore.Set([]byte(key), cdc.MustMarshal(&newTopic))
+		ctx.Logger().Debug("MIGRATION V14: Updated topic with TopicType and OutputArity", "topicId", newTopic.Id)
+		topicCount++
 	}
 
-	for key, topic := range topicsToChange {
-		topicStore.Set([]byte(key), cdc.MustMarshal(&topic))
-		ctx.Logger().Debug("MIGRATION V14: Updated topic with TopicType and OutputArity", "topicId", topic.Id)
-	}
-
-	ctx.Logger().Info("MIGRATION V14: Topics migration complete", "topicsUpdated", len(topicsToChange))
+	ctx.Logger().Info("MIGRATION V14: Topics migration complete", "topicsUpdated", topicCount)
 	return nil
 }

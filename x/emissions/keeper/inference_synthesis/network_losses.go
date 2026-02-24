@@ -79,7 +79,7 @@ func CalcNetworkLosses(
 	runningWeightedOneInForecasterLosses := make(map[Worker]*RunningWeightedLoss)
 
 	for _, report := range reputerReportedLosses {
-		if report == nil {
+		if report == nil || report.ReputerRequestNonce == nil || report.ReputerRequestNonce.ReputerNonce == nil {
 			continue
 		}
 		if report.TopicId != topicId {

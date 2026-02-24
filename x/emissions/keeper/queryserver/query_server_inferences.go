@@ -4,12 +4,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
@@ -69,7 +71,9 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 		return nil, err
 	}
 
-	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences}, nil
+	return &emissionstypes.GetNetworkInferencesAtBlockResponse{
+		NetworkInferences: valueBundleToNetworkInferenceBundle(networkInferences),
+	}, nil
 }
 
 // An outlier resistant version of GetNetworkInferencesAtBlock
@@ -91,7 +95,9 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 		return nil, err
 	}
 
-	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{NetworkInferences: outlierResistantNetworkInferences}, nil
+	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{
+		NetworkInferences: valueBundleToNetworkInferenceBundle(outlierResistantNetworkInferences),
+	}, nil
 }
 
 // Return full set of inferences in I_i from the chain
@@ -105,7 +111,7 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 
 	// Convert result to response
 	return &emissionstypes.GetLatestNetworkInferencesResponse{
-		NetworkInferences:    result,
+		NetworkInferences:    valueBundleToNetworkInferenceBundle(result),
 		InferenceBlockHeight: result.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
 }
@@ -123,9 +129,121 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 
 	// Convert result to response
 	return &emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse{
-		NetworkInferences:    result,
+		NetworkInferences:    valueBundleToNetworkInferenceBundle(result),
 		InferenceBlockHeight: result.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
+}
+
+// TODO: re-create network inferences store to remove this conversion logic
+func valueBundleToNetworkInferenceBundle(vb *emissionstypes.ValueBundle) *emissionstypes.NetworkInferenceBundle {
+	const label0 uint32 = 0
+
+	out := &emissionstypes.NetworkInferenceBundle{
+		TopicId: vb.TopicId,
+		Nonce:   vb.ReputerRequestNonce.ReputerNonce.BlockHeight,
+
+		CombinedValue: []*emissionstypes.LabeledValue{
+			{LabelId: label0, Value: vb.CombinedValue},
+		},
+		NaiveValue: []*emissionstypes.LabeledValue{
+			{LabelId: label0, Value: vb.NaiveValue},
+		},
+	}
+
+	// InfererValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.InfererValues); n > 0 {
+		out.InfererValues = make([]*emissionstypes.WorkerInference, n)
+		for i, v := range vb.InfererValues {
+			out.InfererValues[i] = &emissionstypes.WorkerInference{
+				Worker: v.Worker,
+				Values: []*emissionstypes.LabeledValue{
+					{LabelId: label0, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// ForecasterValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.ForecasterValues); n > 0 {
+		out.ForecasterValues = make([]*emissionstypes.WorkerInference, n)
+		for i, v := range vb.ForecasterValues {
+			out.ForecasterValues[i] = &emissionstypes.WorkerInference{
+				Worker: v.Worker,
+				Values: []*emissionstypes.LabeledValue{
+					{LabelId: label0, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererValues: []*WithheldWorkerAttributedValue -> []*OneOutInfererValue
+	if n := len(vb.OneOutInfererValues); n > 0 {
+		out.OneOutInfererValues = make([]*emissionstypes.OneOutInfererValue, n)
+		for i, v := range vb.OneOutInfererValues {
+			out.OneOutInfererValues[i] = &emissionstypes.OneOutInfererValue{
+				WithheldInferer: v.Worker,
+				CombinedInference: []*emissionstypes.LabeledValue{
+					{LabelId: label0, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutForecasterValues: []*WithheldWorkerAttributedValue -> []*OneOutForecasterValue
+	if n := len(vb.OneOutForecasterValues); n > 0 {
+		out.OneOutForecasterValues = make([]*emissionstypes.OneOutForecasterValue, n)
+		for i, v := range vb.OneOutForecasterValues {
+			out.OneOutForecasterValues[i] = &emissionstypes.OneOutForecasterValue{
+				WithheldForecaster: v.Worker,
+				CombinedInference: []*emissionstypes.LabeledValue{
+					{LabelId: label0, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneInForecasterValues: []*WorkerAttributedValue -> []*OneInForecasterValue
+	if n := len(vb.OneInForecasterValues); n > 0 {
+		out.OneInForecasterValues = make([]*emissionstypes.OneInForecasterValue, n)
+		for i, v := range vb.OneInForecasterValues {
+			out.OneInForecasterValues[i] = &emissionstypes.OneInForecasterValue{
+				Forecaster: v.Worker,
+				CombinedInference: []*emissionstypes.LabeledValue{
+					{LabelId: label0, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererForecasterValues: []*OneOutInfererForecasterValues -> []*OneOutInfererForecasterValue
+	// Old structure: per forecaster -> list of withheld-inferer values (but no explicit withheld-inferer in output).
+	// Here we emit one record per (forecaster, withheldInferer) pair.
+	if n := len(vb.OneOutInfererForecasterValues); n > 0 {
+		// pre-size approximately: sum of per-forecaster rows
+		total := 0
+		for _, row := range vb.OneOutInfererForecasterValues {
+			total += len(row.OneOutInfererValues)
+		}
+		if total > 0 {
+			out.OneOutInfererForecasterValues = make([]*emissionstypes.OneOutInfererForecasterValue, 0, total)
+			for _, row := range vb.OneOutInfererForecasterValues {
+				fc := row.Forecaster
+				for _, cell := range row.OneOutInfererValues {
+					out.OneOutInfererForecasterValues = append(out.OneOutInfererForecasterValues,
+						&emissionstypes.OneOutInfererForecasterValue{
+							Forecaster:      fc,
+							WithheldInferer: cell.Worker,
+							CombinedInference: []*emissionstypes.LabeledValue{
+								{LabelId: label0, Value: cell.Value},
+							},
+						},
+					)
+				}
+			}
+		}
+	}
+
+	return out
 }
 
 func (qs queryServer) GetLatestTopicInferences(ctx context.Context, req *emissionstypes.GetLatestTopicInferencesRequest) (_ *emissionstypes.GetLatestTopicInferencesResponse, err error) {

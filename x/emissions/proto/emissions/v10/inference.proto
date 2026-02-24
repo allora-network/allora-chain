@@ -15,14 +15,12 @@ message Inference {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-
+  bytes extra_data = 5;
+  string proof = 6;
   repeated string values = 7 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-
-  bytes extra_data = 5;
-  string proof = 6;
 }
 
 message Inferences {

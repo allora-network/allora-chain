@@ -6,6 +6,7 @@ import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "emissions/v10/inference.proto";
 import "emissions/v10/topic.proto";
+import "emissions/v10/network_inference.proto";
 import "emissions/v3/node.proto";
 import "emissions/v3/nonce.proto";
 import "emissions/v3/score.proto";
@@ -13,7 +14,6 @@ import "emissions/v3/stake.proto";
 import "emissions/v3/types.proto";
 import "emissions/v3/value_bundle.proto";
 import "emissions/v3/worker.proto";
-// v8
 import "emissions/v9/params.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
@@ -931,11 +931,6 @@ message GetActiveTopicsRequest {
   emissions.v3.SimpleCursorPaginationRequest pagination = 1;
 }
 
-message GetActiveTopicsResponse {
-  repeated Topic topics = 1;
-  emissions.v3.SimpleCursorPaginationResponse pagination = 2;
-}
-
 // Returns the inferences on a topic posted at a block height
 message GetInferencesAtBlockRequest {
   uint64 topic_id = 1;
@@ -1104,18 +1099,18 @@ message IsReputerNonceUnfulfilledResponse {
 }
 
 message GetNetworkInferencesAtBlockResponse {
-  emissions.v3.ValueBundle network_inferences = 1;
+  NetworkInferenceBundle network_inferences = 1;
 }
 
 message GetNetworkInferencesAtBlockOutlierResistantResponse {
-  emissions.v3.ValueBundle network_inferences = 1;
+  NetworkInferenceBundle network_inferences = 1;
 }
 
 message GetLatestNetworkInferencesResponse {
   reserved 2, 3, 4, 6, 7, 8;
   reserved "forecast_implied_inferences", "inferer_weights", "forecaster_weights", "confidence_interval_raw_percentiles", "confidence_interval_values", "loss_block_height";
 
-  emissions.v3.ValueBundle network_inferences = 1;
+  NetworkInferenceBundle network_inferences = 1;
   int64 inference_block_height = 5;
 }
 
@@ -1123,7 +1118,7 @@ message GetLatestNetworkInferencesOutlierResistantResponse {
   reserved 2, 3, 4, 6, 7, 8;
   reserved "forecast_implied_inferences", "inferer_weights", "forecaster_weights", "confidence_interval_raw_percentiles", "confidence_interval_values", "loss_block_height";
 
-  emissions.v3.ValueBundle network_inferences = 1;
+  NetworkInferenceBundle network_inferences = 1;
   int64 inference_block_height = 5;
 }
 

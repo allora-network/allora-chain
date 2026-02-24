@@ -62,6 +62,7 @@ func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
 		Nonce:     bundle.Nonce.BlockHeight,
 		TopicId:   bundle.TopicId,
 		Value:     bundle.InferenceForecastsBundle.Inference.Value,
+		Values:    bundle.InferenceForecastsBundle.Inference.Values,
 		ExtraData: bundle.InferenceForecastsBundle.Inference.ExtraData,
 	}
 }

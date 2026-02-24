@@ -63,10 +63,10 @@ func TestInputInferenceConvert(t *testing.T) {
 			require.Equal(t, tt.input.ExtraData, got.ExtraData)
 			require.Equal(t, tt.input.Proof, got.Proof)
 			// Check value conversion
-			dec, _ := tt.input.Value.ToDec()
+			dec := tt.input.Value.ToDec()
 			require.True(t, dec.Equal(got.Value))
 			for i := range got.Values {
-				decv, _ := tt.input.Values[i].ToDec()
+				decv := tt.input.Values[i].ToDec()
 				require.True(t, decv.Equal(got.Values[i]))
 			}
 		})
@@ -107,7 +107,7 @@ func TestInputForecastElementConvert(t *testing.T) {
 				return
 			}
 			require.Equal(t, tt.input.Inferer, got.Inferer)
-			boundedDec, err := tt.input.Value.ToDec()
+			boundedDec := tt.input.Value.ToDec()
 			require.NoError(t, err)
 			require.True(t, boundedDec.Equal(got.Value))
 		})
@@ -336,11 +336,11 @@ func TestInputValueBundleConvert(t *testing.T) {
 			require.Equal(t, tt.input.ExtraData, got.ExtraData)
 
 			// Check decimal conversions
-			combinedValue, err := tt.input.CombinedValue.ToDec()
+			combinedValue := tt.input.CombinedValue.ToDec()
 			require.NoError(t, err)
 			require.True(t, combinedValue.Equal(got.CombinedValue))
 
-			naiveValue, err := tt.input.NaiveValue.ToDec()
+			naiveValue := tt.input.NaiveValue.ToDec()
 			require.NoError(t, err)
 			require.True(t, naiveValue.Equal(got.NaiveValue))
 

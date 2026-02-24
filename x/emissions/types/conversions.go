@@ -11,10 +11,10 @@ func NewInferenceFromInput(bi *InputInference) (*Inference, error) {
 	if bi == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, _ := bi.Value.ToDec()
+	dec := bi.Value.ToDec()
 	decs := make([]alloraMath.Dec, len(bi.Values))
 	for i := range bi.Values {
-		decs[i], _ = bi.Values[i].ToDec()
+		decs[i] = bi.Values[i].ToDec()
 	}
 	inference := &Inference{
 		TopicId:     bi.TopicId,
@@ -36,15 +36,12 @@ func NewForecastElementFromInput(bfe *InputForecastElement) (*ForecastElement, e
 	if bfe == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, err := bfe.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
-	}
+	dec := bfe.Value.ToDec()
 	forecastElement := &ForecastElement{
 		Inferer: bfe.Inferer,
 		Value:   dec,
 	}
-	err = forecastElement.Validate()
+	err := forecastElement.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate forecast element")
 	}
@@ -138,15 +135,12 @@ func NewWorkerAttributedValueFromInput(bwav *InputWorkerAttributedValue) (*Worke
 	if bwav == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, err := bwav.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
-	}
+	dec := bwav.Value.ToDec()
 	workerAttributedValue := &WorkerAttributedValue{
 		Worker: bwav.Worker,
 		Value:  dec,
 	}
-	err = workerAttributedValue.Validate()
+	err := workerAttributedValue.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate worker attributed value")
 	}
@@ -158,15 +152,12 @@ func NewWithheldWorkerAttributedValueFromInput(bwwav *InputWithheldWorkerAttribu
 	if bwwav == nil {
 		return nil, ErrInvalidValue
 	}
-	dec, err := bwwav.Value.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert value")
-	}
+	dec := bwwav.Value.ToDec()
 	withheldWorkerAttributedValue := &WithheldWorkerAttributedValue{
 		Worker: bwwav.Worker,
 		Value:  dec,
 	}
-	err = withheldWorkerAttributedValue.Validate()
+	err := withheldWorkerAttributedValue.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate withheld worker attributed value")
 	}
@@ -203,15 +194,8 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 		return nil, ErrInvalidValue
 	}
 
-	combinedValue, err := bvb.CombinedValue.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert combined value")
-	}
-
-	naiveValue, err := bvb.NaiveValue.ToDec()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert naive value")
-	}
+	combinedValue := bvb.CombinedValue.ToDec()
+	naiveValue := bvb.NaiveValue.ToDec()
 
 	infererValues := make([]*WorkerAttributedValue, len(bvb.InfererValues))
 	for i, val := range bvb.InfererValues {
@@ -281,15 +265,15 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 		OneInForecasterValues:         oneInForecasterValues,
 		OneOutInfererForecasterValues: oneOutInfererForecasterValues,
 	}
-	err = valueBundle.Validate()
+	err := valueBundle.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate value bundle")
 	}
 	return valueBundle, nil
 }
 
-// NewInputReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
-func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*LossBundle, error) {
+// NewLossBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
+func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*LossBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
 	}

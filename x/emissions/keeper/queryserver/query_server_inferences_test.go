@@ -638,8 +638,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 
 	require.NoError(err)
 	require.NotNil(response)
-	require.Equal(response.NetworkInferences.Reputer, "")
-	require.Equal(response.NetworkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight, int64(0))
+	require.Equal(response.NetworkInferences.Nonce, int64(0))
 }
 
 // Helper function to generate inferences

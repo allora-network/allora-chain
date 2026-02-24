@@ -27,7 +27,7 @@ message NetworkInferenceBundle {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  int64 nonce = 2;
 
   // combined inference I_i
   repeated LabeledValue combined_value = 3;

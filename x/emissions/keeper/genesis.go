@@ -449,22 +449,18 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 
 	// AllLossBundles []*TopicIdBlockHeightReputerValueBundles
 	for _, topicIdBlockHeightReputerValueBundles := range data.AllLossBundles {
-		lossBundles := types.LossBundles(topicIdBlockHeightReputerValueBundles.GetReputerValueBundles())
-		if topicIdBlockHeightReputerValueBundles != nil {
-			if err := lossBundles.Validate(); err != nil {
-				return errors.Wrap(err, "reputer value bundles validation failed")
-			}
-			reputerValueBundles := make([]*types.ReputerValueBundle, len(lossBundles))
-			for i := range lossBundles {
-				reputerValueBundles[i] = &types.ReputerValueBundle{
-					ValueBundle: lossBundles[i],
-				}
-			}
-			if err := k.allLossBundles.Set(ctx,
-				collections.Join(topicIdBlockHeightReputerValueBundles.TopicId, topicIdBlockHeightReputerValueBundles.BlockHeight),
-				types.ReputerValueBundles{ReputerValueBundles: reputerValueBundles}); err != nil {
-				return errors.Wrap(err, "error setting allLossBundles")
-			}
+		if topicIdBlockHeightReputerValueBundles == nil ||
+			topicIdBlockHeightReputerValueBundles.ReputerValueBundles == nil ||
+			len(topicIdBlockHeightReputerValueBundles.ReputerValueBundles.ReputerValueBundles) == 0 {
+			continue
+		}
+		if err := topicIdBlockHeightReputerValueBundles.GetReputerValueBundles().Validate(); err != nil {
+			return errors.Wrap(err, "reputer value bundles validation failed")
+		}
+		if err := k.allLossBundles.Set(ctx,
+			collections.Join(topicIdBlockHeightReputerValueBundles.TopicId, topicIdBlockHeightReputerValueBundles.BlockHeight),
+			*topicIdBlockHeightReputerValueBundles.GetReputerValueBundles()); err != nil {
+			return errors.Wrap(err, "error setting allLossBundles")
 		}
 	}
 
@@ -835,11 +831,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 
 	// LossBundles
 	for _, bundle := range data.LossBundles {
-		if bundle != nil {
+		if bundle != nil && bundle.GetReputerValueBundle() != nil {
 			key := collections.Join(bundle.TopicId, bundle.Reputer)
-			if err := k.lossBundles.Set(ctx, key, types.ReputerValueBundle{
-				ValueBundle: bundle.ReputerValueBundle,
-			}); err != nil {
+			if err := k.lossBundles.Set(ctx, key, *bundle.GetReputerValueBundle()); err != nil {
 				return errors.Wrap(err, "error setting loss bundle")
 			}
 		}
@@ -1817,7 +1811,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		topicIdBlockHeightValueBundles := types.TopicIdBlockHeightReputerValueBundles{
 			TopicId:             keyValue.Key.K1(),
 			BlockHeight:         keyValue.Key.K2(),
-			ReputerValueBundles: reputerValueBundles,
+			ReputerValueBundles: &value,
 		}
 		allLossBundles = append(allLossBundles, &topicIdBlockHeightValueBundles)
 	}
@@ -2297,7 +2291,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		lossBundles = append(lossBundles, &types.TopicIdReputerReputerValueBundle{
 			TopicId:            keyValue.Key.K1(),
 			Reputer:            keyValue.Key.K2(),
-			ReputerValueBundle: keyValue.Value.GetValueBundle(),
+			ReputerValueBundle: &keyValue.Value,
 		})
 	}
 

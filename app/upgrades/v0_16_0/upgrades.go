@@ -10,7 +10,6 @@ import (
 
 	"github.com/allora-network/allora-chain/app/keepers"
 	"github.com/allora-network/allora-chain/app/upgrades"
-	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
 )
 
 const (
@@ -20,7 +19,7 @@ const (
 var Upgrade = upgrades.Upgrade{
 	UpgradeName:          UpgradeName,
 	CreateUpgradeHandler: CreateUpgradeHandler,
-	StoreUpgrades:        storetypes.StoreUpgrades{Added: []string{schedulertypes.StoreKey}, Renamed: nil, Deleted: nil},
+	StoreUpgrades:        storetypes.StoreUpgrades{Added: nil, Renamed: nil, Deleted: nil},
 }
 
 func CreateUpgradeHandler(

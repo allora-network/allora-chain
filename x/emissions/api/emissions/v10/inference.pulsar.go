@@ -65,9 +65,9 @@ var (
 	fd_Inference_block_height protoreflect.FieldDescriptor
 	fd_Inference_inferer      protoreflect.FieldDescriptor
 	fd_Inference_value        protoreflect.FieldDescriptor
-	fd_Inference_values       protoreflect.FieldDescriptor
 	fd_Inference_extra_data   protoreflect.FieldDescriptor
 	fd_Inference_proof        protoreflect.FieldDescriptor
+	fd_Inference_values       protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -77,9 +77,9 @@ func init() {
 	fd_Inference_block_height = md_Inference.Fields().ByName("block_height")
 	fd_Inference_inferer = md_Inference.Fields().ByName("inferer")
 	fd_Inference_value = md_Inference.Fields().ByName("value")
-	fd_Inference_values = md_Inference.Fields().ByName("values")
 	fd_Inference_extra_data = md_Inference.Fields().ByName("extra_data")
 	fd_Inference_proof = md_Inference.Fields().ByName("proof")
+	fd_Inference_values = md_Inference.Fields().ByName("values")
 }
 
 var _ protoreflect.Message = (*fastReflection_Inference)(nil)
@@ -171,12 +171,6 @@ func (x *fastReflection_Inference) Range(f func(protoreflect.FieldDescriptor, pr
 			return
 		}
 	}
-	if len(x.Values) != 0 {
-		value := protoreflect.ValueOfList(&_Inference_7_list{list: &x.Values})
-		if !f(fd_Inference_values, value) {
-			return
-		}
-	}
 	if len(x.ExtraData) != 0 {
 		value := protoreflect.ValueOfBytes(x.ExtraData)
 		if !f(fd_Inference_extra_data, value) {
@@ -186,6 +180,12 @@ func (x *fastReflection_Inference) Range(f func(protoreflect.FieldDescriptor, pr
 	if x.Proof != "" {
 		value := protoreflect.ValueOfString(x.Proof)
 		if !f(fd_Inference_proof, value) {
+			return
+		}
+	}
+	if len(x.Values) != 0 {
+		value := protoreflect.ValueOfList(&_Inference_7_list{list: &x.Values})
+		if !f(fd_Inference_values, value) {
 			return
 		}
 	}
@@ -212,12 +212,12 @@ func (x *fastReflection_Inference) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.Inferer != ""
 	case "emissions.v10.Inference.value":
 		return x.Value != ""
-	case "emissions.v10.Inference.values":
-		return len(x.Values) != 0
 	case "emissions.v10.Inference.extra_data":
 		return len(x.ExtraData) != 0
 	case "emissions.v10.Inference.proof":
 		return x.Proof != ""
+	case "emissions.v10.Inference.values":
+		return len(x.Values) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.Inference"))
@@ -242,12 +242,12 @@ func (x *fastReflection_Inference) Clear(fd protoreflect.FieldDescriptor) {
 		x.Inferer = ""
 	case "emissions.v10.Inference.value":
 		x.Value = ""
-	case "emissions.v10.Inference.values":
-		x.Values = nil
 	case "emissions.v10.Inference.extra_data":
 		x.ExtraData = nil
 	case "emissions.v10.Inference.proof":
 		x.Proof = ""
+	case "emissions.v10.Inference.values":
+		x.Values = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.Inference"))
@@ -276,18 +276,18 @@ func (x *fastReflection_Inference) Get(descriptor protoreflect.FieldDescriptor) 
 	case "emissions.v10.Inference.value":
 		value := x.Value
 		return protoreflect.ValueOfString(value)
-	case "emissions.v10.Inference.values":
-		if len(x.Values) == 0 {
-			return protoreflect.ValueOfList(&_Inference_7_list{})
-		}
-		listValue := &_Inference_7_list{list: &x.Values}
-		return protoreflect.ValueOfList(listValue)
 	case "emissions.v10.Inference.extra_data":
 		value := x.ExtraData
 		return protoreflect.ValueOfBytes(value)
 	case "emissions.v10.Inference.proof":
 		value := x.Proof
 		return protoreflect.ValueOfString(value)
+	case "emissions.v10.Inference.values":
+		if len(x.Values) == 0 {
+			return protoreflect.ValueOfList(&_Inference_7_list{})
+		}
+		listValue := &_Inference_7_list{list: &x.Values}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.Inference"))
@@ -316,14 +316,14 @@ func (x *fastReflection_Inference) Set(fd protoreflect.FieldDescriptor, value pr
 		x.Inferer = value.Interface().(string)
 	case "emissions.v10.Inference.value":
 		x.Value = value.Interface().(string)
-	case "emissions.v10.Inference.values":
-		lv := value.List()
-		clv := lv.(*_Inference_7_list)
-		x.Values = *clv.list
 	case "emissions.v10.Inference.extra_data":
 		x.ExtraData = value.Bytes()
 	case "emissions.v10.Inference.proof":
 		x.Proof = value.Interface().(string)
+	case "emissions.v10.Inference.values":
+		lv := value.List()
+		clv := lv.(*_Inference_7_list)
+		x.Values = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.Inference"))
@@ -383,13 +383,13 @@ func (x *fastReflection_Inference) NewField(fd protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfString("")
 	case "emissions.v10.Inference.value":
 		return protoreflect.ValueOfString("")
-	case "emissions.v10.Inference.values":
-		list := []string{}
-		return protoreflect.ValueOfList(&_Inference_7_list{list: &list})
 	case "emissions.v10.Inference.extra_data":
 		return protoreflect.ValueOfBytes(nil)
 	case "emissions.v10.Inference.proof":
 		return protoreflect.ValueOfString("")
+	case "emissions.v10.Inference.values":
+		list := []string{}
+		return protoreflect.ValueOfList(&_Inference_7_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.Inference"))
@@ -473,12 +473,6 @@ func (x *fastReflection_Inference) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if len(x.Values) > 0 {
-			for _, s := range x.Values {
-				l = len(s)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
 		l = len(x.ExtraData)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
@@ -486,6 +480,12 @@ func (x *fastReflection_Inference) ProtoMethods() *protoiface.Methods {
 		l = len(x.Proof)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if len(x.Values) > 0 {
+			for _, s := range x.Values {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -714,38 +714,6 @@ func (x *fastReflection_Inference) ProtoMethods() *protoiface.Methods {
 				}
 				x.Value = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 7:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Values = append(x.Values, string(dAtA[iNdEx:postIndex]))
-				iNdEx = postIndex
 			case 5:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ExtraData", wireType)
@@ -811,6 +779,38 @@ func (x *fastReflection_Inference) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				x.Proof = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Values = append(x.Values, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -1363,9 +1363,9 @@ type Inference struct {
 	BlockHeight int64    `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	Inferer     string   `protobuf:"bytes,3,opt,name=inferer,proto3" json:"inferer,omitempty"`
 	Value       string   `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
-	Values      []string `protobuf:"bytes,7,rep,name=values,proto3" json:"values,omitempty"`
 	ExtraData   []byte   `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
 	Proof       string   `protobuf:"bytes,6,opt,name=proof,proto3" json:"proof,omitempty"`
+	Values      []string `protobuf:"bytes,7,rep,name=values,proto3" json:"values,omitempty"`
 }
 
 func (x *Inference) Reset() {
@@ -1416,13 +1416,6 @@ func (x *Inference) GetValue() string {
 	return ""
 }
 
-func (x *Inference) GetValues() []string {
-	if x != nil {
-		return x.Values
-	}
-	return nil
-}
-
 func (x *Inference) GetExtraData() []byte {
 	if x != nil {
 		return x.ExtraData
@@ -1435,6 +1428,13 @@ func (x *Inference) GetProof() string {
 		return x.Proof
 	}
 	return ""
+}
+
+func (x *Inference) GetValues() []string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
 }
 
 type Inferences struct {
@@ -1490,15 +1490,15 @@ var file_emissions_v10_inference_proto_rawDesc = []byte{
 	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
 	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
 	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
-	0x65, 0x63, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x4f, 0x0a, 0x06, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
-	0x65, 0x63, 0x52, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78,
-	0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09,
-	0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f,
-	0x6f, 0x66, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x3a,
+	0x65, 0x63, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74,
+	0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65,
+	0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f, 0x6f,
+	0x66, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x12, 0x4f,
+	0x0a, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x3a,
 	0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x46, 0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
 	0x63, 0x65, 0x73, 0x12, 0x38, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
 	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,

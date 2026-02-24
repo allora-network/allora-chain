@@ -232,8 +232,8 @@ func (bd BoundedExp40Dec) MarshalTo(data []byte) (int, error) {
 	return bd.dec.MarshalTo(data)
 }
 
-func (bd BoundedExp40Dec) ToDec() (Dec, error) {
-	return bd.dec, nil
+func (bd BoundedExp40Dec) ToDec() Dec {
+	return bd.dec
 }
 
 func (bd BoundedExp40Dec) Equal(y BoundedExp40Dec) bool {
