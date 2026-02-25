@@ -2053,8 +2053,11 @@ func (k *Keeper) GetReputerLatestLossByTopicId(
 ) (types.LossBundle, error) {
 	key := collections.Join(topicId, reputer)
 	valueBundle, err := k.lossBundles.Get(ctx, key)
-	if err != nil || valueBundle.ValueBundle == nil {
+	if err != nil {
 		return types.LossBundle{}, err
+	}
+	if valueBundle.ValueBundle == nil {
+		return types.LossBundle{}, errorsmod.Wrapf(types.ErrInvalidValue, "value_bundle is nil")
 	}
 	return *valueBundle.GetValueBundle(), err
 }

@@ -66,13 +66,17 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	networkInferences, err := qs.k.GetNetworkInferences(ctx, req.TopicId, req.BlockHeightLastInference)
+	result, err := qs.k.GetNetworkInferences(ctx, req.TopicId, req.BlockHeightLastInference)
 	if err != nil {
 		return nil, err
 	}
 
+	if result.ReputerRequestNonce == nil || result.ReputerRequestNonce.ReputerNonce == nil {
+		return nil, status.Error(codes.Internal, "invalid nonce")
+	}
+
 	return &emissionstypes.GetNetworkInferencesAtBlockResponse{
-		NetworkInferences: valueBundleToNetworkInferenceBundle(networkInferences),
+		NetworkInferences: valueBundleToNetworkInferenceBundle(result),
 	}, nil
 }
 
@@ -90,13 +94,17 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	outlierResistantNetworkInferences, err := qs.k.GetOutlierResistantNetworkInferences(ctx, req.TopicId, req.BlockHeightLastInference)
+	result, err := qs.k.GetOutlierResistantNetworkInferences(ctx, req.TopicId, req.BlockHeightLastInference)
 	if err != nil {
 		return nil, err
 	}
 
+	if result.ReputerRequestNonce == nil || result.ReputerRequestNonce.ReputerNonce == nil {
+		return nil, status.Error(codes.Internal, "invalid nonce")
+	}
+
 	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{
-		NetworkInferences: valueBundleToNetworkInferenceBundle(outlierResistantNetworkInferences),
+		NetworkInferences: valueBundleToNetworkInferenceBundle(result),
 	}, nil
 }
 
@@ -107,6 +115,10 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 	result, err := qs.k.GetLatestNetworkInferences(ctx, req.TopicId, false)
 	if err != nil {
 		return nil, err
+	}
+
+	if result.ReputerRequestNonce == nil || result.ReputerRequestNonce.ReputerNonce == nil {
+		return nil, status.Error(codes.Internal, "invalid nonce")
 	}
 
 	// Convert result to response
@@ -127,6 +139,10 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 		return nil, err
 	}
 
+	if result.ReputerRequestNonce == nil || result.ReputerRequestNonce.ReputerNonce == nil {
+		return nil, status.Error(codes.Internal, "invalid nonce")
+	}
+
 	// Convert result to response
 	return &emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse{
 		NetworkInferences:    valueBundleToNetworkInferenceBundle(result),
@@ -137,10 +153,6 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 // TODO: re-create network inferences store to remove this conversion logic
 func valueBundleToNetworkInferenceBundle(vb *emissionstypes.ValueBundle) *emissionstypes.NetworkInferenceBundle {
 	const label0 uint32 = 0
-
-	if vb == nil || vb.ReputerRequestNonce == nil || vb.ReputerRequestNonce.ReputerNonce == nil {
-		return nil
-	}
 
 	//nolint:exhaustruct
 	out := &emissionstypes.NetworkInferenceBundle{
