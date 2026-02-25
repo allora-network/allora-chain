@@ -142,6 +142,7 @@ func valueBundleToNetworkInferenceBundle(vb *emissionstypes.ValueBundle) *emissi
 		return nil
 	}
 
+	//nolint:exhaustruct
 	out := &emissionstypes.NetworkInferenceBundle{
 		TopicId: vb.TopicId,
 		Nonce:   vb.ReputerRequestNonce.ReputerNonce.BlockHeight,

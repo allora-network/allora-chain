@@ -70,6 +70,6 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
 		"Topic TopicType should be %s, got %s", emissionstypes.TopicType_TOPIC_TYPE_REGRESSION.String(), gotTopic.TopicType.String())
 	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotTopic.OutputArity,
 		"Topic OutputArity should be %s, got %s", emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE.String(), gotTopic.OutputArity.String())
-	s.Require().Equal(false, gotTopic.RequireUnity, "Topic RequireUnity should be false, got %v", gotTopic.RequireUnity)
+	s.Require().Falsef(gotTopic.RequireUnity, "Topic RequireUnity should be false, got %v", gotTopic.RequireUnity)
 	s.Require().Equal("0", gotTopic.UnityTolerance.String(), "Topic UnityTolerance should be 0, got %s", gotTopic.UnityTolerance.String())
 }
