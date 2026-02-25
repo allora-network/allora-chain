@@ -320,10 +320,11 @@ func createAndSendReputerPayloads(
 	ctx := context.Background()
 	for _, reputer := range reputers {
 		valueBundle := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
-		signedValueBundle := signInputReputerValueBundle(m, reputer, valueBundle)
 		lossesMsg := &emissionstypes.InsertReputerPayloadRequest{
-			Sender:             reputer.addr,
-			ReputerValueBundle: signedValueBundle,
+			Sender: reputer.addr,
+			ReputerValueBundle: &emissionstypes.InputReputerValueBundle{
+				ValueBundle: &valueBundle,
+			},
 		}
 
 		txResp, err := m.Client.BroadcastTx(ctx, reputer.acc, lossesMsg)
@@ -378,30 +379,6 @@ func createReputerValueBundle(
 		},
 		OneOutInfererForecasterValues: nil,
 	}
-}
-
-func signInputReputerValueBundle(
-	m *testcommon.TestConfig,
-	reputer Actor,
-	valueBundle emissionstypes.InputValueBundle,
-) *emissionstypes.InputReputerValueBundle {
-	// Sign
-	src := make([]byte, 0)
-	src, err := valueBundle.XXX_Marshal(src, true)
-	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
-
-	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(reputer.name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	require.NoError(m.T, err, "Sign should not return an error")
-	reputerPublicKeyBytes := pubKey.Bytes()
-
-	// Create a InsertReputerPayloadRequest message
-	reputerValueBundle := &emissionstypes.InputReputerValueBundle{
-		ValueBundle: &valueBundle,
-		Signature:   valueBundleSignature,
-		Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
-	}
-
-	return reputerValueBundle
 }
 
 // for every worker, generate a worker attributed value

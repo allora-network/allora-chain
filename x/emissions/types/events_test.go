@@ -534,7 +534,7 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	assertEventValueBundle(t, val.GetValue(), networkInferences)
 }
 
-// nolint:exhaustruct
+//nolint:exhaustruct
 func TestValueBundleToEventValueBundleBase(t *testing.T) {
 	const maxInferers = 32
 

@@ -30,10 +30,10 @@ index 7cc8ee97..e99ddb32 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -41,6 +41,7 @@ var (
- 	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
- 	_ appmodule.AppModule     = AppModule{} // nolint: exhaustruct
- 	_ appmodule.HasEndBlocker = AppModule{} // nolint: exhaustruct
-+	_ module.HasInvariants    = AppModule{} //nolint: exhaustruct
+ 	_ module.HasGenesis       = AppModule{} //nolint:exhaustruct
+ 	_ appmodule.AppModule     = AppModule{} //nolint:exhaustruct
+ 	_ appmodule.HasEndBlocker = AppModule{} //nolint:exhaustruct
++	_ module.HasInvariants    = AppModule{} //nolint:exhaustruct
  )
  
  // ConsensusVersion defines the current module consensus version.

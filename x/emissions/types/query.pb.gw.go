@@ -11545,7 +11545,7 @@ var (
 
 	pattern_QueryService_GetTotalRewardToDistribute_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v10", "total_reward_to_distribute"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_QueryService_GetNaiveInfererNetworkRegret_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v10", "native_inferer_network_regret"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_QueryService_GetNaiveInfererNetworkRegret_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v10", "naive_inferer_network_regret"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_QueryService_GetOneOutInfererInfererNetworkRegret_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v10", "one_out_inferer_inferer_network_regret"}, "", runtime.AssumeColonVerbOpt(false)))
 

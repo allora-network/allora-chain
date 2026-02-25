@@ -121,7 +121,7 @@ func NCalcEma(
 // Used for deterministic ranging of maps
 func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 	keys := make([]K, 0, len(m))
-	for k := range m { // nolint: maprange // reason: iteration to array before sorting
+	for k := range m { //nolint:maprange // reason: iteration to array before sorting
 		keys = append(keys, k)
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
@@ -136,7 +136,7 @@ func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 func GetSortedElementsByDecWeightDesc[K cmp.Ordered](m map[K]*Dec) []K {
 	// Create a new array that only contains unique elements that are in the map
 	newL := make([]K, 0)
-	for id := range m { // nolint: maprange // reason: iteration to array before sorting
+	for id := range m { //nolint:maprange // reason: iteration to array before sorting
 		newL = append(newL, id)
 	}
 

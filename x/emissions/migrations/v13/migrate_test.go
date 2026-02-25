@@ -32,7 +32,7 @@ func (s *EmissionsV13MigrationTestSuite) TestMigrateParams() {
 	defaultParams := emissionstypes.DefaultParams()
 	oldCNorm := alloraMath.MustNewDecFromString("0.75")
 
-	paramsOld := oldV11Types.Params{ //nolint: exhaustruct // this is an old version of the params
+	paramsOld := oldV11Types.Params{ //nolint:exhaustruct // this is an old version of the params
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
@@ -228,7 +228,7 @@ func (s *EmissionsV13MigrationTestSuite) TestFullMigration() {
 	defaultParams := emissionstypes.DefaultParams()
 	oldCNorm := alloraMath.MustNewDecFromString("0.65")
 
-	paramsOld := oldV11Types.Params{ //nolint: exhaustruct // this is an old version of the params
+	paramsOld := oldV11Types.Params{ //nolint:exhaustruct // this is an old version of the params
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,

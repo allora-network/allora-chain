@@ -281,7 +281,7 @@ message EventInsertReputerPayload {
   uint64 topic_id = 1;
   int64 nonce = 2;
   string reputer = 3;
-  EventValueBundle bundle = 5;
+  EventValueBundle bundle = 4;
 }
 
 message EventReputerRegistered {

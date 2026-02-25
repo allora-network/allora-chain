@@ -138,6 +138,10 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 func valueBundleToNetworkInferenceBundle(vb *emissionstypes.ValueBundle) *emissionstypes.NetworkInferenceBundle {
 	const label0 uint32 = 0
 
+	if vb == nil || vb.ReputerRequestNonce == nil || vb.ReputerRequestNonce.ReputerNonce == nil {
+		return nil
+	}
+
 	out := &emissionstypes.NetworkInferenceBundle{
 		TopicId: vb.TopicId,
 		Nonce:   vb.ReputerRequestNonce.ReputerNonce.BlockHeight,

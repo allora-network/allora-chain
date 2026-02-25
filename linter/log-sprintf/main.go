@@ -7,7 +7,7 @@ import (
 	"golang.org/x/tools/go/analysis/singlechecker"
 )
 
-var Analyzer = &analysis.Analyzer{ //nolint: exhaustruct
+var Analyzer = &analysis.Analyzer{ //nolint:exhaustruct
 	Name: "log_sprintf",
 	Doc:  "checks for inefficient use of fmt.Sprintf inside logging functions",
 	Run:  run,
@@ -60,7 +60,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			return true
 		})
 	}
-	return nil, nil //nolint: nilnil
+	return nil, nil //nolint:nilnil
 }
 
 func main() {

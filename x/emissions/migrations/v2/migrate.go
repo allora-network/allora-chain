@@ -84,7 +84,7 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			newWorkerSubmissionWindow = max(1, oldMsg.EpochLength/2)
 		}
 
-		newMsg := types.Topic{ // nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
+		newMsg := types.Topic{ //nolint:exhaustruct // not sure if safe to fix, also this upgrade has already happened.
 			Id:                     oldMsg.Id,
 			Creator:                oldMsg.Creator,
 			Metadata:               oldMsg.Metadata,

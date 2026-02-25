@@ -160,7 +160,7 @@ func NewInsertReputerPayloadEventBase(bundle *LossBundle) proto.Message {
 }
 
 func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
-	// nolint:exhaustruct
+	//nolint:exhaustruct
 	evb := &EventValueBundle{
 		ExtraData:     bundle.ExtraData,
 		CombinedValue: bundle.CombinedValue,

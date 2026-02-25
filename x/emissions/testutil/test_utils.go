@@ -495,7 +495,7 @@ func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, worker
 
 	for i, workerIdx := range workerIndexes {
 		// Generate random inference value between 0.1 and 0.25
-		// nolint:gosec
+		//nolint:gosec
 		inferenceValueStr := strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
 		if hasWorkerValues {
 			inferenceValueStr = workerValues[i].Value

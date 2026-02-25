@@ -709,7 +709,7 @@ func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScoreEdgeCases() {
 		{
 			name: "single score",
 			scores: []types.Score{
-				{Score: alloraMath.MustNewDecFromString("0.5")}, // nolint:exhaustruct
+				{Score: alloraMath.MustNewDecFromString("0.5")}, //nolint:exhaustruct
 			},
 			expectedError: false,
 			expectedScore: "0.5", // With single score, no std dev calculation possible, returns the score

@@ -183,27 +183,10 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 		OneOutInfererForecasterValues: nil,
 	}
 
-	// Sign
-	src := make([]byte, 0)
-	src, err := reputerValueBundle.XXX_Marshal(src, true)
-	// require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
-	if err != nil {
-		return err
-	}
-
-	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(m.AliceAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	// require.NoError(m.T, err, "Sign should not return an error")
-	if err != nil {
-		return err
-	}
-	reputerPublicKeyBytes := pubKey.Bytes()
-
 	lossesMsg := &types.InsertReputerPayloadRequest{
 		Sender: reputerAddr,
 		ReputerValueBundle: &types.InputReputerValueBundle{
 			ValueBundle: reputerValueBundle,
-			Signature:   valueBundleSignature,
-			Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
 		},
 	}
 

@@ -100,7 +100,7 @@ func (s *WeightsTestSuite) TestNormalizeWeights() {
 			s.Require().NoError(err)
 
 			// Verify each weight matches expected
-			for addr, expectedWeight := range tc.expected { // nolint: maprange // reason: order not relevant
+			for addr, expectedWeight := range tc.expected { //nolint:maprange // reason: order not relevant
 				var actualWeight alloraMath.Dec
 				if weight, ok := tc.weights.Inferers[addr]; ok {
 					actualWeight = weight
@@ -116,11 +116,11 @@ func (s *WeightsTestSuite) TestNormalizeWeights() {
 
 			// Verify sum is 1.0
 			sum := alloraMath.ZeroDec()
-			for _, w := range tc.weights.Inferers { // nolint: maprange // reason: order not relevant
+			for _, w := range tc.weights.Inferers { //nolint:maprange // reason: order not relevant
 				sum, err = sum.Add(w)
 				s.Require().NoError(err)
 			}
-			for _, w := range tc.weights.Forecasters { // nolint: maprange // reason: order not relevant
+			for _, w := range tc.weights.Forecasters { //nolint:maprange // reason: order not relevant
 				sum, err = sum.Add(w)
 				s.Require().NoError(err)
 			}
@@ -150,7 +150,7 @@ func (s *WeightsTestSuite) TestStoreLatestNormalizedWeights() {
 		s.Require().NoError(err)
 
 		// Verify stored weights
-		for worker, expectedWeight := range weights.Inferers { // nolint: maprange // reason: order not relevant
+		for worker, expectedWeight := range weights.Inferers { //nolint:maprange // reason: order not relevant
 			storedWeight, err := s.EmissionsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, worker)
 			s.Require().NoError(err)
 			s.Require().True(expectedWeight.Equal(storedWeight))
@@ -392,7 +392,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 
 			},
 		},
-		{ // nolint: exhaustruct
+		{ //nolint:exhaustruct
 			name: "empty workers should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
 				Logger:                 s.Ctx().Logger(),
@@ -407,7 +407,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 			},
 			expectedError: true,
 		},
-		{ // nolint: exhaustruct
+		{ //nolint:exhaustruct
 			name: "missing regret values should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
 				Logger:                 s.Ctx().Logger(),

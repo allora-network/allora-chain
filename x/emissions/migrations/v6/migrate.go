@@ -46,7 +46,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // Migrate params for this new version
 // The changes are the addition of GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV5Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
+	oldParams := oldV5Types.Params{} //nolint:exhaustruct // empty struct used by cosmos-sdk Unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -61,7 +61,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-	newParams := v6Types.Params{ //nolint: exhaustruct
+	newParams := v6Types.Params{ //nolint:exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

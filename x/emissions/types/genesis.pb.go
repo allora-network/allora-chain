@@ -167,11 +167,11 @@ type GenesisState struct {
 	BlockToActiveTopics              []*BlockHeightTopicIds          `protobuf:"bytes,58,rep,name=block_to_active_topics,json=blockToActiveTopics,proto3" json:"block_to_active_topics,omitempty"`
 	BlockToLowestActiveTopicWeight   []*BlockHeightTopicIdWeightPair `protobuf:"bytes,59,rep,name=block_to_lowest_active_topic_weight,json=blockToLowestActiveTopicWeight,proto3" json:"block_to_lowest_active_topic_weight,omitempty"`
 	/// EMA SCORES
-	// map of (topic, block_height, worker) -> score
+	// map of (topic, actor) -> score
 	InfererScoreEmas []*TopicIdActorIdScore `protobuf:"bytes,60,rep,name=inferer_score_emas,json=infererScoreEmas,proto3" json:"inferer_score_emas,omitempty"`
-	// map of (topic, block_height, worker) -> score
+	// map of (topic, actor) -> score
 	ForecasterScoreEmas []*TopicIdActorIdScore `protobuf:"bytes,61,rep,name=forecaster_score_emas,json=forecasterScoreEmas,proto3" json:"forecaster_score_emas,omitempty"`
-	// map of (topic, block_height, reputer) -> score
+	// map of (topic, actor) -> score
 	ReputerScoreEmas []*TopicIdActorIdScore `protobuf:"bytes,62,rep,name=reputer_score_emas,json=reputerScoreEmas,proto3" json:"reputer_score_emas,omitempty"`
 	// EMA
 	PreviousTopicQuantileInfererScoreEma    []*TopicIdAndDec `protobuf:"bytes,63,rep,name=previous_topic_quantile_inferer_score_ema,json=previousTopicQuantileInfererScoreEma,proto3" json:"previous_topic_quantile_inferer_score_ema,omitempty"`

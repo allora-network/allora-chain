@@ -5595,7 +5595,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 	err := k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
-	// nolint: gosec
+	//nolint:gosec
 	for i := int64(0); i < int64(params.MaxTopInferersToReward); i++ {
 		addr := s.AddrsStr(int(i))
 		score := types.Score{

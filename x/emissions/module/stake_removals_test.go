@@ -15,7 +15,7 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// nolint: exhaustruct
+//nolint:exhaustruct
 func TestRemoveStakes(t *testing.T) {
 	ctx := testutil.DefaultContext(
 		storetypes.NewKVStoreKey(emissionstypes.ModuleName),
@@ -123,7 +123,7 @@ func TestRemoveStakes(t *testing.T) {
 	}
 }
 
-// nolint: exhaustruct
+//nolint:exhaustruct
 func TestRemoveDelegateStakes(t *testing.T) {
 	ctx := testutil.DefaultContext(
 		storetypes.NewKVStoreKey(emissionstypes.ModuleName),

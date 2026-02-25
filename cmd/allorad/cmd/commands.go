@@ -92,7 +92,7 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 }
 
 func queryCommand() *cobra.Command {
-	cmd := &cobra.Command{ // nolint: exhaustruct // dependency code don't want to change the way it works
+	cmd := &cobra.Command{ //nolint:exhaustruct // dependency code don't want to change the way it works
 		Use:                        "query",
 		Aliases:                    []string{"q"},
 		Short:                      "Querying subcommands",
@@ -114,7 +114,7 @@ func queryCommand() *cobra.Command {
 }
 
 func txCommand() *cobra.Command {
-	cmd := &cobra.Command{ // nolint: exhaustruct // dependency code don't want to change the way it works
+	cmd := &cobra.Command{ //nolint:exhaustruct // dependency code don't want to change the way it works
 		Use:                        "tx",
 		Short:                      "Transactions subcommands",
 		DisableFlagParsing:         false,

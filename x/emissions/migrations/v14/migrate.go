@@ -83,9 +83,7 @@ func MigrateTopics(
 			UnityTolerance:           alloraMath.ZeroDec(),
 		}
 
-		key := string(iterator.Key())
-
-		topicStore.Set([]byte(key), cdc.MustMarshal(&newTopic))
+		topicStore.Set(iterator.Key(), cdc.MustMarshal(&newTopic))
 		ctx.Logger().Debug("MIGRATION V14: Updated topic with TopicType and OutputArity", "topicId", newTopic.Id)
 		topicCount++
 	}
