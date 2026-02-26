@@ -12,48 +12,37 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-type EmissionsKeeper interface {
-	GetStakeRemovalsUpUntilBlock(
-		ctx context.Context,
-		blockHeight emissionskeeper.BlockHeight,
-		limit uint64,
-	) ([]emissionstypes.StakeRemovalInfo, bool, error)
-	GetDelegateStakeRemovalsUpUntilBlock(
-		ctx context.Context,
-		blockHeight emissionskeeper.BlockHeight,
-		limit uint64,
-	) ([]emissionstypes.DelegateStakeRemovalInfo, bool, error)
-	RemoveReputerStake(
-		ctx context.Context,
-		blockHeight emissionskeeper.BlockHeight,
-		topicId emissionskeeper.TopicId,
-		reputer emissionskeeper.ActorId,
-		stakeToRemove cosmosMath.Int,
-	) error
-	RemoveDelegateStake(
-		ctx context.Context,
-		stakeRemovalBlockHeight emissionskeeper.BlockHeight,
-		topicId emissionskeeper.TopicId,
-		delegator emissionskeeper.ActorId,
-		reputer emissionskeeper.ActorId,
-		stakeToRemove cosmosMath.Int,
-	) error
-	SendCoinsFromModuleToAccount(
-		ctx context.Context,
-		senderModule string,
-		recipientAddr emissionskeeper.ActorId,
-		amt sdk.Coins,
-	) error
-}
+type GetStakeRemovalsUpUntilBlockFn func(
+	ctx context.Context,
+	blockHeight emissionstypes.BlockHeight,
+	limit uint64,
+) (ret []emissionstypes.StakeRemovalInfo, anyLeft bool, err error)
+
+type RemoveReputerStakeFn func(
+	ctx context.Context,
+	blockHeight emissionstypes.BlockHeight,
+	topicId emissionskeeper.TopicId,
+	reputer emissionskeeper.ActorId,
+	stakeToRemove cosmosMath.Int,
+) error
+
+type SendCoinsFromModuleToAccountFn func(
+	ctx context.Context,
+	senderModule string,
+	recipient emissionskeeper.ActorId,
+	amt sdk.Coins,
+) error
 
 // Remove all stakes this block that have been marked for removal
 func RemoveStakes(
 	sdkCtx sdk.Context,
 	currentBlock int64,
-	k EmissionsKeeper,
+	getStakeRemovalsUpUntilBlock GetStakeRemovalsUpUntilBlockFn,
+	removeReputerStake RemoveReputerStakeFn,
+	sendCoinsFromModuleToAccount SendCoinsFromModuleToAccountFn,
 	limitToProcess uint64,
 ) error {
-	removals, limitHit, err := k.GetStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
+	removals, limitHit, err := getStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
 	if err != nil {
 		return errors.Wrapf(err, "Unable to get stake removals for block %d", currentBlock)
 	}
@@ -69,7 +58,7 @@ func RemoveStakes(
 		cacheSdkCtx, write := sdkCtx.CacheContext()
 
 		// Update the stake data structures
-		err = k.RemoveReputerStake(
+		err = removeReputerStake(
 			cacheSdkCtx,
 			stakeRemoval.BlockRemovalCompleted,
 			stakeRemoval.TopicId,
@@ -89,7 +78,7 @@ func RemoveStakes(
 		// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 		// Send the funds
 		coins := sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, stakeRemoval.Amount))
-		err = k.SendCoinsFromModuleToAccount(
+		err = sendCoinsFromModuleToAccount(
 			cacheSdkCtx,
 			emissionstypes.AlloraStakingAccountName,
 			stakeRemoval.Reputer,
@@ -108,14 +97,30 @@ func RemoveStakes(
 	return nil
 }
 
+type RemoveDelegateStakeFn func(
+	ctx context.Context,
+	stakeRemovalBlockHeight emissionskeeper.BlockHeight,
+	topicId emissionskeeper.TopicId,
+	delegator, reputer emissionskeeper.ActorId,
+	stakeToRemove cosmosMath.Int,
+) error
+
+type GetDelegateStakeRemovalsUpUntilBlockFn func(
+	ctx context.Context,
+	blockHeight emissionstypes.BlockHeight,
+	limit uint64,
+) (ret []emissionstypes.DelegateStakeRemovalInfo, limitHit bool, err error)
+
 // remove all delegated stakes that have been marked for removal this block
 func RemoveDelegateStakes(
 	sdkCtx sdk.Context,
 	currentBlock int64,
-	k EmissionsKeeper,
+	getDelegateStakeRemovalsUpUntilBlock GetDelegateStakeRemovalsUpUntilBlockFn,
+	removeDelegateStake RemoveDelegateStakeFn,
+	sendCoinsFromModuleToAccount SendCoinsFromModuleToAccountFn,
 	limitToProcess uint64,
 ) error {
-	removals, limitHit, err := k.GetDelegateStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
+	removals, limitHit, err := getDelegateStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
 	if err != nil {
 		return errors.Wrapf(err, "Unable to get stake removals for block %d", currentBlock)
 	}
@@ -131,7 +136,7 @@ func RemoveDelegateStakes(
 		cacheSdkCtx, write := sdkCtx.CacheContext()
 
 		// Update the stake data structures
-		err = k.RemoveDelegateStake(
+		err = removeDelegateStake(
 			cacheSdkCtx,
 			stakeRemoval.BlockRemovalCompleted,
 			stakeRemoval.TopicId,
@@ -152,7 +157,7 @@ func RemoveDelegateStakes(
 		// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 		// Send the funds
 		coins := sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, stakeRemoval.Amount))
-		err = k.SendCoinsFromModuleToAccount(
+		err = sendCoinsFromModuleToAccount(
 			cacheSdkCtx,
 			emissionstypes.AlloraStakingAccountName,
 			stakeRemoval.Delegator, coins)

@@ -29,9 +29,9 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToInferer() {
 		Address:     "allo1l6nc88z4uqs00nnnaqkwjvlk4lxq3k4und7kzy",
 		Score:       alloraMath.MustNewDecFromString("300"),
 	}
-	s.Require().NoError(k.SetTopicInitialInfererEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
+	s.Require().NoError(k.GetScoresKeeper().SetTopicInitialInfererEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
 
-	newScore, err := k.ApplyLivenessPenaltyToInferer(ctx, givenTopic, 105, givenPreviousScore)
+	newScore, err := k.GetActorPenaltiesKeeper().ApplyLivenessPenaltyToInferer(ctx, givenTopic, 105, givenPreviousScore)
 	s.Require().NoError(err)
 	s.Require().Equal(givenPreviousScore.TopicId, newScore.TopicId)
 	s.Require().Equal(givenPreviousScore.Address, newScore.Address)
@@ -58,9 +58,9 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToForecaster() {
 		Address:     "allo1l6nc88z4uqs00nnnaqkwjvlk4lxq3k4und7kzy",
 		Score:       alloraMath.MustNewDecFromString("300"),
 	}
-	s.Require().NoError(k.SetTopicInitialForecasterEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
+	s.Require().NoError(k.GetScoresKeeper().SetTopicInitialForecasterEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
 
-	newScore, err := k.ApplyLivenessPenaltyToForecaster(ctx, givenTopic, 105, givenPreviousScore)
+	newScore, err := k.GetActorPenaltiesKeeper().ApplyLivenessPenaltyToForecaster(ctx, givenTopic, 105, givenPreviousScore)
 	s.Require().NoError(err)
 	s.Require().Equal(givenPreviousScore.TopicId, newScore.TopicId)
 	s.Require().Equal(givenPreviousScore.Address, newScore.Address)
@@ -88,9 +88,9 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToReputer() {
 		Address:     "allo1l6nc88z4uqs00nnnaqkwjvlk4lxq3k4und7kzy",
 		Score:       alloraMath.MustNewDecFromString("300"),
 	}
-	s.Require().NoError(k.SetTopicInitialReputerEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
+	s.Require().NoError(k.GetScoresKeeper().SetTopicInitialReputerEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
 
-	newScore, err := k.ApplyLivenessPenaltyToReputer(ctx, givenTopic, 105, givenPreviousScore)
+	newScore, err := k.GetActorPenaltiesKeeper().ApplyLivenessPenaltyToReputer(ctx, givenTopic, 105, givenPreviousScore)
 	s.Require().NoError(err)
 	s.Require().Equal(givenPreviousScore.TopicId, newScore.TopicId)
 	s.Require().Equal(givenPreviousScore.Address, newScore.Address)

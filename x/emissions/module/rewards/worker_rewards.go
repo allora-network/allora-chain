@@ -2,10 +2,11 @@ package rewards
 
 import (
 	"cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -60,7 +61,7 @@ func getWorkersRewardFractions(
 		}
 
 		// Get worker scores from the latest time steps
-		latestScoresFromLastestTimeSteps, err := k.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
+		latestScoresFromLastestTimeSteps, err := k.GetScoresKeeper().GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
 			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker inference scores from the latest time steps")
 		}
@@ -77,7 +78,7 @@ func getWorkersRewardFractions(
 		}
 
 		// Get worker scores from the latest time steps
-		latestScoresFromLastestTimeSteps, err := k.GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
+		latestScoresFromLastestTimeSteps, err := k.GetScoresKeeper().GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
 			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker forecast scores from the latest time steps")
 		}
@@ -88,7 +89,7 @@ func getWorkersRewardFractions(
 		scores = append(scores, workerLastScoresDec)
 	}
 
-	topic, err := k.GetTopic(ctx, topicId)
+	topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get topic %v", topicId)
 	}
@@ -158,12 +159,12 @@ func getInferenceOrForecastTaskEntropy(
 	for i, worker := range workers {
 		noPriorFraction := false
 		if which == taskInference {
-			previousRewardFraction, noPriorFraction, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+			previousRewardFraction, noPriorFraction, err = k.GetScoresKeeper().GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous inference reward fraction")
 			}
 		} else { // taskForecast
-			previousRewardFraction, noPriorFraction, err = k.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+			previousRewardFraction, noPriorFraction, err = k.GetScoresKeeper().GetPreviousForecastRewardFraction(ctx, topicId, worker)
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast reward fraction")
 			}
@@ -184,14 +185,14 @@ func getInferenceOrForecastTaskEntropy(
 	}
 	if which == taskInference {
 		for i, worker := range workers {
-			err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, emaRewardFractions[i])
+			err := k.GetScoresKeeper().SetPreviousInferenceRewardFraction(ctx, topicId, worker, emaRewardFractions[i])
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous inference reward fraction")
 			}
 		}
 	} else { // taskForecast
 		for i, worker := range workers {
-			err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, emaRewardFractions[i])
+			err := k.GetScoresKeeper().SetPreviousForecastRewardFraction(ctx, topicId, worker, emaRewardFractions[i])
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous forecast reward fraction")
 			}

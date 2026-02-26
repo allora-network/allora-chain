@@ -5,14 +5,15 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
-	v6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
+
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	oldV5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
+	v6Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // MigrateStore migrates the store from version 5 to version 6
@@ -34,7 +35,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("FLIPPING ON ALL TOPIC WORKER AND REPUTER WHITELISTS - VERSION 5 TO VERSION 6")
-	if err := FlipOnTopicWhitelists(ctx, store, cdc, emissionsKeeper); err != nil {
+	if err := FlipOnTopicWhitelists(ctx, emissionsKeeper.GetTopicKeeper(), emissionsKeeper.GetWhitelistsKeeper()); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER FlipOnTopicWhitelists() - VERSION 5 TO VERSION 6")
 		return err
 	}
@@ -46,7 +47,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // Migrate params for this new version
 // The changes are the addition of GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV5Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
+	oldParams := oldV5Types.Params{} //nolint:exhaustruct // empty struct used by cosmos-sdk Unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -61,7 +62,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-	newParams := v6Types.Params{ //nolint: exhaustruct
+	newParams := v6Types.Params{ //nolint:exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,
@@ -119,11 +120,10 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 // Iterate through all topics and turn on their respective worker and reputer whitelists
 func FlipOnTopicWhitelists(
 	ctx sdk.Context,
-	store storetypes.KVStore,
-	cdc codec.BinaryCodec,
-	emissionsKeeper keeper.Keeper,
+	tk *keeper.TopicKeeper,
+	wk *keeper.WhitelistsKeeper,
 ) error {
-	nextTopicId, err := emissionsKeeper.GetNextTopicId(ctx)
+	nextTopicId, err := tk.GetNextTopicId(ctx)
 	if err != nil {
 		return err
 	}
@@ -135,12 +135,12 @@ func FlipOnTopicWhitelists(
 		binary.BigEndian.PutUint64(idByte, id)
 		ctx.Logger().Info("MIGRATION V6: Updating topic", "topicId", id)
 
-		err = emissionsKeeper.EnableTopicWorkerWhitelist(ctx, id)
+		err = wk.EnableTopicWorkerWhitelist(ctx, id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to enable topic %d worker whitelist", id)
 		}
 
-		err = emissionsKeeper.EnableTopicReputerWhitelist(ctx, id)
+		err = wk.EnableTopicReputerWhitelist(ctx, id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to enable topic %d reputer whitelist", id)
 		}

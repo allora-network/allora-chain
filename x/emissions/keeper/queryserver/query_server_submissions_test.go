@@ -1,12 +1,12 @@
 package queryserver_test
 
 import (
-	testutil "github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *QueryServerTestSuite) TestGetOpenReputerSubmissionWindows() {
-	keeper := s.EmissionsKeeper()
+	keeper := s.NonceKeeper()
 	queryServer := s.EmissionsQueryServer()
 	topicId := s.CreateTopic(
 		testutil.WithEpochLength(100),
@@ -67,7 +67,7 @@ func (s *QueryServerTestSuite) TestGetOpenReputerSubmissionWindows() {
 }
 
 func (s *QueryServerTestSuite) TestGetOpenWorkerSubmissionWindows() {
-	keeper := s.EmissionsKeeper()
+	keeper := s.NonceKeeper()
 	queryServer := s.EmissionsQueryServer()
 	topicId := s.CreateTopic(
 		testutil.WithEpochLength(100),
@@ -136,7 +136,7 @@ func (s *QueryServerTestSuite) TestGetOpenWorkerSubmissionWindows() {
 }
 
 func (s *QueryServerTestSuite) TestGetOpenReputerSubmissionWindowsWithMultipleNoncesInWindow() {
-	keeper := s.EmissionsKeeper()
+	keeper := s.NonceKeeper()
 	queryServer := s.EmissionsQueryServer()
 	topicId := s.CreateTopic(
 		testutil.WithEpochLength(100),

@@ -2,14 +2,25 @@ package keeper
 
 import (
 	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+func NewActorPenaltiesKeeper(scoresKeeper *ScoresKeeper) *ActorPenaltiesKeeper {
+	return &ActorPenaltiesKeeper{
+		scoresKeeper: scoresKeeper,
+	}
+}
+
+type ActorPenaltiesKeeper struct {
+	scoresKeeper *ScoresKeeper
+}
 
 // ApplyLivenessPenaltyToInferer penalises an inferer for missing previous epochs. It only returns the updated EMA score.
 // If the inferer didn't miss any epochs this is a no-op, the EMA score is returned as is.
-func (k *Keeper) ApplyLivenessPenaltyToInferer(
+func (k *ActorPenaltiesKeeper) ApplyLivenessPenaltyToInferer(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight types.BlockHeight,
@@ -19,7 +30,7 @@ func (k *Keeper) ApplyLivenessPenaltyToInferer(
 		ctx,
 		CountWorkerContiguousMissedEpochs,
 		func(topicId TopicId) (alloraMath.Dec, error) {
-			return k.GetTopicInitialInfererEmaScore(ctx, topicId)
+			return k.scoresKeeper.GetTopicInitialInfererEmaScore(ctx, topicId)
 		},
 		topic,
 		nonceBlockHeight,
@@ -29,7 +40,7 @@ func (k *Keeper) ApplyLivenessPenaltyToInferer(
 
 // ApplyLivenessPenaltyToForecaster penalises a forecaster for missing previous epochs. It only returns the updated EMA score.
 // If the forecaster didn't miss any epochs this is a no-op, the EMA score is returned as is.
-func (k *Keeper) ApplyLivenessPenaltyToForecaster(
+func (k *ActorPenaltiesKeeper) ApplyLivenessPenaltyToForecaster(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight types.BlockHeight,
@@ -39,7 +50,7 @@ func (k *Keeper) ApplyLivenessPenaltyToForecaster(
 		ctx,
 		CountWorkerContiguousMissedEpochs,
 		func(topicId TopicId) (alloraMath.Dec, error) {
-			return k.GetTopicInitialForecasterEmaScore(ctx, topicId)
+			return k.scoresKeeper.GetTopicInitialForecasterEmaScore(ctx, topicId)
 		},
 		topic,
 		nonceBlockHeight,
@@ -49,7 +60,7 @@ func (k *Keeper) ApplyLivenessPenaltyToForecaster(
 
 // ApplyLivenessPenaltyToReputer penalises a reputer for missing previous epochs. It only returns the updated EMA score.
 // If the reputer didn't miss any epochs this is a no-op, the EMA score is returned as is.
-func (k *Keeper) ApplyLivenessPenaltyToReputer(
+func (k *ActorPenaltiesKeeper) ApplyLivenessPenaltyToReputer(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight types.BlockHeight,
@@ -59,7 +70,7 @@ func (k *Keeper) ApplyLivenessPenaltyToReputer(
 		ctx,
 		CountReputerContiguousMissedEpochs,
 		func(topicId TopicId) (alloraMath.Dec, error) {
-			return k.GetTopicInitialReputerEmaScore(ctx, topicId)
+			return k.scoresKeeper.GetTopicInitialReputerEmaScore(ctx, topicId)
 		},
 		topic,
 		nonceBlockHeight,

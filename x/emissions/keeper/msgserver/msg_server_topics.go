@@ -5,27 +5,29 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
 	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err)
 
 	// Validate the address
-	if err := ms.k.ValidateStringIsBech32(msg.Creator); err != nil {
+	if err := keeper.ValidateStringIsBech32(msg.Creator); err != nil {
 		return nil, err
 	}
-	canCreate, err := ms.k.CanCreateTopic(ctx, msg.Creator)
+	canCreate, err := ms.wlk.CanCreateTopic(ctx, msg.Creator)
 	if err != nil {
 		return nil, err
 	} else if !canCreate {
 		return nil, types.ErrNotPermittedToCreateTopic
 	}
 
-	params, err := ms.k.GetParams(ctx)
+	params, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
 	}
@@ -33,7 +35,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		return nil, err
 	}
 
-	topicId, err := ms.k.GetNextTopicId(ctx)
+	topicId, err := ms.tk.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -71,29 +73,29 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
 		CNorm:                    msg.CNorm,
 	}
-	_, err = ms.k.IncrementTopicId(ctx)
+	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := ms.k.SetTopic(ctx, topicId, topic); err != nil {
+	if err := ms.tk.SetTopic(ctx, topicId, topic); err != nil {
 		return nil, err
 	}
 
 	// Turn topic whitelist on by default so no one can squeeze in payloads before an admin notices or can act
 	if msg.EnableWorkerWhitelist {
-		err = ms.k.EnableTopicWorkerWhitelist(ctx, topicId)
+		err = ms.wlk.EnableTopicWorkerWhitelist(ctx, topicId)
 		if err != nil {
 			return nil, err
 		}
 	}
 	if msg.EnableReputerWhitelist {
-		err = ms.k.EnableTopicReputerWhitelist(ctx, topicId)
+		err = ms.wlk.EnableTopicReputerWhitelist(ctx, topicId)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
+	err = ms.tk.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
 
 	types.EmitNewCreateNewTopicEvent(ctx, &topic)
 	return &types.CreateNewTopicResponse{TopicId: topicId}, err
@@ -102,11 +104,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {
 	defer metrics.RecordMetrics("UpdateTopic", time.Now(), &err)
 
-	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+	if err := keeper.ValidateStringIsBech32(msg.Sender); err != nil {
 		return nil, err
 	}
 
-	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	topic, err := ms.tk.GetTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +125,7 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
 
-	updatedTopic, err = ms.k.UpdateTopic(ctx, topic, updatedTopic)
+	updatedTopic, err = ms.tk.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {
 		return nil, err
 	}

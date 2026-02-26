@@ -2,14 +2,18 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
+	"cosmossdk.io/collections"
+	errorsmod "cosmossdk.io/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // Get lowest score from all reputers
-func GetLowestScoreFromAllReputers(
+func (k *ScoresKeeper) GetLowestScoreFromAllReputers(
 	ctx context.Context,
-	k *Keeper,
 	topicId TopicId,
 	reputerAddresses []string,
 ) (lowScore types.Score, err error) {
@@ -26,9 +30,8 @@ func GetLowestScoreFromAllReputers(
 }
 
 // Update lowest score from new reputer addresses set
-func UpdateLowestScoreFromReputerAddresses(
+func (k *ScoresKeeper) UpdateLowestScoreFromReputerAddresses(
 	ctx context.Context,
-	k *Keeper,
 	topicId TopicId,
 	reputerAddresses []string,
 	addedReputer string,
@@ -45,7 +48,7 @@ func UpdateLowestScoreFromReputerAddresses(
 	reputerAddresses = append(reputerAddresses, addedReputer)
 
 	// Get lowest score from all reputers
-	lowScore, err := GetLowestScoreFromAllReputers(ctx, k, topicId, reputerAddresses)
+	lowScore, err := k.GetLowestScoreFromAllReputers(ctx, topicId, reputerAddresses)
 	if err != nil {
 		return err
 	}
@@ -54,9 +57,8 @@ func UpdateLowestScoreFromReputerAddresses(
 }
 
 // Update lowest score from new inferer addresses set
-func UpdateLowestScoreFromInfererAddresses(
+func (k *ScoresKeeper) UpdateLowestScoreFromInfererAddresses(
 	ctx context.Context,
-	k *Keeper,
 	topicId TopicId,
 	infererAddresses []string,
 	addedInferer string,
@@ -73,7 +75,7 @@ func UpdateLowestScoreFromInfererAddresses(
 	infererAddresses = append(infererAddresses, addedInferer)
 
 	// Get lowest score from all inferers
-	lowScore, err := GetLowestScoreFromAllInferers(ctx, k, topicId, infererAddresses)
+	lowScore, err := k.GetLowestScoreFromAllInferers(ctx, topicId, infererAddresses)
 	if err != nil {
 		return err
 	}
@@ -82,9 +84,8 @@ func UpdateLowestScoreFromInfererAddresses(
 }
 
 // Get lowest score from all inferers
-func GetLowestScoreFromAllInferers(
+func (k *ScoresKeeper) GetLowestScoreFromAllInferers(
 	ctx context.Context,
-	k *Keeper,
 	topicId TopicId,
 	infererAddresses []string,
 ) (lowScore types.Score, err error) {
@@ -101,9 +102,8 @@ func GetLowestScoreFromAllInferers(
 }
 
 // Update lowest score from new forecaster addresses set
-func UpdateLowestScoreFromForecasterAddresses(
+func (k *ScoresKeeper) UpdateLowestScoreFromForecasterAddresses(
 	ctx context.Context,
-	k *Keeper,
 	topicId TopicId,
 	forecasterAddresses []string,
 	addedForecaster string,
@@ -120,7 +120,7 @@ func UpdateLowestScoreFromForecasterAddresses(
 	forecasterAddresses = append(forecasterAddresses, addedForecaster)
 
 	// Get lowest score from all forecasters
-	lowScore, err := GetLowestScoreFromAllForecasters(ctx, k, topicId, forecasterAddresses)
+	lowScore, err := k.GetLowestScoreFromAllForecasters(ctx, topicId, forecasterAddresses)
 	if err != nil {
 		return err
 	}
@@ -129,9 +129,8 @@ func UpdateLowestScoreFromForecasterAddresses(
 }
 
 // Get lowest score from all forecasters
-func GetLowestScoreFromAllForecasters(
+func (k *ScoresKeeper) GetLowestScoreFromAllForecasters(
 	ctx context.Context,
-	k *Keeper,
 	topicId TopicId,
 	forecasterAddresses []string,
 ) (lowScore types.Score, err error) {
@@ -145,4 +144,103 @@ func GetLowestScoreFromAllForecasters(
 		}
 	}
 	return lowScore, nil
+}
+
+// SetLowestReputerScoreEma sets the lowest reputer score EMA for a topic
+func (k *ScoresKeeper) SetLowestReputerScoreEma(ctx context.Context, topicId TopicId, lowestScore types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "invalid topic id")
+	}
+	if err := types.ValidateBech32(lowestScore.Address); err != nil {
+		return errorsmod.Wrap(err, "invalid address")
+	}
+	return k.lowestReputerScoreEma.Set(ctx, topicId, lowestScore)
+}
+
+// GetLowestReputerScoreEma gets the lowest reputer score EMA for a topic
+func (k *ScoresKeeper) GetLowestReputerScoreEma(ctx context.Context, topicId TopicId) (types.Score, bool, error) {
+	lowestScore, err := k.lowestReputerScoreEma.Get(ctx, topicId)
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, nil
+	} else if err != nil {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
+	}
+	return lowestScore, true, nil
+}
+
+// SetLowestInfererScoreEma sets the lowest inferer score EMA for a topic
+func (k *ScoresKeeper) SetLowestInfererScoreEma(ctx context.Context, topicId TopicId, lowestScore types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "invalid topic id")
+	}
+	if err := types.ValidateBech32(lowestScore.Address); err != nil {
+		return errorsmod.Wrap(err, "invalid address")
+	}
+	return k.lowestInfererScoreEma.Set(ctx, topicId, lowestScore)
+}
+
+// GetLowestInfererScoreEma gets the lowest inferer score EMA for a topic
+func (k *ScoresKeeper) GetLowestInfererScoreEma(ctx context.Context, topicId TopicId) (types.Score, bool, error) {
+	lowestScore, err := k.lowestInfererScoreEma.Get(ctx, topicId)
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, nil
+	} else if err != nil {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, errorsmod.Wrap(err, "error getting lowest inferer score EMA")
+	}
+	return lowestScore, true, nil
+}
+
+// SetLowestForecasterScoreEma sets the lowest forecaster score EMA for a topic
+func (k *ScoresKeeper) SetLowestForecasterScoreEma(ctx context.Context, topicId TopicId, lowestScore types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "invalid topic id")
+	}
+	if err := types.ValidateBech32(lowestScore.Address); err != nil {
+		return errorsmod.Wrap(err, "invalid address")
+	}
+	return k.lowestForecasterScoreEma.Set(ctx, topicId, lowestScore)
+}
+
+// GetLowestForecasterScoreEma gets the lowest forecaster score EMA for a topic
+func (k *ScoresKeeper) GetLowestForecasterScoreEma(ctx context.Context, topicId TopicId) (types.Score, bool, error) {
+	lowestScore, err := k.lowestForecasterScoreEma.Get(ctx, topicId)
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, nil
+	} else if err != nil {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, errorsmod.Wrap(err, "error getting lowest forecaster score EMA")
+	}
+	return lowestScore, true, nil
 }

@@ -10,7 +10,7 @@ import (
 func (s *QueryServerTestSuite) TestGetNextTopicId() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 
 	// Get the initial next topic ID
 	initialNextTopicId, err := keeper.GetNextTopicId(ctx)
@@ -33,7 +33,7 @@ func (s *QueryServerTestSuite) TestGetNextTopicId() {
 func (s *QueryServerTestSuite) TestGetTopic() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 
 	topicId, err := keeper.GetNextTopicId(ctx)
 	s.Require().NoError(err)
@@ -59,7 +59,7 @@ func (s *QueryServerTestSuite) TestGetTopic() {
 func (s *QueryServerTestSuite) TestGetLatestCommit() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 	blockHeight := 100
 	nonce := types.Nonce{
 		BlockHeight: 95,
@@ -110,7 +110,7 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 
 func (s *QueryServerTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 	topicId := uint64(1)
 
 	// Test Get on an unset topicId, should return 0
@@ -146,7 +146,7 @@ func (s *QueryServerTestSuite) TestGetSetDeleteTopicRewardNonce() {
 
 func (s *QueryServerTestSuite) TestGetPreviousTopicWeight() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 	topicId := uint64(1)
 
 	// Set previous topic weight
@@ -165,7 +165,7 @@ func (s *QueryServerTestSuite) TestGetPreviousTopicWeight() {
 
 func (s *QueryServerTestSuite) TestTopicExists() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 
 	// Test a topic ID that does not exist
 	nonExistentTopicId := uint64(999) // Assuming this ID has not been used
@@ -195,7 +195,7 @@ func (s *QueryServerTestSuite) TestTopicExists() {
 
 func (s *QueryServerTestSuite) TestIsTopicActive() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 	topicId := uint64(3)
 
 	// Assume topic initially active
@@ -240,7 +240,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 
 func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.TopicKeeper()
 	topicId := uint64(2)
 
 	// Test getting revenue for a topic with no existing revenue
@@ -266,7 +266,6 @@ func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 
 func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
 	queryServer := s.EmissionsQueryServer()
 	topicId := uint64(1)
 	workerAddress := s.AddrsStr(0)
@@ -276,7 +275,7 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	params.MaxUnfulfilledReputerRequests = uint64(300)
 	params.GlobalWorkerWhitelistEnabled = true
 	params.GlobalReputerWhitelistEnabled = true
-	err := keeper.SetParams(ctx, params)
+	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Create topic
@@ -286,11 +285,11 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	topic.EpochLength = 20
 	topic.GroundTruthLag = 30
 
-	err = keeper.SetTopic(ctx, topicId, topic)
+	err = s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
 
 	// Enable worker whitelist for testing
-	err = keeper.EnableTopicWorkerWhitelist(ctx, topicId)
+	err = s.WhitelistsKeeper().EnableTopicWorkerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Test with no address provided
@@ -310,7 +309,7 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	s.Require().Error(err, "Should error with invalid address format")
 
 	// Add worker to global whitelist first so they can be tested
-	err = keeper.AddToGlobalWorkerWhitelist(ctx, workerAddress)
+	err = s.WhitelistsKeeper().AddToGlobalWorkerWhitelist(ctx, workerAddress)
 	s.Require().NoError(err)
 
 	// Test with valid unregistered address
@@ -321,7 +320,7 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	s.Require().True(response.IsWhitelisted) // Can submit via global whitelist
 
 	// Register the worker using MsgServer
-	moduleParams, _ := keeper.GetParams(ctx)
+	moduleParams, _ := s.ParamsKeeper().GetParams(ctx)
 	s.FundAccount(moduleParams.RegistrationFee.Int64(), s.Addrs(0))
 	registerMsg := &types.RegisterRequest{
 		Sender:    workerAddress,
@@ -338,22 +337,22 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	s.Require().True(response.IsRegistered)
 
 	// Add worker to whitelist for deterministic test setup
-	err = keeper.AddToTopicWorkerWhitelist(ctx, topicId, workerAddress)
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(ctx, topicId, workerAddress)
 	s.Require().NoError(err)
 
 	// Fund and activate topic
 	currentBlock := int64(0)
-	err = keeper.AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
+	err = s.StakingKeeper().AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 
 	funderAddr := s.Addrs(2)
 	s.FundTopic(topicId, funderAddr, cosmosMath.NewInt(10000))
 
-	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	isActive, err := s.TopicKeeper().IsTopicActive(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().True(isActive)
 
-	err = keeper.UpdateTopicEpochLastEnded(ctx, topicId, int64(0))
+	err = s.TopicKeeper().UpdateTopicEpochLastEnded(ctx, topicId, int64(0))
 	s.Require().NoError(err)
 
 	// Create multiple overlapping worker nonces to test "latest active nonce" selection
@@ -367,14 +366,14 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 	nonce2 := &types.Nonce{BlockHeight: 2}  // Window [2, 12] - includes block 5 (more recent)
 	nonce3 := &types.Nonce{BlockHeight: 15} // Window [15, 25] - future window
 
-	err = keeper.AddWorkerNonce(ctx, topicId, nonce1)
+	err = s.NonceKeeper().AddWorkerNonce(ctx, topicId, nonce1)
 	s.Require().NoError(err)
-	err = keeper.AddWorkerNonce(ctx, topicId, nonce2)
+	err = s.NonceKeeper().AddWorkerNonce(ctx, topicId, nonce2)
 	s.Require().NoError(err)
-	err = keeper.AddWorkerNonce(ctx, topicId, nonce3)
+	err = s.NonceKeeper().AddWorkerNonce(ctx, topicId, nonce3)
 	s.Require().NoError(err)
 
-	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	unfulfilledNonces, err := s.NonceKeeper().GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Len(unfulfilledNonces.Nonces, 3)
 
@@ -404,7 +403,6 @@ func (s *QueryServerTestSuite) TestGetWorkerSubmissionWindowStatus() {
 
 func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
 	queryServer := s.EmissionsQueryServer()
 	topicId := uint64(1)
 	reputerAddress := s.AddrsStr(0)
@@ -414,7 +412,7 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	params.MaxUnfulfilledReputerRequests = uint64(300)
 	params.GlobalWorkerWhitelistEnabled = true
 	params.GlobalReputerWhitelistEnabled = true
-	err := keeper.SetParams(ctx, params)
+	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Create topic
@@ -424,11 +422,11 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	topic.EpochLength = 20
 	topic.GroundTruthLag = 30
 
-	err = keeper.SetTopic(ctx, topicId, topic)
+	err = s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
 
 	// Enable reputer whitelist
-	err = keeper.EnableTopicReputerWhitelist(ctx, topicId)
+	err = s.WhitelistsKeeper().EnableTopicReputerWhitelist(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Test with no address provided
@@ -448,7 +446,7 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	s.Require().Error(err, "Should error with invalid address format")
 
 	// Add reputer to global whitelist first so they can be tested
-	err = keeper.AddToGlobalReputerWhitelist(ctx, reputerAddress)
+	err = s.WhitelistsKeeper().AddToGlobalReputerWhitelist(ctx, reputerAddress)
 	s.Require().NoError(err)
 
 	// Test with valid unregistered address
@@ -459,7 +457,7 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	s.Require().True(response.IsWhitelisted) // Can submit via global whitelist
 
 	// Register the reputer using MsgServer
-	moduleParams, _ := keeper.GetParams(ctx)
+	moduleParams, _ := s.ParamsKeeper().GetParams(ctx)
 	s.FundAccount(moduleParams.RegistrationFee.Int64(), s.Addrs(0))
 	registerMsg := &types.RegisterRequest{
 		Sender:    reputerAddress,
@@ -476,17 +474,17 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	s.Require().True(response.IsRegistered)
 
 	// Add reputer to whitelist for deterministic test setup
-	err = keeper.AddToTopicReputerWhitelist(ctx, topicId, reputerAddress)
+	err = s.WhitelistsKeeper().AddToTopicReputerWhitelist(ctx, topicId, reputerAddress)
 	s.Require().NoError(err)
 
 	// Fund and activate topic
-	err = keeper.AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
+	err = s.StakingKeeper().AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 
 	funderAddr := s.Addrs(2)
 	s.FundTopic(topicId, funderAddr, cosmosMath.NewInt(10000))
 
-	isActive, err := keeper.IsTopicActive(ctx, topicId)
+	isActive, err := s.TopicKeeper().IsTopicActive(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().True(isActive)
 
@@ -498,11 +496,11 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	reputerNonce2 := &types.Nonce{BlockHeight: 5}  // Window [35, 65] (5+30 to 5+30+10+20)
 	reputerNonce3 := &types.Nonce{BlockHeight: 20} // Window [50, 80] (20+30 to 20+30+10+20)
 
-	err = keeper.AddReputerNonce(ctx, topicId, reputerNonce1)
+	err = s.NonceKeeper().AddReputerNonce(ctx, topicId, reputerNonce1)
 	s.Require().NoError(err)
-	err = keeper.AddReputerNonce(ctx, topicId, reputerNonce2)
+	err = s.NonceKeeper().AddReputerNonce(ctx, topicId, reputerNonce2)
 	s.Require().NoError(err)
-	err = keeper.AddReputerNonce(ctx, topicId, reputerNonce3)
+	err = s.NonceKeeper().AddReputerNonce(ctx, topicId, reputerNonce3)
 	s.Require().NoError(err)
 
 	// Set current block to be within multiple reputer windows

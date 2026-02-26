@@ -100,6 +100,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	epochGetters map[int]func(header string) alloraMath.Dec,
 ) {
 	k = *s.EmissionsKeeper()
+	rk := s.RegretsKeeper()
 	ctx = s.Ctx()
 	topicId = uint64(1)
 	blockHeight := int64(1)
@@ -138,7 +139,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 				worker4: epochPrevGet("inference_regret_worker_4"),
 			}
 		for inferer, regret := range infererNetworkRegrets {
-			err := s.EmissionsKeeper().SetInfererNetworkRegret(
+			err := rk.SetInfererNetworkRegret(
 				s.Ctx(),
 				topicId,
 				inferer,
@@ -154,7 +155,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecaster7: epochPrevGet("inference_regret_worker_7"),
 		}
 		for forecaster, regret := range forecasterNetworkRegrets {
-			err := s.EmissionsKeeper().SetForecasterNetworkRegret(
+			err := rk.SetForecasterNetworkRegret(
 				s.Ctx(),
 				topicId,
 				forecaster,
@@ -173,7 +174,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 				worker4: epochPrevGet("naive_inference_regret_worker_4"),
 			}
 		for inferer, regret := range infererNaiveNetworkRegrets {
-			err := s.EmissionsKeeper().SetNaiveInfererNetworkRegret(
+			err := rk.SetNaiveInfererNetworkRegret(
 				s.Ctx(),
 				topicId,
 				inferer,
@@ -187,7 +188,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			infererName := workerList[infererIndex]
 			infererName2 := workerList[infererIndex2]
 			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(infererIndex2)
-			err := k.SetOneOutInfererInfererNetworkRegret(
+			err := rk.SetOneOutInfererInfererNetworkRegret(
 				s.Ctx(),
 				topicId,
 				infererName2,
@@ -210,7 +211,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			infererName := workerList[infererIndex]
 			forecasterName := forecasterList[forecasterIndex]
 			headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(infererIndex)
-			err := k.SetOneOutInfererForecasterNetworkRegret(
+			err := rk.SetOneOutInfererForecasterNetworkRegret(
 				s.Ctx(),
 				topicId,
 				infererName,
@@ -233,7 +234,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			infererName := workerList[infererIndex]
 			forecasterName := forecasterList[forecasterIndex]
 			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(forecasterIndex)
-			err := k.SetOneOutForecasterInfererNetworkRegret(
+			err := rk.SetOneOutForecasterInfererNetworkRegret(
 				s.Ctx(),
 				topicId,
 				forecasterName,
@@ -256,7 +257,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecasterName := forecasterList[forecasterIndex]
 			forecasterName2 := forecasterList[forecasterIndex2]
 			headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(forecasterIndex2)
-			err := k.SetOneOutForecasterForecasterNetworkRegret(
+			err := rk.SetOneOutForecasterForecasterNetworkRegret(
 				s.Ctx(),
 				topicId,
 				forecasterName2,
@@ -279,7 +280,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecasterName := forecasterList[forecasterIndex+5]
 			infererName := workerList[infererIndex]
 			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_onein_" + strconv.Itoa(forecasterIndex)
-			err := k.SetOneInForecasterNetworkRegret(
+			err := rk.SetOneInForecasterNetworkRegret(
 				s.Ctx(),
 				topicId,
 				forecasterName,
@@ -294,7 +295,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		setOneInForecasterSelfRegret := func(forecaster int, epochGet func(string) alloraMath.Dec) {
 			forecasterName := forecasterList[forecaster+5]
 			headerName := "inference_regret_worker_5_onein_" + strconv.Itoa(forecaster)
-			err := k.SetOneInForecasterNetworkRegret(
+			err := rk.SetOneInForecasterNetworkRegret(
 				s.Ctx(),
 				topicId,
 				forecasterName,
@@ -329,7 +330,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		s.Require().True(ok)
 
 		workerString := s.AddrsStr(workerIndex)
-		err = k.AddReputerStake(s.Ctx(), topicId, workerString, stakeInt)
+		err = k.GetStakingKeeper().AddReputerStake(s.Ctx(), topicId, workerString, stakeInt)
 		s.Require().NoError(err)
 	}
 
@@ -814,7 +815,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForecasters() {
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
@@ -894,7 +895,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 
 	calcArgs := inferencesynthesis.CalcNetworkInferencesArgs{
 		Ctx:                                  ctx,
-		K:                                    k,
+		K:                                    *s.EmissionsKeeper(),
 		Logger:                               ctx.Logger(),
 		TopicId:                              topicId,
 		Inferers:                             inferers,
@@ -927,7 +928,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeForecasters() {
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
@@ -1038,7 +1039,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 
 	calcArgs := inferencesynthesis.CalcNetworkInferencesArgs{
 		Ctx:                                  ctx,
-		K:                                    k,
+		K:                                    *s.EmissionsKeeper(),
 		Logger:                               ctx.Logger(),
 		TopicId:                              topicId,
 		Inferers:                             inferers,
@@ -1074,7 +1075,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoForecastersValidOneForecasterInvalid() {
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 	ctx := s.Ctx()
 	topicId := uint64(1)
 	blockHeight := int64(300)
@@ -1186,7 +1187,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 
 	calcArgs := inferencesynthesis.CalcNetworkInferencesArgs{
 		Ctx:                                  ctx,
-		K:                                    k,
+		K:                                    *s.EmissionsKeeper(),
 		Logger:                               ctx.Logger(),
 		TopicId:                              topicId,
 		Inferers:                             inferers,
@@ -1228,7 +1229,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTwoInferersNewOneOldOneNew() {
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 	ctx := s.Ctx()
 	topicId := uint64(1)
 
@@ -1295,7 +1296,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferencesTwoForecastersOldTw
 
 	calcArgs := inferencesynthesis.CalcNetworkInferencesArgs{
 		Ctx:                                  ctx,
-		K:                                    k,
+		K:                                    *s.EmissionsKeeper(),
 		Logger:                               ctx.Logger(),
 		TopicId:                              topicId,
 		Inferers:                             inferers,

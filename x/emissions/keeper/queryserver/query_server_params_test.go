@@ -7,7 +7,7 @@ import (
 func (s *QueryServerTestSuite) TestParams() {
 	expectedParams := types.DefaultParams()
 
-	err := s.EmissionsKeeper().SetParams(s.Ctx(), expectedParams)
+	err := s.ParamsKeeper().SetParams(s.Ctx(), expectedParams)
 	s.Require().NoError(err, "Setting parameters should not produce an error")
 
 	response, err := s.EmissionsQueryServer().GetParams(s.Ctx(), &types.GetParamsRequest{})

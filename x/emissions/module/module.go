@@ -147,7 +147,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 9 to 10: %v", types.ModuleName, err))
 	}
 	if err := cfg.RegisterMigration(types.ModuleName, 10, func(ctx sdk.Context) error {
-		return migrationV11.MigrateStore(ctx, am.keeper)
+		return migrationV11.MigrateStore(ctx, am.keeper.GetWeightsKeeper())
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 10 to 11: %v", types.ModuleName, err))
 	}

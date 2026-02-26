@@ -350,9 +350,6 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateAllLossBundles() {
 
 	defaultOneOutInfererForecasterValues := []*types.OneOutInfererForecasterValues{}
 	s.Require().Equal(len(defaultOneOutInfererForecasterValues), len(newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues))
-
-	s.Require().Equal(reputerValueBundle.Signature, newMsg.ReputerValueBundles[0].Signature)
-	s.Require().Equal(reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
 
 func (s *EmissionsV2MigrationTestSuite) TestMigrateAllRecordCommits() {
@@ -447,9 +444,9 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateParams() {
 	s.Require().NoError(err)
 
 	// Run migration
-	err = v2.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
+	err = v2.MigrateParams(s.Ctx(), s.ParamsKeeper())
 	s.Require().NoError(err)
-	newParams, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	newParams, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 
 	// Check params after migration

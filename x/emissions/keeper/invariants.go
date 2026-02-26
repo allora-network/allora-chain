@@ -5,10 +5,11 @@ import (
 
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // RegisterInvariants registers the emissions module invariants.
@@ -47,12 +48,12 @@ func AllInvariants(k Keeper) sdk.Invariant {
 // of the Allora staking bank account.
 func StakingInvariantTotalStakeEqualAlloraStakingBankBalance(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		totalStake, err := k.GetTotalStake(ctx)
+		totalStake, err := k.stakingKeeper.GetTotalStake(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get total stake: %v", err))
 		}
 		alloraStakingAddr := k.authKeeper.GetModuleAccount(ctx, emissionstypes.AlloraStakingAccountName).GetAddress()
-		alloraStakingBalance := k.bankKeeper.GetBalance(
+		alloraStakingBalance := k.bankingKeeper.GetBalance(
 			ctx,
 			alloraStakingAddr,
 			params.DefaultBondDenom).Amount
@@ -72,7 +73,7 @@ func StakingInvariantTotalStakeEqualAlloraStakingBankBalance(k Keeper) sdk.Invar
 // should always equal the number of values in the stakeRemovalsByActor map
 func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		iterByBlock, err := k.stakeRemovalsByBlock.Iterate(ctx, nil)
+		iterByBlock, err := k.stakingKeeper.stakeRemovalsByBlock.Iterate(ctx, nil)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals iterator: %v", err))
 		}
@@ -82,7 +83,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 			panic(fmt.Sprintf("failed to get stake removals values: %v", err))
 		}
 		lenByBlock := len(valuesByBlock)
-		iterByActor, err := k.stakeRemovalsByActor.Iterate(ctx, nil)
+		iterByActor, err := k.stakingKeeper.stakeRemovalsByActor.Iterate(ctx, nil)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals iterator: %v", err))
 		}
@@ -116,7 +117,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 			topicSumsRemove[value.TopicId] = topicSumBefore.Add(value.Amount)
 			totalSumRemove = totalSumRemove.Add(value.Amount)
 		}
-		totalStake, err := k.totalStake.Get(ctx)
+		totalStake, err := k.stakingKeeper.totalStake.Get(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get total stake: %v", err))
 		}
@@ -132,7 +133,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 			), broken
 		}
 		for topicId, topicSumRemove := range topicSumsRemove {
-			topicStake, err := k.GetTopicStake(ctx, topicId)
+			topicStake, err := k.stakingKeeper.GetTopicStake(ctx, topicId)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get topic stake: %v", err))
 			}
@@ -157,13 +158,13 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 // stakeFromDelegatorsUponReputer = Sum(delegatedStakes[topicid, all delegators, reputer])
 func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		numTopics, err := k.GetNextTopicId(ctx)
+		numTopics, err := k.topicKeeper.GetNextTopicId(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get next topic id: %v", err))
 		}
 		for i := uint64(0); i < numTopics; i++ {
 			rng := collections.NewPrefixedTripleRange[uint64, string, string](i)
-			topicIter, err := k.delegatedStakes.Iterate(ctx, rng)
+			topicIter, err := k.stakingKeeper.delegatedStakes.Iterate(ctx, rng)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get delegated stakes iterator: %v", err))
 			}
@@ -187,7 +188,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 				}
 				existingSumsDelegator, presentDelegator := delegatorsToSumsMap[delegator]
 				if !presentDelegator {
-					stakeSumForDelegator, err := k.stakeSumFromDelegator.Get(ctx, collections.Join(i, delegator))
+					stakeSumForDelegator, err := k.stakingKeeper.stakeSumFromDelegator.Get(ctx, collections.Join(i, delegator))
 					if err != nil {
 						panic(fmt.Sprintf("failed to get stake sum from delegator: %v", err))
 					}
@@ -204,7 +205,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 				}
 				existingSumsReputer, presentReputer := reputersToSumsMap[reputer]
 				if !presentReputer {
-					stakeSumForReputer, err := k.stakeFromDelegatorsUponReputer.Get(ctx, collections.Join(i, reputer))
+					stakeSumForReputer, err := k.stakingKeeper.stakeFromDelegatorsUponReputer.Get(ctx, collections.Join(i, reputer))
 					if err != nil {
 						panic(fmt.Sprintf("failed to get delegator stake upon reputer: %v", err))
 					}
@@ -257,17 +258,17 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 
 func StakingInvariantSumStakeFromStakeReputerAuthorityEqualTotalStakeAndTopicStake(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		totalStake, err := k.GetTotalStake(ctx)
+		totalStake, err := k.stakingKeeper.GetTotalStake(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get total stake: %v", err))
 		}
-		numTopics, err := k.GetNextTopicId(ctx)
+		numTopics, err := k.topicKeeper.GetNextTopicId(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get next topic id: %v", err))
 		}
 		sumTopicStakes := cosmosMath.ZeroInt()
 		for i := uint64(0); i < numTopics; i++ {
-			topicStake, err := k.GetTopicStake(ctx, i)
+			topicStake, err := k.stakingKeeper.GetTopicStake(ctx, i)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get topic stake: %v", err))
 			}
@@ -275,7 +276,7 @@ func StakingInvariantSumStakeFromStakeReputerAuthorityEqualTotalStakeAndTopicSta
 
 			sumReputersThisTopic := cosmosMath.ZeroInt()
 			rng := collections.NewPrefixedPairRange[uint64, string](i)
-			reputerAuthoritiesForTopicIter, err := k.stakeReputerAuthority.Iterate(ctx, rng)
+			reputerAuthoritiesForTopicIter, err := k.stakingKeeper.stakeReputerAuthority.Iterate(ctx, rng)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get reputer authorities iterator: %v", err))
 			}
@@ -319,10 +320,10 @@ func StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRew
 		// first get the balance of the pending reward for delegators account
 		// this is the total amount of rewards that we hold on behalf of delegators
 		alloraPendingAddr := k.authKeeper.GetModuleAccount(ctx, emissionstypes.AlloraPendingRewardForDelegatorAccountName).GetAddress()
-		alloraPendingBankBal := k.GetBankBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
+		alloraPendingBankBal := k.bankingKeeper.GetBankBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
 
 		// for every delegator stake position
-		delegatedStakesIter, err := k.delegatedStakes.Iterate(ctx, nil)
+		delegatedStakesIter, err := k.stakingKeeper.delegatedStakes.Iterate(ctx, nil)
 		if err != nil {
 			panic("failed to get delegated stakes iterator")
 		}
@@ -337,7 +338,7 @@ func StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRew
 			reputer := keyValue.Key.K3()
 			delegatorInfo := keyValue.Value
 			// Get share for this topicId and reputer
-			share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
+			share, err := k.stakingKeeper.GetDelegateRewardPerShare(ctx, topicId, reputer)
 			if err != nil {
 				panic("failed to get delegate reward per share")
 			}
