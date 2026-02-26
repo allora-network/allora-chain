@@ -92,7 +92,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigrateParams() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -167,7 +167,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.1337"),
 	}
 
-	_, err := s.EmissionsKeeper().IncrementTopicId(s.Ctx())
+	_, err := s.TopicKeeper().IncrementTopicId(s.Ctx())
 	s.Require().NoError(err)
 	bz, err := proto.Marshal(&migratedOldTopicWithNaNInitialRegret)
 	s.Require().NoError(err)
@@ -178,7 +178,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().NoError(err)
 	s.Require().NotEqual(0, countWritten)
 	topicStore.Set(bytesKey, bz)
-	err = v5.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v5.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
@@ -212,7 +212,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().Equal("0", newMsg.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 2)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
 }
@@ -243,7 +243,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	migratedOldTopic2 := migratedOldTopic1
 	migratedOldTopic2.Id = 3
 
-	_, err := s.EmissionsKeeper().IncrementTopicId(s.Ctx())
+	_, err := s.TopicKeeper().IncrementTopicId(s.Ctx())
 	s.Require().NoError(err)
 
 	// Create 2 topics
@@ -258,7 +258,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	topicStore.Set(bytesKey, bz)
 
 	// Topic 2
-	_, err = s.EmissionsKeeper().IncrementTopicId(s.Ctx())
+	_, err = s.TopicKeeper().IncrementTopicId(s.Ctx())
 	s.Require().NoError(err)
 
 	bz, err = proto.Marshal(&migratedOldTopic2)
@@ -290,7 +290,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	s.Require().NoError(err)
 	topicWeightStore.Set(bytesKey, marshaledWeight)
 
-	err = v5.MigrateTopics(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err = v5.MigrateTopics(s.Ctx(), store, cdc, s.TopicKeeper())
 	s.Require().NoError(err)
 
 	// Verify the sumPreviousTopicWeights store has been updated correctly
@@ -360,7 +360,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights
 	s.Require().Equal("0", topic2.InitialRegret.String())
 
 	// sanity check that the emissions keeper collections.go API also gets the same data
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), 2)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), 2)
 	s.Require().NoError(err)
 	s.Require().Equal(topic1, topic)
 }

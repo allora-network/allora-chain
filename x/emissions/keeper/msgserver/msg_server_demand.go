@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -20,12 +21,12 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) 
 		return nil, errors.Wrap(err, "amount is not valid")
 	}
 
-	err = ms.k.ValidateStringIsBech32(msg.Sender)
+	err = keeper.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", msg.TopicId)
 	} else if err != nil {

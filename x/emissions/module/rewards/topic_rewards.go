@@ -5,6 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -53,7 +54,7 @@ func UpdateNoncesOfActiveTopics(
 	block BlockHeight,
 	weights map[TopicId]*alloraMath.Dec,
 ) error {
-	moduleParams, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParamsKeeper().GetParams(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
@@ -73,14 +74,14 @@ func UpdateNoncesOfActiveTopics(
 			continue
 		}
 		// Get the topic
-		topic, err := k.GetTopic(ctx, topicId)
+		topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Debug("Error getting topic: ", err)
 			continue
 		}
 
 		// Update the last inference ran
-		err = k.UpdateTopicEpochLastEnded(ctx, topic.Id, block)
+		err = k.GetTopicKeeper().UpdateTopicEpochLastEnded(ctx, topic.Id, block)
 		if err != nil {
 			ctx.Logger().Warn("Error updating last inference ran", "error", err)
 			continue
@@ -88,14 +89,14 @@ func UpdateNoncesOfActiveTopics(
 
 		// Add Worker Nonces
 		nextNonce := types.Nonce{BlockHeight: block}
-		err = k.AddWorkerNonce(ctx, topic.Id, &nextNonce)
+		err = k.GetNonceKeeper().AddWorkerNonce(ctx, topic.Id, &nextNonce)
 		if err != nil {
 			ctx.Logger().Warn("Error adding worker nonce", "error", err)
 			continue
 		}
 		ctx.Logger().Debug("Added worker nonce for topic", "topicId", topic.Id, "nonce", nextNonce.BlockHeight)
 
-		err = k.AddWorkerWindowTopicId(ctx, block+topic.WorkerSubmissionWindow, topic.Id)
+		err = k.GetNonceKeeper().AddWorkerWindowTopicId(ctx, block+topic.WorkerSubmissionWindow, topic.Id)
 		if err != nil {
 			ctx.Logger().Warn("Error adding worker window topic id", "error", err)
 			continue
@@ -132,7 +133,7 @@ func GetAndUpdateActiveTopicWeights(
 	totalRevenue cosmosMath.Int,
 	err error,
 ) {
-	moduleParams, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParamsKeeper().GetParams(ctx)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get alpha")
 	}
@@ -144,7 +145,7 @@ func GetAndUpdateActiveTopicWeights(
 	// Retrieve and sort all active topics with epoch ending at this block
 	// default page limit for the max because default is 100 and max is 1000
 	// 1000 is excessive for the topic query
-	topicids, err := k.GetActiveTopicIdsAtBlock(ctx, block)
+	topicids, err := k.GetTopicKeeper().GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get active topics")
 	}
@@ -154,13 +155,13 @@ func GetAndUpdateActiveTopicWeights(
 
 	// Apply the function on all sorted topics
 	for _, topicId := range topicids.TopicIds {
-		topic, err := k.GetTopic(ctx, topicId)
+		topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
 		}
 
 		// Calc weight and related data per topic
-		weight, topicFeeRevenue, topicStake, err := k.GetCurrentTopicWeight(
+		weight, topicFeeRevenue, topicStake, err := k.GetTopicKeeper().GetCurrentTopicWeight(
 			ctx,
 			topic.Id,
 			topic.EpochLength,
@@ -173,7 +174,7 @@ func GetAndUpdateActiveTopicWeights(
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get current topic weight")
 		}
 		Logger(ctx).Debug("Setting previous topic weight for topic", "topicId", topic.Id, "weight", weight.String())
-		err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
+		err = k.GetTopicKeeper().SetPreviousTopicWeight(ctx, topic.Id, weight)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to set previous topic weight")
 		}
@@ -183,14 +184,14 @@ func GetAndUpdateActiveTopicWeights(
 		// This revenue will be paid to top active topics of this block (the churnable topics).
 		// This happens regardless of this topic's fate (inactivation or not)
 		// => the influence of this topic's revenue needs to be appropriately diminished.
-		err = k.DripTopicFeeRevenue(ctx, topic, blocksPerWeek, block)
+		err = k.GetTopicKeeper().DripTopicFeeRevenue(ctx, topic, blocksPerWeek, block)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to reset topic fee revenue")
 		}
 
 		// If the topic is inactive, inactivate it
 		if weight.Lt(moduleParams.MinTopicWeight) {
-			err := k.InactivateTopic(ctx, topic.Id)
+			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
@@ -199,10 +200,10 @@ func GetAndUpdateActiveTopicWeights(
 		}
 
 		// Update topic active status
-		err = k.AttemptTopicReactivation(ctx, topicId)
+		err = k.GetTopicKeeper().AttemptTopicReactivation(ctx, topicId)
 		if err != nil {
 			ctx.Logger().Error("Error on attempt topic reactivation, explicitly inactivating topic")
-			err := k.InactivateTopic(ctx, topic.Id)
+			err := k.GetTopicKeeper().InactivateTopic(ctx, topic.Id)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}

@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func EndBlocker(ctx context.Context, am AppModule) error {
@@ -14,18 +15,32 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug("---------------- Emissions EndBlock -------------------", "blockHeight", blockHeight)
 
-	moduleParams, err := am.keeper.GetParams(sdkCtx)
+	moduleParams, err := am.keeper.GetParamsKeeper().GetParams(sdkCtx)
 	if err != nil {
 		sdkCtx.Logger().Error("Error Getting module params", err)
 		return err
 	}
 
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
-	err = RemoveStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	err = RemoveStakes(
+		sdkCtx,
+		blockHeight,
+		am.keeper.GetStakingKeeper().GetStakeRemovalsUpUntilBlock,
+		am.keeper.GetStakingKeeper().RemoveReputerStake,
+		am.keeper.GetBankingKeeper().SendCoinsFromModuleToAccount,
+		moduleParams.HalfMaxProcessStakeRemovalsEndBlock,
+	)
 	if err != nil {
 		sdkCtx.Logger().Error("Error removing stakes: ", err)
 	}
-	err = RemoveDelegateStakes(sdkCtx, blockHeight, &am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	err = RemoveDelegateStakes(
+		sdkCtx,
+		blockHeight,
+		am.keeper.GetStakingKeeper().GetDelegateStakeRemovalsUpUntilBlock,
+		am.keeper.GetStakingKeeper().RemoveDelegateStake,
+		am.keeper.GetBankingKeeper().SendCoinsFromModuleToAccount,
+		moduleParams.HalfMaxProcessStakeRemovalsEndBlock,
+	)
 	if err != nil {
 		sdkCtx.Logger().Error("Error removing delegate stakes: ", err)
 	}
@@ -65,12 +80,12 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	// Close any open windows due this blockHeight
-	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
+	workerWindowsToClose := am.keeper.GetNonceKeeper().GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {
 		for _, topicId := range workerWindowsToClose.TopicIds {
 			sdkCtx.Logger().Info("ABCI EndBlocker: Worker close cadence met for topic", "topicId", topicId)
 			// Check if there is an unfulfilled nonce
-			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId)
+			nonces, err := am.keeper.GetNonceKeeper().GetUnfulfilledWorkerNonces(sdkCtx, topicId)
 			if err != nil {
 				sdkCtx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 				continue
@@ -78,7 +93,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				// No nonces to fulfill
 				continue
 			} else {
-				topic, err := am.keeper.GetTopic(sdkCtx, topicId)
+				topic, err := am.keeper.GetTopicKeeper().GetTopic(sdkCtx, topicId)
 				if err != nil {
 					sdkCtx.Logger().Warn("Error getting topic", "error", err)
 					continue
@@ -93,7 +108,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 			}
 		}
-		err = am.keeper.DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
+		err = am.keeper.GetNonceKeeper().DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
 		if err != nil {
 			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
 		}

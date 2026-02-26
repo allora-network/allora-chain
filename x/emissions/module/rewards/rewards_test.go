@@ -32,7 +32,7 @@ func TestRewardsTestSuite(t *testing.T) {
 
 func (s *RewardsTestSuite) GenerateRewards(topicId uint64, block int64) ([]types.TaskReward, alloraMath.Dec) {
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
-	p, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	p, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 
 	rewardsDistribution, totalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(
@@ -63,10 +63,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Do not send bundles for topic 2 yet
 	topic2 := s.FullTopicSetup(workerIndexes2, reputerIndexes2)
 
-	beforeRewardsTopic1FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
+	beforeRewardsTopic1FeeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
-	beforeRewardsTopic2FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topic2.GetId())
+	beforeRewardsTopic2FeeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topic2.GetId())
 	s.Require().NoError(err)
 
 	// TOPIC 1 - FIRST PASS
@@ -81,9 +81,9 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Trigger end block - rewards distribution
 	s.EndBlock()
 
-	afterRewardsTopic1FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
+	afterRewardsTopic1FeeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	afterRewardsTopic2FeeRevenue, err := s.EmissionsKeeper().GetTopicFeeRevenue(s.Ctx(), topic2.GetId())
+	afterRewardsTopic2FeeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(s.Ctx(), topic2.GetId())
 	s.Require().NoError(err)
 
 	// Topic 1 should have less revenue after rewards distribution -> rewards distributed
@@ -110,10 +110,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImportanceOfPastVsPresent() {
 	require := s.Require()
 
-	currentParams, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	currentParams, err := s.ParamsKeeper().GetParams(s.Ctx())
 	require.NoError(err)
 	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString("0.1")
-	err = s.EmissionsKeeper().SetParams(s.Ctx(), currentParams)
+	err = s.ParamsKeeper().SetParams(s.Ctx(), currentParams)
 	require.NoError(err)
 
 	workerIndexes := testutil.ReturnIndexes(0, 3)
@@ -168,7 +168,6 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 // However this test is enough to prove the point
 func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPresentPerformance() {
 	require := s.Require()
-	k := s.EmissionsKeeper()
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 
 	workerIndexes := testutil.ReturnIndexes(0, 3)
@@ -185,10 +184,10 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	// run tests for each alpha value
 	for alphaIndex, alpha := range alphaValues {
 		// set the task reward alpha for this test series
-		currentParams, err := k.GetParams(s.Ctx())
+		currentParams, err := s.ParamsKeeper().GetParams(s.Ctx())
 		require.NoError(err)
 		currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString(alpha)
-		err = k.SetParams(s.Ctx(), currentParams)
+		err = s.ParamsKeeper().SetParams(s.Ctx(), currentParams)
 		require.NoError(err)
 
 		baseOpts := []testutil.Option{
@@ -277,7 +276,6 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegret() {
 	// SETUP
 	require := s.Require()
-	k := s.EmissionsKeeper()
 
 	// Initialize indices and values
 	workerIndexes := testutil.ReturnIndexes(0, 3)
@@ -342,10 +340,10 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 
 		// Set task reward alpha in params for second trial
 		if i == 1 {
-			currentParams, err := k.GetParams(s.Ctx())
+			currentParams, err := s.ParamsKeeper().GetParams(s.Ctx())
 			require.NoError(err)
 			currentParams.TaskRewardAlpha = trial.alphaRegret
-			err = k.SetParams(s.Ctx(), currentParams)
+			err = s.ParamsKeeper().SetParams(s.Ctx(), currentParams)
 			require.NoError(err)
 		}
 
@@ -362,7 +360,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		s.FullTopicPass(workerIndexes, reputerIndexes, phaseOptions...)
 
 		// Get first epoch regret for worker 0
-		worker0, _, err := k.GetInfererNetworkRegret(s.Ctx(), trial.topicId, addrs[0])
+		worker0, _, err := s.RegretsKeeper().GetInfererNetworkRegret(s.Ctx(), trial.topicId, addrs[0])
 		require.NoError(err)
 		trial.firstRegret = worker0.Value
 
@@ -372,7 +370,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 
 		// Collect regrets for all workers
 		for j, idx := range workerIndexes {
-			worker, _, err := k.GetInfererNetworkRegret(s.Ctx(), trial.topicId, addrs[idx])
+			worker, _, err := s.RegretsKeeper().GetInfererNetworkRegret(s.Ctx(), trial.topicId, addrs[idx])
 			require.NoError(err)
 			if j == 0 {
 				trial.secondRegret = worker.Value
@@ -514,7 +512,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		regretScales  []alloraMath.Dec
 	)
 
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	const numEpochs = 10
@@ -529,7 +527,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		topicId, block = s.FullTopicPass(workerIndexes, reputerIndexes, baseOptions...)
 
 		// Get current weight and regret scale before processing
-		regretScale, err := s.EmissionsKeeper().GetLatestRegretScale(s.Ctx(), topicId)
+		regretScale, err := s.WeightstsKeeper().GetLatestRegretScale(s.Ctx(), topicId)
 		require.NoError(err)
 		regretScales = append(regretScales, regretScale)
 
@@ -537,7 +535,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
 		for _, index := range workerIndexes {
-			weight, err := s.EmissionsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, s.AddrsStr(index))
+			weight, err := s.WeightstsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, s.AddrsStr(index))
 			s.Require().NoError(err)
 			workerWeights[s.AddrsStr(index)] = append(workerWeights[s.AddrsStr(index)], weight)
 		}
@@ -584,7 +582,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	var err error
 	reputerStake := make([]cosmosMath.Int, 5)
 	for _, index := range reputerIndexes {
-		reputerStake[index], err = s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
+		reputerStake[index], err = s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
 		s.Require().NoError(err)
 	}
 
@@ -597,7 +595,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithTopicID(topicId))
 
 	for i, index := range reputerIndexes {
-		reputerStakeCurrent, err := s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
+		reputerStakeCurrent, err := s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
 		s.Require().NoError(err)
 		s.Require().True(
 			reputerStakeCurrent.GT(reputerStake[i]),
@@ -638,7 +636,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	topicId, _ := s.FullTopicPass(workerIndexes, reputerIndexes)
 	_, block := s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithTopicID(topicId))
 
-	networkLossBundles, err := s.EmissionsKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, block)
+	networkLossBundles, err := s.ReputerLossKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err)
 	s.Require().NotNil(networkLossBundles)
 
@@ -658,7 +656,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		*networkLossBundles)
 	s.Require().NoError(err)
 
-	p, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	p, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Equal(p.GetMaxTopInferersToReward(), uint64(len(infererScores)), "Only few Top inferers can get reward")
@@ -729,7 +727,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		for i, topicID := range topicIDs {
 			for j, reputerIdx := range reputerIndexes {
 				var err error
-				stakes[i][j], err = s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicID, s.AddrsStr(reputerIdx))
+				stakes[i][j], err = s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicID, s.AddrsStr(reputerIdx))
 				require.NoError(err)
 			}
 		}
@@ -777,7 +775,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	require.NoError(err)
 
 	// update stakes and run second epoch
-	stakes1[1][0], err = s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicIDs[1], s.AddrsStr(reputerIndexes[0]))
+	stakes1[1][0], err = s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicIDs[1], s.AddrsStr(reputerIndexes[0]))
 	require.NoError(err)
 
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(fundAmount))
@@ -822,14 +820,14 @@ func (s *RewardsTestSuite) validateTopicWeightsConsistency(topicIDs [2]uint64) {
 	var topicWeights [2]alloraMath.Dec
 	var err error
 	for i, topicID := range topicIDs {
-		topicWeights[i], _, err = s.EmissionsKeeper().GetPreviousTopicWeight(s.Ctx(), topicID)
+		topicWeights[i], _, err = s.TopicKeeper().GetPreviousTopicWeight(s.Ctx(), topicID)
 		s.Require().NoError(err)
 	}
 
 	sumWeights, err := topicWeights[0].Add(topicWeights[1])
 	s.Require().NoError(err)
 
-	totalSum, err := s.EmissionsKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	totalSum, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
 	s.Require().NoError(err)
 
 	inDelta, err := alloraMath.InDelta(totalSum, sumWeights, alloraMath.MustNewDecFromString("0.0001"))
@@ -909,11 +907,11 @@ func (s *RewardsTestSuite) TestReputerDeviatingFromConsensusGetsLessRewards() {
 			var err error
 			reputerStakes0 := make([]cosmosMath.Int, len(reputerIndexes))
 			for i, index := range reputerIndexes {
-				reputerStakes0[i], err = s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
+				reputerStakes0[i], err = s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
 				require.NoError(err)
 			}
 
-			err = s.EmissionsKeeper().SetPreviousTopicWeight(s.Ctx(), topicId, alloraMath.MustNewDecFromString("100"))
+			err = s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), topicId, alloraMath.MustNewDecFromString("100"))
 			require.NoError(err)
 
 			reputerValues := s.GetReputerValuesFromIndexes(reputerIndexes, workerIndexes, tc.baseValue)
@@ -934,7 +932,7 @@ func (s *RewardsTestSuite) TestReputerDeviatingFromConsensusGetsLessRewards() {
 
 			reputerStakes1 := make([]cosmosMath.Int, len(reputerIndexes))
 			for i, index := range reputerIndexes {
-				reputerStakes1[i], err = s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
+				reputerStakes1[i], err = s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(index))
 				require.NoError(err)
 			}
 
@@ -1018,7 +1016,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 		reputerStakeSnapshots[scenarioIdx] = make([]cosmosMath.Int, len(reputerIndexes))
 		for i, idx := range reputerIndexes {
 			var err error
-			reputerStakeSnapshots[scenarioIdx][i], err = s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(idx))
+			reputerStakeSnapshots[scenarioIdx][i], err = s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(idx))
 			require.NoError(err)
 		}
 
@@ -1146,13 +1144,13 @@ func (s *RewardsTestSuite) TestRewardIncreaseContinuouslyAfterTopicReactivated()
 	runPassWithSetup(1, false)
 
 	// Check topic 0 is inactive, reactivate, and verify rewards
-	isActive, err := s.EmissionsKeeper().IsTopicActive(s.Ctx(), topicIDs[0])
+	isActive, err := s.TopicKeeper().IsTopicActive(s.Ctx(), topicIDs[0])
 	require.NoError(err)
 	require.False(isActive)
 
 	s.FundTopic(topicIDs[0], s.Addrs(topicConfigs[0].rIdx[0]), initialStake.MulRaw(3))
 
-	isActive, err = s.EmissionsKeeper().IsTopicActive(s.Ctx(), topicIDs[0])
+	isActive, err = s.TopicKeeper().IsTopicActive(s.Ctx(), topicIDs[0])
 	require.NoError(err)
 	require.True(isActive)
 
@@ -1424,7 +1422,7 @@ func (s *RewardsTestSuite) TestNoActiveParticipantsNoRewardsForTopic() {
 	initialEcosystemBalance := s.BankKeeper().GetBalance(s.Ctx(), ecosystemAddr, params.DefaultBondDenom)
 
 	// Simulate moving to the end of the first epoch
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 	nextBlock := block + topic.EpochLength
 	s.WithBlockHeight(nextBlock)
@@ -1433,7 +1431,7 @@ func (s *RewardsTestSuite) TestNoActiveParticipantsNoRewardsForTopic() {
 	s.EndBlock()
 
 	// Check topic weight after funding and epoch end
-	topicWeight, _, err := s.EmissionsKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
+	topicWeight, _, err := s.TopicKeeper().GetPreviousTopicWeight(s.Ctx(), topicId)
 	require.NoError(err)
 	require.True(topicWeight.Gt(alloraMath.ZeroDec()), "Topic weight should be greater than zero after funding")
 

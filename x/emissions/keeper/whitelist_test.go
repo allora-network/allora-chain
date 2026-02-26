@@ -9,7 +9,7 @@ import (
 //nolint:exhaustruct
 func (s *KeeperTestSuite) TestWhitelistOperations() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.WhitelistsKeeper()
 	topicId := uint64(1)
 	address := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	nonExistentAddr := "allo1w6uwgrv77szudkve7g84uazuhyw6j4q9hdqelv"
@@ -127,7 +127,7 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 //nolint:exhaustruct
 func (s *KeeperTestSuite) TestWhitelistEnableDisableOperations() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.WhitelistsKeeper()
 	topicId := uint64(2)
 
 	testCases := []struct {
@@ -185,7 +185,7 @@ func (s *KeeperTestSuite) TestWhitelistEnableDisableOperations() {
 
 func (s *KeeperTestSuite) TestWhitelistEnabledOperations() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.WhitelistsKeeper()
 	address := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	testCases := []struct {
@@ -233,7 +233,7 @@ func (s *KeeperTestSuite) TestWhitelistEnabledOperations() {
 
 func (s *KeeperTestSuite) TestTopicWhitelistEnabledOperations() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.WhitelistsKeeper()
 	address := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	topicId := uint64(1)
 
@@ -301,7 +301,7 @@ func (s *KeeperTestSuite) TestTopicWhitelistEnabledOperations() {
 
 func (s *KeeperTestSuite) TestPermissionOperations() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.WhitelistsKeeper()
 	address := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 
 	testCases := []struct {
@@ -355,12 +355,12 @@ func (s *KeeperTestSuite) TestPermissionOperations() {
 
 func (s *KeeperTestSuite) TestTopicPermissionCanUpdateTopicWhitelist() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.WhitelistsKeeper()
 	address := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
 	topicId := s.CreateTopic(testutil.WithEpochLength(60))
 
 	// Get topic creator for comparison
-	topic, err := k.GetTopic(ctx, topicId)
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Topic creator should have permission
@@ -389,7 +389,7 @@ func (s *KeeperTestSuite) TestTopicPermissionCanUpdateTopicWhitelist() {
 //nolint:exhaustruct
 func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.WhitelistsKeeper()
 	topicCreator := s.AddrsStr(0)
 	topicWorker := s.AddrsStr(1)
 	topicReputer := s.AddrsStr(2)

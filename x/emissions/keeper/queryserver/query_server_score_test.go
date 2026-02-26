@@ -7,7 +7,7 @@ import (
 
 func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	worker := s.AddrsStr(0)
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
@@ -32,7 +32,7 @@ func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 
 func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	worker := s.AddrsStr(0)
 	forecaster := s.AddrsStr(2)
@@ -54,7 +54,7 @@ func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 
 func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	worker := s.AddrsStr(0)
 	reputer := s.AddrsStr(2)
@@ -76,7 +76,7 @@ func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 
 func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	workerAddress := s.Addrs(0)
 	blockHeight := int64(105)
@@ -117,7 +117,7 @@ func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 
 func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 	score := types.Score{
@@ -132,7 +132,7 @@ func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopInferersToReward = 1
-	err := keeper.SetParams(ctx, params)
+	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
@@ -155,7 +155,7 @@ func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 
 func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(105)
 
@@ -183,7 +183,7 @@ func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 
 func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -212,7 +212,7 @@ func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 
 func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	blockHeight := int64(100)
 
@@ -242,7 +242,7 @@ func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 
 func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	reputer := s.AddrsStr(1)
 
@@ -274,7 +274,7 @@ func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 }
 
 func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
-	ctx, keeper, require := s.Ctx(), s.EmissionsKeeper(), s.Require()
+	ctx, keeper, require := s.Ctx(), s.ScoresKeeper(), s.Require()
 
 	topicId := uint64(1)
 	blockHeight := int64(100)
@@ -300,7 +300,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 }
 
 func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
-	ctx, keeper, require := s.Ctx(), s.EmissionsKeeper(), s.Require()
+	ctx, keeper, require := s.Ctx(), s.ScoresKeeper(), s.Require()
 
 	topicId := uint64(1)
 	blockHeight := int64(100)
@@ -326,7 +326,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 }
 
 func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
-	ctx, keeper, require := s.Ctx(), s.EmissionsKeeper(), s.Require()
+	ctx, keeper, require := s.Ctx(), s.ScoresKeeper(), s.Require()
 
 	topicId := uint64(1)
 	blockHeight := int64(100)
@@ -353,7 +353,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 
 func (s *QueryServerTestSuite) TestGetTopicInitialInfererEmaScore() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	initialScore := alloraMath.MustNewDecFromString("95.5")
 
@@ -378,7 +378,7 @@ func (s *QueryServerTestSuite) TestGetTopicInitialInfererEmaScore() {
 
 func (s *QueryServerTestSuite) TestGetTopicInitialForecasterEmaScore() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	initialScore := alloraMath.MustNewDecFromString("92.5")
 
@@ -403,7 +403,7 @@ func (s *QueryServerTestSuite) TestGetTopicInitialForecasterEmaScore() {
 
 func (s *QueryServerTestSuite) TestGetTopicInitialReputerEmaScore() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	initialScore := alloraMath.MustNewDecFromString("93.5")
 

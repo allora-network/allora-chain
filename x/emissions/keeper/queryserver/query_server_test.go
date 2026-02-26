@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/allora-network/allora-chain/app/params"
-	testutil "github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -43,14 +43,14 @@ func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 	err = s.BankKeeper().SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, creator, creatorInitialBalanceCoins)
 	s.Require().NoError(err)
 
-	initialTopicId, err := s.EmissionsKeeper().GetNextTopicId(s.Ctx())
+	initialTopicId, err := s.TopicKeeper().GetNextTopicId(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().NotNil(initialTopicId)
 
 	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 
-	result, err := s.EmissionsKeeper().GetNextTopicId(s.Ctx())
+	result, err := s.TopicKeeper().GetNextTopicId(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(initialTopicId+1, result)
@@ -59,7 +59,7 @@ func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on second topic")
 
-	result, err = s.EmissionsKeeper().GetNextTopicId(s.Ctx())
+	result, err = s.TopicKeeper().GetNextTopicId(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(initialTopicId+2, result)

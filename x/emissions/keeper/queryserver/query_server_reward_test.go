@@ -7,7 +7,7 @@ import (
 
 func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	reputer := s.AddrsStr(2)
 
@@ -41,7 +41,7 @@ func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
 
 func (s *QueryServerTestSuite) TestGetPreviousInferenceRewardFraction() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	worker := s.AddrsStr(1)
 
@@ -74,7 +74,7 @@ func (s *QueryServerTestSuite) TestGetPreviousInferenceRewardFraction() {
 
 func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	topicId := uint64(1)
 	worker := s.AddrsStr(3)
 
@@ -108,7 +108,7 @@ func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
 
 func (s *QueryServerTestSuite) TestGetPreviousPercentageRewardToStakedReputers() {
 	ctx := s.Ctx()
-	keeper := s.EmissionsKeeper()
+	keeper := s.ScoresKeeper()
 	previousPercentageReward := alloraMath.NewDecFromInt64(50)
 
 	// Set the previous percentage reward to staked reputers

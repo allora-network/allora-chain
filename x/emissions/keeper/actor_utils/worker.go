@@ -19,7 +19,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	blockHeight := ctx.BlockHeight()
 
 	// Check if the nonce is unfulfilled
-	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
+	nonceUnfulfilled, err := k.GetNonceKeeper().IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		_, fulfillErr := k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
+		_, fulfillErr := k.GetNonceKeeper().FulfillWorkerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
 				"Error fulfilling worker nonce during deferred cleanup",
@@ -54,7 +54,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		resetActiveErr := k.ResetActiveWorkersForTopic(ctx, topic.Id)
+		resetActiveErr := k.GetWorkerKeeper().ResetActiveWorkersForTopic(ctx, topic.Id)
 		if resetActiveErr != nil {
 			ctx.Logger().Error(
 				"Error resetting active workers during deferred cleanup",
@@ -63,7 +63,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 			)
 		}
 
-		resetSubmissionsErr := k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
+		resetSubmissionsErr := k.GetWorkerKeeper().ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
 		if resetSubmissionsErr != nil {
 			ctx.Logger().Error(
 				"Error resetting worker individual submissions during deferred cleanup",
@@ -79,7 +79,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}()
 
 	// Get all active inferers for this topic
-	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
+	activeInfererAddresses, err := k.GetWorkerKeeper().GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	}
 
 	// Get all active forecasters for this topic
-	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
+	activeForecastAddresses, err := k.GetWorkerKeeper().GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -120,18 +120,18 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
+	err = k.GetNonceKeeper().AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
 
-	err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
+	err = k.GetTopicKeeper().SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}
 
 	// Once inferences are closed, update the network inferences outlier metrics
-	err = k.UpdateNetworkInferencesOutlierMetrics(ctx, topic.Id, nonce.BlockHeight)
+	err = k.GetWorkerKeeper().UpdateNetworkInferencesOutlierMetrics(ctx, topic.Id, nonce.BlockHeight)
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func ProcessAndStoreNetworkInferences(
 	}
 
 	// Get outlier resistant inferences
-	outlierResistantFilteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
+	outlierResistantFilteredInferences, err := k.GetTopicKeeper().FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to filter outlier resistant inferences")
 	}
@@ -247,7 +247,7 @@ func closeActiveInferencesSet(
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
 	for _, address := range activeInfererAddresses {
-		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
+		inference, err := k.GetWorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -264,7 +264,7 @@ func closeActiveInferencesSet(
 		Inferences: activeInferences,
 	}
 
-	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)
+	err = k.GetWorkerKeeper().InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -287,7 +287,7 @@ func closeActiveForecastsSet(
 	activeForecasts := make([]*types.Forecast, 0)
 
 	for _, address := range activeForecastAddresses {
-		forecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, address)
+		forecast, err := k.GetWorkerKeeper().GetWorkerLatestForecastByTopicId(ctx, topicId, address)
 		if err != nil {
 			return nil, err
 		}
@@ -340,7 +340,7 @@ func closeActiveForecastsSet(
 		Forecasts: activeForecasts,
 	}
 
-	err = k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
+	err = k.GetWorkerKeeper().InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, *forecasts)
 	if err != nil {
 		return nil, err
 	}
