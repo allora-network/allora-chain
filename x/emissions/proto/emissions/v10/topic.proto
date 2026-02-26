@@ -105,3 +105,14 @@ message TopicIdWeightPair {
     (gogoproto.nullable) = false
   ];
 }
+
+message TopicLabel {
+  uint32 id = 1;
+  string name = 2;
+}
+
+message EpochLabelRegistry {
+  uint64 topic_id = 1;
+  uint64 epoch_id = 2;
+  repeated TopicLabel labels = 3;
+}

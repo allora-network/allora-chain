@@ -31,6 +31,7 @@ type ActorId = string
 type BlockHeight = int64
 type Reputer = string
 type Delegator = string
+type LabelId = uint32
 
 type Keeper struct {
 	cdc              codec.BinaryCodec
@@ -80,6 +81,8 @@ type Keeper struct {
 	lowestForecasterScoreEma collections.Map[TopicId, types.Score]
 	// lowest reputer score ema for a topic
 	lowestReputerScoreEma collections.Map[TopicId, types.Score]
+	// topic epoch label registry - keyed by [topic_id, nonce]
+	topicLabelRegistry collections.Map[collections.Pair[TopicId, BlockHeight], types.EpochLabelRegistry]
 
 	// / SCORES
 
@@ -379,6 +382,7 @@ func NewKeeper(
 		lowestForecasterScoreEma:                  collections.NewMap(sb, types.LowestForecasterScoreEmaKey, "lowest_forecaster_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		activeReputers:                            collections.NewKeySet(sb, types.ActiveReputersKey, "active_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		lowestReputerScoreEma:                     collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
+		topicLabelRegistry:                        collections.NewMap(sb, types.TopicLabelRegistryKey, "topic_label_registry", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.EpochLabelRegistry](cdc)),
 		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
 		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
 		lastMedianInferences:                      collections.NewMap(sb, types.LastMedianInferencesKey, "last_median_inferences", collections.Uint64Key, alloraMath.DecValue),
@@ -4309,6 +4313,10 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx sdk.Context, topicId TopicId, bloc
 	if err != nil {
 		return errorsmod.Wrap(err, "error pruning outlier resistant network inferences")
 	}
+	err = k.pruneTopicLabelRegistry(ctx, blockRange)
+	if err != nil {
+		return errorsmod.Wrap(err, "error pruning topic label registry")
+	}
 	return nil
 }
 
@@ -4334,6 +4342,10 @@ func (k *Keeper) pruneNetworkInferences(ctx context.Context, blockRange *collect
 
 func (k *Keeper) pruneOutlierResistantNetworkInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
 	return k.outlierResistantNetworkInferences.Clear(ctx, blockRange)
+}
+
+func (k *Keeper) pruneTopicLabelRegistry(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	return k.topicLabelRegistry.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
@@ -5042,4 +5054,125 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
 
 	return nil
+}
+
+// GetEpochLabelRegistry returns the registry for (topicId, nonce).
+// If none exists yet, it returns an empty registry (not an error).
+func (k *Keeper) GetEpochLabelRegistry(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+) (types.EpochLabelRegistry, error) {
+	registry, err := k.topicLabelRegistry.Get(ctx, collections.Join(topicId, nonce))
+	if err != nil {
+		if errorsmod.IsOf(err, collections.ErrNotFound) {
+			return types.EpochLabelRegistry{
+				TopicId: topicId,
+				EpochId: uint64(nonce),
+				Labels:  nil,
+			}, nil
+		}
+		return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error getting topic label registry")
+	}
+	registry.TopicId = topicId
+	registry.EpochId = uint64(nonce)
+	return registry, nil
+}
+
+// RegisterEpochLabel ensures labelName exists in the registry for (topicId, nonce).
+// If it already exists, it returns the existing id (idempotent).
+func (k *Keeper) RegisterEpochLabel(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	labelName string,
+) (LabelId, error) {
+	labelName = strings.TrimSpace(labelName)
+	if labelName == "" {
+		return 0, errorsmod.Wrap(types.ErrInvalidLabelName, "label name cannot be empty")
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return 0, err
+	}
+
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Name == labelName {
+			return lbl.Id, nil
+		}
+	}
+
+	// use max id if any gaps ever appear
+	var maxID uint32
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Id > maxID {
+			maxID = lbl.Id
+		}
+	}
+	newID := maxID + 1
+
+	registry.Labels = append(registry.Labels, &types.TopicLabel{
+		Id:   newID,
+		Name: labelName,
+	})
+
+	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicId, nonce), registry); err != nil {
+		return 0, errorsmod.Wrap(err, "error setting topic label registry")
+	}
+
+	return newID, nil
+}
+
+// GetEpochLabelId returns the label id for labelName, if present.
+func (k *Keeper) GetEpochLabelId(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	labelName string,
+) (LabelId, bool, error) {
+	labelName = strings.TrimSpace(labelName)
+	if labelName == "" {
+		return 0, false, nil
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return 0, false, err
+	}
+
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Name == labelName {
+			return lbl.Id, true, nil
+		}
+	}
+	return 0, false, nil
+}
+
+// GetEpochLabelName returns the label name for id, if present.
+func (k *Keeper) GetEpochLabelName(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	id LabelId,
+) (string, bool, error) {
+	if id == 0 {
+		return "", false, nil
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return "", false, err
+	}
+	if len(registry.Labels) == 0 {
+		return "", false, nil
+	}
+
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Id == id {
+			return lbl.Name, true, nil
+		}
+	}
+
+	return "", false, nil
 }
