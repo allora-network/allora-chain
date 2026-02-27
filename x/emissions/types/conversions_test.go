@@ -37,7 +37,7 @@ func TestInputInferenceConvert(t *testing.T) {
 				BlockHeight: 100,
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Value:       mustNewBoundedExp40Dec(t, "1.23"),
-				Values:      []math.BoundedExp40Dec{mustNewBoundedExp40Dec(t, "1.23")},
+				Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1.23")}},
 				ExtraData:   []byte("extra"),
 				Proof:       "proof",
 			},
@@ -66,7 +66,7 @@ func TestInputInferenceConvert(t *testing.T) {
 			dec := tt.input.Value.ToDec()
 			require.True(t, dec.Equal(got.Value))
 			for i := range got.Values {
-				decv := tt.input.Values[i].ToDec()
+				decv := tt.input.Values[i].Value.ToDec()
 				require.True(t, decv.Equal(got.Values[i]))
 			}
 		})
@@ -174,7 +174,7 @@ func TestInputInferenceForecastBundleConvert(t *testing.T) {
 		BlockHeight: 100,
 		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 		Value:       mustNewBoundedExp40Dec(t, "1.23"),
-		Values:      []math.BoundedExp40Dec{mustNewBoundedExp40Dec(t, "1.23")},
+		Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1.23")}},
 		ExtraData:   []byte("extra"),
 		Proof:       "proof",
 	}
