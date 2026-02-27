@@ -14,7 +14,7 @@ func NewInferenceFromInput(bi *InputInference) (*Inference, error) {
 	dec := bi.Value.ToDec()
 	decs := make([]alloraMath.Dec, len(bi.Values))
 	for i := range bi.Values {
-		decs[i] = bi.Values[i].ToDec()
+		decs[i] = bi.Values[i].Value.ToDec()
 	}
 	inference := &Inference{
 		TopicId:     bi.TopicId,

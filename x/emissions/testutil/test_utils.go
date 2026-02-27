@@ -531,7 +531,7 @@ func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, worker
 				BlockHeight: nonce,
 				Inferer:     s.addrsStr[workerIdx],
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
-				Values:      []alloraMath.BoundedExp40Dec{alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr))},
+				Values:      []*types.InputLabeledValue{{Label: "", Value: alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr)}},
 				ExtraData:   nil,
 				Proof:       "",
 			},
