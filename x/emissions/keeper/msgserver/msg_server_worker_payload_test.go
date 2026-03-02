@@ -1,8 +1,6 @@
 package msgserver_test
 
 import (
-	"encoding/hex"
-
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -103,27 +101,10 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 					},
 				},
 			},
-			InferencesForecastsBundleSignature: []byte{},
 		},
 	}
 
 	return workerMsg, topic
-}
-func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(workerMsg types.InsertWorkerPayloadRequest, workerPrivateKey secp256k1.PrivKey) types.InsertWorkerPayloadRequest {
-	require := s.Require()
-
-	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-
-	src := make([]byte, 0)
-	src, err := workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
-	require.NoError(err, "Marshall reputer value bundle should not return an error")
-
-	sig, err := workerPrivateKey.Sign(src)
-	require.NoError(err, "Sign should not return an error")
-	workerMsg.WorkerDataBundle.InferencesForecastsBundleSignature = sig
-	workerMsg.WorkerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
-
-	return workerMsg
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
@@ -131,7 +112,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 
 	s.WithBlockHeight(blockHeight)
@@ -154,7 +134,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilInference(
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	s.WithBlockHeight(blockHeight)
@@ -181,7 +160,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast()
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
 	s.WithBlockHeight(blockHeight)
@@ -208,7 +186,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInferenceAndF
 	// BEGIN MODIFICATION
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	// END MODIFICATION
 
 	// Add worker to topic whitelist
@@ -216,25 +193,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInferenceAndF
 	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
-	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
-}
-
-func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutSignature() {
-	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
-	require := s.Require()
-
-	workerPrivateKey := secp256k1.GenPrivKey()
-	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
-
-	// BEGIN MODIFICATION
-	// workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
-	// END MODIFICATION
-
-	// Add worker to topic whitelist
-	err := s.EmissionsKeeper().AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
-	require.NoError(err)
-
-	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
@@ -257,7 +215,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedTopicI
 
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
 	s.WithBlockHeight(blockHeight)
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
@@ -286,7 +243,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInfe
 	err = s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
 	s.WithBlockHeight(blockHeight)
 
@@ -334,7 +290,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	_ = s.EmissionsKeeper().SetInfererScoreEma(s.Ctx(), topicId, inferer3, score3)
 	_ = s.EmissionsKeeper().SetInfererScoreEma(s.Ctx(), topicId, inferer4, score4)
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	param, _ := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.WithBlockHeight(workerBlockHeight)
 
@@ -374,7 +329,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForeca
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = newTopicId
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	forecastsCount0 := s.getCountForecastsAtBlock(originalTopicId, blockHeight)
 	require.Equal(forecastsCount0, 0)
@@ -426,8 +380,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredFore
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 	require.Equal(forecastsCount0, 0)
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
-
 	s.WithBlockHeight(blockHeight)
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.ErrorIs(err, types.ErrAddressNotRegistered)
@@ -456,8 +408,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 	err := s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
-
 	blockHeight := forecast.BlockHeight
 	s.WithBlockHeight(blockHeight)
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
@@ -484,8 +434,6 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	// Mock setup for addresses
 	workerIndexes := testutil.ReturnIndexes(1, 1)
 	worker := s.AddrsStr(workerIndexes[0])
-	workerPrivateKey := s.PrivKeys(workerIndexes[0])
-	workerPubKeyBytes := s.PubKeyHexStr(workerIndexes[0])
 
 	forecastElements := []*types.InputForecastElement{}
 	for i := 0; i < 1000000; i++ {
@@ -517,19 +465,10 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 					ForecastElements: forecastElements,
 				},
 			},
-			InferencesForecastsBundleSignature: []byte{},
 		},
 	}
 
-	src := make([]byte, 0)
-	src, err := workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
-	require.NoError(err, "Marshall reputer value bundle should not return an error")
-
-	sig, err := workerPrivateKey.Sign(src)
-	require.NoError(err, "Sign should not return an error")
-	workerMsg.WorkerDataBundle.InferencesForecastsBundleSignature = sig
-	workerMsg.WorkerDataBundle.Pubkey = workerPubKeyBytes
-	_, err = msgServer.InsertWorkerPayload(ctx, workerMsg)
+	_, err := msgServer.InsertWorkerPayload(ctx, workerMsg)
 	require.ErrorIs(err, types.ErrQueryTooLarge)
 }
 
@@ -542,8 +481,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	// Mock setup for addresses
 	worker := s.AddrsStr(1)
 	inferer := s.AddrsStr(2)
-	forecaster := s.AddrsStr(3)
-	inferer2 := s.AddrsStr(4)
 
 	// Create a InsertWorkerPayloadRequest message
 	//nolint:exhaustruct
@@ -554,29 +491,9 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 			TopicId: topicId,
 			Nonce:   &nonce,
 			InferenceForecastsBundle: &types.InputInferenceForecastBundle{
-				Inference: &types.InputInference{
-					TopicId:     topicId,
-					BlockHeight: nonce.BlockHeight,
-					Inferer:     inferer,
-					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-				},
-				Forecast: &types.InputForecast{
-					TopicId:     topicId,
-					BlockHeight: nonce.BlockHeight,
-					Forecaster:  forecaster,
-					ForecastElements: []*types.InputForecastElement{
-						{
-							Inferer: inferer,
-							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-						},
-						{
-							Inferer: inferer2,
-							Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
-						},
-					},
-				},
+				Inference: nil,
+				Forecast:  nil,
 			},
-			InferencesForecastsBundleSignature: []byte{},
 		},
 	}
 
@@ -610,7 +527,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 	inferenceBlockHeight := blockHeight + 10800
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayloadWithBlockHeight(workerPrivateKey, inferenceBlockHeight)
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	s.WithBlockHeight(blockHeight)
 
 	inferers := make([]string, 4)
@@ -659,7 +575,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadInfererNotMatchSignature(
 	err := s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	s.WithBlockHeight(blockHeight)
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
@@ -678,7 +593,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterNotMatchSignatu
 	err := s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	s.WithBlockHeight(blockHeight)
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
@@ -693,7 +607,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWorkerNotMatchSignature()
 
 	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 	workerMsg.WorkerDataBundle.Worker = s.AddrsStr(3)
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	s.WithBlockHeight(blockHeight)
 
@@ -747,7 +660,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecastIncludesSelf() {
 		},
 	}
 
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	s.WithBlockHeight(blockHeight)
 
 	// Set up scores for both inferers
@@ -814,8 +726,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredF
 	// This establishes a clean baseline to verify our test's effects
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 	require.Equal(forecastsCount0, 0, "No forecasts should exist before submitting the payload")
-
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	// Set the block height context so that we're within the worker submission window
 	s.WithBlockHeight(blockHeight)
@@ -960,7 +870,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			if c.mutate != nil {
 				c.mutate(&msg)
 			}
-			msg = s.signMsgInsertWorkerPayload(msg, workerPrivateKey)
 
 			s.WithBlockHeight(nonce)
 			s.setTopicArityAndUnity(topicId, c.arity, c.requireUnity, c.unityTol)
@@ -1023,7 +932,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
 		{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("3")},
 	}
-	msg1 = s.signMsgInsertWorkerPayload(msg1, pk1)
 
 	msg2, _ := s.setUpMsgInsertWorkerPayload(pk2)
 	msg2.WorkerDataBundle.TopicId = topicId
@@ -1037,7 +945,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
 		{Label: "d", Value: alloraMath.MustNewBoundedExp40DecFromString("40")},
 	}
-	msg2 = s.signMsgInsertWorkerPayload(msg2, pk2)
 
 	err := s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
@@ -1095,7 +1002,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
 		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
 	}
-	msg1 = s.signMsgInsertWorkerPayload(msg1, pk1)
 
 	// register nonce2 for the same topic (epoch 2)
 	err := s.EmissionsKeeper().AddWorkerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: nonce2})
@@ -1115,7 +1021,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
 		{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("30")},
 	}
-	msg2 = s.signMsgInsertWorkerPayload(msg2, pk2)
 
 	// whitelist both workers
 	err = s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)

@@ -1,20 +1,12 @@
 package types
 
 import (
-	"encoding/hex"
-
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils"
-)
-
-var (
-	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
 
 // / EXTERNAL TYPE VALIDATIONS
@@ -305,19 +297,6 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 	if len(bundle.Worker) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker cannot be empty")
 	}
-	if len(bundle.Pubkey) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "public key cannot be empty")
-	}
-	pk, err := hex.DecodeString(bundle.Pubkey)
-	if err != nil || len(pk) != secp256k1.PubKeySize {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pubkey")
-	}
-	pubkey := secp256k1.PubKey(pk)
-	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
-
-	if len(bundle.InferencesForecastsBundleSignature) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature cannot be empty")
-	}
 	if bundle.InferenceForecastsBundle == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference forecasts bundle cannot be nil")
 	}
@@ -329,12 +308,6 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 	if bundle.InferenceForecastsBundle.Inference != nil {
 		if err := bundle.InferenceForecastsBundle.Inference.Validate(); err != nil {
 			return err
-		}
-		// Validate against the current bundle
-		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
-			return errors.Wrapf(sdkerrors.ErrUnauthorized,
-				"Inference.Inferer %s does not match pubkey %s",
-				bundle.InferenceForecastsBundle.Inference.Inferer, pubKeyConvertedToAddress)
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
@@ -352,12 +325,6 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
 			return err
 		}
-		// Validate against the current bundle
-		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
-			return errors.Wrapf(sdkerrors.ErrUnauthorized,
-				"Forecast.Forecaster %s does not match pubkey %s",
-				bundle.InferenceForecastsBundle.Forecast.Forecaster, pubKeyConvertedToAddress)
-		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match worker address %s",
@@ -369,21 +336,6 @@ func (bundle *InputWorkerDataBundle) Validate() error {
 		if bundle.Nonce.BlockHeight != bundle.InferenceForecastsBundle.Forecast.BlockHeight {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "forecast block height %d does not match bundle block height %d", bundle.InferenceForecastsBundle.Forecast.BlockHeight, bundle.Nonce.BlockHeight)
 		}
-	}
-
-	// Check signature from the bundle, throw if invalid!
-	buf := inferenceForecastsBundleBufferPool.Get()
-	defer inferenceForecastsBundleBufferPool.Put(buf)
-	marshaled, err := bundle.InferenceForecastsBundle.XXX_Marshal(buf, true)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal inference forecasts bundle: %s", err)
-	}
-	if !pubkey.VerifySignature(marshaled, bundle.InferencesForecastsBundleSignature) {
-		return errors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
-	}
-	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
-	if pubKeyConvertedToAddress != bundle.Worker {
-		return errors.Wrap(sdkerrors.ErrUnauthorized, "worker address does not match signature")
 	}
 
 	return nil

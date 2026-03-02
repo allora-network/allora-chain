@@ -4053,13 +4053,11 @@ func (x *fastReflection_InputInferenceForecastBundle) ProtoMethods() *protoiface
 }
 
 var (
-	md_InputWorkerDataBundle                                       protoreflect.MessageDescriptor
-	fd_InputWorkerDataBundle_worker                                protoreflect.FieldDescriptor
-	fd_InputWorkerDataBundle_nonce                                 protoreflect.FieldDescriptor
-	fd_InputWorkerDataBundle_topic_id                              protoreflect.FieldDescriptor
-	fd_InputWorkerDataBundle_inference_forecasts_bundle            protoreflect.FieldDescriptor
-	fd_InputWorkerDataBundle_inferences_forecasts_bundle_signature protoreflect.FieldDescriptor
-	fd_InputWorkerDataBundle_pubkey                                protoreflect.FieldDescriptor
+	md_InputWorkerDataBundle                            protoreflect.MessageDescriptor
+	fd_InputWorkerDataBundle_worker                     protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_nonce                      protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_topic_id                   protoreflect.FieldDescriptor
+	fd_InputWorkerDataBundle_inference_forecasts_bundle protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -4069,8 +4067,6 @@ func init() {
 	fd_InputWorkerDataBundle_nonce = md_InputWorkerDataBundle.Fields().ByName("nonce")
 	fd_InputWorkerDataBundle_topic_id = md_InputWorkerDataBundle.Fields().ByName("topic_id")
 	fd_InputWorkerDataBundle_inference_forecasts_bundle = md_InputWorkerDataBundle.Fields().ByName("inference_forecasts_bundle")
-	fd_InputWorkerDataBundle_inferences_forecasts_bundle_signature = md_InputWorkerDataBundle.Fields().ByName("inferences_forecasts_bundle_signature")
-	fd_InputWorkerDataBundle_pubkey = md_InputWorkerDataBundle.Fields().ByName("pubkey")
 }
 
 var _ protoreflect.Message = (*fastReflection_InputWorkerDataBundle)(nil)
@@ -4162,18 +4158,6 @@ func (x *fastReflection_InputWorkerDataBundle) Range(f func(protoreflect.FieldDe
 			return
 		}
 	}
-	if len(x.InferencesForecastsBundleSignature) != 0 {
-		value := protoreflect.ValueOfBytes(x.InferencesForecastsBundleSignature)
-		if !f(fd_InputWorkerDataBundle_inferences_forecasts_bundle_signature, value) {
-			return
-		}
-	}
-	if x.Pubkey != "" {
-		value := protoreflect.ValueOfString(x.Pubkey)
-		if !f(fd_InputWorkerDataBundle_pubkey, value) {
-			return
-		}
-	}
 }
 
 // Has reports whether a field is populated.
@@ -4197,10 +4181,6 @@ func (x *fastReflection_InputWorkerDataBundle) Has(fd protoreflect.FieldDescript
 		return x.TopicId != uint64(0)
 	case "emissions.v10.InputWorkerDataBundle.inference_forecasts_bundle":
 		return x.InferenceForecastsBundle != nil
-	case "emissions.v10.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
-		return len(x.InferencesForecastsBundleSignature) != 0
-	case "emissions.v10.InputWorkerDataBundle.pubkey":
-		return x.Pubkey != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.InputWorkerDataBundle"))
@@ -4225,10 +4205,6 @@ func (x *fastReflection_InputWorkerDataBundle) Clear(fd protoreflect.FieldDescri
 		x.TopicId = uint64(0)
 	case "emissions.v10.InputWorkerDataBundle.inference_forecasts_bundle":
 		x.InferenceForecastsBundle = nil
-	case "emissions.v10.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
-		x.InferencesForecastsBundleSignature = nil
-	case "emissions.v10.InputWorkerDataBundle.pubkey":
-		x.Pubkey = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.InputWorkerDataBundle"))
@@ -4257,12 +4233,6 @@ func (x *fastReflection_InputWorkerDataBundle) Get(descriptor protoreflect.Field
 	case "emissions.v10.InputWorkerDataBundle.inference_forecasts_bundle":
 		value := x.InferenceForecastsBundle
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "emissions.v10.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
-		value := x.InferencesForecastsBundleSignature
-		return protoreflect.ValueOfBytes(value)
-	case "emissions.v10.InputWorkerDataBundle.pubkey":
-		value := x.Pubkey
-		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.InputWorkerDataBundle"))
@@ -4291,10 +4261,6 @@ func (x *fastReflection_InputWorkerDataBundle) Set(fd protoreflect.FieldDescript
 		x.TopicId = value.Uint()
 	case "emissions.v10.InputWorkerDataBundle.inference_forecasts_bundle":
 		x.InferenceForecastsBundle = value.Message().Interface().(*InputInferenceForecastBundle)
-	case "emissions.v10.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
-		x.InferencesForecastsBundleSignature = value.Bytes()
-	case "emissions.v10.InputWorkerDataBundle.pubkey":
-		x.Pubkey = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.InputWorkerDataBundle"))
@@ -4329,10 +4295,6 @@ func (x *fastReflection_InputWorkerDataBundle) Mutable(fd protoreflect.FieldDesc
 		panic(fmt.Errorf("field worker of message emissions.v10.InputWorkerDataBundle is not mutable"))
 	case "emissions.v10.InputWorkerDataBundle.topic_id":
 		panic(fmt.Errorf("field topic_id of message emissions.v10.InputWorkerDataBundle is not mutable"))
-	case "emissions.v10.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
-		panic(fmt.Errorf("field inferences_forecasts_bundle_signature of message emissions.v10.InputWorkerDataBundle is not mutable"))
-	case "emissions.v10.InputWorkerDataBundle.pubkey":
-		panic(fmt.Errorf("field pubkey of message emissions.v10.InputWorkerDataBundle is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.InputWorkerDataBundle"))
@@ -4356,10 +4318,6 @@ func (x *fastReflection_InputWorkerDataBundle) NewField(fd protoreflect.FieldDes
 	case "emissions.v10.InputWorkerDataBundle.inference_forecasts_bundle":
 		m := new(InputInferenceForecastBundle)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
-	case "emissions.v10.InputWorkerDataBundle.inferences_forecasts_bundle_signature":
-		return protoreflect.ValueOfBytes(nil)
-	case "emissions.v10.InputWorkerDataBundle.pubkey":
-		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.InputWorkerDataBundle"))
@@ -4444,14 +4402,6 @@ func (x *fastReflection_InputWorkerDataBundle) ProtoMethods() *protoiface.Method
 			l = options.Size(x.InferenceForecastsBundle)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.InferencesForecastsBundleSignature)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.Pubkey)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -4480,20 +4430,6 @@ func (x *fastReflection_InputWorkerDataBundle) ProtoMethods() *protoiface.Method
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.Pubkey) > 0 {
-			i -= len(x.Pubkey)
-			copy(dAtA[i:], x.Pubkey)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Pubkey)))
-			i--
-			dAtA[i] = 0x32
-		}
-		if len(x.InferencesForecastsBundleSignature) > 0 {
-			i -= len(x.InferencesForecastsBundleSignature)
-			copy(dAtA[i:], x.InferencesForecastsBundleSignature)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.InferencesForecastsBundleSignature)))
-			i--
-			dAtA[i] = 0x2a
 		}
 		if x.InferenceForecastsBundle != nil {
 			encoded, err := options.Marshal(x.InferenceForecastsBundle)
@@ -4706,72 +4642,6 @@ func (x *fastReflection_InputWorkerDataBundle) ProtoMethods() *protoiface.Method
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.InferenceForecastsBundle); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
-				iNdEx = postIndex
-			case 5:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InferencesForecastsBundleSignature", wireType)
-				}
-				var byteLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					byteLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if byteLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + byteLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.InferencesForecastsBundleSignature = append(x.InferencesForecastsBundleSignature[:0], dAtA[iNdEx:postIndex]...)
-				if x.InferencesForecastsBundleSignature == nil {
-					x.InferencesForecastsBundleSignature = []byte{}
-				}
-				iNdEx = postIndex
-			case 6:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Pubkey", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Pubkey = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -5669,12 +5539,10 @@ type InputWorkerDataBundle struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Worker                             string                        `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
-	Nonce                              *v3.Nonce                     `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	TopicId                            uint64                        `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	InferenceForecastsBundle           *InputInferenceForecastBundle `protobuf:"bytes,4,opt,name=inference_forecasts_bundle,json=inferenceForecastsBundle,proto3" json:"inference_forecasts_bundle,omitempty"`
-	InferencesForecastsBundleSignature []byte                        `protobuf:"bytes,5,opt,name=inferences_forecasts_bundle_signature,json=inferencesForecastsBundleSignature,proto3" json:"inferences_forecasts_bundle_signature,omitempty"`
-	Pubkey                             string                        `protobuf:"bytes,6,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+	Worker                   string                        `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
+	Nonce                    *v3.Nonce                     `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	TopicId                  uint64                        `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	InferenceForecastsBundle *InputInferenceForecastBundle `protobuf:"bytes,4,opt,name=inference_forecasts_bundle,json=inferenceForecastsBundle,proto3" json:"inference_forecasts_bundle,omitempty"`
 }
 
 func (x *InputWorkerDataBundle) Reset() {
@@ -5723,20 +5591,6 @@ func (x *InputWorkerDataBundle) GetInferenceForecastsBundle() *InputInferenceFor
 		return x.InferenceForecastsBundle
 	}
 	return nil
-}
-
-func (x *InputWorkerDataBundle) GetInferencesForecastsBundleSignature() []byte {
-	if x != nil {
-		return x.InferencesForecastsBundleSignature
-	}
-	return nil
-}
-
-func (x *InputWorkerDataBundle) GetPubkey() string {
-	if x != nil {
-		return x.Pubkey
-	}
-	return ""
 }
 
 type InputWorkerDataBundles struct {
@@ -5855,7 +5709,7 @@ var file_emissions_v10_inputworker_proto_rawDesc = []byte{
 	0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
 	0x76, 0x31, 0x30, 0x2e, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
 	0x74, 0x52, 0x08, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f,
-	0x01, 0x22, 0xd1, 0x02, 0x0a, 0x15, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65,
+	0x01, 0x22, 0xe6, 0x01, 0x0a, 0x15, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65,
 	0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x77,
 	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72,
 	0x6b, 0x65, 0x72, 0x12, 0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01,
@@ -5869,34 +5723,28 @@ var file_emissions_v10_inputworker_proto_rawDesc = []byte{
 	0x70, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65,
 	0x63, 0x61, 0x73, 0x74, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52, 0x18, 0x69, 0x6e, 0x66, 0x65,
 	0x72, 0x65, 0x6e, 0x63, 0x65, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x42, 0x75,
-	0x6e, 0x64, 0x6c, 0x65, 0x12, 0x51, 0x0a, 0x25, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x73, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x5f, 0x62, 0x75, 0x6e,
-	0x64, 0x6c, 0x65, 0x5f, 0x73, 0x69, 0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x0c, 0x52, 0x22, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x46,
-	0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x53, 0x69,
-	0x67, 0x6e, 0x61, 0x74, 0x75, 0x72, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x70, 0x75, 0x62, 0x6b, 0x65,
-	0x79, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x70, 0x75, 0x62, 0x6b, 0x65, 0x79, 0x3a,
-	0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x6e, 0x0a, 0x16, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x57, 0x6f,
-	0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73, 0x12,
-	0x54, 0x0a, 0x13, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x62,
-	0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x30, 0x2e, 0x49, 0x6e, 0x70,
-	0x75, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64,
-	0x6c, 0x65, 0x52, 0x11, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75,
-	0x6e, 0x64, 0x6c, 0x65, 0x73, 0x42, 0xcd, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x30, 0x42, 0x10, 0x49, 0x6e, 0x70,
-	0x75, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
-	0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2f, 0x76, 0x31, 0x30, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76,
-	0x31, 0x30, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0x30, 0xca, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x30, 0xe2, 0x02, 0x19, 0x45, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x30, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
-	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x3a, 0x3a, 0x56, 0x31, 0x30, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6e, 0x64, 0x6c, 0x65, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x6e, 0x0a, 0x16, 0x49, 0x6e,
+	0x70, 0x75, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74, 0x61, 0x42, 0x75, 0x6e,
+	0x64, 0x6c, 0x65, 0x73, 0x12, 0x54, 0x0a, 0x13, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x64,
+	0x61, 0x74, 0x61, 0x5f, 0x62, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x24, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31,
+	0x30, 0x2e, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44, 0x61, 0x74,
+	0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52, 0x11, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x44,
+	0x61, 0x74, 0x61, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73, 0x42, 0xcd, 0x01, 0x0a, 0x11, 0x63,
+	0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x30,
+	0x42, 0x10, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x50, 0x72, 0x6f,
+	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x30, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0x30, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0d,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0x30, 0xca, 0x02, 0x0d,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x30, 0xe2, 0x02, 0x19,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x30, 0x5c, 0x47, 0x50,
+	0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0e, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x30, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (

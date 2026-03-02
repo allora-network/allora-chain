@@ -70,8 +70,6 @@ message InputWorkerDataBundle {
   emissions.v3.Nonce nonce = 2;
   uint64 topic_id = 3;
   InputInferenceForecastBundle inference_forecasts_bundle = 4;
-  bytes inferences_forecasts_bundle_signature = 5;
-  string pubkey = 6;
 }
 
 message InputWorkerDataBundles {

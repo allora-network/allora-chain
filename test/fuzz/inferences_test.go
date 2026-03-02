@@ -2,12 +2,9 @@ package fuzz_test
 
 import (
 	"context"
-	"encoding/hex"
 	"math/rand"
 
 	cosmossdk_io_math "cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/stretchr/testify/require"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
@@ -230,20 +227,7 @@ func createWorkerDataBundle(
 				ExtraData:        nil,
 			},
 		},
-		InferencesForecastsBundleSignature: nil,
-		Pubkey:                             "",
 	}
-
-	// Sign
-	src := make([]byte, 0)
-	src, err := workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
-	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
-
-	sig, pubKey, err := m.Client.Context().Keyring.Sign(inferer.name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	require.NoError(m.T, err, "Sign should not return an error")
-	workerPublicKeyBytes := pubKey.Bytes()
-	workerDataBundle.InferencesForecastsBundleSignature = sig
-	workerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	return workerDataBundle
 }

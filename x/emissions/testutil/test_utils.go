@@ -544,52 +544,18 @@ func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, worker
 			},
 		}
 
-		topic, err := s.emissionsKeeper.GetTopic(s.Ctx(), topicId)
-		s.Require().NoError(err)
-
-		// Sign the bundle
-		inputBundle, err := s.emissionsKeeper.NewInferenceForecastBundleFromInput(
-			s.Ctx(),
-			topic,
-			nonce,
-			inferenceForecastBundle,
-		)
-		s.Require().NoError(err)
-		signature, err := signInferenceForecastBundle(inputBundle, s.privKeys[workerIdx])
-		s.Require().NoError(err)
-
 		// Create the complete worker data bundle
 		bundle := &types.InputWorkerDataBundle{
-			Worker:                             s.addrsStr[workerIdx],
-			Nonce:                              &types.Nonce{BlockHeight: nonce},
-			TopicId:                            topicId,
-			InferenceForecastsBundle:           inferenceForecastBundle,
-			InferencesForecastsBundleSignature: signature,
-			Pubkey:                             s.pubKeyHexStr[workerIdx],
+			Worker:                   s.addrsStr[workerIdx],
+			Nonce:                    &types.Nonce{BlockHeight: nonce},
+			TopicId:                  topicId,
+			InferenceForecastsBundle: inferenceForecastBundle,
 		}
 
 		bundles = append(bundles, bundle)
 	}
 
 	return bundles
-}
-
-func signInferenceForecastBundle(
-	inferenceForecastBundle *types.InferenceForecastBundle,
-	privateKey secp256k1.PrivKey,
-) ([]byte, error) {
-	src := make([]byte, 0)
-	src, err := inferenceForecastBundle.XXX_Marshal(src, true)
-	if err != nil {
-		return nil, err
-	}
-
-	sig, err := privateKey.Sign(src)
-	if err != nil {
-		return nil, err
-	}
-
-	return sig, nil
 }
 
 type TestReputerValue struct {
