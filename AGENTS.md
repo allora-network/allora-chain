@@ -46,3 +46,6 @@ Read extra references only when needed:
 
 ### Pre-flight Check
 Before the first commit in any session, run these checks. If any fail, **stop and inform the user** before doing any work — but ask whether they still want you to proceed with non-committing tasks (e.g. code changes, exploration, reviews) while they resolve the issue.
+
+### Git Remote Protocol
+**Never change the git remote URL.** The remote must stay as it is unless otherwise requested. Do not switch HTTPS/SSH, do not run `git remote set-url`, and do not run `gh auth setup-git`, unless explicitly stated, requested and only execute if approved by the user. 
