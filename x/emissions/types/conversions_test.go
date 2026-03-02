@@ -19,60 +19,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestInputInferenceConvert(t *testing.T) {
-	tests := []struct {
-		name    string
-		input   *InputInference
-		wantErr bool
-	}{
-		{
-			name:    "nil input",
-			input:   nil,
-			wantErr: true,
-		},
-		{
-			name: "valid input",
-			input: &InputInference{
-				TopicId:     1,
-				BlockHeight: 100,
-				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:       mustNewBoundedExp40Dec(t, "1.23"),
-				Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1.23")}},
-				ExtraData:   []byte("extra"),
-				Proof:       "proof",
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewInferenceFromInput(tt.input)
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			if tt.input == nil {
-				require.Nil(t, got)
-				return
-			}
-			require.Equal(t, tt.input.TopicId, got.TopicId)
-			require.Equal(t, tt.input.BlockHeight, got.BlockHeight)
-			require.Equal(t, tt.input.Inferer, got.Inferer)
-			require.Equal(t, tt.input.ExtraData, got.ExtraData)
-			require.Equal(t, tt.input.Proof, got.Proof)
-			// Check value conversion
-			dec := tt.input.Value.ToDec()
-			require.True(t, dec.Equal(got.Value))
-			for i := range got.Values {
-				decv := tt.input.Values[i].Value.ToDec()
-				require.True(t, decv.Equal(got.Values[i]))
-			}
-		})
-	}
-}
-
 func TestInputForecastElementConvert(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -164,68 +110,6 @@ func TestInputForecastConvert(t *testing.T) {
 			require.Equal(t, tt.input.Forecaster, got.Forecaster)
 			require.Equal(t, tt.input.ExtraData, got.ExtraData)
 			require.Equal(t, len(tt.input.ForecastElements), len(got.ForecastElements))
-		})
-	}
-}
-
-func TestInputInferenceForecastBundleConvert(t *testing.T) {
-	validInference := &InputInference{
-		TopicId:     1,
-		BlockHeight: 100,
-		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-		Value:       mustNewBoundedExp40Dec(t, "1.23"),
-		Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1.23")}},
-		ExtraData:   []byte("extra"),
-		Proof:       "proof",
-	}
-
-	validForecast := &InputForecast{
-		TopicId:     1,
-		BlockHeight: 100,
-		Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
-		ForecastElements: []*InputForecastElement{
-			{
-				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:   mustNewBoundedExp40Dec(t, "1.23"),
-			},
-		},
-		ExtraData: []byte("extra"),
-	}
-
-	tests := []struct {
-		name    string
-		input   *InputInferenceForecastBundle
-		wantErr bool
-	}{
-		{
-			name:    "nil input",
-			input:   nil,
-			wantErr: true,
-		},
-		{
-			name: "valid input",
-			input: &InputInferenceForecastBundle{
-				Inference: validInference,
-				Forecast:  validForecast,
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewInferenceForecastBundleFromInput(tt.input)
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			if tt.input == nil {
-				require.Nil(t, got)
-				return
-			}
-			require.NotNil(t, got.Inference)
-			require.NotNil(t, got.Forecast)
 		})
 	}
 }

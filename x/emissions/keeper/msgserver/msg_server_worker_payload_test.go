@@ -71,7 +71,13 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 					TopicId:     topic,
 					BlockHeight: nonce.BlockHeight,
 					Inferer:     worker,
-					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(100)),
+					Value:       alloraMath.MustNewBoundedExp40DecFromString("100"),
+					Values: []*types.InputLabeledValue{
+						{
+							Label: "whatever",
+							Value: alloraMath.MustNewBoundedExp40DecFromString("100"),
+						},
+					},
 				},
 				Forecast: &types.InputForecast{
 					TopicId:     topic,
@@ -816,4 +822,369 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredF
 
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should succeed with an unregistered inferer")
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
+	type tc struct {
+		name          string
+		arity         types.TopicOutputArity
+		requireUnity  bool
+		unityTol      string
+		mutate        func(*types.InsertWorkerPayloadRequest)
+		wantErr       bool
+		wantErrIs     error
+		wantValuesStr []string
+		wantReg       []string
+	}
+
+	cases := []tc{
+		{
+			name:         "SINGLE_values_len1_overrides_scalar",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Value = alloraMath.MustNewBoundedExp40DecFromString("999")
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "x", Value: alloraMath.MustNewBoundedExp40DecFromString("7")},
+				}
+			},
+			wantValuesStr: []string{"7"},
+			wantReg:       nil,
+		},
+		{
+			name:         "SINGLE_values_empty_uses_scalar",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Value = alloraMath.MustNewBoundedExp40DecFromString("42")
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = nil
+			},
+			wantValuesStr: []string{"42"},
+			wantReg:       nil,
+		},
+		{
+			name:         "SINGLE_values_len2_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "x", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+					{Label: "y", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+				}
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_registers_labels_and_aligns",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "A", Value: alloraMath.MustNewBoundedExp40DecFromString("0.2")},
+					{Label: "B", Value: alloraMath.MustNewBoundedExp40DecFromString("0.8")},
+				}
+			},
+			wantValuesStr: []string{"0.2", "0.8"},
+			wantReg:       []string{"A", "B"},
+		},
+		{
+			name:         "MULTI_require_unity_ok",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: true,
+			unityTol:     "0.000001",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "A", Value: alloraMath.MustNewBoundedExp40DecFromString("0.2")},
+					{Label: "B", Value: alloraMath.MustNewBoundedExp40DecFromString("0.8")},
+				}
+			},
+			wantValuesStr: []string{"0.2", "0.8"},
+			wantReg:       []string{"A", "B"},
+		},
+		{
+			name:         "MULTI_require_unity_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: true,
+			unityTol:     "0.01",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "A", Value: alloraMath.MustNewBoundedExp40DecFromString("0.2")},
+					{Label: "B", Value: alloraMath.MustNewBoundedExp40DecFromString("0.7")},
+				}
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_duplicate_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "A", Value: alloraMath.MustNewBoundedExp40DecFromString("0.1")},
+					{Label: "A", Value: alloraMath.MustNewBoundedExp40DecFromString("0.2")},
+				}
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_empty_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "   ", Value: alloraMath.MustNewBoundedExp40DecFromString("0.1")},
+				}
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+
+			workerPrivateKey := secp256k1.GenPrivKey()
+			nonce := int64(1)
+
+			msg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+			if c.mutate != nil {
+				c.mutate(&msg)
+			}
+			msg = s.signMsgInsertWorkerPayload(msg, workerPrivateKey)
+
+			s.WithBlockHeight(nonce)
+			s.setTopicArityAndUnity(topicId, c.arity, c.requireUnity, c.unityTol)
+
+			err := s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+			s.Require().NoError(err)
+
+			_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
+			if c.wantErr {
+				if c.wantErrIs != nil {
+					s.Require().ErrorIs(err, c.wantErrIs)
+				} else {
+					s.Require().Error(err)
+				}
+				return
+			}
+			s.Require().NoError(err)
+
+			got, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+			s.Require().NoError(err)
+			s.Require().NotNil(got)
+			s.Require().Equal(len(c.wantValuesStr), len(got.Values))
+			for i := range c.wantValuesStr {
+				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
+			}
+
+			reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+			s.Require().NoError(err)
+
+			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+				s.Require().Equal(0, len(reg.Labels))
+				return
+			}
+
+			s.Require().Equal(len(c.wantReg), len(reg.Labels))
+			for i := range c.wantReg {
+				s.Require().Equal(c.wantReg[i], reg.Labels[i].Name)
+			}
+		})
+	}
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonce_UnionAndAlignment() {
+	s.SetupTest()
+
+	pk1 := secp256k1.GenPrivKey()
+	pk2 := secp256k1.GenPrivKey()
+
+	nonce := int64(1)
+
+	msg1, topicId := s.setUpMsgInsertWorkerPayload(pk1)
+	s.WithBlockHeight(nonce)
+	s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, false, "0")
+
+	msg1.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+		{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("3")},
+	}
+	msg1 = s.signMsgInsertWorkerPayload(msg1, pk1)
+
+	msg2, _ := s.setUpMsgInsertWorkerPayload(pk2)
+	msg2.WorkerDataBundle.TopicId = topicId
+	msg2.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
+		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
+		{Label: "d", Value: alloraMath.MustNewBoundedExp40DecFromString("40")},
+	}
+	msg2 = s.signMsgInsertWorkerPayload(msg2, pk2)
+
+	err := s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	err = s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg1)
+	s.Require().NoError(err)
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
+	s.Require().NoError(err)
+
+	reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(4, len(reg.Labels))
+	s.Require().Equal("a", reg.Labels[0].Name)
+	s.Require().Equal("b", reg.Labels[1].Name)
+	s.Require().Equal("c", reg.Labels[2].Name)
+	s.Require().Equal("d", reg.Labels[3].Name)
+
+	got1, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(got1.Values))
+	s.Require().Equal("1", got1.Values[0].String())
+	s.Require().Equal("2", got1.Values[1].String())
+	s.Require().Equal("3", got1.Values[2].String())
+
+	got2, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	s.Require().Equal(4, len(got2.Values))
+	s.Require().Equal("10", got2.Values[0].String())
+	s.Require().Equal("20", got2.Values[1].String())
+	s.Require().Equal("0", got2.Values[2].String())
+	s.Require().Equal("40", got2.Values[3].String())
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegistryLeakage() {
+	s.SetupTest()
+
+	pk1 := secp256k1.GenPrivKey()
+	pk2 := secp256k1.GenPrivKey()
+
+	nonce1 := int64(1)
+	nonce2 := int64(200)
+
+	// worker1 @ nonce1
+	msg1, topicId := s.setUpMsgInsertWorkerPayload(pk1)
+	s.WithBlockHeight(nonce1)
+	s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, false, "0")
+
+	msg1.WorkerDataBundle.Nonce.BlockHeight = nonce1
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce1
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce1
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+	}
+	msg1 = s.signMsgInsertWorkerPayload(msg1, pk1)
+
+	// register nonce2 for the same topic (epoch 2)
+	err := s.EmissionsKeeper().AddWorkerNonce(s.Ctx(), topicId, &types.Nonce{BlockHeight: nonce2})
+	s.Require().NoError(err)
+
+	// worker2 @ nonce2 (must be a different worker because activeInferers is (topic,inferer) only)
+	msg2, _ := s.setUpMsgInsertWorkerPayload(pk2)
+	msg2.WorkerDataBundle.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = topicId
+
+	msg2.WorkerDataBundle.Nonce.BlockHeight = nonce2
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce2
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce2
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
+		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
+		{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("30")},
+	}
+	msg2 = s.signMsgInsertWorkerPayload(msg2, pk2)
+
+	// whitelist both workers
+	err = s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	err = s.EmissionsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+
+	// submit worker1 @ nonce1
+	s.WithBlockHeight(nonce1)
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg1)
+	s.Require().NoError(err)
+
+	reg1, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce1)
+	s.Require().NoError(err)
+	s.Require().Equal(2, len(reg1.Labels))
+	s.Require().Equal("a", reg1.Labels[0].Name)
+	s.Require().Equal("b", reg1.Labels[1].Name)
+
+	got1, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	s.Require().NotNil(got1)
+	s.Require().Equal(2, len(got1.Values))
+	s.Require().Equal("1", got1.Values[0].String())
+	s.Require().Equal("2", got1.Values[1].String())
+
+	// submit worker2 @ nonce2
+	s.WithBlockHeight(nonce2)
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
+	s.Require().NoError(err)
+
+	reg2, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce2)
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(reg2.Labels))
+	s.Require().Equal("a", reg2.Labels[0].Name)
+	s.Require().Equal("b", reg2.Labels[1].Name)
+	s.Require().Equal("c", reg2.Labels[2].Name)
+
+	got2, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	s.Require().NotNil(got2)
+	s.Require().Equal(3, len(got2.Values))
+	s.Require().Equal("10", got2.Values[0].String())
+	s.Require().Equal("20", got2.Values[1].String())
+	s.Require().Equal("30", got2.Values[2].String())
+
+	// ensure epoch1 registry did not change after epoch2 submission
+	reg1Again, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce1)
+	s.Require().NoError(err)
+	s.Require().Equal(2, len(reg1Again.Labels))
+	s.Require().Equal("a", reg1Again.Labels[0].Name)
+	s.Require().Equal("b", reg1Again.Labels[1].Name)
+}
+
+func (s *MsgServerTestSuite) setTopicArityAndUnity(
+	topicId uint64,
+	outputArity types.TopicOutputArity,
+	requireUnity bool,
+	unityTol string,
+) {
+	ctx := s.Ctx()
+	k := s.EmissionsKeeper()
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	topic.OutputArity = outputArity
+	topic.RequireUnity = requireUnity
+	topic.UnityTolerance = alloraMath.MustNewDecFromString(unityTol)
+
+	err = k.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
 }

@@ -56,7 +56,7 @@ func NewOutlierResistantNetworkInferencesEventBase(networkInferences ValueBundle
 	}
 }
 
-func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
+func NewInsertInfererPayloadEventBase(bundle *InputWorkerDataBundle) proto.Message {
 	return &EventInsertInfererPayload{
 		Inferer:   bundle.Worker,
 		Nonce:     bundle.Nonce.BlockHeight,

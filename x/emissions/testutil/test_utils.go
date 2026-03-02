@@ -544,8 +544,16 @@ func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, worker
 			},
 		}
 
+		topic, err := s.emissionsKeeper.GetTopic(s.Ctx(), topicId)
+		s.Require().NoError(err)
+
 		// Sign the bundle
-		inputBundle, err := types.NewInferenceForecastBundleFromInput(inferenceForecastBundle)
+		inputBundle, err := s.emissionsKeeper.NewInferenceForecastBundleFromInput(
+			s.Ctx(),
+			topic,
+			nonce,
+			inferenceForecastBundle,
+		)
 		s.Require().NoError(err)
 		signature, err := signInferenceForecastBundle(inputBundle, s.privKeys[workerIdx])
 		s.Require().NoError(err)

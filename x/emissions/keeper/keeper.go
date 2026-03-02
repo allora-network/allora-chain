@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
 	cosmosMath "cosmossdk.io/math"
@@ -5099,18 +5100,14 @@ func (k *Keeper) RegisterEpochLabel(
 
 	for _, lbl := range registry.Labels {
 		if lbl != nil && lbl.Name == labelName {
+			if lbl.Id == 0 {
+				return 0, errorsmod.Wrap(sdkerrors.ErrLogic, "label id zero")
+			}
 			return lbl.Id, nil
 		}
 	}
 
-	// use max id if any gaps ever appear
-	var maxID uint32
-	for _, lbl := range registry.Labels {
-		if lbl != nil && lbl.Id > maxID {
-			maxID = lbl.Id
-		}
-	}
-	newID := maxID + 1
+	newID := LabelId(len(registry.Labels) + 1)
 
 	registry.Labels = append(registry.Labels, &types.TopicLabel{
 		Id:   newID,
@@ -5164,15 +5161,213 @@ func (k *Keeper) GetEpochLabelName(
 	if err != nil {
 		return "", false, err
 	}
-	if len(registry.Labels) == 0 {
+
+	idx := int(id) - 1
+	if idx < 0 || idx >= len(registry.Labels) {
 		return "", false, nil
 	}
+	lbl := registry.Labels[idx]
+	if lbl == nil || lbl.Id != id {
+		return "", false, nil
+	}
+	return lbl.Name, true, nil
+}
 
-	for _, lbl := range registry.Labels {
-		if lbl != nil && lbl.Id == id {
-			return lbl.Name, true, nil
+// NewWorkerDataBundleFromInput converts InputWorkerDataBundle to WorkerDataBundle
+func (k *Keeper) NewWorkerDataBundleFromInput(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	bwdb *types.InputWorkerDataBundle,
+) (*types.WorkerDataBundle, error) {
+	if bwdb == nil {
+		return nil, types.ErrInvalidValue
+	}
+	if bwdb.TopicId != topic.Id {
+		return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "topic mismatch")
+	}
+
+	bundle, err := k.NewInferenceForecastBundleFromInput(
+		ctx,
+		topic,
+		nonce,
+		bwdb.InferenceForecastsBundle,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert inference forecasts bundle")
+	}
+	workerDataBundle := &types.WorkerDataBundle{
+		Worker:                   bwdb.Worker,
+		Nonce:                    bwdb.Nonce,
+		TopicId:                  bwdb.TopicId,
+		InferenceForecastsBundle: bundle,
+	}
+	err = workerDataBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate worker data bundle")
+	}
+	return workerDataBundle, nil
+}
+
+// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
+func (k *Keeper) NewInferenceForecastBundleFromInput(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	bifb *types.InputInferenceForecastBundle,
+) (*types.InferenceForecastBundle, error) {
+	if bifb == nil {
+		return nil, types.ErrInvalidValue
+	}
+	var err error
+	var inference *types.Inference
+	if bifb.Inference != nil {
+		inference, err = k.NormalizeInputInference(ctx, topic, nonce, bifb.Inference)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to convert inference")
+		}
+	}
+	var forecast *types.Forecast
+	if bifb.Forecast != nil {
+		forecast, err = types.NewForecastFromInput(bifb.Forecast)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to convert forecast")
+		}
+	}
+	inferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: inference,
+		Forecast:  forecast,
+	}
+	err = inferenceForecastBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate inference forecast bundle")
+	}
+	return inferenceForecastBundle, nil
+}
+
+// NormalizeInputInference converts the worker-submitted inference into the internal Inference.
+// MULTI: labeled dictionary -> fixed-length array aligned with epoch registry (missing => 0).
+// SINGLE: if labeled dictionary length is 1 - use it, if greater than 1 reject the request, otherwise scalar submission is used
+func (k *Keeper) NormalizeInputInference(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	in *types.InputInference,
+) (*types.Inference, error) {
+	if in == nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
+	}
+
+	switch topic.OutputArity {
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		if len(in.Values) > 1 {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "single-arity inference accepts at most one value")
+		}
+		var dec alloraMath.Dec
+		if len(in.Values) == 1 {
+			dec = in.Values[0].Value.ToDec()
+		} else {
+			dec = in.Value.ToDec()
+		}
+		if dec.IsNaN() || !dec.IsFinite() {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
+		}
+		return &types.Inference{
+			TopicId:     in.TopicId,
+			BlockHeight: in.BlockHeight,
+			Inferer:     in.Inferer,
+			Value:       dec,
+			Values:      []alloraMath.Dec{dec},
+			ExtraData:   in.ExtraData,
+			Proof:       in.Proof,
+		}, nil
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		if len(in.Values) == 0 {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires labeled values")
+		}
+	default:
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+
+	seen := make(map[string]struct{}, len(in.Values))
+	submitted := make([]struct {
+		labelId LabelId
+		value   alloraMath.Dec
+	}, 0, len(in.Values))
+
+	sumSubmitted := alloraMath.ZeroDec()
+
+	for _, lv := range in.Values {
+		name := strings.TrimSpace(lv.Label)
+		if name == "" {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "label name empty")
+		}
+		if _, ok := seen[name]; ok {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate label in submission: %s", name)
+		}
+		seen[name] = struct{}{}
+
+		dec := lv.Value.ToDec()
+		if dec.IsNaN() || !dec.IsFinite() {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label %s has invalid value", name)
+		}
+
+		labelId, err := k.RegisterEpochLabel(ctx, in.TopicId, nonce, name)
+		if err != nil {
+			return nil, err
+		}
+
+		submitted = append(submitted, struct {
+			labelId LabelId
+			value   alloraMath.Dec
+		}{labelId: labelId, value: dec})
+
+		sumSubmitted, err = sumSubmitted.Add(dec)
+		if err != nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to sum submitted value: %s", err)
 		}
 	}
 
-	return "", false, nil
+	if topic.RequireUnity {
+		diff, err := sumSubmitted.Sub(alloraMath.OneDec())
+		if err != nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to compute unity diff: %v", err)
+		}
+		diff, err = diff.Abs()
+		if err != nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to abs unity diff: %v", err)
+		}
+		if diff.Gt(topic.UnityTolerance) {
+			return nil, errorsmod.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"require_unity violated: sum=%s tol=%s",
+				sumSubmitted.String(), topic.UnityTolerance.String(),
+			)
+		}
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, in.TopicId, nonce)
+	if err != nil {
+		return nil, err
+	}
+	L := len(registry.Labels)
+	values := make([]alloraMath.Dec, L)
+
+	for _, s := range submitted {
+		idx := int(s.labelId) - 1
+		if idx < 0 || idx >= L {
+			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "label id out of range")
+		}
+		values[idx] = s.value
+	}
+
+	return &types.Inference{
+		TopicId:     in.TopicId,
+		BlockHeight: in.BlockHeight,
+		Inferer:     in.Inferer,
+		Value:       alloraMath.ZeroDec(),
+		Values:      values,
+		ExtraData:   in.ExtraData,
+		Proof:       in.Proof,
+	}, nil
 }

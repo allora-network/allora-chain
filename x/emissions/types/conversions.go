@@ -2,34 +2,7 @@ package types
 
 import (
 	"cosmossdk.io/errors"
-
-	alloraMath "github.com/allora-network/allora-chain/math"
 )
-
-// NewInferenceFromInput converts InputInference to Inference
-func NewInferenceFromInput(bi *InputInference) (*Inference, error) {
-	if bi == nil {
-		return nil, ErrInvalidValue
-	}
-	dec := bi.Value.ToDec()
-	decs := make([]alloraMath.Dec, len(bi.Values))
-	for i := range bi.Values {
-		decs[i] = bi.Values[i].Value.ToDec()
-	}
-	inference := &Inference{
-		TopicId:     bi.TopicId,
-		BlockHeight: bi.BlockHeight,
-		Inferer:     bi.Inferer,
-		Value:       dec,
-		Values:      decs,
-		ExtraData:   bi.ExtraData,
-		Proof:       bi.Proof,
-	}
-	if err := inference.Validate(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate inference")
-	}
-	return inference, nil
-}
 
 // NewForecastElementFromInput converts InputForecastElement to ForecastElement
 func NewForecastElementFromInput(bfe *InputForecastElement) (*ForecastElement, error) {
@@ -73,61 +46,6 @@ func NewForecastFromInput(bf *InputForecast) (*Forecast, error) {
 		return nil, errors.Wrap(err, "failed to validate forecast")
 	}
 	return forecast, nil
-}
-
-// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
-func NewInferenceForecastBundleFromInput(bifb *InputInferenceForecastBundle) (*InferenceForecastBundle, error) {
-	if bifb == nil {
-		return nil, ErrInvalidValue
-	}
-	var err error
-	var inference *Inference
-	if bifb.Inference != nil {
-		inference, err = NewInferenceFromInput(bifb.Inference)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to convert inference")
-		}
-	}
-	var forecast *Forecast
-	if bifb.Forecast != nil {
-		forecast, err = NewForecastFromInput(bifb.Forecast)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to convert forecast")
-		}
-	}
-	inferenceForecastBundle := &InferenceForecastBundle{
-		Inference: inference,
-		Forecast:  forecast,
-	}
-	err = inferenceForecastBundle.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate inference forecast bundle")
-	}
-	return inferenceForecastBundle, nil
-}
-
-// NewWorkerDataBundleFromInput converts InputWorkerDataBundle to WorkerDataBundle
-func NewWorkerDataBundleFromInput(bwdb *InputWorkerDataBundle) (*WorkerDataBundle, error) {
-	if bwdb == nil {
-		return nil, ErrInvalidValue
-	}
-	bundle, err := NewInferenceForecastBundleFromInput(bwdb.InferenceForecastsBundle)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert inference forecasts bundle")
-	}
-	workerDataBundle := &WorkerDataBundle{
-		Worker:                             bwdb.Worker,
-		Nonce:                              bwdb.Nonce,
-		TopicId:                            bwdb.TopicId,
-		InferenceForecastsBundle:           bundle,
-		InferencesForecastsBundleSignature: bwdb.InferencesForecastsBundleSignature,
-		Pubkey:                             bwdb.Pubkey,
-	}
-	err = workerDataBundle.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate worker data bundle")
-	}
-	return workerDataBundle, nil
 }
 
 // NewWorkerAttributedValueFromInput converts InputWorkerAttributedValue to WorkerAttributedValue

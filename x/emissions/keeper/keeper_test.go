@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"cosmossdk.io/collections"
+	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -6173,4 +6175,378 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 			tc.run(ctx, k)
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestInputInferenceForecastBundleConvert() {
+	validInference := &types.InputInference{
+		TopicId:     1,
+		BlockHeight: 100,
+		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("1.23"),
+		Values:      []*types.InputLabeledValue{{Label: "", Value: alloraMath.MustNewBoundedExp40DecFromString("1.23")}},
+		ExtraData:   []byte("extra"),
+		Proof:       "proof",
+	}
+
+	validForecast := &types.InputForecast{
+		TopicId:     1,
+		BlockHeight: 100,
+		Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
+		ForecastElements: []*types.InputForecastElement{
+			{
+				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+				Value:   alloraMath.MustNewBoundedExp40DecFromString("1.23"),
+			},
+		},
+		ExtraData: []byte("extra"),
+	}
+
+	tests := []struct {
+		name    string
+		input   *types.InputInferenceForecastBundle
+		wantErr bool
+	}{
+		{
+			name: "valid input",
+			input: &types.InputInferenceForecastBundle{
+				Inference: validInference,
+				Forecast:  validForecast,
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), validInference.TopicId)
+
+			got, err := s.EmissionsKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
+			if tt.wantErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+			if tt.input == nil {
+				s.Require().Nil(got)
+				return
+			}
+			s.Require().NotNil(got.Inference)
+			s.Require().NotNil(got.Forecast)
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestNormalizeInputInference() {
+	type tc struct {
+		name         string
+		arity        types.TopicOutputArity
+		requireUnity bool
+		unityTol     string
+
+		nonce int64
+
+		preRegisterLabels []string
+
+		scalarValue string
+		labeled     []struct {
+			label string
+			value string
+		}
+
+		wantErr   bool
+		wantErrIs error
+
+		wantValuesStr []string
+		wantRegLabels []string
+	}
+
+	cases := []tc{
+		{
+			name:         "SINGLE_uses_labeled_when_len1_over_scalar",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			scalarValue:  "999",
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "x", value: "7"},
+			},
+			wantValuesStr: []string{"7"},
+			wantRegLabels: nil,
+		},
+		{
+			name:          "SINGLE_uses_scalar_when_no_labeled",
+			arity:         types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity:  false,
+			unityTol:      "0",
+			nonce:         1,
+			scalarValue:   "42",
+			labeled:       nil,
+			wantValuesStr: []string{"42"},
+			wantRegLabels: nil,
+		},
+		{
+			name:         "SINGLE_rejects_when_labeled_len_gt_1",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			scalarValue:  "1",
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "x", value: "1"},
+				{label: "y", value: "2"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_requires_labeled_values",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			scalarValue:  "123",
+			labeled:      nil,
+			wantErr:      true,
+			wantErrIs:    sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_registers_labels_and_aligns_dense",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.2"},
+				{label: "B", value: "0.8"},
+			},
+			wantValuesStr: []string{"0.2", "0.8"},
+			wantRegLabels: []string{"A", "B"},
+		},
+		{
+			name:         "MULTI_duplicate_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.1"},
+				{label: "A", value: "0.2"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_empty_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "   ", value: "0.1"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_missing_labels_are_zero_against_existing_registry",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			preRegisterLabels: []string{
+				"a", "b", "c",
+			},
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "a", value: "1"},
+				{label: "b", value: "2"},
+			},
+			wantValuesStr: []string{"1", "2", "0"},
+			wantRegLabels: []string{"a", "b", "c"},
+		},
+		{
+			name:         "MULTI_require_unity_ok",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: true,
+			unityTol:     "0.000001",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.2"},
+				{label: "B", value: "0.8"},
+			},
+			wantValuesStr: []string{"0.2", "0.8"},
+			wantRegLabels: []string{"A", "B"},
+		},
+		{
+			name:         "MULTI_require_unity_rejected_outside_tol",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: true,
+			unityTol:     "0.01",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.2"},
+				{label: "B", value: "0.7"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_trims_labels_and_is_idempotent_on_registry",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "  Z  ", value: "5"},
+			},
+			wantValuesStr: []string{"5"},
+			wantRegLabels: []string{"Z"},
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+
+			ctx := s.Ctx()
+			k := s.EmissionsKeeper()
+
+			topicId := s.CreateTopic()
+			topic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+
+			topic.OutputArity = c.arity
+			topic.RequireUnity = c.requireUnity
+			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
+			s.Require().NoError(k.SetTopic(ctx, topicId, topic))
+
+			for _, l := range c.preRegisterLabels {
+				_, err := k.RegisterEpochLabel(ctx, topicId, c.nonce, l)
+				s.Require().NoError(err)
+			}
+
+			in := &types.InputInference{
+				TopicId:     topicId,
+				BlockHeight: c.nonce,
+				Inferer:     "inferer",
+				Value:       alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue),
+			}
+			if c.labeled != nil {
+				in.Values = make([]*types.InputLabeledValue, 0, len(c.labeled))
+				for _, lv := range c.labeled {
+					in.Values = append(in.Values, &types.InputLabeledValue{
+						Label: lv.label,
+						Value: alloraMath.MustNewBoundedExp40DecFromString(lv.value),
+					})
+				}
+			}
+
+			got, err := k.NormalizeInputInference(ctx, topic, c.nonce, in)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.wantErrIs != nil {
+					s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
+				}
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().NotNil(got)
+
+			s.Require().Equal(len(c.wantValuesStr), len(got.Values))
+			for i := range c.wantValuesStr {
+				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
+			}
+
+			reg, err := k.GetEpochLabelRegistry(ctx, topicId, c.nonce)
+			s.Require().NoError(err)
+
+			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+				s.Require().Equal(0, len(reg.Labels))
+				return
+			}
+
+			s.Require().Equal(len(c.wantRegLabels), len(reg.Labels))
+			for i := range c.wantRegLabels {
+				s.Require().Equal(c.wantRegLabels[i], reg.Labels[i].Name)
+			}
+		})
+	}
+
+	s.Run("MULTI_preserves_label_ids_across_calls_even_if_submission_order_changes", func() {
+		s.SetupTest()
+
+		ctx := s.Ctx()
+		k := s.EmissionsKeeper()
+
+		topicId := s.CreateTopic()
+		topic, err := k.GetTopic(ctx, topicId)
+		s.Require().NoError(err)
+		topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+		topic.RequireUnity = false
+		topic.UnityTolerance = alloraMath.ZeroDec()
+		s.Require().NoError(k.SetTopic(ctx, topicId, topic))
+
+		nonce := types.BlockHeight(1)
+
+		in1 := &types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: 1,
+			Inferer:     "inferer",
+			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+			Values: []*types.InputLabeledValue{
+				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+			},
+		}
+		got1, err := k.NormalizeInputInference(ctx, topic, nonce, in1)
+		s.Require().NoError(err)
+		s.Require().Equal([]string{"1", "2"}, []string{got1.Values[0].String(), got1.Values[1].String()})
+
+		in2 := &types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: 1,
+			Inferer:     "inferer",
+			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+			Values: []*types.InputLabeledValue{
+				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
+				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
+			},
+		}
+		got2, err := k.NormalizeInputInference(ctx, topic, nonce, in2)
+		s.Require().NoError(err)
+		s.Require().Equal([]string{"10", "20"}, []string{got2.Values[0].String(), got2.Values[1].String()})
+
+		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+		s.Require().NoError(err)
+		s.Require().Equal(2, len(reg.Labels))
+		s.Require().Equal("a", reg.Labels[0].Name)
+		s.Require().Equal("b", reg.Labels[1].Name)
+	})
 }
