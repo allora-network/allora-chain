@@ -395,9 +395,9 @@ func (k *ReputerLossKeeper) GetReputerLossBundlesAtBlock(ctx context.Context, to
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		return types.ReputerValueBundles{}, nil
+		return types.ReputerValueBundles{ReputerValueBundles: nil}, nil
 	} else if err != nil {
-		return types.ReputerValueBundles{}, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
+		return types.ReputerValueBundles{ReputerValueBundles: nil}, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
 	}
 	return reputerLossBundles, nil
 }

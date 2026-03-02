@@ -272,6 +272,8 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 						OneOutForecasterValues:        valueBundle.ValueBundle.OneOutForecasterValues,
 						OneInForecasterValues:         valueBundle.ValueBundle.OneInForecasterValues,
 					},
+					Signature: valueBundle.Signature,
+					Pubkey:    valueBundle.Pubkey,
 				},
 			)
 		}
