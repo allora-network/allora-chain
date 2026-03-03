@@ -299,6 +299,13 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 	)
 }
 
+func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScoreNotFound() {
+	ctx := s.Ctx()
+	req := &types.GetCurrentLowestInfererScoreRequest{TopicId: 999999}
+	_, err := s.EmissionsQueryServer().GetCurrentLowestInfererScore(ctx, req)
+	s.Require().Error(err, "missing lowest inferer score should return an error")
+}
+
 func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 	ctx, keeper, require := s.Ctx(), s.ScoresKeeper(), s.Require()
 
@@ -325,6 +332,13 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 	)
 }
 
+func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScoreNotFound() {
+	ctx := s.Ctx()
+	req := &types.GetCurrentLowestForecasterScoreRequest{TopicId: 999999}
+	_, err := s.EmissionsQueryServer().GetCurrentLowestForecasterScore(ctx, req)
+	s.Require().Error(err, "missing lowest forecaster score should return an error")
+}
+
 func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 	ctx, keeper, require := s.Ctx(), s.ScoresKeeper(), s.Require()
 
@@ -349,6 +363,13 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 		"The lowest score should be 95",
 		response.Score,
 	)
+}
+
+func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScoreNotFound() {
+	ctx := s.Ctx()
+	req := &types.GetCurrentLowestReputerScoreRequest{TopicId: 999999}
+	_, err := s.EmissionsQueryServer().GetCurrentLowestReputerScore(ctx, req)
+	s.Require().Error(err, "missing lowest reputer score should return an error")
 }
 
 func (s *QueryServerTestSuite) TestGetTopicInitialInfererEmaScore() {

@@ -104,7 +104,7 @@ func (qs queryServer) GetCurrentLowestInfererScore(ctx context.Context, req *typ
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest inferer score EMA")
 	} else if !found {
-		return nil, errorsmod.Wrap(err, "no lowest inferer score found for this topic")
+		return nil, status.Errorf(codes.NotFound, "no lowest inferer score found for topic %d", req.TopicId)
 	}
 
 	return &types.GetCurrentLowestInfererScoreResponse{Score: &lowestInfererScore}, nil
@@ -136,7 +136,7 @@ func (qs queryServer) GetCurrentLowestForecasterScore(ctx context.Context, req *
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest forecaster score EMA")
 	} else if !found {
-		return nil, errorsmod.Wrap(err, "no lowest forecaster score found for this topic")
+		return nil, status.Errorf(codes.NotFound, "no lowest forecaster score found for topic %d", req.TopicId)
 	}
 
 	return &types.GetCurrentLowestForecasterScoreResponse{Score: &lowestForecasterScore}, nil
@@ -158,7 +158,7 @@ func (qs queryServer) GetCurrentLowestReputerScore(ctx context.Context, req *typ
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
 	} else if !found {
-		return nil, errorsmod.Wrap(err, "no lowest reputer score found for this topic")
+		return nil, status.Errorf(codes.NotFound, "no lowest reputer score found for topic %d", req.TopicId)
 	}
 
 	return &types.GetCurrentLowestReputerScoreResponse{Score: &lowestReputerScore}, nil
@@ -179,10 +179,10 @@ func (qs queryServer) GetTopicInitialInfererEmaScore(ctx context.Context, req *t
 	defer metrics.RecordMetrics("GetTopicInitialInfererEmaScore", time.Now(), &err)
 
 	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
+	if err != nil {
 		return nil, err
+	} else if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
 	}
 
 	score, err := qs.sck.GetTopicInitialInfererEmaScore(ctx, req.TopicId)
@@ -197,10 +197,10 @@ func (qs queryServer) GetTopicInitialForecasterEmaScore(ctx context.Context, req
 	defer metrics.RecordMetrics("GetTopicInitialForecasterEmaScore", time.Now(), &err)
 
 	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
+	if err != nil {
 		return nil, err
+	} else if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
 	}
 
 	score, err := qs.sck.GetTopicInitialForecasterEmaScore(ctx, req.TopicId)
@@ -215,10 +215,10 @@ func (qs queryServer) GetTopicInitialReputerEmaScore(ctx context.Context, req *t
 	defer metrics.RecordMetrics("GetTopicInitialReputerEmaScore", time.Now(), &err)
 
 	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
+	if err != nil {
 		return nil, err
+	} else if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
 	}
 
 	score, err := qs.sck.GetTopicInitialReputerEmaScore(ctx, req.TopicId)

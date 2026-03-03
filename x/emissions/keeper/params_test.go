@@ -342,4 +342,9 @@ func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
 	limit, _, err = k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	s.Require().NoError(err, "Handling limit exceeding maximum should not fail")
 	s.Require().Equal(maxLimit, limit, "Limit should be capped at the maximum limit")
+
+	// Test 5: Invalid key length should return an error instead of panicking
+	invalidKeyPagination := &types.SimpleCursorPaginationRequest{Key: []byte{0x01}, Limit: 10}
+	_, _, err = k.CalcAppropriatePaginationForUint64Cursor(ctx, invalidKeyPagination)
+	s.Require().Error(err, "Should reject non-8-byte pagination keys")
 }
