@@ -199,7 +199,7 @@ func (k *TopicKeeper) GetTotalSumPreviousTopicWeights(ctx context.Context) (allo
 	if errors.Is(err, collections.ErrNotFound) {
 		return alloraMath.ZeroDec(), nil
 	} else if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting topic fee revenue")
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting total sum of previous topic weights")
 	}
 
 	return sumPreviousWeights, nil

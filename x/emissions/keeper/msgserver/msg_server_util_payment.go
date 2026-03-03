@@ -69,7 +69,7 @@ func checkBalanceAndSendFee(
 	if err != nil {
 		return err
 	}
-	balance := ms.bk.GetBankBalance(ctx, accAddress, appParams.DefaultBondDenom)
+	balance := ms.bk.GetBalance(ctx, accAddress, appParams.DefaultBondDenom)
 	fee := sdk.NewCoin(balance.Denom, amount)
 
 	if balance.IsLT(fee) {

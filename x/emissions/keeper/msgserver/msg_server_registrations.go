@@ -147,7 +147,7 @@ func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address str
 	if err != nil {
 		return false, fee, err
 	}
-	balance := ms.bk.GetBankBalance(ctx, accAddress, fee.Denom)
+	balance := ms.bk.GetBalance(ctx, accAddress, fee.Denom)
 	success = balance.IsGTE(fee)
 	return success, fee, err
 }

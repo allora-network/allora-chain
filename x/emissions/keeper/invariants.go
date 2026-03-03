@@ -320,7 +320,7 @@ func StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRew
 		// first get the balance of the pending reward for delegators account
 		// this is the total amount of rewards that we hold on behalf of delegators
 		alloraPendingAddr := k.authKeeper.GetModuleAccount(ctx, emissionstypes.AlloraPendingRewardForDelegatorAccountName).GetAddress()
-		alloraPendingBankBal := k.bankingKeeper.GetBankBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
+		alloraPendingBankBal := k.bankingKeeper.GetBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
 
 		// for every delegator stake position
 		delegatedStakesIter, err := k.stakingKeeper.delegatedStakes.Iterate(ctx, nil)
