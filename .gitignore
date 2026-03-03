@@ -58,8 +58,11 @@ allora.log
 
 **/.DS_Store
 
+<<<<<<< HEAD
 .agents
 .cursor
 .claude
+=======
+>>>>>>> f31c30fe (pag guard, nil-wrap notfound, error mgmt (#921))
 .worktrees/
 
