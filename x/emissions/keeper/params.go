@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -51,6 +52,13 @@ func (k *ParamsKeeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Cont
 
 	if pagination != nil {
 		if len(pagination.Key) > 0 {
+			if len(pagination.Key) != 8 {
+				return uint64(0), uint64(0), errorsmod.Wrapf(
+					sdkerrors.ErrInvalidRequest,
+					"invalid pagination key length %d, expected 8",
+					len(pagination.Key),
+				)
+			}
 			cursor = binary.BigEndian.Uint64(pagination.Key)
 		}
 		if pagination.Limit > 0 {
