@@ -227,6 +227,12 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 		if err != nil {
 			return errorsmod.Wrap(err, "error setting initial reputer score ema")
 		}
+		previousEmaScore = types.Score{
+			TopicId:     topic.Id,
+			Address:     reputerLoss.ValueBundle.Reputer,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
+		}
 	} else {
 		// If not new: Penalise the reputer if needed
 		previousEmaScore, err = k.actorPenaltiesKeeper.ApplyLivenessPenaltyToReputer(ctx, topic, nonceBlockHeight, previousEmaScore)

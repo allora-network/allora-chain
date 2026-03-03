@@ -172,12 +172,7 @@ func (k *ScoresKeeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, 
 			Score:       alloraMath.ZeroDec(),
 		}, nil
 	} else if err != nil {
-		return types.Score{
-			BlockHeight: 0,
-			Address:     reputer,
-			TopicId:     topicId,
-			Score:       alloraMath.ZeroDec(),
-		}, errorsmod.Wrap(err, "error getting reputer score ema")
+		return types.Score{}, errorsmod.Wrap(err, "error getting reputer score ema")
 	}
 	return score, nil
 }
@@ -626,7 +621,13 @@ func (k *ScoresKeeper) SetPreviousPercentageRewardToStakedReputers(
 }
 
 func (k *ScoresKeeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
-	return k.previousPercentageRewardToStakedReputers.Get(ctx)
+	percentage, err := k.previousPercentageRewardToStakedReputers.Get(ctx)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous percentage reward to staked reputers")
+	}
+	return percentage, nil
 }
 
 func (k *ScoresKeeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, forecasterScoreRatio alloraMath.Dec) error {

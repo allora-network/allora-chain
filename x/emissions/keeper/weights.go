@@ -81,6 +81,9 @@ func (k *WeightsKeeper) SetLatestInfererWeight(ctx context.Context, topicId Topi
 	if err := types.ValidateBech32(worker); err != nil {
 		return errorsmod.Wrap(err, "worker address validation failed")
 	}
+	if err := types.ValidateDec(weight); err != nil {
+		return errorsmod.Wrap(err, "inferer weight validation failed")
+	}
 	return k.latestInfererWeights.Set(ctx, collections.Join(topicId, worker), weight)
 }
 
@@ -100,6 +103,9 @@ func (k *WeightsKeeper) SetLatestForecasterWeight(ctx context.Context, topicId T
 	}
 	if err := types.ValidateBech32(worker); err != nil {
 		return errorsmod.Wrap(err, "worker address validation failed")
+	}
+	if err := types.ValidateDec(weight); err != nil {
+		return errorsmod.Wrap(err, "forecaster weight validation failed")
 	}
 	return k.latestForecasterWeights.Set(ctx, collections.Join(topicId, worker), weight)
 }
