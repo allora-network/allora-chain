@@ -48,11 +48,16 @@ func MigrateTopics(
 
 	ctx.Logger().Info("MIGRATION V14: Migrating topics to add TopicType and OutputArity")
 
+	type kv struct {
+		key   []byte
+		value []byte
+	}
+	updates := make([]kv, 0)
+
 	topicCount := 0
 	for ; iterator.Valid(); iterator.Next() {
 		var oldTopic oldtypes.Topic
-		err := proto.Unmarshal(iterator.Value(), &oldTopic)
-		if err != nil {
+		if err := proto.Unmarshal(iterator.Value(), &oldTopic); err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
@@ -83,9 +88,14 @@ func MigrateTopics(
 			UnityTolerance:           alloraMath.ZeroDec(),
 		}
 
-		topicStore.Set(iterator.Key(), cdc.MustMarshal(&newTopic))
-		ctx.Logger().Debug("MIGRATION V14: Updated topic with TopicType and OutputArity", "topicId", newTopic.Id)
+		updates = append(updates, kv{
+			key:   append([]byte(nil), iterator.Key()...),
+			value: cdc.MustMarshal(&newTopic),
+		})
 		topicCount++
+	}
+	for _, u := range updates {
+		topicStore.Set(u.key, u.value)
 	}
 
 	ctx.Logger().Info("MIGRATION V14: Topics migration complete", "topicsUpdated", topicCount)

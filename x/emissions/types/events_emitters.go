@@ -718,7 +718,7 @@ func EmitNewTopicInitialEmaScoreSetEvent(ctx context.Context, actorType ActorTyp
 }
 
 // Individual events
-func EmitNewRegretStdNormSetEvent(ctx context.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
+func EmitNewRegretScaleSetEvent(ctx context.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.REGRET_STDNORM_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, blockHeight, stdNorm))

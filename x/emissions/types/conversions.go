@@ -190,7 +190,7 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 	return valueBundle, nil
 }
 
-// NewLossBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
+// NewLossBundleFromInput converts InputReputerValueBundle to LossBundle
 func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*LossBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
