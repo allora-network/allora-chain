@@ -58,3 +58,5 @@ allora.log
 
 **/.DS_Store
 
+.worktrees/
+
