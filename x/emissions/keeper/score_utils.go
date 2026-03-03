@@ -17,14 +17,19 @@ func (k *ScoresKeeper) GetLowestScoreFromAllReputers(
 	topicId TopicId,
 	reputerAddresses []string,
 ) (lowScore types.Score, err error) {
-	for i, address := range reputerAddresses {
+	foundValidScore := false
+	for _, address := range reputerAddresses {
 		score, err := k.GetReputerScoreEma(ctx, topicId, address)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Gt(score.Score) || i == 0 {
+		if !foundValidScore || lowScore.Score.Gt(score.Score) {
 			lowScore = score
+			foundValidScore = true
 		}
+	}
+	if !foundValidScore {
+		return types.Score{}, types.ErrNotFound
 	}
 	return lowScore, nil
 }
@@ -50,6 +55,9 @@ func (k *ScoresKeeper) UpdateLowestScoreFromReputerAddresses(
 	// Get lowest score from all reputers
 	lowScore, err := k.GetLowestScoreFromAllReputers(ctx, topicId, reputerAddresses)
 	if err != nil {
+		if errors.Is(err, types.ErrNotFound) {
+			return nil
+		}
 		return err
 	}
 
@@ -89,14 +97,19 @@ func (k *ScoresKeeper) GetLowestScoreFromAllInferers(
 	topicId TopicId,
 	infererAddresses []string,
 ) (lowScore types.Score, err error) {
-	for i, address := range infererAddresses {
+	foundValidScore := false
+	for _, address := range infererAddresses {
 		score, err := k.GetInfererScoreEma(ctx, topicId, address)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Gt(score.Score) || i == 0 {
+		if !foundValidScore || lowScore.Score.Gt(score.Score) {
 			lowScore = score
+			foundValidScore = true
 		}
+	}
+	if !foundValidScore {
+		return types.Score{}, types.ErrNotFound
 	}
 	return lowScore, nil
 }
@@ -122,6 +135,9 @@ func (k *ScoresKeeper) UpdateLowestScoreFromForecasterAddresses(
 	// Get lowest score from all forecasters
 	lowScore, err := k.GetLowestScoreFromAllForecasters(ctx, topicId, forecasterAddresses)
 	if err != nil {
+		if errors.Is(err, types.ErrNotFound) {
+			return nil
+		}
 		return err
 	}
 
@@ -134,14 +150,19 @@ func (k *ScoresKeeper) GetLowestScoreFromAllForecasters(
 	topicId TopicId,
 	forecasterAddresses []string,
 ) (lowScore types.Score, err error) {
-	for i, address := range forecasterAddresses {
+	foundValidScore := false
+	for _, address := range forecasterAddresses {
 		score, err := k.GetForecasterScoreEma(ctx, topicId, address)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Gt(score.Score) || i == 0 {
+		if !foundValidScore || lowScore.Score.Gt(score.Score) {
 			lowScore = score
+			foundValidScore = true
 		}
+	}
+	if !foundValidScore {
+		return types.Score{}, types.ErrNotFound
 	}
 	return lowScore, nil
 }
