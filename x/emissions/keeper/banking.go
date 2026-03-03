@@ -24,10 +24,6 @@ type BankingKeeper struct {
 	authKeeper AccountKeeper
 }
 
-func (k *BankingKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
-	return k.bankKeeper.GetBalance(ctx, addr, denom)
-}
-
 // wrapper around bank keeper SendCoinsFromModuleToAccount
 func (k *BankingKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipient ActorId, amt sdk.Coins) error {
 	recipientAddr, err := sdk.AccAddressFromBech32(recipient)
@@ -52,12 +48,15 @@ func (k *BankingKeeper) SendCoinsFromModuleToModule(ctx context.Context, senderM
 }
 
 // wrapper around bank keeper GetBalance
-func (k *BankingKeeper) GetBankBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+func (k *BankingKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
 	return k.bankKeeper.GetBalance(ctx, addr, denom)
 }
 
 // MoveCoinsFromAlloraRewardsToEcosystem moves funds from the allora rewards account to the ecosystem account
 func (k *BankingKeeper) MoveCoinsFromAlloraRewardsToEcosystem(ctx context.Context, amount alloraMath.Dec) error {
+	if amount.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "amount to move cannot be negative")
+	}
 	if amount.IsZero() {
 		return nil
 	}
@@ -78,7 +77,7 @@ func (k *BankingKeeper) GetTotalRewardToDistribute(ctx context.Context) (alloraM
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
 	// Get Total Allocation
-	totalReward := k.GetBankBalance(
+	totalReward := k.GetBalance(
 		ctx,
 		alloraRewardsAccountAddr,
 		params.DefaultBondDenom).Amount

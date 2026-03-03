@@ -46,11 +46,11 @@ type ScoresKeeper struct {
 	forecasterScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, block_height, reputer) -> score
 	reputerScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
-	// map of (topic, block_height, worker) -> score
+	// map of (topic, worker) -> score
 	infererScoreEmas collections.Map[collections.Pair[TopicId, ActorId], types.Score]
-	// map of (topic, block_height, worker) -> score
+	// map of (topic, worker) -> score
 	forecasterScoreEmas collections.Map[collections.Pair[TopicId, ActorId], types.Score]
-	// map of (topic, block_height, reputer) -> score
+	// map of (topic, reputer) -> score
 	reputerScoreEmas collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, ActorId], types.ListeningCoefficient]
