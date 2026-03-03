@@ -513,6 +513,7 @@ func (k *StakingKeeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 	if err != nil {
 		return types.DelegateStakeRemovalInfo{}, false, errorsmod.Wrap(err, "error iterating over delegate stake removals by actor")
 	}
+	defer iter.Close()
 	keys, err := iter.Keys()
 	if err != nil {
 		return types.DelegateStakeRemovalInfo{}, false, errorsmod.Wrap(err, "error getting keys")

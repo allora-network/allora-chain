@@ -1,8 +1,6 @@
 package keeper_test
 
 import (
-	"cosmossdk.io/collections"
-
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -663,12 +661,17 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicNoNonces() {
 
 	// Call pruneWorkerNonces
 	err = k.PruneWorkerNonces(s.Ctx(), topicId1, blockHeightThreshold)
-	s.Require().ErrorIs(err, collections.ErrNotFound)
+	s.Require().NoError(err)
 
 	// Check remaining nonces
 	nonces, err := k.GetUnfulfilledWorkerNonces(s.Ctx(), topicId1)
 	s.Require().NoError(err)
 	s.Require().Empty(nonces.Nonces)
+}
+
+func (s *KeeperTestSuite) TestAddReputerNonceNilInput() {
+	err := s.NonceKeeper().AddReputerNonce(s.Ctx(), uint64(1), nil)
+	s.Require().Error(err)
 }
 
 func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {

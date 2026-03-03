@@ -86,6 +86,9 @@ func (k *NonceKeeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, n
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return false, errorsmod.Wrap(err, "error validating topic id")
 	}
+	if nonce == nil {
+		return false, errors.New("nil worker nonce provided")
+	}
 	if err := nonce.Validate(); err != nil {
 		return false, errorsmod.Wrap(err, "error validating nonce")
 	}
@@ -121,6 +124,9 @@ func (k *NonceKeeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, 
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return false, errorsmod.Wrap(err, "error validating topic id")
 	}
+	if nonce == nil {
+		return false, errors.New("nil reputer nonce provided")
+	}
 	if err := nonce.Validate(); err != nil {
 		return false, errorsmod.Wrap(err, "error validating nonce")
 	}
@@ -131,6 +137,9 @@ func (k *NonceKeeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, 
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for i, n := range unfulfilledNonces.Nonces {
+		if n == nil || n.ReputerNonce == nil {
+			continue
+		}
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
@@ -172,6 +181,9 @@ func (k *NonceKeeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId Topi
 
 // True if nonce is unfulfilled, false otherwise.
 func (k *NonceKeeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId, nonce *types.Nonce) (isUnfulfilled bool, err error) {
+	if nonce == nil {
+		return false, errors.New("nil reputer nonce provided")
+	}
 	// Get the latest unfulfilled nonces
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
@@ -180,7 +192,7 @@ func (k *NonceKeeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId Top
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
-		if n == nil {
+		if n == nil || n.ReputerNonce == nil {
 			continue
 		}
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
@@ -196,6 +208,9 @@ func (k *NonceKeeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId Top
 func (k *NonceKeeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if nonce == nil {
+		return errors.New("nil worker nonce provided")
 	}
 	if err := nonce.Validate(); err != nil {
 		return errorsmod.Wrap(err, "error validating nonce")
@@ -236,6 +251,9 @@ func (k *NonceKeeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonc
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
+	if nonce == nil {
+		return errors.New("nil reputer's nonce provided")
+	}
 	if err := nonce.Validate(); err != nil {
 		return errorsmod.Wrap(err, "error validating nonce")
 	}
@@ -243,13 +261,13 @@ func (k *NonceKeeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonc
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
-	if nonce == nil {
-		return errors.New("nil reputer's nonce provided")
-	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
 	// nor that the `associatedWorkerNonce` is already associated with a worker request
 	for _, n := range nonces.Nonces {
+		if n == nil || n.ReputerNonce == nil {
+			continue
+		}
 		// Do nothing if nonce is already in the list
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			return nil
@@ -381,10 +399,8 @@ func (k *NonceKeeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blo
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
-	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
-	if errors.Is(err, collections.ErrNotFound) {
-		return errorsmod.Wrapf(err, "no nonces found to prune for topic %d", topicId)
-	} else if err != nil {
+	nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
+	if err != nil {
 		return errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
@@ -420,6 +436,9 @@ func (k *NonceKeeper) PruneReputerNonces(ctx context.Context, topicId uint64, bl
 	// Filter Nonces based on block_height
 	filteredNonces := make([]*types.ReputerRequestNonce, 0)
 	for _, nonce := range nonces.Nonces {
+		if nonce == nil || nonce.ReputerNonce == nil {
+			continue
+		}
 		if nonce.ReputerNonce.BlockHeight >= blockHeightThreshold {
 			filteredNonces = append(filteredNonces, nonce)
 		}
