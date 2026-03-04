@@ -15,6 +15,12 @@ import (
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
+	if sdkCtx.BlockHeight() == 1 {
+		if err := k.EnsureEmissionRecalculationTaskScheduled(ctx, 0); err != nil {
+			return errorsmod.Wrap(err, "failed to schedule emission recalculation task")
+		}
+	}
+
 	// Calculate blockCountSinceTGE early - needed for monthly reset check
 	// This must happen BEFORE the emission enabled check so monthly reset always runs
 	blockHeight := uint64(sdkCtx.BlockHeight())
@@ -69,28 +75,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	vPercent, err := vPercentADec.SdkLegacyDec()
 	if err != nil {
 		return errorsmod.Wrap(err, "could not convert validators vs allora percent reward to legacy dec")
-	}
-	// every month on the first block of the month, update the emissions rate
-	// Note: Monthly rewards reset already happened above (before emission enabled check)
-	if blockCountSinceTGE%blocksPerMonth == 1 {
-		// Recalculate the target emission for the block
-		// WARNING: After Calling RecalculateTargetEmission,
-		// PreviousRewardEmissionPerUnitStakedToken and PreviousBlockEmission
-		// are set to new values. If later in begin blocker you need to use these
-		// you should get them first before this function is called!!
-		blockEmission, _, err = keeper.RecalculateTargetEmission(
-			sdkCtx,
-			k,
-			blockCountSinceTGE,
-			blocksPerMonth,
-			moduleParams,
-			ecosystemBalance,
-			ecosystemMintSupplyRemaining,
-			vPercent,
-		)
-		if err != nil {
-			return errorsmod.Wrap(err, "could not recalculate target emission")
-		}
 	}
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {

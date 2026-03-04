@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#907](https://github.com/allora-network/allora-chain/pull/907) Integrate `x/mint` with `x/scheduler` for periodic emission recalculation
+
 ### Changed
 
 * [#910](https://github.com/allora-network/allora-chain/pull/910) Regret norm to use MAD

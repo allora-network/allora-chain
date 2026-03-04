@@ -26,6 +26,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/keepers"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

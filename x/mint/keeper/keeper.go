@@ -29,6 +29,7 @@ type Keeper struct {
 	stakingKeeper    types.StakingKeeper
 	bankKeeper       types.BankKeeper
 	emissionsKeeper  types.EmissionsKeeper
+	schedulerKeeper  types.SchedulerKeeper
 	feeCollectorName string
 
 	Schema                                   collections.Schema
@@ -49,6 +50,7 @@ func NewKeeper(
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	ek types.EmissionsKeeper,
+	schedulerKeeper types.SchedulerKeeper,
 	feeCollectorName string,
 ) Keeper {
 	// ensure mint module account is set
@@ -65,6 +67,7 @@ func NewKeeper(
 		accountKeeper:                            ak,
 		bankKeeper:                               bk,
 		emissionsKeeper:                          ek,
+		schedulerKeeper:                          schedulerKeeper,
 		feeCollectorName:                         feeCollectorName,
 		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),

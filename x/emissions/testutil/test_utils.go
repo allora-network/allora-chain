@@ -340,6 +340,7 @@ func (s *TestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		nil,
 		authtypes.FeeCollectorName,
 	)
 

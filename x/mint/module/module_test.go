@@ -15,6 +15,7 @@ import (
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -74,11 +75,21 @@ func (s *MintModuleTestSuite) SetupTest() {
 	}
 	s.addrs = addrs
 	s.addrsStr = addrsStr
-	key := storetypes.NewKVStoreKey(types.StoreKey)
-	storeService := runtime.NewKVStoreService(key)
+	mintKey := storetypes.NewKVStoreKey(types.StoreKey)
+	schedulerKey := storetypes.NewKVStoreKey("scheduler")
+	storeService := runtime.NewKVStoreService(mintKey)
+	schedulerStoreService := runtime.NewKVStoreService(schedulerKey)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
+	ctx := testutil.DefaultContextWithKeys(
+		map[string]*storetypes.KVStoreKey{
+			types.StoreKey: mintKey,
+			"scheduler":    schedulerKey,
+		},
+		map[string]*storetypes.TransientStoreKey{
+			"transient_test": storetypes.NewTransientStoreKey("transient_test"),
+		},
+		nil,
+	).WithHeaderInfo(header.Info{
 		Height:  1,
 		Hash:    []byte("test"),
 		ChainID: "localnet",
@@ -146,6 +157,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		"fee_collector",
 	)
 
+	schedulerKeeper := schedulerkeeper.NewKeeper(schedulerStoreService, encCfg.Codec)
 	mintKeeper := keeper.NewKeeper(
 		encCfg.Codec,
 		storeService,
@@ -153,8 +165,10 @@ func (s *MintModuleTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		emissionsKeeper,
+		&schedulerKeeper,
 		authtypes.FeeCollectorName,
 	)
+	s.Require().NoError(schedulerKeeper.RegisterTaskHandlers(mintKeeper.TaskHandlers()))
 
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper
@@ -173,6 +187,12 @@ func (s *MintModuleTestSuite) SetupTest() {
 	defaultGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
 	mintAppModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
 	s.appModule = mintAppModule
+}
+
+func (s *MintModuleTestSuite) recalculateEmission() cosmosMath.Int {
+	blockEmission, err := s.mintKeeper.RecalculateEmission(s.ctx)
+	s.Require().NoError(err)
+	return blockEmission
 }
 
 func TestMintModuleTestSuite(t *testing.T) {
@@ -338,6 +358,8 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 
 	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 
+	s.recalculateEmission()
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
@@ -414,6 +436,8 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	s.Require().NoError(err)
 
 	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+
+	s.recalculateEmission()
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
@@ -511,6 +535,8 @@ func (s *MintModuleTestSuite) TestNotEnoughTokensToMintToCoverInflation() {
 	s.Require().NoError(err)
 
 	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+
+	s.recalculateEmission()
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
@@ -618,6 +644,8 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	ecosystemTokensMintedZero, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
 	s.Require().NoError(err)
 	// do the first inflation calculation
+	s.recalculateEmission()
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
@@ -649,6 +677,8 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	blocks := new(big.Int).SetUint64(blocksPerMonth)
 	blocks.Add(blocks, big.NewInt(1))
 	s.ctx = s.ctx.WithBlockHeight(blocks.Int64())
+
+	s.recalculateEmission()
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
@@ -709,6 +739,8 @@ func (s *MintModuleTestSuite) TestEcosystemRefundReducesMintingInSubsequentBlock
 	tokenSupplyStart := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 
 	// 2. Run BeginBlocker at block 1 - should mint tokens
+	s.recalculateEmission()
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
@@ -742,6 +774,7 @@ func (s *MintModuleTestSuite) TestEcosystemRefundReducesMintingInSubsequentBlock
 
 	// 4. Run BeginBlocker at block 2
 	s.ctx = s.ctx.WithBlockHeight(2) // Advance block height, avoid recalculation
+
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
