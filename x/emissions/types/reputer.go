@@ -1,8 +1,8 @@
 package types
 
 import (
+	"cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/ignite/cli/v28/ignite/pkg/errors"
 
 	alloramath "github.com/allora-network/allora-chain/math"
 )

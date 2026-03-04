@@ -1,5 +1,7 @@
 package keeper_test
 
+//nolint:exhaustruct,staticcheck
+
 import (
 	"encoding/binary"
 	"fmt"
@@ -6088,7 +6090,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 				s.Require().NoError(err)
 				s.Require().Equal(topicId, reg.TopicId)
 				s.Require().Equal(uint64(nonce), reg.EpochId)
-				s.Require().Len(reg.Labels, 0)
+				s.Require().Empty(reg.Labels)
 			},
 		},
 		{
@@ -6488,7 +6490,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			s.Require().NoError(err)
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Equal(0, len(reg.Labels))
+				s.Require().Empty(reg.Labels)
 				return
 			}
 
@@ -6545,7 +6547,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 		s.Require().NoError(err)
-		s.Require().Equal(2, len(reg.Labels))
+		s.Require().Len(2, len(reg.Labels))
 		s.Require().Equal("a", reg.Labels[0].Name)
 		s.Require().Equal("b", reg.Labels[1].Name)
 	})
