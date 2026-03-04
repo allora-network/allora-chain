@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"sort"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -11,28 +10,21 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-type InferenceValues struct {
-	TopicId     uint64
-	BlockHeight int64
-	Worker      string
-	Values      alloraMath.DecArray
-}
+type InferenceValues = alloraMath.DecArray
 
-func (iv InferenceValues) Len() int { return len(iv.Values) }
-
-// ValidateAgainstRegistry verifies that the inference values are consistent
+// ValidateInferenceValues verifies that the inference values are consistent
 // with the provided epoch label registry.
-func (iv InferenceValues) ValidateAgainstRegistry(reg types.EpochLabelRegistry) error {
+func ValidateInferenceValues(iv InferenceValues, reg types.EpochLabelRegistry) error {
 	want := len(reg.GetLabels())
-	if len(iv.Values) != want {
+	if len(iv) != want {
 		return errorsmod.Wrapf(
 			sdkerrors.ErrLogic,
 			"inference values length mismatch: got=%d want=%d",
-			len(iv.Values), want,
+			len(iv), want,
 		)
 	}
-	for i := range iv.Values {
-		if iv.Values[i].IsNaN() || !iv.Values[i].IsFinite() {
+	for i := range iv {
+		if iv[i].IsNaN() || !iv[i].IsFinite() {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "invalid inference value at idx=%d", i)
 		}
 	}
@@ -41,10 +33,9 @@ func (iv InferenceValues) ValidateAgainstRegistry(reg types.EpochLabelRegistry) 
 
 // InferenceValuesFromProto converts a stored Inference proto into the internal
 // InferenceValues representation used by math code.
-func (k *Keeper) InferenceValuesFromProto(
-	ctx context.Context,
+func InferenceValuesFromProto(
 	topic types.Topic,
-	nonce BlockHeight,
+	reg types.EpochLabelRegistry,
 	inf *types.Inference,
 ) (InferenceValues, error) {
 	if inf == nil {
@@ -74,17 +65,8 @@ func (k *Keeper) InferenceValuesFromProto(
 			return InferenceValues{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
 
-		return InferenceValues{
-			TopicId:     inf.TopicId,
-			BlockHeight: inf.BlockHeight,
-			Worker:      inf.Inferer,
-			Values:      alloraMath.DecArray{dec},
-		}, nil
+		return alloraMath.DecArray{dec}, nil
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
-		reg, err := k.GetEpochLabelRegistry(ctx, inf.TopicId, nonce)
-		if err != nil {
-			return InferenceValues{}, err
-		}
 		regLen := len(reg.GetLabels())
 		if regLen == 0 {
 			return InferenceValues{}, errorsmod.Wrap(sdkerrors.ErrLogic, "epoch label registry is empty for multi-arity")
@@ -106,35 +88,28 @@ func (k *Keeper) InferenceValuesFromProto(
 			out[i] = zero
 		}
 		copy(out, inf.Values)
-
-		iv := InferenceValues{
-			TopicId:     inf.TopicId,
-			BlockHeight: inf.BlockHeight,
-			Worker:      inf.Inferer,
-			Values:      out,
-		}
-		if err := iv.ValidateAgainstRegistry(reg); err != nil {
+		if err := ValidateInferenceValues(out, reg); err != nil {
 			return InferenceValues{}, err
 		}
-		return iv, nil
+		return out, nil
 	default:
 		return InferenceValues{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
 }
 
-// ToLabeledValues converts the internal InferenceValues representation into
+// InferenceValuesToLabeledValues converts the internal InferenceValues representation into
 // a slice of LabeledValue suitable for RPC responses or event emission.
-func (iv InferenceValues) ToLabeledValues(reg types.EpochLabelRegistry) ([]*types.LabeledValue, error) {
+func InferenceValuesToLabeledValues(iv InferenceValues, reg types.EpochLabelRegistry) ([]*types.LabeledValue, error) {
 	want := len(reg.GetLabels())
-	if len(iv.Values) != want {
+	if len(iv) != want {
 		return nil, errorsmod.Wrapf(
 			sdkerrors.ErrInvalidRequest,
 			"inference values length mismatch: got=%d want=%d",
-			len(iv.Values), want,
+			len(iv), want,
 		)
 	}
-	out := make([]*types.LabeledValue, 0, len(iv.Values))
-	for i, v := range iv.Values {
+	out := make([]*types.LabeledValue, 0, len(iv))
+	for i, v := range iv {
 		lbl := reg.GetLabels()[i]
 		if lbl == nil {
 			return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "nil label in registry at idx=%d", i)
@@ -157,7 +132,7 @@ func (k *Keeper) InferenceValuesFromInferencesSnapshot(
 	inferences *types.Inferences,
 ) ([]InferenceValues, error) {
 	if inferences == nil || len(inferences.Inferences) == 0 {
-		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inferences is nil/empty")
+		return []InferenceValues{}, nil
 	}
 
 	reg, err := k.GetEpochLabelRegistry(ctx, topic.Id, nonce)
@@ -171,21 +146,20 @@ func (k *Keeper) InferenceValuesFromInferencesSnapshot(
 		if inf == nil {
 			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "nil inference in snapshot")
 		}
-		iv, err := k.InferenceValuesFromProto(ctx, topic, nonce, inf)
+		iv, err := InferenceValuesFromProto(topic, reg, inf)
 		if err != nil {
 			return nil, err
 		}
-		if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI && len(iv.Values) != regLen {
+		if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI && len(iv) != regLen {
 			return nil, errorsmod.Wrapf(
 				sdkerrors.ErrLogic,
 				"snapshot inference not padded to registry: worker=%s got=%d want=%d",
-				iv.Worker, len(iv.Values), regLen,
+				inf.Inferer, len(iv), regLen,
 			)
 		}
 		out = append(out, iv)
 	}
 
-	sort.Slice(out, func(i, j int) bool { return out[i].Worker < out[j].Worker })
 	return out, nil
 }
 

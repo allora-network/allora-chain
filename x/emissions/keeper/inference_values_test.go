@@ -4,6 +4,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -44,13 +45,12 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 	}
 
 	type tc struct {
-		name       string
-		arity      types.TopicOutputArity
-		setup      func()
-		inf        func() *types.Inference
-		wantErrIs  error
-		wantWorker string
-		wantVals   []string
+		name      string
+		arity     types.TopicOutputArity
+		setup     func()
+		inf       func() *types.Inference
+		wantErrIs error
+		wantVals  []string
 	}
 
 	cases := []tc{
@@ -73,8 +73,7 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					Values:      nil,
 				}
 			},
-			wantWorker: w1,
-			wantVals:   []string{"42"},
+			wantVals: []string{"42"},
 		},
 		{
 			name:  "SINGLE_values_len1_equal_scalar_ok",
@@ -88,8 +87,7 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					Values:      []alloraMath.Dec{mustDec("7")},
 				}
 			},
-			wantWorker: w1,
-			wantVals:   []string{"7"},
+			wantVals: []string{"7"},
 		},
 		{
 			name:  "SINGLE_values_len1_mismatch_rejected",
@@ -185,8 +183,7 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					Values:      []alloraMath.Dec{mustDec("10"), mustDec("20"), mustDec("30")},
 				}
 			},
-			wantWorker: w2,
-			wantVals:   []string{"10", "20", "30"},
+			wantVals: []string{"10", "20", "30"},
 		},
 		{
 			name:  "MULTI_shorter_len_pads_to_registry_len",
@@ -203,8 +200,7 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					Values:      []alloraMath.Dec{mustDec("9"), mustDec("8")}, // => [9,8,0,0,0]
 				}
 			},
-			wantWorker: w1,
-			wantVals:   []string{"9", "8", "0", "0", "0"},
+			wantVals: []string{"9", "8", "0", "0", "0"},
 		},
 		{
 			name:  "MULTI_rejects_invalid_value_in_values",
@@ -249,7 +245,10 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 				inf = c.inf()
 			}
 
-			got, err := k.InferenceValuesFromProto(ctx, topic, nonce, inf)
+			reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+			s.Require().NoError(err)
+
+			got, err := keeper.InferenceValuesFromProto(topic, reg, inf)
 
 			if c.wantErrIs != nil {
 				s.Require().ErrorIs(err, c.wantErrIs)
@@ -257,13 +256,9 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 			}
 			s.Require().NoError(err)
 
-			s.Require().Equal(topicId, got.TopicId)
-			s.Require().Equal(nonce, got.BlockHeight)
-			s.Require().Equal(c.wantWorker, got.Worker)
-
-			s.Require().Equal(len(c.wantVals), len(got.Values))
+			s.Require().Equal(len(c.wantVals), len(got))
 			for i := range c.wantVals {
-				s.Require().Equal(c.wantVals[i], got.Values[i].String())
+				s.Require().Equal(c.wantVals[i], got[i].String())
 			}
 		})
 	}
