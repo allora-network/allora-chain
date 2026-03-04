@@ -243,25 +243,20 @@ func closeActiveInferencesSet(
 	nonce types.Nonce,
 	activeInfererAddresses []string,
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
-	activeInferences := make([]*types.Inference, 0)
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	for _, address := range activeInfererAddresses {
-		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
-		if err != nil {
-			return nil, nil, err
-		}
-		activeInferences = append(activeInferences, &inference)
-		activeInfererAddressesMap[inference.Inferer] = true
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "failed to get topic")
 	}
 
-	// Ensure deterministic ordering
-	sort.Slice(activeInferences, func(i, j int) bool {
-		return activeInferences[i].Inferer < activeInferences[j].Inferer
-	})
+	inferences, err = k.GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce.BlockHeight, activeInfererAddresses)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	inferences = &types.Inferences{
-		Inferences: activeInferences,
+	for _, inference := range inferences.Inferences {
+		activeInfererAddressesMap[inference.Inferer] = true
 	}
 
 	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)

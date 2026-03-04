@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"sort"
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
@@ -1868,6 +1869,96 @@ func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 ) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
 	return k.inferences.Get(ctx, key)
+}
+
+// GetWorkersLatestInferencesByTopicIdValuesPadded retrieves the latest inference
+// for each provided worker and guarantees that the returned Inference.Values
+// slices are aligned with the expected shape for the topic.
+//
+// SINGLE topics:
+//   - Ensures Values has length 1.
+//   - If only the scalar Value field is populated (legacy), it is converted
+//     to Values = [Value].
+//   - Value and Values[0] are kept consistent.
+//
+// MULTI topics:
+//   - Pads each inference's Values slice with zeros so that its length matches
+//     the epoch label registry length for (topicId, nonce).
+//   - Returns an error if any inference has more values than the registry.
+//
+// Returned inferences are sorted deterministically by Inferer address.
+func (k *Keeper) GetWorkersLatestInferencesByTopicIdValuesPadded(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	workers []ActorId,
+) (*types.Inferences, error) {
+	active := make([]*types.Inference, 0, len(workers))
+
+	switch topic.OutputArity {
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		for _, addr := range workers {
+			inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
+			if err != nil {
+				return nil, err
+			}
+			if len(inf.Values) > 1 {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"worker %s single-arity inference has len(values)>1: got=%d",
+					addr, len(inf.Values),
+				)
+			}
+
+			infCopy := inf
+			if len(infCopy.Values) == 0 {
+				infCopy.Values = []alloraMath.Dec{infCopy.Value}
+			} else {
+				infCopy.Value = infCopy.Values[0]
+			}
+
+			active = append(active, &infCopy)
+		}
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		reg, err := k.GetEpochLabelRegistry(ctx, topic.Id, nonce)
+		if err != nil {
+			return nil, err
+		}
+		targetLen := len(reg.GetLabels())
+
+		for _, addr := range workers {
+			inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
+			if err != nil {
+				return nil, err
+			}
+			if len(inf.Values) > targetLen {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"worker %s inference values longer than registry: got=%d registry=%d",
+					addr, len(inf.Values), targetLen,
+				)
+			}
+
+			infCopy := inf
+			active = append(active, &infCopy)
+		}
+
+		zero := alloraMath.ZeroDec()
+		for i := range active {
+			if diff := targetLen - len(active[i].Values); diff > 0 {
+				pad := make([]alloraMath.Dec, diff)
+				for j := range pad {
+					pad[j] = zero
+				}
+				active[i].Values = append(active[i].Values, pad...)
+			}
+		}
+	default:
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+
+	sort.Slice(active, func(i, j int) bool { return active[i].Inferer < active[j].Inferer })
+	return &types.Inferences{Inferences: active}, nil
 }
 
 func (k *Keeper) GetWorkerLatestForecastByTopicId(
