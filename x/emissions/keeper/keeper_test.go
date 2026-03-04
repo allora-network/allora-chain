@@ -1,3 +1,4 @@
+//nolint:exhaustruct,staticcheck
 package keeper_test
 
 import (
@@ -6086,7 +6087,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 				s.Require().NoError(err)
 				s.Require().Equal(topicId, reg.TopicId)
 				s.Require().Equal(uint64(nonce), reg.EpochId)
-				s.Require().Len(reg.Labels, 0)
+				s.Require().Empty(reg.Labels)
 			},
 		},
 		{

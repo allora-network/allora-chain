@@ -5065,7 +5065,7 @@ func (k *Keeper) GetEpochLabelRegistry(
 ) (types.EpochLabelRegistry, error) {
 	registry, err := k.topicLabelRegistry.Get(ctx, collections.Join(topicId, nonce))
 	if err != nil {
-		if errorsmod.IsOf(err, collections.ErrNotFound) {
+		if errors.Is(err, collections.ErrNotFound) {
 			return types.EpochLabelRegistry{
 				TopicId: topicId,
 				EpochId: uint64(nonce),
