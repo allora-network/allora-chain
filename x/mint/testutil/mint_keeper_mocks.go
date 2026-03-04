@@ -20,7 +20,7 @@ type MockMintKeeperMockRecorder struct {
 	mock *MockMintKeeper
 }
 
-// NewMintMintKeeper creates a new mock instance.
+// NewMockMintKeeper creates a new mock instance.
 func NewMockMintKeeper(ctrl *gomock.Controller) *MockMintKeeper {
 	mock := &MockMintKeeper{ctrl: ctrl}
 	mock.recorder = &MockMintKeeperMockRecorder{mock}
