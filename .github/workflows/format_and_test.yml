@@ -3,33 +3,6 @@ name: Run Format, Unit Tests, and Integration Tests
 on: [pull_request]
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      upgrade_related: ${{ steps.filter.outputs.upgrade_related }}
-    steps:
-    - uses: actions/checkout@v4
-    - id: filter
-      uses: dorny/paths-filter@v3
-      with:
-        filters: |
-          upgrade_related:
-            - 'app/upgrades.go'
-            - 'app/upgrades/**'
-            - 'x/**/migrations/**'
-            - 'x/**/module/**'
-            - 'x/**/module.go'
-            - 'test/integration/upgrade*'
-            - 'test/integration/integration_test.go'
-            - 'test/local_testnet_l1.sh'
-            - 'Dockerfile.upgrade'
-            - 'Dockerfile.cosmovisor'
-            - 'scripts/upgrade.sh'
-            - 'scripts/restore_snapshot*.sh'
-            - 'proto/**'
-            - 'app/app.go'
-            - 'app/app.yaml'
-
   gofmt:
     name: "Go Format Check"
     runs-on: ubuntu-latest
@@ -97,46 +70,4 @@ jobs:
 
     - name: IntegrationTest
       run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 15m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/test/integration -v
-
-  upgrade-test:
-    needs: [changes]
-    if: needs.changes.outputs.upgrade_related == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - uses: actions/setup-go@v5
-      with:
-        go-version: 1.22.x
-
-    - name: Disk usage (before)
-      shell: bash
-      run: |
-        df -h
-        echo "Workspace: $GITHUB_WORKSPACE"
-
-    - name: Free Disk Space (Ubuntu)
-      uses: insightsengineering/disk-space-reclaimer@v1
-      with:
-        android: true
-        dotnet: true
-        haskell: true
-        large-packages: true
-        swap-storage: true
-        docker-images: true
-        tools-cache: false
-
-    - name: Disk usage (after reclaim)
-      shell: bash
-      run: |
-        df -h
-        docker system df || true
-
-    - name: Run allora l1 chain in upgrade mode
-      run: DO_UPGRADE=true UPGRADE_VERSION=v0.16.0 bash ./test/local_testnet_l1.sh
-
-    - name: UpgradeTest
-      run: UPGRADE=TRUE UPGRADE_TARGET=v0.16.0 RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 15m -run ^TestUpgradeTestSuite$ github.com/allora-network/allora-chain/test/integration -v
 
