@@ -6547,7 +6547,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 		s.Require().NoError(err)
-		s.Require().Len(2, len(reg.Labels))
+		s.Require().Len(reg.Labels, 2)
 		s.Require().Equal("a", reg.Labels[0].Name)
 		s.Require().Equal("b", reg.Labels[1].Name)
 	})
