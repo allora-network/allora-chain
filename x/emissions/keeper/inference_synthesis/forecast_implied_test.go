@@ -531,11 +531,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.063129668414686004388530315977163")},
+		"forecaster0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.063129668414686004388530315977163")}},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
 	}
 
 	allInferersAreNew := false
@@ -552,9 +552,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"forecaster0": &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -568,6 +576,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		},
 	)
 	s.Require().NoError(err)
@@ -576,16 +585,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
 		inDelta, err := alloraMath.InDelta(
-			expectedValue.Value,
-			actualValue.Value,
+			expectedValue.Values[0],
+			actualValue.Values[0],
 			alloraMath.MustNewDecFromString("0.0001"),
 		)
 		s.Require().NoError(err)
 		s.Require().True(
 			inDelta, "Values do not match for key: %s %s %s",
 			key,
-			expectedValue.Value.String(),
-			actualValue.Value.String(),
+			expectedValue.Values[0].String(),
+			actualValue.Values[0].String(),
 		)
 	}
 }
@@ -608,11 +617,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
 	}
 
 	topicId := uint64(1)
@@ -629,9 +638,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"worker0": &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -645,6 +662,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		},
 	)
 	s.Require().NoError(err)
@@ -653,16 +671,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
 		inDelta, err := alloraMath.InDelta(
-			expectedValue.Value,
-			actualValue.Value,
+			expectedValue.Values[0],
+			actualValue.Values[0],
 			alloraMath.MustNewDecFromString("0.00001"),
 		)
 		s.Require().NoError(err)
 		s.Require().True(
 			inDelta, "Values do not match for key: %s %s %s",
 			key,
-			expectedValue.Value.String(),
-			actualValue.Value.String(),
+			expectedValue.Values[0].String(),
+			actualValue.Values[0].String(),
 		)
 	}
 }
@@ -695,14 +713,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1.317025398914864082848526530373150")},
-		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("1.2974778440227044")},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.317025398914864082848526530373150")}},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.2974778440227044")}},
 		s.AddrsStr(2): nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("2")},
-		s.AddrsStr(2): {Value: alloraMath.MustNewDecFromString("3")},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		s.AddrsStr(2): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3")}},
 	}
 
 	topicId := uint64(1)
@@ -724,9 +742,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		s.AddrsStr(1): &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -740,6 +766,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		},
 	)
 	s.Require().NoError(err)
@@ -753,16 +780,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		} else {
 			s.Require().True(exists, "Expected key %v does not exist in result map", key)
 			inDelta, err := alloraMath.InDelta(
-				expectedValue.Value,
-				actualValue.Value,
+				expectedValue.Values[0],
+				actualValue.Values[0],
 				alloraMath.MustNewDecFromString("0.0001"),
 			)
 			s.Require().NoError(err)
 			s.Require().True(
 				inDelta, "Values do not match for key: %s %s %s",
 				key,
-				expectedValue.Value.String(),
-				actualValue.Value.String(),
+				expectedValue.Values[0].String(),
+				actualValue.Values[0].String(),
 			)
 		}
 	}
@@ -798,14 +825,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
-		forecaster0: {Value: epoch2Get("forecast_implied_inference_0")},
+		forecaster0: {Values: []alloraMath.Dec{epoch2Get("forecast_implied_inference_0")}},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		worker0: {Value: epoch2Get("inference_0")},
-		worker1: {Value: epoch2Get("inference_1")},
-		worker2: {Value: epoch2Get("inference_2")},
-		worker3: {Value: epoch2Get("inference_3")},
-		worker4: {Value: epoch2Get("inference_4")},
+		worker0: {Values: []alloraMath.Dec{epoch2Get("inference_0")}},
+		worker1: {Values: []alloraMath.Dec{epoch2Get("inference_1")}},
+		worker2: {Values: []alloraMath.Dec{epoch2Get("inference_2")}},
+		worker3: {Values: []alloraMath.Dec{epoch2Get("inference_3")}},
+		worker4: {Values: []alloraMath.Dec{epoch2Get("inference_4")}},
 	}
 
 	topicId := uint64(1)
@@ -825,9 +852,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		forecaster0: &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -841,22 +876,23 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
 		inDelta, err := alloraMath.InDelta(
-			expectedValue.Value,
-			actualValue.Value,
+			expectedValue.Values[0],
+			actualValue.Values[0],
 			alloraMath.MustNewDecFromString("0.001"),
 		)
 		s.Require().NoError(err)
 		s.Require().True(
 			inDelta, "Values do not match for key: %s %s %s",
 			key,
-			expectedValue.Value.String(),
-			actualValue.Value.String(),
+			expectedValue.Values[0].String(),
+			actualValue.Values[0].String(),
 		)
 	}
 }
@@ -892,14 +928,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
-		forecaster0: {Value: epoch3Get("forecast_implied_inference_0")},
+		forecaster0: {Values: []alloraMath.Dec{epoch3Get("forecast_implied_inference_0")}},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		worker0: {Value: epoch3Get("inference_0")},
-		worker1: {Value: epoch3Get("inference_1")},
-		worker2: {Value: epoch3Get("inference_2")},
-		worker3: {Value: epoch3Get("inference_3")},
-		worker4: {Value: epoch3Get("inference_4")},
+		worker0: {Values: []alloraMath.Dec{epoch3Get("inference_0")}},
+		worker1: {Values: []alloraMath.Dec{epoch3Get("inference_1")}},
+		worker2: {Values: []alloraMath.Dec{epoch3Get("inference_2")}},
+		worker3: {Values: []alloraMath.Dec{epoch3Get("inference_3")}},
+		worker4: {Values: []alloraMath.Dec{epoch3Get("inference_4")}},
 	}
 	topicId := uint64(1)
 	allInferersAreNew := false
@@ -918,9 +954,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		forecaster0: &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -934,22 +978,23 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
 		inDelta, err := alloraMath.InDelta(
-			expectedValue.Value,
-			actualValue.Value,
+			expectedValue.Values[0],
+			actualValue.Values[0],
 			alloraMath.MustNewDecFromString("0.01"),
 		)
 		s.Require().NoError(err)
 		s.Require().True(
 			inDelta, "Values do not match for key: %s %s %s",
 			key,
-			expectedValue.Value.String(),
-			actualValue.Value.String(),
+			expectedValue.Values[0].String(),
+			actualValue.Values[0].String(),
 		)
 	}
 }
@@ -976,7 +1021,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 
 	// Only one valid inferer exists
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
+		"worker0": {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
 	}
 
 	allInferersAreNew := false
@@ -991,9 +1036,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 		"forecaster0": &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -1007,6 +1060,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		},
 	)
 	s.Require().NoError(err)
@@ -1033,8 +1087,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 	}
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
 	}
 
 	allInferersAreNew := false
@@ -1050,9 +1104,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 		"forecaster0": &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -1066,6 +1128,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		},
 	)
 	s.Require().NoError(err)
@@ -1121,9 +1184,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 
 	// All active inferers have inferences
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
-		s.AddrsStr(1): {Value: alloraMath.MustNewDecFromString("2")},
-		s.AddrsStr(2): {Value: alloraMath.MustNewDecFromString("3")},
+		"worker0":     {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1")}},
+		s.AddrsStr(1): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("2")}},
+		s.AddrsStr(2): {Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("3")}},
 	}
 
 	allInferersAreNew := false
@@ -1148,9 +1211,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 		s.AddrsStr(3): &zero,
 	}
 
+	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	s.Require().NoError(err)
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	s.Require().NoError(err)
+
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
+			Ctx:                    s.Ctx(),
+			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
@@ -1164,6 +1235,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 			PNorm:                  pNorm,
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
+			LabelRegistry:          &registry,
 		},
 	)
 	s.Require().NoError(err)
@@ -1184,13 +1256,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 		s.Require().NotNil(inference, "Expected inference to not be nil for forecaster: %s", forecaster)
 		s.Require().Equal(topicId, inference.TopicId, "Expected correct topic ID for forecaster: %s", forecaster)
 		s.Require().Equal(forecaster, inference.Inferer, "Expected correct inferer for forecaster: %s", forecaster)
-		s.Require().True(inference.Value.IsPositive(), "Expected positive value for forecaster: %s", forecaster)
+		s.Require().True(inference.Values[0].IsPositive(), "Expected positive value for forecaster: %s", forecaster)
 	}
 
 	// Verify that the function handled missing forecasts gracefully
 	// Each forecaster should have processed only the inferers they forecasted for
 	// and ignored the ones they didn't forecast for
-	s.Require().True(result["forecaster0"].Value.IsPositive(), "forecaster0 should have valid result despite missing worker2")
-	s.Require().True(result[s.AddrsStr(1)].Value.IsPositive(), "forecaster1 should have valid result despite missing worker1")
-	s.Require().True(result[s.AddrsStr(2)].Value.IsPositive(), "forecaster2 should have valid result despite missing worker0")
+	s.Require().True(result["forecaster0"].Values[0].IsPositive(), "forecaster0 should have valid result despite missing worker2")
+	s.Require().True(result[s.AddrsStr(1)].Values[0].IsPositive(), "forecaster1 should have valid result despite missing worker1")
+	s.Require().True(result[s.AddrsStr(2)].Values[0].IsPositive(), "forecaster2 should have valid result despite missing worker0")
 }

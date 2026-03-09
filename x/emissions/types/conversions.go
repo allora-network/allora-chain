@@ -204,3 +204,123 @@ func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*LossBundle, error) 
 	}
 	return valueBundle, nil
 }
+
+// TODO: remove once the system completely moves to using NetworkInferenceBundle
+func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundle {
+	const (
+		label0Id   uint32 = 1
+		label0Name string = "y"
+	)
+
+	var nonce int64
+	if vb.ReputerRequestNonce != nil && vb.ReputerRequestNonce.ReputerNonce != nil {
+		nonce = vb.ReputerRequestNonce.ReputerNonce.BlockHeight
+	}
+
+	//nolint:exhaustruct
+	out := &NetworkInferenceBundle{
+		TopicId: vb.TopicId,
+		Nonce:   nonce,
+		CombinedValue: []*LabeledValue{
+			{LabelId: label0Id, LabelName: label0Name, Value: vb.CombinedValue},
+		},
+		NaiveValue: []*LabeledValue{
+			{LabelId: label0Id, LabelName: label0Name, Value: vb.NaiveValue},
+		},
+	}
+
+	// InfererValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.InfererValues); n > 0 {
+		out.InfererValues = make([]*WorkerInference, n)
+		for i, v := range vb.InfererValues {
+			out.InfererValues[i] = &WorkerInference{
+				Worker: v.Worker,
+				Values: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// ForecasterValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.ForecasterValues); n > 0 {
+		out.ForecasterValues = make([]*WorkerInference, n)
+		for i, v := range vb.ForecasterValues {
+			out.ForecasterValues[i] = &WorkerInference{
+				Worker: v.Worker,
+				Values: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererValues: []*WithheldWorkerAttributedValue -> []*OneOutInfererValue
+	if n := len(vb.OneOutInfererValues); n > 0 {
+		out.OneOutInfererValues = make([]*OneOutInfererValue, n)
+		for i, v := range vb.OneOutInfererValues {
+			out.OneOutInfererValues[i] = &OneOutInfererValue{
+				WithheldInferer: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutForecasterValues: []*WithheldWorkerAttributedValue -> []*OneOutForecasterValue
+	if n := len(vb.OneOutForecasterValues); n > 0 {
+		out.OneOutForecasterValues = make([]*OneOutForecasterValue, n)
+		for i, v := range vb.OneOutForecasterValues {
+			out.OneOutForecasterValues[i] = &OneOutForecasterValue{
+				WithheldForecaster: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneInForecasterValues: []*WorkerAttributedValue -> []*OneInForecasterValue
+	if n := len(vb.OneInForecasterValues); n > 0 {
+		out.OneInForecasterValues = make([]*OneInForecasterValue, n)
+		for i, v := range vb.OneInForecasterValues {
+			out.OneInForecasterValues[i] = &OneInForecasterValue{
+				Forecaster: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererForecasterValues: []*OneOutInfererForecasterValues -> []*OneOutInfererForecasterValue
+	// Old structure: per forecaster -> list of withheld-inferer values (but no explicit withheld-inferer in output).
+	// Here we emit one record per (forecaster, withheldInferer) pair.
+	if n := len(vb.OneOutInfererForecasterValues); n > 0 {
+		// pre-size approximately: sum of per-forecaster rows
+		total := 0
+		for _, row := range vb.OneOutInfererForecasterValues {
+			total += len(row.OneOutInfererValues)
+		}
+		if total > 0 {
+			out.OneOutInfererForecasterValues = make([]*OneOutInfererForecasterValue, 0, total)
+			for _, row := range vb.OneOutInfererForecasterValues {
+				fc := row.Forecaster
+				for _, cell := range row.OneOutInfererValues {
+					out.OneOutInfererForecasterValues = append(out.OneOutInfererForecasterValues,
+						&OneOutInfererForecasterValue{
+							Forecaster:      fc,
+							WithheldInferer: cell.Worker,
+							CombinedInference: []*LabeledValue{
+								{LabelId: label0Id, LabelName: label0Name, Value: cell.Value},
+							},
+						},
+					)
+				}
+			}
+		}
+	}
+
+	return out
+}

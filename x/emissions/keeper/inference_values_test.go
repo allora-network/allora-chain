@@ -69,8 +69,7 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("42"),
-					Values:      nil,
+					Values:      []alloraMath.Dec{mustDec("42")},
 				}
 			},
 			wantVals: []string{"42"},
@@ -83,25 +82,10 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("7"),
 					Values:      []alloraMath.Dec{mustDec("7")},
 				}
 			},
 			wantVals: []string{"7"},
-		},
-		{
-			name:  "SINGLE_values_len1_mismatch_rejected",
-			arity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			inf: func() *types.Inference {
-				return &types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Value:       mustDec("1"),
-					Values:      []alloraMath.Dec{mustDec("2")},
-				}
-			},
-			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
 			name:  "SINGLE_values_len_gt_1_rejected",
@@ -111,7 +95,6 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("1"),
 					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2")},
 				}
 			},
@@ -128,7 +111,6 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("1")},
 				}
 			},
@@ -145,7 +127,6 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      nil,
 				}
 			},
@@ -162,7 +143,6 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
 				}
 			},
@@ -179,7 +159,6 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w2,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("10"), mustDec("20"), mustDec("30")},
 				}
 			},
@@ -196,7 +175,6 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("9"), mustDec("8")}, // => [9,8,0,0,0]
 				}
 			},
@@ -213,7 +191,6 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("1"), alloraMath.NewNaN(), mustDec("3")},
 				}
 			},
@@ -248,7 +225,7 @@ func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 			reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 			s.Require().NoError(err)
 
-			got, err := keeper.InferenceValuesFromProto(topic, reg, inf)
+			got, err := keeper.InferenceValuesFromProto(topic, &reg, inf)
 
 			if c.wantErrIs != nil {
 				s.Require().ErrorIs(err, c.wantErrIs)

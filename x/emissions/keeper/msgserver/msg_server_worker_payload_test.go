@@ -900,7 +900,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			s.Require().NoError(err)
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Equal(0, len(reg.Labels))
+				s.Require().Equal(1, len(reg.Labels))
 				return
 			}
 

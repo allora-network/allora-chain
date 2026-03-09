@@ -21,13 +21,13 @@ func TestWorkerTestSuite(t *testing.T) {
 	})
 }
 
-func (s *WorkerTestSuite) TestCloseWorkerNonce() {
-	// Create a topic
+func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
+	// Create a MULTI topic
 	blockHeight := int64(101)
 	s.WithBlockHeight(blockHeight)
 
 	// Create topic using MsgServer like in rewards_test.go
-	topicId := s.CreateTopic()
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
 
 	// Get the topic
 	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
@@ -60,28 +60,47 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 	err = s.EmissionsKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
-	// Create and insert inferences
-	inferences := types.Inferences{
-		Inferences: []*types.Inference{
-			{
-				Inferer:     worker0,
-				Value:       alloraMath.MustNewDecFromString("-0.035995138925040600"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
-			{
-				Inferer:     worker1,
-				Value:       alloraMath.MustNewDecFromString("-0.07333303938740420"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
+	// MULTI: ensure epoch label registry exists for this nonce (and has labels)
+	// (Pick whatever labels your tests commonly use)
+	_, err = s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "a")
+	s.Require().NoError(err)
+	_, err = s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "b")
+	s.Require().NoError(err)
+	_, err = s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "c")
+	s.Require().NoError(err)
+
+	reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce.BlockHeight)
+	s.Require().NoError(err)
+	s.Require().Greater(len(reg.GetLabels()), 0)
+
+	// Create and insert inferences (Values length must match registry length)
+	inf0 := types.Inference{
+		Inferer:     worker0,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Values: []alloraMath.Dec{
+			alloraMath.MustNewDecFromString("-0.035995138925040600"),
+			alloraMath.MustNewDecFromString("0.100000000000000000"),
+			alloraMath.MustNewDecFromString("0.200000000000000000"),
 		},
 	}
-	err = s.EmissionsKeeper().InsertInference(s.Ctx(), topicId, *inferences.Inferences[0])
+	inf1 := types.Inference{
+		Inferer:     worker1,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Values: []alloraMath.Dec{
+			alloraMath.MustNewDecFromString("-0.07333303938740420"),
+			alloraMath.MustNewDecFromString("0.110000000000000000"),
+			alloraMath.MustNewDecFromString("0.210000000000000000"),
+		},
+	}
+
+	s.Require().Equal(len(reg.GetLabels()), len(inf0.Values))
+	s.Require().Equal(len(reg.GetLabels()), len(inf1.Values))
+
+	err = s.EmissionsKeeper().InsertInference(s.Ctx(), topicId, inf0)
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().InsertInference(s.Ctx(), topicId, *inferences.Inferences[1])
+	err = s.EmissionsKeeper().InsertInference(s.Ctx(), topicId, inf1)
 	s.Require().NoError(err)
 
 	// Artificially add the workers as active inferers
@@ -198,8 +217,8 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
 	}
-	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
-	s.Require().NoError(err)
+	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err)
 	topicId := res.TopicId
 	blockHeight := int64(100)
 
@@ -211,37 +230,16 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	forecaster0 := s.AddrsStr(4)
 	forecaster1 := s.AddrsStr(5)
 
+	_, err = s.EmissionsKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	require.NoError(err)
+
 	// Create inferences where worker3 is an obvious outlier
 	inferences := &types.Inferences{
 		Inferences: []*types.Inference{
-			{
-				Inferer:     worker0,
-				Value:       alloraMath.MustNewDecFromString("1.0"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
-			{
-				Inferer:     worker1,
-				Value:       alloraMath.MustNewDecFromString("1.1"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
-			{
-				Inferer:     worker2,
-				Value:       alloraMath.MustNewDecFromString("0.9"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
-			{
-				Inferer:     worker3,
-				Value:       alloraMath.MustNewDecFromString("100.0"), // Clear outlier
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
+			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.9")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("100.0")}, TopicId: topicId, BlockHeight: blockHeight}, // outlier
 		},
 	}
 
@@ -309,20 +307,19 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		require.NotEqual(worker3, infValue.Worker, "Outlier should not be present in outlier-resistant results")
 	}
 
+	regularVal := regularInferences.CombinedValue[0].Value
+	outlierVal := outlierResistantInferences.CombinedValue[0].Value
+
 	// Verify the values are different between regular and outlier-resistant
-	require.NotEqual(
-		regularInferences.CombinedValue,
-		outlierResistantInferences.CombinedValue,
-		"Regular and outlier-resistant combined values should differ",
-	)
+	require.False(regularVal.Equal(outlierVal), "Regular and outlier-resistant combined values should differ")
 
 	// Verify the outlier-resistant combined value is closer to the median
-	regularDiff, err := regularInferences.CombinedValue.Sub(lastMedian)
+	regularDiff, err := regularVal.Sub(lastMedian)
 	require.NoError(err)
 	regularDiffAbs, err := regularDiff.Abs()
 	require.NoError(err)
 
-	outlierDiff, err := outlierResistantInferences.CombinedValue.Sub(lastMedian)
+	outlierDiff, err := outlierVal.Sub(lastMedian)
 	require.NoError(err)
 	outlierDiffAbs, err := outlierDiff.Abs()
 	require.NoError(err)
@@ -362,8 +359,8 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
 	}
-	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
-	s.Require().NoError(err)
+	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err)
 	topicId := res.TopicId
 	blockHeight := int64(100)
 
@@ -378,34 +375,10 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	// Create inferences where all values are within normal bounds
 	inferences := &types.Inferences{
 		Inferences: []*types.Inference{
-			{
-				Inferer:     worker0,
-				Value:       alloraMath.MustNewDecFromString("1.0"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
-			{
-				Inferer:     worker1,
-				Value:       alloraMath.MustNewDecFromString("1.1"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
-			{
-				Inferer:     worker2,
-				Value:       alloraMath.MustNewDecFromString("0.9"),
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
-			{
-				Inferer:     worker3,
-				Value:       alloraMath.MustNewDecFromString("1.2"), // Normal value, not an outlier
-				Values:      nil,
-				TopicId:     topicId,
-				BlockHeight: blockHeight,
-			},
+			{Inferer: worker0, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.1")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.9")}, TopicId: topicId, BlockHeight: blockHeight},
+			{Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("1.2")}, TopicId: topicId, BlockHeight: blockHeight},
 		},
 	}
 
@@ -451,11 +424,12 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
 	err = keeper.SetParams(ctx, params)
 	require.NoError(err)
+	_, err = s.EmissionsKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	require.NoError(err)
 
 	// Call the function we're testing
 	err = actorutils.ProcessAndStoreNetworkInferences(keeper, ctx, topicId, blockHeight, inferences, forecasts)
 	require.NoError(err)
-
 	// Retrieve both regular and outlier-resistant network inferences
 	regularInferences, err := keeper.GetNetworkInferences(ctx, topicId, blockHeight)
 	require.NoError(err)
@@ -479,9 +453,12 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 
 	require.Equal(regularWorkers, outlierWorkers, "Both results should contain the same workers")
 
+	regularVal := regularInferences.CombinedValue[0].Value
+	outlierVal := outlierResistantInferences.CombinedValue[0].Value
+
 	// Verify the combined values are equal (within decimal precision)
 	require.True(
-		regularInferences.CombinedValue.Equal(outlierResistantInferences.CombinedValue),
-		"Regular and outlier-resistant combined values should be equal when there are no outliers",
+		regularVal.Equal(outlierVal),
+		"Combined values should match when no outliers exist",
 	)
 }

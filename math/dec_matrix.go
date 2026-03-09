@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type DecMatrix [][]Dec
+type DecMatrix []DecArray
 
 var _ sdk.CustomProtobufType = &DecMatrix{}
 

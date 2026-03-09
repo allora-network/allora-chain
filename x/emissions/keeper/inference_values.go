@@ -14,7 +14,10 @@ type InferenceValues = alloraMath.DecArray
 
 // ValidateInferenceValues verifies that the inference values are consistent
 // with the provided epoch label registry.
-func ValidateInferenceValues(iv InferenceValues, reg types.EpochLabelRegistry) error {
+func ValidateInferenceValues(iv InferenceValues, reg *types.EpochLabelRegistry) error {
+	if reg == nil {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "label registry is nil")
+	}
 	want := len(reg.GetLabels())
 	if len(iv) != want {
 		return errorsmod.Wrapf(
@@ -35,7 +38,7 @@ func ValidateInferenceValues(iv InferenceValues, reg types.EpochLabelRegistry) e
 // InferenceValues representation used by math code.
 func InferenceValuesFromProto(
 	topic types.Topic,
-	reg types.EpochLabelRegistry,
+	reg *types.EpochLabelRegistry,
 	inf *types.Inference,
 ) (InferenceValues, error) {
 	if inf == nil {
@@ -44,22 +47,11 @@ func InferenceValuesFromProto(
 
 	switch topic.OutputArity {
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
-		if len(inf.Values) > 1 {
-			return InferenceValues{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "single-arity inference accepts at most one value")
+		if len(inf.Values) != 1 {
+			return InferenceValues{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "single-arity inference accepts exactly one value")
 		}
 
-		var dec alloraMath.Dec
-		if len(inf.Values) == 1 {
-			dec = inf.Values[0]
-			if !inf.Value.Equal(dec) {
-				return InferenceValues{}, errorsmod.Wrap(
-					sdkerrors.ErrInvalidRequest,
-					"single-arity inference scalar and array mismatch",
-				)
-			}
-		} else {
-			dec = inf.Value
-		}
+		dec := inf.Values[0]
 
 		if dec.IsNaN() || !dec.IsFinite() {
 			return InferenceValues{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
@@ -99,7 +91,7 @@ func InferenceValuesFromProto(
 
 // InferenceValuesToLabeledValues converts the internal InferenceValues representation into
 // a slice of LabeledValue suitable for RPC responses or event emission.
-func InferenceValuesToLabeledValues(iv InferenceValues, reg types.EpochLabelRegistry) ([]*types.LabeledValue, error) {
+func InferenceValuesToLabeledValues(iv InferenceValues, reg *types.EpochLabelRegistry) ([]*types.LabeledValue, error) {
 	want := len(reg.GetLabels())
 	if len(iv) != want {
 		return nil, errorsmod.Wrapf(
@@ -146,7 +138,7 @@ func (k *Keeper) InferenceValuesFromInferencesSnapshot(
 		if inf == nil {
 			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "nil inference in snapshot")
 		}
-		iv, err := InferenceValuesFromProto(topic, reg, inf)
+		iv, err := InferenceValuesFromProto(topic, &reg, inf)
 		if err != nil {
 			return nil, err
 		}

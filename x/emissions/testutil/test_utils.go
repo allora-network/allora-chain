@@ -164,6 +164,7 @@ type (
 		workerValues          []TestWorkerValue
 		reputerValues         []TestReputerValue
 		skipNetworkInferences bool
+		outputArity           types.TopicOutputArity
 		reputerStake          *cosmosMath.Int
 	}
 )
@@ -249,6 +250,12 @@ func WithInitialRegret(initialRegret string) Option {
 func WithSkipNetworkInferences() Option {
 	return func(p *customParams) {
 		p.skipNetworkInferences = true
+	}
+}
+
+func WithOutputArity(outputArity types.TopicOutputArity) Option {
+	return func(p *customParams) {
+		p.outputArity = outputArity
 	}
 }
 
@@ -593,10 +600,8 @@ func (s *TestSuite) GenerateLossBundles(
 	}
 
 	// Get network inferences (may be empty)
-	networkInferences := new(types.ValueBundle)
+	networkInferences, err := s.emissionsKeeper.GetLatestNetworkInferences(s.Ctx(), topicId, false)
 	if !p.skipNetworkInferences {
-		var err error
-		networkInferences, err = s.emissionsKeeper.GetLatestNetworkInferences(s.Ctx(), topicId, false)
 		s.Require().NoError(err)
 	}
 
@@ -606,7 +611,8 @@ func (s *TestSuite) GenerateLossBundles(
 			reputerValue = p.reputerValues[i]
 		}
 
-		valueBundle := buildInputValueBundle(topicId, nonce, s.addrsStr[reputerIndex], reputerValue, networkInferences, p.skipNetworkInferences)
+		base := NetworkInferenceBundleToLossBundleSkeleton(networkInferences)
+		valueBundle := buildInputValueBundle(topicId, nonce, s.addrsStr[reputerIndex], reputerValue, base, p.skipNetworkInferences)
 
 		bundle := &types.InputReputerValueBundle{
 			ValueBundle: valueBundle,
@@ -729,17 +735,93 @@ func createValue[O builderValueO](worker string, value alloraMath.Dec) (out O) {
 	return out
 }
 
-func (s *TestSuite) SignValueBundle(valueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) []byte {
-	src := make([]byte, 0)
-	src, err := valueBundle.XXX_Marshal(src, true)
-	if err != nil {
-		return nil
+func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle) *types.ValueBundle {
+	if b == nil {
+		return &types.ValueBundle{}
 	}
 
-	valueBundleSignature, err := privateKey.Sign(src)
-	s.Require().NoError(err)
+	inferers := make([]*types.WorkerAttributedValue, 0, len(b.InfererValues))
+	for _, w := range b.InfererValues {
+		if w == nil {
+			continue
+		}
+		inferers = append(inferers, &types.WorkerAttributedValue{
+			Worker: w.Worker,
+			Value:  alloraMath.ZeroDec(),
+		})
+	}
 
-	return valueBundleSignature
+	forecasters := make([]*types.WorkerAttributedValue, 0, len(b.ForecasterValues))
+	for _, w := range b.ForecasterValues {
+		if w == nil {
+			continue
+		}
+		forecasters = append(forecasters, &types.WorkerAttributedValue{
+			Worker: w.Worker,
+			Value:  alloraMath.ZeroDec(),
+		})
+	}
+
+	oneOutInferers := make([]*types.WithheldWorkerAttributedValue, 0, len(b.OneOutInfererValues))
+	for _, v := range b.OneOutInfererValues {
+		if v == nil {
+			continue
+		}
+		oneOutInferers = append(oneOutInferers, &types.WithheldWorkerAttributedValue{
+			Worker: v.WithheldInferer,
+			Value:  alloraMath.ZeroDec(),
+		})
+	}
+
+	oneOutForecasters := make([]*types.WithheldWorkerAttributedValue, 0, len(b.OneOutForecasterValues))
+	for _, v := range b.OneOutForecasterValues {
+		if v == nil {
+			continue
+		}
+		oneOutForecasters = append(oneOutForecasters, &types.WithheldWorkerAttributedValue{
+			Worker: v.WithheldForecaster,
+			Value:  alloraMath.ZeroDec(),
+		})
+	}
+
+	oneInForecasters := make([]*types.WorkerAttributedValue, 0, len(b.OneInForecasterValues))
+	for _, v := range b.OneInForecasterValues {
+		if v == nil {
+			continue
+		}
+		oneInForecasters = append(oneInForecasters, &types.WorkerAttributedValue{
+			Worker: v.Forecaster,
+			Value:  alloraMath.ZeroDec(),
+		})
+	}
+
+	ooif := make([]*types.OneOutInfererForecasterValues, 0, len(b.OneOutInfererForecasterValues))
+	for _, x := range b.OneOutInfererForecasterValues {
+		if x == nil {
+			continue
+		}
+		ooif = append(ooif, &types.OneOutInfererForecasterValues{
+			Forecaster: x.Forecaster,
+			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+				{
+					Worker: x.WithheldInferer,
+					Value:  alloraMath.ZeroDec(),
+				},
+			},
+		})
+	}
+
+	return &types.ValueBundle{
+		TopicId:                       b.TopicId,
+		CombinedValue:                 alloraMath.ZeroDec(),
+		NaiveValue:                    alloraMath.ZeroDec(),
+		InfererValues:                 inferers,
+		ForecasterValues:              forecasters,
+		OneOutInfererValues:           oneOutInferers,
+		OneOutForecasterValues:        oneOutForecasters,
+		OneInForecasterValues:         oneInForecasters,
+		OneOutInfererForecasterValues: ooif,
+	}
 }
 
 func (s *TestSuite) SetupTopic(creator sdk.AccAddress, opts ...Option) uint64 {
@@ -805,6 +887,9 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 		if uint64(newTopicMsg.GroundTruthLag) > maxGTL {
 			newTopicMsg.GroundTruthLag = newTopicMsg.EpochLength
 		}
+	}
+	if p.outputArity != types.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED {
+		newTopicMsg.OutputArity = p.outputArity
 	}
 
 	res, err := s.emissionsMsgServer.CreateNewTopic(s.Ctx(), newTopicMsg)
