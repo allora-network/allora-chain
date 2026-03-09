@@ -151,7 +151,7 @@ func (s *WeightsTestSuite) TestStoreLatestNormalizedWeights() {
 
 		// Verify stored weights
 		for worker, expectedWeight := range weights.Inferers { // nolint: maprange // reason: order not relevant
-			storedWeight, err := s.WeightstsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, worker)
+			storedWeight, err := s.WeightsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, worker)
 			s.Require().NoError(err)
 			s.Require().True(expectedWeight.Equal(storedWeight))
 		}

@@ -14,7 +14,7 @@ func (s *QueryServerTestSuite) TestGetInfererWeight() {
 	weight := alloraMath.NewDecFromInt64(100)
 
 	// Set initial weight
-	err := s.WeightstsKeeper().SetLatestInfererWeight(ctx, topicId, worker, weight)
+	err := s.WeightsKeeper().SetLatestInfererWeight(ctx, topicId, worker, weight)
 	s.Require().NoError(err, "Setting inferer weight should not fail")
 
 	req := &types.GetLatestInfererWeightRequest{
@@ -42,7 +42,7 @@ func (s *QueryServerTestSuite) TestGetForecasterWeight() {
 	weight := alloraMath.NewDecFromInt64(100)
 
 	// Set initial weight
-	err := s.WeightstsKeeper().SetLatestForecasterWeight(ctx, topicId, forecaster, weight)
+	err := s.WeightsKeeper().SetLatestForecasterWeight(ctx, topicId, forecaster, weight)
 	s.Require().NoError(err, "Setting forecaster weight should not fail")
 
 	req := &types.GetLatestForecasterWeightRequest{
@@ -69,7 +69,7 @@ func (s *QueryServerTestSuite) TestGetLatestRegretStdNorm() {
 	regretScale := alloraMath.NewDecFromInt64(100)
 
 	// Set initial regret scale
-	err := s.WeightstsKeeper().SetLatestRegretScale(ctx, topicId, regretScale)
+	err := s.WeightsKeeper().SetLatestRegretScale(ctx, topicId, regretScale)
 	s.Require().NoError(err, "Setting latest regret scale should not fail")
 
 	req := &types.GetLatestRegretStdNormRequest{

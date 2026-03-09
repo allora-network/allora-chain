@@ -8,7 +8,7 @@ import (
 
 func (s *KeeperTestSuite) TestLatestForecasterWeightFunctions() {
 	ctx := s.Ctx()
-	k := s.WeightstsKeeper()
+	k := s.WeightsKeeper()
 	topicId := uint64(1)
 	forecaster := s.AddrsStr(0)
 	weight := alloraMath.NewDecFromInt64(100)
@@ -36,7 +36,7 @@ func (s *KeeperTestSuite) TestLatestForecasterWeightFunctions() {
 
 func (s *KeeperTestSuite) TestLatestInfererWeightFunctions() {
 	ctx := s.Ctx()
-	k := s.WeightstsKeeper()
+	k := s.WeightsKeeper()
 	topicId := uint64(1)
 	inferer := s.AddrsStr(1)
 	weight := alloraMath.NewDecFromInt64(75)
@@ -64,7 +64,7 @@ func (s *KeeperTestSuite) TestLatestInfererWeightFunctions() {
 
 func (s *KeeperTestSuite) TestLatestRegretScaleFunctions() {
 	ctx := s.Ctx()
-	k := s.WeightstsKeeper()
+	k := s.WeightsKeeper()
 	topicId := uint64(1)
 	regretScale := alloraMath.NewDecFromInt64(50)
 
@@ -95,7 +95,7 @@ func (s *KeeperTestSuite) TestLatestRegretScaleFunctions() {
 
 func (s *KeeperTestSuite) TestMonthlyRewards() {
 	ctx := s.Ctx()
-	k := s.WeightstsKeeper()
+	k := s.WeightsKeeper()
 
 	// Initial state should be zero
 	reputerRewards, err := k.GetMonthlyReputerRewards(ctx)

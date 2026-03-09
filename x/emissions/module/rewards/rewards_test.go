@@ -527,7 +527,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		topicId, block = s.FullTopicPass(workerIndexes, reputerIndexes, baseOptions...)
 
 		// Get current weight and regret scale before processing
-		regretScale, err := s.WeightstsKeeper().GetLatestRegretScale(s.Ctx(), topicId)
+		regretScale, err := s.WeightsKeeper().GetLatestRegretScale(s.Ctx(), topicId)
 		require.NoError(err)
 		regretScales = append(regretScales, regretScale)
 
@@ -535,7 +535,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 		s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
 		for _, index := range workerIndexes {
-			weight, err := s.WeightstsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, s.AddrsStr(index))
+			weight, err := s.WeightsKeeper().GetLatestInfererWeight(s.Ctx(), topicId, s.AddrsStr(index))
 			s.Require().NoError(err)
 			workerWeights[s.AddrsStr(index)] = append(workerWeights[s.AddrsStr(index)], weight)
 		}

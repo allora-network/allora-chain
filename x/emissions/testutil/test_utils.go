@@ -143,7 +143,7 @@ func (s *TestSuite) WorkerKeeper() *keeper.WorkerKeeper {
 	return s.emissionsKeeper.GetWorkerKeeper()
 }
 
-func (s *TestSuite) WeightstsKeeper() *keeper.WeightsKeeper {
+func (s *TestSuite) WeightsKeeper() *keeper.WeightsKeeper {
 	return s.emissionsKeeper.GetWeightsKeeper()
 }
 
