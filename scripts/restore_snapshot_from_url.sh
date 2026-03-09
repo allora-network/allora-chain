@@ -81,7 +81,11 @@ echo "Resetting ${DATA_DIR}"
 rm -rf "${DATA_DIR}"
 mkdir -p "${DATA_DIR}"
 
-case "${SNAPSHOT_URL}" in
+# Detect archive type from URL path only (ignore query/fragment).
+snapshot_path="${SNAPSHOT_URL%%\?*}"
+snapshot_path="${snapshot_path%%\#*}"
+
+case "${snapshot_path}" in
   *.tar.zst)
     echo "Extracting .tar.zst snapshot"
     tar --zstd -xvf "${tmp_archive}" -C "${DATA_DIR}"
