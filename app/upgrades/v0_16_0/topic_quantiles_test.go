@@ -1,4 +1,4 @@
-package v0_16_0
+package v0_16_0 //nolint:revive // Upgrade package naming follows version directory convention.
 
 import (
 	"context"
@@ -47,8 +47,10 @@ func (m *mockTopicQuantileMigrationKeeper) SetTopic(_ context.Context, topicID u
 }
 
 func TestMigrateTopicActiveQuantilesWithTopicKeeper(t *testing.T) {
+	//nolint:exhaustruct // Test mock only initializes fields needed by this scenario.
 	mockKeeper := &mockTopicQuantileMigrationKeeper{
 		nextTopicID: 4,
+		//nolint:exhaustruct // Test fixture intentionally sets only quantile fields under test.
 		topics: map[uint64]emissionstypes.Topic{
 			1: {
 				ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
@@ -78,6 +80,7 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeper(t *testing.T) {
 }
 
 func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnNextTopicID(t *testing.T) {
+	//nolint:exhaustruct // Test mock only initializes error path input.
 	mockKeeper := &mockTopicQuantileMigrationKeeper{
 		getErr: errors.New("next topic id failed"),
 	}
@@ -88,6 +91,7 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnNextTopicID(t *testing
 }
 
 func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnGetTopic(t *testing.T) {
+	//nolint:exhaustruct // Test mock only initializes fields needed by this scenario.
 	mockKeeper := &mockTopicQuantileMigrationKeeper{
 		nextTopicID: 2,
 		topics:      map[uint64]emissionstypes.Topic{},
@@ -103,8 +107,10 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnGetTopic(t *testing.T)
 }
 
 func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnSetTopic(t *testing.T) {
+	//nolint:exhaustruct // Test mock only initializes fields needed by this scenario.
 	mockKeeper := &mockTopicQuantileMigrationKeeper{
 		nextTopicID: 2,
+		//nolint:exhaustruct // Minimal topic fixture to exercise SetTopic failure path.
 		topics: map[uint64]emissionstypes.Topic{
 			1: {},
 		},

@@ -1,4 +1,4 @@
-package v0_16_0
+package v0_16_0 //nolint:revive // Upgrade package naming follows version directory convention.
 
 import (
 	"context"
