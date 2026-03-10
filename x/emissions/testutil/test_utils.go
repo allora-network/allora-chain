@@ -834,10 +834,18 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 			},
 		})
 	}
+	combVal := alloraMath.ZeroDec()
+	if len(b.CombinedValue) > 0 {
+		combVal = b.CombinedValue[0].Value
+	}
+	naiveVal := alloraMath.ZeroDec()
+	if len(b.NaiveValue) > 0 {
+		naiveVal = b.NaiveValue[0].Value
+	}
 	return &types.ValueBundle{
 		TopicId:                       b.TopicId,
-		CombinedValue:                 alloraMath.ZeroDec(),
-		NaiveValue:                    alloraMath.ZeroDec(),
+		CombinedValue:                 combVal,
+		NaiveValue:                    naiveVal,
 		InfererValues:                 inferers,
 		ForecasterValues:              forecasters,
 		OneOutInfererValues:           oneOutInferers,
