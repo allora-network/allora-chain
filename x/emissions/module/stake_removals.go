@@ -99,7 +99,7 @@ func RemoveStakes(
 
 type RemoveDelegateStakeFn func(
 	ctx context.Context,
-	stakeRemovalBlockHeight emissionskeeper.BlockHeight,
+	stakeRemovalBlockHeight emissionstypes.BlockHeight,
 	topicId emissionskeeper.TopicId,
 	delegator, reputer emissionskeeper.ActorId,
 	stakeToRemove cosmosMath.Int,
