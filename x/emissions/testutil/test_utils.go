@@ -600,8 +600,10 @@ func (s *TestSuite) GenerateLossBundles(
 	}
 
 	// Get network inferences (may be empty)
-	networkInferences, err := s.emissionsKeeper.GetLatestNetworkInferences(s.Ctx(), topicId, false)
+	networkInferences := new(types.NetworkInferenceBundle)
 	if !p.skipNetworkInferences {
+		var err error
+		networkInferences, err = s.emissionsKeeper.GetLatestNetworkInferences(s.Ctx(), topicId, false)
 		s.Require().NoError(err)
 	}
 
