@@ -745,9 +745,13 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if w == nil {
 			continue
 		}
+		val := alloraMath.ZeroDec()
+		if len(w.Values) > 0 {
+			val = w.Values[0].Value
+		}
 		inferers = append(inferers, &types.WorkerAttributedValue{
 			Worker: w.Worker,
-			Value:  alloraMath.ZeroDec(),
+			Value:  val,
 		})
 	}
 
@@ -756,9 +760,13 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if w == nil {
 			continue
 		}
+		val := alloraMath.ZeroDec()
+		if len(w.Values) > 0 {
+			val = w.Values[0].Value
+		}
 		forecasters = append(forecasters, &types.WorkerAttributedValue{
 			Worker: w.Worker,
-			Value:  alloraMath.ZeroDec(),
+			Value:  val,
 		})
 	}
 
@@ -767,9 +775,13 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if v == nil {
 			continue
 		}
+		val := alloraMath.ZeroDec()
+		if len(v.CombinedInference) != 0 {
+			val = v.CombinedInference[0].Value
+		}
 		oneOutInferers = append(oneOutInferers, &types.WithheldWorkerAttributedValue{
 			Worker: v.WithheldInferer,
-			Value:  alloraMath.ZeroDec(),
+			Value:  val,
 		})
 	}
 
@@ -778,9 +790,13 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if v == nil {
 			continue
 		}
+		val := alloraMath.ZeroDec()
+		if len(v.CombinedInference) != 0 {
+			val = v.CombinedInference[0].Value
+		}
 		oneOutForecasters = append(oneOutForecasters, &types.WithheldWorkerAttributedValue{
 			Worker: v.WithheldForecaster,
-			Value:  alloraMath.ZeroDec(),
+			Value:  val,
 		})
 	}
 
@@ -789,9 +805,13 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if v == nil {
 			continue
 		}
+		val := alloraMath.ZeroDec()
+		if len(v.CombinedInference) != 0 {
+			val = v.CombinedInference[0].Value
+		}
 		oneInForecasters = append(oneInForecasters, &types.WorkerAttributedValue{
 			Worker: v.Forecaster,
-			Value:  alloraMath.ZeroDec(),
+			Value:  val,
 		})
 	}
 
@@ -800,17 +820,20 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 		if x == nil {
 			continue
 		}
+		val := alloraMath.ZeroDec()
+		if len(x.CombinedInference) > 0 {
+			val = x.CombinedInference[0].Value
+		}
 		ooif = append(ooif, &types.OneOutInfererForecasterValues{
 			Forecaster: x.Forecaster,
 			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: x.WithheldInferer,
-					Value:  alloraMath.ZeroDec(),
+					Value:  val,
 				},
 			},
 		})
 	}
-
 	return &types.ValueBundle{
 		TopicId:                       b.TopicId,
 		CombinedValue:                 alloraMath.ZeroDec(),
