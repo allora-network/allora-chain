@@ -8,7 +8,6 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -73,20 +72,14 @@ func (k *RegretsKeeper) GetInfererNetworkRegret(
 	if errors.Is(err, collections.ErrNotFound) {
 		topic, err := k.topicKeeper.GetTopic(ctx, topicId)
 		if err != nil {
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       alloraMath.ZeroDec(),
-			}, false, errorsmod.Wrap(err, "error getting topic")
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
 		return types.TimestampedValue{
 			BlockHeight: 0,
 			Value:       topic.InitialRegret,
 		}, true, nil
 	} else if err != nil {
-		return types.TimestampedValue{
-			BlockHeight: 0,
-			Value:       alloraMath.ZeroDec(),
-		}, false, errorsmod.Wrap(err, "error getting inferer network regret")
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting inferer network regret")
 	}
 	return regret, false, nil
 }
