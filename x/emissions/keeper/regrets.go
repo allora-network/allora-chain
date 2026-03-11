@@ -39,7 +39,7 @@ type RegretsKeeper struct {
 	latestOneOutInfererInfererNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 	// map of (topicId, oneOutInferer, forecaster) -> regret
 	latestOneOutInfererForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-	// map of (topicId, oneOutInferer, inferer) -> regret
+	// map of (topicId, oneOutForecaster, inferer) -> regret
 	latestOneOutForecasterInfererNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 	// map of (topicId, oneOutForecaster, forecaster) -> regret
 	latestOneOutForecasterForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]

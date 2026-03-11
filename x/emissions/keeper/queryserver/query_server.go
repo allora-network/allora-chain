@@ -5,8 +5,10 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-//nolint:exhaustruct
-var _ types.QueryServiceServer = queryServer{k: keeper.Keeper{}}
+var (
+	_qs queryServer
+	_   types.QueryServiceServer = _qs
+)
 
 // NewQueryServerImpl returns an implementation of the module QueryServer.
 func NewQueryServerImpl(
