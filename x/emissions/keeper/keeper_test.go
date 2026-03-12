@@ -3425,6 +3425,9 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	err = s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
 
+	_, err = s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, block, "a")
+	s.Require().NoError(err, "RegisterEpochLabel should not return an error")
+
 	// Check if the records are set
 	_, err = s.EmissionsKeeper().GetInferencesAtBlock(s.Ctx(), topicId, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
@@ -3461,6 +3464,10 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().Empty(networkBundles.OneOutInfererForecasterValues, "one out inferer forecaster values is empty")
 	s.Require().Equal("0", networkBundles.CombinedValue.String(), "Must be pruned as evidenced by empty combined value")
 	s.Require().Equal("0", networkBundles.NaiveValue.String(), "Must be pruned as evidenced by empty naive value")
+
+	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, block)
+	s.Require().NoError(err, "Getting epoch label registry should not fail")
+	s.Require().Len(registry.Labels, 0, "Must be pruned")
 }
 
 func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicNoNonces() {
@@ -4464,6 +4471,7 @@ func mockUninitializedParams() types.Params {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		MaxLabelsPerSubmission:              uint64(8),
 	}
 }
 
@@ -6158,6 +6166,51 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 				s.Require().False(ok)
 			},
 		},
+		{
+			name: "Closed worker nonce freezes new labels but keeps lookups",
+			run: func(ctx sdk.Context, k *keeper.Keeper) {
+				ctx, k, topicId, nonce := newFixture()
+				nonceRef := &types.Nonce{BlockHeight: int64(nonce)}
+				s.Require().NoError(k.AddWorkerNonce(ctx, topicId, nonceRef))
+
+				id, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
+				s.Require().NoError(err)
+				s.Require().Equal(keeper.LabelId(1), id)
+
+				before, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+				s.Require().NoError(err)
+				s.Require().Len(before.Labels, 1)
+
+				fulfilled, err := k.FulfillWorkerNonce(ctx, topicId, nonceRef)
+				s.Require().NoError(err)
+				s.Require().True(fulfilled)
+				s.Require().NoError(k.SetWorkerTopicLastCommit(ctx, topicId, ctx.BlockHeight(), nonceRef))
+
+				id, err = k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
+				s.Require().NoError(err)
+				s.Require().Equal(keeper.LabelId(1), id)
+
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "DOWN")
+				s.Require().Error(err)
+				s.Require().True(errorsmod.IsOf(err, types.ErrEpochLabelRegistryFrozen))
+
+				after, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+				s.Require().NoError(err)
+				s.Require().Len(after.Labels, 1)
+				s.Require().Equal(before.Labels[0].Name, after.Labels[0].Name)
+				s.Require().Equal(before.Labels[0].Id, after.Labels[0].Id)
+
+				gotID, ok, err := k.GetEpochLabelId(ctx, topicId, nonce, "UP")
+				s.Require().NoError(err)
+				s.Require().True(ok)
+				s.Require().Equal(keeper.LabelId(1), gotID)
+
+				gotName, ok, err := k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(1))
+				s.Require().NoError(err)
+				s.Require().True(ok)
+				s.Require().Equal("UP", gotName)
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -6308,6 +6361,51 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			wantErrIs:    sdkerrors.ErrInvalidRequest,
 		},
 		{
+			name:         "MULTI_accepts_submission_at_max_labels_per_submission_boundary",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "a", value: "1"},
+				{label: "b", value: "2"},
+				{label: "c", value: "3"},
+				{label: "d", value: "4"},
+				{label: "e", value: "5"},
+				{label: "f", value: "6"},
+				{label: "g", value: "7"},
+				{label: "h", value: "8"},
+			},
+			wantValuesStr: []string{"1", "2", "3", "4", "5", "6", "7", "8"},
+			wantRegLabels: []string{"a", "b", "c", "d", "e", "f", "g", "h"},
+		},
+		{
+			name:         "MULTI_rejects_submission_over_max_labels_per_submission",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "a", value: "1"},
+				{label: "b", value: "2"},
+				{label: "c", value: "3"},
+				{label: "d", value: "4"},
+				{label: "e", value: "5"},
+				{label: "f", value: "6"},
+				{label: "g", value: "7"},
+				{label: "h", value: "8"},
+				{label: "i", value: "9"},
+			},
+			wantErr:   true,
+			wantErrIs: types.ErrMaxLabelsPerSubmissionExceeded,
+		},
+		{
 			name:         "MULTI_registers_labels_and_aligns_dense",
 			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			requireUnity: false,
@@ -6370,7 +6468,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 				{label: "a", value: "1"},
 				{label: "b", value: "2"},
 			},
-			wantValuesStr: []string{"1", "2", "0"},
+			wantValuesStr: []string{"1", "2"},
 			wantRegLabels: []string{"a", "b", "c"},
 		},
 		{
@@ -6477,20 +6575,18 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 			reg, err := k.GetEpochLabelRegistry(ctx, topicId, c.nonce)
 			s.Require().NoError(err)
-
-			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Equal(1, len(reg.Labels))
-				return
-			}
-
-			s.Require().Equal(len(c.wantRegLabels), len(reg.Labels))
-			for i := range c.wantRegLabels {
-				s.Require().Equal(c.wantRegLabels[i], reg.Labels[i].Name)
+			if len(c.preRegisterLabels) == 0 {
+				s.Require().Len(reg.Labels, 0)
+			} else {
+				s.Require().Len(reg.Labels, len(c.preRegisterLabels))
+				for i := range c.preRegisterLabels {
+					s.Require().Equal(c.preRegisterLabels[i], reg.Labels[i].Name)
+				}
 			}
 		})
 	}
 
-	s.Run("MULTI_preserves_label_ids_across_calls_even_if_submission_order_changes", func() {
+	s.Run("MULTI_keeps_submission_order_without_preclose_label_ids", func() {
 		s.SetupTest()
 
 		ctx := s.Ctx()
@@ -6532,13 +6628,11 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 		}
 		got2, err := k.NormalizeInputInference(ctx, topic, nonce, in2)
 		s.Require().NoError(err)
-		s.Require().Equal([]string{"10", "20"}, []string{got2.Values[0].String(), got2.Values[1].String()})
+		s.Require().Equal([]string{"20", "10"}, []string{got2.Values[0].String(), got2.Values[1].String()})
 
 		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 		s.Require().NoError(err)
-		s.Require().Equal(2, len(reg.Labels))
-		s.Require().Equal("a", reg.Labels[0].Name)
-		s.Require().Equal("b", reg.Labels[1].Name)
+		s.Require().Len(reg.Labels, 0)
 	})
 }
 

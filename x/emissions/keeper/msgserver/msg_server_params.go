@@ -186,6 +186,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MinWeightThresholdForStdnorm) == 1 {
 		existingParams.MinWeightThresholdForStdnorm = newParams.MinWeightThresholdForStdnorm[0]
 	}
+	if len(newParams.MaxLabelsPerSubmission) == 1 {
+		existingParams.MaxLabelsPerSubmission = newParams.MaxLabelsPerSubmission[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err

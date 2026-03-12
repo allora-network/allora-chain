@@ -134,6 +134,97 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	s.Require().NotNil(outlierResistantInferences, "Outlier resistant network inferences should exist")
 }
 
+func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi_DerivesRegistryFromFinalActiveSet() {
+	blockHeight := int64(200)
+	s.WithBlockHeight(blockHeight)
+
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	s.Require().NoError(s.EmissionsKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	params.MaxTopInferersToReward = 2
+	s.Require().NoError(s.EmissionsKeeper().SetParams(s.Ctx(), params))
+
+	worker0 := s.AddrsStr(0)
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+
+	s.Require().NoError(s.EmissionsKeeper().SetInfererScoreEma(s.Ctx(), topicId, worker0, types.Score{
+		TopicId:     topicId,
+		Address:     worker0,
+		BlockHeight: blockHeight - 1,
+		Score:       alloraMath.MustNewDecFromString("90"),
+	}))
+	s.Require().NoError(s.EmissionsKeeper().SetInfererScoreEma(s.Ctx(), topicId, worker1, types.Score{
+		TopicId:     topicId,
+		Address:     worker1,
+		BlockHeight: blockHeight - 1,
+		Score:       alloraMath.MustNewDecFromString("95"),
+	}))
+	s.Require().NoError(s.EmissionsKeeper().SetInfererScoreEma(s.Ctx(), topicId, worker2, types.Score{
+		TopicId:     topicId,
+		Address:     worker2,
+		BlockHeight: blockHeight - 1,
+		Score:       alloraMath.MustNewDecFromString("99"),
+	}))
+
+	submit := func(worker string, labels []string, values []string) {
+		s.Require().Equal(len(labels), len(values))
+		labeled := make([]*types.InputLabeledValue, 0, len(labels))
+		for i := range labels {
+			labeled = append(labeled, &types.InputLabeledValue{
+				Label: labels[i],
+				Value: alloraMath.MustNewBoundedExp40DecFromString(values[i]),
+			})
+		}
+		raw := types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker,
+			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+			Values:      labeled,
+		}
+		normalized, err := s.EmissionsKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &raw)
+		s.Require().NoError(err)
+		s.Require().NoError(s.EmissionsKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, blockHeight, raw))
+		s.Require().NoError(s.EmissionsKeeper().AppendInference(s.Ctx(), topic, blockHeight, normalized, params.MaxTopInferersToReward))
+	}
+
+	submit(worker0, []string{"a", "b"}, []string{"1", "2"})
+	submit(worker1, []string{"b", "c"}, []string{"10", "20"})
+	submit(worker2, []string{"c", "d"}, []string{"30", "40"})
+
+	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
+
+	reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)
+	s.Require().NoError(err)
+	s.Require().Len(reg.Labels, 3)
+	s.Require().Equal("b", reg.Labels[0].Name)
+	s.Require().Equal("c", reg.Labels[1].Name)
+	s.Require().Equal("d", reg.Labels[2].Name)
+
+	inferences, err := s.EmissionsKeeper().GetInferencesAtBlock(s.Ctx(), topicId, blockHeight, false)
+	s.Require().NoError(err)
+	s.Require().Len(inferences.Inferences, 2)
+
+	byInferer := make(map[string][]string, 2)
+	for _, inf := range inferences.Inferences {
+		gotVals := make([]string, 0, len(inf.Values))
+		for _, v := range inf.Values {
+			gotVals = append(gotVals, v.String())
+		}
+		byInferer[inf.Inferer] = gotVals
+	}
+	s.Require().Equal([]string{"10", "20", "0"}, byInferer[worker1])
+	s.Require().Equal([]string{"0", "30", "40"}, byInferer[worker2])
+}
+
 func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 	blockHeight := int64(101)
 	s.WithBlockHeight(blockHeight)

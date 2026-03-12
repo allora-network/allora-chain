@@ -99,6 +99,18 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId,
 				"inferer not using the same topic as bundle")
 		}
+		if msg.WorkerDataBundle.InferenceForecastsBundle == nil || msg.WorkerDataBundle.InferenceForecastsBundle.Inference == nil {
+			return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData, "missing raw inference payload")
+		}
+		err = ms.k.SetWorkerLatestInputInference(
+			ctx,
+			topicId,
+			nonce.BlockHeight,
+			*msg.WorkerDataBundle.InferenceForecastsBundle.Inference,
+		)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "Error storing raw inference")
+		}
 
 		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
 		if err != nil {

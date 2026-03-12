@@ -250,7 +250,7 @@ func closeActiveInferencesSet(
 		return nil, nil, errorsmod.Wrap(err, "failed to get topic")
 	}
 
-	inferences, err = k.GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce.BlockHeight, activeInfererAddresses)
+	inferences, err = k.GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(ctx, topic, nonce.BlockHeight, activeInfererAddresses)
 	if err != nil {
 		return nil, nil, err
 	}

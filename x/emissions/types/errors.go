@@ -98,4 +98,6 @@ var (
 	ErrTopicAlreadyActive                        = errors.Register(ModuleName, 93, "topic already active")
 	ErrTopicCannotBeActivated                    = errors.Register(ModuleName, 94, "topic cannot be activated")
 	ErrInvalidLabelName                          = errors.Register(ModuleName, 95, "invalid label name")
+	ErrEpochLabelRegistryFrozen                  = errors.Register(ModuleName, 96, "epoch label registry is frozen")
+	ErrMaxLabelsPerSubmissionExceeded            = errors.Register(ModuleName, 98, "max labels per submission exceeded")
 )

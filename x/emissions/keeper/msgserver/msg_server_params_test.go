@@ -74,6 +74,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		GlobalAdminWhitelistAppended:        []bool{true},
 		MaxWhitelistInputArrayLength:        []uint64{10},
 		MinWeightThresholdForStdnorm:        []alloraMath.Dec{alloraMath.MustNewDecFromString("0.000001")},
+		MaxLabelsPerSubmission:              []uint64{7},
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -141,6 +142,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.GlobalAdminWhitelistAppended[0], updatedParams.GlobalAdminWhitelistAppended)
 	require.Equal(newParams.MaxWhitelistInputArrayLength[0], updatedParams.MaxWhitelistInputArrayLength)
 	require.Equal(newParams.MinWeightThresholdForStdnorm[0], updatedParams.MinWeightThresholdForStdnorm)
+	require.Equal(newParams.MaxLabelsPerSubmission[0], updatedParams.MaxLabelsPerSubmission)
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
@@ -169,4 +171,39 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 	// Expect an error since the sender is not whitelisted
 	require.Nil(response, "Response should be nil when access is denied")
 	require.ErrorIs(err, types.ErrNotPermittedToUpdateParams, "Expected an error for non-whitelisted sender")
+}
+
+func (s *MsgServerTestSuite) TestUpdateParams_LabelLimitOptionalBehavior() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	k := s.EmissionsKeeper()
+	require := s.Require()
+
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	require.NoError(k.AddWhitelistAdmin(ctx, adminAddr.String()))
+
+	before, err := k.GetParams(ctx)
+	require.NoError(err)
+
+	_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+		Sender: adminAddr.String(),
+		Params: &types.OptionalParams{
+			MaxLabelsPerSubmission: []uint64{before.MaxLabelsPerSubmission + 1},
+		},
+	})
+	require.NoError(err)
+
+	afterEpochOnly, err := k.GetParams(ctx)
+	require.NoError(err)
+	require.Equal(before.MaxLabelsPerSubmission+1, afterEpochOnly.MaxLabelsPerSubmission)
+
+	_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+		Sender: adminAddr.String(),
+		Params: &types.OptionalParams{},
+	})
+	require.NoError(err)
+
+	afterNoChange, err := k.GetParams(ctx)
+	require.NoError(err)
+	require.Equal(afterEpochOnly.MaxLabelsPerSubmission, afterNoChange.MaxLabelsPerSubmission)
 }

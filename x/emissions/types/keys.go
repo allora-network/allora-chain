@@ -122,4 +122,8 @@ var (
 	TopicLabelRegistryKey                     = collections.NewPrefix(106)
 	NetworkInferenceBundleKey                 = collections.NewPrefix(107)
 	OutlierResistantNetworkInferenceBundleKey = collections.NewPrefix(108)
+	WorkerLatestInputInferenceKey             = collections.NewPrefix(109)
+	ActiveInfererLabelRefCountKey             = collections.NewPrefix(110)
+	ActiveInfererLabelOrderKey                = collections.NewPrefix(111)
+	ActiveInfererLabelOrderSequenceKey        = collections.NewPrefix(112)
 )

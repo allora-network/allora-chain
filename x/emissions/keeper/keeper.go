@@ -149,6 +149,14 @@ type Keeper struct {
 
 	// map of (topic, worker) -> inference
 	inferences collections.Map[collections.Pair[TopicId, ActorId], types.Inference]
+	// map of (topic, worker) -> latest raw input inference
+	workerLatestInputInferences collections.Map[collections.Pair[TopicId, ActorId], types.InputInference]
+	// map of (topic, nonce, label) -> number of active inferers currently using label
+	activeInfererLabelRefCount collections.Map[collections.Triple[TopicId, BlockHeight, string], uint64]
+	// map of (topic, nonce, label) -> deterministic active-set insertion order
+	activeInfererLabelOrder collections.Map[collections.Triple[TopicId, BlockHeight, string], uint64]
+	// map of (topic, nonce) -> last order sequence number used for active labels
+	activeInfererLabelOrderSequence collections.Map[collections.Pair[TopicId, BlockHeight], uint64]
 
 	// map of (topic, worker) -> forecast[]
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
@@ -329,6 +337,10 @@ func NewKeeper(
 		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, sdk.IntValue),
 		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
+		workerLatestInputInferences:              collections.NewMap(sb, types.WorkerLatestInputInferenceKey, "worker_latest_input_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InputInference](cdc)),
+		activeInfererLabelRefCount:               collections.NewMap(sb, types.ActiveInfererLabelRefCountKey, "active_inferer_label_ref_count", collections.TripleKeyCodec(collections.Uint64Key, collections.Int64Key, collections.StringKey), collections.Uint64Value),
+		activeInfererLabelOrder:                  collections.NewMap(sb, types.ActiveInfererLabelOrderKey, "active_inferer_label_order", collections.TripleKeyCodec(collections.Uint64Key, collections.Int64Key, collections.StringKey), collections.Uint64Value),
+		activeInfererLabelOrderSequence:          collections.NewMap(sb, types.ActiveInfererLabelOrderSequenceKey, "active_inferer_label_order_sequence", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), collections.Uint64Value),
 		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
 		lossBundles:                              collections.NewMap(sb, types.LossBundlesKey, "loss_bundles", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ReputerValueBundle](cdc)),
 		workers:                                  collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
@@ -1619,6 +1631,9 @@ func (k *Keeper) AppendInference(
 		if err != nil {
 			return errorsmod.Wrap(err, "error adding active inferer")
 		}
+		if err := k.trackActiveInfererLabelsOnAdmission(ctx, topic, nonceBlockHeight, inference.Inferer); err != nil {
+			return errorsmod.Wrap(err, "error tracking active inferer labels on admission")
+		}
 		return k.InsertInference(ctx, topic.Id, *inference)
 	}
 
@@ -1655,10 +1670,19 @@ func (k *Keeper) AppendInference(
 		if err != nil {
 			return errorsmod.Wrap(err, "error removing inference from inferer")
 		}
+		if err := k.trackActiveInfererLabelsOnRemoval(ctx, topic, nonceBlockHeight, lowestEmaScore.Address); err != nil {
+			return errorsmod.Wrap(err, "error tracking active inferer labels on removal")
+		}
+		if err := k.RemoveWorkerLatestInputInference(ctx, topic.Id, lowestEmaScore.Address); err != nil && !errors.Is(err, collections.ErrNotFound) {
+			return errorsmod.Wrap(err, "error removing raw inference from inferer")
+		}
 		// Add new active inferer
 		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
 		if err != nil {
 			return errorsmod.Wrap(err, "error adding active inferer")
+		}
+		if err := k.trackActiveInfererLabelsOnAdmission(ctx, topic, nonceBlockHeight, inference.Inferer); err != nil {
+			return errorsmod.Wrap(err, "error tracking active inferer labels on admission")
 		}
 		// Calculate new lowest score with updated infererAddresses
 		err = UpdateLowestScoreFromInfererAddresses(ctx, k, topic.Id, workerAddresses, inference.Inferer, lowestEmaScore.Address)
@@ -1898,6 +1922,356 @@ func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 ) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
 	return k.inferences.Get(ctx, key)
+}
+
+func (k *Keeper) SetWorkerLatestInputInference(
+	ctx context.Context,
+	topicId TopicId,
+	nonce BlockHeight,
+	inference types.InputInference,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(nonce); err != nil {
+		return errorsmod.Wrap(err, "nonce validation failed")
+	}
+
+	inference.TopicId = topicId
+	inference.BlockHeight = nonce
+	inference.Values = normalizeAndCopyLabeledValues(inference.Values)
+
+	key := collections.Join(topicId, inference.Inferer)
+	return k.workerLatestInputInferences.Set(ctx, key, inference)
+}
+
+func (k *Keeper) GetWorkerLatestInputInferenceByTopicId(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (types.InputInference, error) {
+	key := collections.Join(topicId, worker)
+	return k.workerLatestInputInferences.Get(ctx, key)
+}
+
+func (k *Keeper) RemoveWorkerLatestInputInference(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) error {
+	key := collections.Join(topicId, worker)
+	return k.workerLatestInputInferences.Remove(ctx, key)
+}
+
+func normalizeAndCopyLabeledValues(values []*types.InputLabeledValue) []*types.InputLabeledValue {
+	if len(values) == 0 {
+		return nil
+	}
+	out := make([]*types.InputLabeledValue, 0, len(values))
+	for _, lv := range values {
+		if lv == nil {
+			continue
+		}
+		out = append(out, &types.InputLabeledValue{
+			Label: strings.TrimSpace(lv.Label),
+			Value: lv.Value,
+		})
+	}
+	return out
+}
+
+func labelNamesInSubmissionOrder(values []*types.InputLabeledValue) []string {
+	if len(values) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(values))
+	labels := make([]string, 0, len(values))
+	for _, lv := range values {
+		if lv == nil {
+			continue
+		}
+		name := strings.TrimSpace(lv.Label)
+		if name == "" {
+			continue
+		}
+		if _, ok := seen[name]; ok {
+			continue
+		}
+		seen[name] = struct{}{}
+		labels = append(labels, name)
+	}
+	return labels
+}
+
+func (k *Keeper) trackActiveInfererLabelsOnAdmission(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	inferer ActorId,
+) error {
+	if topic.OutputArity != types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return nil
+	}
+
+	raw, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topic.Id, inferer)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil
+		}
+		return errorsmod.Wrap(err, "error getting raw inference for label tracking")
+	}
+
+	labels := labelNamesInSubmissionOrder(raw.Values)
+	for _, label := range labels {
+		key := collections.Join3(topic.Id, nonce, label)
+		count, err := k.activeInfererLabelRefCount.Get(ctx, key)
+		if err != nil && !errors.Is(err, collections.ErrNotFound) {
+			return errorsmod.Wrap(err, "error getting active inferer label refcount")
+		}
+		if errors.Is(err, collections.ErrNotFound) || count == 0 {
+			nextOrder, err := k.activeInfererLabelOrderSequence.Get(ctx, collections.Join(topic.Id, nonce))
+			if err != nil && !errors.Is(err, collections.ErrNotFound) {
+				return errorsmod.Wrap(err, "error getting active inferer label order sequence")
+			}
+			if errors.Is(err, collections.ErrNotFound) {
+				nextOrder = 0
+			}
+			nextOrder++
+			if err := k.activeInfererLabelOrderSequence.Set(ctx, collections.Join(topic.Id, nonce), nextOrder); err != nil {
+				return errorsmod.Wrap(err, "error setting active inferer label order sequence")
+			}
+			if err := k.activeInfererLabelOrder.Set(ctx, key, nextOrder); err != nil {
+				return errorsmod.Wrap(err, "error setting active inferer label order")
+			}
+		}
+
+		if err := k.activeInfererLabelRefCount.Set(ctx, key, count+1); err != nil {
+			return errorsmod.Wrap(err, "error setting active inferer label refcount")
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) trackActiveInfererLabelsOnRemoval(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	inferer ActorId,
+) error {
+	if topic.OutputArity != types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return nil
+	}
+
+	raw, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topic.Id, inferer)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil
+		}
+		return errorsmod.Wrap(err, "error getting raw inference for label tracking")
+	}
+	labels := labelNamesInSubmissionOrder(raw.Values)
+	for _, label := range labels {
+		key := collections.Join3(topic.Id, nonce, label)
+		count, err := k.activeInfererLabelRefCount.Get(ctx, key)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				continue
+			}
+			return errorsmod.Wrap(err, "error getting active inferer label refcount")
+		}
+		if count <= 1 {
+			if err := k.activeInfererLabelRefCount.Remove(ctx, key); err != nil {
+				return errorsmod.Wrap(err, "error removing active inferer label refcount")
+			}
+			if err := k.activeInfererLabelOrder.Remove(ctx, key); err != nil && !errors.Is(err, collections.ErrNotFound) {
+				return errorsmod.Wrap(err, "error removing active inferer label order")
+			}
+			continue
+		}
+
+		if err := k.activeInfererLabelRefCount.Set(ctx, key, count-1); err != nil {
+			return errorsmod.Wrap(err, "error decrementing active inferer label refcount")
+		}
+	}
+	return nil
+}
+
+func (k *Keeper) buildAndStoreFinalEpochLabelRegistryFromActiveSet(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+) (types.EpochLabelRegistry, error) {
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		registry := types.EpochLabelRegistry{
+			TopicId: topic.Id,
+			EpochId: uint64(nonce),
+			Labels: []*types.TopicLabel{
+				{Id: 1, Name: "y"},
+			},
+		}
+		if err := k.topicLabelRegistry.Set(ctx, collections.Join(topic.Id, nonce), registry); err != nil {
+			return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error setting topic label registry")
+		}
+		return registry, nil
+	}
+
+	type orderedLabel struct {
+		name  string
+		order uint64
+	}
+	labels := make([]orderedLabel, 0)
+	rng := collections.NewSuperPrefixedTripleRange[TopicId, BlockHeight, string](topic.Id, nonce)
+	iter, err := k.activeInfererLabelRefCount.Iterate(ctx, rng)
+	if err != nil {
+		return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error iterating active inferer label refcount")
+	}
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.Key()
+		if err != nil {
+			return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error reading active inferer label refcount key")
+		}
+		count, err := iter.Value()
+		if err != nil {
+			return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error reading active inferer label refcount value")
+		}
+		if count == 0 {
+			continue
+		}
+		order, err := k.activeInfererLabelOrder.Get(ctx, key)
+		if err != nil {
+			return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error getting active inferer label order")
+		}
+		labels = append(labels, orderedLabel{name: key.K3(), order: order})
+	}
+
+	if len(labels) == 0 {
+		existing, err := k.GetEpochLabelRegistry(ctx, topic.Id, nonce)
+		if err == nil && len(existing.Labels) > 0 {
+			return existing, nil
+		}
+	}
+
+	sort.Slice(labels, func(i, j int) bool {
+		if labels[i].order == labels[j].order {
+			return labels[i].name < labels[j].name
+		}
+		return labels[i].order < labels[j].order
+	})
+
+	registry := types.EpochLabelRegistry{
+		TopicId: topic.Id,
+		EpochId: uint64(nonce),
+		Labels:  make([]*types.TopicLabel, 0, len(labels)),
+	}
+	for i, label := range labels {
+		registry.Labels = append(registry.Labels, &types.TopicLabel{
+			Id:   uint32(i + 1),
+			Name: label.name,
+		})
+	}
+	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topic.Id, nonce), registry); err != nil {
+		return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error setting topic label registry")
+	}
+	return registry, nil
+}
+
+func (k *Keeper) GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	workers []ActorId,
+) (*types.Inferences, error) {
+	registry, err := k.buildAndStoreFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	if err != nil {
+		return nil, err
+	}
+
+	active := make([]*types.Inference, 0, len(workers))
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		for _, addr := range workers {
+			inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
+			if err != nil {
+				return nil, err
+			}
+			if len(inf.Values) != 1 {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"worker %s single-arity inference must have exactly 1 value, got=%d",
+					addr, len(inf.Values),
+				)
+			}
+			active = append(active, &types.Inference{
+				TopicId:     inf.TopicId,
+				BlockHeight: inf.BlockHeight,
+				Inferer:     inf.Inferer,
+				Values:      []alloraMath.Dec{inf.Values[0]},
+				ExtraData:   inf.ExtraData,
+				Proof:       inf.Proof,
+			})
+		}
+		sort.Slice(active, func(i, j int) bool { return active[i].Inferer < active[j].Inferer })
+		return &types.Inferences{Inferences: active}, nil
+	}
+
+	targetLen := len(registry.Labels)
+	labelIndex := make(map[string]int, targetLen)
+	for i, lbl := range registry.Labels {
+		if lbl == nil || lbl.Name == "" {
+			continue
+		}
+		labelIndex[lbl.Name] = i
+	}
+	zero := alloraMath.ZeroDec()
+
+	for _, addr := range workers {
+		inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
+		if err != nil {
+			return nil, err
+		}
+
+		values := make([]alloraMath.Dec, targetLen)
+		for i := range values {
+			values[i] = zero
+		}
+
+		raw, rawErr := k.GetWorkerLatestInputInferenceByTopicId(ctx, topic.Id, addr)
+		if rawErr == nil && raw.BlockHeight == nonce && len(raw.Values) > 0 {
+			for _, lv := range raw.Values {
+				if lv == nil {
+					continue
+				}
+				name := strings.TrimSpace(lv.Label)
+				idx, ok := labelIndex[name]
+				if !ok {
+					return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "label %q missing from final registry", name)
+				}
+				values[idx] = lv.Value.ToDec()
+			}
+		} else {
+			if len(inf.Values) > targetLen {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"worker %s inference values longer than registry: got=%d registry=%d",
+					addr, len(inf.Values), targetLen,
+				)
+			}
+			copy(values, inf.Values)
+		}
+
+		active = append(active, &types.Inference{
+			TopicId:     inf.TopicId,
+			BlockHeight: inf.BlockHeight,
+			Inferer:     inf.Inferer,
+			Values:      values,
+			ExtraData:   inf.ExtraData,
+			Proof:       inf.Proof,
+		})
+	}
+
+	sort.Slice(active, func(i, j int) bool { return active[i].Inferer < active[j].Inferer })
+	return &types.Inferences{Inferences: active}, nil
 }
 
 // GetWorkersLatestInferencesByTopicIdValuesPadded retrieves the latest inference
@@ -4836,9 +5210,24 @@ func (k *Keeper) ResetWorkersIndividualSubmissionsForTopic(ctx context.Context, 
 	if err := k.inferences.Clear(ctx, infererRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing inferences")
 	}
+	if err := k.workerLatestInputInferences.Clear(ctx, infererRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing raw inferences")
+	}
 	forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.forecasts.Clear(ctx, forecasterRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing forecasts")
+	}
+	labelRefRange := &collections.Range[collections.Triple[TopicId, BlockHeight, string]]{}
+	labelRefRange = labelRefRange.Prefix(collections.TriplePrefix[TopicId, BlockHeight, string](topicId))
+	if err := k.activeInfererLabelRefCount.Clear(ctx, labelRefRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active inferer label refcounts")
+	}
+	if err := k.activeInfererLabelOrder.Clear(ctx, labelRefRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active inferer label order")
+	}
+	labelSeqRange := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId)
+	if err := k.activeInfererLabelOrderSequence.Clear(ctx, labelSeqRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active inferer label order sequence")
 	}
 
 	return nil
@@ -5233,6 +5622,19 @@ func (k *Keeper) RegisterEpochLabel(
 		}
 	}
 
+	// Prevent registry growth after worker nonce closure for this topic+epoch.
+	if closed, err := k.isWorkerNonceClosedForLabelRegistration(ctx, topicId, nonce, len(registry.Labels) > 0); err != nil {
+		return 0, err
+	} else if closed {
+		return 0, errorsmod.Wrapf(
+			types.ErrEpochLabelRegistryFrozen,
+			"topic %d nonce %d label %q",
+			topicId,
+			nonce,
+			labelName,
+		)
+	}
+
 	newID := LabelId(len(registry.Labels) + 1)
 
 	registry.Labels = append(registry.Labels, &types.TopicLabel{
@@ -5245,6 +5647,39 @@ func (k *Keeper) RegisterEpochLabel(
 	}
 
 	return newID, nil
+}
+
+func (k *Keeper) isWorkerNonceClosedForLabelRegistration(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	hasExistingLabels bool,
+) (bool, error) {
+	nonceRef := &types.Nonce{BlockHeight: nonce}
+	isUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, nonceRef)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "error checking worker nonce status")
+	}
+	if isUnfulfilled {
+		return false, nil
+	}
+
+	// CloseWorkerNonce moves a worker nonce into unfulfilled reputer nonces.
+	isReputerUnfulfilled, err := k.IsReputerNonceUnfulfilled(ctx, topicId, nonceRef)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "error checking reputer nonce status")
+	}
+	if isReputerUnfulfilled {
+		return true, nil
+	}
+
+	// As a fallback, when labels already exist, a matching last commit indicates closure.
+	lastCommit, err := k.GetWorkerTopicLastCommit(ctx, topicId)
+	if hasExistingLabels && err == nil && lastCommit.Nonce != nil && lastCommit.Nonce.BlockHeight == nonce {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // GetEpochLabelId returns the label id for labelName, if present.
@@ -5399,11 +5834,6 @@ func (k *Keeper) NormalizeInputInference(
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
 
-		_, err := k.RegisterEpochLabel(ctx, in.TopicId, nonce, "y")
-		if err != nil {
-			return nil, err
-		}
-
 		return &types.Inference{
 			TopicId:     in.TopicId,
 			BlockHeight: in.BlockHeight,
@@ -5416,17 +5846,27 @@ func (k *Keeper) NormalizeInputInference(
 		if len(in.Values) == 0 {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires labeled values")
 		}
+		moduleParams, err := k.GetParams(ctx)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error getting params")
+		}
+		if uint64(len(in.Values)) > moduleParams.MaxLabelsPerSubmission {
+			return nil, errorsmod.Wrapf(
+				types.ErrMaxLabelsPerSubmissionExceeded,
+				"labels=%d max=%d",
+				len(in.Values),
+				moduleParams.MaxLabelsPerSubmission,
+			)
+		}
 	default:
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
 
 	seen := make(map[string]struct{}, len(in.Values))
-	submitted := make([]struct {
-		labelId LabelId
-		value   alloraMath.Dec
-	}, 0, len(in.Values))
+	submittedValues := make([]alloraMath.Dec, 0, len(in.Values))
 
 	sumSubmitted := alloraMath.ZeroDec()
+	var err error
 
 	for _, lv := range in.Values {
 		name := strings.TrimSpace(lv.Label)
@@ -5443,15 +5883,7 @@ func (k *Keeper) NormalizeInputInference(
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label %s has invalid value", name)
 		}
 
-		labelId, err := k.RegisterEpochLabel(ctx, in.TopicId, nonce, name)
-		if err != nil {
-			return nil, err
-		}
-
-		submitted = append(submitted, struct {
-			labelId LabelId
-			value   alloraMath.Dec
-		}{labelId: labelId, value: dec})
+		submittedValues = append(submittedValues, dec)
 
 		sumSubmitted, err = sumSubmitted.Add(dec)
 		if err != nil {
@@ -5477,30 +5909,11 @@ func (k *Keeper) NormalizeInputInference(
 		}
 	}
 
-	registry, err := k.GetEpochLabelRegistry(ctx, in.TopicId, nonce)
-	if err != nil {
-		return nil, err
-	}
-	L := len(registry.Labels)
-	zero := alloraMath.ZeroDec()
-	values := make([]alloraMath.Dec, L)
-	for i := range values {
-		values[i] = zero
-	}
-
-	for _, s := range submitted {
-		idx := int(s.labelId) - 1
-		if idx < 0 || idx >= L {
-			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "label id out of range")
-		}
-		values[idx] = s.value
-	}
-
 	return &types.Inference{
 		TopicId:     in.TopicId,
 		BlockHeight: in.BlockHeight,
 		Inferer:     in.Inferer,
-		Values:      values,
+		Values:      submittedValues,
 		ExtraData:   in.ExtraData,
 		Proof:       in.Proof,
 	}, nil

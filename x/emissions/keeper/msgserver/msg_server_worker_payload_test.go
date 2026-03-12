@@ -898,16 +898,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 
 			reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
 			s.Require().NoError(err)
-
-			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Equal(1, len(reg.Labels))
-				return
-			}
-
-			s.Require().Equal(len(c.wantReg), len(reg.Labels))
-			for i := range c.wantReg {
-				s.Require().Equal(c.wantReg[i], reg.Labels[i].Name)
-			}
+			s.Require().Len(reg.Labels, 0)
 		})
 	}
 }
@@ -959,11 +950,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 
 	reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
 	s.Require().NoError(err)
-	s.Require().Equal(4, len(reg.Labels))
-	s.Require().Equal("a", reg.Labels[0].Name)
-	s.Require().Equal("b", reg.Labels[1].Name)
-	s.Require().Equal("c", reg.Labels[2].Name)
-	s.Require().Equal("d", reg.Labels[3].Name)
+	s.Require().Len(reg.Labels, 0)
 
 	got1, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
@@ -974,11 +961,10 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 
 	got2, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
-	s.Require().Equal(4, len(got2.Values))
+	s.Require().Equal(3, len(got2.Values))
 	s.Require().Equal("10", got2.Values[0].String())
 	s.Require().Equal("20", got2.Values[1].String())
-	s.Require().Equal("0", got2.Values[2].String())
-	s.Require().Equal("40", got2.Values[3].String())
+	s.Require().Equal("40", got2.Values[2].String())
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegistryLeakage() {
@@ -1035,9 +1021,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 
 	reg1, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce1)
 	s.Require().NoError(err)
-	s.Require().Equal(2, len(reg1.Labels))
-	s.Require().Equal("a", reg1.Labels[0].Name)
-	s.Require().Equal("b", reg1.Labels[1].Name)
+	s.Require().Len(reg1.Labels, 0)
 
 	got1, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
@@ -1053,10 +1037,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 
 	reg2, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce2)
 	s.Require().NoError(err)
-	s.Require().Equal(3, len(reg2.Labels))
-	s.Require().Equal("a", reg2.Labels[0].Name)
-	s.Require().Equal("b", reg2.Labels[1].Name)
-	s.Require().Equal("c", reg2.Labels[2].Name)
+	s.Require().Len(reg2.Labels, 0)
 
 	got2, err := s.EmissionsKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
@@ -1069,9 +1050,61 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 	// ensure epoch1 registry did not change after epoch2 submission
 	reg1Again, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce1)
 	s.Require().NoError(err)
-	s.Require().Equal(2, len(reg1Again.Labels))
-	s.Require().Equal("a", reg1Again.Labels[0].Name)
-	s.Require().Equal("b", reg1Again.Labels[1].Name)
+	s.Require().Len(reg1Again.Labels, 0)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_MaxLabelsPerSubmission() {
+	s.SetupTest()
+
+	k := s.EmissionsKeeper()
+	msgServer := s.EmissionsMsgServer()
+	pk := secp256k1.GenPrivKey()
+
+	msg, topicId := s.setUpMsgInsertWorkerPayload(pk)
+	nonce := msg.WorkerDataBundle.Nonce.BlockHeight
+	s.WithBlockHeight(nonce)
+	s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, false, "0")
+
+	params, err := k.GetParams(s.Ctx())
+	s.Require().NoError(err)
+	params.MaxLabelsPerSubmission = 2
+	s.Require().NoError(k.SetParams(s.Ctx(), params))
+
+	err = k.AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+
+	s.Run("accept_at_boundary", func() {
+		msg.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+			{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+			{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+		}
+
+		_, err := msgServer.InsertWorkerPayload(s.Ctx(), &msg)
+		s.Require().NoError(err)
+	})
+
+	s.Run("reject_over_limit", func() {
+		msg2, _ := s.setUpMsgInsertWorkerPayload(pk)
+		msg2.Sender = msg.Sender
+		msg2.WorkerDataBundle.Worker = msg.WorkerDataBundle.Worker
+		msg2.WorkerDataBundle.TopicId = topicId
+		msg2.WorkerDataBundle.Nonce.BlockHeight = nonce
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = topicId
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer = msg.WorkerDataBundle.Worker
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = topicId
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster = msg.WorkerDataBundle.Worker
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+			{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+			{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+			{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("3")},
+		}
+
+		_, err := msgServer.InsertWorkerPayload(s.Ctx(), &msg2)
+		s.Require().Error(err)
+		s.Require().ErrorIs(err, types.ErrMaxLabelsPerSubmissionExceeded)
+	})
 }
 
 func (s *MsgServerTestSuite) setTopicArityAndUnity(
