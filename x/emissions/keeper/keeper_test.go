@@ -6280,6 +6280,7 @@ func (s *KeeperTestSuite) TestInputInferenceForecastBundleConvert() {
 	}
 }
 
+//nolint:exhaustruct // Added nolint because these table-driven cases intentionally set only scenario-relevant fixture fields.
 func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	type tc struct {
 		name         string
@@ -6636,6 +6637,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	})
 }
 
+//nolint:exhaustruct // Added nolint because these table-driven fixtures are intentionally sparse to isolate padding behavior.
 func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() {
 	topicId := keeper.TopicId(1)
 	nonce := int64(1)

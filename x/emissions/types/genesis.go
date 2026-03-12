@@ -101,6 +101,8 @@ func NewGenesisState() *GenesisState {
 		LatestForecasterWeights:                        []*TopicIdActorIdDec{},
 		NetworkInferences:                              []*TopicIdBlockHeightValueBundles{},
 		OutlierResistantNetworkInferences:              []*TopicIdBlockHeightValueBundles{},
+		NetworkInferenceBundle:                         []*TopicIdBlockHeightNetworkInferenceBundles{},
+		OutlierResistantNetworkInferenceBundle:         []*TopicIdBlockHeightNetworkInferenceBundles{},
 		MonthlyReputerRewards:                          cosmosMath.ZeroInt(),
 		MonthlyTopicRewards:                            cosmosMath.ZeroInt(),
 	}

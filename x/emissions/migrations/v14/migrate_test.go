@@ -89,6 +89,7 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateNetworkInferences() {
 			ReputerNonce: &emissionstypes.Nonce{BlockHeight: 123},
 		},
 		Reputer:       s.Addrs(9).String(),
+		ExtraData:     nil,
 		CombinedValue: alloraMath.MustNewDecFromString("10"),
 		NaiveValue:    alloraMath.MustNewDecFromString("20"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{

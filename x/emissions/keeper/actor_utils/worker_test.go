@@ -78,6 +78,8 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 		Inferer:     worker0,
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
+		ExtraData:   nil,
+		Proof:       "",
 		Values: []alloraMath.Dec{
 			alloraMath.MustNewDecFromString("-0.035995138925040600"),
 			alloraMath.MustNewDecFromString("0.100000000000000000"),
@@ -88,6 +90,8 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 		Inferer:     worker1,
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
+		ExtraData:   nil,
+		Proof:       "",
 		Values: []alloraMath.Dec{
 			alloraMath.MustNewDecFromString("-0.07333303938740420"),
 			alloraMath.MustNewDecFromString("0.110000000000000000"),
@@ -187,6 +191,8 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi_DerivesRegistryFromFinalAct
 			BlockHeight: blockHeight,
 			Inferer:     worker,
 			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+			ExtraData:   nil,
+			Proof:       "",
 			Values:      labeled,
 		}
 		normalized, err := s.EmissionsKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &raw)

@@ -147,6 +147,8 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 				TopicId:     args.TopicId,
 				BlockHeight: blockHeight,
 				Inferer:     forecaster,
+				ExtraData:   nil,
+				Proof:       "",
 				Values:      []alloraMath.Dec(result),
 			}
 
@@ -250,6 +252,8 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 			TopicId:     args.TopicId,
 			BlockHeight: blockHeight,
 			Inferer:     forecaster,
+			ExtraData:   nil,
+			Proof:       "",
 			Values:      []alloraMath.Dec(running),
 		}
 

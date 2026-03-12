@@ -8,6 +8,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+//nolint:exhaustruct // Added nolint because this table-driven test intentionally uses sparse fixture literals to focus each scenario.
 func (s *KeeperTestSuite) TestInferenceValuesFromProto() {
 	s.SetupTest()
 

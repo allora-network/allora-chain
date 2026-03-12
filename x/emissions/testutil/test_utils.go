@@ -739,7 +739,7 @@ func createValue[O builderValueO](worker string, value alloraMath.Dec) (out O) {
 
 func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle) *types.ValueBundle {
 	if b == nil {
-		return &types.ValueBundle{}
+		return &types.ValueBundle{} //nolint:exhaustruct // Added nolint because this helper intentionally returns an empty skeleton for nil input.
 	}
 
 	inferers := make([]*types.WorkerAttributedValue, 0, len(b.InfererValues))
@@ -846,6 +846,9 @@ func NetworkInferenceBundleToLossBundleSkeleton(b *types.NetworkInferenceBundle)
 	}
 	return &types.ValueBundle{
 		TopicId:                       b.TopicId,
+		ReputerRequestNonce:           nil,
+		Reputer:                       "",
+		ExtraData:                     nil,
 		CombinedValue:                 combVal,
 		NaiveValue:                    naiveVal,
 		InfererValues:                 inferers,

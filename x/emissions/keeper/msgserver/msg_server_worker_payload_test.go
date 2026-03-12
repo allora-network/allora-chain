@@ -734,6 +734,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredF
 	require.NoError(err, "InsertWorkerPayload should succeed with an unregistered inferer")
 }
 
+//nolint:exhaustruct // Added nolint because this table-driven test keeps case literals sparse to highlight per-scenario behavior.
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 	type tc struct {
 		name          string

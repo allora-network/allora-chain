@@ -187,7 +187,7 @@ func (s *MsgServerTestSuite) TestUpdateParams_LabelLimitOptionalBehavior() {
 
 	_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
 		Sender: adminAddr.String(),
-		Params: &types.OptionalParams{
+		Params: &types.OptionalParams{ //nolint:exhaustruct // Added nolint because update tests intentionally set only the field being patched.
 			MaxLabelsPerSubmission: []uint64{before.MaxLabelsPerSubmission + 1},
 		},
 	})
@@ -199,7 +199,7 @@ func (s *MsgServerTestSuite) TestUpdateParams_LabelLimitOptionalBehavior() {
 
 	_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
 		Sender: adminAddr.String(),
-		Params: &types.OptionalParams{},
+		Params: &types.OptionalParams{}, //nolint:exhaustruct // Added nolint because empty OptionalParams is required to verify no-op update behavior.
 	})
 	require.NoError(err)
 
