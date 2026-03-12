@@ -3,11 +3,16 @@ package inferencesynthesis_test
 import (
 	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	testutil2 "github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/utils/ptr"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type WeightsTestSuite struct {
@@ -438,6 +443,452 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 
 			if tc.checkResult != nil {
 				tc.checkResult(result)
+			}
+		})
+	}
+}
+
+func (s *WeightsTestSuite) TestCalcWeightsPositive() {
+	require := s.Require()
+
+	inferers := []string{"A", "B", "C"}
+
+	infererToRegret := map[string]*alloraMath.Dec{
+		"A": ptr.To(alloraMath.MustNewDecFromString("0.1")),
+		"B": ptr.To(alloraMath.MustNewDecFromString("0.2")),
+		"C": ptr.To(alloraMath.MustNewDecFromString("0.3")),
+	}
+
+	args := synth.CalcWeightsGivenWorkersArgs{
+		Logger:                 log.NewNopLogger(),
+		Inferers:               inferers,
+		InfererToRegret:        infererToRegret,
+		EpsilonTopic:           alloraMath.MustNewDecFromString("0.0001"),
+		PNorm:                  alloraMath.MustNewDecFromString("2"),
+		CNorm:                  alloraMath.MustNewDecFromString("1"),
+		RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1"),
+	}
+
+	weights, err := synth.CalcWeightsGivenWorkers(args)
+	require.NoError(err)
+
+	for _, w := range weights.Inferers {
+		require.True(w.Gt(alloraMath.ZeroDec()))
+	}
+}
+
+func (s *WeightsTestSuite) TestCalcWeightsEqualRegretsEqualWeights() {
+	inferers := []string{"A", "B", "C"}
+
+	infererToRegret := map[string]*alloraMath.Dec{
+		"A": ptr.To(alloraMath.MustNewDecFromString("0.2")),
+		"B": ptr.To(alloraMath.MustNewDecFromString("0.2")),
+		"C": ptr.To(alloraMath.MustNewDecFromString("0.2")),
+	}
+
+	args := synth.CalcWeightsGivenWorkersArgs{
+		Logger:                 log.NewNopLogger(),
+		Inferers:               inferers,
+		InfererToRegret:        infererToRegret,
+		EpsilonTopic:           alloraMath.MustNewDecFromString("0.0001"),
+		PNorm:                  alloraMath.MustNewDecFromString("2"),
+		CNorm:                  alloraMath.MustNewDecFromString("1"),
+		RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1"),
+	}
+
+	weights, err := synth.CalcWeightsGivenWorkers(args)
+	s.Require().NoError(err)
+
+	wA := weights.Inferers["A"]
+	wB := weights.Inferers["B"]
+	wC := weights.Inferers["C"]
+
+	testutil2.InEpsilon5(s.T(), wA, wB.String())
+	testutil2.InEpsilon5(s.T(), wB, wC.String())
+}
+
+func (s *WeightsTestSuite) TestGetCombinedInference() {
+	require := s.Require()
+
+	mustDec := func(v string) alloraMath.Dec {
+		return alloraMath.MustNewDecFromString(v)
+	}
+
+	decPtr := func(v string) *alloraMath.Dec {
+		d := mustDec(v)
+		return &d
+	}
+
+	mkInf := func(worker string, vals ...string) *emissionstypes.Inference {
+		out := make([]alloraMath.Dec, len(vals))
+		for i, v := range vals {
+			out[i] = mustDec(v)
+		}
+		return &emissionstypes.Inference{
+			Inferer: worker,
+			Values:  out,
+		}
+	}
+
+	mkExpectedCombined := func(args synth.GetCombinedInferenceArgs, weights synth.RegretInformedWeights) alloraMath.DecArray {
+		running := make(alloraMath.DecArray, args.NumLabels)
+		for i := range running {
+			running[i] = alloraMath.ZeroDec()
+		}
+		sumWeights := alloraMath.ZeroDec()
+
+		if args.AllInferersAreNew {
+			used := 0
+			for _, inferer := range args.Inferers {
+				inf, ok := args.InfererToInference[inferer]
+				if !ok || inf == nil {
+					continue
+				}
+				for i := 0; i < args.NumLabels; i++ {
+					var err error
+					running[i], err = running[i].Add(inf.Values[i])
+					require.NoError(err)
+				}
+				used++
+			}
+
+			require.Greater(used, 0)
+			sumWeights = alloraMath.NewDecFromInt64(int64(used))
+		} else {
+			for _, inferer := range args.Inferers {
+				inf, ok := args.InfererToInference[inferer]
+				if !ok || inf == nil {
+					continue
+				}
+				if _, ok := args.InfererToRegret[inferer]; !ok {
+					continue
+				}
+				w, ok := weights.Inferers[inferer]
+				if !ok {
+					continue
+				}
+				if w.Equal(alloraMath.ZeroDec()) {
+					continue
+				}
+
+				for i := 0; i < args.NumLabels; i++ {
+					term, err := w.Mul(inf.Values[i])
+					require.NoError(err)
+					running[i], err = running[i].Add(term)
+					require.NoError(err)
+				}
+				var err error
+				sumWeights, err = sumWeights.Add(w)
+				require.NoError(err)
+			}
+
+			for _, forecaster := range args.Forecasters {
+				inf, ok := args.ForecasterToForecastImpliedInference[forecaster]
+				if !ok || inf == nil {
+					continue
+				}
+				if _, ok := args.ForecasterToRegret[forecaster]; !ok {
+					continue
+				}
+				w, ok := weights.Forecasters[forecaster]
+				if !ok {
+					continue
+				}
+				if w.Equal(alloraMath.ZeroDec()) {
+					continue
+				}
+
+				for i := 0; i < args.NumLabels; i++ {
+					term, err := w.Mul(inf.Values[i])
+					require.NoError(err)
+					running[i], err = running[i].Add(term)
+					require.NoError(err)
+				}
+				var err error
+				sumWeights, err = sumWeights.Add(w)
+				require.NoError(err)
+			}
+		}
+
+		if sumWeights.Lt(args.EpsilonSafeDiv) {
+			sumWeights = args.EpsilonSafeDiv
+		}
+
+		out := make(alloraMath.DecArray, args.NumLabels)
+		for i := 0; i < args.NumLabels; i++ {
+			v, err := running[i].Quo(sumWeights)
+			require.NoError(err)
+			out[i] = v
+		}
+		return out
+	}
+
+	assertVecEqual := func(got emissionskeeper.InferenceValues, want alloraMath.DecArray) {
+		require.Len(got, len(want))
+		for i := range want {
+			require.Truef(
+				got[i].Equal(want[i]),
+				"idx=%d got=%s want=%s",
+				i,
+				got[i].String(),
+				want[i].String(),
+			)
+		}
+	}
+
+	type testCase struct {
+		name          string
+		args          synth.GetCombinedInferenceArgs
+		assertWeights func(weights synth.RegretInformedWeights)
+		assertResult  func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues)
+	}
+
+	testCases := []testCase{
+		{
+			name: "all inferers new ignores forecasters and averages inferers only",
+			args: synth.GetCombinedInferenceArgs{
+				Logger:   log.NewNopLogger(),
+				TopicId:  1,
+				Inferers: []synth.Inferer{"i1", "i2"},
+				InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+					"i1": mkInf("i1", "1", "3"),
+					"i2": mkInf("i2", "5", "7"),
+				},
+				InfererToRegret: map[synth.Inferer]*synth.Regret{
+					"i1": decPtr("0"),
+					"i2": decPtr("0"),
+				},
+				AllInferersAreNew: true,
+				Forecasters:       []synth.Forecaster{"f1"},
+				ForecasterToForecastImpliedInference: map[synth.Forecaster]*emissionstypes.Inference{
+					"f1": mkInf("f1", "100", "100"),
+				},
+				ForecasterToRegret: map[synth.Forecaster]*synth.Regret{
+					"f1": decPtr("0"),
+				},
+				EpsilonTopic:           mustDec("0.0001"),
+				EpsilonSafeDiv:         mustDec("0.0000001"),
+				PNorm:                  mustDec("2"),
+				CNorm:                  mustDec("0.75"),
+				RegretScalePlusEpsilon: mustDec("1"),
+				NumLabels:              2,
+			},
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+				want := alloraMath.DecArray{mustDec("3"), mustDec("5")}
+				assertVecEqual(combined, want)
+				_ = weights
+				require.True(true)
+			},
+		},
+		{
+			name: "equal regrets produce equal inferer weights and mean result",
+			args: synth.GetCombinedInferenceArgs{
+				Logger:   log.NewNopLogger(),
+				TopicId:  1,
+				Inferers: []synth.Inferer{"i1", "i2"},
+				InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+					"i1": mkInf("i1", "1"),
+					"i2": mkInf("i2", "3"),
+				},
+				InfererToRegret: map[synth.Inferer]*synth.Regret{
+					"i1": decPtr("0.2"),
+					"i2": decPtr("0.2"),
+				},
+				AllInferersAreNew:                    false,
+				Forecasters:                          nil,
+				ForecasterToForecastImpliedInference: nil,
+				ForecasterToRegret:                   nil,
+				EpsilonTopic:                         mustDec("0.0001"),
+				EpsilonSafeDiv:                       mustDec("0.0000001"),
+				PNorm:                                mustDec("2"),
+				CNorm:                                mustDec("0.75"),
+				RegretScalePlusEpsilon:               mustDec("1"),
+				NumLabels:                            1,
+			},
+			assertWeights: func(weights synth.RegretInformedWeights) {
+				require.Contains(weights.Inferers, "i1")
+				require.Contains(weights.Inferers, "i2")
+				require.True(weights.Inferers["i1"].Equal(weights.Inferers["i2"]))
+			},
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+				require.Len(combined, 1)
+				require.True(combined[0].Equal(mustDec("2")))
+				_ = weights
+			},
+		},
+		{
+			name: "lower regret gets higher weight",
+			args: synth.GetCombinedInferenceArgs{
+				Logger:   log.NewNopLogger(),
+				TopicId:  1,
+				Inferers: []synth.Inferer{"i1", "i2", "i3"},
+				InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+					"i1": mkInf("i1", "1"),
+					"i2": mkInf("i2", "2"),
+					"i3": mkInf("i3", "10"),
+				},
+				InfererToRegret: map[synth.Inferer]*synth.Regret{
+					"i1": decPtr("0.1"),
+					"i2": decPtr("0.2"),
+					"i3": decPtr("0.5"),
+				},
+				AllInferersAreNew:                    false,
+				Forecasters:                          nil,
+				ForecasterToForecastImpliedInference: nil,
+				ForecasterToRegret:                   nil,
+				EpsilonTopic:                         mustDec("0.0001"),
+				EpsilonSafeDiv:                       mustDec("0.0000001"),
+				PNorm:                                mustDec("2"),
+				CNorm:                                mustDec("0.75"),
+				RegretScalePlusEpsilon:               mustDec("1"),
+				NumLabels:                            1,
+			},
+			assertWeights: func(weights synth.RegretInformedWeights) {
+				require.True(weights.Inferers["i1"].Gt(weights.Inferers["i2"]))
+				require.True(weights.Inferers["i2"].Gt(weights.Inferers["i3"]))
+			},
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+				args := synth.GetCombinedInferenceArgs{
+					Inferers: []synth.Inferer{"i1", "i2", "i3"},
+					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+						"i1": mkInf("i1", "1"),
+						"i2": mkInf("i2", "2"),
+						"i3": mkInf("i3", "10"),
+					},
+					InfererToRegret:                      map[synth.Inferer]*synth.Regret{"i1": decPtr("0.1"), "i2": decPtr("0.2"), "i3": decPtr("0.5")},
+					EpsilonSafeDiv:                       mustDec("0.0000001"),
+					NumLabels:                            1,
+					AllInferersAreNew:                    false,
+					Forecasters:                          nil,
+					ForecasterToRegret:                   nil,
+					ForecasterToForecastImpliedInference: nil,
+				}
+				want := mkExpectedCombined(args, weights)
+				assertVecEqual(combined, want)
+				require.True(combined[0].Gt(mustDec("1")))
+				require.True(combined[0].Lt(mustDec("10")))
+			},
+		},
+		{
+			name: "forecaster implied inference contributes to combined inference",
+			args: synth.GetCombinedInferenceArgs{
+				Logger:   log.NewNopLogger(),
+				TopicId:  1,
+				Inferers: []synth.Inferer{"i1", "i2"},
+				InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+					"i1": mkInf("i1", "1", "0"),
+					"i2": mkInf("i2", "0", "2"),
+				},
+				InfererToRegret: map[synth.Inferer]*synth.Regret{
+					"i1": decPtr("0.1"),
+					"i2": decPtr("0.3"),
+				},
+				AllInferersAreNew: false,
+				Forecasters:       []synth.Forecaster{"f1"},
+				ForecasterToForecastImpliedInference: map[synth.Forecaster]*emissionstypes.Inference{
+					"f1": mkInf("f1", "5", "5"),
+				},
+				ForecasterToRegret: map[synth.Forecaster]*synth.Regret{
+					"f1": decPtr("0.2"),
+				},
+				EpsilonTopic:           mustDec("0.0001"),
+				EpsilonSafeDiv:         mustDec("0.0000001"),
+				PNorm:                  mustDec("2"),
+				CNorm:                  mustDec("0.75"),
+				RegretScalePlusEpsilon: mustDec("1"),
+				NumLabels:              2,
+			},
+			assertWeights: func(weights synth.RegretInformedWeights) {
+				require.Contains(weights.Inferers, "i1")
+				require.Contains(weights.Inferers, "i2")
+				require.Contains(weights.Forecasters, "f1")
+				require.True(weights.Forecasters["f1"].Gt(alloraMath.ZeroDec()))
+			},
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+				args := synth.GetCombinedInferenceArgs{
+					Inferers: []synth.Inferer{"i1", "i2"},
+					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+						"i1": mkInf("i1", "1", "0"),
+						"i2": mkInf("i2", "0", "2"),
+					},
+					InfererToRegret: map[synth.Inferer]*synth.Regret{
+						"i1": decPtr("0.1"),
+						"i2": decPtr("0.3"),
+					},
+					AllInferersAreNew: false,
+					Forecasters:       []synth.Forecaster{"f1"},
+					ForecasterToForecastImpliedInference: map[synth.Forecaster]*emissionstypes.Inference{
+						"f1": mkInf("f1", "5", "5"),
+					},
+					ForecasterToRegret: map[synth.Forecaster]*synth.Regret{
+						"f1": decPtr("0.2"),
+					},
+					EpsilonSafeDiv: mustDec("0.0000001"),
+					NumLabels:      2,
+				}
+				want := mkExpectedCombined(args, weights)
+				assertVecEqual(combined, want)
+			},
+		},
+		{
+			name: "missing inferer inference is ignored in aggregation",
+			args: synth.GetCombinedInferenceArgs{
+				Logger:   log.NewNopLogger(),
+				TopicId:  1,
+				Inferers: []synth.Inferer{"i1", "i2", "i3"},
+				InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+					"i1": mkInf("i1", "1"),
+					"i2": mkInf("i2", "3"),
+					// i3 intentionally missing
+				},
+				InfererToRegret: map[synth.Inferer]*synth.Regret{
+					"i1": decPtr("0.2"),
+					"i2": decPtr("0.2"),
+					"i3": decPtr("0.2"),
+				},
+				AllInferersAreNew:                    false,
+				Forecasters:                          nil,
+				ForecasterToForecastImpliedInference: nil,
+				ForecasterToRegret:                   nil,
+				EpsilonTopic:                         mustDec("0.0001"),
+				EpsilonSafeDiv:                       mustDec("0.0000001"),
+				PNorm:                                mustDec("2"),
+				CNorm:                                mustDec("0.75"),
+				RegretScalePlusEpsilon:               mustDec("1"),
+				NumLabels:                            1,
+			},
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+				args := synth.GetCombinedInferenceArgs{
+					Inferers: []synth.Inferer{"i1", "i2", "i3"},
+					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+						"i1": mkInf("i1", "1"),
+						"i2": mkInf("i2", "3"),
+					},
+					InfererToRegret: map[synth.Inferer]*synth.Regret{
+						"i1": decPtr("0.2"),
+						"i2": decPtr("0.2"),
+						"i3": decPtr("0.2"),
+					},
+					AllInferersAreNew: false,
+					EpsilonSafeDiv:    mustDec("0.0000001"),
+					NumLabels:         1,
+				}
+				want := mkExpectedCombined(args, weights)
+				assertVecEqual(combined, want)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			weights, combined, err := synth.GetCombinedInference(tc.args)
+			require.NoError(err)
+
+			if tc.assertWeights != nil {
+				tc.assertWeights(weights)
+			}
+			if tc.assertResult != nil {
+				tc.assertResult(weights, combined)
 			}
 		})
 	}

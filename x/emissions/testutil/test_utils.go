@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"reflect"
 	"slices"
@@ -464,6 +465,35 @@ func GetWorkerValuesFromIndexes(indexes []int, value ...string) []TestWorkerValu
 	return values
 }
 
+func GetWorkerMultiValuesFromIndexes(
+	indexes []int,
+	numLabels int,
+	values ...string,
+) []TestWorkerValue {
+	if numLabels <= 0 {
+		panic("numLabels must be > 0")
+	}
+	if len(values) == 0 {
+		panic("values must not be empty")
+	}
+	out := make([]TestWorkerValue, 0, len(indexes))
+	for i, index := range indexes {
+		lbls := make([]TestLabeledValue, numLabels)
+		for j := 0; j < numLabels; j++ {
+			v := values[(i*numLabels+j)%len(values)]
+			lbls[j] = TestLabeledValue{
+				Label: fmt.Sprintf("L%d", j),
+				Value: v,
+			}
+		}
+		out = append(out, TestWorkerValue{
+			Index:  index,
+			Values: lbls,
+		})
+	}
+	return out
+}
+
 func (s *TestSuite) GetReputerValuesFromIndexes(reputerIndexes, workerIndexes []int, value ...string) []TestReputerValue {
 	if len(value) == 0 {
 		panic("value is empty")
@@ -486,59 +516,106 @@ func (s *TestSuite) GetReputerValuesFromIndexes(reputerIndexes, workerIndexes []
 	return values
 }
 
-type TestWorkerValue struct {
-	Index int
+type TestLabeledValue struct {
+	Label string
 	Value string
 }
 
-func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, workerIndexes []int, workerValues []TestWorkerValue) []*types.InputWorkerDataBundle {
+type TestWorkerValue struct {
+	Index  int
+	Value  string             // legacy / SINGLE convenience
+	Values []TestLabeledValue // MULTI or explicit SINGLE
+}
+
+func generateWorkerDataBundles(
+	s *TestSuite,
+	nonce int64,
+	topicId uint64,
+	workerIndexes []int,
+	workerValues []TestWorkerValue,
+) []*types.InputWorkerDataBundle {
 	lwv := len(workerValues)
 	hasWorkerValues := lwv > 0
 	if hasWorkerValues && len(workerIndexes) != lwv {
 		panic("invalid worker values length")
 	}
+
+	toInputLabeledValues := func(tv TestWorkerValue) []*types.InputLabeledValue {
+		if len(tv.Values) > 0 {
+			out := make([]*types.InputLabeledValue, len(tv.Values))
+			for i, v := range tv.Values {
+				out[i] = &types.InputLabeledValue{
+					Label: v.Label,
+					Value: alloraMath.MustNewBoundedExp40DecFromString(v.Value),
+				}
+			}
+			return out
+		}
+		// backward-compatible SINGLE default
+		inferenceValueStr := tv.Value
+		if inferenceValueStr == "" {
+			//nolint:gosec
+			inferenceValueStr = strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
+		}
+		return []*types.InputLabeledValue{
+			{
+				Label: "",
+				Value: alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr),
+			},
+		}
+	}
+
+	getForecastValueStr := func(tv TestWorkerValue) string {
+		if len(tv.Values) > 0 {
+			// forecasts are still scalar worker-loss forecasts; use first labeled value as default seed
+			return tv.Values[0].Value
+		}
+		if tv.Value != "" {
+			return tv.Value
+		}
+		//nolint:gosec
+		return strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
+	}
+
 	var bundles []*types.InputWorkerDataBundle
 	totalAddresses := len(s.addrsStr)
 
 	for i, workerIdx := range workerIndexes {
-		// Generate random inference value between 0.1 and 0.25
-		//nolint:gosec
-		inferenceValueStr := strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
+		var tv TestWorkerValue
 		if hasWorkerValues {
-			inferenceValueStr = workerValues[i].Value
+			tv = workerValues[i]
 		}
 
-		// Select forecast targets (next two workers in sequence, wrapping if needed)
+		inferenceValues := toInputLabeledValues(tv)
+		forecastValueStr := getForecastValueStr(tv)
+
 		forecastTargets := []int{
 			(workerIdx + 0) % totalAddresses,
 			(workerIdx + 1) % totalAddresses,
 			(workerIdx + 2) % totalAddresses,
 		}
 
-		// Create forecast elements
 		forecastElements := []*types.InputForecastElement{
 			{
 				Inferer: s.addrs[forecastTargets[0]].String(),
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
+				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
 			},
 			{
 				Inferer: s.addrs[forecastTargets[1]].String(),
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
+				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
 			},
 			{
 				Inferer: s.addrs[forecastTargets[2]].String(),
-				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
+				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
 			},
 		}
 
-		// Create inference-forecast bundle
 		inferenceForecastBundle := &types.InputInferenceForecastBundle{
 			Inference: &types.InputInference{
 				TopicId:     topicId,
 				BlockHeight: nonce,
 				Inferer:     s.addrsStr[workerIdx],
-				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(inferenceValueStr)),
-				Values:      []*types.InputLabeledValue{{Label: "", Value: alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr)}},
+				Values:      inferenceValues,
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -551,7 +628,6 @@ func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, worker
 			},
 		}
 
-		// Create the complete worker data bundle
 		bundle := &types.InputWorkerDataBundle{
 			Worker:                   s.addrsStr[workerIdx],
 			Nonce:                    &types.Nonce{BlockHeight: nonce},
