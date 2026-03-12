@@ -140,7 +140,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					out[i] = m
 				}
 
-				result = keeper.InferenceValues(out)
+				result = out
 			}
 
 			forecastImpliedInference := emissionstypes.Inference{

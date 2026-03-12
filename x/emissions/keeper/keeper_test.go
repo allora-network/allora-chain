@@ -6170,7 +6170,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 			name: "Closed worker nonce freezes new labels but keeps lookups",
 			run: func(ctx sdk.Context, k *keeper.Keeper) {
 				ctx, k, topicId, nonce := newFixture()
-				nonceRef := &types.Nonce{BlockHeight: int64(nonce)}
+				nonceRef := &types.Nonce{BlockHeight: nonce}
 				s.Require().NoError(k.AddWorkerNonce(ctx, topicId, nonceRef))
 
 				id, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
