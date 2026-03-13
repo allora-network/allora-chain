@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
@@ -33,6 +34,18 @@ type BlockHeight = int64
 type Reputer = string
 type Delegator = string
 type LabelId = uint32
+
+func safeLabelIDFromOneBasedInt(v int) (LabelId, error) {
+	if v <= 0 {
+		return 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label id out of uint32 range: %d", v)
+	}
+	parsed, err := strconv.ParseUint(strconv.Itoa(v), 10, 32)
+	if err != nil {
+		return 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label id out of uint32 range: %d", v)
+	}
+	//nolint:gosec // parsed is bounded to 32 bits by ParseUint bitSize argument.
+	return LabelId(parsed), nil
+}
 
 type Keeper struct {
 	cdc              codec.BinaryCodec
@@ -2166,8 +2179,12 @@ func (k *Keeper) buildAndStoreFinalEpochLabelRegistryFromActiveSet(
 		Labels:  make([]*types.TopicLabel, 0, len(labels)),
 	}
 	for i, label := range labels {
+		labelID, err := safeLabelIDFromOneBasedInt(i + 1)
+		if err != nil {
+			return types.EpochLabelRegistry{}, err
+		}
 		registry.Labels = append(registry.Labels, &types.TopicLabel{
-			Id:   uint32(i + 1),
+			Id:   labelID,
 			Name: label.name,
 		})
 	}
@@ -5635,7 +5652,10 @@ func (k *Keeper) RegisterEpochLabel(
 		)
 	}
 
-	newID := LabelId(len(registry.Labels) + 1)
+	newID, err := safeLabelIDFromOneBasedInt(len(registry.Labels) + 1)
+	if err != nil {
+		return 0, err
+	}
 
 	registry.Labels = append(registry.Labels, &types.TopicLabel{
 		Id:   newID,

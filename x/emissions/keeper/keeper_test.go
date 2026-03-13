@@ -3467,7 +3467,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting epoch label registry should not fail")
-	s.Require().Len(registry.Labels, 0, "Must be pruned")
+	s.Require().Empty(registry.Labels, "Must be pruned")
 }
 
 func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicNoNonces() {
@@ -6067,7 +6067,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 	type testCase struct {
 		name string
-		run  func(ctx sdk.Context, k *keeper.Keeper)
+		run  func()
 	}
 
 	newFixture := func() (sdk.Context, *keeper.Keeper, types.TopicId, types.BlockHeight) {
@@ -6081,18 +6081,18 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 	tests := []testCase{
 		{
 			name: "Get empty registry returns empty (no error)",
-			run: func(ctx sdk.Context, k *keeper.Keeper) {
-				_, _, topicId, nonce := newFixture()
+			run: func() {
+				ctx, k, topicId, nonce := newFixture()
 				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 				s.Require().NoError(err)
 				s.Require().Equal(topicId, reg.TopicId)
 				s.Require().Equal(uint64(nonce), reg.EpochId)
-				s.Require().Len(reg.Labels, 0)
+				s.Require().Empty(reg.Labels)
 			},
 		},
 		{
 			name: "Register one label assigns ID=1 and persists",
-			run: func(ctx sdk.Context, k *keeper.Keeper) {
+			run: func() {
 				ctx, k, topicId, nonce := newFixture()
 
 				id, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
@@ -6108,7 +6108,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 		},
 		{
 			name: "Register two labels assigns ID=2 on second label",
-			run: func(ctx sdk.Context, k *keeper.Keeper) {
+			run: func() {
 				ctx, k, topicId, nonce := newFixture()
 
 				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
@@ -6131,7 +6131,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 		},
 		{
 			name: "Duplicate register does not create new ID or new label",
-			run: func(ctx sdk.Context, k *keeper.Keeper) {
+			run: func() {
 				ctx, k, topicId, nonce := newFixture()
 
 				id1, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
@@ -6151,7 +6151,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 		},
 		{
 			name: "Missing lookups return ok=false (no error)",
-			run: func(ctx sdk.Context, k *keeper.Keeper) {
+			run: func() {
 				ctx, k, topicId, nonce := newFixture()
 
 				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
@@ -6168,7 +6168,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 		},
 		{
 			name: "Closed worker nonce freezes new labels but keeps lookups",
-			run: func(ctx sdk.Context, k *keeper.Keeper) {
+			run: func() {
 				ctx, k, topicId, nonce := newFixture()
 				nonceRef := &types.Nonce{BlockHeight: nonce}
 				s.Require().NoError(k.AddWorkerNonce(ctx, topicId, nonceRef))
@@ -6215,8 +6215,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			ctx, k, _, _ := newFixture()
-			tc.run(ctx, k)
+			tc.run()
 		})
 	}
 }
@@ -6263,6 +6262,7 @@ func (s *KeeperTestSuite) TestInputInferenceForecastBundleConvert() {
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
 			topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), validInference.TopicId)
+			s.Require().NoError(err)
 
 			got, err := s.EmissionsKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
 			if tt.wantErr {
@@ -6577,7 +6577,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			reg, err := k.GetEpochLabelRegistry(ctx, topicId, c.nonce)
 			s.Require().NoError(err)
 			if len(c.preRegisterLabels) == 0 {
-				s.Require().Len(reg.Labels, 0)
+				s.Require().Empty(reg.Labels)
 			} else {
 				s.Require().Len(reg.Labels, len(c.preRegisterLabels))
 				for i := range c.preRegisterLabels {
@@ -6633,7 +6633,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 		s.Require().NoError(err)
-		s.Require().Len(reg.Labels, 0)
+		s.Require().Empty(reg.Labels)
 	})
 }
 

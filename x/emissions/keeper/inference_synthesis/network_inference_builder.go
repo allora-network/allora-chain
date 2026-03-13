@@ -164,7 +164,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 	for _, forecaster := range args.Forecasters {
 		// For each forecaster, we'll calculate what their forecast-implied inference would be
 		// if each inferer was removed one at a time
-		oneOutInfererValues := make([]*emissions.LabeledValue, 0)
+		var oneOutInfererValues []*emissions.LabeledValue
 
 		// Get this forecaster's forecast and filter out the withheld inferer
 		forecast, ok := args.ForecasterToForecast[forecaster]

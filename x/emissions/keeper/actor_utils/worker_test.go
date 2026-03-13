@@ -71,7 +71,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 
 	reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
-	s.Require().Greater(len(reg.GetLabels()), 0)
+	s.Require().NotEmpty(reg.GetLabels())
 
 	// Create and insert inferences (Values length must match registry length)
 	inf0 := types.Inference{
