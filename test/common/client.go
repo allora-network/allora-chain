@@ -3,8 +3,10 @@ package testcommon
 import (
 	"context"
 	"math/rand"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/allora-network/allora-chain/app/params"
@@ -28,6 +30,11 @@ const (
 	SingleRpc RpcConnectionType = iota
 	RoundRobin
 	RandomBasedOnDeterministicSeed
+)
+
+const (
+	rpcRetryAttempts = 4
+	rpcRetryDelay    = 300 * time.Millisecond
 )
 
 // where to get ahold of a node
@@ -182,7 +189,9 @@ func (c *Client) BroadcastTx(
 	account cosmosaccount.Account,
 	msgs ...sdktypes.Msg,
 ) (cosmosclient.Response, error) {
-	return c.Clients[c.getNextClientNumber()].BroadcastTx(ctx, account, msgs...)
+	return withTransientRetryValue(c, ctx, func(client cosmosclient.Client) (cosmosclient.Response, error) {
+		return client.BroadcastTx(ctx, account, msgs...)
+	})
 }
 
 func (c *Client) Context() sdkclient.Context {
@@ -190,19 +199,82 @@ func (c *Client) Context() sdkclient.Context {
 }
 
 func (c *Client) WaitForNextBlock(ctx context.Context) error {
-	return c.Clients[c.getNextClientNumber()].WaitForNextBlock(ctx)
+	return withTransientRetry(c, ctx, func(client cosmosclient.Client) error {
+		return client.WaitForNextBlock(ctx)
+	})
 }
 
 func (c *Client) WaitForBlockHeight(ctx context.Context, height int64) error {
-	return c.Clients[c.getNextClientNumber()].WaitForBlockHeight(ctx, height)
+	return withTransientRetry(c, ctx, func(client cosmosclient.Client) error {
+		return client.WaitForBlockHeight(ctx, height)
+	})
 }
 
 func (c *Client) WaitForTx(ctx context.Context, hash string) (*coretypes.ResultTx, error) {
-	return c.Clients[c.getNextClientNumber()].WaitForTx(ctx, hash)
+	return withTransientRetryValue(c, ctx, func(client cosmosclient.Client) (*coretypes.ResultTx, error) {
+		return client.WaitForTx(ctx, hash)
+	})
 }
 
 func (c *Client) BlockHeight(ctx context.Context) (int64, error) {
-	return c.Clients[c.getNextClientNumber()].LatestBlockHeight(ctx)
+	return withTransientRetryValue(c, ctx, func(client cosmosclient.Client) (int64, error) {
+		return client.LatestBlockHeight(ctx)
+	})
+}
+
+func withTransientRetry(c *Client, ctx context.Context, operation func(client cosmosclient.Client) error) error {
+	_, err := withTransientRetryValue(c, ctx, func(client cosmosclient.Client) (struct{}, error) {
+		return struct{}{}, operation(client)
+	})
+	return err
+}
+
+func withTransientRetryValue[T any](
+	c *Client,
+	ctx context.Context,
+	operation func(client cosmosclient.Client) (T, error),
+) (T, error) {
+	var (
+		zero T
+		val  T
+		err  error
+	)
+	for attempt := 1; attempt <= rpcRetryAttempts; attempt++ {
+		client := c.Clients[c.getNextClientNumber()]
+		val, err = operation(client)
+		if err == nil || !isTransientRPCErr(err) || attempt == rpcRetryAttempts {
+			return val, err
+		}
+		if waitErr := sleepWithContext(ctx, rpcRetryDelay); waitErr != nil {
+			return zero, waitErr
+		}
+	}
+	return val, err
+}
+
+func isTransientRPCErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	errMsg := strings.ToLower(err.Error())
+	return strings.Contains(errMsg, "eof") ||
+		strings.Contains(errMsg, "connection reset by peer") ||
+		strings.Contains(errMsg, "broken pipe") ||
+		strings.Contains(errMsg, "use of closed network connection") ||
+		strings.Contains(errMsg, "server closed idle connection") ||
+		strings.Contains(errMsg, "post failed")
+}
+
+func sleepWithContext(ctx context.Context, d time.Duration) error {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
 }
 
 // account code has to be concurrency aware
