@@ -13,6 +13,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 
 ## Go Conventions
 - Always `gofmt`/`goimports`; keep `golangci-lint` clean.
+- Keep `nolint` statements where needed, adding a comment on the rationale if none is there.
 - Prefer table-driven tests and explicit dependency injection for easy mocking.
 - Use `sdk.Context.Logger()` for chain logs; avoid noisy logs in consensus paths.
 - Only apply Allora Go Service patterns (brynbellomy errors, sqlc, viper, Gin, zerolog) if editing non-chain services.
