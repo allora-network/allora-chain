@@ -1,3 +1,4 @@
+//nolint:exhaustruct
 package inferencesynthesis_test
 
 import (
@@ -552,7 +553,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				used++
 			}
 
-			require.Greater(used, 0)
+			require.Positive(used)
 			sumWeights = alloraMath.NewDecFromInt64(int64(used))
 		} else {
 			for _, inferer := range args.Inferers {

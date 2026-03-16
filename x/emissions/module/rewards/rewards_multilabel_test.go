@@ -1,3 +1,4 @@
+//nolint:gosec,exhaustruct
 package rewards_test
 
 import (
@@ -338,6 +339,8 @@ func (s *RewardsTestSuite) TestMultiLabelPermutationInvariance() {
 
 	combined1 := labeledValuesToMap(bundle1.CombinedValue)
 	naive1 := labeledValuesToMap(bundle1.NaiveValue)
+
+	s.SetupTest()
 
 	// Run 2
 	topicID2, nonce2 := s.FullTopicPass(

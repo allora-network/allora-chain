@@ -140,9 +140,10 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					out[i] = m
 				}
 
-				result = keeper.InferenceValues(out)
+				result = out
 			}
 
+			//nolint:exhaustruct
 			forecastImpliedInference := emissionstypes.Inference{
 				TopicId:     args.TopicId,
 				BlockHeight: blockHeight,
@@ -246,6 +247,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 			}
 		}
 
+		//nolint:exhaustruct
 		forecastImpliedInference := emissionstypes.Inference{
 			TopicId:     args.TopicId,
 			BlockHeight: blockHeight,

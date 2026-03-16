@@ -49,7 +49,7 @@ func (m DecMatrix) MarshalJSON() ([]byte, error) {
 			b.WriteByte(',')
 		}
 		// row is []Dec => reuse DecArray marshalling logic
-		rowBz, err := (DecArray(row)).MarshalJSON()
+		rowBz, err := row.MarshalJSON()
 		if err != nil {
 			return nil, err
 		}

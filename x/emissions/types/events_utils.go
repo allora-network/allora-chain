@@ -119,9 +119,7 @@ func groupOneOutInfererForecaster(
 	for _, fc := range order {
 		rows := rowsByForecaster[fc]
 		m := make(alloraMath.DecMatrix, len(rows))
-		for i := range rows {
-			m[i] = rows[i]
-		}
+		copy(m, rows)
 		out = append(out, m)
 	}
 	return out

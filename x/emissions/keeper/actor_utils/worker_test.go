@@ -71,9 +71,10 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 
 	reg, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
-	s.Require().Greater(len(reg.GetLabels()), 0)
+	s.Require().NotEmpty(reg.GetLabels())
 
 	// Create and insert inferences (Values length must match registry length)
+	//nolint:exhaustruct
 	inf0 := types.Inference{
 		Inferer:     worker0,
 		TopicId:     topicId,
@@ -84,6 +85,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 			alloraMath.MustNewDecFromString("0.200000000000000000"),
 		},
 	}
+	//nolint:exhaustruct
 	inf1 := types.Inference{
 		Inferer:     worker1,
 		TopicId:     topicId,

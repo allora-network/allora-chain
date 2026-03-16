@@ -1,3 +1,4 @@
+//nolint:exhaustruct,
 package keeper_test
 
 import (
@@ -6056,6 +6057,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
 
+//nolint:staticcheck
 func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 	type testCase struct {
 		name string
@@ -6079,7 +6081,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 				s.Require().NoError(err)
 				s.Require().Equal(topicId, reg.TopicId)
 				s.Require().Equal(uint64(nonce), reg.EpochId)
-				s.Require().Len(reg.Labels, 0)
+				s.Require().Empty(reg.Labels)
 			},
 		},
 		{
@@ -6210,6 +6212,7 @@ func (s *KeeperTestSuite) TestInputInferenceForecastBundleConvert() {
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
 			topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), validInference.TopicId)
+			s.Require().NoError(err)
 
 			got, err := s.EmissionsKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
 			if tt.wantErr {
@@ -6479,7 +6482,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			s.Require().NoError(err)
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Equal(1, len(reg.Labels))
+				s.Require().Len(reg.Labels, 1)
 				return
 			}
 
@@ -6536,7 +6539,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 		s.Require().NoError(err)
-		s.Require().Equal(2, len(reg.Labels))
+		s.Require().Len(reg.Labels, 2)
 		s.Require().Equal("a", reg.Labels[0].Name)
 		s.Require().Equal("b", reg.Labels[1].Name)
 	})

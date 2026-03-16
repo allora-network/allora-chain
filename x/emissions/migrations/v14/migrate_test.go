@@ -83,6 +83,7 @@ func (s *EmissionsV14MigrationTestSuite) TestMigrateNetworkInferences() {
 	oldStore := prefix.NewStore(store, emissionstypes.NetworkInferencesKey)
 	newStore := prefix.NewStore(store, emissionstypes.NetworkInferenceBundleKey)
 
+	//nolint:exhaustruct
 	oldBundle := emissionstypes.ValueBundle{
 		TopicId: 1,
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{

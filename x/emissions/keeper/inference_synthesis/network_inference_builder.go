@@ -162,10 +162,6 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 
 	// Organize by forecaster first, then by withheld inferer
 	for _, forecaster := range args.Forecasters {
-		// For each forecaster, we'll calculate what their forecast-implied inference would be
-		// if each inferer was removed one at a time
-		oneOutInfererValues := make([]*emissions.LabeledValue, 0)
-
 		// Get this forecaster's forecast and filter out the withheld inferer
 		forecast, ok := args.ForecasterToForecast[forecaster]
 		if !ok {
@@ -252,8 +248,9 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 				continue
 			}
 
-			// Add to our results
-			oneOutInfererValues, err = emissionskeeper.InferenceValuesToLabeledValues(forecastImpliedInference.Values, args.LabelRegistry)
+			// For each forecaster, we'll calculate what their forecast-implied inference would be
+			// if each inferer was removed one at a time
+			oneOutInfererValues, err := emissionskeeper.InferenceValuesToLabeledValues(forecastImpliedInference.Values, args.LabelRegistry)
 			if err != nil {
 				return nil, errorsmod.Wrap(err, "failed to convert forecast implied inference values")
 			}
