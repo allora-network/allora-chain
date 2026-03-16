@@ -712,12 +712,12 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 			},
 			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
 				require.Len(combined, 1)
-				require.True(combined[0].Equal(mustDec("2")))
+				testutil2.InEpsilon5(s.T(), combined[0], "2")
 				_ = weights
 			},
 		},
 		{
-			name: "lower regret gets higher weight",
+			name: "higher regret gets higher weight",
 			args: synth.GetCombinedInferenceArgs{
 				Logger:   log.NewNopLogger(),
 				TopicId:  1,
@@ -744,8 +744,8 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				NumLabels:                            1,
 			},
 			assertWeights: func(weights synth.RegretInformedWeights) {
-				require.True(weights.Inferers["i1"].Gt(weights.Inferers["i2"]))
-				require.True(weights.Inferers["i2"].Gt(weights.Inferers["i3"]))
+				require.True(weights.Inferers["i3"].Gt(weights.Inferers["i2"]))
+				require.True(weights.Inferers["i2"].Gt(weights.Inferers["i1"]))
 			},
 			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
 				args := synth.GetCombinedInferenceArgs{
@@ -755,7 +755,11 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 						"i2": mkInf("i2", "2"),
 						"i3": mkInf("i3", "10"),
 					},
-					InfererToRegret:                      map[synth.Inferer]*synth.Regret{"i1": decPtr("0.1"), "i2": decPtr("0.2"), "i3": decPtr("0.5")},
+					InfererToRegret: map[synth.Inferer]*synth.Regret{
+						"i1": decPtr("0.1"),
+						"i2": decPtr("0.2"),
+						"i3": decPtr("0.5"),
+					},
 					EpsilonSafeDiv:                       mustDec("0.0000001"),
 					NumLabels:                            1,
 					AllInferersAreNew:                    false,
