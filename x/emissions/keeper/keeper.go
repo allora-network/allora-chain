@@ -5233,7 +5233,8 @@ func (k *Keeper) RegisterEpochLabel(
 		}
 	}
 
-	newID := LabelId(uint32(len(registry.Labels)) + 1)
+	//nolint:gosec
+	newID := LabelId(len(registry.Labels)) + 1
 
 	registry.Labels = append(registry.Labels, &types.TopicLabel{
 		Id:   newID,
