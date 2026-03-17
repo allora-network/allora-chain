@@ -157,12 +157,12 @@ func GenerateReputerScores(
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveReputerQuantile)
+	// Update topic quantile from EMA scores (used by sortition EMA flow).
+	topicEmaScoreQuantile, err := getQuantileOfScores(emaScores, topic.ActiveReputerQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicInstantScoreQuantile)
+	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicEmaScoreQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -250,12 +250,12 @@ func GenerateInferenceScores(
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveInfererQuantile)
+	// Update topic quantile from EMA scores (used by sortition EMA flow).
+	topicEmaScoreQuantile, err := getQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error getting quantile of scores")
 	}
-	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicInstantScoreQuantile)
+	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
 	}
@@ -367,12 +367,12 @@ func GenerateForecastScores(
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveForecasterQuantile)
+	// Update topic quantile from EMA scores (used by sortition EMA flow).
+	topicEmaScoreQuantile, err := getQuantileOfScores(emaScores, topic.ActiveForecasterQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicInstantScoreQuantile)
+	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicEmaScoreQuantile)
 	if err != nil {
 		return nil, err
 	}
