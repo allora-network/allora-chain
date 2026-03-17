@@ -339,6 +339,8 @@ func (s *RewardsTestSuite) TestMultiLabelPermutationInvariance() {
 
 	combined1 := labeledValuesToMap(bundle1.CombinedValue)
 	naive1 := labeledValuesToMap(bundle1.NaiveValue)
+	// preserve the same accounts
+	accounts := s.Accounts()
 
 	s.SetupTest()
 
@@ -348,6 +350,7 @@ func (s *RewardsTestSuite) TestMultiLabelPermutationInvariance() {
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
 		testutil.WithWorkerValues(permutedWorkerValues),
+		testutil.WithAccounts(accounts),
 	)
 
 	bundle2, err := s.EmissionsKeeper().GetNetworkInferences(s.Ctx(), topicID2, nonce2)

@@ -2,6 +2,7 @@
 package testutil
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -64,10 +65,14 @@ type TestSuite struct {
 	emissionsAppModule    module.AppModule
 	emissionsQueryServer  types.QueryServiceServer
 	emissionsMsgServer    types.MsgServiceServer
-	privKeys              []secp256k1.PrivKey
-	addrs                 []sdk.AccAddress
-	addrsStr              []string
-	pubKeyHexStr          []string
+	accounts              []account
+}
+
+type account struct {
+	addr         sdk.AccAddress
+	addrStr      string
+	pubKeyHexStr string
+	privKey      secp256k1.PrivKey
 }
 
 func NewTestSuite(moduleName string) TestSuite {
@@ -81,24 +86,31 @@ func (s *TestSuite) Ctx() sdk.Context {
 	return s.ctx
 }
 
+func (s *TestSuite) Accounts() []account {
+	accounts := make([]account, len(s.accounts))
+	copy(accounts, s.accounts)
+	return accounts
+}
+
 func (s *TestSuite) Addrs(idx int) sdk.AccAddress {
-	return s.addrs[idx]
+	return s.accounts[idx].addr
 }
 
 func (s *TestSuite) AddrsStr(idx int) string {
-	return s.addrsStr[idx]
+	return s.accounts[idx].addrStr
+
 }
 
 func (s *TestSuite) PubKeyHexStr(idx int) string {
-	return s.pubKeyHexStr[idx]
+	return s.accounts[idx].pubKeyHexStr
 }
 
 func (s *TestSuite) PrivKeys(idx int) secp256k1.PrivKey {
-	return s.privKeys[idx]
+	return s.accounts[idx].privKey
 }
 
 func (s *TestSuite) LenAccounts() int {
-	return len(s.addrs)
+	return len(s.accounts)
 }
 
 func (s *TestSuite) EmissionsKeeper() *keeper.Keeper {
@@ -168,8 +180,15 @@ type (
 		skipNetworkInferences bool
 		outputArity           types.TopicOutputArity
 		reputerStake          *cosmosMath.Int
+		accounts              []account
 	}
 )
+
+func WithAccounts(accounts []account) Option {
+	return func(s *customParams) {
+		s.accounts = accounts
+	}
+}
 
 func WithBlock(block int64) Option {
 	return func(s *customParams) {
@@ -368,25 +387,40 @@ func (s *TestSuite) SetupTest() {
 	// Fund the rewards account generously
 	s.FundAccount(10000000000, s.accountKeeper.GetModuleAddress(types.AlloraRewardsAccountName))
 
-	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(50)
-	for _, addr := range s.addrs {
-		s.FundAccount(10000000000, addr)
+	const numAccounts = 50
+
+	s.accounts = make([]account, numAccounts)
+
+	privKeys, pubKeyHexStr, addrs, addrsStr := alloratestutil.GenerateTestAccounts(numAccounts)
+	for i, addr := range addrs {
+		s.accounts[i] = account{
+			addr:         addr,
+			addrStr:      addrsStr[i],
+			pubKeyHexStr: pubKeyHexStr[i],
+			privKey:      privKeys[i],
+		}
 	}
 
-	// Add all tests addresses in whitelists
-	for _, addr := range s.addrsStr {
-		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.Require().NoError(err)
-
-		err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, addr)
-		s.Require().NoError(err)
-
-		err = s.emissionsKeeper.AddToGlobalWhitelist(ctx, addr)
-		s.Require().NoError(err)
-	}
+	s.FundAndWhitelistAccounts(ctx)
 
 	// create first topic
 	s.CreateTopic(WithEpochLength(100), WithGroundTruthLag(100), WithWorkerSubmissionWindow(100))
+}
+
+func (s *TestSuite) FundAndWhitelistAccounts(ctx context.Context) {
+	// fund and add all tests addresses in whitelists
+	for _, acc := range s.accounts {
+		s.FundAccount(10000000000, acc.addr)
+
+		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, acc.addrStr)
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, acc.addrStr)
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.AddToGlobalWhitelist(ctx, acc.addrStr)
+		s.Require().NoError(err)
+	}
 }
 
 func (s *TestSuite) SetParamsForTest() {
@@ -501,7 +535,7 @@ func (s *TestSuite) GetReputerValuesFromIndexes(reputerIndexes, workerIndexes []
 	}
 	addrs := make([]string, len(workerIndexes))
 	for i, index := range workerIndexes {
-		addrs[i] = s.addrsStr[index]
+		addrs[i] = s.accounts[index].addrStr
 	}
 	slices.Sort(addrs)
 	values := make([]TestReputerValue, len(reputerIndexes))
@@ -579,7 +613,7 @@ func generateWorkerDataBundles(
 	}
 
 	var bundles []*types.InputWorkerDataBundle
-	totalAddresses := len(s.addrsStr)
+	totalAddresses := len(s.accounts)
 
 	for i, workerIdx := range workerIndexes {
 		var tv TestWorkerValue
@@ -598,15 +632,15 @@ func generateWorkerDataBundles(
 
 		forecastElements := []*types.InputForecastElement{
 			{
-				Inferer: s.addrs[forecastTargets[0]].String(),
+				Inferer: s.accounts[forecastTargets[0]].addrStr,
 				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
 			},
 			{
-				Inferer: s.addrs[forecastTargets[1]].String(),
+				Inferer: s.accounts[forecastTargets[1]].addrStr,
 				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
 			},
 			{
-				Inferer: s.addrs[forecastTargets[2]].String(),
+				Inferer: s.accounts[forecastTargets[2]].addrStr,
 				Value:   alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString(forecastValueStr)),
 			},
 		}
@@ -615,7 +649,7 @@ func generateWorkerDataBundles(
 			Inference: &types.InputInference{
 				TopicId:     topicId,
 				BlockHeight: nonce,
-				Inferer:     s.addrsStr[workerIdx],
+				Inferer:     s.accounts[workerIdx].addrStr,
 				Values:      inferenceValues,
 				ExtraData:   nil,
 				Proof:       "",
@@ -623,14 +657,14 @@ func generateWorkerDataBundles(
 			Forecast: &types.InputForecast{
 				TopicId:          topicId,
 				BlockHeight:      nonce,
-				Forecaster:       s.addrsStr[workerIdx],
+				Forecaster:       s.accounts[workerIdx].addrStr,
 				ForecastElements: forecastElements,
 				ExtraData:        nil,
 			},
 		}
 
 		bundle := &types.InputWorkerDataBundle{
-			Worker:                   s.addrsStr[workerIdx],
+			Worker:                   s.accounts[workerIdx].addrStr,
 			Nonce:                    &types.Nonce{BlockHeight: nonce},
 			TopicId:                  topicId,
 			InferenceForecastsBundle: inferenceForecastBundle,
@@ -691,7 +725,7 @@ func (s *TestSuite) GenerateLossBundles(
 		}
 
 		base := NetworkInferenceBundleToLossBundleSkeleton(networkInferences)
-		valueBundle := buildInputValueBundle(topicId, nonce, s.addrsStr[reputerIndex], reputerValue, base, p.skipNetworkInferences)
+		valueBundle := buildInputValueBundle(topicId, nonce, s.accounts[reputerIndex].addrStr, reputerValue, base, p.skipNetworkInferences)
 
 		bundle := &types.InputReputerValueBundle{
 			ValueBundle: valueBundle,
@@ -1020,7 +1054,7 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 func (s *TestSuite) MockTopic() types.Topic {
 	return types.Topic{
 		Id:                       1,
-		Creator:                  s.addrs[0].String(),
+		Creator:                  s.accounts[0].addrStr,
 		Metadata:                 "metadata",
 		LossMethod:               "mse",
 		EpochLength:              10800,
@@ -1088,12 +1122,12 @@ func (s *TestSuite) SetupParticipants(topicID uint64, indexes []int, isReputer b
 	var addresses []sdk.AccAddress
 
 	for _, index := range indexes {
-		addresses = append(addresses, s.addrs[index])
+		addresses = append(addresses, s.accounts[index].addr)
 		workerRegMsg := &types.RegisterRequest{
-			Sender:    s.addrs[index].String(),
+			Sender:    s.accounts[index].addrStr,
 			TopicId:   topicID,
 			IsReputer: isReputer,
-			Owner:     s.addrs[index].String(),
+			Owner:     s.accounts[index].addrStr,
 		}
 		_, err := s.emissionsMsgServer.Register(s.Ctx(), workerRegMsg)
 		if !errors.Is(err, types.ErrAddressAlreadyRegisteredInATopic) {
@@ -1182,10 +1216,15 @@ func (s *TestSuite) FullTopicSetup(workerIndexes, reputerIndexes []int, options 
 		opt(p)
 	}
 
+	if len(p.accounts) > 0 {
+		s.accounts = p.accounts
+		s.FundAndWhitelistAccounts(s.Ctx())
+	}
+
 	topicId := p.topicID
 	// Create topic if not exists
 	if topicId == 0 && len(reputerIndexes) > 0 {
-		topicId = s.SetupTopic(s.addrs[reputerIndexes[0]], options...)
+		topicId = s.SetupTopic(s.accounts[reputerIndexes[0]].addr, options...)
 	}
 
 	// Register workers
