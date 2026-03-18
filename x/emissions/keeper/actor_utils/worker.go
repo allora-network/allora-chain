@@ -231,7 +231,7 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 	}
 
 	addresses := make([]string, 0, len(weightsByAddress))
-	for address := range weightsByAddress {
+	for address := range weightsByAddress { //nolint:maprange // it is later sorted below
 		addresses = append(addresses, address)
 	}
 	sort.Strings(addresses)
