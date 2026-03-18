@@ -132,6 +132,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 				),
 			), broken
 		}
+		//nolint:maprange // invariant check only: map iteration order affects first reported offender, not state or broken result
 		for topicId, topicSumRemove := range topicSumsRemove {
 			topicStake, err := k.stakingKeeper.GetTopicStake(ctx, topicId)
 			if err != nil {
@@ -221,6 +222,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 					}
 				}
 			}
+			//nolint:maprange // invariant check only: map iteration order affects first reported offender, not state or broken result
 			for delegator, sums := range delegatorsToSumsMap {
 				broken := !sums.expected.Equal(sums.computed)
 				if broken {
@@ -236,6 +238,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 					), broken
 				}
 			}
+			//nolint:maprange // invariant check only: map iteration order affects first reported offender, not state or broken result
 			for reputer, sums := range reputersToSumsMap {
 				broken := !sums.expected.Equal(sums.computed)
 				if broken {
