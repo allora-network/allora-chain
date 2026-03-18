@@ -180,23 +180,13 @@ func ProcessAndStoreNetworkInferences(
 	types.EmitNewNetworkInferencesEvent(ctx, *networkInferencesResult.NetworkInferences)
 
 	// Emit packed network inference weight events
-	if len(networkInferencesResult.InfererToWeight) > 0 {
-		infererAddresses := make([]string, 0, len(networkInferencesResult.InfererToWeight))
-		infererWeights := make([]alloraMath.Dec, 0, len(networkInferencesResult.InfererToWeight))
-		for inferer, weight := range networkInferencesResult.InfererToWeight {
-			infererAddresses = append(infererAddresses, inferer)
-			infererWeights = append(infererWeights, weight)
-		}
+	infererAddresses, infererWeights := buildSortedAddressWeights(networkInferencesResult.InfererToWeight)
+	if len(infererAddresses) > 0 {
 		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, blockHeight, infererAddresses, infererWeights)
 	}
 
-	if len(networkInferencesResult.ForecasterToWeight) > 0 {
-		forecasterAddresses := make([]string, 0, len(networkInferencesResult.ForecasterToWeight))
-		forecasterWeights := make([]alloraMath.Dec, 0, len(networkInferencesResult.ForecasterToWeight))
-		for forecaster, weight := range networkInferencesResult.ForecasterToWeight {
-			forecasterAddresses = append(forecasterAddresses, forecaster)
-			forecasterWeights = append(forecasterWeights, weight)
-		}
+	forecasterAddresses, forecasterWeights := buildSortedAddressWeights(networkInferencesResult.ForecasterToWeight)
+	if len(forecasterAddresses) > 0 {
 		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, blockHeight, forecasterAddresses, forecasterWeights)
 	}
 
@@ -233,6 +223,24 @@ func ProcessAndStoreNetworkInferences(
 	types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, *outlierResistantNetworkInferencesResult.NetworkInferences)
 
 	return nil
+}
+
+func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]string, []alloraMath.Dec) {
+	if len(weightsByAddress) == 0 {
+		return nil, nil
+	}
+
+	addresses := make([]string, 0, len(weightsByAddress))
+	for address := range weightsByAddress {
+		addresses = append(addresses, address)
+	}
+	sort.Strings(addresses)
+
+	weights := make([]alloraMath.Dec, 0, len(addresses))
+	for _, address := range addresses {
+		weights = append(weights, weightsByAddress[address])
+	}
+	return addresses, weights
 }
 
 // Returns a map of active inferer addresses to their latest inference and the inferences themselves
