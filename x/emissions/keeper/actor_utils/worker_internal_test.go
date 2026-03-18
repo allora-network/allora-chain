@@ -31,4 +31,3 @@ func TestBuildSortedAddressWeightsEmptyInput(t *testing.T) {
 	require.Nil(t, addresses)
 	require.Nil(t, weights)
 }
-
