@@ -6555,16 +6555,14 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() {
 	topicId := keeper.TopicId(1)
 	nonce := int64(1)
-	w1 := s.AddrsStr(0)
-	w2 := s.AddrsStr(1)
 
 	type tc struct {
 		name         string
 		outputArity  types.TopicOutputArity
-		setup        func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64)
+		setup        func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string)
 		workersOrder []int
 		wantErrIs    error
-		wantValues   map[string][]string
+		wantValues   map[int][]string
 	}
 
 	mustDec := func(x string) alloraMath.Dec { return alloraMath.MustNewDecFromString(x) }
@@ -6588,7 +6586,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		{
 			name:        "SINGLE_scalar_only_populates_values_len1",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce,
@@ -6598,14 +6596,14 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{0},
-			wantValues: map[string][]string{
-				w1: {"42"},
+			wantValues: map[int][]string{
+				0: {"42"},
 			},
 		},
 		{
 			name:        "SINGLE_values_len1_used_and_consistent_with_scalar",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce,
@@ -6615,14 +6613,14 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{0},
-			wantValues: map[string][]string{
-				w1: {"7"},
+			wantValues: map[int][]string{
+				0: {"7"},
 			},
 		},
 		{
 			name:        "SINGLE_scalar_and_values_mismatch_canonicalizes_to_values0",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce,
@@ -6632,13 +6630,13 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{0},
-			wantValues: map[string][]string{
-				w1: {"2"},
+			wantValues: map[int][]string{
+				0: {"2"},
 			},
 		}, {
 			name:        "SINGLE_rejects_values_len_gt_1",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce,
@@ -6653,7 +6651,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		{
 			name:        "SINGLE_two_workers_scalar_only_both_values_len1_and_sorted_by_inferer",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce,
@@ -6670,15 +6668,15 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{1, 0},
-			wantValues: map[string][]string{
-				w1: {"42"},
-				w2: {"7"},
+			wantValues: map[int][]string{
+				0: {"42"},
+				1: {"7"},
 			},
 		},
 		{
 			name:        "MULTI_pads_shorter_values_to_registry_len_and_sorts_inferers",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
 				s.Require().NoError(err)
 				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
@@ -6704,15 +6702,15 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{1, 0},
-			wantValues: map[string][]string{
-				w1: {"1", "2", "3", "0"},
-				w2: {"10", "20", "0", "40"},
+			wantValues: map[int][]string{
+				0: {"1", "2", "3", "0"},
+				1: {"10", "20", "0", "40"},
 			},
 		},
 		{
 			name:        "MULTI_values_longer_than_registry_rejected",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
 				s.Require().NoError(err)
 				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
@@ -6731,7 +6729,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		}, {
 			name:        "MULTI_registry_len_zero_rejects_any_nonempty_inference_values",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				// do NOT register labels => registry len = 0
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
@@ -6747,7 +6745,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		{
 			name:        "MULTI_registry_len_zero_allows_empty_values_no_padding_needed",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				// registry len = 0
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
@@ -6758,14 +6756,14 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{0},
-			wantValues: map[string][]string{
-				w1: {},
+			wantValues: map[int][]string{
+				0: {},
 			},
 		},
 		{
 			name:        "MULTI_pads_multiple_missing_entries_not_just_one",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
 				s.Require().NoError(err)
 				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
@@ -6786,14 +6784,14 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{0},
-			wantValues: map[string][]string{
-				w1: {"1", "0", "0", "0", "0"},
+			wantValues: map[int][]string{
+				0: {"1", "0", "0", "0", "0"},
 			},
 		},
 		{
 			name:        "MULTI_does_not_mutate_stored_inference_when_padding",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64) {
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
 				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
 				s.Require().NoError(err)
 				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
@@ -6810,8 +6808,8 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				})
 			},
 			workersOrder: []int{0},
-			wantValues: map[string][]string{
-				w1: {"9", "0", "0"},
+			wantValues: map[int][]string{
+				0: {"9", "0", "0"},
 			},
 		},
 	}
@@ -6823,12 +6821,14 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			ctx := s.Ctx()
 			k := s.EmissionsKeeper()
 
+			w1 := s.AddrsStr(0)
+			w2 := s.AddrsStr(1)
 			workers := []string{w1, w2}
 
 			setTopic(ctx, k, topicId, c.outputArity)
 
 			if c.setup != nil {
-				c.setup(ctx, k, topicId, nonce)
+				c.setup(ctx, k, topicId, nonce, w1, w2)
 			}
 
 			reqWorkers := make([]string, 0, len(c.workersOrder))
@@ -6847,7 +6847,8 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			s.Require().NoError(err)
 			s.Require().NotNil(got)
 
-			for addr, want := range c.wantValues {
+			for workerIdx, want := range c.wantValues {
+				addr := workers[workerIdx]
 				var found *types.Inference
 				for _, inf := range got.Inferences {
 					if inf.Inferer == addr {

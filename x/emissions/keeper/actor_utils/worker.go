@@ -92,7 +92,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	activeInfererAddressesMap, activeInferences, err := closeActiveInferencesSet(
 		ctx,
 		k,
-		topic.Id,
+		topic,
 		nonce,
 		activeInfererAddresses,
 	)
@@ -239,16 +239,11 @@ func ProcessAndStoreNetworkInferences(
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
-	topicId uint64,
+	topic types.Topic,
 	nonce types.Nonce,
 	activeInfererAddresses []string,
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
 	activeInfererAddressesMap = make(map[string]bool, 0)
-
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return nil, nil, errorsmod.Wrap(err, "failed to get topic")
-	}
 
 	inferences, err = k.GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce.BlockHeight, activeInfererAddresses)
 	if err != nil {
@@ -259,7 +254,7 @@ func closeActiveInferencesSet(
 		activeInfererAddressesMap[inference.Inferer] = true
 	}
 
-	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)
+	err = k.InsertActiveInferences(ctx, topic.Id, nonce.BlockHeight, *inferences)
 	if err != nil {
 		return nil, nil, err
 	}
