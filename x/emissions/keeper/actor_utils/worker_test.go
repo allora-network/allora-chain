@@ -61,7 +61,6 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	s.Require().NoError(err)
 
 	// MULTI: ensure epoch label registry exists for this nonce (and has labels)
-	// (Pick whatever labels your tests commonly use)
 	_, err = s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "a")
 	s.Require().NoError(err)
 	_, err = s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "b")

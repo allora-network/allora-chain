@@ -528,6 +528,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
 			CNorm:                                cNorm,
 			RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 			LabelRegistry:                        registry,
+			NumLabels:                            len(registry.GetLabels()),
 		})
 	s.Require().NoError(err)
 	alloratestutil.InEpsilon5(s.T(), naiveValue[0].Value, epochGet[epoch]("network_naive_inference").String())
@@ -567,6 +568,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 			K:                      k,
 			Logger:                 logger,
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
 			InfererToRegret:        infererRegrets,
@@ -581,6 +583,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          registry,
+			NumLabels:              len(registry.GetLabels()),
 		})
 	s.Require().NoError(err)
 
@@ -629,6 +632,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 			CNorm:                                cNorm,
 			RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 			LabelRegistry:                        registry,
+			NumLabels:                            len(registry.GetLabels()),
 		})
 	s.Require().NoError(err)
 
@@ -688,6 +692,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 			CNorm:                                cNorm,
 			RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
 			LabelRegistry:                        registry,
+			NumLabels:                            len(registry.GetLabels()),
 		})
 	s.Require().NoError(err)
 
@@ -1271,6 +1276,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			K:                      k,
 			Logger:                 ctx.Logger(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			Inferers:               args.Inferers,
 			InfererToInference:     args.InfererToInference,
 			InfererToRegret:        args.InfererToRegret,
@@ -1284,6 +1290,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          args.LabelRegistry,
+			NumLabels:              args.NumLabels,
 		})
 	s.Require().NoError(err)
 
@@ -1310,6 +1317,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			K:                      k,
 			Logger:                 ctx.Logger(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			Inferers:               args.Inferers,
 			InfererToInference:     args.InfererToInference,
 			InfererToRegret:        args.InfererToRegret,
@@ -1323,6 +1331,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          args.LabelRegistry,
+			NumLabels:              args.NumLabels,
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(emptyResult)
@@ -1334,6 +1343,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			K:                      k,
 			Logger:                 ctx.Logger(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			Inferers:               []string{worker1},
 			InfererToInference:     map[string]*emissionstypes.Inference{worker1: inferences.Inferences[0]},
 			InfererToRegret:        map[string]*alloraMath.Dec{},
@@ -1354,6 +1364,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 					Name: "y",
 				}},
 			},
+			NumLabels: 1,
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(singleInfererResult)
@@ -1418,6 +1429,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 			K:                      k,
 			Logger:                 ctx.Logger(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			Inferers:               args.Inferers,
 			InfererToInference:     args.InfererToInference,
 			InfererToRegret:        args.InfererToRegret,
@@ -1431,6 +1443,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          args.LabelRegistry,
+			NumLabels:              args.NumLabels,
 		},
 	)
 	s.Require().NoError(err)

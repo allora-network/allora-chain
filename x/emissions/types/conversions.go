@@ -2,6 +2,9 @@ package types
 
 import (
 	"cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
 // NewForecastElementFromInput converts InputForecastElement to ForecastElement
@@ -323,4 +326,85 @@ func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundl
 	}
 
 	return out
+}
+
+// ConvertInferenceValuesFromProto converts a stored Inference proto into the internal
+// InferenceValues representation used by math code.
+func ConvertInferenceValuesFromProto(
+	topicArity TopicOutputArity,
+	labels []*TopicLabel,
+	inf *Inference,
+) (InferenceValues, error) {
+	if inf == nil {
+		return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
+	}
+
+	switch topicArity {
+	case TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		if len(inf.Values) != 1 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "single-arity inference accepts exactly one value")
+		}
+
+		dec := inf.Values[0]
+
+		if dec.IsNaN() || !dec.IsFinite() {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
+		}
+
+		return alloraMath.DecArray{dec}, nil
+	case TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		regLen := len(labels)
+		if regLen == 0 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrLogic, "epoch label registry is empty for multi-arity")
+		}
+		if len(inf.Values) == 0 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires values")
+		}
+		if len(inf.Values) > regLen {
+			return InferenceValues{}, errors.Wrapf(
+				sdkerrors.ErrLogic,
+				"multi-arity inference length exceeds registry: got=%d reg=%d",
+				len(inf.Values), regLen,
+			)
+		}
+
+		zero := alloraMath.ZeroDec()
+		out := make(alloraMath.DecArray, regLen)
+		for i := range out {
+			out[i] = zero
+		}
+		copy(out, inf.Values)
+		if err := ValidateInferenceValues(out, labels); err != nil {
+			return InferenceValues{}, err
+		}
+		return out, nil
+	default:
+		return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+}
+
+// ConvertInferenceValuesToLabeledValues converts the internal InferenceValues representation into
+// a slice of LabeledValue suitable for RPC responses or event emission.
+func ConvertInferenceValuesToLabeledValues(iv InferenceValues, reg *EpochLabelRegistry) ([]*LabeledValue, error) {
+	want := len(reg.GetLabels())
+	if len(iv) != want {
+		return nil, errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"inference values length mismatch: got=%d want=%d",
+			len(iv), want,
+		)
+	}
+	out := make([]*LabeledValue, 0, len(iv))
+	for i, v := range iv {
+		lbl := reg.GetLabels()[i]
+		if lbl == nil {
+			return nil, errors.Wrapf(sdkerrors.ErrLogic, "nil label in registry at idx=%d", i)
+		}
+		out = append(out, &LabeledValue{
+			LabelId:   lbl.Id,
+			LabelName: lbl.Name,
+			Value:     v,
+		})
+	}
+	return out, nil
 }

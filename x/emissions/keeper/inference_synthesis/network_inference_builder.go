@@ -5,8 +5,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
-	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -34,7 +34,7 @@ type GetCombinedInferenceArgs struct {
 
 // Calculates the network combined inference I_i, Equation 9
 func GetCombinedInference(args GetCombinedInferenceArgs) (
-	weights RegretInformedWeights, combinedInference emissionskeeper.InferenceValues, err error) {
+	weights RegretInformedWeights, combinedInference emissions.InferenceValues, err error) {
 	args.Logger.Debug("Calculating combined inference", "topicId", args.TopicId)
 
 	weights, err = CalcWeightsGivenWorkers(
@@ -51,7 +51,7 @@ func GetCombinedInference(args GetCombinedInferenceArgs) (
 		},
 	)
 	if err != nil {
-		return RegretInformedWeights{}, emissionskeeper.InferenceValues{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating weights for combined inference")
+		return RegretInformedWeights{}, emissions.InferenceValues{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating weights for combined inference")
 	}
 
 	combinedInference, err = calcWeightedInference(calcWeightedInferenceArgs{
@@ -68,7 +68,7 @@ func GetCombinedInference(args GetCombinedInferenceArgs) (
 		numLabels:                            args.NumLabels,
 	})
 	if err != nil {
-		return RegretInformedWeights{}, emissionskeeper.InferenceValues{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating combined inference")
+		return RegretInformedWeights{}, emissions.InferenceValues{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating combined inference")
 	}
 
 	args.Logger.Debug("Combined inference calculated", "topicId", args.TopicId)
@@ -83,7 +83,11 @@ func getInferences(
 ) (infererValues []*emissions.WorkerInference, _ error) {
 	infererValues = make([]*emissions.WorkerInference, 0)
 	for _, inferer := range inferers {
-		inferenceValues, err := emissionskeeper.InferenceValuesToLabeledValues(infererToInference[inferer].Values, reg)
+		inference, ok := infererToInference[inferer]
+		if !ok {
+			return []*emissions.WorkerInference{}, errorsmod.Wrapf(sdkerrors.ErrLogic, "missing inference for inferer: %s", inferer)
+		}
+		inferenceValues, err := emissions.ConvertInferenceValuesToLabeledValues(inference.Values, reg)
 		if err != nil {
 			return []*emissions.WorkerInference{}, errorsmod.Wrap(err, "failed to convert inference values")
 		}
@@ -109,12 +113,12 @@ func getForecastImpliedInferences(
 			logger.Warn("getForecastImpliedInferences() no forecast-implied inference", "forecaster", forecaster)
 			continue
 		}
-		inferenceValues, err := emissionskeeper.InferenceValuesToLabeledValues(forecasterToForecastImpliedInference[forecaster].Values, reg)
+		inferenceValues, err := emissions.ConvertInferenceValuesToLabeledValues(forecasterToForecastImpliedInference[forecaster].Values, reg)
 		if err != nil {
 			return []*emissions.WorkerInference{}, errorsmod.Wrap(err, "failed to convert inference values")
 		}
 		forecastImpliedInferences = append(forecastImpliedInferences, &emissions.WorkerInference{
-			Worker: forecasterToForecastImpliedInference[forecaster].Inferer,
+			Worker: forecaster,
 			Values: inferenceValues,
 		})
 	}
@@ -126,6 +130,7 @@ type GetOneOutInfererForecastImpliedInferencesArgs struct {
 	K                      emissionskeeper.Keeper
 	Logger                 log.Logger
 	TopicId                uint64
+	TopicArity             emissions.TopicOutputArity
 	Inferers               []Inferer
 	InfererToInference     map[Inferer]*emissions.Inference
 	InfererToRegret        map[Inferer]*Regret
@@ -139,6 +144,7 @@ type GetOneOutInfererForecastImpliedInferencesArgs struct {
 	CNorm                  alloraMath.Dec
 	RegretScalePlusEpsilon alloraMath.Dec
 	LabelRegistry          *emissions.EpochLabelRegistry
+	NumLabels              int
 }
 
 // GetOneOutInfererForecastImpliedInferences calculates what each forecaster's implied inference
@@ -160,12 +166,12 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 		return oneOutInfererForecastImpliedValues, nil
 	}
 
+	if args.LabelRegistry == nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "GetOneOutInfererForecastImpliedInferences: LabelRegistry is nil")
+	}
+
 	// Organize by forecaster first, then by withheld inferer
 	for _, forecaster := range args.Forecasters {
-		// For each forecaster, we'll calculate what their forecast-implied inference would be
-		// if each inferer was removed one at a time
-		oneOutInfererValues := make([]*emissions.LabeledValue, 0)
-
 		// Get this forecaster's forecast and filter out the withheld inferer
 		forecast, ok := args.ForecasterToForecast[forecaster]
 		if !ok {
@@ -224,8 +230,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 				CalcForecastImpliedInferencesArgs{
 					Logger:                 args.Logger,
 					TopicId:                args.TopicId,
-					Ctx:                    args.Ctx,
-					K:                      args.K,
+					TopicArity:             args.TopicArity,
 					AllInferersAreNew:      args.AllInferersAreNew,
 					Inferers:               filteredInferers,
 					InfererToInference:     filteredInfererToInference,
@@ -239,6 +244,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 					CNorm:                  args.CNorm,
 					RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 					LabelRegistry:          args.LabelRegistry,
+					NumLabels:              args.NumLabels,
 				},
 			)
 			if calcErr != nil {
@@ -253,7 +259,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 			}
 
 			// Add to our results
-			oneOutInfererValues, err = emissionskeeper.InferenceValuesToLabeledValues(forecastImpliedInference.Values, args.LabelRegistry)
+			oneOutInfererValues, err := emissions.ConvertInferenceValuesToLabeledValues(forecastImpliedInference.Values, args.LabelRegistry)
 			if err != nil {
 				return nil, errorsmod.Wrap(err, "failed to convert forecast implied inference values")
 			}
@@ -290,11 +296,16 @@ type GetNaiveInferenceArgs struct {
 	CNorm                                alloraMath.Dec
 	RegretScalePlusEpsilon               alloraMath.Dec
 	LabelRegistry                        *emissions.EpochLabelRegistry
+	NumLabels                            int
 }
 
 // Calculates the network naive inference I^-_i
 func GetNaiveInference(args GetNaiveInferenceArgs) (labeledNaiveInference []*emissions.LabeledValue, err error) {
 	args.Logger.Debug("Calculating naive inference", "topicId", args.TopicId)
+
+	if args.LabelRegistry == nil {
+		return []*emissions.LabeledValue{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "GetNaiveInference: LabelRegistry is nil")
+	}
 
 	// Get inferer naive regrets
 	infererToRegret := make(map[string]*alloraMath.Dec)
@@ -334,7 +345,7 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (labeledNaiveInference []*emi
 		forecasterToForecastImpliedInference: args.ForecasterToForecastImpliedInference,
 		weights:                              weights,
 		epsilonSafeDiv:                       args.EpsilonSafeDiv,
-		numLabels:                            len(args.LabelRegistry.GetLabels()),
+		numLabels:                            args.NumLabels,
 	})
 	if err != nil {
 		return []*emissions.LabeledValue{}, errorsmod.Wrap(err, "GetNaiveInference() error calculating naive inference")
@@ -342,7 +353,7 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (labeledNaiveInference []*emi
 
 	args.Logger.Debug("Naive inference calculated", "topicId", args.TopicId)
 
-	labeledNaiveInference, err = emissionskeeper.InferenceValuesToLabeledValues(naiveInference, args.LabelRegistry)
+	labeledNaiveInference, err = emissions.ConvertInferenceValuesToLabeledValues(naiveInference, args.LabelRegistry)
 	if err != nil {
 		return []*emissions.LabeledValue{}, errorsmod.Wrap(err, "GetNaiveInference() error converting naive inference")
 	}
@@ -356,6 +367,7 @@ type CalcOneOutInfererInferenceArgs struct {
 	K                      emissionskeeper.Keeper
 	Logger                 log.Logger
 	TopicId                uint64
+	TopicArity             emissions.TopicOutputArity
 	Inferers               []Inferer
 	InfererToInference     map[Inferer]*emissions.Inference
 	InfererToRegret        map[Inferer]*Regret
@@ -371,6 +383,7 @@ type CalcOneOutInfererInferenceArgs struct {
 	WithheldInferer        Inferer
 	RegretScalePlusEpsilon alloraMath.Dec
 	LabelRegistry          *emissions.EpochLabelRegistry
+	NumLabels              int
 }
 
 // Calculate the one-out inference given a withheld inferer
@@ -413,8 +426,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 			CalcForecastImpliedInferencesArgs{
 				Logger:                 args.Logger,
 				TopicId:                args.TopicId,
-				Ctx:                    args.Ctx,
-				K:                      args.K,
+				TopicArity:             args.TopicArity,
 				AllInferersAreNew:      args.AllInferersAreNew,
 				Inferers:               remainingInferers,
 				InfererToInference:     args.InfererToInference,
@@ -428,6 +440,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 				CNorm:                  args.CNorm,
 				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 				LabelRegistry:          args.LabelRegistry,
+				NumLabels:              args.NumLabels,
 			},
 		)
 		if err != nil {
@@ -471,7 +484,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 		forecasterToForecastImpliedInference: forecasterToForecastImpliedInference,
 		weights:                              weights,
 		epsilonSafeDiv:                       args.EpsilonSafeDiv,
-		numLabels:                            len(args.LabelRegistry.GetLabels()),
+		numLabels:                            args.NumLabels,
 	})
 	if err != nil {
 		return alloraMath.DecArray{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error calculating one-out inference for inferer")
@@ -487,6 +500,7 @@ type GetOneOutInfererInferencesArgs struct {
 	K                      emissionskeeper.Keeper
 	Logger                 log.Logger
 	TopicId                uint64
+	TopicArity             emissions.TopicOutputArity
 	Inferers               []Inferer
 	InfererToInference     map[Inferer]*emissions.Inference
 	InfererToRegret        map[Inferer]*Regret
@@ -501,6 +515,7 @@ type GetOneOutInfererInferencesArgs struct {
 	CNorm                  alloraMath.Dec
 	RegretScalePlusEpsilon alloraMath.Dec
 	LabelRegistry          *emissions.EpochLabelRegistry
+	NumLabels              int
 }
 
 // Set all one-out-inferer inferences that are possible given the provided input
@@ -513,6 +528,10 @@ func GetOneOutInfererInferences(args GetOneOutInfererInferencesArgs) (
 ) {
 	args.Logger.Debug("Calculating one-out inferer inferences", "topicId", args.TopicId, "numInferers", len(args.Inferers))
 
+	if args.LabelRegistry == nil {
+		return []*emissions.OneOutInfererValue{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "GetOneOutInfererInferences: LabelRegistry is nil")
+	}
+
 	// Calculate the one-out inferences per inferer
 	oneOutInferences := make([]*emissions.OneOutInfererValue, 0)
 	for _, worker := range args.Inferers {
@@ -522,6 +541,7 @@ func GetOneOutInfererInferences(args GetOneOutInfererInferencesArgs) (
 				K:                      args.K,
 				Logger:                 args.Logger,
 				TopicId:                args.TopicId,
+				TopicArity:             args.TopicArity,
 				Inferers:               args.Inferers,
 				InfererToInference:     args.InfererToInference,
 				InfererToRegret:        args.InfererToRegret,
@@ -537,12 +557,13 @@ func GetOneOutInfererInferences(args GetOneOutInfererInferencesArgs) (
 				WithheldInferer:        worker,
 				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 				LabelRegistry:          args.LabelRegistry,
+				NumLabels:              args.NumLabels,
 			})
 		if err != nil {
 			return []*emissions.OneOutInfererValue{}, errorsmod.Wrapf(err, "GetOneOutInfererInferences() error calculating one-out inferer inferences")
 		}
 
-		combinedInference, err := emissionskeeper.InferenceValuesToLabeledValues(oneOutInference, args.LabelRegistry)
+		combinedInference, err := emissions.ConvertInferenceValuesToLabeledValues(oneOutInference, args.LabelRegistry)
 		if err != nil {
 			return []*emissions.OneOutInfererValue{}, errorsmod.Wrapf(err, "GetOneOutForecasterInferences() error converting one-out inferer inferences")
 		}
@@ -675,6 +696,7 @@ type GetOneOutForecasterInferencesArgs struct {
 	CNorm                                alloraMath.Dec
 	RegretScalePlusEpsilon               alloraMath.Dec
 	LabelRegistry                        *emissions.EpochLabelRegistry
+	NumLabels                            int
 }
 
 // Set all one-out-forecaster inferences that are possible given the provided input
@@ -685,6 +707,11 @@ func GetOneOutForecasterInferences(args GetOneOutForecasterInferencesArgs) (
 	err error,
 ) {
 	args.Logger.Debug("Calculating one-out forecaster inferences", "topicId", args.TopicId, "numForecasters", len(args.Forecasters))
+
+	if args.LabelRegistry == nil {
+		return []*emissions.OneOutForecasterValue{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "GetOneOutForecasterInferences: LabelRegistry is nil")
+	}
+
 	// Calculate the one-out forecast-implied inferences per forecaster
 	oneOutForecasterInferences = make([]*emissions.OneOutForecasterValue, 0)
 	// If there is only one forecaster, there's no need to calculate one-out inferences
@@ -709,12 +736,12 @@ func GetOneOutForecasterInferences(args GetOneOutForecasterInferencesArgs) (
 					CNorm:                                args.CNorm,
 					WithheldForecaster:                   worker,
 					RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
-					NumLabels:                            len(args.LabelRegistry.GetLabels()),
+					NumLabels:                            args.NumLabels,
 				})
 			if err != nil {
 				return []*emissions.OneOutForecasterValue{}, errorsmod.Wrapf(err, "GetOneOutForecasterInferences() error calculating one-out forecaster inferences")
 			}
-			combinedInference, err := emissionskeeper.InferenceValuesToLabeledValues(oneOutInferences, args.LabelRegistry)
+			combinedInference, err := emissions.ConvertInferenceValuesToLabeledValues(oneOutInferences, args.LabelRegistry)
 			if err != nil {
 				return []*emissions.OneOutForecasterValue{}, errorsmod.Wrapf(err, "GetOneOutForecasterInferences() error converting one-out forecaster inferences")
 			}
@@ -755,7 +782,7 @@ func calcOneInValues(args calcOneInValuesArgs) (alloraMath.DecArray, error) {
 	fi, ok := args.ForecasterToForecastImpliedInference[args.OneInForecaster]
 	if !ok || fi == nil {
 		return alloraMath.DecArray{}, errorsmod.Wrapf(
-			types.ErrInvalidRequest,
+			sdkerrors.ErrInvalidRequest,
 			"missing forecast-implied inference for one-in forecaster %s",
 			args.OneInForecaster,
 		)
@@ -853,6 +880,7 @@ type GetOneInForecasterInferencesArgs struct {
 	CNorm                                alloraMath.Dec
 	RegretScalePlusEpsilon               alloraMath.Dec
 	LabelRegistry                        *emissions.EpochLabelRegistry
+	NumLabels                            int
 }
 
 // Set all one-in inferences that are possible given the provided input
@@ -862,6 +890,10 @@ func GetOneInForecasterInferences(args GetOneInForecasterInferencesArgs) (
 	oneInInferences []*emissions.OneInForecasterValue,
 	err error,
 ) {
+	if args.LabelRegistry == nil {
+		return []*emissions.OneInForecasterValue{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "GetOneInForecasterInferences: LabelRegistry is nil")
+	}
+
 	// Loop over all forecast-implied inferences and set it as the only forecast-implied inference
 	// one at a time, then calculate the network inference given that one held out
 	oneInInferences = make([]*emissions.OneInForecasterValue, 0)
@@ -884,12 +916,12 @@ func GetOneInForecasterInferences(args GetOneInForecasterInferencesArgs) (
 					CNorm:                                args.CNorm,
 					OneInForecaster:                      oneInForecaster,
 					RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
-					NumLabels:                            len(args.LabelRegistry.GetLabels()),
+					NumLabels:                            args.NumLabels,
 				})
 			if err != nil {
 				return []*emissions.OneInForecasterValue{}, errorsmod.Wrapf(err, "GetOneInForecasterInferences() error calculating one-in inferences")
 			}
-			combinedInference, err := emissionskeeper.InferenceValuesToLabeledValues(oneInValues, args.LabelRegistry)
+			combinedInference, err := emissions.ConvertInferenceValuesToLabeledValues(oneInValues, args.LabelRegistry)
 			if err != nil {
 				return []*emissions.OneInForecasterValue{}, errorsmod.Wrapf(err, "GetOneInForecasterInferences() error converting one-in inferences")
 			}
@@ -908,6 +940,7 @@ type CalcNetworkInferencesArgs struct {
 	K                                    emissionskeeper.Keeper
 	Logger                               log.Logger
 	TopicId                              uint64
+	TopicArity                           emissions.TopicOutputArity
 	Inferers                             []Inferer
 	InfererToInference                   map[Inferer]*emissions.Inference
 	InfererToRegret                      map[Inferer]*Regret
@@ -924,6 +957,7 @@ type CalcNetworkInferencesArgs struct {
 	RegretScalePlusEpsilon               alloraMath.Dec
 	InferenceBlockHeight                 BlockHeight
 	LabelRegistry                        *emissions.EpochLabelRegistry
+	NumLabels                            int
 }
 
 // Calculates all network inferences in the set I_i given historical state (e.g. regrets)
@@ -936,6 +970,10 @@ func CalcNetworkInferences(
 	weights RegretInformedWeights,
 	err error,
 ) {
+	if args.LabelRegistry == nil {
+		return &emissions.NetworkInferenceBundle{}, RegretInformedWeights{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "CalcNetworkInferences: LabelRegistry is nil")
+	}
+
 	// first get the network combined inference I_i
 	// which is the end result of all this work, the actual combined
 	// inference from all of the inferers put together
@@ -956,7 +994,7 @@ func CalcNetworkInferences(
 			PNorm:                                args.PNorm,
 			CNorm:                                args.CNorm,
 			RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
-			NumLabels:                            len(args.LabelRegistry.GetLabels()),
+			NumLabels:                            args.NumLabels,
 		})
 	if err != nil {
 		return &emissions.NetworkInferenceBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating combined inference")
@@ -999,6 +1037,7 @@ func CalcNetworkInferences(
 			CNorm:                                args.CNorm,
 			RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 			LabelRegistry:                        args.LabelRegistry,
+			NumLabels:                            args.NumLabels,
 		})
 	if err != nil {
 		return &emissions.NetworkInferenceBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating naive inference")
@@ -1017,6 +1056,7 @@ func CalcNetworkInferences(
 			K:                      args.K,
 			Logger:                 args.Logger,
 			TopicId:                args.TopicId,
+			TopicArity:             args.TopicArity,
 			Inferers:               args.Inferers,
 			InfererToInference:     args.InfererToInference,
 			InfererToRegret:        args.InfererToRegret,
@@ -1031,6 +1071,7 @@ func CalcNetworkInferences(
 			CNorm:                  args.CNorm,
 			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 			LabelRegistry:          args.LabelRegistry,
+			NumLabels:              args.NumLabels,
 		})
 	if err != nil {
 		return &emissions.NetworkInferenceBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out inferer inferences")
@@ -1067,6 +1108,7 @@ func CalcNetworkInferences(
 				CNorm:                                args.CNorm,
 				RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 				LabelRegistry:                        args.LabelRegistry,
+				NumLabels:                            args.NumLabels,
 			})
 		if err != nil {
 			return &emissions.NetworkInferenceBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-out forecaster inferences")
@@ -1094,6 +1136,7 @@ func CalcNetworkInferences(
 				CNorm:                                args.CNorm,
 				RegretScalePlusEpsilon:               args.RegretScalePlusEpsilon,
 				LabelRegistry:                        args.LabelRegistry,
+				NumLabels:                            args.NumLabels,
 			})
 		if err != nil {
 			return &emissions.NetworkInferenceBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error calculating one-in inferences")
@@ -1106,6 +1149,7 @@ func CalcNetworkInferences(
 				K:                      args.K,
 				Logger:                 args.Logger,
 				TopicId:                args.TopicId,
+				TopicArity:             args.TopicArity,
 				Inferers:               args.Inferers,
 				InfererToInference:     args.InfererToInference,
 				InfererToRegret:        args.InfererToRegret,
@@ -1119,6 +1163,7 @@ func CalcNetworkInferences(
 				CNorm:                  args.CNorm,
 				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
 				LabelRegistry:          args.LabelRegistry,
+				NumLabels:              args.NumLabels,
 			},
 		)
 		if err != nil {
@@ -1126,7 +1171,7 @@ func CalcNetworkInferences(
 		}
 	}
 
-	combinedInferenceLabeled, err := emissionskeeper.InferenceValuesToLabeledValues(combinedInference, args.LabelRegistry)
+	combinedInferenceLabeled, err := emissions.ConvertInferenceValuesToLabeledValues(combinedInference, args.LabelRegistry)
 	if err != nil {
 		return &emissions.NetworkInferenceBundle{}, RegretInformedWeights{}, errorsmod.Wrap(err, "CalcNetworkInferences() error converting combined values")
 	}
