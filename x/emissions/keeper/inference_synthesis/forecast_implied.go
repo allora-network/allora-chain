@@ -1,23 +1,19 @@
 package inferencesynthesis
 
 import (
-	"context"
-
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // CalcForecastImpliedInferencesArgs holds inputs for CalcForecastImpliedInferences.
 type CalcForecastImpliedInferencesArgs struct {
 	Logger                 log.Logger
-	Ctx                    context.Context
-	K                      keeper.Keeper
-	TopicId                uint64
+	TopicId                emissionstypes.TopicId
+	TopicArity             emissionstypes.TopicOutputArity
 	AllInferersAreNew      bool
 	Inferers               []Inferer
 	InfererToInference     map[Inferer]*emissionstypes.Inference
@@ -31,6 +27,7 @@ type CalcForecastImpliedInferencesArgs struct {
 	CNorm                  alloraMath.Dec
 	RegretScalePlusEpsilon alloraMath.Dec
 	LabelRegistry          *emissionstypes.EpochLabelRegistry
+	NumLabels              int
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
@@ -53,14 +50,11 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 		return nil, args.InfererToRegret, args.ForecasterToRegret, nil
 	}
 
-	topic, err := args.K.GetTopic(args.Ctx, args.TopicId)
-	if err != nil {
-		return nil, nil, nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "unable to get topic id %d", args.TopicId)
+	if args.LabelRegistry == nil {
+		return nil, nil, nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "topic id %d: LabelRegistry is nil", args.TopicId)
 	}
-
-	reg := args.LabelRegistry
-	regLen := len(reg.GetLabels())
-
+	labels := args.LabelRegistry.GetLabels()
+	regLen := args.NumLabels
 	if regLen == 0 {
 		return nil, nil, nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "topic id %d has no labels", args.TopicId)
 	}
@@ -89,7 +83,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 
 		if args.AllInferersAreNew {
 			// ---------- MEDIAN ----------
-			vecs := make([]keeper.InferenceValues, 0, len(sortedInferersInForecast))
+			vecs := make([]emissionstypes.InferenceValues, 0, len(sortedInferersInForecast))
 
 			for _, inferer := range sortedInferersInForecast {
 				inf := args.InfererToInference[inferer]
@@ -98,7 +92,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					blockHeight = inf.BlockHeight
 				}
 
-				iv, err := keeper.InferenceValuesFromProto(topic, reg, inf)
+				iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, inf)
 				if err != nil {
 					return nil, nil, nil, err
 				}
@@ -106,9 +100,9 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 				vecs = append(vecs, iv)
 			}
 
-			var result keeper.InferenceValues
+			var result emissionstypes.InferenceValues
 
-			if topic.OutputArity == emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+			if args.TopicArity == emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
 
 				values := make([]alloraMath.Dec, 0, len(vecs))
 				for _, v := range vecs {
@@ -120,7 +114,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					return nil, nil, nil, err
 				}
 
-				result = keeper.InferenceValues{m}
+				result = emissionstypes.InferenceValues{m}
 
 			} else {
 
@@ -201,7 +195,6 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 		running := make(alloraMath.DecArray, regLen)
 
 		for _, inferer := range sortedInferersInForecast {
-
 			w := infererWeightsForThisForecaster[inferer]
 			if w.Equal(alloraMath.ZeroDec()) {
 				continue
@@ -213,7 +206,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 				blockHeight = inf.BlockHeight
 			}
 
-			iv, err := keeper.InferenceValuesFromProto(topic, reg, inf)
+			iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, inf)
 			if err != nil {
 				return nil, nil, nil, err
 			}

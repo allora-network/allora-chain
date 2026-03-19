@@ -244,7 +244,7 @@ type calcWeightedInferenceArgs struct {
 // w_il = φ'_p(\hatR_i-1,l)
 // \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
 // given inferences, forecast-implied inferences, and network regrets
-func calcWeightedInference(args calcWeightedInferenceArgs) (keeper.InferenceValues, error) {
+func calcWeightedInference(args calcWeightedInferenceArgs) (emissionstypes.InferenceValues, error) {
 	L := args.numLabels
 	if L <= 0 {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "calcWeightedInference: numLabels must be > 0")
@@ -437,7 +437,7 @@ func getForecasterRegretsSlice(
 // sum up all of the inference values into running network combined inference
 // and sum up all of the weights of all of the inferers
 func accumulateWeights(
-	inference keeper.InferenceValues,
+	inference emissionstypes.InferenceValues,
 	weight alloraMath.Dec,
 	allPeersAreNew bool,
 	runningUnnormalizedI_i alloraMath.DecArray, //nolint:revive // var-naming: don't use underscores in Go names

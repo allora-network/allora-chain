@@ -561,9 +561,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -577,6 +576,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		},
 	)
 	s.Require().NoError(err)
@@ -647,9 +647,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -663,6 +662,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		},
 	)
 	s.Require().NoError(err)
@@ -751,9 +751,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -767,6 +766,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		},
 	)
 	s.Require().NoError(err)
@@ -861,9 +861,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -877,6 +876,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -963,9 +963,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -979,6 +978,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -1045,9 +1045,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -1061,6 +1060,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		},
 	)
 	s.Require().NoError(err)
@@ -1113,9 +1113,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -1129,6 +1128,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		},
 	)
 	s.Require().NoError(err)
@@ -1220,9 +1220,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
-			Ctx:                    s.Ctx(),
-			K:                      *s.EmissionsKeeper(),
 			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			AllInferersAreNew:      allInferersAreNew,
 			Inferers:               inferers,
 			InfererToInference:     inferenceByWorker,
@@ -1236,6 +1235,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 			CNorm:                  cNorm,
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          &registry,
+			NumLabels:              len(registry.GetLabels()),
 		},
 	)
 	s.Require().NoError(err)

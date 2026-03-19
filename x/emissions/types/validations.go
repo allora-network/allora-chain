@@ -1210,3 +1210,22 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 
 	return nil
 }
+
+// ValidateInferenceValues verifies that the inference values are consistent
+// with the provided epoch label registry.
+func ValidateInferenceValues(iv InferenceValues, labels []*TopicLabel) error {
+	want := len(labels)
+	if len(iv) != want {
+		return errors.Wrapf(
+			sdkerrors.ErrLogic,
+			"inference values length mismatch: got=%d want=%d",
+			len(iv), want,
+		)
+	}
+	for i := range iv {
+		if iv[i].IsNaN() || !iv[i].IsFinite() {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid inference value at idx=%d", i)
+		}
+	}
+	return nil
+}
