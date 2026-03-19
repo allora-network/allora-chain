@@ -10,7 +10,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testutil2 "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/utils/ptr"
-	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -624,7 +623,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 		return out
 	}
 
-	assertVecEqual := func(got emissionskeeper.InferenceValues, want alloraMath.DecArray) {
+	assertVecEqual := func(got emissionstypes.InferenceValues, want alloraMath.DecArray) {
 		require.Len(got, len(want))
 		for i := range want {
 			require.Truef(
@@ -641,7 +640,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 		name          string
 		args          synth.GetCombinedInferenceArgs
 		assertWeights func(weights synth.RegretInformedWeights)
-		assertResult  func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues)
+		assertResult  func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues)
 	}
 
 	testCases := []testCase{
@@ -674,7 +673,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				RegretScalePlusEpsilon: mustDec("1"),
 				NumLabels:              2,
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
 				want := alloraMath.DecArray{mustDec("3"), mustDec("5")}
 				assertVecEqual(combined, want)
 				_ = weights
@@ -711,7 +710,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				require.Contains(weights.Inferers, "i2")
 				require.True(weights.Inferers["i1"].Equal(weights.Inferers["i2"]))
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
 				require.Len(combined, 1)
 				testutil2.InEpsilon5(s.T(), combined[0], "2")
 				_ = weights
@@ -748,7 +747,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				require.True(weights.Inferers["i3"].Gt(weights.Inferers["i2"]))
 				require.True(weights.Inferers["i2"].Gt(weights.Inferers["i1"]))
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
 				args := synth.GetCombinedInferenceArgs{
 					Inferers: []synth.Inferer{"i1", "i2", "i3"},
 					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
@@ -809,7 +808,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				require.Contains(weights.Forecasters, "f1")
 				require.True(weights.Forecasters["f1"].Gt(alloraMath.ZeroDec()))
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
 				args := synth.GetCombinedInferenceArgs{
 					Inferers: []synth.Inferer{"i1", "i2"},
 					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
@@ -862,7 +861,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				RegretScalePlusEpsilon:               mustDec("1"),
 				NumLabels:                            1,
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionskeeper.InferenceValues) {
+			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
 				args := synth.GetCombinedInferenceArgs{
 					Inferers: []synth.Inferer{"i1", "i2", "i3"},
 					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
