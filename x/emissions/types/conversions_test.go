@@ -238,6 +238,7 @@ func TestInputValueBundleConvert(t *testing.T) {
 	}
 }
 
+//nolint:exhaustruct
 func TestConvertInferenceValuesFromProto(t *testing.T) {
 	topicId := uint64(1)
 	nonce := int64(1)
