@@ -73,22 +73,24 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	s.Require().NotEmpty(reg.GetLabels())
 
 	// Create and insert inferences (Values length must match registry length)
-	//nolint:exhaustruct
 	inf0 := types.Inference{
-		Inferer:     worker0,
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
+		Inferer:     worker0,
+		ExtraData:   nil,
+		Proof:       "",
 		Values: []alloraMath.Dec{
 			alloraMath.MustNewDecFromString("-0.035995138925040600"),
 			alloraMath.MustNewDecFromString("0.100000000000000000"),
 			alloraMath.MustNewDecFromString("0.200000000000000000"),
 		},
 	}
-	//nolint:exhaustruct
 	inf1 := types.Inference{
-		Inferer:     worker1,
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
+		Inferer:     worker1,
+		ExtraData:   nil,
+		Proof:       "",
 		Values: []alloraMath.Dec{
 			alloraMath.MustNewDecFromString("-0.07333303938740420"),
 			alloraMath.MustNewDecFromString("0.110000000000000000"),
