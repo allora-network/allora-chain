@@ -5,8 +5,11 @@ import (
 	"errors"
 	"testing"
 
+	"cosmossdk.io/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -67,7 +70,9 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeper(t *testing.T) {
 		setErrByID: map[uint64]error{},
 	}
 
-	err := migrateTopicActiveQuantilesWithTopicKeeper(context.Background(), mockKeeper)
+	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.NoError(t, err)
 	require.ElementsMatch(t, []uint64{1, 3}, mockKeeper.setCalls)
 
@@ -85,7 +90,9 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnNextTopicID(t *testing
 		getErr: errors.New("next topic id failed"),
 	}
 
-	err := migrateTopicActiveQuantilesWithTopicKeeper(context.Background(), mockKeeper)
+	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to get next topic id")
 }
@@ -101,7 +108,9 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnGetTopic(t *testing.T)
 		setErrByID: map[uint64]error{},
 	}
 
-	err := migrateTopicActiveQuantilesWithTopicKeeper(context.Background(), mockKeeper)
+	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to fetch topic 1")
 }
@@ -120,7 +129,9 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnSetTopic(t *testing.T)
 		},
 	}
 
-	err := migrateTopicActiveQuantilesWithTopicKeeper(context.Background(), mockKeeper)
+	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to update topic 1 quantiles")
 }

@@ -34,7 +34,7 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		if err := migrateTopicActiveQuantiles(ctx, &keepers.EmissionsKeeper); err != nil {
+		if err := migrateTopicActiveQuantiles(sdkCtx, &keepers.EmissionsKeeper); err != nil {
 			return vm, err
 		}
 
