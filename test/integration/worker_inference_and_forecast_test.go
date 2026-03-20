@@ -2,9 +2,11 @@ package integration_test
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -64,8 +66,26 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 					ExtraData: nil,
 				},
 			},
+			InferencesForecastsBundleSignature: nil,
+			Pubkey:                             "",
 		},
 	}
+	// Sign
+	src := make([]byte, 0)
+	src, err := workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+	// require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
+	if err != nil {
+		return err
+	}
+
+	sig, pubKey, err := m.Client.Context().Keyring.Sign(m.BobAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	// require.NoError(m.T, err, "Sign should not return an error")
+	if err != nil {
+		return err
+	}
+	workerPublicKeyBytes := pubKey.Bytes()
+	workerMsg.WorkerDataBundle.InferencesForecastsBundleSignature = sig
+	workerMsg.WorkerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, workerMsg)
 	// require.NoError(m.T, err)
