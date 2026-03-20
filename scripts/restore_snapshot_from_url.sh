@@ -88,7 +88,7 @@ snapshot_path="${snapshot_path%%\#*}"
 case "${snapshot_path}" in
   *.tar.zst)
     echo "Extracting .tar.zst snapshot"
-    tar --zstd -xvf "${tmp_archive}" -C "${DATA_DIR}"
+    tar --zstd -xvf "${tmp_archive}" --no-same-owner --no-overwrite-dir -C "${DATA_DIR}"
     ;;
   *.tar.gz|*.tgz)
     echo "Extracting .tar.gz snapshot"
