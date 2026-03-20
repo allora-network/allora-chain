@@ -894,4 +894,3 @@ func (s *KeeperTestSuite) TestIsReputerNonceUnfulfilledNilNonce() {
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "nil reputer nonce provided")
 }
-
