@@ -64,6 +64,9 @@ func (k *BankingKeeper) MoveCoinsFromAlloraRewardsToEcosystem(ctx context.Contex
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to sdk int trim amount")
 	}
+	if amountInt.IsZero() {
+		return nil
+	}
 	return k.bankKeeper.SendCoinsFromModuleToModule(
 		ctx,
 		types.AlloraRewardsAccountName,

@@ -857,3 +857,41 @@ func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
 	s.Require().NoError(err)
 	s.Require().Empty(nonces.Nonces)
 }
+
+// NIL GUARD TESTS
+
+func (s *KeeperTestSuite) TestIsWorkerNonceUnfulfilledNilNonce() {
+	k := s.NonceKeeper()
+	_, err := k.IsWorkerNonceUnfulfilled(s.Ctx(), uint64(1), nil)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "nil worker nonce provided")
+}
+
+func (s *KeeperTestSuite) TestFulfillWorkerNonceNilNonce() {
+	k := s.NonceKeeper()
+	_, err := k.FulfillWorkerNonce(s.Ctx(), uint64(1), nil)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "nil worker nonce provided")
+}
+
+func (s *KeeperTestSuite) TestAddWorkerNonceNilNonce() {
+	k := s.NonceKeeper()
+	err := k.AddWorkerNonce(s.Ctx(), uint64(1), nil)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "nil worker nonce provided")
+}
+
+func (s *KeeperTestSuite) TestFulfillReputerNonceNilNonce() {
+	k := s.NonceKeeper()
+	_, err := k.FulfillReputerNonce(s.Ctx(), uint64(1), nil)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "nil reputer nonce provided")
+}
+
+func (s *KeeperTestSuite) TestIsReputerNonceUnfulfilledNilNonce() {
+	k := s.NonceKeeper()
+	_, err := k.IsReputerNonceUnfulfilled(s.Ctx(), uint64(1), nil)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "nil reputer nonce provided")
+}
+

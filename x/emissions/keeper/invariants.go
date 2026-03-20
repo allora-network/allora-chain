@@ -117,7 +117,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 			topicSumsRemove[value.TopicId] = topicSumBefore.Add(value.Amount)
 			totalSumRemove = totalSumRemove.Add(value.Amount)
 		}
-		totalStake, err := k.stakingKeeper.totalStake.Get(ctx)
+		totalStake, err := k.stakingKeeper.GetTotalStake(ctx)
 		if err != nil {
 			panic(fmt.Sprintf("failed to get total stake: %v", err))
 		}

@@ -58,24 +58,24 @@ type Keeper struct {
 	// WORKERS
 	workerKeeper *WorkerKeeper
 
-	// / MISC GLOBAL STATE
+	// MISC GLOBAL STATE
 
 	// Current block emission, set by mint module
 	rewardCurrentBlockEmission collections.Item[cosmosMath.Int]
 
-	// / NONCES
+	// NONCES
 	nonceKeeper *NonceKeeper
 
-	// / REGRETS
+	// REGRETS
 	regretsKeeper *RegretsKeeper
 
 	// WEIGHTS
 	weightsKeeper *WeightsKeeper
 
-	// / WHITELISTS
+	// WHITELISTS
 	whitelistsKeeper *WhitelistsKeeper
 
-	// / INCLUSIONS
+	// INCLUSIONS
 
 	countInfererInclusionsInTopicActiveSet    collections.Map[collections.Pair[TopicId, ActorId], uint64]
 	countForecasterInclusionsInTopicActiveSet collections.Map[collections.Pair[TopicId, ActorId], uint64]
@@ -129,7 +129,6 @@ func NewKeeper(
 		regretsKeeper:        rk,
 		weightsKeeper:        wgk,
 		whitelistsKeeper:     wlk,
-		// emissionsMintKeeper:                    NewEmissionsMintKeeper(), TODO
 		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
 		countInfererInclusionsInTopicActiveSet:    collections.NewMap(sb, types.CountInfererInclusionsInTopicKey, "count_inferer_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 		countForecasterInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountForecasterInclusionsInTopicKey, "count_forecaster_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
@@ -290,7 +289,7 @@ func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId
 	}, nil
 }
 
-// / INCLUSIONS
+// INCLUSIONS
 
 // Get the count of inferer inclusions in topic active set
 func (k *Keeper) GetCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) (uint64, error) {
@@ -338,7 +337,7 @@ func (k *Keeper) IncrementCountForecasterInclusionsInTopic(ctx context.Context, 
 	return k.countForecasterInclusionsInTopicActiveSet.Set(ctx, key, count)
 }
 
-// / STATE MANAGEMENT
+// STATE MANAGEMENT
 
 // Iterate through topic state and prune records that are no longer needed
 func (k *Keeper) PruneRecordsAfterRewards(ctx sdk.Context, topicId TopicId, blockHeight int64) error {

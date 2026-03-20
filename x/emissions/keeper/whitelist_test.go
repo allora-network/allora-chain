@@ -24,24 +24,28 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 		removeWhitelist      func(context.Context, string) error
 		removeTopicWhitelist func(context.Context, uint64, string) error
 		needsTopicId         bool
+		expectedErrMsg       string
 	}{
 		{
 			name:            "Admin whitelist operations",
 			setupWhitelist:  k.AddWhitelistAdmin,
 			checkWhitelist:  k.IsWhitelistAdmin,
 			removeWhitelist: k.RemoveWhitelistAdmin,
+			expectedErrMsg:  "error validating admin id",
 		},
 		{
 			name:            "Global whitelist operations",
 			setupWhitelist:  k.AddToGlobalWhitelist,
 			checkWhitelist:  k.IsWhitelistedGlobalActor,
 			removeWhitelist: k.RemoveFromGlobalWhitelist,
+			expectedErrMsg:  "error validating actor address",
 		},
 		{
 			name:            "Topic creator whitelist operations",
 			setupWhitelist:  k.AddToTopicCreatorWhitelist,
 			checkWhitelist:  k.IsWhitelistedTopicCreator,
 			removeWhitelist: k.RemoveFromTopicCreatorWhitelist,
+			expectedErrMsg:  "error validating actor address",
 		},
 		{
 			name:                 "Topic worker whitelist operations",
@@ -49,6 +53,7 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 			checkTopicWhitelist:  k.IsWhitelistedTopicWorker,
 			removeTopicWhitelist: k.RemoveFromTopicWorkerWhitelist,
 			needsTopicId:         true,
+			expectedErrMsg:       "error validating actor address",
 		},
 		{
 			name:                 "Topic reputer whitelist operations",
@@ -56,6 +61,7 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 			checkTopicWhitelist:  k.IsWhitelistedTopicReputer,
 			removeTopicWhitelist: k.RemoveFromTopicReputerWhitelist,
 			needsTopicId:         true,
+			expectedErrMsg:       "error validating actor address",
 		},
 	}
 
@@ -111,7 +117,7 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 				err = tc.setupWhitelist(ctx, invalidAddr)
 			}
 			s.Require().Error(err)
-			s.Require().Contains(err.Error(), "error validating admin id")
+			s.Require().Contains(err.Error(), tc.expectedErrMsg)
 
 			if tc.removeTopicWhitelist != nil {
 				err = tc.removeTopicWhitelist(ctx, topicId, invalidAddr)
@@ -119,7 +125,7 @@ func (s *KeeperTestSuite) TestWhitelistOperations() {
 				err = tc.removeWhitelist(ctx, invalidAddr)
 			}
 			s.Require().Error(err)
-			s.Require().Contains(err.Error(), "error validating admin id")
+			s.Require().Contains(err.Error(), tc.expectedErrMsg)
 		})
 	}
 }
@@ -503,4 +509,42 @@ func (s *KeeperTestSuite) TestWhitelistBasedPermissions() {
 			}
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestWhitelistInvalidAddressErrorMessages() {
+	ctx := s.Ctx()
+	k := s.WhitelistsKeeper()
+	invalidAddr := "invalid"
+
+	err := k.AddWhitelistAdmin(ctx, invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating admin id")
+
+	err = k.AddToGlobalWhitelist(ctx, invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToGlobalWorkerWhitelist(ctx, invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToGlobalReputerWhitelist(ctx, invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToGlobalAdminWhitelist(ctx, invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToTopicCreatorWhitelist(ctx, invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToTopicWorkerWhitelist(ctx, uint64(1), invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
+
+	err = k.AddToTopicReputerWhitelist(ctx, uint64(1), invalidAddr)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "error validating actor address")
 }
