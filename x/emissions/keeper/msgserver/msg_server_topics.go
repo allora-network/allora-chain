@@ -96,9 +96,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	}
 
 	err = ms.tk.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "error adding topic fee revenue")
+	}
 
 	types.EmitNewCreateNewTopicEvent(ctx, &topic)
-	return &types.CreateNewTopicResponse{TopicId: topicId}, err
+	return &types.CreateNewTopicResponse{TopicId: topicId}, nil
 }
 
 func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {

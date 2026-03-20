@@ -172,12 +172,12 @@ func (k *WeightsKeeper) HandleMonthlyRewardsReset(ctx context.Context) (err erro
 
 	totalRewardToStakedReputers, err := k.GetMonthlyReputerRewards(ctx)
 	if err != nil {
-		return errorsmod.Wrap(err, "Failed to get monthly reputer rewards")
+		return errorsmod.Wrap(err, "failed to get monthly reputer rewards")
 	}
 
 	totalRewardToTopicParticipants, err := k.GetMonthlyTopicRewards(ctx)
 	if err != nil {
-		return errorsmod.Wrap(err, "Failed to get monthly topic rewards")
+		return errorsmod.Wrap(err, "failed to get monthly topic rewards")
 	}
 
 	sdkCtx.Logger().Info("Monthly rewards", "totalRewardToStakedReputers", totalRewardToStakedReputers, "totalRewardToTopicParticipants", totalRewardToTopicParticipants)
@@ -186,22 +186,22 @@ func (k *WeightsKeeper) HandleMonthlyRewardsReset(ctx context.Context) (err erro
 	if !totalRewardToTopicParticipants.IsZero() {
 		totalReputersDec, err := alloraMath.NewDecFromSdkInt(totalRewardToStakedReputers)
 		if err != nil {
-			return errorsmod.Wrap(err, "Failed to convert total reputer rewards to alloraMath.Dec")
+			return errorsmod.Wrap(err, "failed to convert total reputer rewards to alloraMath.Dec")
 		}
 		totalTopicDec, err := alloraMath.NewDecFromSdkInt(totalRewardToTopicParticipants)
 		if err != nil {
-			return errorsmod.Wrap(err, "Failed to convert total topic rewards to alloraMath.Dec")
+			return errorsmod.Wrap(err, "failed to convert total topic rewards to alloraMath.Dec")
 		}
 
 		percentageToStakedReputersDec, err = totalReputersDec.Quo(totalTopicDec)
 		if err != nil {
-			return errorsmod.Wrap(err, "Failed to calculate percentage to staked reputers")
+			return errorsmod.Wrap(err, "failed to calculate percentage to staked reputers")
 		}
 	}
 
 	err = k.scoresKeeper.SetPreviousPercentageRewardToStakedReputers(ctx, percentageToStakedReputersDec)
 	if err != nil {
-		return errorsmod.Wrap(err, "Failed to set previous percentage reward to staked reputers")
+		return errorsmod.Wrap(err, "failed to set previous percentage reward to staked reputers")
 	}
 
 	// Emit the event
@@ -210,7 +210,7 @@ func (k *WeightsKeeper) HandleMonthlyRewardsReset(ctx context.Context) (err erro
 	// Reset monthly reputer rewards
 	err = k.ResetMonthlyRewards(ctx)
 	if err != nil {
-		return errorsmod.Wrap(err, "Failed to reset monthly reputer rewards")
+		return errorsmod.Wrap(err, "failed to reset monthly reputer rewards")
 	}
 
 	sdkCtx.Logger().Debug("Monthly rewards reset triggered for block height", "blockHeight", sdkCtx.BlockHeight(),

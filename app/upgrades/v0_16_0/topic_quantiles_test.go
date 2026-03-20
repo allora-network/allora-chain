@@ -71,7 +71,7 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeper(t *testing.T) {
 	}
 
 	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
-	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger()) //nolint:exhaustruct // Test mock only initializes fields needed by this scenario.
 	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.NoError(t, err)
 	require.ElementsMatch(t, []uint64{1, 3}, mockKeeper.setCalls)
@@ -91,7 +91,7 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnNextTopicID(t *testing
 	}
 
 	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
-	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger()) //nolint:exhaustruct // Test mock only initializes fields needed by this scenario.
 	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to get next topic id")
@@ -109,7 +109,7 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnGetTopic(t *testing.T)
 	}
 
 	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
-	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger()) //nolint:exhaustruct // Test mock only initializes fields needed by this scenario.
 	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to fetch topic 1")
@@ -130,7 +130,7 @@ func TestMigrateTopicActiveQuantilesWithTopicKeeperFailsOnSetTopic(t *testing.T)
 	}
 
 	//nolint:staticcheck // sdk.NewContext is deprecated but is the simplest way to build a test sdk.Context.
-	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger()) //nolint:exhaustruct // Test mock only initializes fields needed by this scenario.
 	err := migrateTopicActiveQuantilesWithTopicKeeper(ctx, mockKeeper)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "failed to update topic 1 quantiles")

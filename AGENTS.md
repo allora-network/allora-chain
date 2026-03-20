@@ -12,7 +12,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 - Params/genesis: validate every param change + authority checks; genesis is deterministic with round-trip tests.
 
 ## Go Conventions
-- Always `gofmt`/`goimports`; keep `golangci-lint` clean.
+- Always `gofmt`/`goimports`; keep `golangci-lint` clean. Always after producing code that may be pushed.
 - Keep `nolint` statements where needed, adding a comment on the rationale if none is there.
 - Prefer table-driven tests and explicit dependency injection for easy mocking.
 - Use `sdk.Context.Logger()` for chain logs; avoid noisy logs in consensus paths.

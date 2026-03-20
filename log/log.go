@@ -10,7 +10,7 @@ type Fields map[string]any
 
 func (f Fields) With(xs ...any) Fields {
 	f2 := make(Fields, len(f)+(len(xs)/2))
-	//nolint:maprange // only used in nurse logging, does not affect consensus
+	//nolint:maprange // map copy: iteration order does not affect the result
 	for k, v := range f {
 		f2[k] = v
 	}
@@ -27,11 +27,11 @@ func (f Fields) With(xs ...any) Fields {
 
 func (f Fields) Merge(f2 Fields) Fields {
 	f3 := make(Fields, len(f)+len(f2))
-	//nolint:maprange // only used in nurse logging, does not affect consensus
+	//nolint:maprange // map copy: iteration order does not affect the result
 	for k, v := range f {
 		f3[k] = v
 	}
-	//nolint:maprange // only used in nurse logging, does not affect consensus
+	//nolint:maprange // map copy: iteration order does not affect the result
 	for k, v := range f2 {
 		f3[k] = v
 	}
@@ -41,7 +41,7 @@ func (f Fields) Merge(f2 Fields) Fields {
 func (f Fields) Slice() []any {
 	s := make([]any, len(f)*2)
 	i := 0
-	//nolint:maprange // only used in nurse logging, does not affect consensus
+	//nolint:maprange // map copy: iteration order does not affect the result
 	for k, v := range f {
 		s[i] = k
 		s[i+1] = v

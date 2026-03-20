@@ -3,7 +3,6 @@ package v0_16_0 //nolint:revive // Upgrade package naming follows version direct
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -13,6 +12,8 @@ import (
 )
 
 var targetActiveTopicQuantile = alloraMath.MustNewDecFromString("0.05")
+
+var _ topicQuantileMigrationKeeper = (*emissionskeeper.TopicKeeper)(nil)
 
 type topicQuantileMigrationKeeper interface {
 	GetNextTopicId(ctx context.Context) (uint64, error)
@@ -51,7 +52,7 @@ func migrateTopicActiveQuantilesWithTopicKeeper(ctx sdk.Context, topicKeeper top
 
 		if err := topicKeeper.SetTopic(ctx, topicID, topic); err != nil {
 			ctx.Logger().Error("MIGRATION v0.16.0: failed to update topic quantiles", "topicID", topicID, "error", err)
-			return errorsmod.Wrap(err, fmt.Sprintf("failed to update topic %d quantiles", topicID))
+			return errorsmod.Wrapf(err, "failed to update topic %d quantiles", topicID)
 		}
 		ctx.Logger().Info("MIGRATION v0.16.0: updated topic quantiles", "topicID", topicID)
 		updatedTopics++
