@@ -566,6 +566,12 @@ func generateWorkerDataBundles(s *TestSuite, nonce int64, topicId uint64, worker
 	return bundles
 }
 
+func (s *TestSuite) SignInputValueBundle(InputValueBundle *types.InputValueBundle, privateKey secp256k1.PrivKey) []byte {
+	valueBundle, err := types.NewValueBundleFromInput(InputValueBundle)
+	s.Require().NoError(err)
+	return s.SignValueBundle(valueBundle, privateKey)
+}
+
 func signInferenceForecastBundle(
 	inferenceForecastBundle *types.InferenceForecastBundle,
 	privateKey secp256k1.PrivKey,
@@ -633,8 +639,11 @@ func (s *TestSuite) GenerateLossBundles(
 		}
 
 		valueBundle := buildInputValueBundle(topicId, nonce, s.addrsStr[reputerIndex], reputerValue, networkInferences, p.skipNetworkInferences)
+		sig := s.SignInputValueBundle(valueBundle, s.privKeys[reputerIndex])
 
 		bundle := &types.InputReputerValueBundle{
+			Pubkey:      s.pubKeyHexStr[reputerIndex],
+			Signature:   sig,
 			ValueBundle: valueBundle,
 		}
 		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)

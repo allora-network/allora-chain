@@ -14,6 +14,7 @@ import (
 )
 
 var (
+	reputerValueBundleBufferPool       = utils.NewBytesPool(1024, 0)
 	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
 
@@ -655,10 +656,67 @@ func (bundle *InputReputerValueBundle) Validate() error {
 	if bundle.ValueBundle == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid pubkey %d", len(pk))
+	}
+	pubkey := secp256k1.PubKey(pk)
+	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
+
+	if bundle.ValueBundle.Reputer != pubKeyConvertedToAddress {
+		return errors.Wrapf(sdkerrors.ErrUnauthorized, "Reputer does not match pubkey")
+	}
 
 	// validate the value bundle
 	if err := bundle.ValueBundle.Validate(); err != nil {
 		return errors.Wrap(err, "value bundle is invalid")
+	}
+
+	buf := reputerValueBundleBufferPool.Get()
+	defer reputerValueBundleBufferPool.Put(buf)
+	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.Signature) {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
+	}
+
+	return nil
+}
+
+// validate that a reputer value bundle follows the expected format
+func (bundle *ReputerValueBundle) Validate() error {
+	if bundle == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer value bundle cannot be nil")
+	}
+	if bundle.ValueBundle == nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
+	}
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid pubkey %d", len(pk))
+	}
+	pubkey := secp256k1.PubKey(pk)
+	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
+
+	if bundle.ValueBundle.Reputer != pubKeyConvertedToAddress {
+		return errors.Wrapf(sdkerrors.ErrUnauthorized, "Reputer does not match pubkey")
+	}
+
+	// validate the value bundle
+	if err := bundle.ValueBundle.Validate(); err != nil {
+		return errors.Wrap(err, "value bundle is invalid")
+	}
+
+	buf := reputerValueBundleBufferPool.Get()
+	defer reputerValueBundleBufferPool.Put(buf)
+	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.Signature) {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
 	}
 
 	return nil

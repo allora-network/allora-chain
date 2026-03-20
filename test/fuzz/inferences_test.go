@@ -6,12 +6,11 @@ import (
 	"math/rand"
 
 	cosmossdk_io_math "cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/stretchr/testify/require"
-
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/stretchr/testify/require"
 )
 
 func doInferenceAndReputation(
@@ -320,11 +319,10 @@ func createAndSendReputerPayloads(
 	ctx := context.Background()
 	for _, reputer := range reputers {
 		valueBundle := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
+		signedValueBundle := signInputReputerValueBundle(m, reputer, valueBundle)
 		lossesMsg := &emissionstypes.InsertReputerPayloadRequest{
-			Sender: reputer.addr,
-			ReputerValueBundle: &emissionstypes.InputReputerValueBundle{
-				ValueBundle: &valueBundle,
-			},
+			Sender:             reputer.addr,
+			ReputerValueBundle: signedValueBundle,
 		}
 
 		txResp, err := m.Client.BroadcastTx(ctx, reputer.acc, lossesMsg)
@@ -379,6 +377,30 @@ func createReputerValueBundle(
 		},
 		OneOutInfererForecasterValues: nil,
 	}
+}
+
+func signInputReputerValueBundle(
+	m *testcommon.TestConfig,
+	reputer Actor,
+	valueBundle emissionstypes.InputValueBundle,
+) *emissionstypes.InputReputerValueBundle {
+	// Sign
+	src := make([]byte, 0)
+	src, err := valueBundle.XXX_Marshal(src, true)
+	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
+
+	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(reputer.name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	require.NoError(m.T, err, "Sign should not return an error")
+	reputerPublicKeyBytes := pubKey.Bytes()
+
+	// Create a InsertReputerPayloadRequest message
+	reputerValueBundle := &emissionstypes.InputReputerValueBundle{
+		ValueBundle: &valueBundle,
+		Signature:   valueBundleSignature,
+		Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
+	}
+
+	return reputerValueBundle
 }
 
 // for every worker, generate a worker attributed value

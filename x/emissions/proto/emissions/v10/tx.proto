@@ -4,7 +4,7 @@ package emissions.v10;
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "emissions/v10/inputreputer.proto";
+import "emissions/v9/inputreputer.proto";
 import "emissions/v10/inputworker.proto";
 import "emissions/v10/topic.proto";
 import "gogoproto/gogo.proto";
@@ -380,7 +380,7 @@ message InsertReputerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  InputReputerValueBundle reputer_value_bundle = 2;
+  emissions.v9.InputReputerValueBundle reputer_value_bundle = 2;
 }
 
 message InsertReputerPayloadResponse {}
