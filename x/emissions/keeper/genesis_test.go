@@ -4,8 +4,20 @@ import (
 	cosmossdk_io_math "cosmossdk.io/math"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// newFreshGenesisSuite creates an isolated keeper test suite with a fresh store/context.
+// Round-trip genesis tests use it to verify InitGenesis rebuilds state instead of reusing existing state.
+func (s *KeeperTestSuite) newFreshGenesisSuite() *KeeperTestSuite {
+	fresh := &KeeperTestSuite{
+		TestSuite: emissionstestutil.NewTestSuite("emissions_keeper"),
+	}
+	fresh.SetT(s.T())
+	fresh.SetupTest()
+	return fresh
+}
 
 // at minimum test that an import can be done from an export without error
 func (s *KeeperTestSuite) TestImportExportGenesisNoError() {
@@ -18,15 +30,17 @@ func (s *KeeperTestSuite) TestImportExportGenesisNoError() {
 	genesisState, err := s.EmissionsKeeper().ExportGenesis(s.Ctx())
 	s.Require().NoError(err)
 
-	err = s.EmissionsKeeper().InitGenesis(s.Ctx(), genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
 	for _, addr := range types.DefaultCoreTeamAddresses() {
-		admin, err := s.WhitelistsKeeper().IsWhitelistAdmin(s.Ctx(), addr)
+		admin, err := fresh.WhitelistsKeeper().IsWhitelistAdmin(fresh.Ctx(), addr)
 		s.Require().NoError(err)
 		s.Require().Equal(admin, true)
 	}
-	admin, err := s.WhitelistsKeeper().IsWhitelistAdmin(s.Ctx(), testAddr)
+	admin, err := fresh.WhitelistsKeeper().IsWhitelistAdmin(fresh.Ctx(), testAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(admin, true)
 }
@@ -52,11 +66,13 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            false,
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		InitialRegret:            alloraMath.ZeroDec(),
 		WorkerSubmissionWindow:   10,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		CNorm:                    alloraMath.ZeroDec(),
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -234,13 +250,14 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 	s.Require().NotEmpty(genesisState.ActiveTopics)
 	s.Require().True(genesisState.TotalSumPreviousTopicWeights.Equal(alloraMath.MustNewDecFromString("100.0")))
 
-	// RE-IMPORT: Use InitGenesis on a fresh context to verify round-trip.
-	// Since we're using the same keeper, InitGenesis will overwrite the state.
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	// RE-IMPORT on a fresh store to ensure InitGenesis actually reconstructs state.
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
 	// VERIFY round-trip by exporting again and comparing key fields
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	// Params
@@ -291,10 +308,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperParamsRoundTrip() {
 	s.Require().NoError(err)
 	s.Require().Equal(params, genesisState.Params)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	params2, err := s.ParamsKeeper().GetParams(ctx)
+	params2, err := fresh.ParamsKeeper().GetParams(fresh.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(params, params2)
 }
@@ -321,14 +340,16 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperStakingRoundTrip() {
 	s.Require().Len(genesisState.StakeReputerAuthority, 1)
 	s.Require().Len(genesisState.DelegateRewardPerShare, 1)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	totalStake, err := s.StakingKeeper().GetTotalStake(ctx)
+	totalStake, err := fresh.StakingKeeper().GetTotalStake(fresh.Ctx())
 	s.Require().NoError(err)
 	s.Require().True(totalStake.Equal(cosmossdk_io_math.NewInt(5000)))
 
-	topicStake, err := s.StakingKeeper().GetTopicStake(ctx, topicId)
+	topicStake, err := fresh.StakingKeeper().GetTopicStake(fresh.Ctx(), topicId)
 	s.Require().NoError(err)
 	s.Require().True(topicStake.Equal(cosmossdk_io_math.NewInt(2000)))
 }
@@ -364,10 +385,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperRegretsRoundTrip() {
 	s.Require().Len(genesisState.LatestOneOutInfererInfererNetworkRegrets, 1)
 	s.Require().Len(genesisState.LatestOneInForecasterNetworkRegrets, 1)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Len(genesisState2.LatestInfererNetworkRegrets, 1)
@@ -417,14 +440,16 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWhitelistsRoundTrip() {
 	s.Require().NotEmpty(genesisState.TopicWorkerWhitelistEnabled)
 	s.Require().NotEmpty(genesisState.TopicReputerWhitelistEnabled)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	isAdmin, err := s.WhitelistsKeeper().IsWhitelistAdmin(ctx, addr0)
+	isAdmin, err := fresh.WhitelistsKeeper().IsWhitelistAdmin(fresh.Ctx(), addr0)
 	s.Require().NoError(err)
 	s.Require().True(isAdmin)
 
-	isGlobal, err := s.WhitelistsKeeper().IsWhitelistedGlobalActor(ctx, addr1)
+	isGlobal, err := fresh.WhitelistsKeeper().IsWhitelistedGlobalActor(fresh.Ctx(), addr1)
 	s.Require().NoError(err)
 	s.Require().True(isGlobal)
 }
@@ -449,10 +474,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWeightsRoundTrip() {
 	s.Require().Len(genesisState.LatestInfererWeights, 1)
 	s.Require().Len(genesisState.LatestForecasterWeights, 1)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Len(genesisState2.LatestRegretStdNorm, 1)
@@ -462,10 +489,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWeightsRoundTrip() {
 func (s *KeeperTestSuite) TestGenesisDefaultStateRoundTrip() {
 	genesisState := types.NewGenesisState()
 
-	err := s.EmissionsKeeper().InitGenesis(s.Ctx(), genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err := fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	exported, err := s.EmissionsKeeper().ExportGenesis(s.Ctx())
+	exported, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 	s.Require().NotNil(exported)
 
@@ -490,10 +519,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperNoncesRoundTrip() {
 	s.Require().Len(genesisState.UnfulfilledWorkerNonces[0].Nonces.Nonces, 2)
 	s.Require().Len(genesisState.UnfulfilledReputerNonces, 1)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Len(genesisState2.UnfulfilledWorkerNonces, 1)
@@ -540,10 +571,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperScoresRoundTrip() {
 		alloraMath.MustNewDecFromString("0.28"),
 	))
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Len(genesisState2.InfererScoreEmas, 1)
@@ -577,11 +610,13 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            false,
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		InitialRegret:            alloraMath.ZeroDec(),
 		WorkerSubmissionWindow:   10,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		CNorm:                    alloraMath.ZeroDec(),
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -611,10 +646,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 	s.Require().Len(genesisState.LastMedianInferences, 1)
 	s.Require().True(genesisState.TotalSumPreviousTopicWeights.Equal(alloraMath.MustNewDecFromString("50.0")))
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Equal(genesisState.NextTopicId, genesisState2.NextTopicId)

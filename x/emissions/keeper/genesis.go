@@ -139,7 +139,7 @@ func (k *Keeper) initGenesisKeeperFields(ctx context.Context, data *types.Genesi
 
 // ExportGenesis exports the module state to a genesis state.
 func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
-	data := &types.GenesisState{}
+	data := types.NewGenesisState()
 
 	if err := k.paramsKeeper.ExportGenesis(ctx, data); err != nil {
 		return nil, errors.Wrap(err, "params keeper export genesis")
