@@ -14,6 +14,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// InfererScoresByBlock []*TopicIdBlockHeightScores
 	for _, topicIdBlockHeightScores := range data.InfererScoresByBlock {
 		if topicIdBlockHeightScores != nil {
+			if topicIdBlockHeightScores.Scores == nil {
+				return errors.Wrap(types.ErrInvalidValue, "inferer scores by block cannot be nil")
+			}
 			if err := k.SetInfererScoresByBlock(ctx,
 				topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight,
 				*topicIdBlockHeightScores.Scores); err != nil {
@@ -24,6 +27,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// ForecasterScoresByBlock []*TopicIdBlockHeightScores
 	for _, topicIdBlockHeightScores := range data.ForecasterScoresByBlock {
 		if topicIdBlockHeightScores != nil {
+			if topicIdBlockHeightScores.Scores == nil {
+				return errors.Wrap(types.ErrInvalidValue, "forecaster scores by block cannot be nil")
+			}
 			if err := k.SetForecasterScoresByBlock(
 				ctx, topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight,
 				*topicIdBlockHeightScores.Scores); err != nil {
@@ -35,6 +41,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// ReputerScoresByBlock []*TopicIdBlockHeightScores
 	for _, topicIdBlockHeightScores := range data.ReputerScoresByBlock {
 		if topicIdBlockHeightScores != nil {
+			if topicIdBlockHeightScores.Scores == nil {
+				return errors.Wrap(types.ErrInvalidValue, "reputer scores by block cannot be nil")
+			}
 			if err := types.ValidateTopicId(topicIdBlockHeightScores.TopicId); err != nil {
 				return errors.Wrap(err, "error setting reputerScoresByBlock")
 			}
@@ -56,6 +65,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// InfererScoreEmas []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.InfererScoreEmas {
 		if topicIdActorIdScore != nil {
+			if topicIdActorIdScore.Score == nil {
+				return errors.Wrap(types.ErrInvalidValue, "inferer score ema cannot be nil")
+			}
 			if err := k.SetInfererScoreEma(ctx,
 				topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId,
 				*topicIdActorIdScore.Score); err != nil {
@@ -66,6 +78,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// ForecasterScoreEmas []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.ForecasterScoreEmas {
 		if topicIdActorIdScore != nil {
+			if topicIdActorIdScore.Score == nil {
+				return errors.Wrap(types.ErrInvalidValue, "forecaster score ema cannot be nil")
+			}
 			if err := k.SetForecasterScoreEma(ctx,
 				topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId,
 				*topicIdActorIdScore.Score); err != nil {
@@ -76,6 +91,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// ReputerScoreEmas []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.ReputerScoreEmas {
 		if topicIdActorIdScore != nil {
+			if topicIdActorIdScore.Score == nil {
+				return errors.Wrap(types.ErrInvalidValue, "reputer score ema cannot be nil")
+			}
 			if err := k.SetReputerScoreEma(ctx,
 				topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId,
 				*topicIdActorIdScore.Score); err != nil {
@@ -86,6 +104,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// ReputerListeningCoefficient []*TopicIdActorIdListeningCoefficient
 	for _, topicIdActorIdListeningCoefficient := range data.ReputerListeningCoefficient {
 		if topicIdActorIdListeningCoefficient != nil {
+			if topicIdActorIdListeningCoefficient.ListeningCoefficient == nil {
+				return errors.Wrap(types.ErrInvalidValue, "reputer listening coefficient cannot be nil")
+			}
 			if err := k.SetListeningCoefficient(ctx,
 				topicIdActorIdListeningCoefficient.TopicId, topicIdActorIdListeningCoefficient.ActorId,
 				*topicIdActorIdListeningCoefficient.ListeningCoefficient); err != nil {
@@ -203,6 +224,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// LowestInfererScoreEma []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.LowestInfererScoreEma {
 		if topicIdActorIdScore != nil {
+			if topicIdActorIdScore.Score == nil {
+				return errors.Wrap(types.ErrInvalidValue, "lowest inferer score ema cannot be nil")
+			}
 			if err := k.SetLowestInfererScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
 				return errors.Wrap(err, "error setting lowestInfererScoreEma")
 			}
@@ -212,6 +236,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// LowestForecasterScoreEma []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.LowestForecasterScoreEma {
 		if topicIdActorIdScore != nil {
+			if topicIdActorIdScore.Score == nil {
+				return errors.Wrap(types.ErrInvalidValue, "lowest forecaster score ema cannot be nil")
+			}
 			if err := k.SetLowestForecasterScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
 				return errors.Wrap(err, "error setting lowestForecasterScoreEma")
 			}
@@ -221,6 +248,9 @@ func (k *ScoresKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// LowestReputerScoreEma []*TopicIdActorIdScore
 	for _, topicIdActorIdScore := range data.LowestReputerScoreEma {
 		if topicIdActorIdScore != nil {
+			if topicIdActorIdScore.Score == nil {
+				return errors.Wrap(types.ErrInvalidValue, "lowest reputer score ema cannot be nil")
+			}
 			if err := k.SetLowestReputerScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
 				return errors.Wrap(err, "error setting lowestReputerScoreEma")
 			}

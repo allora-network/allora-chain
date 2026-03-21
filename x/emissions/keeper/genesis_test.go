@@ -682,10 +682,12 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperWorkerRoundTrip() {
 	s.Require().Len(genesisState.ActiveInferers, 1)
 	s.Require().Len(genesisState.ActiveForecasters, 1)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Len(genesisState2.TopicWorkers, 1)
@@ -713,14 +715,114 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperReputerLossRoundTrip() {
 	s.Require().Equal(addr1, genesisState.TopicReputers[0].ActorId)
 	s.Require().Len(genesisState.ActiveReputers, 1)
 
-	err = s.EmissionsKeeper().InitGenesis(ctx, genesisState)
+	fresh := s.newFreshGenesisSuite()
+
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
 	s.Require().NoError(err)
 
-	genesisState2, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	genesisState2, err := fresh.EmissionsKeeper().ExportGenesis(fresh.Ctx())
 	s.Require().NoError(err)
 
 	s.Require().Len(genesisState2.TopicReputers, 1)
 	s.Require().Equal(addr1, genesisState2.TopicReputers[0].ActorId)
 	s.Require().Len(genesisState2.ActiveReputers, 1)
 	s.Require().Equal(addr1, genesisState2.ActiveReputers[0].ActorId)
+}
+
+func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
+	testCases := []struct {
+		name      string
+		mutate    func(*types.GenesisState)
+		wantError string
+	}{
+		{
+			name: "scores inferer block scores nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.InfererScoresByBlock = []*types.TopicIdBlockHeightScores{{TopicId: 1, BlockHeight: 10, Scores: nil}}
+			},
+			wantError: "inferer scores by block cannot be nil",
+		},
+		{
+			name: "staking delegated stake info nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.DelegatedStakes = []*types.TopicIdDelegatorReputerDelegatorInfo{{TopicId: 1, Delegator: "a", Reputer: "b", DelegatorInfo: nil}}
+			},
+			wantError: "delegated stake info cannot be nil",
+		},
+		{
+			name: "reputer offchain node nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.Reputers = []*types.LibP2PKeyAndOffchainNode{{LibP2PKey: "peer", OffchainNode: nil}}
+			},
+			wantError: "reputer info cannot be nil",
+		},
+		{
+			name: "worker inference nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.Inferences = []*types.TopicIdActorIdInference{{TopicId: 1, ActorId: s.AddrsStr(0), Inference: nil}}
+			},
+			wantError: "inference cannot be nil",
+		},
+		{
+			name: "all inferences nil wrapper",
+			mutate: func(gs *types.GenesisState) {
+				gs.AllInferences = []*types.TopicIdBlockHeightInferences{{TopicId: 1, BlockHeight: 10, Inferences: nil}}
+			},
+			wantError: "all inferences cannot be nil",
+		},
+		{
+			name: "nonces worker nonces nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.UnfulfilledWorkerNonces = []*types.TopicIdAndNonces{{TopicId: 1, Nonces: nil}}
+			},
+			wantError: "unfulfilled worker nonces cannot be nil",
+		},
+		{
+			name: "nonces reputer nonces nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.UnfulfilledReputerNonces = []*types.TopicIdAndReputerRequestNonces{{TopicId: 1, ReputerRequestNonces: nil}}
+			},
+			wantError: "unfulfilled reputer nonces cannot be nil",
+		},
+		{
+			name: "topic inner topic nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.Topics = []*types.TopicIdAndTopic{{TopicId: 1, Topic: nil}}
+			},
+			wantError: "topic cannot be nil",
+		},
+		{
+			name: "topic worker commit nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.TopicLastWorkerCommit = []*types.TopicIdTimestampedActorNonce{{TopicId: 1, TimestampedActorNonce: nil}}
+			},
+			wantError: "topic last worker commit cannot be nil",
+		},
+		{
+			name: "topic active topics nil list",
+			mutate: func(gs *types.GenesisState) {
+				gs.BlockToActiveTopics = []*types.BlockHeightTopicIds{{BlockHeight: 10, TopicIds: nil}}
+			},
+			wantError: "block to active topics cannot be nil",
+		},
+		{
+			name: "topic lowest active topic weight nil",
+			mutate: func(gs *types.GenesisState) {
+				gs.BlockToLowestActiveTopicWeight = []*types.BlockHeightTopicIdWeightPair{{BlockHeight: 10, TopicWeight: nil}}
+			},
+			wantError: "block to lowest active topic weight cannot be nil",
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			fresh := s.newFreshGenesisSuite()
+			genesisState := types.NewGenesisState()
+			tc.mutate(genesisState)
+
+			err := fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState)
+			s.Require().Error(err)
+			s.Require().Contains(err.Error(), tc.wantError)
+		})
+	}
 }

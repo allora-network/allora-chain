@@ -29,6 +29,9 @@ func (k *ReputerLossKeeper) InitGenesis(ctx context.Context, data *types.Genesis
 	// Reputers []*LibP2PKeyAndOffchainNode
 	for _, libP2PKeyAndOffchainNode := range data.Reputers {
 		if libP2PKeyAndOffchainNode != nil {
+			if libP2PKeyAndOffchainNode.OffchainNode == nil {
+				return errors.Wrap(types.ErrInvalidValue, "reputer info cannot be nil")
+			}
 			if err := libP2PKeyAndOffchainNode.OffchainNode.Validate(); err != nil {
 				return errors.Wrap(err, "reputer info validation failed")
 			}
@@ -44,6 +47,9 @@ func (k *ReputerLossKeeper) InitGenesis(ctx context.Context, data *types.Genesis
 	// AllLossBundles []*TopicIdBlockHeightReputerValueBundles
 	for _, topicIdBlockHeightReputerValueBundles := range data.AllLossBundles {
 		if topicIdBlockHeightReputerValueBundles != nil {
+			if topicIdBlockHeightReputerValueBundles.ReputerValueBundles == nil {
+				return errors.Wrap(types.ErrInvalidValue, "all loss bundles cannot be nil")
+			}
 			if err := topicIdBlockHeightReputerValueBundles.ReputerValueBundles.Validate(); err != nil {
 				return errors.Wrap(err, "reputer value bundles validation failed")
 			}
@@ -58,6 +64,9 @@ func (k *ReputerLossKeeper) InitGenesis(ctx context.Context, data *types.Genesis
 	// NetworkLossBundles []*TopicIdBlockHeightValueBundles
 	for _, topicIdBlockHeightValueBundles := range data.NetworkLossBundles {
 		if topicIdBlockHeightValueBundles != nil {
+			if topicIdBlockHeightValueBundles.ValueBundle == nil {
+				return errors.Wrap(types.ErrInvalidValue, "network loss bundle cannot be nil")
+			}
 			if err := topicIdBlockHeightValueBundles.ValueBundle.Validate(); err != nil {
 				return errors.Wrap(err, "value bundle validation failed")
 			}
@@ -81,6 +90,9 @@ func (k *ReputerLossKeeper) InitGenesis(ctx context.Context, data *types.Genesis
 	// LossBundles []*TopicIdReputerReputerValueBundle
 	for _, bundle := range data.LossBundles {
 		if bundle != nil {
+			if bundle.ReputerValueBundle == nil {
+				return errors.Wrap(types.ErrInvalidValue, "loss bundle cannot be nil")
+			}
 			key := collections.Join(bundle.TopicId, bundle.Reputer)
 			if err := k.lossBundles.Set(ctx, key, *bundle.ReputerValueBundle); err != nil {
 				return errors.Wrap(err, "error setting loss bundle")

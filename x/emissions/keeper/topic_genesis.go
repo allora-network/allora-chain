@@ -24,6 +24,9 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// Topics []*TopicIdAndTopic
 	for _, topic := range data.Topics {
 		if topic != nil {
+			if topic.Topic == nil {
+				return errors.Wrap(types.ErrInvalidValue, "topic cannot be nil")
+			}
 			if err := k.SetTopic(ctx, topic.TopicId, *topic.Topic); err != nil {
 				return errors.Wrap(err, "error setting topic")
 			}
@@ -92,6 +95,9 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// TopicLastWorkerCommit []*TopicIdTimestampedActorNonce
 	for _, topicIdTimestampedActorNonce := range data.TopicLastWorkerCommit {
 		if topicIdTimestampedActorNonce != nil {
+			if topicIdTimestampedActorNonce.TimestampedActorNonce == nil {
+				return errors.Wrap(types.ErrInvalidValue, "topic last worker commit cannot be nil")
+			}
 			if err := k.SetWorkerTopicLastCommit(ctx,
 				topicIdTimestampedActorNonce.TopicId,
 				topicIdTimestampedActorNonce.TimestampedActorNonce.BlockHeight,
@@ -103,6 +109,9 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// TopicLastReputerCommit []*TopicIdTimestampedActorNonce
 	for _, topicIdTimestampedActorNonce := range data.TopicLastReputerCommit {
 		if topicIdTimestampedActorNonce != nil {
+			if topicIdTimestampedActorNonce.TimestampedActorNonce == nil {
+				return errors.Wrap(types.ErrInvalidValue, "topic last reputer commit cannot be nil")
+			}
 			if err := k.SetReputerTopicLastCommit(ctx,
 				topicIdTimestampedActorNonce.TopicId,
 				topicIdTimestampedActorNonce.TimestampedActorNonce.BlockHeight,
@@ -126,6 +135,9 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// BlockToActiveTopics []*BlockHeightTopicIds
 	for _, blockToActiveTopics := range data.BlockToActiveTopics {
 		if blockToActiveTopics != nil {
+			if blockToActiveTopics.TopicIds == nil {
+				return errors.Wrap(types.ErrInvalidValue, "block to active topics cannot be nil")
+			}
 			if err := k.blockToActiveTopics.Set(ctx,
 				blockToActiveTopics.BlockHeight,
 				*blockToActiveTopics.TopicIds); err != nil {
@@ -137,6 +149,9 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// BlockToLowestActiveTopicWeight []*BlockHeightTopicIdWeightPair
 	for _, lowestActiveTopicWeight := range data.BlockToLowestActiveTopicWeight {
 		if lowestActiveTopicWeight != nil {
+			if lowestActiveTopicWeight.TopicWeight == nil {
+				return errors.Wrap(types.ErrInvalidValue, "block to lowest active topic weight cannot be nil")
+			}
 			if err := k.blockToLowestActiveTopicWeight.Set(ctx,
 				lowestActiveTopicWeight.BlockHeight,
 				*lowestActiveTopicWeight.TopicWeight); err != nil {

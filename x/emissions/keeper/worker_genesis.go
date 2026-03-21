@@ -29,6 +29,9 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// Inferences []*TopicIdActorIdInference
 	for _, topicIdActorIdInference := range data.Inferences {
 		if topicIdActorIdInference != nil {
+			if topicIdActorIdInference.Inference == nil {
+				return errors.Wrap(types.ErrInvalidValue, "inference cannot be nil")
+			}
 			if err := topicIdActorIdInference.Inference.Validate(); err != nil {
 				return errors.Wrap(err, "inference in list is invalid")
 			}
@@ -45,6 +48,9 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// Forecasts []*TopicIdActorIdForecast
 	for _, topicIdActorIdForecast := range data.Forecasts {
 		if topicIdActorIdForecast != nil {
+			if topicIdActorIdForecast.Forecast == nil {
+				return errors.Wrap(types.ErrInvalidValue, "forecast cannot be nil")
+			}
 			if err := topicIdActorIdForecast.Forecast.Validate(); err != nil {
 				return errors.Wrap(err, "forecast in list is invalid")
 			}
@@ -61,6 +67,9 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// Workers []*LibP2PKeyAndOffchainNode
 	for _, libP2PKeyAndOffchainNode := range data.Workers {
 		if libP2PKeyAndOffchainNode != nil {
+			if libP2PKeyAndOffchainNode.OffchainNode == nil {
+				return errors.Wrap(types.ErrInvalidValue, "worker info cannot be nil")
+			}
 			if err := libP2PKeyAndOffchainNode.OffchainNode.Validate(); err != nil {
 				return errors.Wrap(err, "worker info validation failed")
 			}
@@ -76,6 +85,9 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// AllInferences []*TopicIdBlockHeightInferences
 	for _, topicIdBlockHeightInferences := range data.AllInferences {
 		if topicIdBlockHeightInferences != nil {
+			if topicIdBlockHeightInferences.Inferences == nil {
+				return errors.Wrap(types.ErrInvalidValue, "all inferences cannot be nil")
+			}
 			for _, inference := range topicIdBlockHeightInferences.Inferences.Inferences {
 				if inference != nil {
 					if err := inference.Validate(); err != nil {
@@ -94,6 +106,9 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// AllForecasts []*TopicIdBlockHeightForecasts
 	for _, topicIdBlockHeightForecasts := range data.AllForecasts {
 		if topicIdBlockHeightForecasts != nil {
+			if topicIdBlockHeightForecasts.Forecasts == nil {
+				return errors.Wrap(types.ErrInvalidValue, "all forecasts cannot be nil")
+			}
 			for _, forecast := range topicIdBlockHeightForecasts.Forecasts.Forecasts {
 				if forecast != nil {
 					if err := forecast.Validate(); err != nil {

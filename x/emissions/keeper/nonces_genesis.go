@@ -34,6 +34,9 @@ func (k *NonceKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// UnfulfilledWorkerNonces
 	for _, topicIdAndNonces := range data.UnfulfilledWorkerNonces {
 		if topicIdAndNonces != nil {
+			if topicIdAndNonces.Nonces == nil {
+				return errors.Wrap(types.ErrInvalidValue, "unfulfilled worker nonces cannot be nil")
+			}
 			if err := topicIdAndNonces.Nonces.Validate(); err != nil {
 				return errors.Wrap(err, "error validating unfulfilled worker nonces")
 			}
@@ -46,6 +49,9 @@ func (k *NonceKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// UnfulfilledReputerNonces
 	for _, topicIdAndReputerRequestNonces := range data.UnfulfilledReputerNonces {
 		if topicIdAndReputerRequestNonces != nil {
+			if topicIdAndReputerRequestNonces.ReputerRequestNonces == nil {
+				return errors.Wrap(types.ErrInvalidValue, "unfulfilled reputer nonces cannot be nil")
+			}
 			if err := topicIdAndReputerRequestNonces.ReputerRequestNonces.Validate(); err != nil {
 				return errors.Wrap(err, "error validating unfulfilled reputer nonces")
 			}

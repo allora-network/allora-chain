@@ -51,6 +51,9 @@ func (k *StakingKeeper) InitGenesis(ctx context.Context, data *types.GenesisStat
 	// DelegatedStakes
 	for _, topicIdDelegatorReputerDelegatorInfo := range data.DelegatedStakes {
 		if topicIdDelegatorReputerDelegatorInfo != nil {
+			if topicIdDelegatorReputerDelegatorInfo.DelegatorInfo == nil {
+				return errors.Wrap(types.ErrInvalidValue, "delegated stake info cannot be nil")
+			}
 			if err := k.SetDelegateStakePlacement(ctx,
 				topicIdDelegatorReputerDelegatorInfo.TopicId,
 				topicIdDelegatorReputerDelegatorInfo.Delegator,
@@ -83,6 +86,9 @@ func (k *StakingKeeper) InitGenesis(ctx context.Context, data *types.GenesisStat
 	// StakeRemovalsByBlock (also populates StakeRemovalsByActor)
 	for _, blockHeightTopicIdReputerStakeRemovalInfo := range data.StakeRemovalsByBlock {
 		if blockHeightTopicIdReputerStakeRemovalInfo != nil {
+			if blockHeightTopicIdReputerStakeRemovalInfo.StakeRemovalInfo == nil {
+				return errors.Wrap(types.ErrInvalidValue, "stake removal info cannot be nil")
+			}
 			if err := k.SetStakeRemoval(ctx,
 				*blockHeightTopicIdReputerStakeRemovalInfo.StakeRemovalInfo); err != nil {
 				return errors.Wrapf(err, "error setting stakeRemovalsByBlock %v",
@@ -94,6 +100,9 @@ func (k *StakingKeeper) InitGenesis(ctx context.Context, data *types.GenesisStat
 	// DelegateStakeRemovalsByBlock (also populates DelegateStakeRemovalsByActor)
 	for _, blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo := range data.DelegateStakeRemovalsByBlock {
 		if blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo != nil {
+			if blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.DelegateStakeRemovalInfo == nil {
+				return errors.Wrap(types.ErrInvalidValue, "delegate stake removal info cannot be nil")
+			}
 			if err := k.SetDelegateStakeRemoval(ctx,
 				*blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.DelegateStakeRemovalInfo); err != nil {
 				return errors.Wrap(err, "error setting delegateStakeRemovalsByBlock")
