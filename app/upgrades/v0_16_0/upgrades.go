@@ -24,17 +24,13 @@ var Upgrade = upgrades.Upgrade{
 func CreateUpgradeHandler(
 	moduleManager *module.Manager,
 	configurator module.Configurator,
-	keepers *keepers.AppKeepers,
+	_ *keepers.AppKeepers,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		sdkCtx.Logger().Info("RUN MIGRATIONS")
 		vm, err := moduleManager.RunMigrations(ctx, configurator, vm)
 		if err != nil {
-			return vm, err
-		}
-
-		if err := migrateTopicActiveQuantiles(sdkCtx, &keepers.EmissionsKeeper); err != nil {
 			return vm, err
 		}
 
