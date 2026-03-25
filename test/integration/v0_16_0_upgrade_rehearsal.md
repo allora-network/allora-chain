@@ -71,12 +71,15 @@ After crossing upgrade height:
 ```bash
 allorad q upgrade applied-plan v0.16.0 --home "$HOME/.allorad"
 allorad q upgrade module-versions --home "$HOME/.allorad"
+allorad q emissions topic 1 --home "$HOME/.allorad"
 ```
 
 Expected module versions for the `v0.16.0` scenario in this branch:
 - `scheduler = 1`
-- `emissions = 13`
+- `emissions = 14`
 - `mint = 6`
+
+The topic query should show `active_inferer_quantile`, `active_forecaster_quantile`, and `active_reputer_quantile` set to `0.05` for migrated topics.
 
 ## 7) Run automated upgrade checks against local node
 
