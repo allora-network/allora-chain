@@ -43,8 +43,8 @@ func TestExternalTestSuite(t *testing.T) {
 	TopicWeightDistributionChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(testConfig)
-	// t.Log(">>> Test Reputer Un-Staking <<<")
-	// UnstakingChecks(testConfig)
+	t.Log(">>> Test Reputer Un-Staking <<<")
+	UnstakingChecks(testConfig)
 }
 
 func TestUpgradeTestSuite(t *testing.T) {
