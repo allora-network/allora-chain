@@ -93,7 +93,7 @@ func (s *EmissionsV7MigrationTestSuite) TestMigrateParams() {
 	// - LambdaInitialScore
 	paramsExpected := defaultParams
 
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)

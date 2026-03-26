@@ -69,7 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* [#910](https://github.com/allora-network/allora-chain/pull/910) Regret norm to use MAD
+* [#910](https://github.com/allora-network/allora-chain/pull/910) Regret norm to use MAD + adjust quantiles
+* [#919](https://github.com/allora-network/allora-chain/pull/919) Keeper refactor + upgrade testing improvements
 
 ### Deprecated
 
@@ -87,8 +88,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
-
 # [Released]
+
+# v0.16.0
+
+### Added
+
+### Changed
+
+* [#910](https://github.com/allora-network/allora-chain/pull/910) Regret norm to use MAD + adjust quantiles
+* [#919](https://github.com/allora-network/allora-chain/pull/919) Keeper refactor + upgrade testing improvements
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added 
+
+#### Changed
+
 
 # v0.15.1
 

@@ -1609,7 +1609,7 @@ func SetRegretsFromPreviousEpoch(
 	}
 
 	for inferer, regret := range infererNetworkRegrets {
-		err := k.SetInfererNetworkRegret(
+		err := k.GetRegretsKeeper().SetInfererNetworkRegret(
 			ctx,
 			topicId,
 			inferer,
@@ -1627,7 +1627,7 @@ func SetRegretsFromPreviousEpoch(
 	}
 
 	for forecaster, regret := range forecasterNetworkRegrets {
-		err := k.SetForecasterNetworkRegret(
+		err := k.GetRegretsKeeper().SetForecasterNetworkRegret(
 			ctx,
 			topicId,
 			forecaster,
@@ -1645,7 +1645,7 @@ func SetRegretsFromPreviousEpoch(
 	}
 
 	for inferer, regret := range infererNaiveNetworkRegrets {
-		err := k.SetNaiveInfererNetworkRegret(
+		err := k.GetRegretsKeeper().SetNaiveInfererNetworkRegret(
 			ctx,
 			topicId,
 			inferer,
@@ -1660,7 +1660,7 @@ func SetRegretsFromPreviousEpoch(
 	for i := range inferers {
 		for j := range inferers {
 			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", i, j)
-			err := k.SetOneOutInfererInfererNetworkRegret(
+			err := k.GetRegretsKeeper().SetOneOutInfererInfererNetworkRegret(
 				ctx,
 				topicId,
 				inferers[j],
@@ -1680,7 +1680,7 @@ func SetRegretsFromPreviousEpoch(
 	for i := range inferers {
 		for j := range forecasters {
 			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", j+5, i)
-			err := k.SetOneOutInfererForecasterNetworkRegret(
+			err := k.GetRegretsKeeper().SetOneOutInfererForecasterNetworkRegret(
 				ctx,
 				topicId,
 				inferers[i],
@@ -1700,7 +1700,7 @@ func SetRegretsFromPreviousEpoch(
 	for i := range inferers {
 		for j := range forecasters {
 			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", i, j+5)
-			err := k.SetOneOutForecasterInfererNetworkRegret(
+			err := k.GetRegretsKeeper().SetOneOutForecasterInfererNetworkRegret(
 				ctx,
 				topicId,
 				forecasters[j],
@@ -1720,7 +1720,7 @@ func SetRegretsFromPreviousEpoch(
 	for i := range forecasters {
 		for j := range forecasters {
 			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", i+5, j+5)
-			err := k.SetOneOutForecasterForecasterNetworkRegret(
+			err := k.GetRegretsKeeper().SetOneOutForecasterForecasterNetworkRegret(
 				ctx,
 				topicId,
 				forecasters[j],
@@ -1739,7 +1739,7 @@ func SetRegretsFromPreviousEpoch(
 	// Set one-in forecaster network regrets
 	for i := range forecasters {
 		headerName := fmt.Sprintf("inference_regret_worker_5_onein_%v", i)
-		err := k.SetOneInForecasterNetworkRegret(
+		err := k.GetRegretsKeeper().SetOneInForecasterNetworkRegret(
 			ctx,
 			topicId,
 			forecasters[i],
@@ -1754,7 +1754,7 @@ func SetRegretsFromPreviousEpoch(
 		}
 		for j := range inferers {
 			headerName := fmt.Sprintf("inference_regret_worker_%v_onein_%v", j, i)
-			err := k.SetOneInForecasterNetworkRegret(
+			err := k.GetRegretsKeeper().SetOneInForecasterNetworkRegret(
 				ctx,
 				topicId,
 				forecasters[i],

@@ -72,7 +72,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			},
 		},
 	}
-	err := a.EmissionsKeeper().InsertActiveInferences(a.Ctx(), 1, workerNonce.BlockHeight, infererLossBundle)
+	err := a.WorkerKeeper().InsertActiveInferences(a.Ctx(), 1, workerNonce.BlockHeight, infererLossBundle)
 	a.Require().NoError(err)
 
 	forecasterLossBundle := emissionstypes.Forecasts{
@@ -105,7 +105,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			},
 		},
 	}
-	err = a.EmissionsKeeper().InsertActiveForecasts(a.Ctx(), 1, workerNonce.BlockHeight, forecasterLossBundle)
+	err = a.WorkerKeeper().InsertActiveForecasts(a.Ctx(), 1, workerNonce.BlockHeight, forecasterLossBundle)
 	a.Require().NoError(err)
 
 	// Prepare a sample ReputerValueBundle

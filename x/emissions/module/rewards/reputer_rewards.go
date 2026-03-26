@@ -3,11 +3,12 @@ package rewards
 import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func GetReputersRewardFractions(
@@ -24,7 +25,7 @@ func GetReputersRewardFractions(
 	for i, scorePtr := range scoresAtBlock {
 		scores[i] = scorePtr.Score
 		reputers[i] = scorePtr.Address
-		stake, err := k.GetStakeReputerAuthority(ctx, topicId, scorePtr.Address)
+		stake, err := k.GetStakingKeeper().GetStakeReputerAuthority(ctx, topicId, scorePtr.Address)
 		if err != nil {
 			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
 		}
@@ -66,7 +67,7 @@ func GetReputerTaskEntropy(
 	numReputers := len(reputers)
 	emaRewardFractions := make([]alloraMath.Dec, numReputers)
 	for i, reputer := range reputers {
-		previousReputerRewardFraction, noPriorFraction, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+		previousReputerRewardFraction, noPriorFraction, err := k.GetScoresKeeper().GetPreviousReputerRewardFraction(ctx, topicId, reputer)
 		if err != nil {
 			return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous reputer reward fraction")
 		}
@@ -84,7 +85,7 @@ func GetReputerTaskEntropy(
 		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "invalid reward fractions after EMA")
 	}
 	for i, reputer := range reputers {
-		err := k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, emaRewardFractions[i])
+		err := k.GetScoresKeeper().SetPreviousReputerRewardFraction(ctx, topicId, reputer, emaRewardFractions[i])
 		if err != nil {
 			return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous reputer reward fraction")
 		}
@@ -160,7 +161,7 @@ func GetRewardForReputerFromTotalReward(
 	for _, reputerReward := range reputerDelegatorRewards {
 		reputer := reputerReward.Address
 		reward := reputerReward.Reward
-		totalStakeAmountInt, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputer)
+		totalStakeAmountInt, err := keeper.GetStakingKeeper().GetStakeReputerAuthority(ctx, topicId, reputer)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer stake")
 		}
@@ -169,7 +170,7 @@ func GetRewardForReputerFromTotalReward(
 			return nil, errors.Wrapf(err, "failed to convert reputer total stake to dec")
 		}
 		// calculate reward for delegator total staked amount and send it to AlloraPendingRewardForDelegatorAccountName
-		totalDelegatorStakeAmountInt, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputer)
+		totalDelegatorStakeAmountInt, err := keeper.GetStakingKeeper().GetDelegateStakeUponReputer(ctx, topicId, reputer)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer upon stake")
 		}
@@ -201,7 +202,7 @@ func GetRewardForReputerFromTotalReward(
 			if err != nil {
 				return nil, err
 			}
-			currentShareDec, err := keeper.GetDelegateRewardPerShare(ctx, topicId, reputer)
+			currentShareDec, err := keeper.GetStakingKeeper().GetDelegateRewardPerShare(ctx, topicId, reputer)
 			if err != nil {
 				return nil, err
 			}
@@ -209,14 +210,14 @@ func GetRewardForReputerFromTotalReward(
 			if err != nil {
 				return nil, err
 			}
-			err = keeper.SetDelegateRewardPerShare(ctx, topicId, reputer, newShare)
+			err = keeper.GetStakingKeeper().SetDelegateRewardPerShare(ctx, topicId, reputer, newShare)
 			if err != nil {
 				return nil, err
 			}
 			// Emit event for delegate reward share updated
 			types.EmitNewDelegateRewardShareUpdatedEvent(ctx, topicId, reputer, newShare)
 
-			err = keeper.SendCoinsFromModuleToModule(
+			err = keeper.GetBankingKeeper().SendCoinsFromModuleToModule(
 				ctx,
 				types.AlloraRewardsAccountName,
 				types.AlloraPendingRewardForDelegatorAccountName,

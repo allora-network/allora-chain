@@ -50,7 +50,7 @@ func InvokeRegisterTaskHandlers(keeper *keeper.Keeper, perModTaskHandlers map[st
 	}
 
 	allTaskHandlers := make([]types.TaskHandler, 0)
-	for _, taskHandlers := range perModTaskHandlers {
+	for _, taskHandlers := range perModTaskHandlers { //nolint:maprange // it is later sorted on RegisterTaskHandlers
 		for _, taskHandler := range taskHandlers {
 			allTaskHandlers = append(allTaskHandlers, taskHandler)
 		}
