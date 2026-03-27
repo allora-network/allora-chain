@@ -92,12 +92,12 @@ build-local-edits:
 
 build-all-platforms:
 	mkdir -p $(BUILDDIR)/
-	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=windows GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
-	GOOS=windows GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(VERSION:v%=%)_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(VERSION:v%=%)_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(VERSION:v%=%)_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(VERSION:v%=%)_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(VERSION:v%=%)_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(VERSION:v%=%)_windows_arm64 github.com/allora-network/allora-chain/cmd/allorad
 
 lint:
 	@echo "--> Running linter"
