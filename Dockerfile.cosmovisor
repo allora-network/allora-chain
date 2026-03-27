@@ -41,12 +41,19 @@ RUN tar -xvf /tmp/cosmovisor.tar.gz -C /usr/local/bin/ && \
 ARG ALLORAD_CURRENT_VERSION="v0.15.1"
 ARG ALLORAD_UPGRADE_VERSION="v0.16.0"
 
+# New releases use allora-chain_<semver>_linux_amd64; older releases used allorad_linux_amd64
 RUN mkdir -p ${INITIAL_COSMOVISOR_DIR}/genesis/bin && \
-    curl -Lo ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_CURRENT_VERSION}/allorad_linux_amd64 && \
+    STRIP="${ALLORAD_CURRENT_VERSION#v}" && \
+    URL_NEW="https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_CURRENT_VERSION}/allora-chain_${STRIP}_linux_amd64" && \
+    URL_OLD="https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_CURRENT_VERSION}/allorad_linux_amd64" && \
+    (curl -fL "${URL_NEW}" -o ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad || curl -fL "${URL_OLD}" -o ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad) && \
     chmod +x ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad
 
 RUN mkdir -p ${INITIAL_COSMOVISOR_DIR}/upgrades/${ALLORAD_UPGRADE_VERSION}/bin && \
-    curl -Lo ${INITIAL_COSMOVISOR_DIR}/upgrades/${ALLORAD_UPGRADE_VERSION}/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_UPGRADE_VERSION}/allorad_linux_amd64
+    STRIP="${ALLORAD_UPGRADE_VERSION#v}" && \
+    URL_NEW="https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_UPGRADE_VERSION}/allora-chain_${STRIP}_linux_amd64" && \
+    URL_OLD="https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_UPGRADE_VERSION}/allorad_linux_amd64" && \
+    (curl -fL "${URL_NEW}" -o ${INITIAL_COSMOVISOR_DIR}/upgrades/${ALLORAD_UPGRADE_VERSION}/bin/allorad || curl -fL "${URL_OLD}" -o ${INITIAL_COSMOVISOR_DIR}/upgrades/${ALLORAD_UPGRADE_VERSION}/bin/allorad)
 
 VOLUME ${APP_PATH}
 WORKDIR ${APP_PATH}
