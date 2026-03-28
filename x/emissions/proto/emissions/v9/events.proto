@@ -382,6 +382,21 @@ message EventTopicRewardsSet {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // Topic IDs whose rewards were redirected to the ecosystem account this epoch.
+  repeated uint64 redirected_topic_ids = 3;
+}
+
+// Emitted when a topic's rewards are redirected to the ecosystem module account
+// instead of being distributed to participants.
+message EventRewardRedirectedToEcosystem {
+  uint64 topic_id = 1;
+  string reward_amount = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // "no_valid_reward_nonce" or "reward_distribution_failed"
+  string reason = 3;
+  int64 block_height = 4;
 }
 
 message EventEMAScoresSet {
