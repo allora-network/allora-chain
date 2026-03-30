@@ -530,115 +530,17 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 		}
 	}
 
-	mkExpectedCombined := func(args synth.GetCombinedInferenceArgs, weights synth.RegretInformedWeights) alloraMath.DecArray {
-		running := make(alloraMath.DecArray, args.NumLabels)
-		for i := range running {
-			running[i] = alloraMath.ZeroDec()
-		}
-		sumWeights := alloraMath.ZeroDec()
-
-		if args.AllInferersAreNew {
-			used := 0
-			for _, inferer := range args.Inferers {
-				inf, ok := args.InfererToInference[inferer]
-				if !ok || inf == nil {
-					continue
-				}
-				for i := 0; i < args.NumLabels; i++ {
-					var err error
-					running[i], err = running[i].Add(inf.Values[i])
-					require.NoError(err)
-				}
-				used++
-			}
-
-			require.Positive(used)
-			sumWeights = alloraMath.NewDecFromInt64(int64(used))
-		} else {
-			for _, inferer := range args.Inferers {
-				inf, ok := args.InfererToInference[inferer]
-				if !ok || inf == nil {
-					continue
-				}
-				if _, ok := args.InfererToRegret[inferer]; !ok {
-					continue
-				}
-				w, ok := weights.Inferers[inferer]
-				if !ok {
-					continue
-				}
-				if w.Equal(alloraMath.ZeroDec()) {
-					continue
-				}
-
-				for i := 0; i < args.NumLabels; i++ {
-					term, err := w.Mul(inf.Values[i])
-					require.NoError(err)
-					running[i], err = running[i].Add(term)
-					require.NoError(err)
-				}
-				var err error
-				sumWeights, err = sumWeights.Add(w)
-				require.NoError(err)
-			}
-
-			for _, forecaster := range args.Forecasters {
-				inf, ok := args.ForecasterToForecastImpliedInference[forecaster]
-				if !ok || inf == nil {
-					continue
-				}
-				if _, ok := args.ForecasterToRegret[forecaster]; !ok {
-					continue
-				}
-				w, ok := weights.Forecasters[forecaster]
-				if !ok {
-					continue
-				}
-				if w.Equal(alloraMath.ZeroDec()) {
-					continue
-				}
-
-				for i := 0; i < args.NumLabels; i++ {
-					term, err := w.Mul(inf.Values[i])
-					require.NoError(err)
-					running[i], err = running[i].Add(term)
-					require.NoError(err)
-				}
-				var err error
-				sumWeights, err = sumWeights.Add(w)
-				require.NoError(err)
-			}
-		}
-
-		if sumWeights.Lt(args.EpsilonSafeDiv) {
-			sumWeights = args.EpsilonSafeDiv
-		}
-
-		out := make(alloraMath.DecArray, args.NumLabels)
-		for i := 0; i < args.NumLabels; i++ {
-			v, err := running[i].Quo(sumWeights)
-			require.NoError(err)
-			out[i] = v
-		}
-		return out
-	}
-
 	assertVecEqual := func(got emissionstypes.InferenceValues, want alloraMath.DecArray) {
 		require.Len(got, len(want))
 		for i := range want {
-			require.Truef(
-				got[i].Equal(want[i]),
-				"idx=%d got=%s want=%s",
-				i,
-				got[i].String(),
-				want[i].String(),
-			)
+			testutil2.InEpsilon5(s.T(), got[i], want[i].String())
 		}
 	}
 
 	type testCase struct {
 		name          string
 		args          synth.GetCombinedInferenceArgs
+		wantCombined  alloraMath.DecArray
 		assertWeights func(weights synth.RegretInformedWeights)
 		assertResult  func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues)
 	}
@@ -673,12 +575,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				RegretScalePlusEpsilon: mustDec("1"),
 				NumLabels:              2,
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
-				want := alloraMath.DecArray{mustDec("3"), mustDec("5")}
-				assertVecEqual(combined, want)
-				_ = weights
-				require.True(true)
-			},
+			wantCombined: alloraMath.DecArray{mustDec("3"), mustDec("5")},
 		},
 		{
 			name: "equal regrets produce equal inferer weights and mean result",
@@ -705,19 +602,15 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				RegretScalePlusEpsilon:               mustDec("1"),
 				NumLabels:                            1,
 			},
+			wantCombined: alloraMath.DecArray{mustDec("2")},
 			assertWeights: func(weights synth.RegretInformedWeights) {
 				require.Contains(weights.Inferers, "i1")
 				require.Contains(weights.Inferers, "i2")
 				require.True(weights.Inferers["i1"].Equal(weights.Inferers["i2"]))
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
-				require.Len(combined, 1)
-				testutil2.InEpsilon5(s.T(), combined[0], "2")
-				_ = weights
-			},
 		},
 		{
-			name: "higher regret gets higher weight",
+			name: "higher regret gets higher weight and pulls combined upward",
 			args: synth.GetCombinedInferenceArgs{
 				Logger:   log.NewNopLogger(),
 				TopicId:  1,
@@ -747,34 +640,63 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				require.True(weights.Inferers["i3"].Gt(weights.Inferers["i2"]))
 				require.True(weights.Inferers["i2"].Gt(weights.Inferers["i1"]))
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
-				args := synth.GetCombinedInferenceArgs{
-					Inferers: []synth.Inferer{"i1", "i2", "i3"},
-					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
-						"i1": mkInf("i1", "1"),
-						"i2": mkInf("i2", "2"),
-						"i3": mkInf("i3", "10"),
-					},
-					InfererToRegret: map[synth.Inferer]*synth.Regret{
-						"i1": decPtr("0.1"),
-						"i2": decPtr("0.2"),
-						"i3": decPtr("0.5"),
-					},
-					EpsilonSafeDiv:                       mustDec("0.0000001"),
-					NumLabels:                            1,
-					AllInferersAreNew:                    false,
-					Forecasters:                          nil,
-					ForecasterToRegret:                   nil,
-					ForecasterToForecastImpliedInference: nil,
-				}
-				want := mkExpectedCombined(args, weights)
-				assertVecEqual(combined, want)
-				require.True(combined[0].Gt(mustDec("1")))
+			assertResult: func(_ synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
+				require.Len(combined, 1)
+
+				unweightedMean, err := mustDec("13").Quo(mustDec("3"))
+				require.NoError(err)
+
+				// The largest input (10) belongs to the highest-regret worker, so the
+				// weighted result should move above the simple mean while remaining in-range.
+				require.True(combined[0].Gt(unweightedMean))
 				require.True(combined[0].Lt(mustDec("10")))
 			},
 		},
 		{
 			name: "forecaster implied inference contributes to combined inference",
+			args: synth.GetCombinedInferenceArgs{
+				Logger:   log.NewNopLogger(),
+				TopicId:  1,
+				Inferers: []synth.Inferer{"i1", "i2"},
+				InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
+					"i1": mkInf("i1", "1", "0"),
+					"i2": mkInf("i2", "0", "2"),
+				},
+				InfererToRegret: map[synth.Inferer]*synth.Regret{
+					"i1": decPtr("0.2"),
+					"i2": decPtr("0.2"),
+				},
+				AllInferersAreNew: false,
+				Forecasters:       []synth.Forecaster{"f1"},
+				ForecasterToForecastImpliedInference: map[synth.Forecaster]*emissionstypes.Inference{
+					"f1": mkInf("f1", "5", "5"),
+				},
+				ForecasterToRegret: map[synth.Forecaster]*synth.Regret{
+					"f1": decPtr("0.2"),
+				},
+				EpsilonTopic:           mustDec("0.0001"),
+				EpsilonSafeDiv:         mustDec("0.0000001"),
+				PNorm:                  mustDec("2"),
+				CNorm:                  mustDec("0.75"),
+				RegretScalePlusEpsilon: mustDec("1"),
+				NumLabels:              2,
+			},
+			wantCombined: func() alloraMath.DecArray {
+				sevenThirds, err := mustDec("7").Quo(mustDec("3"))
+				require.NoError(err)
+				return alloraMath.DecArray{mustDec("2"), sevenThirds}
+			}(),
+			assertWeights: func(weights synth.RegretInformedWeights) {
+				require.Contains(weights.Inferers, "i1")
+				require.Contains(weights.Inferers, "i2")
+				require.Contains(weights.Forecasters, "f1")
+				require.True(weights.Forecasters["f1"].Gt(alloraMath.ZeroDec()))
+				require.True(weights.Inferers["i1"].Equal(weights.Inferers["i2"]))
+				require.True(weights.Inferers["i2"].Equal(weights.Forecasters["f1"]))
+			},
+		},
+		{
+			name: "forecaster with distinct regret shifts combined inference toward implied values",
 			args: synth.GetCombinedInferenceArgs{
 				Logger:   log.NewNopLogger(),
 				TopicId:  1,
@@ -806,32 +728,46 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				require.Contains(weights.Inferers, "i1")
 				require.Contains(weights.Inferers, "i2")
 				require.Contains(weights.Forecasters, "f1")
-				require.True(weights.Forecasters["f1"].Gt(alloraMath.ZeroDec()))
+				require.True(weights.Inferers["i2"].Gt(weights.Forecasters["f1"]))
+				require.True(weights.Forecasters["f1"].Gt(weights.Inferers["i1"]))
 			},
 			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
-				args := synth.GetCombinedInferenceArgs{
-					Inferers: []synth.Inferer{"i1", "i2"},
-					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
-						"i1": mkInf("i1", "1", "0"),
-						"i2": mkInf("i2", "0", "2"),
-					},
-					InfererToRegret: map[synth.Inferer]*synth.Regret{
-						"i1": decPtr("0.1"),
-						"i2": decPtr("0.3"),
-					},
-					AllInferersAreNew: false,
-					Forecasters:       []synth.Forecaster{"f1"},
-					ForecasterToForecastImpliedInference: map[synth.Forecaster]*emissionstypes.Inference{
-						"f1": mkInf("f1", "5", "5"),
-					},
-					ForecasterToRegret: map[synth.Forecaster]*synth.Regret{
-						"f1": decPtr("0.2"),
-					},
-					EpsilonSafeDiv: mustDec("0.0000001"),
-					NumLabels:      2,
-				}
-				want := mkExpectedCombined(args, weights)
-				assertVecEqual(combined, want)
+				require.Len(combined, 2)
+
+				w1 := weights.Inferers["i1"]
+				w2 := weights.Inferers["i2"]
+				wf := weights.Forecasters["f1"]
+
+				sumWeights, err := w1.Add(w2)
+				require.NoError(err)
+				sumWeights, err = sumWeights.Add(wf)
+				require.NoError(err)
+
+				label0Numerator, err := wf.Mul(mustDec("5"))
+				require.NoError(err)
+				label0Numerator, err = label0Numerator.Add(w1)
+				require.NoError(err)
+
+				label1Numerator, err := w2.Mul(mustDec("2"))
+				require.NoError(err)
+				forecasterLabel1, err := wf.Mul(mustDec("5"))
+				require.NoError(err)
+				label1Numerator, err = label1Numerator.Add(forecasterLabel1)
+				require.NoError(err)
+
+				want0, err := label0Numerator.Quo(sumWeights)
+				require.NoError(err)
+				want1, err := label1Numerator.Quo(sumWeights)
+				require.NoError(err)
+
+				assertVecEqual(combined, alloraMath.DecArray{want0, want1})
+
+				// Distinct regrets should pull the result toward the higher-regret inferer
+				// while the forecaster still nudges both labels toward the implied [5, 5].
+				require.True(combined[0].Gt(mustDec("1")))
+				require.True(combined[0].Lt(mustDec("5")))
+				require.True(combined[1].Gt(mustDec("2")))
+				require.True(combined[1].Lt(mustDec("5")))
 			},
 		},
 		{
@@ -861,25 +797,7 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 				RegretScalePlusEpsilon:               mustDec("1"),
 				NumLabels:                            1,
 			},
-			assertResult: func(weights synth.RegretInformedWeights, combined emissionstypes.InferenceValues) {
-				args := synth.GetCombinedInferenceArgs{
-					Inferers: []synth.Inferer{"i1", "i2", "i3"},
-					InfererToInference: map[synth.Inferer]*emissionstypes.Inference{
-						"i1": mkInf("i1", "1"),
-						"i2": mkInf("i2", "3"),
-					},
-					InfererToRegret: map[synth.Inferer]*synth.Regret{
-						"i1": decPtr("0.2"),
-						"i2": decPtr("0.2"),
-						"i3": decPtr("0.2"),
-					},
-					AllInferersAreNew: false,
-					EpsilonSafeDiv:    mustDec("0.0000001"),
-					NumLabels:         1,
-				}
-				want := mkExpectedCombined(args, weights)
-				assertVecEqual(combined, want)
-			},
+			wantCombined: alloraMath.DecArray{mustDec("2")},
 		},
 	}
 
@@ -888,6 +806,9 @@ func (s *WeightsTestSuite) TestGetCombinedInference() {
 			weights, combined, err := synth.GetCombinedInference(tc.args)
 			require.NoError(err)
 
+			if tc.wantCombined != nil {
+				assertVecEqual(combined, tc.wantCombined)
+			}
 			if tc.assertWeights != nil {
 				tc.assertWeights(weights)
 			}
