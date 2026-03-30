@@ -30,7 +30,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 	topicId := s.CreateTopic()
 
 	// Get the topic
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Register workers using MsgServer
@@ -57,7 +57,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 
 	// Add worker nonce
 	nonce := types.Nonce{BlockHeight: blockHeight}
-	err = s.EmissionsKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
+	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
 	// Create and insert inferences
@@ -77,15 +77,15 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 			},
 		},
 	}
-	err = s.EmissionsKeeper().InsertInference(s.Ctx(), topicId, *inferences.Inferences[0])
+	err = s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inferences.Inferences[0])
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().InsertInference(s.Ctx(), topicId, *inferences.Inferences[1])
+	err = s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inferences.Inferences[1])
 	s.Require().NoError(err)
 
 	// Artificially add the workers as active inferers
-	err = s.EmissionsKeeper().AddActiveInferer(s.Ctx(), topicId, worker0)
+	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0)
 	s.Require().NoError(err)
-	err = s.EmissionsKeeper().AddActiveInferer(s.Ctx(), topicId, worker1)
+	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1)
 	s.Require().NoError(err)
 
 	// ------------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce() {
 	s.Require().NoError(err)
 
 	// Verify nonce is no longer unfulfilled
-	isUnfulfilled, err := s.EmissionsKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), topicId, &nonce)
+	isUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 	s.Require().False(isUnfulfilled, "Nonce should no longer be unfulfilled")
 
@@ -142,7 +142,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 	topicId := res.TopicId
 
 	// Get the topic
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	// Test 1: Closing without valid nonce
@@ -153,7 +153,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 
 	// Test 2: Closing without active inferers
 	topic.EpochLastEnded = blockHeight - 100 // Fix the window
-	err = s.EmissionsKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
+	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
 	// Move to end of worker submission window
@@ -262,16 +262,16 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	// Set up the last median and MAD for outlier detection
 	lastMedian := alloraMath.MustNewDecFromString("1.0")
 	mad := alloraMath.MustNewDecFromString("0.2")
-	err = keeper.SetLastMedianInferences(ctx, topicId, lastMedian)
+	err = s.TopicKeeper().SetLastMedianInferences(ctx, topicId, lastMedian)
 	require.NoError(err)
-	err = keeper.SetMadInferences(ctx, topicId, mad)
+	err = s.TopicKeeper().SetMadInferences(ctx, topicId, mad)
 	require.NoError(err)
 
 	// Set the outlier threshold in params
-	params, err := keeper.GetParams(ctx)
+	params, err := s.ParamsKeeper().GetParams(ctx)
 	require.NoError(err)
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
 
 	// Call the function we're testing
@@ -418,16 +418,16 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	// Set up the last median and MAD for outlier detection
 	lastMedian := alloraMath.MustNewDecFromString("1.0")
 	mad := alloraMath.MustNewDecFromString("0.2")
-	err = keeper.SetLastMedianInferences(ctx, topicId, lastMedian)
+	err = s.TopicKeeper().SetLastMedianInferences(ctx, topicId, lastMedian)
 	require.NoError(err)
-	err = keeper.SetMadInferences(ctx, topicId, mad)
+	err = s.TopicKeeper().SetMadInferences(ctx, topicId, mad)
 	require.NoError(err)
 
 	// Set the outlier threshold in params (same as other test)
-	params, err := keeper.GetParams(ctx)
+	params, err := s.ParamsKeeper().GetParams(ctx)
 	require.NoError(err)
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
 
 	// Call the function we're testing

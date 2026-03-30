@@ -36,14 +36,14 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 	err = s.BankKeeper().SendCoinsFromModuleToAccount(s.Ctx(), types.AlloraStakingAccountName, creator, creatorInitialBalanceCoins)
 	s.Require().NoError(err)
 
-	initialTopicId, err := s.EmissionsKeeper().GetNextTopicId(s.Ctx())
+	initialTopicId, err := s.TopicKeeper().GetNextTopicId(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().NotNil(initialTopicId)
 
 	// Create first topic
 	s.CreateTopic()
 
-	result, err := s.EmissionsKeeper().GetNextTopicId(s.Ctx())
+	result, err := s.TopicKeeper().GetNextTopicId(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(initialTopicId+1, result)
@@ -51,7 +51,7 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 	// Create second topic
 	s.CreateTopic()
 
-	result, err = s.EmissionsKeeper().GetNextTopicId(s.Ctx())
+	result, err = s.TopicKeeper().GetNextTopicId(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(initialTopicId+2, result)

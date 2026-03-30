@@ -4,10 +4,11 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var InitialRegretCNorm = alloraMath.MustNewDecFromString("0.75")
@@ -135,7 +136,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	var workersForEvent []Worker
 	var regretsForEvent []alloraMath.Dec
 	for _, infererLoss := range args.NetworkLosses.InfererValues {
-		lastRegret, newParticipant, err := args.K.GetInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
+		lastRegret, newParticipant, err := args.K.GetRegretsKeeper().GetInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
@@ -149,7 +150,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building inferer regret")
 		}
-		err = args.K.SetInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker, newInfererRegret)
+		err = args.K.GetRegretsKeeper().SetInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker, newInfererRegret)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting inferer regret")
 		}
@@ -182,7 +183,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	workersForEvent = nil
 	regretsForEvent = nil
 	for _, forecasterLoss := range args.NetworkLosses.ForecasterValues {
-		lastRegret, newParticipant, err := args.K.GetForecasterNetworkRegret(args.Ctx, args.TopicId, forecasterLoss.Worker)
+		lastRegret, newParticipant, err := args.K.GetRegretsKeeper().GetForecasterNetworkRegret(args.Ctx, args.TopicId, forecasterLoss.Worker)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
@@ -196,7 +197,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building forecaster regret")
 		}
-		err = args.K.SetForecasterNetworkRegret(args.Ctx, args.TopicId, forecasterLoss.Worker, newForecasterRegret)
+		err = args.K.GetRegretsKeeper().SetForecasterNetworkRegret(args.Ctx, args.TopicId, forecasterLoss.Worker, newForecasterRegret)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting forecaster regret")
 		}
@@ -229,7 +230,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	workersForEvent = nil
 	regretsForEvent = nil
 	for _, infererLoss := range args.NetworkLosses.InfererValues {
-		lastRegret, _, err := args.K.GetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
+		lastRegret, _, err := args.K.GetRegretsKeeper().GetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
@@ -243,7 +244,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building inferer regret")
 		}
-		err = args.K.SetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker, newInfererRegret)
+		err = args.K.GetRegretsKeeper().SetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker, newInfererRegret)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting inferer regret")
 		}
@@ -257,7 +258,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	// R^-j′ij - One-out inferer inferer regrets
 	for _, oneOutInfererLoss := range args.NetworkLosses.OneOutInfererValues {
 		for _, infererLoss := range args.NetworkLosses.InfererValues {
-			lastRegret, _, err := args.K.GetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, infererLoss.Worker)
+			lastRegret, _, err := args.K.GetRegretsKeeper().GetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, infererLoss.Worker)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting one-out inferer inferer regret")
 			}
@@ -271,7 +272,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building one-out inferer regret")
 			}
-			err = args.K.SetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, infererLoss.Worker, newOneOutInfererInfererRegret)
+			err = args.K.GetRegretsKeeper().SetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, infererLoss.Worker, newOneOutInfererInfererRegret)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting one-out inferer inferer regret")
 			}
@@ -281,7 +282,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	// R^-j′ik - One-out inferer forecaster regrets
 	for _, oneOutInfererLoss := range args.NetworkLosses.OneOutInfererValues {
 		for _, oneOutInfererForecasterLoss := range args.NetworkLosses.OneOutInfererForecasterValues {
-			lastRegret, _, err := args.K.GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, oneOutInfererForecasterLoss.Forecaster)
+			lastRegret, _, err := args.K.GetRegretsKeeper().GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, oneOutInfererForecasterLoss.Forecaster)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting one-out inferer forecaster regret")
 			}
@@ -295,7 +296,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building one-out inferer forecaster regret")
 			}
-			err = args.K.SetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, oneOutInfererForecasterLoss.Forecaster, newOneOutInfererForecasterRegret)
+			err = args.K.GetRegretsKeeper().SetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, oneOutInfererForecasterLoss.Forecaster, newOneOutInfererForecasterRegret)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting one-out inferer forecaster regret")
 			}
@@ -305,7 +306,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	// R^-k′ij - One-out forecaster inferer regrets
 	for _, oneOutForecasterLoss := range args.NetworkLosses.OneOutForecasterValues {
 		for _, infererloss := range args.NetworkLosses.InfererValues {
-			lastRegret, _, err := args.K.GetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, infererloss.Worker)
+			lastRegret, _, err := args.K.GetRegretsKeeper().GetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, infererloss.Worker)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting one-out forecaster inferer regret")
 			}
@@ -319,7 +320,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building one-out forecaster inferer regret")
 			}
-			err = args.K.SetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, infererloss.Worker, newOneOutForecasterInfererRegret)
+			err = args.K.GetRegretsKeeper().SetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, infererloss.Worker, newOneOutForecasterInfererRegret)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting one-out forecaster inferer regret")
 			}
@@ -329,7 +330,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	// R^-k′ik - One-out forecaster forecaster regrets
 	for _, oneOutForecasterLoss := range args.NetworkLosses.OneOutForecasterValues {
 		for _, forecasterLoss := range args.NetworkLosses.ForecasterValues {
-			lastRegret, _, err := args.K.GetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, forecasterLoss.Worker)
+			lastRegret, _, err := args.K.GetRegretsKeeper().GetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, forecasterLoss.Worker)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting one-out forecaster forecaster regret")
 			}
@@ -343,7 +344,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building one-out forecaster forecaster regret")
 			}
-			err = args.K.SetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, forecasterLoss.Worker, newOneOutForecasterForecasterRegret)
+			err = args.K.GetRegretsKeeper().SetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, forecasterLoss.Worker, newOneOutForecasterForecasterRegret)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting one-out forecaster forecaster regret")
 			}
@@ -354,7 +355,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 	for _, oneInForecasterLoss := range args.NetworkLosses.OneInForecasterValues {
 		// Loop over the inferer losses so that their losses may be compared against the one-in forecaster's loss, for each forecaster
 		for _, infererLoss := range args.NetworkLosses.InfererValues {
-			lastRegret, _, err := args.K.GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, infererLoss.Worker)
+			lastRegret, _, err := args.K.GetRegretsKeeper().GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, infererLoss.Worker)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 			}
@@ -368,13 +369,13 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building one-in forecaster regret")
 			}
-			err = args.K.SetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
+			err = args.K.GetRegretsKeeper().SetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
 			if err != nil {
 				return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting one-in forecaster regret")
 			}
 		}
 
-		lastRegret, _, err := args.K.GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker)
+		lastRegret, _, err := args.K.GetRegretsKeeper().GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
@@ -388,14 +389,14 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error computing and building one-in forecaster regret")
 		}
-		err = args.K.SetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker, newOneInForecasterRegret)
+		err = args.K.GetRegretsKeeper().SetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker, newOneInForecasterRegret)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error setting one-in forecaster regret")
 		}
 	}
 
 	// Get Params
-	params, err := args.K.GetParams(args.Ctx)
+	params, err := args.K.GetParamsKeeper().GetParams(args.Ctx)
 	if err != nil {
 		return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error getting params")
 	}
@@ -431,7 +432,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) (out GetCalcSet
 			}
 		}
 
-		err = args.K.UpdateTopicInitialRegret(args.Ctx, args.TopicId, updatedTopicInitialRegret)
+		err = args.K.GetTopicKeeper().UpdateTopicInitialRegret(args.Ctx, args.TopicId, updatedTopicInitialRegret)
 		if err != nil {
 			return GetCalcSetNetworkRegretsOut{}, errorsmod.Wrapf(err, "Error updating topic initial regret")
 		}

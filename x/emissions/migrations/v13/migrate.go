@@ -163,7 +163,7 @@ func MigrateTopics(
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
-		ctx.Logger().Debug("MIGRATION V13: Updating topic", "topicId", topic.Id)
+		ctx.Logger().Info("MIGRATION V13: Updating topic", "topicId", topic.Id)
 
 		topic.CNorm = oldCNorm
 
@@ -172,7 +172,7 @@ func MigrateTopics(
 
 	for key, topic := range topicsToChange {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&topic))
-		ctx.Logger().Debug("MIGRATION V13: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
+		ctx.Logger().Info("MIGRATION V13: Updated topic with CNorm", "topicId", topic.Id, "cNorm", oldCNorm)
 	}
 
 	ctx.Logger().Info("MIGRATION V13: Topics migration complete", "topicsUpdated", len(topicsToChange))

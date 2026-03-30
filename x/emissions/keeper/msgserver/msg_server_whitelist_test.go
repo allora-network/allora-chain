@@ -10,7 +10,6 @@ import (
 func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
 
 	adminAddr := s.AddrsStr(0)
 	targetAddr := s.AddrsStr(1)
@@ -58,7 +57,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 				return err
 			},
 			verifyResult: func() {
-				isAdmin, err := keeper.IsWhitelistAdmin(ctx, nonAdminAddr)
+				isAdmin, err := s.WhitelistsKeeper().IsWhitelistAdmin(ctx, nonAdminAddr)
 				s.Require().NoError(err)
 				s.Require().True(isAdmin)
 			},
@@ -74,7 +73,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 				return err
 			},
 			verifyResult: func() {
-				isAdmin, err := keeper.IsWhitelistAdmin(ctx, targetAddr)
+				isAdmin, err := s.WhitelistsKeeper().IsWhitelistAdmin(ctx, targetAddr)
 				s.Require().NoError(err)
 				s.Require().False(isAdmin)
 			},
@@ -101,7 +100,7 @@ func (s *MsgServerTestSuite) TestWhitelistAdminOperations() {
 func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 
 	adminAddr := s.AddrsStr(0)
 	targetAddr := s.AddrsStr(1)
@@ -360,7 +359,7 @@ func (s *MsgServerTestSuite) TestGlobalWhitelistOperations() {
 func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 	adminAddr := s.AddrsStr(0)
 
 	addresses := []string{
@@ -370,10 +369,10 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 	}
 
 	// Set max array length for testing
-	params, err := keeper.GetParams(ctx)
+	params, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	params.MaxWhitelistInputArrayLength = 3
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	tooManyAddresses := make([]string, params.MaxWhitelistInputArrayLength+1)
@@ -522,7 +521,7 @@ func (s *MsgServerTestSuite) TestBulkWhitelistOperations() {
 func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 
 	adminAddr := s.AddrsStr(0)
 	targetAddr := s.AddrsStr(1)
@@ -784,7 +783,7 @@ func (s *MsgServerTestSuite) TestTopicWhitelistOperations() {
 func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 	ctx := s.Ctx()
 	msgServer := s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
+	keeper := s.WhitelistsKeeper()
 	adminAddr := s.AddrsStr(0)
 	topicId := s.CreateTopic()
 
@@ -795,10 +794,10 @@ func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 	}
 
 	// Set max array length for testing
-	params, err := keeper.GetParams(ctx)
+	params, err := s.ParamsKeeper().GetParams(ctx)
 	s.Require().NoError(err)
 	params.MaxWhitelistInputArrayLength = 3
-	err = keeper.SetParams(ctx, params)
+	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	tooManyAddresses := make([]string, params.MaxWhitelistInputArrayLength+1)

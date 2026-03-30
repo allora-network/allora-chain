@@ -52,8 +52,7 @@ type EmitRewardsArgs struct {
 
 func EmitRewards(args EmitRewardsArgs) error {
 	// Get current total treasury, to confirm it covers the rewards to give
-	totalRewardTreasury, err := args.K.GetTotalRewardToDistribute(args.Ctx)
-	Logger(args.Ctx).Debug("Max rewards to distribute this epoch", "totalRewardTreasury", totalRewardTreasury.String())
+	totalRewardTreasury, err := args.K.GetBankingKeeper().GetTotalRewardToDistribute(args.Ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max rewards to distribute")
 	}
@@ -77,7 +76,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 	}
 
 	// Get the global total sum of previous topic weights
-	totalSumPreviousTopicWeights, err := args.K.GetTotalSumPreviousTopicWeights(args.Ctx)
+	totalSumPreviousTopicWeights, err := args.K.GetTopicKeeper().GetTotalSumPreviousTopicWeights(args.Ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total sum of previous topic weights")
 	}
@@ -87,7 +86,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 	// Get epoch lengths for sorted rewardable topics
 	epochLengths := make(map[uint64]int64)
 	for _, topicId := range sortedRewardableTopics {
-		topic, err := args.K.GetTopic(args.Ctx, topicId)
+		topic, err := args.K.GetTopicKeeper().GetTopic(args.Ctx, topicId)
 		if err != nil {
 			return errors.Wrapf(err, "failed to get epoch length for topic %d", topicId)
 		}
@@ -129,11 +128,11 @@ func EmitRewards(args EmitRewardsArgs) error {
 	redirectedTopicIds := make([]uint64, 0)
 
 	for _, topicId := range sortedRewardableTopics {
-		topicRewardNonce, err := args.K.GetTopicRewardNonce(args.Ctx, topicId)
+		topicRewardNonce, err := args.K.GetTopicKeeper().GetTopicRewardNonce(args.Ctx, topicId)
 		if err != nil || topicRewardNonce == 0 {
 			// return reward to ecosystem account
 			rewardAmount := *topicRewards[topicId]
-			err = args.K.MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, rewardAmount)
+			err = args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, rewardAmount)
 			if err != nil {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
 				panic(err)
@@ -164,7 +163,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 		if err != nil {
 			// return reward to ecosystem account
 			rewardAmount := *topicRewards[topicId]
-			errMC := args.K.MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, rewardAmount)
+			errMC := args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, rewardAmount)
 			if errMC != nil {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", errMC)
 				panic(errMC)
@@ -193,7 +192,7 @@ func EmitRewards(args EmitRewardsArgs) error {
 	}
 
 	// Add accumulated monthly reputer rewards
-	err = args.K.AddMonthlyRewards(args.Ctx, totalMonthlyReputerRewards, totalMonthlyTopicRewards)
+	err = args.K.GetWeightsKeeper().AddMonthlyRewards(args.Ctx, totalMonthlyReputerRewards, totalMonthlyTopicRewards)
 	if err != nil {
 		return errors.Wrapf(err, "failed to add monthly rewards")
 	}
@@ -360,21 +359,21 @@ func GenerateRewardsDistributionByTopicParticipant(
 		return nil, alloraMath.Dec{}, types.ErrInvalidReward
 	}
 	args.Ctx.Logger().Debug("Generating rewards distribution for topic", "topicId", args.TopicId, "block", args.BlockHeight, "topicReward", args.TopicReward)
-	bundles, err := args.K.GetReputerLossBundlesAtBlock(args.Ctx, args.TopicId, args.BlockHeight)
+	bundles, err := args.K.GetReputerLossKeeper().GetReputerLossBundlesAtBlock(args.Ctx, args.TopicId, args.BlockHeight)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer loss bundle at block %d", args.BlockHeight)
 	}
-	if bundles != nil && len(bundles.ReputerValueBundles) == 0 {
+	if len(bundles.ReputerValueBundles) == 0 {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "empty reputer loss bundles")
 	}
 
-	lossBundles, err := args.K.GetNetworkLossBundleAtBlock(args.Ctx, args.TopicId, args.BlockHeight)
+	lossBundles, err := args.K.GetReputerLossKeeper().GetNetworkLossBundleAtBlock(args.Ctx, args.TopicId, args.BlockHeight)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", args.BlockHeight)
 	}
 
 	// Calculate and Set the reputer scores
-	reputerScores, err := GenerateReputerScores(args.Ctx, args.K, args.TopicId, args.BlockHeight, *bundles)
+	reputerScores, err := GenerateReputerScores(args.Ctx, args.K, args.TopicId, args.BlockHeight, bundles)
 	if err != nil {
 		return nil, alloraMath.Dec{}, err
 	}
@@ -488,7 +487,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Get previous forecaster score ratio for topic
-	previousForecasterScoreRatio, err := args.K.GetPreviousForecasterScoreRatio(args.Ctx, args.TopicId)
+	previousForecasterScoreRatio, err := args.K.GetScoresKeeper().GetPreviousForecasterScoreRatio(args.Ctx, args.TopicId)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast score ratio")
 	}
@@ -509,7 +508,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	types.EmitNewForecastTaskUtilityScoreSetEvent(args.Ctx, args.TopicId, forecastingTaskUtilityScore, args.BlockHeight)
 
 	// Set updated forecaster score ratio
-	err = args.K.SetPreviousForecasterScoreRatio(args.Ctx, args.TopicId, updatedForecasterScoreRatio)
+	err = args.K.GetScoresKeeper().SetPreviousForecasterScoreRatio(args.Ctx, args.TopicId, updatedForecasterScoreRatio)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous forecast score ratio")
 	}
@@ -626,7 +625,7 @@ func payoutRewards(
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == types.ReputerAndDelegatorRewardType {
-			err := k.SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
+			err := k.GetBankingKeeper().SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(
 					err,
@@ -635,7 +634,7 @@ func payoutRewards(
 				))
 				continue
 			}
-			err = k.AddReputerStake(ctx, reward.TopicId, reward.Address, rewardInt)
+			err = k.GetStakingKeeper().AddReputerStake(ctx, reward.TopicId, reward.Address, rewardInt)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address, rewardInt.String()))
 				continue
@@ -649,13 +648,13 @@ func payoutRewards(
 				continue
 			}
 
-			nodeInfo, err := k.GetWorkerInfo(ctx, reward.Address)
+			nodeInfo, err := k.GetWorkerKeeper().GetWorkerInfo(ctx, reward.Address)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to get worker info: %s", reward.Address))
 				continue
 			}
 
-			err = k.SendCoinsFromModuleToAccount(
+			err = k.GetBankingKeeper().SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraRewardsAccountName,
 				nodeInfo.Owner,
@@ -705,13 +704,13 @@ func pruneRecordsAfterRewards(
 	topicRewardNonce int64,
 ) error {
 	// Delete topic reward nonce
-	err := k.DeleteTopicRewardNonce(ctx, topicId)
+	err := k.GetTopicKeeper().DeleteTopicRewardNonce(ctx, topicId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete topic reward nonce")
 	}
 
 	// Get oldest unfulfilled nonce - delete everything behind it
-	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+	unfulfilledNonces, err := k.GetNonceKeeper().GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return err
 	}
@@ -728,7 +727,7 @@ func pruneRecordsAfterRewards(
 		}
 	}
 
-	topic, err := k.GetTopic(ctx, topicId)
+	topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get topic")
 	}

@@ -111,12 +111,48 @@ func (s *TestSuite) BankKeeper() keeper.BankKeeper {
 	return s.bankKeeper
 }
 
+func (s *TestSuite) ScoresKeeper() *keeper.ScoresKeeper {
+	return s.emissionsKeeper.GetScoresKeeper()
+}
+
+func (s *TestSuite) ParamsKeeper() *keeper.ParamsKeeper {
+	return s.emissionsKeeper.GetParamsKeeper()
+}
+
+func (s *TestSuite) TopicKeeper() *keeper.TopicKeeper {
+	return s.emissionsKeeper.GetTopicKeeper()
+}
+
 func (s *TestSuite) MintKeeper() minttypes.MintKeeper {
 	return s.mintKeeper
 }
 
-func (s *TestSuite) StakingKeeper() minttypes.StakingKeeper {
-	return s.stakingKeeper
+func (s *TestSuite) StakingKeeper() *keeper.StakingKeeper {
+	return s.emissionsKeeper.GetStakingKeeper()
+}
+
+func (s *TestSuite) ReputerLossKeeper() *keeper.ReputerLossKeeper {
+	return s.emissionsKeeper.GetReputerLossKeeper()
+}
+
+func (s *TestSuite) NonceKeeper() *keeper.NonceKeeper {
+	return s.emissionsKeeper.GetNonceKeeper()
+}
+
+func (s *TestSuite) WorkerKeeper() *keeper.WorkerKeeper {
+	return s.emissionsKeeper.GetWorkerKeeper()
+}
+
+func (s *TestSuite) WeightsKeeper() *keeper.WeightsKeeper {
+	return s.emissionsKeeper.GetWeightsKeeper()
+}
+
+func (s *TestSuite) WhitelistsKeeper() *keeper.WhitelistsKeeper {
+	return s.emissionsKeeper.GetWhitelistsKeeper()
+}
+
+func (s *TestSuite) RegretsKeeper() *keeper.RegretsKeeper {
+	return s.emissionsKeeper.GetRegretsKeeper()
 }
 
 func (s *TestSuite) EmissionsAppModule() module.AppModule {
@@ -366,13 +402,13 @@ func (s *TestSuite) SetupTest() {
 
 	// Add all tests addresses in whitelists
 	for _, addr := range s.addrsStr {
-		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		err := s.WhitelistsKeeper().AddWhitelistAdmin(ctx, addr)
 		s.Require().NoError(err)
 
-		err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, addr)
+		err = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, addr)
 		s.Require().NoError(err)
 
-		err = s.emissionsKeeper.AddToGlobalWhitelist(ctx, addr)
+		err = s.WhitelistsKeeper().AddToGlobalWhitelist(ctx, addr)
 		s.Require().NoError(err)
 	}
 
@@ -384,7 +420,7 @@ func (s *TestSuite) SetParamsForTest() {
 	// Setup a sender address
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
-	err := s.emissionsKeeper.AddWhitelistAdmin(s.Ctx(), adminAddr.String())
+	err := s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
 	s.Require().NoError(err)
 
 	//nolint:exhaustruct
@@ -833,7 +869,7 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 		newTopicMsg.WorkerSubmissionWindow = newTopicMsg.EpochLength - 1
 	}
 	if newTopicMsg.EpochLength < newTopicMsg.GroundTruthLag {
-		prms, err := s.EmissionsKeeper().GetParams(s.Ctx())
+		prms, err := s.ParamsKeeper().GetParams(s.Ctx())
 		s.Require().NoError(err)
 		maxGTL := prms.MaxUnfulfilledReputerRequests * uint64(newTopicMsg.EpochLength)
 		if uint64(newTopicMsg.GroundTruthLag) > maxGTL {
@@ -845,11 +881,11 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 	s.Require().NoError(err)
 
 	if p.epochLastEnded > 0 || p.initialRegret != "" {
-		topic, err := s.emissionsKeeper.GetTopic(s.Ctx(), res.TopicId)
+		topic, err := s.TopicKeeper().GetTopic(s.Ctx(), res.TopicId)
 		s.Require().NoError(err)
 		topic.EpochLastEnded = p.epochLastEnded
 		topic.InitialRegret = alloraMath.MustNewDecFromString(p.initialRegret)
-		err = s.emissionsKeeper.SetTopic(s.Ctx(), topic.Id, topic)
+		err = s.TopicKeeper().SetTopic(s.Ctx(), topic.Id, topic)
 		s.Require().NoError(err)
 	}
 
@@ -1029,7 +1065,7 @@ func (s *TestSuite) FullTopicSetup(workerIndexes, reputerIndexes []int, options 
 		s.SetupParticipants(topicId, reputerIndexes, true, options...)
 	}
 
-	topic, err := s.emissionsKeeper.GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
 
 	return topic
@@ -1065,17 +1101,17 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	var err error
 	nonce := p.block
 	if nonce == 0 {
-		nonce, _, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.Ctx(), p.topicID)
+		nonce, _, err = s.TopicKeeper().GetNextPossibleChurningBlockByTopicId(s.Ctx(), p.topicID)
 		s.Require().NoError(err)
 		s.T().Logf("Moving nonce to post inferences for TopicId: %d, Next block: %v", p.topicID, nonce)
 		s.WithBlockHeight(nonce)
 		s.EndBlock()
 	}
 
-	topic, err = s.emissionsKeeper.GetTopic(s.Ctx(), topic.Id)
+	topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topic.Id)
 	s.Require().NoError(err)
 
-	workerNonces, err := s.emissionsKeeper.GetUnfulfilledWorkerNonces(s.Ctx(), topic.Id)
+	workerNonces, err := s.NonceKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topic.Id)
 	s.Require().NoError(err)
 
 	if len(workerNonces.Nonces) > 0 {
@@ -1091,7 +1127,7 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	s.WithBlockHeight(epochEndBlock)
 	s.EndBlock()
 
-	reputerNonces, err := s.emissionsKeeper.GetUnfulfilledReputerNonces(s.Ctx(), p.topicID)
+	reputerNonces, err := s.NonceKeeper().GetUnfulfilledReputerNonces(s.Ctx(), p.topicID)
 	s.Require().NoError(err)
 
 	if len(reputerNonces.Nonces) > 0 {

@@ -3,9 +3,10 @@ package v6_test
 import (
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/stretchr/testify/suite"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 
 	v5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
 	v6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
@@ -91,7 +92,7 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 
 	paramsExpected := defaultParams
 
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(paramsExpected.Version, params.Version)
 	s.Require().Equal(paramsExpected.MaxSerializedMsgLength, params.MaxSerializedMsgLength)
@@ -142,9 +143,6 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 // In this test we check that the topic worker and reputer whitelists
 // have been turned on for all topics.
 func (s *EmissionsV6MigrationTestSuite) TestFlipOnTopicWhitelists() {
-	store := runtime.KVStoreAdapter(s.StoreServiceEmissions().OpenKVStore(s.Ctx()))
-	cdc := s.EmissionsKeeper().GetBinaryCodec()
-
 	const (
 		startTopicID = 2
 		numTopics    = 4
@@ -152,28 +150,28 @@ func (s *EmissionsV6MigrationTestSuite) TestFlipOnTopicWhitelists() {
 
 	// Create 3 test topics
 	for i := uint64(startTopicID); i <= numTopics-startTopicID; i++ {
-		_, err := s.EmissionsKeeper().IncrementTopicId(s.Ctx())
+		_, err := s.TopicKeeper().IncrementTopicId(s.Ctx())
 		s.Require().NoError(err)
 
 		s.CreateTopic()
 
-		_, err = s.EmissionsKeeper().IncrementTopicId(s.Ctx())
+		_, err = s.TopicKeeper().IncrementTopicId(s.Ctx())
 		s.Require().NoError(err)
 	}
 
 	// Run the migration
-	err := v6.FlipOnTopicWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	err := v6.FlipOnTopicWhitelists(s.Ctx(), s.TopicKeeper(), s.WhitelistsKeeper())
 	s.Require().NoError(err)
 
 	// Verify each topic has whitelists enabled
 	for i := uint64(startTopicID); i <= numTopics-startTopicID; i++ {
 		// Check worker whitelist is enabled
-		workerWhitelistEnabled, err := s.EmissionsKeeper().IsTopicWorkerWhitelistEnabled(s.Ctx(), i)
+		workerWhitelistEnabled, err := s.WhitelistsKeeper().IsTopicWorkerWhitelistEnabled(s.Ctx(), i)
 		s.Require().NoError(err)
 		s.Require().True(workerWhitelistEnabled)
 
 		// Check reputer whitelist is enabled
-		reputerWhitelistEnabled, err := s.EmissionsKeeper().IsTopicReputerWhitelistEnabled(s.Ctx(), i)
+		reputerWhitelistEnabled, err := s.WhitelistsKeeper().IsTopicReputerWhitelistEnabled(s.Ctx(), i)
 		s.Require().NoError(err)
 		s.Require().True(reputerWhitelistEnabled)
 	}

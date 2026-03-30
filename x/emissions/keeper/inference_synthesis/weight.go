@@ -7,10 +7,11 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // CalcWeightsGivenWorkersArgs holds inputs for CalcWeightsGivenWorkers.
@@ -513,7 +514,7 @@ func StoreLatestNormalizedWeights(ctx sdk.Context, k keeper.Keeper, topicId Topi
 	// Set inferer weights
 	infererWorkers := alloraMath.GetSortedKeys(weights.Inferers)
 	for _, worker := range infererWorkers {
-		err := k.SetLatestInfererWeight(ctx, topicId, worker, weights.Inferers[worker])
+		err := k.GetWeightsKeeper().SetLatestInfererWeight(ctx, topicId, worker, weights.Inferers[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error setting latest inferer weight for worker %s", worker)
 		}
@@ -522,7 +523,7 @@ func StoreLatestNormalizedWeights(ctx sdk.Context, k keeper.Keeper, topicId Topi
 	// Set forecaster weights
 	forecasterWorkers := alloraMath.GetSortedKeys(weights.Forecasters)
 	for _, worker := range forecasterWorkers {
-		err := k.SetLatestForecasterWeight(ctx, topicId, worker, weights.Forecasters[worker])
+		err := k.GetWeightsKeeper().SetLatestForecasterWeight(ctx, topicId, worker, weights.Forecasters[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error setting latest forecaster weight for worker %s", worker)
 		}

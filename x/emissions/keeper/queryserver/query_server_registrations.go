@@ -4,19 +4,22 @@ import (
 	"context"
 	"time"
 
-	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.GetWorkerNodeInfoRequest) (_ *types.GetWorkerNodeInfoResponse, err error) {
 	defer metrics.RecordMetrics("GetWorkerNodeInfo", time.Now(), &err)
 
-	node, err := qs.k.GetWorkerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
+	node, err := qs.wk.GetWorkerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +30,7 @@ func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.GetWorke
 func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.GetReputerNodeInfoRequest) (_ *types.GetReputerNodeInfoResponse, err error) {
 	defer metrics.RecordMetrics("GetReputerNodeInfo", time.Now(), &err)
 
-	node, err := qs.k.GetReputerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
+	node, err := qs.rlk.GetReputerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -38,18 +41,18 @@ func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.GetRepu
 func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *types.IsWorkerRegisteredInTopicIdRequest) (_ *types.IsWorkerRegisteredInTopicIdResponse, err error) {
 	defer metrics.RecordMetrics("IsWorkerRegisteredInTopicId", time.Now(), &err)
 
-	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
+	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
-	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
 	} else if err != nil {
 		return nil, err
 	}
 
-	isRegistered, err := qs.k.IsWorkerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, req.Address)
+	isRegistered, err := qs.wk.IsWorkerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +63,10 @@ func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *type
 func (qs queryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *types.IsReputerRegisteredInTopicIdRequest) (_ *types.IsReputerRegisteredInTopicIdResponse, err error) {
 	defer metrics.RecordMetrics("IsReputerRegisteredInTopicId", time.Now(), &err)
 
-	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
+	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
-	isRegistered, err := qs.k.IsReputerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, req.Address)
+	isRegistered, err := qs.rlk.IsReputerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, req.Address)
 	if err != nil {
 		return nil, err
 	}

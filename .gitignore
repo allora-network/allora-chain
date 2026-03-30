@@ -61,3 +61,5 @@ allora.log
 .agents
 .cursor
 .claude
+.worktrees/
+

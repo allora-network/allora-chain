@@ -21,22 +21,22 @@ import (
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (_ *types.InsertWorkerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), &err)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err = ms.k.ValidateStringIsBech32(msg.Sender)
+	err = keeper.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error validating sender address")
 	}
-	err = ms.k.ValidateStringIsBech32(msg.WorkerDataBundle.Worker)
+	err = keeper.ValidateStringIsBech32(msg.WorkerDataBundle.Worker)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error validating worker address")
 	}
-	canSubmit, err := ms.k.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
+	canSubmit, err := ms.wlk.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error checking if worker can submit payload")
 	} else if !canSubmit {
 		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
 	}
 
-	moduleParams, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params")
 	}
@@ -55,11 +55,11 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	nonce := wdb.Nonce
 	topicId := wdb.TopicId
 
-	topic, err := ms.k.GetTopic(ctx, topicId)
+	topic, err := ms.tk.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
-	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce)
+	nonceUnfulfilled, err := ms.nk.IsWorkerNonceUnfulfilled(ctx, topicId, nonce)
 	if err != nil {
 		return nil, err
 	} else if !nonceUnfulfilled {
@@ -77,7 +77,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		)
 	}
 
-	isWorkerRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, wdb.Worker)
+	isWorkerRegistered, err := ms.wk.IsWorkerRegisteredInTopic(ctx, topicId, wdb.Worker)
 	if err != nil {
 		return nil, err
 	} else if !isWorkerRegistered {
@@ -100,7 +100,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 				"inferer not using the same topic as bundle")
 		}
 
-		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
+		err = ms.wk.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
@@ -121,7 +121,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		// Limit forecast elements to top inferers
 		latestScoresForForecastedInferers := make([]types.Score, 0)
 		for _, el := range forecast.ForecastElements {
-			score, err := ms.k.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
+			score, err := ms.sck.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
 			if err != nil {
 				continue
 			}
@@ -149,7 +149,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 
 		if len(acceptedForecastElements) > 0 {
 			forecast.ForecastElements = acceptedForecastElements
-			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
+			err = ms.wk.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err,
 					"Error appending forecast")

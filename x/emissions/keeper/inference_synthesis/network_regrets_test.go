@@ -109,7 +109,7 @@ func (s *InferenceSynthesisTestSuite) TestComputeAndBuildEMRegret() {
 // by the topic's initial regret.
 func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require := s.Require()
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 
 	topicId := uint64(1)
 	// Create new topic
@@ -117,7 +117,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	topic.InitialRegret = alloraMath.ZeroDec()
 	// Need to use "0.5" to set limit inclusions count as 2=(1/0.5)
 	topic.AlphaRegret = alloraMath.MustNewDecFromString("0.5")
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	require.NoError(err)
 
 	worker1 := s.AddrsStr(1)
@@ -258,7 +258,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require.True(worker3NoPriorRegret)
 
 	// Get topic initial regret
-	topic, err = k.GetTopic(s.Ctx(), topicId)
+	topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 
 	for _, acc := range bothAccs {
@@ -281,7 +281,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 
 func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers() {
 	require := s.Require()
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 
 	worker1 := s.AddrsStr(1)
 	worker2 := s.AddrsStr(2)
@@ -403,7 +403,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 
 func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	require := s.Require()
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epochPrevGet := epochGet[300]
 	epoch301Get := epochGet[301]
@@ -526,7 +526,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 // We then compare the resulting regrets to see if the higher losses result in lower regrets.
 func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	require := s.Require()
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 
 	topicId := uint64(1)
 	blockHeight := int64(1003)
@@ -792,7 +792,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	initialRegret := alloraMath.ZeroDec()
 	topic := s.MockTopic()
 	topic.AlphaRegret = alloraMath.MustNewDecFromString("0.5")
-	err := s.EmissionsKeeper().SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	s.Require().NoError(err)
 
 	// Create 8 inferer addresses
@@ -831,7 +831,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 			BlockHeight: blockHeight,
 			Value:       value,
 		}
-		err = k.SetInfererNetworkRegret(s.Ctx(), topicId, worker, timestampedValue)
+		err = s.RegretsKeeper().SetInfererNetworkRegret(s.Ctx(), topicId, worker, timestampedValue)
 		require.NoError(err)
 	}
 
@@ -841,7 +841,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 			BlockHeight: blockHeight,
 			Value:       value,
 		}
-		err = k.SetForecasterNetworkRegret(s.Ctx(), topicId, worker, timestampedValue)
+		err = s.RegretsKeeper().SetForecasterNetworkRegret(s.Ctx(), topicId, worker, timestampedValue)
 		require.NoError(err)
 	}
 
@@ -896,7 +896,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	require.NoError(err)
 
 	// Verify that initial regret was updated
-	topic, err = s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err = s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 	require.NotEqual(topic.InitialRegret, initialRegret)
 
@@ -929,7 +929,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 // are no experienced workers but enough total workers to use the fallback mechanism.
 func (s *InferenceSynthesisTestSuite) TestCalcSetNetworkRegretsWithFallbackRegrets() {
 	require := s.Require()
-	k := *s.EmissionsKeeper()
+	k := s.RegretsKeeper()
 
 	// Setup topic
 	topicId := uint64(1)
@@ -945,7 +945,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcSetNetworkRegretsWithFallbackRegre
 	// Create topic
 	topic := s.MockTopic()
 	topic.AlphaRegret = alpha
-	err := k.SetTopic(s.Ctx(), topicId, topic)
+	err := s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
 	require.NoError(err)
 
 	// Setup workers
@@ -968,11 +968,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcSetNetworkRegretsWithFallbackRegre
 
 	// Add workers with only 1 inclusion each (not experienced)
 	for _, worker := range infererAddresses {
-		err := k.IncrementCountInfererInclusionsInTopic(s.Ctx(), topicId, worker)
+		err := s.EmissionsKeeper().IncrementCountInfererInclusionsInTopic(s.Ctx(), topicId, worker)
 		require.NoError(err)
 	}
 	for _, worker := range forecasterAddresses {
-		err := k.IncrementCountForecasterInclusionsInTopic(s.Ctx(), topicId, worker)
+		err := s.EmissionsKeeper().IncrementCountForecasterInclusionsInTopic(s.Ctx(), topicId, worker)
 		require.NoError(err)
 	}
 
@@ -1034,7 +1034,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcSetNetworkRegretsWithFallbackRegre
 	_, err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   s.Ctx(),
-			K:                     k,
+			K:                     *s.EmissionsKeeper(),
 			TopicId:               topicId,
 			NetworkLosses:         networkLosses,
 			Nonce:                 nonce,
@@ -1048,7 +1048,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcSetNetworkRegretsWithFallbackRegre
 	require.NoError(err)
 
 	// Get the updated topic
-	updatedTopic, err := k.GetTopic(s.Ctx(), topicId)
+	updatedTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 
 	// Since we're using fallback regrets (no experienced workers),

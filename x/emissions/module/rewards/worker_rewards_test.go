@@ -34,11 +34,11 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 			}
 
 			// Persist worker inference score
-			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
+			err := s.ScoresKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			// Persist worker forecast score
-			err = s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
+			err = s.ScoresKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 		}
 
@@ -121,11 +121,11 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 			}
 
 			// Persist worker inference score
-			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
+			err := s.ScoresKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			// Persist worker forecast score
-			err = s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
+			err = s.ScoresKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 		}
 
@@ -205,11 +205,11 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 
 	// CSV values were generated considering just max scores = 10
 	// The actual implementation considers max scores = 10 * max actors to reward
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	params.MaxTopInferersToReward = 1
 	params.MaxTopForecastersToReward = 1
-	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
+	err = s.ParamsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err)
 
 	// Add scores from previous epochs
@@ -240,7 +240,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			}
 
 			// Persist worker inference score
-			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
+			err := s.ScoresKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			if j == 3 {
@@ -257,7 +257,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			}
 
 			// Persist worker forecast score
-			err := s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
+			err := s.ScoresKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
 			if j == 3 {
@@ -336,7 +336,7 @@ func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
 
 	// Add previous reward fractions
 	for i, infererAddr := range infererAddresses {
-		err := s.EmissionsKeeper().SetPreviousInferenceRewardFraction(s.Ctx(), topicId, infererAddr, infererPreviousFractions[i])
+		err := s.ScoresKeeper().SetPreviousInferenceRewardFraction(s.Ctx(), topicId, infererAddr, infererPreviousFractions[i])
 		s.Require().NoError(err)
 	}
 
@@ -385,7 +385,7 @@ func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
 
 	// Add previous reward fractions
 	for i, forecasterAddr := range forecasterAddresses {
-		err := s.EmissionsKeeper().SetPreviousForecastRewardFraction(s.Ctx(), topicId, forecasterAddr, forecasterPreviousFractions[i])
+		err := s.ScoresKeeper().SetPreviousForecastRewardFraction(s.Ctx(), topicId, forecasterAddr, forecasterPreviousFractions[i])
 		s.Require().NoError(err)
 	}
 
@@ -655,7 +655,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	}
 
 	// Persist network losses
-	err := s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
+	err := s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	if err != nil {
 		return types.ValueBundle{}, err
 	}
@@ -729,7 +729,7 @@ func mockSimpleNetworkLosses(
 		OneOutInfererForecasterValues: nil,
 	}
 
-	err := s.EmissionsKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
+	err := s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	if err != nil {
 		return types.ValueBundle{}, err
 	}
@@ -770,13 +770,13 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, e
 			}
 
 			// Persist worker inference score
-			err := s.EmissionsKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blocks[j], scoreToAdd)
+			err := s.ScoresKeeper().InsertWorkerInferenceScore(s.Ctx(), topicId, blocks[j], scoreToAdd)
 			if err != nil {
 				return nil, err
 			}
 
 			// Persist worker forecast score
-			err = s.EmissionsKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blocks[j], scoreToAdd)
+			err = s.ScoresKeeper().InsertWorkerForecastScore(s.Ctx(), topicId, blocks[j], scoreToAdd)
 			if err != nil {
 				return nil, err
 			}

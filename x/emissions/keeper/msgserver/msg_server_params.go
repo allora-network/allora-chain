@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -11,17 +12,17 @@ import (
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (_ *types.UpdateParamsResponse, err error) {
 	defer metrics.RecordMetrics("UpdateParams", time.Now(), &err)
 
-	err = ms.k.ValidateStringIsBech32(msg.Sender)
+	err = keeper.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-	canUpdate, err := ms.k.CanUpdateParams(ctx, msg.Sender)
+	canUpdate, err := ms.wlk.CanUpdateParams(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
 	} else if !canUpdate {
 		return nil, types.ErrNotPermittedToUpdateParams
 	}
-	existingParams, err := ms.k.GetParams(ctx)
+	existingParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +191,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if err != nil {
 		return nil, err
 	}
-	err = ms.k.SetParams(ctx, existingParams)
+	err = ms.pk.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err
 	}

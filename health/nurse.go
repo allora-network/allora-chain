@@ -119,6 +119,7 @@ func (n *Nurse) Start() error {
 			func() {
 				n.checksMu.RLock()
 				defer n.checksMu.RUnlock()
+				//nolint:maprange // nurse diagnostics only, does not affect consensus
 				for reason, checkFunc := range n.checks {
 					if unwell, meta := checkFunc(); unwell {
 						n.GatherVitals(reason, meta)
@@ -258,6 +259,7 @@ func (n *Nurse) appendLog(now time.Time, reason string, meta Meta, wg *sync.Wait
 	lines[0] = fmt.Sprintf("==== %v", now)
 	lines[1] = fmt.Sprintf("reason: %v", reason)
 	i := 0
+	//nolint:maprange // nurse diagnostics only, does not affect consensus
 	for k, v := range meta {
 		lines[i] = fmt.Sprintf("- %v: %v", k, v)
 		i++
