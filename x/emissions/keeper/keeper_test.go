@@ -1,3 +1,4 @@
+//nolint:exhaustruct,
 package keeper_test
 
 import (
@@ -1233,13 +1234,13 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 			},
 		},
@@ -1273,19 +1274,19 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(100), // Assuming NewDecFromInt64 exists and is appropriate
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(100)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(200),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(200)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(10000),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(10000)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 			},
 		},
@@ -1304,9 +1305,8 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 	actualInferences, err = k.GetInferencesAtBlock(ctx, topicId, block, true)
 	s.Require().NoError(err)
 	s.Require().Len(actualInferences.Inferences, 2)
-	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Value)
-	s.Require().Equal(alloraMath.NewDecFromInt64(200), actualInferences.Inferences[1].Value)
-
+	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Values[0])
+	s.Require().Equal(alloraMath.NewDecFromInt64(200), actualInferences.Inferences[1].Values[0])
 }
 
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
@@ -1327,8 +1327,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
-		Value:       alloraMath.MustNewDecFromString("10"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data1"),
 		Proof:       "proof1",
 	}
@@ -1345,8 +1344,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     "allo1dwxj49n0t5969uj4zfuemxg8a2ty85njn9xy9t",
-		Value:       alloraMath.MustNewDecFromString("20"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("20")},
 		ExtraData:   []byte("data2"),
 		Proof:       "proof2",
 	}
@@ -1379,8 +1377,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     workerAccStr,
-		Value:       alloraMath.MustNewDecFromString("10"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
@@ -1392,8 +1389,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     workerAccStr,
-		Value:       alloraMath.MustNewDecFromString("10"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
@@ -3358,13 +3354,13 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     s.AddrsStr(0),
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 				Inferer:     s.AddrsStr(1),
 			},
 		},
@@ -4201,9 +4197,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.52")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.71")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")}},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}},
 		},
 	}
 	for _, inference := range allInferences.Inferences {
@@ -4216,8 +4212,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker4,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4232,8 +4227,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker5,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4285,8 +4279,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker2,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4355,7 +4348,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
 			Inferer:     workers[i],
-			Value:       alloraMath.MustNewDecFromString(formatValue(0.11 + float64(i)*0.01)),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(formatValue(0.11 + float64(i)*0.01))},
 		}
 	}
 
@@ -4395,7 +4388,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
 			Inferer:     workers[i],
-			Value:       alloraMath.MustNewDecFromString(formatValue(0.22 + float64(i-1)*0.01)),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(formatValue(0.22 + float64(i-1)*0.01))},
 		}
 	}
 
@@ -5171,8 +5164,7 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 	inference := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: 100,
-		Value:       alloraMath.NewDecFromInt64(1),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 		Inferer:     inferer,
 		ExtraData:   []byte("data"),
 		Proof:       "",
@@ -5291,19 +5283,19 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Value:       alloraMath.NewDecFromInt64(10),
+			Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(10)},
 			Inferer:     s.AddrsStr(0),
 		},
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Value:       alloraMath.NewDecFromInt64(11),
+			Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(11)},
 			Inferer:     s.AddrsStr(1),
 		},
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Value:       alloraMath.NewDecFromInt64(12),
+			Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(12)},
 			Inferer:     s.AddrsStr(2),
 		},
 	}
@@ -5325,8 +5317,8 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 	s.Require().Equal(alloraMath.NewDecFromInt64(11), median)
 
 	// Modify a copy of the previous inferences and run it again
-	inferencesWrapper.Inferences[0].Value = alloraMath.NewDecFromInt64(100)
-	inferencesWrapper.Inferences[1].Value = alloraMath.NewDecFromInt64(50)
+	inferencesWrapper.Inferences[0].Values = []alloraMath.Dec{alloraMath.NewDecFromInt64(100)}
+	inferencesWrapper.Inferences[1].Values = []alloraMath.Dec{alloraMath.NewDecFromInt64(50)}
 	err = s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, blockHeight, inferencesWrapper)
 	s.Require().NoError(err)
 
@@ -5370,11 +5362,11 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(9)},  // within bounds (|-1| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(11)}, // within bounds (|1| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(25)}, // outlier (|15| > 11*1)
-					{Value: alloraMath.NewDecFromInt64(-5)}, // outlier (|-15| > 11*1)
-					{Value: alloraMath.NewDecFromInt64(10)}, // within bounds (|0| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(9)}},  // within bounds (|-1| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(11)}}, // within bounds (|1| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(25)}}, // outlier (|15| > 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(-5)}}, // outlier (|-15| > 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(10)}}, // within bounds (|0| < 11*1)
 				},
 			},
 			expectedCount: 3,
@@ -5394,11 +5386,11 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(80)},  // within bounds (|-20| < 11*10)
-					{Value: alloraMath.NewDecFromInt64(120)}, // within bounds (|20| < 11*10)
-					{Value: alloraMath.NewDecFromInt64(250)}, // outlier (|150| > 11*10)
-					{Value: alloraMath.NewDecFromInt64(-50)}, // outlier (|-150| > 11*10)
-					{Value: alloraMath.NewDecFromInt64(100)}, // within bounds (|0| < 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(80)}},  // within bounds (|-20| < 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(120)}}, // within bounds (|20| < 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(250)}}, // outlier (|150| > 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(-50)}}, // outlier (|-150| > 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(100)}}, // within bounds (|0| < 11*10)
 				},
 			},
 			expectedCount: 3,
@@ -5418,8 +5410,8 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(10)},
-					{Value: alloraMath.NewDecFromInt64(11)},
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(10)}},
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(11)}},
 				},
 			},
 			expectedCount: 2,
@@ -5438,9 +5430,9 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(5)},  // within bounds (|5| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(-5)}, // within bounds (|-5| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(15)}, // outlier (|15| > 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(5)}},  // within bounds (|5| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(-5)}}, // within bounds (|-5| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(15)}}, // outlier (|15| > 11*1)
 				},
 			},
 			expectedCount: 3,
@@ -5462,7 +5454,7 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			s.Require().Len(filtered.Inferences, tc.expectedCount)
 
 			for i, inf := range filtered.Inferences {
-				s.Require().Equal(tc.expectedVals[i], inf.Value)
+				s.Require().Equal(tc.expectedVals[i], inf.Values[0])
 			}
 		})
 	}
@@ -5485,7 +5477,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		Inferer:     worker,
 	}
 
@@ -5630,8 +5622,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 		TopicId:     topicId,
 		BlockHeight: 2,
 		Inferer:     s.AddrsStr(9), // Using a different address
-		Value:       alloraMath.NewDecFromInt64(100),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(100)},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -5682,7 +5673,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		Inferer:     worker,
 	}
 
@@ -6066,6 +6057,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
 
+//nolint:staticcheck
 func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 	type testCase struct {
 		name string
@@ -6089,7 +6081,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 				s.Require().NoError(err)
 				s.Require().Equal(topicId, reg.TopicId)
 				s.Require().Equal(uint64(nonce), reg.EpochId)
-				s.Require().Len(reg.Labels, 0)
+				s.Require().Empty(reg.Labels)
 			},
 		},
 		{
@@ -6220,6 +6212,7 @@ func (s *KeeperTestSuite) TestInputInferenceForecastBundleConvert() {
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
 			topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), validInference.TopicId)
+			s.Require().NoError(err)
 
 			got, err := s.EmissionsKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
 			if tt.wantErr {
@@ -6489,7 +6482,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			s.Require().NoError(err)
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Equal(0, len(reg.Labels))
+				s.Require().Len(reg.Labels, 1)
 				return
 			}
 
@@ -6546,7 +6539,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 		s.Require().NoError(err)
-		s.Require().Equal(2, len(reg.Labels))
+		s.Require().Len(reg.Labels, 2)
 		s.Require().Equal("a", reg.Labels[0].Name)
 		s.Require().Equal("b", reg.Labels[1].Name)
 	})
@@ -6591,8 +6584,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("42"),
-					Values:      nil,
+					Values:      []alloraMath.Dec{mustDec("42")},
 				})
 			},
 			workersOrder: []int{0},
@@ -6608,7 +6600,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("7"),
 					Values:      []alloraMath.Dec{mustDec("7")},
 				})
 			},
@@ -6625,7 +6616,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("1"),
 					Values:      []alloraMath.Dec{mustDec("2")},
 				})
 			},
@@ -6641,7 +6631,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("1"),
 					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2")},
 				})
 			},
@@ -6656,15 +6645,13 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       mustDec("42"),
-					Values:      nil,
+					Values:      []alloraMath.Dec{mustDec("42")},
 				})
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w2,
-					Value:       mustDec("7"),
-					Values:      nil,
+					Values:      []alloraMath.Dec{mustDec("7")},
 				})
 			},
 			workersOrder: []int{1, 0},
@@ -6690,14 +6677,12 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
 				})
 				setLatestInf(ctx, k, topicId, types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w2,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("10"), mustDec("20"), mustDec("0"), mustDec("40")},
 				})
 			},
@@ -6720,7 +6705,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
 				})
 			},
@@ -6735,7 +6719,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("1")},
 				})
 			},
@@ -6751,8 +6734,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
-					Values:      nil,
+					Values:      []alloraMath.Dec{},
 				})
 			},
 			workersOrder: []int{0},
@@ -6779,7 +6761,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("1")}, // should become [1,0,0,0,0]
 				})
 			},
@@ -6803,7 +6784,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 					TopicId:     topicId,
 					BlockHeight: nonce,
 					Inferer:     w1,
-					Value:       alloraMath.ZeroDec(),
 					Values:      []alloraMath.Dec{mustDec("9")}, // stored len=1
 				})
 			},
@@ -6860,12 +6840,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 				s.Require().Equal(len(want), len(found.Values))
 				for i := range want {
 					s.Require().Equal(want[i], found.Values[i].String())
-				}
-
-				if c.outputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-					s.Require().Equal(want[0], found.Value.String())
-				} else {
-					s.Require().Equal("0", found.Value.String())
 				}
 			}
 		})

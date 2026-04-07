@@ -2,6 +2,9 @@ package types
 
 import (
 	"cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
 // NewForecastElementFromInput converts InputForecastElement to ForecastElement
@@ -203,4 +206,213 @@ func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*LossBundle, error) 
 		return nil, errors.Wrap(err, "failed to convert value bundle")
 	}
 	return valueBundle, nil
+}
+
+// TODO: remove once the system completely moves to using NetworkInferenceBundle
+func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundle {
+	const (
+		label0Id   uint32 = 1
+		label0Name string = "y"
+	)
+
+	var nonce int64
+	if vb.ReputerRequestNonce != nil && vb.ReputerRequestNonce.ReputerNonce != nil {
+		nonce = vb.ReputerRequestNonce.ReputerNonce.BlockHeight
+	}
+
+	//nolint:exhaustruct
+	out := &NetworkInferenceBundle{
+		TopicId: vb.TopicId,
+		Nonce:   nonce,
+		CombinedValue: []*LabeledValue{
+			{LabelId: label0Id, LabelName: label0Name, Value: vb.CombinedValue},
+		},
+		NaiveValue: []*LabeledValue{
+			{LabelId: label0Id, LabelName: label0Name, Value: vb.NaiveValue},
+		},
+	}
+
+	// InfererValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.InfererValues); n > 0 {
+		out.InfererValues = make([]*WorkerInference, n)
+		for i, v := range vb.InfererValues {
+			out.InfererValues[i] = &WorkerInference{
+				Worker: v.Worker,
+				Values: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// ForecasterValues: []*WorkerAttributedValue -> []*WorkerInference
+	if n := len(vb.ForecasterValues); n > 0 {
+		out.ForecasterValues = make([]*WorkerInference, n)
+		for i, v := range vb.ForecasterValues {
+			out.ForecasterValues[i] = &WorkerInference{
+				Worker: v.Worker,
+				Values: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererValues: []*WithheldWorkerAttributedValue -> []*OneOutInfererValue
+	if n := len(vb.OneOutInfererValues); n > 0 {
+		out.OneOutInfererValues = make([]*OneOutInfererValue, n)
+		for i, v := range vb.OneOutInfererValues {
+			out.OneOutInfererValues[i] = &OneOutInfererValue{
+				WithheldInferer: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutForecasterValues: []*WithheldWorkerAttributedValue -> []*OneOutForecasterValue
+	if n := len(vb.OneOutForecasterValues); n > 0 {
+		out.OneOutForecasterValues = make([]*OneOutForecasterValue, n)
+		for i, v := range vb.OneOutForecasterValues {
+			out.OneOutForecasterValues[i] = &OneOutForecasterValue{
+				WithheldForecaster: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneInForecasterValues: []*WorkerAttributedValue -> []*OneInForecasterValue
+	if n := len(vb.OneInForecasterValues); n > 0 {
+		out.OneInForecasterValues = make([]*OneInForecasterValue, n)
+		for i, v := range vb.OneInForecasterValues {
+			out.OneInForecasterValues[i] = &OneInForecasterValue{
+				Forecaster: v.Worker,
+				CombinedInference: []*LabeledValue{
+					{LabelId: label0Id, LabelName: label0Name, Value: v.Value},
+				},
+			}
+		}
+	}
+
+	// OneOutInfererForecasterValues: []*OneOutInfererForecasterValues -> []*OneOutInfererForecasterValue
+	// Old structure: per forecaster -> list of withheld-inferer values (but no explicit withheld-inferer in output).
+	// Here we emit one record per (forecaster, withheldInferer) pair.
+	if n := len(vb.OneOutInfererForecasterValues); n > 0 {
+		// pre-size approximately: sum of per-forecaster rows
+		total := 0
+		for _, row := range vb.OneOutInfererForecasterValues {
+			total += len(row.OneOutInfererValues)
+		}
+		if total > 0 {
+			out.OneOutInfererForecasterValues = make([]*OneOutInfererForecasterValue, 0, total)
+			for _, row := range vb.OneOutInfererForecasterValues {
+				fc := row.Forecaster
+				for _, cell := range row.OneOutInfererValues {
+					out.OneOutInfererForecasterValues = append(out.OneOutInfererForecasterValues,
+						&OneOutInfererForecasterValue{
+							Forecaster:      fc,
+							WithheldInferer: cell.Worker,
+							CombinedInference: []*LabeledValue{
+								{LabelId: label0Id, LabelName: label0Name, Value: cell.Value},
+							},
+						},
+					)
+				}
+			}
+		}
+	}
+
+	return out
+}
+
+// ConvertInferenceValuesFromProto converts a stored Inference proto into the internal
+// InferenceValues representation used by math code.
+func ConvertInferenceValuesFromProto(
+	topicArity TopicOutputArity,
+	labels []*TopicLabel,
+	inf *Inference,
+) (InferenceValues, error) {
+	if inf == nil {
+		return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
+	}
+
+	switch topicArity {
+	case TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		if len(inf.Values) != 1 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "single-arity inference accepts exactly one value")
+		}
+
+		dec := inf.Values[0]
+
+		if dec.IsNaN() || !dec.IsFinite() {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
+		}
+
+		return alloraMath.DecArray{dec}, nil
+	case TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		regLen := len(labels)
+		if regLen == 0 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrLogic, "epoch label registry is empty for multi-arity")
+		}
+		if len(inf.Values) == 0 {
+			return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires values")
+		}
+		if len(inf.Values) > regLen {
+			return InferenceValues{}, errors.Wrapf(
+				sdkerrors.ErrLogic,
+				"multi-arity inference length exceeds registry: got=%d reg=%d",
+				len(inf.Values), regLen,
+			)
+		}
+
+		zero := alloraMath.ZeroDec()
+		out := make(alloraMath.DecArray, regLen)
+		for i := range out {
+			out[i] = zero
+		}
+		copy(out, inf.Values)
+		if err := ValidateInferenceValues(out, labels); err != nil {
+			return InferenceValues{}, err
+		}
+		return out, nil
+	default:
+		return InferenceValues{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+}
+
+// ConvertInferenceValuesToLabeledValues converts the internal InferenceValues representation into
+// a slice of LabeledValue suitable for RPC responses or event emission.
+func ConvertInferenceValuesToLabeledValues(iv InferenceValues, reg *EpochLabelRegistry) ([]*LabeledValue, error) {
+	want := len(reg.GetLabels())
+	if len(iv) != want {
+		return nil, errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"inference values length mismatch: got=%d want=%d",
+			len(iv), want,
+		)
+	}
+	out := make([]*LabeledValue, 0, len(iv))
+	for i, v := range iv {
+		lbl := reg.GetLabels()[i]
+		if lbl == nil {
+			return nil, errors.Wrapf(sdkerrors.ErrLogic, "nil label in registry at idx=%d", i)
+		}
+		out = append(out, &LabeledValue{
+			LabelId:   lbl.Id,
+			LabelName: lbl.Name,
+			Value:     v,
+		})
+	}
+	return out, nil
+}
+
+func ConvertLabeledValuesToDecArray(in []*LabeledValue) alloraMath.DecArray {
+	out := make(alloraMath.DecArray, len(in))
+	for i := range in {
+		out[i] = in[i].Value
+	}
+	return out
 }

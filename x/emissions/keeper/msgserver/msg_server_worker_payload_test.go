@@ -734,6 +734,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadSucceedsWithUnregisteredF
 	require.NoError(err, "InsertWorkerPayload should succeed with an unregistered inferer")
 }
 
+//nolint:exhaustruct
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 	type tc struct {
 		name          string
@@ -900,7 +901,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			s.Require().NoError(err)
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Equal(0, len(reg.Labels))
+				s.Require().Equal(1, len(reg.Labels))
 				return
 			}
 

@@ -43,19 +43,19 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer1,
-				Value:       alloraMath.NewDecFromInt64(1),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 			},
 			{
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer2,
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 			},
 			{
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer4,
-				Value:       alloraMath.NewDecFromInt64(3),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(3)},
 			},
 		},
 	}

@@ -2,10 +2,13 @@ package types
 
 import (
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
 // NewGenesisState creates a new genesis state with default values.
+//
+//nolint:exhaustruct
 func NewGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:                                         DefaultParams(),

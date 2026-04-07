@@ -154,7 +154,7 @@ func ProcessAndStoreNetworkInferences(
 	k *keeper.Keeper,
 	ctx sdk.Context,
 	topicId uint64,
-	blockHeight int64,
+	nonce int64,
 	activeInferences *types.Inferences,
 	activeForecasts *types.Forecasts,
 ) error {
@@ -163,7 +163,7 @@ func ProcessAndStoreNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		*k,
 		topicId,
-		&blockHeight,
+		&nonce,
 		activeInferences,
 		activeForecasts,
 		false,
@@ -173,7 +173,7 @@ func ProcessAndStoreNetworkInferences(
 	}
 
 	// Store regular network inferences
-	if err := k.InsertNetworkInferences(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences); err != nil {
+	if err := k.InsertNetworkInferenceBundle(ctx, topicId, nonce, *networkInferencesResult.NetworkInferences); err != nil {
 		return errorsmod.Wrap(err, "failed to insert network inference")
 	}
 
@@ -187,7 +187,7 @@ func ProcessAndStoreNetworkInferences(
 			infererAddresses = append(infererAddresses, inferer)
 			infererWeights = append(infererWeights, weight)
 		}
-		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, blockHeight, infererAddresses, infererWeights)
+		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, nonce, infererAddresses, infererWeights)
 	}
 
 	if len(networkInferencesResult.ForecasterToWeight) > 0 {
@@ -197,7 +197,7 @@ func ProcessAndStoreNetworkInferences(
 			forecasterAddresses = append(forecasterAddresses, forecaster)
 			forecasterWeights = append(forecasterWeights, weight)
 		}
-		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, blockHeight, forecasterAddresses, forecasterWeights)
+		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, nonce, forecasterAddresses, forecasterWeights)
 	}
 
 	// Get outlier resistant inferences
@@ -215,7 +215,7 @@ func ProcessAndStoreNetworkInferences(
 			sdk.UnwrapSDKContext(ctx),
 			*k,
 			topicId,
-			&blockHeight,
+			&nonce,
 			&outlierResistantFilteredInferences,
 			activeForecasts,
 			true,
@@ -226,7 +226,7 @@ func ProcessAndStoreNetworkInferences(
 	}
 
 	// Store outlier resistant network inferences
-	if err := k.InsertOutlierResistantNetworkInferences(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
+	if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, topicId, nonce, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
 		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
 	}
 

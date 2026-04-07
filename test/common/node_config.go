@@ -3,18 +3,19 @@ package testcommon
 import (
 	"testing"
 
-	upgrade "cosmossdk.io/x/upgrade"
+	"cosmossdk.io/x/upgrade"
+	"github.com/cosmos/cosmos-sdk/codec"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/distribution"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
+	"github.com/stretchr/testify/require"
+
 	"github.com/allora-network/allora-chain/app/params"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
-	"github.com/cosmos/cosmos-sdk/codec"
-	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	auth "github.com/cosmos/cosmos-sdk/x/auth"
-	bank "github.com/cosmos/cosmos-sdk/x/bank"
-	distribution "github.com/cosmos/cosmos-sdk/x/distribution"
-	gov "github.com/cosmos/cosmos-sdk/x/gov"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
-	"github.com/stretchr/testify/require"
 )
 
 // handle to various node data
@@ -62,7 +63,7 @@ func NewTestConfig(
 		alloraHomeDir,
 		int64(seed),
 	)
-	//// restore from mnemonic
+	// restore from mnemonic
 	faucetAcc, err := client.Clients[0].AccountRegistry.GetByName("faucet")
 	require.NoError(t, err)
 	upshotAcc, err := client.Clients[0].AccountRegistry.GetByName("upshot")
