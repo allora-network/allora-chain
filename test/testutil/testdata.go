@@ -227,31 +227,31 @@ func GetInferencesFromCsv(
 		Inferences: []*emissionstypes.Inference{
 			{
 				Inferer:     inferers[0],
-				Value:       epochGet("inference_0"),
+				Values:      []alloraMath.Dec{epochGet("inference_0")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[1],
-				Value:       epochGet("inference_1"),
+				Values:      []alloraMath.Dec{epochGet("inference_1")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[2],
-				Value:       epochGet("inference_2"),
+				Values:      []alloraMath.Dec{epochGet("inference_2")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[3],
-				Value:       epochGet("inference_3"),
+				Values:      []alloraMath.Dec{epochGet("inference_3")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[4],
-				Value:       epochGet("inference_4"),
+				Values:      []alloraMath.Dec{epochGet("inference_4")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},

@@ -2,15 +2,18 @@
 package keeper_test
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"strings"
 	"testing"
 
 	"cosmossdk.io/collections"
+	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -1231,13 +1234,13 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 			},
 		},
@@ -1271,19 +1274,19 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(100), // Assuming NewDecFromInt64 exists and is appropriate
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(100)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(200),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(200)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(10000),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(10000)},
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 			},
 		},
@@ -1302,9 +1305,8 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 	actualInferences, err = k.GetInferencesAtBlock(ctx, topicId, block, true)
 	s.Require().NoError(err)
 	s.Require().Len(actualInferences.Inferences, 2)
-	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Value)
-	s.Require().Equal(alloraMath.NewDecFromInt64(200), actualInferences.Inferences[1].Value)
-
+	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Values[0])
+	s.Require().Equal(alloraMath.NewDecFromInt64(200), actualInferences.Inferences[1].Values[0])
 }
 
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
@@ -1325,8 +1327,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
-		Value:       alloraMath.MustNewDecFromString("10"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data1"),
 		Proof:       "proof1",
 	}
@@ -1343,8 +1344,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     "allo1dwxj49n0t5969uj4zfuemxg8a2ty85njn9xy9t",
-		Value:       alloraMath.MustNewDecFromString("20"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("20")},
 		ExtraData:   []byte("data2"),
 		Proof:       "proof2",
 	}
@@ -1377,8 +1377,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     workerAccStr,
-		Value:       alloraMath.MustNewDecFromString("10"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
@@ -1390,8 +1389,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     workerAccStr,
-		Value:       alloraMath.MustNewDecFromString("10"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
@@ -3356,13 +3354,13 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)}, // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer:     s.AddrsStr(0),
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: block,
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 				Inferer:     s.AddrsStr(1),
 			},
 		},
@@ -4199,9 +4197,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.52")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.71")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")}},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.71")}},
 		},
 	}
 	for _, inference := range allInferences.Inferences {
@@ -4214,8 +4212,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker4,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4230,8 +4227,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker5,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4283,8 +4279,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
 		Inferer:     worker2,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -4353,7 +4348,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
 			Inferer:     workers[i],
-			Value:       alloraMath.MustNewDecFromString(formatValue(0.11 + float64(i)*0.01)),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(formatValue(0.11 + float64(i)*0.01))},
 		}
 	}
 
@@ -4393,7 +4388,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 			TopicId:     topicId,
 			BlockHeight: blockHeightInferences,
 			Inferer:     workers[i],
-			Value:       alloraMath.MustNewDecFromString(formatValue(0.22 + float64(i-1)*0.01)),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(formatValue(0.22 + float64(i-1)*0.01))},
 		}
 	}
 
@@ -5169,8 +5164,7 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 	inference := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: 100,
-		Value:       alloraMath.NewDecFromInt64(1),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 		Inferer:     inferer,
 		ExtraData:   []byte("data"),
 		Proof:       "",
@@ -5289,19 +5283,19 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Value:       alloraMath.NewDecFromInt64(10),
+			Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(10)},
 			Inferer:     s.AddrsStr(0),
 		},
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Value:       alloraMath.NewDecFromInt64(11),
+			Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(11)},
 			Inferer:     s.AddrsStr(1),
 		},
 		{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Value:       alloraMath.NewDecFromInt64(12),
+			Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(12)},
 			Inferer:     s.AddrsStr(2),
 		},
 	}
@@ -5323,8 +5317,8 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 	s.Require().Equal(alloraMath.NewDecFromInt64(11), median)
 
 	// Modify a copy of the previous inferences and run it again
-	inferencesWrapper.Inferences[0].Value = alloraMath.NewDecFromInt64(100)
-	inferencesWrapper.Inferences[1].Value = alloraMath.NewDecFromInt64(50)
+	inferencesWrapper.Inferences[0].Values = []alloraMath.Dec{alloraMath.NewDecFromInt64(100)}
+	inferencesWrapper.Inferences[1].Values = []alloraMath.Dec{alloraMath.NewDecFromInt64(50)}
 	err = s.EmissionsKeeper().InsertActiveInferences(s.Ctx(), topicId, blockHeight, inferencesWrapper)
 	s.Require().NoError(err)
 
@@ -5368,11 +5362,11 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(9)},  // within bounds (|-1| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(11)}, // within bounds (|1| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(25)}, // outlier (|15| > 11*1)
-					{Value: alloraMath.NewDecFromInt64(-5)}, // outlier (|-15| > 11*1)
-					{Value: alloraMath.NewDecFromInt64(10)}, // within bounds (|0| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(9)}},  // within bounds (|-1| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(11)}}, // within bounds (|1| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(25)}}, // outlier (|15| > 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(-5)}}, // outlier (|-15| > 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(10)}}, // within bounds (|0| < 11*1)
 				},
 			},
 			expectedCount: 3,
@@ -5392,11 +5386,11 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(80)},  // within bounds (|-20| < 11*10)
-					{Value: alloraMath.NewDecFromInt64(120)}, // within bounds (|20| < 11*10)
-					{Value: alloraMath.NewDecFromInt64(250)}, // outlier (|150| > 11*10)
-					{Value: alloraMath.NewDecFromInt64(-50)}, // outlier (|-150| > 11*10)
-					{Value: alloraMath.NewDecFromInt64(100)}, // within bounds (|0| < 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(80)}},  // within bounds (|-20| < 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(120)}}, // within bounds (|20| < 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(250)}}, // outlier (|150| > 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(-50)}}, // outlier (|-150| > 11*10)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(100)}}, // within bounds (|0| < 11*10)
 				},
 			},
 			expectedCount: 3,
@@ -5416,8 +5410,8 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(10)},
-					{Value: alloraMath.NewDecFromInt64(11)},
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(10)}},
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(11)}},
 				},
 			},
 			expectedCount: 2,
@@ -5436,9 +5430,9 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			},
 			inferences: types.Inferences{
 				Inferences: []*types.Inference{
-					{Value: alloraMath.NewDecFromInt64(5)},  // within bounds (|5| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(-5)}, // within bounds (|-5| < 11*1)
-					{Value: alloraMath.NewDecFromInt64(15)}, // outlier (|15| > 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(5)}},  // within bounds (|5| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(-5)}}, // within bounds (|-5| < 11*1)
+					{Values: []alloraMath.Dec{alloraMath.NewDecFromInt64(15)}}, // outlier (|15| > 11*1)
 				},
 			},
 			expectedCount: 3,
@@ -5460,7 +5454,7 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 			s.Require().Len(filtered.Inferences, tc.expectedCount)
 
 			for i, inf := range filtered.Inferences {
-				s.Require().Equal(tc.expectedVals[i], inf.Value)
+				s.Require().Equal(tc.expectedVals[i], inf.Values[0])
 			}
 		})
 	}
@@ -5483,7 +5477,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		Inferer:     worker,
 	}
 
@@ -5628,8 +5622,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 		TopicId:     topicId,
 		BlockHeight: 2,
 		Inferer:     s.AddrsStr(9), // Using a different address
-		Value:       alloraMath.NewDecFromInt64(100),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(100)},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -5680,7 +5673,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		Inferer:     worker,
 	}
 
@@ -6064,6 +6057,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
 
+//nolint:staticcheck
 func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 	type testCase struct {
 		name string
@@ -6172,6 +6166,682 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 		s.Run(tc.name, func() {
 			ctx, k, _, _ := newFixture()
 			tc.run(ctx, k)
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestInputInferenceForecastBundleConvert() {
+	validInference := &types.InputInference{
+		TopicId:     1,
+		BlockHeight: 100,
+		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("1.23"),
+		Values:      []*types.InputLabeledValue{{Label: "", Value: alloraMath.MustNewBoundedExp40DecFromString("1.23")}},
+		ExtraData:   []byte("extra"),
+		Proof:       "proof",
+	}
+
+	validForecast := &types.InputForecast{
+		TopicId:     1,
+		BlockHeight: 100,
+		Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
+		ForecastElements: []*types.InputForecastElement{
+			{
+				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+				Value:   alloraMath.MustNewBoundedExp40DecFromString("1.23"),
+			},
+		},
+		ExtraData: []byte("extra"),
+	}
+
+	tests := []struct {
+		name    string
+		input   *types.InputInferenceForecastBundle
+		wantErr bool
+	}{
+		{
+			name: "valid input",
+			input: &types.InputInferenceForecastBundle{
+				Inference: validInference,
+				Forecast:  validForecast,
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), validInference.TopicId)
+			s.Require().NoError(err)
+
+			got, err := s.EmissionsKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
+			if tt.wantErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+			if tt.input == nil {
+				s.Require().Nil(got)
+				return
+			}
+			s.Require().NotNil(got.Inference)
+			s.Require().NotNil(got.Forecast)
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestNormalizeInputInference() {
+	type tc struct {
+		name         string
+		arity        types.TopicOutputArity
+		requireUnity bool
+		unityTol     string
+
+		nonce int64
+
+		preRegisterLabels []string
+
+		scalarValue string
+		labeled     []struct {
+			label string
+			value string
+		}
+
+		wantErr   bool
+		wantErrIs error
+
+		wantValuesStr []string
+		wantRegLabels []string
+	}
+
+	cases := []tc{
+		{
+			name:         "SINGLE_uses_labeled_when_len1_over_scalar",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			scalarValue:  "999",
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "x", value: "7"},
+			},
+			wantValuesStr: []string{"7"},
+			wantRegLabels: nil,
+		},
+		{
+			name:          "SINGLE_uses_scalar_when_no_labeled",
+			arity:         types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity:  false,
+			unityTol:      "0",
+			nonce:         1,
+			scalarValue:   "42",
+			labeled:       nil,
+			wantValuesStr: []string{"42"},
+			wantRegLabels: nil,
+		},
+		{
+			name:         "SINGLE_rejects_when_labeled_len_gt_1",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			scalarValue:  "1",
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "x", value: "1"},
+				{label: "y", value: "2"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_requires_labeled_values",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			scalarValue:  "123",
+			labeled:      nil,
+			wantErr:      true,
+			wantErrIs:    sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_registers_labels_and_aligns_dense",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.2"},
+				{label: "B", value: "0.8"},
+			},
+			wantValuesStr: []string{"0.2", "0.8"},
+			wantRegLabels: []string{"A", "B"},
+		},
+		{
+			name:         "MULTI_duplicate_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.1"},
+				{label: "A", value: "0.2"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_empty_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "   ", value: "0.1"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_missing_labels_are_zero_against_existing_registry",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			preRegisterLabels: []string{
+				"a", "b", "c",
+			},
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "a", value: "1"},
+				{label: "b", value: "2"},
+			},
+			wantValuesStr: []string{"1", "2", "0"},
+			wantRegLabels: []string{"a", "b", "c"},
+		},
+		{
+			name:         "MULTI_require_unity_ok",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: true,
+			unityTol:     "0.000001",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.2"},
+				{label: "B", value: "0.8"},
+			},
+			wantValuesStr: []string{"0.2", "0.8"},
+			wantRegLabels: []string{"A", "B"},
+		},
+		{
+			name:         "MULTI_require_unity_rejected_outside_tol",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: true,
+			unityTol:     "0.01",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "A", value: "0.2"},
+				{label: "B", value: "0.7"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_trims_labels_and_is_idempotent_on_registry",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: false,
+			unityTol:     "0",
+			nonce:        1,
+			labeled: []struct {
+				label string
+				value string
+			}{
+				{label: "  Z  ", value: "5"},
+			},
+			wantValuesStr: []string{"5"},
+			wantRegLabels: []string{"Z"},
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+
+			ctx := s.Ctx()
+			k := s.EmissionsKeeper()
+
+			topicId := s.CreateTopic()
+			topic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+
+			topic.OutputArity = c.arity
+			topic.RequireUnity = c.requireUnity
+			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
+			s.Require().NoError(k.SetTopic(ctx, topicId, topic))
+
+			for _, l := range c.preRegisterLabels {
+				_, err := k.RegisterEpochLabel(ctx, topicId, c.nonce, l)
+				s.Require().NoError(err)
+			}
+
+			in := &types.InputInference{
+				TopicId:     topicId,
+				BlockHeight: c.nonce,
+				Inferer:     "inferer",
+				Value:       alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue),
+			}
+			if c.labeled != nil {
+				in.Values = make([]*types.InputLabeledValue, 0, len(c.labeled))
+				for _, lv := range c.labeled {
+					in.Values = append(in.Values, &types.InputLabeledValue{
+						Label: lv.label,
+						Value: alloraMath.MustNewBoundedExp40DecFromString(lv.value),
+					})
+				}
+			}
+
+			got, err := k.NormalizeInputInference(ctx, topic, c.nonce, in)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.wantErrIs != nil {
+					s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
+				}
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().NotNil(got)
+
+			s.Require().Equal(len(c.wantValuesStr), len(got.Values))
+			for i := range c.wantValuesStr {
+				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
+			}
+
+			reg, err := k.GetEpochLabelRegistry(ctx, topicId, c.nonce)
+			s.Require().NoError(err)
+
+			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+				s.Require().Len(reg.Labels, 1)
+				return
+			}
+
+			s.Require().Equal(len(c.wantRegLabels), len(reg.Labels))
+			for i := range c.wantRegLabels {
+				s.Require().Equal(c.wantRegLabels[i], reg.Labels[i].Name)
+			}
+		})
+	}
+
+	s.Run("MULTI_preserves_label_ids_across_calls_even_if_submission_order_changes", func() {
+		s.SetupTest()
+
+		ctx := s.Ctx()
+		k := s.EmissionsKeeper()
+
+		topicId := s.CreateTopic()
+		topic, err := k.GetTopic(ctx, topicId)
+		s.Require().NoError(err)
+		topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+		topic.RequireUnity = false
+		topic.UnityTolerance = alloraMath.ZeroDec()
+		s.Require().NoError(k.SetTopic(ctx, topicId, topic))
+
+		nonce := types.BlockHeight(1)
+
+		in1 := &types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: 1,
+			Inferer:     "inferer",
+			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+			Values: []*types.InputLabeledValue{
+				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+			},
+		}
+		got1, err := k.NormalizeInputInference(ctx, topic, nonce, in1)
+		s.Require().NoError(err)
+		s.Require().Equal([]string{"1", "2"}, []string{got1.Values[0].String(), got1.Values[1].String()})
+
+		in2 := &types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: 1,
+			Inferer:     "inferer",
+			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+			Values: []*types.InputLabeledValue{
+				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
+				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
+			},
+		}
+		got2, err := k.NormalizeInputInference(ctx, topic, nonce, in2)
+		s.Require().NoError(err)
+		s.Require().Equal([]string{"10", "20"}, []string{got2.Values[0].String(), got2.Values[1].String()})
+
+		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+		s.Require().NoError(err)
+		s.Require().Len(reg.Labels, 2)
+		s.Require().Equal("a", reg.Labels[0].Name)
+		s.Require().Equal("b", reg.Labels[1].Name)
+	})
+}
+
+func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() {
+	topicId := keeper.TopicId(1)
+	nonce := int64(1)
+
+	type tc struct {
+		name         string
+		outputArity  types.TopicOutputArity
+		setup        func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string)
+		workersOrder []int
+		wantErrIs    error
+		wantValues   map[int][]string
+	}
+
+	mustDec := func(x string) alloraMath.Dec { return alloraMath.MustNewDecFromString(x) }
+
+	setTopic := func(ctx context.Context, k *keeper.Keeper, topicId uint64, arity types.TopicOutputArity) {
+		topic, err := k.GetTopic(ctx, topicId)
+		s.Require().NoError(err)
+		topic.OutputArity = arity
+		topic.RequireUnity = false
+		topic.UnityTolerance = alloraMath.ZeroDec()
+		err = k.SetTopic(ctx, topicId, topic)
+		s.Require().NoError(err)
+	}
+
+	setLatestInf := func(ctx context.Context, k *keeper.Keeper, topicId uint64, inf types.Inference) {
+		err := k.InsertInference(ctx, topicId, inf)
+		s.Require().NoError(err)
+	}
+
+	cases := []tc{
+		{
+			name:        "SINGLE_scalar_only_populates_values_len1",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("42")},
+				})
+			},
+			workersOrder: []int{0},
+			wantValues: map[int][]string{
+				0: {"42"},
+			},
+		},
+		{
+			name:        "SINGLE_values_len1_used_and_consistent_with_scalar",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("7")},
+				})
+			},
+			workersOrder: []int{0},
+			wantValues: map[int][]string{
+				0: {"7"},
+			},
+		},
+		{
+			name:        "SINGLE_scalar_and_values_mismatch_canonicalizes_to_values0",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("2")},
+				})
+			},
+			workersOrder: []int{0},
+			wantValues: map[int][]string{
+				0: {"2"},
+			},
+		}, {
+			name:        "SINGLE_rejects_values_len_gt_1",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2")},
+				})
+			},
+			workersOrder: []int{0},
+			wantErrIs:    sdkerrors.ErrLogic,
+		},
+		{
+			name:        "SINGLE_two_workers_scalar_only_both_values_len1_and_sorted_by_inferer",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("42")},
+				})
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w2,
+					Values:      []alloraMath.Dec{mustDec("7")},
+				})
+			},
+			workersOrder: []int{1, 0},
+			wantValues: map[int][]string{
+				0: {"42"},
+				1: {"7"},
+			},
+		},
+		{
+			name:        "MULTI_pads_shorter_values_to_registry_len_and_sorts_inferers",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "c")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "d")
+				s.Require().NoError(err)
+
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
+				})
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w2,
+					Values:      []alloraMath.Dec{mustDec("10"), mustDec("20"), mustDec("0"), mustDec("40")},
+				})
+			},
+			workersOrder: []int{1, 0},
+			wantValues: map[int][]string{
+				0: {"1", "2", "3", "0"},
+				1: {"10", "20", "0", "40"},
+			},
+		},
+		{
+			name:        "MULTI_values_longer_than_registry_rejected",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
+				s.Require().NoError(err)
+
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
+				})
+			},
+			workersOrder: []int{0},
+			wantErrIs:    sdkerrors.ErrLogic,
+		}, {
+			name:        "MULTI_registry_len_zero_rejects_any_nonempty_inference_values",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				// do NOT register labels => registry len = 0
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("1")},
+				})
+			},
+			workersOrder: []int{0},
+			wantErrIs:    sdkerrors.ErrLogic,
+		},
+		{
+			name:        "MULTI_registry_len_zero_allows_empty_values_no_padding_needed",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				// registry len = 0
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{},
+				})
+			},
+			workersOrder: []int{0},
+			wantValues: map[int][]string{
+				0: {},
+			},
+		},
+		{
+			name:        "MULTI_pads_multiple_missing_entries_not_just_one",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "c")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "d")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "e")
+				s.Require().NoError(err)
+
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("1")}, // should become [1,0,0,0,0]
+				})
+			},
+			workersOrder: []int{0},
+			wantValues: map[int][]string{
+				0: {"1", "0", "0", "0", "0"},
+			},
+		},
+		{
+			name:        "MULTI_does_not_mutate_stored_inference_when_padding",
+			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
+				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "a")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "b")
+				s.Require().NoError(err)
+				_, err = k.RegisterEpochLabel(ctx, topicId, nonce, "c")
+				s.Require().NoError(err)
+
+				setLatestInf(ctx, k, topicId, types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     w1,
+					Values:      []alloraMath.Dec{mustDec("9")}, // stored len=1
+				})
+			},
+			workersOrder: []int{0},
+			wantValues: map[int][]string{
+				0: {"9", "0", "0"},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+
+			ctx := s.Ctx()
+			k := s.EmissionsKeeper()
+
+			w1 := s.AddrsStr(0)
+			w2 := s.AddrsStr(1)
+			workers := []string{w1, w2}
+
+			setTopic(ctx, k, topicId, c.outputArity)
+
+			if c.setup != nil {
+				c.setup(ctx, k, topicId, nonce, w1, w2)
+			}
+
+			reqWorkers := make([]string, 0, len(c.workersOrder))
+			for _, idx := range c.workersOrder {
+				reqWorkers = append(reqWorkers, workers[idx])
+			}
+
+			topic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+
+			got, err := k.GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce, reqWorkers)
+			if c.wantErrIs != nil {
+				s.Require().ErrorIs(err, c.wantErrIs)
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().NotNil(got)
+
+			for workerIdx, want := range c.wantValues {
+				addr := workers[workerIdx]
+				var found *types.Inference
+				for _, inf := range got.Inferences {
+					if inf.Inferer == addr {
+						found = inf
+						break
+					}
+				}
+				s.Require().NotNil(found)
+				s.Require().Equal(len(want), len(found.Values))
+				for i := range want {
+					s.Require().Equal(want[i], found.Values[i].String())
+				}
+			}
 		})
 	}
 }

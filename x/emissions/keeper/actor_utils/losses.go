@@ -262,7 +262,7 @@ func CloseReputerNonce(
 	}
 
 	// Emit events: the regret scale set event
-	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, regretScalePlusEpsilon)
+	types.EmitNewRegretScaleSetEvent(ctx, topic.Id, nonce.BlockHeight, regretScalePlusEpsilon)
 	if len(inferers) > 0 {
 		infererWeights := make([]alloraMath.Dec, len(inferers))
 		for i, inferer := range inferers {

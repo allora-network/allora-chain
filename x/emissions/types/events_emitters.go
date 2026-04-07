@@ -46,7 +46,7 @@ func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 
 // EmitNewNetworkInferencesEvent emits a network loss event using the classic attribute event path so that
 // the field `one_out_inferer_forecaster_values` can be emitted as a two-dimensional array
-func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
+func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences NetworkInferenceBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(networkInferences)); err != nil {
@@ -54,7 +54,7 @@ func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueB
 	}
 }
 
-func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
+func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences NetworkInferenceBundle) {
 	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(networkInferences)); err != nil {
@@ -62,7 +62,7 @@ func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkI
 	}
 }
 
-func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *WorkerDataBundle) {
+func EmitNewInsertInfererPayloadEvent(ctx context.Context, bundle *InputWorkerDataBundle) {
 	metrics.IncrProducerEventCount(metrics.INSERT_INFERER_PAYLOAD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewInsertInfererPayloadEventBase(bundle))
@@ -718,7 +718,7 @@ func EmitNewTopicInitialEmaScoreSetEvent(ctx context.Context, actorType ActorTyp
 }
 
 // Individual events
-func EmitNewRegretStdNormSetEvent(ctx context.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
+func EmitNewRegretScaleSetEvent(ctx context.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.REGRET_STDNORM_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, blockHeight, stdNorm))
