@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -29,6 +28,12 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 13 TO VERSION 14")
 	if err := MigrateTopics(ctx, store, cdc); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 13 TO VERSION 14")
+		return err
+	}
+
+	ctx.Logger().Info("MIGRATING NETWORK INFERENCES FROM VERSION 13 TO VERSION 14")
+	if err := MigrateNetworkInferences(ctx, store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateNetworkInferences() FROM VERSION 13 TO VERSION 14")
 		return err
 	}
 
@@ -54,10 +59,9 @@ func MigrateTopics(
 	}
 	updates := make([]kv, 0)
 
-	topicCount := 0
 	for ; iterator.Valid(); iterator.Next() {
 		var oldTopic oldtypes.Topic
-		if err := proto.Unmarshal(iterator.Value(), &oldTopic); err != nil {
+		if err := cdc.Unmarshal(iterator.Value(), &oldTopic); err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
@@ -92,12 +96,64 @@ func MigrateTopics(
 			key:   append([]byte(nil), iterator.Key()...),
 			value: cdc.MustMarshal(&newTopic),
 		})
-		topicCount++
 	}
 	for _, u := range updates {
 		topicStore.Set(u.key, u.value)
 	}
 
-	ctx.Logger().Info("MIGRATION V14: Topics migration complete", "topicsUpdated", topicCount)
+	ctx.Logger().Info("MIGRATION V14: Topics migration complete", "topicsUpdated", len(updates))
+	return nil
+}
+
+func MigrateNetworkInferences(
+	ctx sdk.Context,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+) error {
+	networkInferencesStore := prefix.NewStore(store, emissionstypes.NetworkInferencesKey)
+	iterator := networkInferencesStore.Iterator(nil, nil)
+	defer iterator.Close()
+
+	ctx.Logger().Info("MIGRATION V14: Migrating networkInferences to networkInferenceBundles")
+
+	type kv struct {
+		key   []byte
+		value []byte
+	}
+	updates := make([]kv, 0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		var oldNetworkInference emissionstypes.ValueBundle
+		if err := cdc.Unmarshal(iterator.Value(), &oldNetworkInference); err != nil {
+			return errorsmod.Wrapf(err, "failed to unmarshal networkInference")
+		}
+
+		networkInferenceBundle := emissionstypes.ValueBundleToNetworkInferenceBundle(&oldNetworkInference)
+		if networkInferenceBundle == nil {
+			return errorsmod.Wrapf(emissionstypes.ErrInvalidValue, "converted network inference bundle is nil; topicId: %d, nonce: %d",
+				oldNetworkInference.TopicId, oldNetworkInference.ReputerRequestNonce.ReputerNonce.BlockHeight)
+		}
+
+		if err := networkInferenceBundle.Validate(); err != nil {
+			return errorsmod.Wrapf(err, "failed to validate networkInference")
+		}
+
+		ctx.Logger().Debug("MIGRATION V14: Creating network inference bundle from network inference",
+			"topicId", networkInferenceBundle.TopicId,
+			"nonce", networkInferenceBundle.Nonce)
+		updates = append(updates, kv{
+			key:   append([]byte(nil), iterator.Key()...),
+			value: cdc.MustMarshal(networkInferenceBundle),
+		})
+	}
+
+	networkInferenceBundlesStore := prefix.NewStore(store, emissionstypes.NetworkInferenceBundleKey)
+
+	for _, u := range updates {
+		networkInferenceBundlesStore.Set(u.key, u.value)
+		networkInferencesStore.Delete(u.key)
+	}
+
+	ctx.Logger().Info("MIGRATION V14: Network Inference Bundles migration complete", "networkInferencesUpdated", len(updates))
 	return nil
 }

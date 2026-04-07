@@ -46,7 +46,7 @@ func EmitNewNetworkLossSetEvent(ctx context.Context, lossBundle ValueBundle) {
 
 // EmitNewNetworkInferencesEvent emits a network loss event using the classic attribute event path so that
 // the field `one_out_inferer_forecaster_values` can be emitted as a two-dimensional array
-func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
+func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences NetworkInferenceBundle) {
 	metrics.IncrProducerEventCount(metrics.NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewNetworkInferencesEventBase(networkInferences)); err != nil {
@@ -54,7 +54,7 @@ func EmitNewNetworkInferencesEvent(ctx context.Context, networkInferences ValueB
 	}
 }
 
-func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences ValueBundle) {
+func EmitNewOutlierResistantNetworkInferencesEvent(ctx context.Context, networkInferences NetworkInferenceBundle) {
 	metrics.IncrProducerEventCount(metrics.OUTLIER_RESISTANT_NETWORK_INFERENCES_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if err := sdkCtx.EventManager().EmitTypedEvent(NewOutlierResistantNetworkInferencesEventBase(networkInferences)); err != nil {

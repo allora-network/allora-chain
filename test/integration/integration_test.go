@@ -31,6 +31,8 @@ func TestExternalTestSuite(t *testing.T) {
 	UpdateParamsChecks(testConfig)
 	t.Log(">>> Test Topic Creation <<<")
 	CreateTopic(testConfig)
+	t.Log(">>> Test Multi-Label Topic Creation <<<")
+	CreateTopicMultiLabel(testConfig)
 	t.Log(">>> Test Distribution Checks <<<")
 	DistributionChecks(testConfig)
 	t.Log(">>> Test Actor Registration <<<")

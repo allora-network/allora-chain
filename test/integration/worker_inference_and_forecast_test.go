@@ -49,7 +49,7 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 					BlockHeight: blockHeight,
 					Inferer:     InfererAddress1,
 					Value:       alloraMath.MustNewBoundedExp40DecFromString("100"),
-					Values:      []*types.InputLabeledValue{{Value: alloraMath.MustNewBoundedExp40DecFromString("100")}},
+					Values:      []*types.InputLabeledValue{{Label: "y", Value: alloraMath.MustNewBoundedExp40DecFromString("100")}},
 					ExtraData:   nil,
 					Proof:       "",
 				},

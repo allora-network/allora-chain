@@ -994,11 +994,21 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	// NetworkInferences
+	// NetworkInferences (convert and save to new store)
 	for _, networkInference := range data.NetworkInferences {
 		if networkInference != nil {
-			if err := k.InsertNetworkInferences(ctx, networkInference.TopicId, networkInference.BlockHeight, *networkInference.ValueBundle); err != nil {
+			networkInferenceBundle := types.ValueBundleToNetworkInferenceBundle(networkInference.ValueBundle)
+			if err := k.InsertNetworkInferenceBundle(ctx, networkInference.TopicId, networkInference.BlockHeight, *networkInferenceBundle); err != nil {
 				return errors.Wrap(err, "error setting network inference")
+			}
+		}
+	}
+
+	// NetworkInferenceBundle
+	for _, networkInference := range data.NetworkInferenceBundle {
+		if networkInference != nil {
+			if err := k.InsertNetworkInferenceBundle(ctx, networkInference.TopicId, networkInference.BlockHeight, *networkInference.NetworkInferenceBundle); err != nil {
+				return errors.Wrap(err, "error setting network inference bundle")
 			}
 		}
 	}
@@ -1006,7 +1016,17 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// OutlierResistantNetworkInferences
 	for _, outlierResistantNetworkInference := range data.OutlierResistantNetworkInferences {
 		if outlierResistantNetworkInference != nil {
-			if err := k.InsertOutlierResistantNetworkInferences(ctx, outlierResistantNetworkInference.TopicId, outlierResistantNetworkInference.BlockHeight, *outlierResistantNetworkInference.ValueBundle); err != nil {
+			outlierResistantetworkInferenceBundle := types.ValueBundleToNetworkInferenceBundle(outlierResistantNetworkInference.ValueBundle)
+			if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, outlierResistantNetworkInference.TopicId, outlierResistantNetworkInference.BlockHeight, *outlierResistantetworkInferenceBundle); err != nil {
+				return errors.Wrap(err, "error setting outlier resistant network inference")
+			}
+		}
+	}
+
+	// OutlierResistantNetworkInferenceBundle
+	for _, outlierResistantNetworkInference := range data.OutlierResistantNetworkInferenceBundle {
+		if outlierResistantNetworkInference != nil {
+			if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, outlierResistantNetworkInference.TopicId, outlierResistantNetworkInference.BlockHeight, *outlierResistantNetworkInference.NetworkInferenceBundle); err != nil {
 				return errors.Wrap(err, "error setting outlier resistant network inference")
 			}
 		}
@@ -2564,7 +2584,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	}
 
 	// Export network inferences
-	networkInferences := make([]*types.TopicIdBlockHeightValueBundles, 0)
+	networkInferenceBundle := make([]*types.TopicIdBlockHeightNetworkInferenceBundles, 0)
+
 	networkInferencesIter, err := k.networkInferences.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate network inferences")
@@ -2574,15 +2595,39 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get key value: networkInferencesIter")
 		}
-		networkInferences = append(networkInferences, &types.TopicIdBlockHeightValueBundles{
-			TopicId:     keyValue.Key.K1(),
-			BlockHeight: keyValue.Key.K2(),
-			ValueBundle: &keyValue.Value,
+		networkInference := types.ValueBundleToNetworkInferenceBundle(&keyValue.Value)
+		if networkInference == nil {
+			return nil, errors.Wrap(types.ErrInvalidValue, "network inference bundle is empty")
+		}
+		if err := networkInference.Validate(); err != nil {
+			return nil, errors.Wrap(types.ErrInvalidValue, "network inference is invalid")
+		}
+		networkInferenceBundle = append(networkInferenceBundle, &types.TopicIdBlockHeightNetworkInferenceBundles{
+			TopicId:                keyValue.Key.K1(),
+			BlockHeight:            keyValue.Key.K2(),
+			NetworkInferenceBundle: networkInference,
+		})
+	}
+
+	networkInferencesBundleIter, err := k.networkInferenceBundle.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate network inference bundle")
+	}
+	for ; networkInferencesBundleIter.Valid(); networkInferencesBundleIter.Next() {
+		keyValue, err := networkInferencesBundleIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: networkInferencesBundleIter")
+		}
+		networkInferenceBundle = append(networkInferenceBundle, &types.TopicIdBlockHeightNetworkInferenceBundles{
+			TopicId:                keyValue.Key.K1(),
+			BlockHeight:            keyValue.Key.K2(),
+			NetworkInferenceBundle: &keyValue.Value,
 		})
 	}
 
 	// Outlier resistant network inferences
-	outlierResistantNetworkInferences := make([]*types.TopicIdBlockHeightValueBundles, 0)
+	outlierResistantNetworkInferenceBundle := make([]*types.TopicIdBlockHeightNetworkInferenceBundles, 0)
+
 	outlierResistantNetworkInferencesIter, err := k.outlierResistantNetworkInferences.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate outlier resistant network inferences")
@@ -2592,10 +2637,33 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get key value: outlierResistantNetworkInferencesIter")
 		}
-		outlierResistantNetworkInferences = append(outlierResistantNetworkInferences, &types.TopicIdBlockHeightValueBundles{
-			TopicId:     keyValue.Key.K1(),
-			BlockHeight: keyValue.Key.K2(),
-			ValueBundle: &keyValue.Value,
+		outlierResistantetworkInference := types.ValueBundleToNetworkInferenceBundle(&keyValue.Value)
+		if outlierResistantetworkInference == nil {
+			return nil, errors.Wrap(types.ErrInvalidValue, "outlier resistant network inference bundle is empty")
+		}
+		if err := outlierResistantetworkInference.Validate(); err != nil {
+			return nil, errors.Wrap(types.ErrInvalidValue, "outlier resistant network inference is invalid")
+		}
+		outlierResistantNetworkInferenceBundle = append(outlierResistantNetworkInferenceBundle, &types.TopicIdBlockHeightNetworkInferenceBundles{
+			TopicId:                keyValue.Key.K1(),
+			BlockHeight:            keyValue.Key.K2(),
+			NetworkInferenceBundle: outlierResistantetworkInference,
+		})
+	}
+
+	outlierResistantNetworkInferenceBundleIter, err := k.outlierResistantNetworkInferenceBundle.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate outlier resistant network inference bundle")
+	}
+	for ; outlierResistantNetworkInferenceBundleIter.Valid(); outlierResistantNetworkInferenceBundleIter.Next() {
+		keyValue, err := outlierResistantNetworkInferenceBundleIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: outlierResistantNetworkInferenceBundleIter")
+		}
+		outlierResistantNetworkInferenceBundle = append(outlierResistantNetworkInferenceBundle, &types.TopicIdBlockHeightNetworkInferenceBundles{
+			TopicId:                keyValue.Key.K1(),
+			BlockHeight:            keyValue.Key.K2(),
+			NetworkInferenceBundle: &keyValue.Value,
 		})
 	}
 
@@ -2703,8 +2771,10 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		LatestRegretStdNorm:                            latestRegretScale,
 		LatestInfererWeights:                           latestInfererWeights,
 		LatestForecasterWeights:                        latestForecasterWeights,
-		NetworkInferences:                              networkInferences,
-		OutlierResistantNetworkInferences:              outlierResistantNetworkInferences,
+		NetworkInferences:                              nil, // deprecated
+		OutlierResistantNetworkInferences:              nil, // deprecated
+		NetworkInferenceBundle:                         networkInferenceBundle,
+		OutlierResistantNetworkInferenceBundle:         outlierResistantNetworkInferenceBundle,
 		MonthlyReputerRewards:                          monthlyReputerRewards,
 		MonthlyTopicRewards:                            monthlyTopicRewards,
 	}, nil
