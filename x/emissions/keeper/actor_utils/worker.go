@@ -92,7 +92,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 	activeInfererAddressesMap, activeInferences, err := closeActiveInferencesSet(
 		ctx,
 		k,
-		topic.Id,
+		topic,
 		nonce,
 		activeInfererAddresses,
 	)
@@ -154,7 +154,7 @@ func ProcessAndStoreNetworkInferences(
 	k *keeper.Keeper,
 	ctx sdk.Context,
 	topicId uint64,
-	blockHeight int64,
+	nonce int64,
 	activeInferences *types.Inferences,
 	activeForecasts *types.Forecasts,
 ) error {
@@ -163,7 +163,7 @@ func ProcessAndStoreNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		*k,
 		topicId,
-		&blockHeight,
+		&nonce,
 		activeInferences,
 		activeForecasts,
 		false,
@@ -173,7 +173,7 @@ func ProcessAndStoreNetworkInferences(
 	}
 
 	// Store regular network inferences
-	if err := k.InsertNetworkInferences(ctx, topicId, blockHeight, *networkInferencesResult.NetworkInferences); err != nil {
+	if err := k.InsertNetworkInferenceBundle(ctx, topicId, nonce, *networkInferencesResult.NetworkInferences); err != nil {
 		return errorsmod.Wrap(err, "failed to insert network inference")
 	}
 
@@ -187,7 +187,7 @@ func ProcessAndStoreNetworkInferences(
 			infererAddresses = append(infererAddresses, inferer)
 			infererWeights = append(infererWeights, weight)
 		}
-		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, blockHeight, infererAddresses, infererWeights)
+		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, nonce, infererAddresses, infererWeights)
 	}
 
 	if len(networkInferencesResult.ForecasterToWeight) > 0 {
@@ -197,7 +197,7 @@ func ProcessAndStoreNetworkInferences(
 			forecasterAddresses = append(forecasterAddresses, forecaster)
 			forecasterWeights = append(forecasterWeights, weight)
 		}
-		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, blockHeight, forecasterAddresses, forecasterWeights)
+		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, nonce, forecasterAddresses, forecasterWeights)
 	}
 
 	// Get outlier resistant inferences
@@ -215,7 +215,7 @@ func ProcessAndStoreNetworkInferences(
 			sdk.UnwrapSDKContext(ctx),
 			*k,
 			topicId,
-			&blockHeight,
+			&nonce,
 			&outlierResistantFilteredInferences,
 			activeForecasts,
 			true,
@@ -226,7 +226,7 @@ func ProcessAndStoreNetworkInferences(
 	}
 
 	// Store outlier resistant network inferences
-	if err := k.InsertOutlierResistantNetworkInferences(ctx, topicId, blockHeight, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
+	if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, topicId, nonce, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
 		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
 	}
 
@@ -239,32 +239,22 @@ func ProcessAndStoreNetworkInferences(
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
-	topicId uint64,
+	topic types.Topic,
 	nonce types.Nonce,
 	activeInfererAddresses []string,
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
-	activeInferences := make([]*types.Inference, 0)
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	for _, address := range activeInfererAddresses {
-		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
-		if err != nil {
-			return nil, nil, err
-		}
-		activeInferences = append(activeInferences, &inference)
+	inferences, err = k.GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce.BlockHeight, activeInfererAddresses)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, inference := range inferences.Inferences {
 		activeInfererAddressesMap[inference.Inferer] = true
 	}
 
-	// Ensure deterministic ordering
-	sort.Slice(activeInferences, func(i, j int) bool {
-		return activeInferences[i].Inferer < activeInferences[j].Inferer
-	})
-
-	inferences = &types.Inferences{
-		Inferences: activeInferences,
-	}
-
-	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, *inferences)
+	err = k.InsertActiveInferences(ctx, topic.Id, nonce.BlockHeight, *inferences)
 	if err != nil {
 		return nil, nil, err
 	}

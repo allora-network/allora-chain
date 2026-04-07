@@ -138,9 +138,6 @@ func (inference *Inference) Validate() error {
 	if err := validateInferenceContents(inference.TopicId, inference.Inferer, inference.BlockHeight); err != nil {
 		return errors.Wrap(err, "inference contents are invalid")
 	}
-	if err := ValidateDec(inference.Value); err != nil {
-		return errors.Wrap(err, "inference value is invalid")
-	}
 	if err := ValidateDecs(inference.Values); err != nil {
 		return errors.Wrap(err, "inference values are invalid")
 	}
@@ -401,19 +398,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 	if len(bundle.Worker) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker cannot be empty")
 	}
-	if len(bundle.Pubkey) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "public key cannot be empty")
-	}
-	pk, err := hex.DecodeString(bundle.Pubkey)
-	if err != nil || len(pk) != secp256k1.PubKeySize {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid pubkey")
-	}
-	pubkey := secp256k1.PubKey(pk)
-	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
-
-	if len(bundle.InferencesForecastsBundleSignature) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature cannot be empty")
-	}
 	if bundle.InferenceForecastsBundle == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference forecasts bundle cannot be nil")
 	}
@@ -425,12 +409,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 	if bundle.InferenceForecastsBundle.Inference != nil {
 		if err := bundle.InferenceForecastsBundle.Inference.Validate(); err != nil {
 			return err
-		}
-		// Validate against the current bundle
-		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
-			return errors.Wrapf(sdkerrors.ErrUnauthorized,
-				"Inference.Inferer %s does not match pubkey %s",
-				bundle.InferenceForecastsBundle.Inference.Inferer, pubKeyConvertedToAddress)
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
@@ -448,12 +426,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
 			return err
 		}
-		// Validate against the current bundle
-		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
-			return errors.Wrapf(sdkerrors.ErrUnauthorized,
-				"Forecast.Forecaster %s does not match pubkey %s",
-				bundle.InferenceForecastsBundle.Forecast.Forecaster, pubKeyConvertedToAddress)
-		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
 			return errors.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match worker address %s",
@@ -465,21 +437,6 @@ func (bundle *WorkerDataBundle) Validate() error {
 		if bundle.Nonce.BlockHeight != bundle.InferenceForecastsBundle.Forecast.BlockHeight {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "forecast block height %d does not match bundle block height %d", bundle.InferenceForecastsBundle.Forecast.BlockHeight, bundle.Nonce.BlockHeight)
 		}
-	}
-
-	// Check signature from the bundle, throw if invalid!
-	buf := inferenceForecastsBundleBufferPool.Get()
-	defer inferenceForecastsBundleBufferPool.Put(buf)
-	marshaled, err := bundle.InferenceForecastsBundle.XXX_Marshal(buf, true)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal inference forecasts bundle: %s", err)
-	}
-	if !pubkey.VerifySignature(marshaled, bundle.InferencesForecastsBundleSignature) {
-		return errors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
-	}
-	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
-	if pubKeyConvertedToAddress != bundle.Worker {
-		return errors.Wrap(sdkerrors.ErrUnauthorized, "worker address does not match signature")
 	}
 
 	return nil
@@ -642,6 +599,100 @@ func (bundle *ValueBundle) Validate() error {
 	// are no one out inferer forecaster values for this bundle, and are allowed
 	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
 		if err := oneOutInfererForecaster.Validate(); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
+		}
+	}
+	return nil
+}
+
+func FromLabeledValues(lvals []*LabeledValue) (out alloraMath.DecArray) {
+	out = make(alloraMath.DecArray, len(lvals))
+	for i := range lvals {
+		out[i] = lvals[i].Value
+	}
+	return
+}
+
+// validate that a network inference bundle follows the expected format
+func (bundle *NetworkInferenceBundle) Validate() error {
+	if bundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
+	}
+	if err := ValidateTopicId(bundle.TopicId); err != nil {
+		return errors.Wrap(err, "value bundle topic id is invalid")
+	}
+	if err := ValidateBlockHeight(bundle.Nonce); err != nil {
+		return errors.Wrap(err, "value bundle nonce is invalid")
+	}
+	if bundle.Nonce <= 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than or equal to 0")
+	}
+
+	combinedValue := FromLabeledValues(bundle.CombinedValue)
+
+	if err := ValidateDecs(combinedValue); err != nil {
+		return errors.Wrap(err, "value bundle combined value is invalid")
+	}
+
+	if len(bundle.InfererValues) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value bundle inferer values cannot be nil")
+	}
+
+	// nil values for bundle.InfererValues are interpreted to mean that there
+	// are no inferer values for this bundle, and are allowed
+	for _, infererValue := range bundle.InfererValues {
+		vals := FromLabeledValues(infererValue.GetValues())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle inferer value is invalid")
+		}
+	}
+
+	// nil values for bundle.ForecasterValues are interpreted to mean that there
+	// are no forecaster values for this bundle, and are allowed
+	for _, forecasterValue := range bundle.ForecasterValues {
+		vals := FromLabeledValues(forecasterValue.GetValues())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle forecaster value is invalid")
+		}
+	}
+
+	naiveValue := FromLabeledValues(bundle.NaiveValue)
+	if err := ValidateDecs(naiveValue); err != nil {
+		return errors.Wrap(err, "value bundle naive value is invalid")
+	}
+
+	// nil values for bundle.OneOutInfererValues are interpreted to mean that there
+	// are no one out inferer values for this bundle, and are allowed
+	for _, oneOutInfererValue := range bundle.OneOutInfererValues {
+		vals := FromLabeledValues(oneOutInfererValue.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle one out inferer value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneOutForecasterValues are interpreted to mean that there
+	// are no one out forecaster values for this bundle, and are allowed
+	for _, oneOutForecasterValue := range bundle.OneOutForecasterValues {
+		vals := FromLabeledValues(oneOutForecasterValue.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle one out forecaster value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneInForecasterValues are interpreted to mean that there
+	// are no one in forecaster values for this bundle, and are allowed
+	for _, oneInForecasterValue := range bundle.OneInForecasterValues {
+		vals := FromLabeledValues(oneInForecasterValue.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
+			return errors.Wrap(err, "value bundle one in forecaster value is invalid")
+		}
+	}
+
+	// nil values for bundle.OneOutInfererForecasterValues are interpreted to mean that there
+	// are no one out inferer forecaster values for this bundle, and are allowed
+	for _, oneOutInfererForecaster := range bundle.OneOutInfererForecasterValues {
+		vals := FromLabeledValues(oneOutInfererForecaster.GetCombinedInference())
+		if err := ValidateDecs(vals); err != nil {
 			return errors.Wrap(err, "value bundle one out inferer forecaster value is invalid")
 		}
 	}
@@ -942,7 +993,7 @@ func (topic Topic) Validate(params Params) error {
 	}
 	if topic.RequireUnity &&
 		(topic.UnityTolerance.IsNaN() ||
-			topic.UnityTolerance.Lte(alloraMath.ZeroDec()) ||
+			topic.UnityTolerance.Lt(alloraMath.ZeroDec()) ||
 			topic.UnityTolerance.Gt(alloraMath.MustNewDecFromString(maxTopicUnityTolerance))) {
 		return errors.Wrapf(sdkerrors.ErrInvalidType,
 			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
@@ -1263,5 +1314,24 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
 
+	return nil
+}
+
+// ValidateInferenceValues verifies that the inference values are consistent
+// with the provided epoch label registry.
+func ValidateInferenceValues(iv InferenceValues, labels []*TopicLabel) error {
+	want := len(labels)
+	if len(iv) != want {
+		return errors.Wrapf(
+			sdkerrors.ErrLogic,
+			"inference values length mismatch: got=%d want=%d",
+			len(iv), want,
+		)
+	}
+	for i := range iv {
+		if iv[i].IsNaN() || !iv[i].IsFinite() {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid inference value at idx=%d", i)
+		}
+	}
 	return nil
 }

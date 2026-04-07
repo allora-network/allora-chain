@@ -4,16 +4,17 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"sort"
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
 	cosmosMath "cosmossdk.io/math"
 
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils/fn"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -31,6 +32,7 @@ type ActorId = string
 type BlockHeight = int64
 type Reputer = string
 type Delegator = string
+type LabelId = uint32
 
 type Keeper struct {
 	cdc              codec.BinaryCodec
@@ -80,6 +82,8 @@ type Keeper struct {
 	lowestForecasterScoreEma collections.Map[TopicId, types.Score]
 	// lowest reputer score ema for a topic
 	lowestReputerScoreEma collections.Map[TopicId, types.Score]
+	// topic epoch label registry - keyed by [topic_id, nonce]
+	topicLabelRegistry collections.Map[collections.Pair[TopicId, BlockHeight], types.EpochLabelRegistry]
 
 	// / SCORES
 
@@ -273,9 +277,11 @@ type Keeper struct {
 	initialReputerEmaScore    collections.Map[TopicId, alloraMath.Dec]
 
 	// map of (topic, block_height) -> ValueBundle
-	networkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	networkInferences      collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	networkInferenceBundle collections.Map[collections.Pair[TopicId, BlockHeight], types.NetworkInferenceBundle]
 	// map of (topic, block_height) -> ValueBundle
-	outlierResistantNetworkInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	outlierResistantNetworkInferences      collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	outlierResistantNetworkInferenceBundle collections.Map[collections.Pair[TopicId, BlockHeight], types.NetworkInferenceBundle]
 	// total reward for the month going to reputers
 	monthlyReputerRewards collections.Item[cosmosMath.Int]
 	// total reward for the month going to all topic participants (reputers, inferers, forecasters)
@@ -379,6 +385,7 @@ func NewKeeper(
 		lowestForecasterScoreEma:                  collections.NewMap(sb, types.LowestForecasterScoreEmaKey, "lowest_forecaster_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		activeReputers:                            collections.NewKeySet(sb, types.ActiveReputersKey, "active_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		lowestReputerScoreEma:                     collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
+		topicLabelRegistry:                        collections.NewMap(sb, types.TopicLabelRegistryKey, "topic_label_registry", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.EpochLabelRegistry](cdc)),
 		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
 		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
 		lastMedianInferences:                      collections.NewMap(sb, types.LastMedianInferencesKey, "last_median_inferences", collections.Uint64Key, alloraMath.DecValue),
@@ -390,7 +397,9 @@ func NewKeeper(
 		latestInfererWeights:                      collections.NewMap(sb, types.LatestInfererWeightsKey, "latest_inferer_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		latestForecasterWeights:                   collections.NewMap(sb, types.LatestForecasterWeightsKey, "latest_forecaster_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		networkInferences:                         collections.NewMap(sb, types.NetworkInferencesKey, "network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		networkInferenceBundle:                    collections.NewMap(sb, types.NetworkInferenceBundleKey, "network_inference_bundle", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.NetworkInferenceBundle](cdc)),
 		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		outlierResistantNetworkInferenceBundle:    collections.NewMap(sb, types.OutlierResistantNetworkInferenceBundleKey, "outlier_resistant_network_inference_bundle", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.NetworkInferenceBundle](cdc)),
 		monthlyReputerRewards:                     collections.NewItem(sb, types.MonthlyReputerRewardsKey, "monthly_reputer_rewards", sdk.IntValue),
 		monthlyTopicRewards:                       collections.NewItem(sb, types.MonthlyTopicRewardsKey, "monthly_topic_rewards", sdk.IntValue),
 	}
@@ -413,8 +422,8 @@ func (k *Keeper) GetBinaryCodec() codec.BinaryCodec {
 	return k.cdc
 }
 
-// Insert a network inference for a topic at a block
-func (k *Keeper) InsertNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
+// Insert a network inference bundle for a topic at a block
+func (k *Keeper) InsertNetworkInferenceBundle(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.NetworkInferenceBundle) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
@@ -424,27 +433,21 @@ func (k *Keeper) InsertNetworkInferences(ctx context.Context, topicId TopicId, b
 	if err := bundle.Validate(); err != nil {
 		return errorsmod.Wrap(err, "loss bundle validation failed")
 	}
-	return k.networkInferences.Set(ctx, collections.Join(topicId, blockHeight), bundle)
+	return k.networkInferenceBundle.Set(ctx, collections.Join(topicId, blockHeight), bundle)
 }
 
 // Get Network Inferences
-func (k *Keeper) GetNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
+func (k *Keeper) GetNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.NetworkInferenceBundle, error) {
 	key := collections.Join(topicId, blockHeight)
-	networkInferences, err := k.networkInferences.Get(ctx, key)
+	networkInferences, err := k.networkInferenceBundle.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
-		return &types.ValueBundle{
-			TopicId: topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{
-				ReputerNonce: &types.Nonce{
-					BlockHeight: 0,
-				},
-			},
-			Reputer:                       "",
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.ZeroDec(),
+		return &types.NetworkInferenceBundle{
+			TopicId:                       topicId,
+			Nonce:                         0,
+			CombinedValue:                 []*types.LabeledValue{},
 			InfererValues:                 nil,
 			ForecasterValues:              nil,
-			NaiveValue:                    alloraMath.ZeroDec(),
+			NaiveValue:                    []*types.LabeledValue{},
 			OneOutInfererValues:           nil,
 			OneOutForecasterValues:        nil,
 			OneInForecasterValues:         nil,
@@ -456,7 +459,7 @@ func (k *Keeper) GetNetworkInferences(ctx context.Context, topicId TopicId, bloc
 	return &networkInferences, nil
 }
 
-func (k *Keeper) InsertOutlierResistantNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.ValueBundle) error {
+func (k *Keeper) InsertOutlierResistantNetworkInferenceBundle(ctx context.Context, topicId TopicId, blockHeight BlockHeight, bundle types.NetworkInferenceBundle) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
@@ -466,27 +469,21 @@ func (k *Keeper) InsertOutlierResistantNetworkInferences(ctx context.Context, to
 	if err := bundle.Validate(); err != nil {
 		return errorsmod.Wrap(err, "loss bundle validation failed")
 	}
-	return k.outlierResistantNetworkInferences.Set(ctx, collections.Join(topicId, blockHeight), bundle)
+	return k.outlierResistantNetworkInferenceBundle.Set(ctx, collections.Join(topicId, blockHeight), bundle)
 }
 
 // Get Outlier Resistant Network Inferences
-func (k *Keeper) GetOutlierResistantNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.ValueBundle, error) {
+func (k *Keeper) GetOutlierResistantNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.NetworkInferenceBundle, error) {
 	key := collections.Join(topicId, blockHeight)
-	networkInferences, err := k.outlierResistantNetworkInferences.Get(ctx, key)
+	networkInferences, err := k.outlierResistantNetworkInferenceBundle.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
-		return &types.ValueBundle{
-			TopicId: topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{
-				ReputerNonce: &types.Nonce{
-					BlockHeight: 0,
-				},
-			},
-			Reputer:                       "",
-			ExtraData:                     nil,
-			CombinedValue:                 alloraMath.ZeroDec(),
+		return &types.NetworkInferenceBundle{
+			TopicId:                       topicId,
+			Nonce:                         0,
+			CombinedValue:                 []*types.LabeledValue{},
 			InfererValues:                 nil,
 			ForecasterValues:              nil,
-			NaiveValue:                    alloraMath.ZeroDec(),
+			NaiveValue:                    []*types.LabeledValue{},
 			OneOutInfererValues:           nil,
 			OneOutForecasterValues:        nil,
 			OneInForecasterValues:         nil,
@@ -499,21 +496,21 @@ func (k *Keeper) GetOutlierResistantNetworkInferences(ctx context.Context, topic
 }
 
 // Gets Latest Network Inferences, outlier resistant or not
-func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId, outlierResistant bool) (*types.ValueBundle, error) {
+func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId, outlierResistant bool) (*types.NetworkInferenceBundle, error) {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return nil, errorsmod.Wrap(err, "invalid topic id")
 	}
 
 	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
 	var err error
-	var iter collections.Iterator[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
+	var iter collections.Iterator[collections.Pair[TopicId, BlockHeight], types.NetworkInferenceBundle]
 	if outlierResistant {
-		iter, err = k.outlierResistantNetworkInferences.Iterate(ctx, rng)
+		iter, err = k.outlierResistantNetworkInferenceBundle.Iterate(ctx, rng)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "error iterating outlier resistant network inferences")
 		}
 	} else {
-		iter, err = k.networkInferences.Iterate(ctx, rng)
+		iter, err = k.networkInferenceBundle.Iterate(ctx, rng)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "error iterating network inferences")
 		}
@@ -528,19 +525,13 @@ func (k *Keeper) GetLatestNetworkInferences(ctx context.Context, topicId TopicId
 		}
 		return &keyValue.Value, nil
 	}
-	return &types.ValueBundle{
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: 0,
-			},
-		},
-		Reputer:                       "",
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.ZeroDec(),
+	return &types.NetworkInferenceBundle{
+		TopicId:                       topicId,
+		Nonce:                         0,
+		CombinedValue:                 []*types.LabeledValue{},
 		InfererValues:                 nil,
 		ForecasterValues:              nil,
-		NaiveValue:                    alloraMath.ZeroDec(),
+		NaiveValue:                    []*types.LabeledValue{},
 		OneOutInfererValues:           nil,
 		OneOutForecasterValues:        nil,
 		OneInForecasterValues:         nil,
@@ -1325,18 +1316,29 @@ func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId T
 		return inferences, nil
 	}
 
-	filteredInferences := types.Inferences{
-		Inferences: []*types.Inference{},
-	}
-
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting params")
 	}
 	outlierThresholdMultiplier := params.InferenceOutlierDetectionThreshold
+
+	filteredInferences := types.Inferences{
+		Inferences: []*types.Inference{},
+	}
+
+	thresholdMad, err := outlierThresholdMultiplier.Mul(mad)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting threshold mad")
+	}
+
 	for _, inf := range inferences.Inferences {
 		// Calculate absolute difference from median
-		diff, err := inf.Value.Sub(lastMedian)
+		score, err := inferenceOutlierScore(inf.Values)
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error calculating inference outlier score")
+		}
+
+		diff, err := score.Sub(lastMedian)
 		if err != nil {
 			return types.Inferences{}, errorsmod.Wrap(err, "error getting difference from median")
 		}
@@ -1345,10 +1347,6 @@ func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId T
 			return types.Inferences{}, errorsmod.Wrap(err, "error getting absolute difference")
 		}
 
-		thresholdMad, err := outlierThresholdMultiplier.Mul(mad)
-		if err != nil {
-			return types.Inferences{}, errorsmod.Wrap(err, "error getting threshold mad")
-		}
 		// Check if within threshold
 		if absDiff.Lte(thresholdMad) {
 			filteredInferences.Inferences = append(filteredInferences.Inferences, inf)
@@ -1432,7 +1430,16 @@ func (k *Keeper) UpdateNetworkInferencesOutlierMetrics(
 	}
 
 	// Create an array of the values
-	values := fn.Map(inferences.Inferences[:], func(inf *types.Inference) alloraMath.Dec { return inf.Value })
+	values := make([]alloraMath.Dec, 0, len(inferences.Inferences))
+
+	for _, inf := range inferences.Inferences {
+		norm, err := inferenceOutlierScore(inf.Values)
+		if err != nil {
+			return errorsmod.Wrap(err, "inference norm failed")
+		}
+
+		values = append(values, norm)
+	}
 
 	// Calculate MAD (median absolute deviation)
 	mad, median, err := alloraMath.MedianAbsoluteDeviation(values)
@@ -1486,6 +1493,34 @@ func (k *Keeper) UpdateNetworkInferencesOutlierMetrics(
 	}
 
 	return nil
+}
+
+func inferenceOutlierScore(values []alloraMath.Dec) (alloraMath.Dec, error) {
+	if len(values) == 0 {
+		return alloraMath.Dec{}, errorsmod.Wrap(sdkerrors.ErrLogic, "inference has empty values")
+	}
+
+	if len(values) == 1 {
+		return values[0], nil
+	}
+
+	sumSquares := alloraMath.ZeroDec()
+	for _, v := range values {
+		vv, err := v.Mul(v)
+		if err != nil {
+			return alloraMath.Dec{}, errorsmod.Wrap(err, "error squaring inference value")
+		}
+		sumSquares, err = sumSquares.Add(vv)
+		if err != nil {
+			return alloraMath.Dec{}, errorsmod.Wrap(err, "error accumulating squared inference values")
+		}
+	}
+
+	score, err := sumSquares.Sqrt()
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error taking sqrt of inference norm")
+	}
+	return score, nil
 }
 
 func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, error) {
@@ -1863,6 +1898,102 @@ func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 ) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
 	return k.inferences.Get(ctx, key)
+}
+
+// GetWorkersLatestInferencesByTopicIdValuesPadded retrieves the latest inference
+// for each provided worker and guarantees that the returned Inference.Values
+// slices are aligned with the expected shape for the topic.
+//
+// SINGLE topics:
+//   - Ensures Values has length 1.
+//   - If only the scalar Value field is populated (legacy), it is converted
+//     to Values = [Value].
+//   - Value and Values[0] are kept consistent.
+//
+// MULTI topics:
+//   - Pads each inference's Values slice with zeros so that its length matches
+//     the epoch label registry length for (topicId, nonce).
+//   - Returns an error if any inference has more values than the registry.
+//
+// Returned inferences are sorted deterministically by Inferer address.
+func (k *Keeper) GetWorkersLatestInferencesByTopicIdValuesPadded(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	workers []ActorId,
+) (*types.Inferences, error) {
+	active := make([]*types.Inference, 0, len(workers))
+
+	switch topic.OutputArity {
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		for _, addr := range workers {
+			inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
+			if err != nil {
+				return nil, err
+			}
+			if len(inf.Values) != 1 {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"worker %s single-arity inference must have exactly 1 value, got=%d",
+					addr, len(inf.Values),
+				)
+			}
+
+			values := make([]alloraMath.Dec, 1)
+			values[0] = inf.Values[0]
+
+			active = append(active, &types.Inference{
+				TopicId:     inf.TopicId,
+				BlockHeight: inf.BlockHeight,
+				Inferer:     inf.Inferer,
+				Values:      values,
+				ExtraData:   inf.ExtraData,
+				Proof:       inf.Proof,
+			})
+		}
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		reg, err := k.GetEpochLabelRegistry(ctx, topic.Id, nonce)
+		if err != nil {
+			return nil, err
+		}
+		targetLen := len(reg.GetLabels())
+		zero := alloraMath.ZeroDec()
+
+		for _, addr := range workers {
+			inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
+			if err != nil {
+				return nil, err
+			}
+			if len(inf.Values) > targetLen {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"worker %s inference values longer than registry: got=%d registry=%d",
+					addr, len(inf.Values), targetLen,
+				)
+			}
+
+			values := make([]alloraMath.Dec, targetLen)
+			for i := range values {
+				values[i] = zero
+			}
+
+			copy(values, inf.Values)
+
+			active = append(active, &types.Inference{
+				TopicId:     inf.TopicId,
+				BlockHeight: inf.BlockHeight,
+				Inferer:     inf.Inferer,
+				Values:      values,
+				ExtraData:   inf.ExtraData,
+				Proof:       inf.Proof,
+			})
+		}
+	default:
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+
+	sort.Slice(active, func(i, j int) bool { return active[i].Inferer < active[j].Inferer })
+	return &types.Inferences{Inferences: active}, nil
 }
 
 func (k *Keeper) GetWorkerLatestForecastByTopicId(
@@ -4309,6 +4440,10 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx sdk.Context, topicId TopicId, bloc
 	if err != nil {
 		return errorsmod.Wrap(err, "error pruning outlier resistant network inferences")
 	}
+	err = k.pruneTopicLabelRegistry(ctx, blockRange)
+	if err != nil {
+		return errorsmod.Wrap(err, "error pruning topic label registry")
+	}
 	return nil
 }
 
@@ -4334,6 +4469,10 @@ func (k *Keeper) pruneNetworkInferences(ctx context.Context, blockRange *collect
 
 func (k *Keeper) pruneOutlierResistantNetworkInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
 	return k.outlierResistantNetworkInferences.Clear(ctx, blockRange)
+}
+
+func (k *Keeper) pruneTopicLabelRegistry(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	return k.topicLabelRegistry.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
@@ -5042,4 +5181,328 @@ func (k *Keeper) updateTopicWeightAfterStakeChange(
 	sdkCtx.Logger().Debug("Updated topic weight after stake change", "topicId", topicId, "newWeight", newWeight.String())
 
 	return nil
+}
+
+// GetEpochLabelRegistry returns the registry for (topicId, nonce).
+// If none exists yet, it returns an empty registry (not an error).
+func (k *Keeper) GetEpochLabelRegistry(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+) (types.EpochLabelRegistry, error) {
+	registry, err := k.topicLabelRegistry.Get(ctx, collections.Join(topicId, nonce))
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.EpochLabelRegistry{
+				TopicId: topicId,
+				EpochId: uint64(nonce),
+				Labels:  nil,
+			}, nil
+		}
+		return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error getting topic label registry")
+	}
+	registry.TopicId = topicId
+	registry.EpochId = uint64(nonce)
+	return registry, nil
+}
+
+// RegisterEpochLabel ensures labelName exists in the registry for (topicId, nonce).
+// If it already exists, it returns the existing id (idempotent).
+func (k *Keeper) RegisterEpochLabel(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	labelName string,
+) (LabelId, error) {
+	labelName = strings.TrimSpace(labelName)
+	if labelName == "" {
+		return 0, errorsmod.Wrap(types.ErrInvalidLabelName, "label name cannot be empty")
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return 0, err
+	}
+
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Name == labelName {
+			if lbl.Id == 0 {
+				return 0, errorsmod.Wrap(sdkerrors.ErrLogic, "label id zero")
+			}
+			return lbl.Id, nil
+		}
+	}
+
+	//nolint:gosec
+	newID := LabelId(len(registry.Labels)) + 1
+
+	registry.Labels = append(registry.Labels, &types.TopicLabel{
+		Id:   newID,
+		Name: labelName,
+	})
+
+	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicId, nonce), registry); err != nil {
+		return 0, errorsmod.Wrap(err, "error setting topic label registry")
+	}
+
+	return newID, nil
+}
+
+// GetEpochLabelId returns the label id for labelName, if present.
+func (k *Keeper) GetEpochLabelId(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	labelName string,
+) (LabelId, bool, error) {
+	labelName = strings.TrimSpace(labelName)
+	if labelName == "" {
+		return 0, false, nil
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return 0, false, err
+	}
+
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Name == labelName {
+			return lbl.Id, true, nil
+		}
+	}
+	return 0, false, nil
+}
+
+// GetEpochLabelName returns the label name for id, if present.
+func (k *Keeper) GetEpochLabelName(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	id LabelId,
+) (string, bool, error) {
+	if id == 0 {
+		return "", false, nil
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return "", false, err
+	}
+
+	idx := int(id) - 1
+	if idx < 0 || idx >= len(registry.Labels) {
+		return "", false, nil
+	}
+	lbl := registry.Labels[idx]
+	if lbl == nil || lbl.Id != id {
+		return "", false, nil
+	}
+	return lbl.Name, true, nil
+}
+
+// NewWorkerDataBundleFromInput converts InputWorkerDataBundle to WorkerDataBundle
+func (k *Keeper) NewWorkerDataBundleFromInput(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	bwdb *types.InputWorkerDataBundle,
+) (*types.WorkerDataBundle, error) {
+	if bwdb == nil {
+		return nil, types.ErrInvalidValue
+	}
+	if bwdb.TopicId != topic.Id {
+		return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "topic mismatch")
+	}
+
+	bundle, err := k.NewInferenceForecastBundleFromInput(
+		ctx,
+		topic,
+		nonce,
+		bwdb.InferenceForecastsBundle,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert inference forecasts bundle")
+	}
+	workerDataBundle := &types.WorkerDataBundle{
+		Worker:                   bwdb.Worker,
+		Nonce:                    bwdb.Nonce,
+		TopicId:                  bwdb.TopicId,
+		InferenceForecastsBundle: bundle,
+	}
+	err = workerDataBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate worker data bundle")
+	}
+	return workerDataBundle, nil
+}
+
+// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
+func (k *Keeper) NewInferenceForecastBundleFromInput(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	bifb *types.InputInferenceForecastBundle,
+) (*types.InferenceForecastBundle, error) {
+	if bifb == nil {
+		return nil, types.ErrInvalidValue
+	}
+	var err error
+	var inference *types.Inference
+	if bifb.Inference != nil {
+		inference, err = k.NormalizeInputInference(ctx, topic, nonce, bifb.Inference)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to convert inference")
+		}
+	}
+	var forecast *types.Forecast
+	if bifb.Forecast != nil {
+		forecast, err = types.NewForecastFromInput(bifb.Forecast)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to convert forecast")
+		}
+	}
+	inferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: inference,
+		Forecast:  forecast,
+	}
+	err = inferenceForecastBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate inference forecast bundle")
+	}
+	return inferenceForecastBundle, nil
+}
+
+// NormalizeInputInference converts the worker-submitted inference into the internal Inference.
+// MULTI: labeled dictionary -> fixed-length array aligned with epoch registry (missing => 0).
+// SINGLE: if labeled dictionary length is 1 - use it, if greater than 1 reject the request, otherwise scalar submission is used
+func (k *Keeper) NormalizeInputInference(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	in *types.InputInference,
+) (*types.Inference, error) {
+	if in == nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
+	}
+
+	switch topic.OutputArity {
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		if len(in.Values) > 1 {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "single-arity inference accepts at most one value")
+		}
+		var dec alloraMath.Dec
+		if len(in.Values) == 1 {
+			dec = in.Values[0].Value.ToDec()
+		} else {
+			dec = in.Value.ToDec()
+		}
+		if dec.IsNaN() || !dec.IsFinite() {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
+		}
+
+		_, err := k.RegisterEpochLabel(ctx, in.TopicId, nonce, "y")
+		if err != nil {
+			return nil, err
+		}
+
+		return &types.Inference{
+			TopicId:     in.TopicId,
+			BlockHeight: in.BlockHeight,
+			Inferer:     in.Inferer,
+			Values:      []alloraMath.Dec{dec},
+			ExtraData:   in.ExtraData,
+			Proof:       in.Proof,
+		}, nil
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		if len(in.Values) == 0 {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires labeled values")
+		}
+	default:
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+
+	seen := make(map[string]struct{}, len(in.Values))
+	submitted := make([]struct {
+		labelId LabelId
+		value   alloraMath.Dec
+	}, 0, len(in.Values))
+
+	sumSubmitted := alloraMath.ZeroDec()
+
+	for _, lv := range in.Values {
+		name := strings.TrimSpace(lv.Label)
+		if name == "" {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "label name empty")
+		}
+		if _, ok := seen[name]; ok {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate label in submission: %s", name)
+		}
+		seen[name] = struct{}{}
+
+		dec := lv.Value.ToDec()
+		if dec.IsNaN() || !dec.IsFinite() {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label %s has invalid value", name)
+		}
+
+		labelId, err := k.RegisterEpochLabel(ctx, in.TopicId, nonce, name)
+		if err != nil {
+			return nil, err
+		}
+
+		submitted = append(submitted, struct {
+			labelId LabelId
+			value   alloraMath.Dec
+		}{labelId: labelId, value: dec})
+
+		sumSubmitted, err = sumSubmitted.Add(dec)
+		if err != nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to sum submitted value: %s", err)
+		}
+	}
+
+	if topic.RequireUnity {
+		diff, err := sumSubmitted.Sub(alloraMath.OneDec())
+		if err != nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to compute unity diff: %v", err)
+		}
+		diff, err = diff.Abs()
+		if err != nil {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to abs unity diff: %v", err)
+		}
+		if diff.Gt(topic.UnityTolerance) {
+			return nil, errorsmod.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"require_unity violated: sum=%s tol=%s",
+				sumSubmitted.String(), topic.UnityTolerance.String(),
+			)
+		}
+	}
+
+	registry, err := k.GetEpochLabelRegistry(ctx, in.TopicId, nonce)
+	if err != nil {
+		return nil, err
+	}
+	L := len(registry.Labels)
+	zero := alloraMath.ZeroDec()
+	values := make([]alloraMath.Dec, L)
+	for i := range values {
+		values[i] = zero
+	}
+
+	for _, s := range submitted {
+		idx := int(s.labelId) - 1
+		if idx < 0 || idx >= L {
+			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "label id out of range")
+		}
+		values[idx] = s.value
+	}
+
+	return &types.Inference{
+		TopicId:     in.TopicId,
+		BlockHeight: in.BlockHeight,
+		Inferer:     in.Inferer,
+		Values:      values,
+		ExtraData:   in.ExtraData,
+		Proof:       in.Proof,
+	}, nil
 }

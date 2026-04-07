@@ -5,6 +5,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -12,7 +13,7 @@ import (
 )
 
 type GetNetworkInferencesResult struct {
-	NetworkInferences    *emissions.ValueBundle
+	NetworkInferences    *emissions.NetworkInferenceBundle
 	InfererToWeight      map[Inferer]Weight
 	ForecasterToWeight   map[Forecaster]Weight
 	InferenceBlockHeight int64
@@ -45,12 +46,17 @@ func GetNetworkInferences(
 		ctx.Logger().Debug("Math helper cache cleared after network inference calculation")
 	}()
 
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, *inferencesNonce)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "Error getting epoch label registry")
+	}
+
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:
-		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce)
+		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, forecasts, *inferencesNonce, &registry)
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
-		return calcNetworkInferencesSingle(*inferencesNonce, topicId, inferences), nil
+		return calcNetworkInferencesSingle(*inferencesNonce, topicId, inferences, &registry)
 	} else {
 		return nil, errorsmod.Wrap(emissions.ErrNotFound, "no inferences found")
 	}
@@ -63,6 +69,7 @@ func calcNetworkInferencesMultiple(
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
 	inferenceBlockHeight BlockHeight,
+	registry *emissions.EpochLabelRegistry,
 ) (*GetNetworkInferencesResult, error) {
 	// Set forecasts to nil if there are no forecasts
 	if forecasts == nil {
@@ -104,6 +111,7 @@ func calcNetworkInferencesMultiple(
 		previousNetworkCombinedLoss,
 		moduleParams,
 		inferenceBlockHeight,
+		registry,
 	)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting network inference args")
@@ -133,27 +141,30 @@ func calcNetworkInferencesSingle(
 	inferenceBlockHeight BlockHeight,
 	topicId TopicId,
 	inferences *emissions.Inferences,
-) *GetNetworkInferencesResult {
+	registry *emissions.EpochLabelRegistry,
+) (*GetNetworkInferencesResult, error) {
+	if registry == nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "calcNetworkInferencesSingle: epoch label registry is nil")
+	}
 	singleInference := inferences.Inferences[0]
 
-	networkInferences := &emissions.ValueBundle{
-		TopicId: topicId,
-		Reputer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
-		ReputerRequestNonce: &emissions.ReputerRequestNonce{
-			ReputerNonce: &emissions.Nonce{
-				BlockHeight: inferenceBlockHeight,
-			},
-		},
-		ExtraData:     nil,
-		CombinedValue: singleInference.Value,
-		InfererValues: []*emissions.WorkerAttributedValue{
+	combinedValue, err := emissions.ConvertInferenceValuesToLabeledValues(singleInference.Values, registry)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "error converting combined value")
+	}
+
+	networkInferences := &emissions.NetworkInferenceBundle{
+		TopicId:       topicId,
+		Nonce:         inferenceBlockHeight,
+		CombinedValue: combinedValue,
+		InfererValues: []*emissions.WorkerInference{
 			{
 				Worker: singleInference.Inferer,
-				Value:  singleInference.Value,
+				Values: combinedValue,
 			},
 		},
 		ForecasterValues:              nil,
-		NaiveValue:                    singleInference.Value,
+		NaiveValue:                    combinedValue,
 		OneOutInfererValues:           nil,
 		OneOutForecasterValues:        nil,
 		OneInForecasterValues:         nil,
@@ -165,7 +176,7 @@ func calcNetworkInferencesSingle(
 		ForecasterToWeight:   nil,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      0, // Loss data may actually be available but is not needed to calculate network inference in this case
-	}
+	}, nil
 }
 
 // helper function for getting the args needed for calcNetworkInferences
@@ -181,10 +192,16 @@ func GetCalcNetworkInferenceArgs(
 	previousLossesCombinedValue *alloraMath.Dec,
 	moduleParams emissions.Params,
 	inferenceBlockHeight BlockHeight,
+	registry *emissions.EpochLabelRegistry,
 ) (
 	calcArgs CalcNetworkInferencesArgs,
 	err error,
 ) {
+	if registry == nil {
+		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "GetCalcNetworkInferenceArgs: epoch label registry is nil")
+	}
+	numLabels := len(registry.GetLabels())
+
 	infererToInference := MakeMapFromInfererToTheirInference(inferences.Inferences)
 	forecasterToForecast := MakeMapFromForecasterToTheirForecast(forecasts.Forecasts)
 	sortedInferers := alloraMath.GetSortedKeys(infererToInference)
@@ -221,6 +238,7 @@ func GetCalcNetworkInferenceArgs(
 		K:                                    k,
 		Logger:                               logger,
 		TopicId:                              topicId,
+		TopicArity:                           topic.OutputArity,
 		Inferers:                             sortedInferers,
 		InfererToInference:                   infererToInference,
 		InfererToRegret:                      infererToRegret,
@@ -236,6 +254,8 @@ func GetCalcNetworkInferenceArgs(
 		CNorm:                                topic.CNorm,
 		RegretScalePlusEpsilon:               regretScalePlusEpsilon,
 		InferenceBlockHeight:                 inferenceBlockHeight,
+		LabelRegistry:                        registry,
+		NumLabels:                            numLabels,
 	}
 
 	if previousLossesCombinedValue != nil {
@@ -256,10 +276,11 @@ func GetCalcNetworkInferenceArgs(
 			forecasterRegrets = append(forecasterRegrets, regret.Value)
 		}
 
-		forecastImpliedInferencesByWorker, _, _, err := CalcForecastImpliedInferences(
+		forecastImpliedInferencesByWorker, err := CalcForecastImpliedInferences(
 			CalcForecastImpliedInferencesArgs{
 				Logger:                 logger,
 				TopicId:                topicId,
+				TopicArity:             topic.OutputArity,
 				AllInferersAreNew:      allInferersAreNew,
 				Inferers:               sortedInferers,
 				InfererToInference:     infererToInference,
@@ -272,6 +293,8 @@ func GetCalcNetworkInferenceArgs(
 				PNorm:                  topic.PNorm,
 				CNorm:                  topic.CNorm,
 				RegretScalePlusEpsilon: regretScalePlusEpsilon,
+				LabelRegistry:          registry,
+				NumLabels:              numLabels,
 			},
 		)
 		if err != nil {

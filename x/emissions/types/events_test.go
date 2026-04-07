@@ -492,27 +492,95 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)
-	blockHeight := int64(10)
-	networkInferences := types.ValueBundle{
-		TopicId:                topicId,
-		ReputerRequestNonce:    &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
-		Reputer:                "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
-		ExtraData:              nil,
-		CombinedValue:          alloraMath.MustNewDecFromString("10"),
-		NaiveValue:             alloraMath.MustNewDecFromString("20"),
-		InfererValues:          []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+	nonce := int64(10)
+
+	dec := alloraMath.MustNewDecFromString
+
+	networkInferences := types.NetworkInferenceBundle{
+		TopicId: topicId,
+		Nonce:   nonce,
+		CombinedValue: []*types.LabeledValue{
+			{LabelId: 0, LabelName: "y", Value: dec("10")},
+		},
+		NaiveValue: []*types.LabeledValue{
+			{LabelId: 0, LabelName: "y", Value: dec("20")},
+		},
+		InfererValues: []*types.WorkerInference{
+			{
+				Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		ForecasterValues: []*types.WorkerInference{
+			{
+				Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneOutInfererValues: []*types.OneOutInfererValue{
+			{
+				WithheldInferer: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				WithheldInferer: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneOutForecasterValues: []*types.OneOutForecasterValue{
+			{
+				WithheldForecaster: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				WithheldForecaster: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneInForecasterValues: []*types.OneInForecasterValue{
 			{
 				Forecaster: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
-				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-					{
-						Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
-						Value:  alloraMath.MustNewDecFromString("0.0112"),
-					},
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				Forecaster: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValue{
+			{
+				Forecaster:      "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				WithheldInferer: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
 				},
 			},
 		},
@@ -524,14 +592,183 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v10.EventNetworkInferences", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkInferenceBundle", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 14)
 
-	val, exists := event.GetAttribute(AttributeKeyValueBundle)
-	require.True(t, exists)
-	assertEventValueBundle(t, val.GetValue(), networkInferences)
+	assertEventNetworkInferenceBundle(t, event, networkInferences, false)
+}
+
+func assertEventNetworkInferenceBundle(
+	t *testing.T,
+	event sdk.Event,
+	bundle types.NetworkInferenceBundle,
+	outlierResistant bool,
+) {
+	t.Helper()
+
+	attr := func(key string) string {
+		v, ok := event.GetAttribute(key)
+		require.True(t, ok, "missing attribute %s", key)
+		s := v.GetValue()
+		if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+			s = s[1 : len(s)-1]
+		}
+		return s
+	}
+
+	gotTopicID, err := strconv.ParseUint(attr("topic_id"), 10, 64)
+	require.NoError(t, err, "topic_id parse")
+	require.Equal(t, bundle.GetTopicId(), gotTopicID)
+
+	gotNonce, err := strconv.ParseInt(attr("nonce"), 10, 64)
+	require.NoError(t, err, "nonce parse")
+	require.Equal(t, bundle.GetNonce(), gotNonce)
+
+	gotOutlier, err := strconv.ParseBool(attr("outlier_resistant"))
+	require.NoError(t, err, "outlier_resistant parse")
+	require.Equal(t, outlierResistant, gotOutlier)
+
+	unmarshal := func(key string, dst any) {
+		t.Helper()
+		s := attr(key)
+		require.NoError(t, json.Unmarshal([]byte(s), dst), "unmarshal %s: %q", key, s)
+	}
+
+	decArrayFromLV := func(vals []*types.LabeledValue) alloraMath.DecArray {
+		out := make(alloraMath.DecArray, len(vals))
+		for i := range vals {
+			out[i] = vals[i].Value
+		}
+		return out
+	}
+
+	decMatrixFromWI := func(ws []*types.WorkerInference) alloraMath.DecMatrix {
+		out := make(alloraMath.DecMatrix, len(ws))
+		for i := range ws {
+			out[i] = decArrayFromLV(ws[i].GetValues())
+		}
+		return out
+	}
+
+	eqDec := func(a, b alloraMath.Dec) bool {
+		if a.IsNaN() && b.IsNaN() {
+			return true
+		}
+		return a.Equal(b)
+	}
+	requireDecArrayEq := func(msg string, got, want alloraMath.DecArray) {
+		t.Helper()
+		require.Equal(t, len(want), len(got), "%s: len", msg)
+		for i := range want {
+			require.Truef(t, eqDec(got[i], want[i]), "%s[%d] got=%v want=%v", msg, i, got[i], want[i])
+		}
+	}
+	requireDecMatrixEq := func(msg string, got, want alloraMath.DecMatrix) {
+		t.Helper()
+		require.Equal(t, len(want), len(got), "%s: rows", msg)
+		for r := range want {
+			requireDecArrayEq(fmt.Sprintf("%s[%d]", msg, r), got[r], want[r])
+		}
+	}
+
+	var gotLabelNames []string
+	unmarshal("label_names", &gotLabelNames)
+
+	wantLabelNames := make([]string, len(bundle.GetCombinedValue()))
+	for i, lv := range bundle.GetCombinedValue() {
+		wantLabelNames[i] = lv.GetLabelName()
+	}
+	require.Equal(t, wantLabelNames, gotLabelNames)
+
+	var gotCombined alloraMath.DecArray
+	unmarshal("combined_value", &gotCombined)
+	requireDecArrayEq("combined_value", gotCombined, decArrayFromLV(bundle.GetCombinedValue()))
+
+	var gotNaive alloraMath.DecArray
+	unmarshal("naive_value", &gotNaive)
+	requireDecArrayEq("naive_value", gotNaive, decArrayFromLV(bundle.GetNaiveValue()))
+
+	var gotInfererAddrs []string
+	unmarshal("inferer_addresses", &gotInfererAddrs)
+
+	var gotInfererVals alloraMath.DecMatrix
+	unmarshal("inferer_values", &gotInfererVals)
+
+	wantInfererAddrs := make([]string, len(bundle.GetInfererValues()))
+	for i, w := range bundle.GetInfererValues() {
+		wantInfererAddrs[i] = w.GetWorker()
+	}
+	require.Equal(t, wantInfererAddrs, gotInfererAddrs)
+	requireDecMatrixEq("inferer_values", gotInfererVals, decMatrixFromWI(bundle.GetInfererValues()))
+
+	var gotForecasterAddrs []string
+	unmarshal("forecaster_addresses", &gotForecasterAddrs)
+
+	var gotForecasterVals alloraMath.DecMatrix
+	unmarshal("forecaster_values", &gotForecasterVals)
+
+	wantForecasterAddrs := make([]string, len(bundle.GetForecasterValues()))
+	for i, w := range bundle.GetForecasterValues() {
+		wantForecasterAddrs[i] = w.GetWorker()
+	}
+	require.Equal(t, wantForecasterAddrs, gotForecasterAddrs)
+	requireDecMatrixEq("forecaster_values", gotForecasterVals, decMatrixFromWI(bundle.GetForecasterValues()))
+
+	var gotOOI alloraMath.DecMatrix
+	unmarshal("one_out_inferer_values", &gotOOI)
+	wantOOI := make(alloraMath.DecMatrix, len(bundle.GetOneOutInfererValues()))
+	for i, v := range bundle.GetOneOutInfererValues() {
+		wantOOI[i] = decArrayFromLV(v.GetCombinedInference())
+	}
+	requireDecMatrixEq("one_out_inferer_values", gotOOI, wantOOI)
+
+	var gotOOF alloraMath.DecMatrix
+	unmarshal("one_out_forecaster_values", &gotOOF)
+	wantOOF := make(alloraMath.DecMatrix, len(bundle.GetOneOutForecasterValues()))
+	for i, v := range bundle.GetOneOutForecasterValues() {
+		wantOOF[i] = decArrayFromLV(v.GetCombinedInference())
+	}
+	requireDecMatrixEq("one_out_forecaster_values", gotOOF, wantOOF)
+
+	var gotOIF alloraMath.DecMatrix
+	unmarshal("one_in_forecaster_values", &gotOIF)
+	wantOIF := make(alloraMath.DecMatrix, len(bundle.GetOneInForecasterValues()))
+	for i, v := range bundle.GetOneInForecasterValues() {
+		wantOIF[i] = decArrayFromLV(v.GetCombinedInference())
+	}
+	requireDecMatrixEq("one_in_forecaster_values", gotOIF, wantOIF)
+
+	var gotOOIF []alloraMath.DecMatrix
+	unmarshal("one_out_inferer_forecaster_values", &gotOOIF)
+
+	order := make([]string, 0)
+	rowsByForecaster := make(map[string][]alloraMath.DecArray)
+
+	for _, x := range bundle.GetOneOutInfererForecasterValues() {
+		if x == nil {
+			continue
+		}
+		fc := x.GetForecaster()
+		if _, ok := rowsByForecaster[fc]; !ok {
+			order = append(order, fc)
+		}
+		rowsByForecaster[fc] = append(rowsByForecaster[fc], decArrayFromLV(x.GetCombinedInference()))
+	}
+
+	wantOOIF := make([]alloraMath.DecMatrix, 0, len(order))
+	for _, fc := range order {
+		rows := rowsByForecaster[fc]
+		m := make(alloraMath.DecMatrix, len(rows))
+		copy(m, rows)
+		wantOOIF = append(wantOOIF, m)
+	}
+
+	require.Equal(t, len(wantOOIF), len(gotOOIF), "ooif group count")
+	for gi := range wantOOIF {
+		requireDecMatrixEq(fmt.Sprintf("ooif[%d]", gi), gotOOIF[gi], wantOOIF[gi])
+	}
 }
 
 //nolint:exhaustruct

@@ -272,9 +272,11 @@ message GenesisState {
   repeated TopicIdActorIdDec latest_forecaster_weights = 94;
 
   // NETWORK INFERENCES
-  // TODO: migrate to `TopicIdBlockHeightNetworkInferenceBundles`
   repeated TopicIdBlockHeightValueBundles network_inferences = 95;
   repeated TopicIdBlockHeightValueBundles outlier_resistant_network_inferences = 96;
+
+  repeated TopicIdBlockHeightNetworkInferenceBundles network_inference_bundle = 99;
+  repeated TopicIdBlockHeightNetworkInferenceBundles outlier_resistant_network_inference_bundle = 100;
 
   // MONTHLY REWARDS
   string monthly_reputer_rewards = 97 [

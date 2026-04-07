@@ -25,13 +25,13 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:       alloraMath.NewDecFromInt64(1),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 			},
 		},
 	}
@@ -90,8 +90,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Inferer:     workerAddress,
-		Value:       alloraMath.MustNewDecFromString("123.456"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("123.456")},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -194,7 +193,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	for i, value := range inferenceValues {
 		infs = append(infs, &types.Inference{
 			Inferer:     reputers[i],
-			Value:       alloraMath.MustNewDecFromString(value),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(value)},
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 		})
@@ -301,6 +300,9 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	err = keeper.InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferences)
 	require.NoError(err)
 
+	_, err = keeper.RegisterEpochLabel(s.Ctx(), topicId, inferenceNonce.BlockHeight, "y")
+	require.NoError(err)
+
 	forecasts := getForecastsForBlockHeight(workers, forecasters, inferenceBlockHeight, topicId)
 	err = keeper.InsertActiveForecasts(s.Ctx(), topicId, inferenceNonce.BlockHeight, forecasts)
 	require.NoError(err)
@@ -321,7 +323,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	)
 	require.NoError(err)
 
-	err = keeper.InsertNetworkInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
+	err = keeper.InsertNetworkInferenceBundle(s.Ctx(), topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
 	require.NoError(err)
 
 	// Test query
@@ -505,8 +507,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     s.AddrsStr(1),
-		Value:       alloraMath.MustNewDecFromString("10"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data1"),
 		Proof:       "proof1",
 	}
@@ -523,8 +524,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     s.AddrsStr(2),
-		Value:       alloraMath.MustNewDecFromString("20"),
-		Values:      nil,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("20")},
 		ExtraData:   []byte("data2"),
 		Proof:       "proof2",
 	}
@@ -656,7 +656,7 @@ func getInferencesForBlockHeight(workers []string, blockHeight int64, topicId ui
 		//nolint:exhaustruct
 		inferences = append(inferences, &types.Inference{
 			Inferer:     worker,
-			Value:       alloraMath.MustNewDecFromString(inferenceValues[i]),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(inferenceValues[i])},
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 		})

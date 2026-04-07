@@ -36,24 +36,23 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
 	}
 
+	if err := msg.WorkerDataBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating worker data bundle")
+	}
+
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params")
 	}
 	blockHeight := sdkCtx.BlockHeight()
-	wdb, err := types.NewWorkerDataBundleFromInput(msg.WorkerDataBundle)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err,
-			"Worker bad data format for block: %d", blockHeight)
-	}
 
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	nonce := wdb.Nonce
-	topicId := wdb.TopicId
+	nonce := msg.WorkerDataBundle.Nonce
+	topicId := msg.WorkerDataBundle.TopicId
 
 	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
@@ -77,7 +76,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		)
 	}
 
-	isWorkerRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, wdb.Worker)
+	isWorkerRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
 	if err != nil {
 		return nil, err
 	} else if !isWorkerRegistered {
@@ -89,12 +88,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, err
 	}
 
+	wdb, err := ms.k.NewWorkerDataBundleFromInput(ctx, topic, nonce.BlockHeight, msg.WorkerDataBundle)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Worker bad data format for block: %d", blockHeight)
+	}
+
 	// Process Inferences
-	if wdb.InferenceForecastsBundle.Inference != nil {
-		inference := wdb.InferenceForecastsBundle.Inference
-		if inference == nil {
-			return nil, errorsmod.Wrapf(types.ErrNoValidInferences, "Inference not found")
-		}
+	if inference := wdb.InferenceForecastsBundle.GetInference(); inference != nil {
 		if inference.TopicId != wdb.TopicId {
 			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId,
 				"inferer not using the same topic as bundle")
@@ -102,15 +102,14 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 
 		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
 		if err != nil {
-			return nil, errorsmod.Wrapf(err, "Error appending inference")
+			return nil, errorsmod.Wrap(err, "Error appending inference")
 		}
 
-		types.EmitNewInsertInfererPayloadEvent(ctx, wdb)
+		types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
 	}
 
 	// Process Forecasts
-	if wdb.InferenceForecastsBundle.Forecast != nil {
-		forecast := wdb.InferenceForecastsBundle.Forecast
+	if forecast := wdb.InferenceForecastsBundle.GetForecast(); forecast != nil {
 		if len(forecast.ForecastElements) == 0 {
 			return nil, errorsmod.Wrapf(types.ErrNoValidForecastElements, "No valid forecast elements found in Forecast")
 		}
