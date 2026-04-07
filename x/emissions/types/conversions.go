@@ -408,3 +408,11 @@ func ConvertInferenceValuesToLabeledValues(iv InferenceValues, reg *EpochLabelRe
 	}
 	return out, nil
 }
+
+func ConvertLabeledValuesToDecArray(in []*LabeledValue) alloraMath.DecArray {
+	out := make(alloraMath.DecArray, len(in))
+	for i := range in {
+		out[i] = in[i].Value
+	}
+	return out
+}

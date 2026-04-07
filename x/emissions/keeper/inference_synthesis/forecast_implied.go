@@ -36,32 +36,27 @@ type CalcForecastImpliedInferencesArgs struct {
 // Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
 // Inference without forecast => only weight in calculation of I_ik set to 0
 // A value of 0 => no inference corresponded to any of the forecasts from a forecaster
-func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
-	forecasterToForecastImpliedInference map[Forecaster]*emissionstypes.Inference,
-	infererToRegretOut map[Inferer]*Regret,
-	forecasterToRegretOut map[Forecaster]*Regret,
-	err error,
-) {
+func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[Forecaster]*emissionstypes.Inference, error) {
 	args.Logger.Debug("Calculating forecast-implied inferences", "topicId", args.TopicId)
 
 	// If NetworkCombinedLoss is nil, return empty maps immediately
 	if args.NetworkCombinedLoss == nil {
 		args.Logger.Debug("NetworkCombinedLoss is nil, returning empty forecast-implied inferences", "topicId", args.TopicId)
-		return nil, args.InfererToRegret, args.ForecasterToRegret, nil
+		return nil, nil
 	}
 
 	if args.LabelRegistry == nil {
-		return nil, nil, nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "topic id %d: LabelRegistry is nil", args.TopicId)
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "topic id %d: LabelRegistry is nil", args.TopicId)
 	}
 	labels := args.LabelRegistry.GetLabels()
 	regLen := args.NumLabels
 	if regLen == 0 {
-		return nil, nil, nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "topic id %d has no labels", args.TopicId)
+		return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "topic id %d has no labels", args.TopicId)
 	}
 
-	forecasterToForecastImpliedInference = make(map[Forecaster]*emissionstypes.Inference, len(args.Forecasters))
-	infererToRegretOut = args.InfererToRegret
-	forecasterToRegretOut = args.ForecasterToRegret
+	forecasterToForecastImpliedInference := make(map[Forecaster]*emissionstypes.Inference, len(args.Forecasters))
+	infererToRegretOut := args.InfererToRegret
+	forecasterToRegretOut := args.ForecasterToRegret
 
 	for _, forecaster := range args.Forecasters {
 		fc, ok := args.ForecasterToForecast[forecaster]
@@ -94,7 +89,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 
 				iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, inf)
 				if err != nil {
-					return nil, nil, nil, err
+					return nil, err
 				}
 
 				vecs = append(vecs, iv)
@@ -111,7 +106,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 
 				m, err := alloraMath.Median(values)
 				if err != nil {
-					return nil, nil, nil, err
+					return nil, err
 				}
 
 				result = emissionstypes.InferenceValues{m}
@@ -128,7 +123,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 
 					m, err := alloraMath.Median(col)
 					if err != nil {
-						return nil, nil, nil, err
+						return nil, err
 					}
 
 					out[i] = m
@@ -156,7 +151,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 		for _, infererInForecast := range sortedInferersInForecast {
 			r, err := (*args.NetworkCombinedLoss).Sub(forecastElementsByInferer[infererInForecast].Value)
 			if err != nil {
-				return nil, nil, nil, err
+				return nil, err
 			}
 
 			infererRegretsForThisForecaster[infererInForecast] = &r
@@ -180,7 +175,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 				},
 			)
 			if err != nil {
-				return nil, nil, nil, err
+				return nil, err
 			}
 
 			infererWeightsForThisForecaster = weights.Inferers
@@ -208,24 +203,24 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 
 			iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, inf)
 			if err != nil {
-				return nil, nil, nil, err
+				return nil, err
 			}
 
 			for i := range iv {
 				v, err := w.Mul(iv[i])
 				if err != nil {
-					return nil, nil, nil, err
+					return nil, err
 				}
 
 				running[i], err = running[i].Add(v)
 				if err != nil {
-					return nil, nil, nil, err
+					return nil, err
 				}
 			}
 
 			sumWeights, err = sumWeights.Add(w)
 			if err != nil {
-				return nil, nil, nil, err
+				return nil, err
 			}
 		}
 
@@ -234,9 +229,10 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 		}
 
 		for i := range running {
+			var err error
 			running[i], err = running[i].Quo(sumWeights)
 			if err != nil {
-				return nil, nil, nil, err
+				return nil, err
 			}
 		}
 
@@ -251,5 +247,5 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 		forecasterToForecastImpliedInference[forecaster] = &forecastImpliedInference
 	}
 
-	return forecasterToForecastImpliedInference, infererToRegretOut, forecasterToRegretOut, nil
+	return forecasterToForecastImpliedInference, nil
 }

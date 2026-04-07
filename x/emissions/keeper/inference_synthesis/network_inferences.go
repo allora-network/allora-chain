@@ -276,7 +276,7 @@ func GetCalcNetworkInferenceArgs(
 			forecasterRegrets = append(forecasterRegrets, regret.Value)
 		}
 
-		forecastImpliedInferencesByWorker, _, _, err := CalcForecastImpliedInferences(
+		forecastImpliedInferencesByWorker, err := CalcForecastImpliedInferences(
 			CalcForecastImpliedInferencesArgs{
 				Logger:                 logger,
 				TopicId:                topicId,

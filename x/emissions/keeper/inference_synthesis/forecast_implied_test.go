@@ -558,7 +558,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,
@@ -644,7 +644,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,
@@ -748,7 +748,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,
@@ -858,7 +858,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,
@@ -960,7 +960,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,
@@ -1042,7 +1042,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,
@@ -1110,7 +1110,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,
@@ -1217,7 +1217,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
-	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+	result, err := inferencesynthesis.CalcForecastImpliedInferences(
 		inferencesynthesis.CalcForecastImpliedInferencesArgs{
 			Logger:                 s.Ctx().Logger(),
 			TopicId:                topicId,

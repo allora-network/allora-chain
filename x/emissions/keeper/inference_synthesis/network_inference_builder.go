@@ -226,7 +226,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 			}
 
 			// Calculate forecast-implied inference with the filtered data
-			forecastImpliedInferences, _, _, calcErr := CalcForecastImpliedInferences(
+			forecastImpliedInferences, calcErr := CalcForecastImpliedInferences(
 				CalcForecastImpliedInferencesArgs{
 					Logger:                 args.Logger,
 					TopicId:                args.TopicId,
@@ -422,7 +422,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 	if args.NetworkCombinedLoss != nil {
 		// Recalculate the forecast-implied inferences without the worker's inference
 		// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
-		forecasterToForecastImpliedInference, _, _, err = CalcForecastImpliedInferences(
+		forecasterToForecastImpliedInference, err = CalcForecastImpliedInferences(
 			CalcForecastImpliedInferencesArgs{
 				Logger:                 args.Logger,
 				TopicId:                args.TopicId,

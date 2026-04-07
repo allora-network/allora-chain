@@ -887,7 +887,7 @@ func (topic Topic) Validate(params Params) error {
 	}
 	if topic.RequireUnity &&
 		(topic.UnityTolerance.IsNaN() ||
-			topic.UnityTolerance.Lte(alloraMath.ZeroDec()) ||
+			topic.UnityTolerance.Lt(alloraMath.ZeroDec()) ||
 			topic.UnityTolerance.Gt(alloraMath.MustNewDecFromString(maxTopicUnityTolerance))) {
 		return errors.Wrapf(sdkerrors.ErrInvalidType,
 			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
