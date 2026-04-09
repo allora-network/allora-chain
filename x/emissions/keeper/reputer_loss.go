@@ -399,6 +399,8 @@ func (k *ReputerLossKeeper) InsertActiveReputerLosses(
 	for i := range reputerLossBundles {
 		valueBundles[i] = &types.ReputerValueBundle{
 			ValueBundle: reputerLossBundles[i],
+			Signature:   nil, // not used internally
+			Pubkey:      "",  // not used internally
 		}
 	}
 	return k.allLossBundles.Set(ctx, key, types.ReputerValueBundles{ReputerValueBundles: valueBundles})
