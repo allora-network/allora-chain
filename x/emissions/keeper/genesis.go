@@ -297,7 +297,6 @@ func (k *Keeper) exportGenesisKeeperFields(ctx context.Context, data *types.Gene
 		})
 	}
 
-
 	data.NetworkInferenceBundle = networkInferenceBundle
 
 	// Outlier resistant network inferences

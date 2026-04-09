@@ -187,21 +187,21 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 	topic types.Topic,
 	moduleParams types.Params,
 	nonceBlockHeight BlockHeight,
-	reputerLoss *types.LossBundle,
+	reputerLoss *types.ReputerValueBundle,
 ) error {
 	if reputerLoss == nil {
 		return errors.New("invalid reputerLoss bundle: reputer is empty or nil")
 	}
 
 	// Check if the reputer already submitted the loss
-	isActive, err := k.IsActiveReputer(ctx, topic.Id, reputerLoss.Reputer)
+	isActive, err := k.IsActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
 		return errorsmod.Wrap(err, "error checking if reputer already submitted loss")
 	} else if isActive {
 		return errors.New("reputer loss already submitted")
 	}
 
-	previousEmaScore, err := k.scoresKeeper.GetReputerScoreEma(ctx, topic.Id, reputerLoss.Reputer)
+	previousEmaScore, err := k.scoresKeeper.GetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting reputer score ema")
 	}
@@ -218,14 +218,20 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 		if err != nil {
 			return errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
-		err = k.scoresKeeper.SetReputerScoreEma(ctx, topic.Id, reputerLoss.Reputer, types.Score{
+		err = k.scoresKeeper.SetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer, types.Score{
 			TopicId:     topic.Id,
-			Address:     reputerLoss.Reputer,
+			Address:     reputerLoss.ValueBundle.Reputer,
 			BlockHeight: nonceBlockHeight,
 			Score:       initialEmaScore,
 		})
 		if err != nil {
 			return errorsmod.Wrap(err, "error setting initial reputer score ema")
+		}
+		previousEmaScore = types.Score{
+			TopicId:     topic.Id,
+			Address:     reputerLoss.ValueBundle.Reputer,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
 		}
 	} else {
 		// If not new: Penalise the reputer if needed
@@ -260,7 +266,7 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 			}
 		}
 
-		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.Reputer)
+		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
 			return errorsmod.Wrap(err, "error adding active reputer")
 		}
@@ -299,12 +305,12 @@ func (k *ReputerLossKeeper) AppendReputerLoss(
 			return errorsmod.Wrap(err, "error removing reputer loss from reputer")
 		}
 		// Add new active reputer
-		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.Reputer)
+		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
 			return errorsmod.Wrap(err, "error adding active reputer")
 		}
 		// Calculate new lowest score with updated reputerAddresses
-		err = k.scoresKeeper.UpdateLowestScoreFromReputerAddresses(ctx, topic.Id, reputerAddresses, reputerLoss.Reputer, lowestEmaScore.Address)
+		err = k.scoresKeeper.UpdateLowestScoreFromReputerAddresses(ctx, topic.Id, reputerAddresses, reputerLoss.ValueBundle.Reputer, lowestEmaScore.Address)
 		if err != nil {
 			return errorsmod.Wrap(err, "error getting low score from all reputer losses")
 		}
@@ -342,7 +348,7 @@ func (k *ReputerLossKeeper) GetReputerLatestLossByTopicId(
 func (k *ReputerLossKeeper) InsertReputerLoss(
 	ctx context.Context,
 	topicId TopicId,
-	reputerLoss types.LossBundle,
+	reputerLoss types.ReputerValueBundle,
 ) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -351,10 +357,8 @@ func (k *ReputerLossKeeper) InsertReputerLoss(
 	if err != nil {
 		return errorsmod.Wrap(err, "reputer loss is invalid")
 	}
-	key := collections.Join(topicId, reputerLoss.Reputer)
-	return k.lossBundles.Set(ctx, key, types.ReputerValueBundle{
-		ValueBundle: &reputerLoss,
-	})
+	key := collections.Join(topicId, reputerLoss.ValueBundle.Reputer)
+	return k.lossBundles.Set(ctx, key, reputerLoss)
 }
 
 // RemoveReputerLoss removes a reputer loss for a specific topic

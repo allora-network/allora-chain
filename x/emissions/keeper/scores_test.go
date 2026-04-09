@@ -688,7 +688,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 
 	// Create and append a new reputer value bundle
 	//nolint:exhaustruct
-	lossBundle := &types.ValueBundle{
+	valueBundle := &types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
@@ -698,13 +698,19 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
 		InfererValues: s.createDefaultInfererValues(),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.52"),
 	}
+	signature := s.SignValueBundle(valueBundle, s.PrivKeys(0))
+	reputerValueBundle := &types.ReputerValueBundle{
+		ValueBundle: valueBundle,
+		Signature:   signature,
+		Pubkey:      s.PubKeyHexStr(0),
+	}
 
 	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	params := types.DefaultParams()
 	// Append the reputer value bundle
-	err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, params, blockHeight, lossBundle)
+	err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, params, blockHeight, reputerValueBundle)
 	s.Require().NoError(err)
 
 	// Verify the reputer received the initial EMA score
@@ -922,7 +928,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 
 	// Create and append a new reputer loss
 	//nolint:exhaustruct
-	lossBundle := types.ValueBundle{
+	valueBundleReputer := types.ValueBundle{
 		Reputer:             reputer,
 		CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
 		ReputerRequestNonce: reputerRequestNonce,
@@ -930,12 +936,18 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 		InfererValues:       s.createDefaultInfererValues(),
 		NaiveValue:          alloraMath.MustNewDecFromString("0.0"),
 	}
+	signature := s.SignValueBundle(&valueBundleReputer, s.PrivKeys(0))
+	reputerValueBundle := types.ReputerValueBundle{
+		ValueBundle: &valueBundleReputer,
+		Signature:   signature,
+		Pubkey:      s.PubKeyHexStr(0),
+	}
 
 	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// Append the reputer loss
-	err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, types.DefaultParams(), blockHeight, &lossBundle)
+	err = s.ReputerLossKeeper().AppendReputerLoss(ctx, topic, types.DefaultParams(), blockHeight, &reputerValueBundle)
 	s.Require().NoError(err)
 
 	// Verify the reputer's EMA score trended toward the topic initial score especially when there is a lapse in their

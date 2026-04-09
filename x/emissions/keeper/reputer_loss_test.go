@@ -272,16 +272,22 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 
 	// Create value bundles for all reputers
-	reputerLossBundles := make([]*types.LossBundle, len(reputers))
+	reputerValueBundles := make([]*types.ReputerValueBundle, len(reputers))
 	for i, reputer := range reputers {
 		//nolint:exhaustruct
-		reputerLossBundles[i] = &types.ValueBundle{
+		valueBundle := types.ValueBundle{
 			Reputer:             reputer,
 			CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
 			ReputerRequestNonce: reputerRequestNonce,
 			TopicId:             topicId,
 			InfererValues:       s.createDefaultInfererValues(),
 			NaiveValue:          alloraMath.MustNewDecFromString("0.0"),
+		}
+		signature := s.SignValueBundle(&valueBundle, s.PrivKeys(i))
+		reputerValueBundles[i] = &types.ReputerValueBundle{
+			ValueBundle: &valueBundle,
+			Signature:   signature,
+			Pubkey:      s.PubKeyHexStr(i),
 		}
 	}
 
@@ -290,19 +296,19 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 
 	// Append first three reputer losses
 	for i := 0; i < 3; i++ {
-		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerLossBundles[i])
+		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[i])
 		s.Require().NoError(err)
 	}
 
 	// Add fourth reputer and verify active reputers count
-	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerLossBundles[3])
+	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[3])
 	s.Require().NoError(err)
 	activeReputers, err := k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
 
 	// Add fifth reputer and verify active reputers count remains at max
-	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerLossBundles[4])
+	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundles[4])
 	s.Require().NoError(err)
 	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -341,10 +347,10 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 	s.Require().NoError(err)
 
 	// Create reputer value bundles
-	reputerLossBundles := make([]*types.LossBundle, len(reputers))
+	reputerValueBundles := make([]*types.ReputerValueBundle, len(reputers))
 	for i, reputer := range reputers {
 		//nolint:exhaustruct
-		reputerLossBundles[i] = &types.ValueBundle{
+		valueBundle := types.ValueBundle{
 			Reputer:             reputer,
 			CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
 			ReputerRequestNonce: reputerRequestNonce,
@@ -352,14 +358,24 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 			InfererValues:       s.createDefaultInfererValues(),
 			NaiveValue:          alloraMath.MustNewDecFromString("0.0"),
 		}
+		signature := s.SignValueBundle(&valueBundle, s.PrivKeys(i))
+		reputerValueBundles[i] = &types.ReputerValueBundle{
+			ValueBundle: &valueBundle,
+			Signature:   signature,
+			Pubkey:      s.PubKeyHexStr(i),
+		}
+	}
+
+	allReputerLosses := types.ReputerValueBundles{
+		ReputerValueBundles: reputerValueBundles,
 	}
 
 	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 
 	// First round: append all reputer losses
-	for _, lossBundle := range reputerLossBundles {
-		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, lossBundle)
+	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
+		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
 		s.Require().NoError(err)
 	}
 
@@ -378,8 +394,8 @@ func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
 
 	// Second round: append all reputer losses again
 	nonce.BlockHeight++
-	for _, lossBundle := range reputerLossBundles {
-		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, lossBundle)
+	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
+		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
 		s.Require().NoError(err)
 	}
 
@@ -423,7 +439,7 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 
 	// Create a reputer loss bundle
 	//nolint:exhaustruct
-	lossBundle := types.ValueBundle{
+	valueBundle := types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{BlockHeight: 100},
@@ -434,15 +450,21 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 		InfererValues: s.createDefaultInfererValues(),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
 	}
+	signature := s.SignValueBundle(&valueBundle, s.PrivKeys(0))
+	reputerLossBundle := types.ReputerValueBundle{
+		ValueBundle: &valueBundle,
+		Signature:   signature,
+		Pubkey:      s.PubKeyHexStr(0),
+	}
 
 	// Insert the reputer loss bundle
-	err := k.InsertReputerLoss(ctx, topicId, lossBundle)
+	err := k.InsertReputerLoss(ctx, topicId, reputerLossBundle)
 	s.Require().NoError(err)
 
 	// Verify the reputer loss was added
 	retrievedLoss, err := k.GetReputerLatestLossByTopicId(ctx, topicId, reputer)
 	s.Require().NoError(err)
-	s.Require().Equal(lossBundle, retrievedLoss)
+	s.Require().Equal(valueBundle, retrievedLoss)
 
 	// Remove the reputer loss
 	err = k.RemoveReputerLoss(ctx, topicId, reputer)

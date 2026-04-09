@@ -42,7 +42,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 	// If NetworkCombinedLoss is nil, return empty maps immediately
 	if args.NetworkCombinedLoss == nil {
 		args.Logger.Debug("NetworkCombinedLoss is nil, returning empty forecast-implied inferences", "topicId", args.TopicId)
-		return nil, nil
+		return map[Forecaster]*emissionstypes.Inference{}, nil
 	}
 
 	if args.LabelRegistry == nil {
@@ -55,8 +55,6 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 	}
 
 	forecasterToForecastImpliedInference := make(map[Forecaster]*emissionstypes.Inference, len(args.Forecasters))
-	infererToRegretOut := args.InfererToRegret
-	forecasterToRegretOut := args.ForecasterToRegret
 
 	for _, forecaster := range args.Forecasters {
 		fc, ok := args.ForecasterToForecast[forecaster]
@@ -158,8 +156,8 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 		}
 
 		if len(sortedInferersInForecast) > 1 {
-			infererToRegretOut = infererRegretsForThisForecaster
-			forecasterToRegretOut = make(map[Forecaster]*Regret)
+			infererToRegretOut := infererRegretsForThisForecaster
+			forecasterToRegretOut := make(map[Forecaster]*Regret)
 
 			weights, err := CalcWeightsGivenWorkers(
 				CalcWeightsGivenWorkersArgs{

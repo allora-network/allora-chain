@@ -998,6 +998,7 @@ func (s *KeeperTestSuite) TestNewInferenceForecastBundleFromInput() {
 	}
 }
 
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	type tc struct {
 		name         string
@@ -1313,6 +1314,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	})
 }
 
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() {
 	topicId := keeper.TopicId(1)
 	nonce := int64(1)

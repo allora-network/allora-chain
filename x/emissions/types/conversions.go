@@ -193,19 +193,25 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 	return valueBundle, nil
 }
 
-// NewLossBundleFromInput converts InputReputerValueBundle to LossBundle
-func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*LossBundle, error) {
+// NewLossBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
+func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
-	}
-	if err := brvb.Validate(); err != nil {
-		return nil, errors.Wrap(err, "failed to validate reputer value bundle")
 	}
 	valueBundle, err := NewValueBundleFromInput(brvb.ValueBundle)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert value bundle")
 	}
-	return valueBundle, nil
+	reputerValueBundle := &ReputerValueBundle{
+		ValueBundle: valueBundle,
+		Signature:   brvb.Signature,
+		Pubkey:      brvb.Pubkey,
+	}
+	err = reputerValueBundle.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to validate reputer value bundle")
+	}
+	return reputerValueBundle, nil
 }
 
 // TODO: remove once the system completely moves to using NetworkInferenceBundle

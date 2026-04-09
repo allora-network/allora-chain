@@ -75,6 +75,8 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 		CNorm:                    alloraMath.ZeroDec(),
 		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -621,6 +623,8 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 		CNorm:                    alloraMath.ZeroDec(),
 		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
