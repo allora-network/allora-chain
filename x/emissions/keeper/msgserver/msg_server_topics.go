@@ -130,8 +130,6 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
-	updatedTopic.RequireUnity = msg.RequireUnity
-	updatedTopic.UnityTolerance = msg.UnityTolerance
 
 	updatedTopic, err = ms.tk.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {
