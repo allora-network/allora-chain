@@ -552,10 +552,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"forecaster0": &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(
@@ -638,10 +638,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"worker0": &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(
@@ -742,10 +742,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		s.AddrsStr(1): &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(
@@ -852,10 +852,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		forecaster0: &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(
@@ -954,10 +954,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		forecaster0: &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(
@@ -1036,10 +1036,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 		"forecaster0": &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(
@@ -1104,10 +1104,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 		"forecaster0": &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(
@@ -1211,10 +1211,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 		s.AddrsStr(3): &zero,
 	}
 
-	_, err := s.EmissionsKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
+	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, 1, "y")
 	s.Require().NoError(err)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.CalcForecastImpliedInferences(

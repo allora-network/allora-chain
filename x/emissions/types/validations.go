@@ -1335,3 +1335,11 @@ func ValidateInferenceValues(iv InferenceValues, labels []*TopicLabel) error {
 	}
 	return nil
 }
+
+func ValidateStringIsBech32(actor string) error {
+	_, err := sdk.AccAddressFromBech32(actor)
+	if err != nil {
+		return errors.Wrap(err, "error validating actor id")
+	}
+	return nil
+}

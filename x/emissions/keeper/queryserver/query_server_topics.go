@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"cosmossdk.io/errors"
-	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -16,7 +17,7 @@ import (
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
 func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.GetNextTopicIdRequest) (_ *types.GetNextTopicIdResponse, err error) {
 	defer metrics.RecordMetrics("GetNextTopicId", time.Now(), &err)
-	nextTopicId, err := qs.k.GetNextTopicId(ctx)
+	nextTopicId, err := qs.tk.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -26,17 +27,17 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.GetNextTopi
 // Topics defines the handler for the Get/Topics RPC method.
 func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) (_ *types.GetTopicResponse, err error) {
 	defer metrics.RecordMetrics("GetTopic", time.Now(), &err)
-	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting topic")
 	}
 
-	params, err := qs.k.GetParams(ctx)
+	params, err := qs.pk.GetParams(ctx)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting params")
 	}
 
-	currentTopicWeight, currentTopicRevenue, currentTopicStake, err := qs.k.GetCurrentTopicWeight(
+	currentTopicWeight, currentTopicRevenue, currentTopicStake, err := qs.tk.GetCurrentTopicWeight(
 		ctx,
 		req.TopicId,
 		topic.EpochLength,
@@ -60,7 +61,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) 
 // Return last payload timestamp & nonce by worker/reputer
 func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.GetTopicLastWorkerCommitInfoRequest) (_ *types.GetTopicLastWorkerCommitInfoResponse, err error) {
 	defer metrics.RecordMetrics("GetTopicLastWorkerCommitInfo", time.Now(), &err)
-	lastCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
+	lastCommit, err := qs.tk.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -71,7 +72,7 @@ func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *typ
 // Return last payload timestamp & nonce by worker/reputer
 func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.GetTopicLastReputerCommitInfoRequest) (_ *types.GetTopicLastReputerCommitInfoResponse, err error) {
 	defer metrics.RecordMetrics("GetTopicLastReputerCommitInfo", time.Now(), &err)
-	lastCommit, err := qs.k.GetReputerTopicLastCommit(ctx, req.TopicId)
+	lastCommit, err := qs.tk.GetReputerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -81,7 +82,7 @@ func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *ty
 
 func (qs queryServer) GetTopicRewardNonce(ctx context.Context, req *types.GetTopicRewardNonceRequest) (_ *types.GetTopicRewardNonceResponse, err error) {
 	defer metrics.RecordMetrics("GetTopicRewardNonce", time.Now(), &err)
-	nonce, err := qs.k.GetTopicRewardNonce(ctx, req.TopicId)
+	nonce, err := qs.tk.GetTopicRewardNonce(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -91,7 +92,7 @@ func (qs queryServer) GetTopicRewardNonce(ctx context.Context, req *types.GetTop
 
 func (qs queryServer) GetPreviousTopicWeight(ctx context.Context, req *types.GetPreviousTopicWeightRequest) (_ *types.GetPreviousTopicWeightResponse, err error) {
 	defer metrics.RecordMetrics("GetPreviousTopicWeight", time.Now(), &err)
-	previousTopicWeight, notFound, err := qs.k.GetPreviousTopicWeight(ctx, req.TopicId)
+	previousTopicWeight, notFound, err := qs.tk.GetPreviousTopicWeight(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +102,7 @@ func (qs queryServer) GetPreviousTopicWeight(ctx context.Context, req *types.Get
 
 func (qs queryServer) GetTotalSumPreviousTopicWeights(ctx context.Context, req *types.GetTotalSumPreviousTopicWeightsRequest) (_ *types.GetTotalSumPreviousTopicWeightsResponse, err error) {
 	defer metrics.RecordMetrics("GetTotalSumPreviousTopicWeights", time.Now(), &err)
-	previousTopicWeight, err := qs.k.GetTotalSumPreviousTopicWeights(ctx)
+	previousTopicWeight, err := qs.tk.GetTotalSumPreviousTopicWeights(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +112,7 @@ func (qs queryServer) GetTotalSumPreviousTopicWeights(ctx context.Context, req *
 
 func (qs queryServer) TopicExists(ctx context.Context, req *types.TopicExistsRequest) (_ *types.TopicExistsResponse, err error) {
 	defer metrics.RecordMetrics("TopicExists", time.Now(), &err)
-	exists, err := qs.k.TopicExists(ctx, req.TopicId)
+	exists, err := qs.tk.TopicExists(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +122,7 @@ func (qs queryServer) TopicExists(ctx context.Context, req *types.TopicExistsReq
 
 func (qs queryServer) IsTopicActive(ctx context.Context, req *types.IsTopicActiveRequest) (_ *types.IsTopicActiveResponse, err error) {
 	defer metrics.RecordMetrics("IsTopicActive", time.Now(), &err)
-	isActive, err := qs.k.IsTopicActive(ctx, req.TopicId)
+	isActive, err := qs.tk.IsTopicActive(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +132,7 @@ func (qs queryServer) IsTopicActive(ctx context.Context, req *types.IsTopicActiv
 
 func (qs queryServer) GetTopicFeeRevenue(ctx context.Context, req *types.GetTopicFeeRevenueRequest) (_ *types.GetTopicFeeRevenueResponse, err error) {
 	defer metrics.RecordMetrics("GetTopicFeeRevenue", time.Now(), &err)
-	feeRevenue, err := qs.k.GetTopicFeeRevenue(ctx, req.TopicId)
+	feeRevenue, err := qs.tk.GetTopicFeeRevenue(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -141,13 +142,13 @@ func (qs queryServer) GetTopicFeeRevenue(ctx context.Context, req *types.GetTopi
 
 func (qs queryServer) GetActiveTopicsAtBlock(ctx context.Context, req *types.GetActiveTopicsAtBlockRequest) (_ *types.GetActiveTopicsAtBlockResponse, err error) {
 	defer metrics.RecordMetrics("GetActiveTopicsAtBlock", time.Now(), &err)
-	activeTopicIds, err := qs.k.GetActiveTopicIdsAtBlock(ctx, req.BlockHeight)
+	activeTopicIds, err := qs.tk.GetActiveTopicIdsAtBlock(ctx, req.BlockHeight)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	topics := make([]*types.Topic, 0)
 	for _, topicId := range activeTopicIds.TopicIds {
-		topic, err := qs.k.GetTopic(ctx, topicId)
+		topic, err := qs.tk.GetTopic(ctx, topicId)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -159,7 +160,7 @@ func (qs queryServer) GetActiveTopicsAtBlock(ctx context.Context, req *types.Get
 
 func (qs queryServer) GetNextChurningBlockByTopicId(ctx context.Context, req *types.GetNextChurningBlockByTopicIdRequest) (_ *types.GetNextChurningBlockByTopicIdResponse, err error) {
 	defer metrics.RecordMetrics("GetNextChurningBlockByTopicId", time.Now(), &err)
-	blockHeight, _, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
+	blockHeight, _, err := qs.tk.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
 	if err != nil {
 		return &types.GetNextChurningBlockByTopicIdResponse{BlockHeight: 0}, err
 	}
@@ -174,13 +175,13 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	currentBlockHeight := sdkCtx.BlockHeight()
 
 	// Get topic
-	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting topic")
 	}
 
 	// Get unfulfilled worker nonces to check current window
-	nonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	nonces, err := qs.nk.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting unfulfilled worker nonces")
 	}
@@ -200,19 +201,19 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	// Check registration and whitelist status if address is provided
 	if req.Address != "" {
 		// Validate the address
-		if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
+		if err := types.ValidateStringIsBech32(req.Address); err != nil {
 			return nil, errors.Wrapf(err, "invalid address format")
 		}
 
 		// Check if worker is registered in the topic
-		isRegistered, err := qs.k.IsWorkerRegisteredInTopic(ctx, req.TopicId, req.Address)
+		isRegistered, err := qs.wk.IsWorkerRegisteredInTopic(ctx, req.TopicId, req.Address)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error checking worker registration")
 		}
 		response.IsRegistered = isRegistered
 
 		// Check if worker can submit payload (whitelist check)
-		isWhitelisted, err := qs.k.CanSubmitWorkerPayload(ctx, req.TopicId, req.Address)
+		isWhitelisted, err := qs.wlk.CanSubmitWorkerPayload(ctx, req.TopicId, req.Address)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error checking worker whitelist status")
 		}
@@ -234,7 +235,7 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	}
 
 	// Calculate next window timing based on topic epoch
-	nextChurningBlock, isActive, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
+	nextChurningBlock, isActive, err := qs.tk.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error checking topic active status")
 	}
@@ -255,13 +256,13 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	currentBlockHeight := sdkCtx.BlockHeight()
 
 	// Get topic
-	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting topic")
 	}
 
 	// Get unfulfilled reputer nonces to check current window
-	nonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
+	nonces, err := qs.nk.GetUnfulfilledReputerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting unfulfilled reputer nonces")
 	}
@@ -281,19 +282,19 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	// Check registration and whitelist status if address is provided
 	if req.Address != "" {
 		// Validate the address
-		if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
+		if err := types.ValidateStringIsBech32(req.Address); err != nil {
 			return nil, errors.Wrapf(err, "invalid address format")
 		}
 
 		// Check if reputer is registered in the topic
-		isRegistered, err := qs.k.IsReputerRegisteredInTopic(ctx, req.TopicId, req.Address)
+		isRegistered, err := qs.rlk.IsReputerRegisteredInTopic(ctx, req.TopicId, req.Address)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error checking reputer registration")
 		}
 		response.IsRegistered = isRegistered
 
 		// Check if reputer can submit payload (whitelist check)
-		isWhitelisted, err := qs.k.CanSubmitReputerPayload(ctx, req.TopicId, req.Address)
+		isWhitelisted, err := qs.wlk.CanSubmitReputerPayload(ctx, req.TopicId, req.Address)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error checking reputer whitelist status")
 		}
@@ -342,7 +343,7 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	}
 
 	// Get topic active status from GetNextPossibleChurningBlockByTopicId
-	_, isActive, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
+	_, isActive, err := qs.tk.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error checking topic active status")
 	}

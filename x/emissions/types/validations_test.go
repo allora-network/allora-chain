@@ -696,10 +696,10 @@ func TestTopicValidate(t *testing.T) {
 			wantErr: true, errContains: "unity_tolerance must be in",
 		},
 		{
-			name: "require_unity with unity tolerance <= 0",
+			name: "require_unity with unity tolerance < 0",
 			mutate: func(tp *Topic, _ *Params) {
 				tp.RequireUnity = true
-				tp.UnityTolerance = alloraMath.MustNewDecFromString("0")
+				tp.UnityTolerance = alloraMath.MustNewDecFromString("-0.1")
 			},
 			wantErr: true, errContains: "unity_tolerance must be in",
 		},

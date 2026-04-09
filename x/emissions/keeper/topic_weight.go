@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/errors"
 
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
@@ -17,7 +18,7 @@ import (
 // and (P/C)_{t,i} is the fee revenue collected for performing inference per topic epoch
 // requests for topic t in the last reward epoch i
 // μ, ν are global constants with fiduciary values of 0.5 and 0.5
-func (k *Keeper) GetTargetWeight(
+func (k *TopicKeeper) GetTargetWeight(
 	topicStake alloraMath.Dec,
 	topicFeeRevenue alloraMath.Dec,
 	stakeImportance alloraMath.Dec,
@@ -34,7 +35,7 @@ func (k *Keeper) GetTargetWeight(
 	return s.Mul(p)
 }
 
-func (k *Keeper) GetCurrentTopicWeight(
+func (k *TopicKeeper) GetCurrentTopicWeight(
 	ctx context.Context,
 	topicId TopicId,
 	topicEpochLength BlockHeight,
@@ -43,7 +44,7 @@ func (k *Keeper) GetCurrentTopicWeight(
 	feeImportance alloraMath.Dec,
 	blocksPerMonth uint64,
 ) (weight alloraMath.Dec, topicRevenue cosmosMath.Int, topicStake cosmosMath.Int, err error) {
-	topicStake, err = k.GetTopicStake(ctx, topicId)
+	topicStake, err = k.stakingKeeper.GetTopicStake(ctx, topicId)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic stake")
 	}
@@ -102,8 +103,8 @@ func (k *Keeper) GetCurrentTopicWeight(
 	return alloraMath.ZeroDec(), topicFeeRevenue, topicStake, nil
 }
 
-func (k *Keeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.TopicId) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
+func (k *TopicKeeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.TopicId) (alloraMath.Dec, error) {
+	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}

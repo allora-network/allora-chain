@@ -36,11 +36,11 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 		testutil.WithWorkerValues(workerValues),
 	)
 
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 	require.Equal(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, topic.OutputArity)
 
-	firstRegistry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, firstInferenceNonce)
+	firstRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, firstInferenceNonce)
 	require.NoError(err)
 	require.Len(firstRegistry.Labels, numLabels)
 
@@ -54,7 +54,7 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 
 	reputerStakeBefore := make(map[int]cosmosMath.Int)
 	for _, idx := range reputerIndexes {
-		stake, err := s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(idx))
+		stake, err := s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(idx))
 		require.NoError(err)
 		reputerStakeBefore[idx] = stake
 	}
@@ -75,7 +75,7 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 
 	// Rewards should still be distributed.
 	for _, idx := range reputerIndexes {
-		currentStake, err := s.EmissionsKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(idx))
+		currentStake, err := s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(idx))
 		require.NoError(err)
 		require.True(
 			currentStake.GT(reputerStakeBefore[idx]),
@@ -159,7 +159,7 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 	)
 
 	// Registry for the second inference nonce should also have the full label set.
-	secondRegistry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, secondInferenceNonce)
+	secondRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, secondInferenceNonce)
 	require.NoError(err)
 	require.Len(secondRegistry.Labels, numLabels)
 
@@ -170,7 +170,7 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 	}
 
 	// Spot-check that inferer submissions were aligned to registry size.
-	activeInferences, err := s.EmissionsKeeper().GetInferencesAtBlock(s.Ctx(), topicId, secondInferenceNonce, false)
+	activeInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, secondInferenceNonce, false)
 	require.NoError(err)
 	require.Len(activeInferences.Inferences, len(workerIndexes))
 
@@ -211,11 +211,11 @@ func (s *RewardsTestSuite) TestMultiLabelLabelIndependence() {
 		testutil.WithWorkerValues(workerValues),
 	)
 
-	topic, err := s.EmissionsKeeper().GetTopic(s.Ctx(), topicId)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	require.NoError(err)
 	require.Equal(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, topic.OutputArity)
 
-	registry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, inferenceNonce)
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, inferenceNonce)
 	require.NoError(err)
 	require.Len(registry.Labels, 2)
 	require.Equal("L0", registry.Labels[0].Name)
@@ -464,7 +464,7 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				testutil.WithWorkerValues(tc.workerValues),
 			)
 
-			firstRegistry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, firstNonce)
+			firstRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, firstNonce)
 			require.NoError(err)
 			assertRegistryLabelNames(require, &firstRegistry, tc.wantRegistryNames)
 
@@ -488,7 +488,7 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				expectedAligned,
 			)
 
-			activeInferences, err := s.EmissionsKeeper().GetInferencesAtBlock(s.Ctx(), topicId, firstNonce, false)
+			activeInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, firstNonce, false)
 			require.NoError(err)
 			assertActiveInferencesMatchExpected(require, activeInferences, expectedAligned)
 
@@ -513,7 +513,7 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				testutil.WithWorkerValues(tc.workerValues),
 			)
 
-			secondRegistry, err := s.EmissionsKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, secondNonce)
+			secondRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, secondNonce)
 			require.NoError(err)
 			assertRegistryLabelNames(require, &secondRegistry, tc.wantRegistryNames)
 
@@ -535,7 +535,7 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				expectedAligned,
 			)
 
-			activeInferencesSecond, err := s.EmissionsKeeper().GetInferencesAtBlock(s.Ctx(), topicId, secondNonce, false)
+			activeInferencesSecond, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, secondNonce, false)
 			require.NoError(err)
 			assertActiveInferencesMatchExpected(require, activeInferencesSecond, expectedAligned)
 

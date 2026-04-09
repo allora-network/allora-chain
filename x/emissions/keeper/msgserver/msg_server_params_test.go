@@ -11,13 +11,12 @@ import (
 
 func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
-	keeper := s.EmissionsKeeper()
 	require := s.Require()
 
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 
-	err := keeper.AddWhitelistAdmin(ctx, adminAddr.String())
+	err := s.WhitelistsKeeper().AddWhitelistAdmin(ctx, adminAddr.String())
 	require.NoError(err)
 
 	newParams := &types.OptionalParams{ //nolint:exhaustruct
@@ -85,7 +84,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.NoError(err)
 	require.NotNil(response)
 
-	updatedParams, err := keeper.GetParams(ctx)
+	updatedParams, err := s.ParamsKeeper().GetParams(ctx)
 	require.NoError(err)
 
 	require.Equal(newParams.Version[0], updatedParams.Version)

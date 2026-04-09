@@ -9,7 +9,7 @@ import (
 // Tests that when a topic is not found in the block's active topics list, an error is returned.
 func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicNotFoundInBlockRemovesAllTopics() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.TopicKeeper()
 
 	block := int64(100)
 	topicId1 := uint64(1)
@@ -75,7 +75,7 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicNotFound
 // Tests that when a topic is found in the block's active topics list, only that topic is removed.
 func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicFoundInBlockRemovesOnlyThatTopic() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.TopicKeeper()
 
 	block := int64(200)
 	topicId1 := uint64(10)
@@ -128,7 +128,7 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicFoundInB
 // Tests that inactivating a topic when the block has no active topics returns an error.
 func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_EmptyBlockListNoOp() {
 	ctx := s.Ctx()
-	k := s.EmissionsKeeper()
+	k := s.TopicKeeper()
 
 	block := int64(300)
 	topicId := uint64(100)

@@ -45,7 +45,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
-	err = MigrateParams(ctx, emissionsKeeper)
+	err = MigrateParams(ctx, emissionsKeeper.GetParamsKeeper())
 	if err != nil {
 		return err
 	}
@@ -53,9 +53,9 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+func MigrateParams(ctx sdk.Context, pk *keeper.ParamsKeeper) error {
 	defaultParams := types.DefaultParams()
-	err := emissionsKeeper.SetParams(ctx, defaultParams)
+	err := pk.SetParams(ctx, defaultParams)
 	if err != nil {
 		return err
 	}
@@ -272,8 +272,8 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 						OneOutForecasterValues:        valueBundle.ValueBundle.OneOutForecasterValues,
 						OneInForecasterValues:         valueBundle.ValueBundle.OneInForecasterValues,
 					},
-					Pubkey:    valueBundle.Pubkey,
 					Signature: valueBundle.Signature,
+					Pubkey:    valueBundle.Pubkey,
 				},
 			)
 		}

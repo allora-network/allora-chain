@@ -46,7 +46,7 @@ func GetNetworkInferences(
 		ctx.Logger().Debug("Math helper cache cleared after network inference calculation")
 	}()
 
-	registry, err := k.GetEpochLabelRegistry(ctx, topicId, *inferencesNonce)
+	registry, err := k.GetTopicKeeper().GetEpochLabelRegistry(ctx, topicId, *inferencesNonce)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "Error getting epoch label registry")
 	}
@@ -79,19 +79,19 @@ func calcNetworkInferencesMultiple(
 	}
 
 	// Retrieve module params
-	moduleParams, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParamsKeeper().GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting params")
 	}
 
 	// Retrieve topic
-	topic, err := k.GetTopic(ctx, topicId)
+	topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting topic")
 	}
 
 	var previousNetworkCombinedLoss *alloraMath.Dec
-	networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
+	networkLosses, err := k.GetReputerLossKeeper().GetLatestNetworkLossBundle(ctx, topicId)
 	if err != nil && !errors.Is(err, emissions.ErrNotFound) {
 		return nil, errorsmod.Wrap(err, "while getting latest network loss bundle")
 	} else {
@@ -213,7 +213,7 @@ func GetCalcNetworkInferenceArgs(
 	infererAddresses := make([]string, 0, len(sortedInferers))
 	infererRegrets := make([]alloraMath.Dec, 0, len(sortedInferers))
 	for _, inferer := range sortedInferers {
-		regret, _, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
+		regret, _, err := k.GetRegretsKeeper().GetInfererNetworkRegret(ctx, topicId, inferer)
 		if err != nil {
 			return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting inferer regret")
 		}
@@ -227,7 +227,7 @@ func GetCalcNetworkInferenceArgs(
 	}
 
 	// Get the latest regret scale from the keeper. If zero, it will recalculate with provided data.
-	regretScalePlusEpsilon, err := k.GetLatestRegretScale(ctx, topicId)
+	regretScalePlusEpsilon, err := k.GetWeightsKeeper().GetLatestRegretScale(ctx, topicId)
 	if err != nil {
 		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret scale")
 	}
@@ -263,7 +263,7 @@ func GetCalcNetworkInferenceArgs(
 		forecasterAddresses := make([]string, 0, len(sortedForecasters))
 		forecasterRegrets := make([]alloraMath.Dec, 0, len(sortedForecasters))
 		for _, forecaster := range sortedForecasters {
-			regret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
+			regret, _, err := k.GetRegretsKeeper().GetForecasterNetworkRegret(ctx, topicId, forecaster)
 			if err != nil {
 				return CalcNetworkInferencesArgs{}, errorsmod.Wrapf(err, "GetCalcNetworkInferenceArgs: error getting forecaster regret")
 			}

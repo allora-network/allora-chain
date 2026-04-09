@@ -310,7 +310,7 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (labeledNaiveInference []*emi
 	// Get inferer naive regrets
 	infererToRegret := make(map[string]*alloraMath.Dec)
 	for _, inferer := range args.Inferers {
-		regret, _, err := args.K.GetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, inferer)
+		regret, _, err := args.K.GetRegretsKeeper().GetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, inferer)
 		if err != nil {
 			return []*emissions.LabeledValue{}, errorsmod.Wrapf(err, "GetNaiveInference() error getting naive regret for inferer %s", inferer)
 		}
@@ -410,7 +410,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 		}
 
 		// over every inferer
-		regret, _, err := args.K.GetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, inferer)
+		regret, _, err := args.K.GetRegretsKeeper().GetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, inferer)
 		if err != nil {
 			return alloraMath.DecArray{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error getting one-out inferer regret")
 		}
@@ -449,7 +449,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 
 		// Get regrets for the forecasters
 		for _, forecaster := range args.Forecasters {
-			regret, _, err := args.K.GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, forecaster)
+			regret, _, err := args.K.GetRegretsKeeper().GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldInferer, forecaster)
 			if err != nil {
 				return alloraMath.DecArray{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error getting one-out forecaster regret")
 			}
@@ -614,7 +614,7 @@ func calcOneOutForecasterInferences(args CalcOneOutForecasterInferenceArgs) (
 		if forecaster != args.WithheldForecaster {
 			remainingForecasters = append(remainingForecasters, forecaster)
 
-			regret, _, err := args.K.GetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, forecaster)
+			regret, _, err := args.K.GetRegretsKeeper().GetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, forecaster)
 			if err != nil {
 				return alloraMath.DecArray{}, errorsmod.Wrapf(err, "calcOneOutForecasterInferences() error getting one-out forecaster regret")
 			}
@@ -631,7 +631,7 @@ func calcOneOutForecasterInferences(args CalcOneOutForecasterInferenceArgs) (
 	// Get regrets for the remaining inferers
 	remainingInfererRegrets := make(map[Inferer]*Regret)
 	for _, inferer := range args.Inferers {
-		regret, _, err := args.K.GetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, inferer)
+		regret, _, err := args.K.GetRegretsKeeper().GetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, args.WithheldForecaster, inferer)
 		if err != nil {
 			return alloraMath.DecArray{}, errorsmod.Wrapf(err, "calcOneOutForecasterInferences() error getting one-out inferer regret")
 		}
@@ -789,7 +789,7 @@ func calcOneInValues(args calcOneInValuesArgs) (alloraMath.DecArray, error) {
 	}
 
 	// Ensure we have a self-regret entry for this forecaster (weighting path expects it).
-	selfRegret, _, err := args.K.GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, args.OneInForecaster)
+	selfRegret, _, err := args.K.GetRegretsKeeper().GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, args.OneInForecaster)
 	if err != nil {
 		return alloraMath.DecArray{}, errorsmod.Wrapf(err, "calcOneInValues: error getting one-in forecaster self regret")
 	}
@@ -810,7 +810,7 @@ func calcOneInValues(args calcOneInValuesArgs) (alloraMath.DecArray, error) {
 		}
 		infererToInferenceForSingleForecaster[inferer] = inf
 
-		r, _, err := args.K.GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, inferer)
+		r, _, err := args.K.GetRegretsKeeper().GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, args.OneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.DecArray{}, errorsmod.Wrapf(err, "calcOneInValues: error getting one-in forecaster regret for inferer %s", inferer)
 		}

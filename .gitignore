@@ -58,3 +58,8 @@ allora.log
 
 **/.DS_Store
 
+.agents
+.cursor
+.claude
+.worktrees/
+

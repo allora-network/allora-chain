@@ -21,7 +21,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		return nil, err
 	}
 
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 	}
 
 	if msg.IsReputer {
-		isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
+		isRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 		if err != nil {
 			return nil, err
 		}
@@ -38,7 +38,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 			return nil, errorsmod.Wrapf(types.ErrAddressAlreadyRegisteredInATopic, "reputer is already registered in this topic")
 		}
 	} else {
-		isRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
+		isRegistered, err := ms.wk.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +47,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 		}
 	}
 
-	params, err := ms.k.GetParams(ctx)
+	params, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +62,13 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 	}
 
 	if msg.IsReputer {
-		err = ms.k.InsertReputer(ctx, msg.TopicId, msg.Sender, nodeInfo)
+		err = ms.rlk.InsertReputer(ctx, msg.TopicId, msg.Sender, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
 		types.EmitNewReputerRegisteredEvent(ctx, msg.TopicId, msg.Sender, msg.Owner)
 	} else {
-		err = ms.k.InsertWorker(ctx, msg.TopicId, msg.Sender, nodeInfo)
+		err = ms.wk.InsertWorker(ctx, msg.TopicId, msg.Sender, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -87,7 +87,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 		return nil, err
 	}
 	// Check if topic exists
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.tk.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 
 	// Proceed based on whether requester is removing their reputer or worker registration
 	if msg.IsReputer {
-		isRegisteredInTopic, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
+		isRegisteredInTopic, err := ms.rlk.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 		if err != nil {
 			return nil, err
 		}
@@ -107,13 +107,13 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 		}
 
 		// Remove the reputer registration from the topic
-		err = ms.k.RemoveReputer(ctx, msg.TopicId, msg.Sender)
+		err = ms.rlk.RemoveReputer(ctx, msg.TopicId, msg.Sender)
 		if err != nil {
 			return nil, err
 		}
 		types.EmitNewReputerUnregisteredEvent(ctx, msg.TopicId, msg.Sender)
 	} else {
-		isRegisteredInTopic, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
+		isRegisteredInTopic, err := ms.wk.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 		if err != nil {
 			return nil, err
 		}
@@ -123,7 +123,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 		}
 
 		// Remove the worker registration from the topic
-		err = ms.k.RemoveWorker(ctx, msg.TopicId, msg.Sender)
+		err = ms.wk.RemoveWorker(ctx, msg.TopicId, msg.Sender)
 		if err != nil {
 			return nil, err
 		}
@@ -138,7 +138,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string) (success bool, fee sdk.Coin, err error) {
 	defer metrics.RecordMetrics("CheckBalanceForRegistration", time.Now(), &err)
 
-	moduleParams, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.pk.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err
 	}
@@ -147,7 +147,7 @@ func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address str
 	if err != nil {
 		return false, fee, err
 	}
-	balance := ms.k.GetBankBalance(ctx, accAddress, fee.Denom)
+	balance := ms.bk.GetBalance(ctx, accAddress, fee.Denom)
 	success = balance.IsGTE(fee)
 	return success, fee, err
 }

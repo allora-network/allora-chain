@@ -46,7 +46,7 @@ func GenerateReputerScores(
 	// This is necessary to ensure that all workers are accounted for in the final scores
 	// If a worker is missing from the reported losses, it will be added with a NaN value
 	reportedLosses = EnsureWorkerPresence(reportedLosses)
-	topic, err := keeper.GetTopic(ctx, topicId)
+	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
 	}
@@ -60,7 +60,7 @@ func GenerateReputerScores(
 	for _, reportedLoss := range reportedLosses {
 		reputers = append(reputers, reportedLoss.Reputer)
 		// Get reputer topic stake
-		reputerStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reportedLoss.Reputer)
+		reputerStake, err := keeper.GetStakingKeeper().GetStakeReputerAuthority(ctx, topicId, reportedLoss.Reputer)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnReputerInTopic")
 		}
@@ -72,7 +72,7 @@ func GenerateReputerScores(
 			return []types.Score{}, errors.Wrap(types.ErrInvalidReputerData, "Error invalid reputer Stake: NaN")
 		}
 		// Get reputer listening coefficient
-		res, err := keeper.GetListeningCoefficient(ctx, topicId, reportedLoss.Reputer)
+		res, err := keeper.GetScoresKeeper().GetListeningCoefficient(ctx, topicId, reportedLoss.Reputer)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetListeningCoefficient")
 		}
@@ -92,7 +92,7 @@ func GenerateReputerScores(
 		losses = append(losses, reputerLosses)
 	}
 
-	params, err := keeper.GetParams(ctx)
+	params, err := keeper.GetParamsKeeper().GetParams(ctx)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting GetParams")
 	}
@@ -126,7 +126,7 @@ func GenerateReputerScores(
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
 	for i, reputer := range reputers {
-		err := keeper.SetListeningCoefficient(
+		err := keeper.GetScoresKeeper().SetListeningCoefficient(
 			ctx,
 			topicId,
 			reputer,
@@ -142,12 +142,12 @@ func GenerateReputerScores(
 			Address:     reputer,
 			Score:       scores[i],
 		}
-		err = keeper.InsertReputerScore(ctx, topicId, block, instantScore)
+		err = keeper.GetScoresKeeper().InsertReputerScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, reputer, instantScore)
+		emaScore, err := keeper.GetScoresKeeper().CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, reputer, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
@@ -157,12 +157,12 @@ func GenerateReputerScores(
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveReputerQuantile)
+	// Update topic quantile from EMA scores (used by sortition EMA flow).
+	topicEmaScoreQuantile, err := getQuantileOfScores(emaScores, topic.ActiveReputerQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicInstantScoreQuantile)
+	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicEmaScoreQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -170,13 +170,13 @@ func GenerateReputerScores(
 	// Just update the initial EMA score if there are more than 0 scores
 	if len(emaScores) > 0 {
 		// Calculate initial EMA score
-		initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper, emaScores)
+		initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper.GetParamsKeeper(), emaScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error calculating initial EMA score")
 		}
 
 		// Store the initial EMA score
-		err = keeper.SetTopicInitialReputerEmaScore(ctx, topicId, initialEmaScore)
+		err = keeper.GetScoresKeeper().SetTopicInitialReputerEmaScore(ctx, topicId, initialEmaScore)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error setting initial reputer EMA score")
 		}
@@ -210,7 +210,7 @@ func GenerateInferenceScores(
 			Address:     networkLosses.InfererValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
-		err := keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
+		err := keeper.GetScoresKeeper().InsertWorkerInferenceScore(ctx, topicId, block, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
@@ -218,7 +218,7 @@ func GenerateInferenceScores(
 		types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, ctx.BlockHeight(), instantScores)
 		return instantScores, nil
 	}
-	topic, err := keeper.GetTopic(ctx, topicId)
+	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
 	}
@@ -235,12 +235,12 @@ func GenerateInferenceScores(
 			Address:     oneOutLoss.Worker,
 			Score:       workerNewScore,
 		}
-		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, instantScore)
+		err = keeper.GetScoresKeeper().InsertWorkerInferenceScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, oneOutLoss.Worker, instantScore)
+		emaScore, err := keeper.GetScoresKeeper().CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, oneOutLoss.Worker, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
@@ -250,12 +250,12 @@ func GenerateInferenceScores(
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveInfererQuantile)
+	// Update topic quantile from EMA scores (used by sortition EMA flow).
+	topicEmaScoreQuantile, err := getQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error getting quantile of scores")
 	}
-	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicInstantScoreQuantile)
+	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
 	}
@@ -263,13 +263,13 @@ func GenerateInferenceScores(
 	// Just update the initial EMA score if there are more than 0 scores
 	if len(emaScores) > 0 {
 		// Calculate initial EMA score
-		initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper, emaScores)
+		initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper.GetParamsKeeper(), emaScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error calculating initial EMA score")
 		}
 
 		// Store the initial EMA score
-		err = keeper.SetTopicInitialInfererEmaScore(ctx, topicId, initialEmaScore)
+		err = keeper.GetScoresKeeper().SetTopicInitialInfererEmaScore(ctx, topicId, initialEmaScore)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error setting initial inferer EMA score")
 		}
@@ -293,7 +293,7 @@ func GenerateForecastScores(
 	var instantScores []types.Score
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
-	topic, err := keeper.GetTopic(ctx, topicId)
+	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
 	}
@@ -307,7 +307,7 @@ func GenerateForecastScores(
 			Address:     networkLosses.ForecasterValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
-		err := keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
+		err := keeper.GetScoresKeeper().InsertWorkerForecastScore(ctx, topicId, block, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
@@ -352,12 +352,12 @@ func GenerateForecastScores(
 			Address:     oneInNaiveLoss.Worker,
 			Score:       workerPerformanceScore,
 		}
-		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, instantScore)
+		err = keeper.GetScoresKeeper().InsertWorkerForecastScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, oneInNaiveLoss.Worker, instantScore)
+		emaScore, err := keeper.GetScoresKeeper().CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, oneInNaiveLoss.Worker, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
@@ -367,12 +367,12 @@ func GenerateForecastScores(
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveForecasterQuantile)
+	// Update topic quantile from EMA scores (used by sortition EMA flow).
+	topicEmaScoreQuantile, err := getQuantileOfScores(emaScores, topic.ActiveForecasterQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicInstantScoreQuantile)
+	err = keeper.GetScoresKeeper().SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicEmaScoreQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -380,13 +380,13 @@ func GenerateForecastScores(
 	// Just update the initial EMA score if there are more than 0 scores
 	if len(emaScores) > 0 {
 		// Calculate initial EMA score
-		initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper, emaScores)
+		initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper.GetParamsKeeper(), emaScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error calculating initial EMA score")
 		}
 
 		// Store the initial EMA score
-		err = keeper.SetTopicInitialForecasterEmaScore(ctx, topicId, initialEmaScore)
+		err = keeper.GetScoresKeeper().SetTopicInitialForecasterEmaScore(ctx, topicId, initialEmaScore)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Error setting initial forecaster EMA score")
 		}
@@ -544,7 +544,7 @@ func EnsureAllWorkersPresentWithheld(
 // by using the formula: lowestEmaScore - lambda * standardDeviationOfEmaScores
 func CalculateTopicInitialEmaScore(
 	ctx context.Context,
-	keeper keeper.Keeper,
+	keeper *keeper.ParamsKeeper,
 	activeScores []types.Score,
 ) (alloraMath.Dec, error) {
 	// If there are no scores, return zero

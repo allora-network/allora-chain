@@ -40,7 +40,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 3 TO VERSION 4")
-	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper); err != nil {
+	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper.GetTopicKeeper()); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 3 TO VERSION 4")
 		return err
 	}
@@ -59,7 +59,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // migrate params for this new version
 // the only change is the addition of MaxStringLength
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV3Types.Params{} //nolint:exhaustruct // populated in unmarshal below
+	var oldParams oldV3Types.Params // populated in unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -134,7 +134,7 @@ func MigrateTopics(
 	ctx sdk.Context,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
-	emissionsKeeper keeper.Keeper,
+	tk *keeper.TopicKeeper,
 ) error {
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
@@ -153,7 +153,7 @@ func MigrateTopics(
 		}
 		// now get the topic from the collections.go
 		// API, to check if the fields in the topic exist
-		topic, err := emissionsKeeper.GetTopic(ctx, oldMsg.Id)
+		topic, err := tk.GetTopic(ctx, oldMsg.Id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get topic")
 		}

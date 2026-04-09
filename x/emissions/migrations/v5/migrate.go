@@ -7,16 +7,17 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/gogo/protobuf/proto"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/utils/migutils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v5/oldtypes"
 	v5Types "github.com/allora-network/allora-chain/x/emissions/migrations/v6/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
 )
 
 const maxPageSize = uint64(10000)
@@ -40,7 +41,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 4 TO VERSION 5")
-	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper); err != nil {
+	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper.GetTopicKeeper()); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 4 TO VERSION 5")
 		return err
 	}
@@ -58,7 +59,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // migrate params for this new version
 // the changes are the addition of InitialRegretQuantile,PNormSafeDiv
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV4Types.Params{} //nolint:exhaustruct // empty struct used by cosmos-sdk Unmarshal below
+	var oldParams oldV4Types.Params // empty struct used by cosmos-sdk Unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -133,11 +134,11 @@ func MigrateTopics(
 	ctx sdk.Context,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
-	emissionsKeeper keeper.Keeper,
+	tk *keeper.TopicKeeper,
 ) error {
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 
-	nextTopicId, err := emissionsKeeper.GetNextTopicId(ctx)
+	nextTopicId, err := tk.GetNextTopicId(ctx)
 	if err != nil {
 		return err
 	}
@@ -148,7 +149,7 @@ func MigrateTopics(
 		idByte := make([]byte, 8)
 		binary.BigEndian.PutUint64(idByte, id)
 		ctx.Logger().Info("MIGRATION V5: Updating topic", "topicId", id)
-		topic, err := emissionsKeeper.GetTopic(ctx, id)
+		topic, err := tk.GetTopic(ctx, id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get topic")
 		}
@@ -160,12 +161,12 @@ func MigrateTopics(
 		topicsToChange[string(idByte)] = newTopic
 
 		// Initialization of sumTotalPreviousTopicWeights, summing up all active topic weights
-		isActive, err := emissionsKeeper.IsTopicActive(ctx, topic.Id)
+		isActive, err := tk.IsTopicActive(ctx, topic.Id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get topic")
 		}
 		if isActive {
-			topicWeight, _, err := emissionsKeeper.GetPreviousTopicWeight(ctx, topic.Id)
+			topicWeight, _, err := tk.GetPreviousTopicWeight(ctx, topic.Id)
 			if err != nil {
 				return errorsmod.Wrapf(err, "failed to get topic weight")
 			}
@@ -182,7 +183,7 @@ func MigrateTopics(
 		topicStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}
 	ctx.Logger().Debug("MIGRATION V5: Updating total sum previous topic weights, sum: ", sumTotalPreviousTopicWeights)
-	err = emissionsKeeper.SetTotalSumPreviousTopicWeights(ctx, sumTotalPreviousTopicWeights)
+	err = tk.SetTotalSumPreviousTopicWeights(ctx, sumTotalPreviousTopicWeights)
 	if err != nil {
 		return errorsmod.Wrapf(err, "failed to set total sum previous topic weights")
 	}

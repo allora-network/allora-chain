@@ -11,7 +11,7 @@ import (
 func (qs queryServer) GetOpenReputerSubmissionWindows(ctx context.Context, req *types.GetOpenReputerSubmissionWindowsRequest) (_ *types.GetOpenReputerSubmissionWindowsResponse, err error) {
 	defer metrics.RecordMetrics("GetOpenReputerSubmissionWindows", time.Now(), &err)
 
-	openNonces, err := qs.k.GetOpenReputerSubmissionWindows(ctx, req.TopicId)
+	openNonces, err := qs.nk.GetOpenReputerSubmissionWindows(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (qs queryServer) GetOpenReputerSubmissionWindows(ctx context.Context, req *
 func (qs queryServer) GetOpenWorkerSubmissionWindows(ctx context.Context, req *types.GetOpenWorkerSubmissionWindowsRequest) (_ *types.GetOpenWorkerSubmissionWindowsResponse, err error) {
 	defer metrics.RecordMetrics("GetOpenWorkerSubmissionWindows", time.Now(), &err)
 
-	openNonces, err := qs.k.GetOpenWorkerSubmissionWindows(ctx, req.TopicId)
+	openNonces, err := qs.nk.GetOpenWorkerSubmissionWindows(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}

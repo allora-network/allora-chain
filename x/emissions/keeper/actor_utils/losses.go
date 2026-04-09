@@ -30,7 +30,7 @@ func CloseReputerNonce(
 
 	// All filters should be done in order of increasing computational complexity
 	// Check if the worker nonce is unfulfilled
-	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
+	workerNonceUnfulfilled, err := k.GetNonceKeeper().IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func CloseReputerNonce(
 	}
 
 	// Check if the reputer nonce is unfulfilled
-	reputerNonceUnfulfilled, err := k.IsReputerNonceUnfulfilled(ctx, topic.Id, &nonce)
+	reputerNonceUnfulfilled, err := k.GetNonceKeeper().IsReputerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func CloseReputerNonce(
 			)
 		}
 
-		_, fulfillErr := k.FulfillReputerNonce(ctx, topic.Id, &nonce)
+		_, fulfillErr := k.GetNonceKeeper().FulfillReputerNonce(ctx, topic.Id, &nonce)
 		if fulfillErr != nil {
 			ctx.Logger().Error(
 				"Error fulfilling reputer nonce during deferred cleanup",
@@ -81,7 +81,7 @@ func CloseReputerNonce(
 			)
 		}
 
-		resetActiveErr := k.ResetActiveReputersForTopic(ctx, topic.Id)
+		resetActiveErr := k.GetReputerLossKeeper().ResetActiveReputersForTopic(ctx, topic.Id)
 		if resetActiveErr != nil {
 			ctx.Logger().Error(
 				"Error resetting active reputers during deferred cleanup",
@@ -90,7 +90,7 @@ func CloseReputerNonce(
 			)
 		}
 
-		resetSubmissionsErr := k.ResetReputersIndividualSubmissionsForTopic(ctx, topic.Id)
+		resetSubmissionsErr := k.GetReputerLossKeeper().ResetReputersIndividualSubmissionsForTopic(ctx, topic.Id)
 		if resetSubmissionsErr != nil {
 			ctx.Logger().Error(
 				"Error resetting reputer individual submissions during deferred cleanup",
@@ -105,13 +105,13 @@ func CloseReputerNonce(
 		types.EmitNewReputerSubmissionWindowClosedEvent(ctx, topic.Id, nonce.BlockHeight)
 	}()
 
-	params, err := k.GetParams(ctx)
+	params, err := k.GetParamsKeeper().GetParams(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Get active reputers for the topic
-	activeReputerAddresses, err := k.GetActiveReputersForTopic(ctx, topic.Id)
+	activeReputerAddresses, err := k.GetReputerLossKeeper().GetActiveReputersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -119,14 +119,14 @@ func CloseReputerNonce(
 	lossBundlesByReputer := make(types.LossBundles, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)
 	for _, address := range activeReputerAddresses {
-		bundle, err := k.GetReputerLatestLossByTopicId(ctx, topic.Id, address)
+		bundle, err := k.GetReputerLossKeeper().GetReputerLatestLossByTopicId(ctx, topic.Id, address)
 		if err != nil {
 			ctx.Logger().Warn("Could not get latest loss bundle for reputer, skipping", "reputer", address, "topicId", topic.Id, "error", err)
 			continue // Skip this reputer
 		}
 
 		// Check that the reputer enough stake in the topic
-		stake, err := k.GetStakeReputerAuthority(ctx, topic.Id, bundle.Reputer)
+		stake, err := k.GetStakingKeeper().GetStakeReputerAuthority(ctx, topic.Id, bundle.Reputer)
 		if err != nil {
 			ctx.Logger().Warn("Could not get stake for reputer, skipping", "reputer", bundle.Reputer, "topicId", topic.Id, "error", err)
 			continue // Skip this reputer
@@ -160,7 +160,7 @@ func CloseReputerNonce(
 		return lossBundlesByReputer[i].Reputer < lossBundlesByReputer[j].Reputer
 	})
 
-	err = k.InsertActiveReputerLosses(ctx, topic.Id, nonce.BlockHeight, lossBundlesByReputer)
+	err = k.GetReputerLossKeeper().InsertActiveReputerLosses(ctx, topic.Id, nonce.BlockHeight, lossBundlesByReputer)
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func CloseReputerNonce(
 
 	ctx.Logger().Debug("Reputer Nonce", "blockHeight", &nonce.BlockHeight, "networkLossBundle", networkLossBundle)
 
-	err = k.InsertNetworkLossBundleAtBlock(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
+	err = k.GetReputerLossKeeper().InsertNetworkLossBundleAtBlock(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return err
 	}
@@ -226,7 +226,7 @@ func CloseReputerNonce(
 		return err
 	}
 	// 2.b ... and store it.
-	err = k.SetLatestRegretScale(ctx, topic.Id, regretScalePlusEpsilon)
+	err = k.GetWeightsKeeper().SetLatestRegretScale(ctx, topic.Id, regretScalePlusEpsilon)
 	if err != nil {
 		return err
 	}
@@ -281,7 +281,7 @@ func CloseReputerNonce(
 
 	// -- end of regret scale and weights multistep process
 
-	err = k.SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)
+	err = k.GetTopicKeeper().SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)
 	if err != nil {
 		ctx.Logger().Error(
 			"Error setting topic reward nonce during deferred cleanup",
@@ -292,7 +292,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
+	err = k.GetTopicKeeper().SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		ctx.Logger().Error(
 			"Error setting reputer topic last commit during deferred cleanup",
@@ -319,7 +319,7 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	reputerValueBundle *types.LossBundle,
 ) (*types.LossBundle, error) {
 	// Get the accepted inferers of the associated worker response payload
-	inferences, err := k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight, false)
+	inferences, err := k.GetWorkerKeeper().GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight, false)
 	if errors.Is(err, collections.ErrNotFound) {
 		return nil, errorsmod.Wrapf(sdkerrors.ErrNotFound, "no inferences found at block height %d for topic %d", reputerRequestNonce.ReputerNonce.BlockHeight, topicId)
 	} else if err != nil {
@@ -332,7 +332,7 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	// Get the accepted forecasters of the associated worker response payload
-	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
+	forecasts, err := k.GetWorkerKeeper().GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}

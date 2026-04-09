@@ -5,8 +5,9 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/store/prefix"
-	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -26,53 +27,130 @@ func TestEmissionsV14MigrationTestSuite(t *testing.T) {
 	})
 }
 
-// TestMigrateTopics tests that TopicType and OutputArity is added to all existing topics
 func (s *EmissionsV14MigrationTestSuite) TestMigrateTopics() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	keeper := s.TopicKeeper()
 
-	keeper := s.EmissionsKeeper()
-
-	// Create a topic first (without TopicType and OutputArity, as they would be before migration)
-	oldTopic := oldtypes.Topic{
-		Id:                       1,
-		Creator:                  s.Addrs(0).String(),
-		Metadata:                 "metadata",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		EpochLastEnded:           0,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		InitialRegret:            alloraMath.MustNewDecFromString("0.0001"),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:            false,
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	oldTopics := []oldtypes.Topic{
+		{
+			Id:                       1,
+			Creator:                  s.Addrs(0).String(),
+			Metadata:                 "metadata-1",
+			LossMethod:               "mse",
+			EpochLength:              10800,
+			EpochLastEnded:           0,
+			GroundTruthLag:           10800,
+			WorkerSubmissionWindow:   10,
+			PNorm:                    alloraMath.NewDecFromInt64(3),
+			InitialRegret:            alloraMath.MustNewDecFromString("0.0001"),
+			AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+			AllowNegative:            false,
+			Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+			MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+			ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+			ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+			ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.3"),
+			CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		},
+		{
+			Id:                       2,
+			Creator:                  s.Addrs(1).String(),
+			Metadata:                 "metadata-2",
+			LossMethod:               "mae",
+			EpochLength:              7200,
+			EpochLastEnded:           5,
+			GroundTruthLag:           3600,
+			WorkerSubmissionWindow:   20,
+			PNorm:                    alloraMath.NewDecFromInt64(4),
+			InitialRegret:            alloraMath.MustNewDecFromString("0.001"),
+			AlphaRegret:              alloraMath.MustNewDecFromString("0.2"),
+			AllowNegative:            true,
+			Epsilon:                  alloraMath.MustNewDecFromString("0.02"),
+			MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+			ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.4"),
+			ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.5"),
+			ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.6"),
+			CNorm:                    alloraMath.MustNewDecFromString("0.8"),
+		},
 	}
 
-	topicStore.Set(sdk.Uint64ToBigEndian(oldTopic.Id), cdc.MustMarshal(&oldTopic))
+	for _, oldTopic := range oldTopics {
+		topicStore.Set(sdk.Uint64ToBigEndian(oldTopic.Id), cdc.MustMarshal(&oldTopic))
+	}
 
-	// Run migration
 	err := v14.MigrateTopics(s.Ctx(), store, cdc)
 	s.Require().NoError(err)
 
-	// Verify that the topic now have TopicType and OutputArity values set to defaults
-	gotTopic, err := keeper.GetTopic(s.Ctx(), oldTopic.Id)
+	for _, oldTopic := range oldTopics {
+		gotTopic, err := keeper.GetTopic(s.Ctx(), oldTopic.Id)
+		s.Require().NoError(err)
+
+		// existing fields preserved
+		s.Require().Equal(oldTopic.Id, gotTopic.Id)
+		s.Require().Equal(oldTopic.Creator, gotTopic.Creator)
+		s.Require().Equal(oldTopic.Metadata, gotTopic.Metadata)
+		s.Require().Equal(oldTopic.LossMethod, gotTopic.LossMethod)
+		s.Require().True(oldTopic.PNorm.Equal(gotTopic.PNorm))
+		s.Require().True(oldTopic.InitialRegret.Equal(gotTopic.InitialRegret))
+		s.Require().True(oldTopic.AlphaRegret.Equal(gotTopic.AlphaRegret))
+		s.Require().Equal(oldTopic.AllowNegative, gotTopic.AllowNegative)
+		s.Require().True(oldTopic.Epsilon.Equal(gotTopic.Epsilon))
+		s.Require().True(oldTopic.MeritSortitionAlpha.Equal(gotTopic.MeritSortitionAlpha))
+		s.Require().True(oldTopic.CNorm.Equal(gotTopic.CNorm))
+
+		// migrated quantiles
+		s.Require().True(gotTopic.ActiveInfererQuantile.Equal(alloraMath.MustNewDecFromString("0.05")))
+		s.Require().True(gotTopic.ActiveForecasterQuantile.Equal(alloraMath.MustNewDecFromString("0.05")))
+		s.Require().True(gotTopic.ActiveReputerQuantile.Equal(alloraMath.MustNewDecFromString("0.05")))
+
+		// new fields added with defaults
+		s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_REGRESSION, gotTopic.TopicType)
+		s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotTopic.OutputArity)
+		s.Require().False(gotTopic.RequireUnity)
+		s.Require().Equal("0", gotTopic.UnityTolerance.String())
+	}
+}
+
+func (s *EmissionsV14MigrationTestSuite) TestMigrateTopicsFailsOnInvalidStoredTopicBytes() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	topicStore.Set([]byte("invalid-topic"), []byte("not-protobuf"))
+
+	err := v14.MigrateTopics(s.Ctx(), store, cdc)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "failed to unmarshal topic")
+}
+
+func (s *EmissionsV14MigrationTestSuite) TestMigrateStoreUpdatesExistingTopics() {
+	topicMsg := s.MockTopicMsg()
+
+	s.MintTokensToAddress(s.Addrs(0), emissionstypes.DefaultParams().CreateTopicFee)
+
+	resp, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), topicMsg)
 	s.Require().NoError(err)
-	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_REGRESSION, gotTopic.TopicType,
-		"Topic TopicType should be %s, got %s", emissionstypes.TopicType_TOPIC_TYPE_REGRESSION.String(), gotTopic.TopicType.String())
-	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotTopic.OutputArity,
-		"Topic OutputArity should be %s, got %s", emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE.String(), gotTopic.OutputArity.String())
-	s.Require().Falsef(gotTopic.RequireUnity, "Topic RequireUnity should be false, got %v", gotTopic.RequireUnity)
-	s.Require().Equal("0", gotTopic.UnityTolerance.String(), "Topic UnityTolerance should be 0, got %s", gotTopic.UnityTolerance.String())
+
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), resp.TopicId)
+	s.Require().NoError(err)
+	topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.25")
+	topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.25")
+	topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.25")
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), resp.TopicId, topic))
+
+	err = v14.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	migratedTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), resp.TopicId)
+	s.Require().NoError(err)
+	s.Require().True(migratedTopic.ActiveInfererQuantile.Equal(alloraMath.MustNewDecFromString("0.05")))
+	s.Require().True(migratedTopic.ActiveForecasterQuantile.Equal(alloraMath.MustNewDecFromString("0.05")))
+	s.Require().True(migratedTopic.ActiveReputerQuantile.Equal(alloraMath.MustNewDecFromString("0.05")))
 }
 
 func (s *EmissionsV14MigrationTestSuite) TestMigrateNetworkInferences() {

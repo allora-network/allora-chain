@@ -5,6 +5,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 
 	errorsmod "cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,9 +16,12 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// MigrateStore migrates the store from version 13 to version 14.
-// It does the following:
-// - Migrate all topics to add defaults for TopicType and OutputArity fields
+var targetActiveTopicQuantile = alloraMath.MustNewDecFromString("0.05")
+
+// MigrateStore migrates the emissions module from version 13 to version 14.
+// It updates every existing topic to use the v0.16.0 active quantile defaults,
+// and add defaults for TopicType and OutputArity fields,
+// and migrate NetworkInferences
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 13 TO VERSION 14")
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 13 TO VERSION 14")
@@ -37,11 +41,14 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
-	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 13 TO VERSION 14 COMPLETE")
+	ctx.Logger().Info("MIGRATION EMISSIONS MODULE FROM VERSION 13 TO VERSION 14 COMPLETE")
 	return nil
 }
 
-// MigrateTopics iterates through all topics and adds TopicType and OutputArity field defaults to REGRESSION and SINGLE, respectively
+// MigrateTopics iterates through all topics and adds
+// TopicType and OutputArity field defaults to REGRESSION and SINGLE, respectively,
+// and rewrites the stored per-topic active quantiles
+// used by the EMA-based sortition flow introduced in v0.16.0.
 func MigrateTopics(
 	ctx sdk.Context,
 	store storetypes.KVStore,
@@ -82,9 +89,9 @@ func MigrateTopics(
 			InitialRegret:            oldTopic.InitialRegret,
 			WorkerSubmissionWindow:   oldTopic.WorkerSubmissionWindow,
 			MeritSortitionAlpha:      oldTopic.MeritSortitionAlpha,
-			ActiveInfererQuantile:    oldTopic.ActiveInfererQuantile,
-			ActiveForecasterQuantile: oldTopic.ActiveForecasterQuantile,
-			ActiveReputerQuantile:    oldTopic.ActiveReputerQuantile,
+			ActiveInfererQuantile:    targetActiveTopicQuantile,
+			ActiveForecasterQuantile: targetActiveTopicQuantile,
+			ActiveReputerQuantile:    targetActiveTopicQuantile,
 			CNorm:                    oldTopic.CNorm,
 			TopicType:                emissionstypes.TopicType_TOPIC_TYPE_REGRESSION,
 			OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,

@@ -27,7 +27,7 @@ func CreateUpgradeHandler(
 	configurator module.Configurator,
 	_ *keepers.AppKeepers,
 ) upgradetypes.UpgradeHandler {
-	return func(ctx context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+	return func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		sdkCtx.Logger().Info("RUN MIGRATIONS")
 		vm, err := moduleManager.RunMigrations(ctx, configurator, vm)

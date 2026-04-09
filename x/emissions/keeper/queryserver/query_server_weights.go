@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/allora-network/allora-chain/x/emissions/metrics"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (qs queryServer) GetLatestRegretStdNorm(ctx context.Context, req *types.GetLatestRegretStdNormRequest) (_ *types.GetLatestRegretStdNormResponse, err error) {
@@ -17,7 +18,7 @@ func (qs queryServer) GetLatestRegretStdNorm(ctx context.Context, req *types.Get
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	regretScale, err := qs.k.GetLatestRegretScale(ctx, req.TopicId)
+	regretScale, err := qs.wtk.GetLatestRegretScale(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -38,7 +39,7 @@ func (qs queryServer) GetLatestInfererWeight(ctx context.Context, req *types.Get
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	weight, err := qs.k.GetLatestInfererWeight(ctx, req.TopicId, req.ActorId)
+	weight, err := qs.wtk.GetLatestInfererWeight(ctx, req.TopicId, req.ActorId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -59,7 +60,7 @@ func (qs queryServer) GetLatestForecasterWeight(ctx context.Context, req *types.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	weight, err := qs.k.GetLatestForecasterWeight(ctx, req.TopicId, req.ActorId)
+	weight, err := qs.wtk.GetLatestForecasterWeight(ctx, req.TopicId, req.ActorId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
