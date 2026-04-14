@@ -38,8 +38,8 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	keeper := s.TopicKeeper()
 
-	topics := []emissionstypes.Topic{
-		s.makeLegacyCompatibleTopic(func(topic *emissionstypes.Topic) {
+	topics := []v14oldtypes.Topic{
+		s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
 			topic.Id = 1
 			topic.Creator = s.Addrs(0).String()
 			topic.Metadata = "metadata-1"
@@ -59,7 +59,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 			topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
 			topic.CNorm = alloraMath.MustNewDecFromString("0.75")
 		}),
-		s.makeLegacyCompatibleTopic(func(topic *emissionstypes.Topic) {
+		s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
 			topic.Id = 2
 			topic.Creator = s.Addrs(1).String()
 			topic.Metadata = "metadata-2"
@@ -124,7 +124,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	oldOutlierStore := prefix.NewStore(store, emissionstypes.OutlierResistantNetworkInferencesKey)
 
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	legacyTopic := s.makeLegacyCompatibleTopic(func(topic *emissionstypes.Topic) {
+	legacyTopic := s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
 		topic.Id = 1
 		topic.Creator = s.Addrs(0).String()
 		topic.Metadata = "legacy-topic"
@@ -276,12 +276,8 @@ func (s *EmissionsV15MigrationTestSuite) makeLegacyValueBundle(topicID uint64, b
 	}
 }
 
-func (s *EmissionsV15MigrationTestSuite) makeLegacyCompatibleTopic(apply func(*emissionstypes.Topic)) emissionstypes.Topic {
-	topic := s.MockTopic()
-	topic.TopicType = emissionstypes.TopicType_TOPIC_TYPE_UNSPECIFIED
-	topic.OutputArity = emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED
-	topic.RequireUnity = false
-	topic.UnityTolerance = alloraMath.ZeroDec()
+func (s *EmissionsV15MigrationTestSuite) makeLegacyTopic(apply func(*v14oldtypes.Topic)) v14oldtypes.Topic {
+	var topic v14oldtypes.Topic
 	if apply != nil {
 		apply(&topic)
 	}
