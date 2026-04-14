@@ -8,6 +8,7 @@ Build the local `v0.17.0` binary from your branch:
 
 ```bash
 make build-local-edits
+cp build/allorad /tmp/allorad-v0.17.0
 ```
 
 You also need a `v0.16.0` binary for the genesis/current slot in cosmovisor.
@@ -38,7 +39,7 @@ mkdir -p "$HOME/.allorad/cosmovisor/genesis/bin"
 mkdir -p "$HOME/.allorad/cosmovisor/upgrades/v0.17.0/bin"
 
 cp /tmp/allorad-v0.16.0 "$HOME/.allorad/cosmovisor/genesis/bin/allorad"
-cp build/allorad "$HOME/.allorad/cosmovisor/upgrades/v0.17.0/bin/allorad"
+cp /tmp/allorad-v0.17.0 "$HOME/.allorad/cosmovisor/upgrades/v0.17.0/bin/allorad"
 
 chmod +x "$HOME/.allorad/cosmovisor/genesis/bin/allorad"
 chmod +x "$HOME/.allorad/cosmovisor/upgrades/v0.17.0/bin/allorad"
