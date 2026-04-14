@@ -239,6 +239,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	key := []byte("topic-7/block-321")
 	oldBundle := s.makeLegacyValueBundle(oldTopic.Id, 321)
 	prefix.NewStore(store, emissionstypes.NetworkInferencesKey).Set(key, cdc.MustMarshal(&oldBundle))
+	prefix.NewStore(store, emissionstypes.OutlierResistantNetworkInferencesKey).Set(key, cdc.MustMarshal(&oldBundle))
 
 	err := v14.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
@@ -257,6 +258,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	s.Require().Equal("0", gotTopic.UnityTolerance.String())
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
+	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)
 }
 
 func (s *EmissionsV15MigrationTestSuite) makeLegacyValueBundle(topicID uint64, blockHeight int64) emissionstypes.ValueBundle {
