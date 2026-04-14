@@ -6,8 +6,6 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/gogo/protobuf/proto"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -45,11 +43,15 @@ func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 
 	ctx.Logger().Info("MIGRATION V14: starting topic active quantiles migration")
 
-	topicsToChange := make(map[string]emissionstypes.Topic)
+	type kv struct {
+		key   []byte
+		value []byte
+	}
+	updates := make([]kv, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
 		var topic emissionstypes.Topic
-		if err := proto.Unmarshal(iterator.Value(), &topic); err != nil {
+		if err := cdc.Unmarshal(iterator.Value(), &topic); err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
@@ -57,15 +59,16 @@ func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 		topic.ActiveForecasterQuantile = targetActiveTopicQuantile
 		topic.ActiveReputerQuantile = targetActiveTopicQuantile
 
-		topicsToChange[string(iterator.Key())] = topic
-		ctx.Logger().Info("MIGRATION V14: updated topic quantiles in memory", "topicID", topic.Id)
+		updates = append(updates, kv{
+			key:   append([]byte(nil), iterator.Key()...),
+			value: cdc.MustMarshal(&topic),
+		})
 	}
 
-	for key, topic := range topicsToChange {
-		topicStore.Set([]byte(key), cdc.MustMarshal(&topic))
-		ctx.Logger().Info("MIGRATION V14: stored updated topic quantiles", "topicID", topic.Id)
+	for _, u := range updates {
+		topicStore.Set(u.key, u.value)
 	}
 
-	ctx.Logger().Info("MIGRATION V14: topic active quantiles migration completed", "topicsUpdated", len(topicsToChange))
+	ctx.Logger().Info("MIGRATION V14: topic active quantiles migration completed", "topicsUpdated", len(updates))
 	return nil
 }

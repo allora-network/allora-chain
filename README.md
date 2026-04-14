@@ -268,7 +268,7 @@ CERT_DIR=/path/to/certs TLS_PROXY=true bash test/local_testnet_l1.sh
 To run integration tests, execute the following commands:
 
 ```bash
-bash test/local_testnet_l1.sh 
+bash test/local_testnet_l1.sh
 INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 ```
 
