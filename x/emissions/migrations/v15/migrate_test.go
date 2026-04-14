@@ -39,46 +39,46 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 	keeper := s.TopicKeeper()
 
 	topics := []emissionstypes.Topic{
-		{
-			Id:                       1,
-			Creator:                  s.Addrs(0).String(),
-			Metadata:                 "metadata-1",
-			LossMethod:               "mse",
-			EpochLength:              10800,
-			EpochLastEnded:           0,
-			GroundTruthLag:           10800,
-			WorkerSubmissionWindow:   10,
-			PNorm:                    alloraMath.NewDecFromInt64(3),
-			InitialRegret:            alloraMath.MustNewDecFromString("0.0001"),
-			AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-			AllowNegative:            false,
-			Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-			MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-			ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
-			ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
-			ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
-			CNorm:                    alloraMath.MustNewDecFromString("0.75"),
-		},
-		{
-			Id:                       2,
-			Creator:                  s.Addrs(1).String(),
-			Metadata:                 "metadata-2",
-			LossMethod:               "mae",
-			EpochLength:              7200,
-			EpochLastEnded:           5,
-			GroundTruthLag:           3600,
-			WorkerSubmissionWindow:   20,
-			PNorm:                    alloraMath.NewDecFromInt64(4),
-			InitialRegret:            alloraMath.MustNewDecFromString("0.001"),
-			AlphaRegret:              alloraMath.MustNewDecFromString("0.2"),
-			AllowNegative:            true,
-			Epsilon:                  alloraMath.MustNewDecFromString("0.02"),
-			MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
-			ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
-			ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
-			ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
-			CNorm:                    alloraMath.MustNewDecFromString("0.8"),
-		},
+		s.makeLegacyCompatibleTopic(func(topic *emissionstypes.Topic) {
+			topic.Id = 1
+			topic.Creator = s.Addrs(0).String()
+			topic.Metadata = "metadata-1"
+			topic.LossMethod = "mse"
+			topic.EpochLength = 10800
+			topic.EpochLastEnded = 0
+			topic.GroundTruthLag = 10800
+			topic.WorkerSubmissionWindow = 10
+			topic.PNorm = alloraMath.NewDecFromInt64(3)
+			topic.InitialRegret = alloraMath.MustNewDecFromString("0.0001")
+			topic.AlphaRegret = alloraMath.MustNewDecFromString("0.1")
+			topic.AllowNegative = false
+			topic.Epsilon = alloraMath.MustNewDecFromString("0.01")
+			topic.MeritSortitionAlpha = alloraMath.MustNewDecFromString("0.1")
+			topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.CNorm = alloraMath.MustNewDecFromString("0.75")
+		}),
+		s.makeLegacyCompatibleTopic(func(topic *emissionstypes.Topic) {
+			topic.Id = 2
+			topic.Creator = s.Addrs(1).String()
+			topic.Metadata = "metadata-2"
+			topic.LossMethod = "mae"
+			topic.EpochLength = 7200
+			topic.EpochLastEnded = 5
+			topic.GroundTruthLag = 3600
+			topic.WorkerSubmissionWindow = 20
+			topic.PNorm = alloraMath.NewDecFromInt64(4)
+			topic.InitialRegret = alloraMath.MustNewDecFromString("0.001")
+			topic.AlphaRegret = alloraMath.MustNewDecFromString("0.2")
+			topic.AllowNegative = true
+			topic.Epsilon = alloraMath.MustNewDecFromString("0.02")
+			topic.MeritSortitionAlpha = alloraMath.MustNewDecFromString("0.2")
+			topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.CNorm = alloraMath.MustNewDecFromString("0.8")
+		}),
 	}
 
 	for _, topic := range topics {
@@ -124,24 +124,24 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	oldOutlierStore := prefix.NewStore(store, emissionstypes.OutlierResistantNetworkInferencesKey)
 
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	legacyTopic := emissionstypes.Topic{
-		Id:                       1,
-		Creator:                  s.Addrs(0).String(),
-		Metadata:                 "legacy-topic",
-		LossMethod:               "mse",
-		EpochLength:              10800,
-		GroundTruthLag:           10800,
-		WorkerSubmissionWindow:   10,
-		PNorm:                    alloraMath.NewDecFromInt64(3),
-		InitialRegret:            alloraMath.MustNewDecFromString("0.0001"),
-		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
-		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
-		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
-	}
+	legacyTopic := s.makeLegacyCompatibleTopic(func(topic *emissionstypes.Topic) {
+		topic.Id = 1
+		topic.Creator = s.Addrs(0).String()
+		topic.Metadata = "legacy-topic"
+		topic.LossMethod = "mse"
+		topic.EpochLength = 10800
+		topic.GroundTruthLag = 10800
+		topic.WorkerSubmissionWindow = 10
+		topic.PNorm = alloraMath.NewDecFromInt64(3)
+		topic.InitialRegret = alloraMath.MustNewDecFromString("0.0001")
+		topic.AlphaRegret = alloraMath.MustNewDecFromString("0.1")
+		topic.Epsilon = alloraMath.MustNewDecFromString("0.01")
+		topic.MeritSortitionAlpha = alloraMath.MustNewDecFromString("0.1")
+		topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.CNorm = alloraMath.MustNewDecFromString("0.75")
+	})
 	topicStore.Set(sdk.Uint64ToBigEndian(legacyTopic.Id), cdc.MustMarshal(&legacyTopic))
 
 	oldBundle := s.makeLegacyValueBundle(1, 123)
@@ -274,6 +274,19 @@ func (s *EmissionsV15MigrationTestSuite) makeLegacyValueBundle(topicID uint64, b
 			},
 		},
 	}
+}
+
+func (s *EmissionsV15MigrationTestSuite) makeLegacyCompatibleTopic(apply func(*emissionstypes.Topic)) emissionstypes.Topic {
+	topic := s.MockTopic()
+	topic.TopicType = emissionstypes.TopicType_TOPIC_TYPE_UNSPECIFIED
+	topic.OutputArity = emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED
+	topic.RequireUnity = false
+	topic.UnityTolerance = alloraMath.ZeroDec()
+	if apply != nil {
+		apply(&topic)
+	}
+
+	return topic
 }
 
 func (s *EmissionsV15MigrationTestSuite) assertMigratedBundle(
