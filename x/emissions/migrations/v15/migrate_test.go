@@ -114,6 +114,51 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 	}
 }
 
+func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClassificationFields() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+
+	classifTopic := emissionstypes.Topic{
+		Id:                       42,
+		Creator:                  s.Addrs(0).String(),
+		Metadata:                 "classification-topic",
+		LossMethod:               "cross_entropy",
+		EpochLastEnded:           0,
+		EpochLength:              0,
+		GroundTruthLag:           0,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		InitialRegret:            alloraMath.MustNewDecFromString("0.0001"),
+		WorkerSubmissionWindow:   10,
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                emissionstypes.TopicType_TOPIC_TYPE_CLASSIFICATION,
+		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             true,
+		UnityTolerance:           alloraMath.MustNewDecFromString("0.001"),
+	}
+	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
+
+	err := v15.MigrateTopics(s.Ctx(), store, cdc)
+	s.Require().NoError(err)
+
+	gotTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), classifTopic.Id)
+	s.Require().NoError(err)
+
+	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_CLASSIFICATION, gotTopic.TopicType)
+	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, gotTopic.OutputArity)
+	s.Require().True(gotTopic.RequireUnity)
+	s.Require().True(gotTopic.UnityTolerance.Equal(alloraMath.MustNewDecFromString("0.001")))
+}
+
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
