@@ -65,6 +65,12 @@ message Topic {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // Topic-level limit for labels accepted in a single MULTI submission.
+  // Must be <= module params max_labels_per_submission cap.
+  uint64 max_labels_per_submission = 27;
+  // Optional fixed label set for this topic.
+  // Empty means no whitelist filtering.
+  repeated string label_whitelist = 28;
 }
 
 enum TopicType {

@@ -75,6 +75,15 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		OutputArity:              msg.OutputArity,
 		RequireUnity:             msg.RequireUnity,
 		UnityTolerance:           msg.UnityTolerance,
+		MaxLabelsPerSubmission:   msg.MaxLabelsPerSubmission,
+		LabelWhitelist:           msg.LabelWhitelist,
+	}
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		// SINGLE topics always accept exactly one scalar output.
+		topic.MaxLabelsPerSubmission = 1
+	} else if topic.MaxLabelsPerSubmission == 0 {
+		// MULTI topics default to the module cap when not explicitly set.
+		topic.MaxLabelsPerSubmission = params.MaxLabelsPerSubmission
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -129,6 +138,12 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.CNorm = msg.CNorm
 	updatedTopic.RequireUnity = msg.RequireUnity
 	updatedTopic.UnityTolerance = msg.UnityTolerance
+	if msg.MaxLabelsPerSubmission > 0 {
+		updatedTopic.MaxLabelsPerSubmission = msg.MaxLabelsPerSubmission
+	}
+	if msg.LabelWhitelist != nil {
+		updatedTopic.LabelWhitelist = msg.LabelWhitelist
+	}
 
 	updatedTopic, err = ms.k.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {

@@ -182,4 +182,5 @@ message Params {
     (gogoproto.nullable) = false
   ];
   uint64 max_labels_per_submission = 61; // maximum number of labeled values allowed in a single MULTI submission
+  uint64 max_whitelist_label_size = 62; // maximum size of topic label whitelist
 }

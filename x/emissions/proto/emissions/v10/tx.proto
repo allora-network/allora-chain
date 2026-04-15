@@ -267,6 +267,7 @@ message OptionalParams {
     (gogoproto.nullable) = false
   ];
   repeated uint64 max_labels_per_submission = 61;
+  repeated uint64 max_whitelist_label_size = 62;
 }
 
 message UpdateParamsRequest {
@@ -335,6 +336,8 @@ message CreateNewTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  uint64 max_labels_per_submission = 26;
+  repeated string label_whitelist = 27;
 }
 
 message CreateNewTopicResponse {
@@ -371,6 +374,8 @@ message UpdateTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  uint64 max_labels_per_submission = 11;
+  repeated string label_whitelist = 12;
 }
 
 message UpdateTopicResponse {}

@@ -189,6 +189,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MaxLabelsPerSubmission) == 1 {
 		existingParams.MaxLabelsPerSubmission = newParams.MaxLabelsPerSubmission[0]
 	}
+	if len(newParams.MaxWhitelistLabelSize) == 1 {
+		existingParams.MaxWhitelistLabelSize = newParams.MaxWhitelistLabelSize[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err

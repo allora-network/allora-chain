@@ -75,6 +75,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		MaxWhitelistInputArrayLength:        []uint64{10},
 		MinWeightThresholdForStdnorm:        []alloraMath.Dec{alloraMath.MustNewDecFromString("0.000001")},
 		MaxLabelsPerSubmission:              []uint64{7},
+		MaxWhitelistLabelSize:               []uint64{9},
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -143,6 +144,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxWhitelistInputArrayLength[0], updatedParams.MaxWhitelistInputArrayLength)
 	require.Equal(newParams.MinWeightThresholdForStdnorm[0], updatedParams.MinWeightThresholdForStdnorm)
 	require.Equal(newParams.MaxLabelsPerSubmission[0], updatedParams.MaxLabelsPerSubmission)
+	require.Equal(newParams.MaxWhitelistLabelSize[0], updatedParams.MaxWhitelistLabelSize)
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
@@ -189,6 +191,7 @@ func (s *MsgServerTestSuite) TestUpdateParams_LabelLimitOptionalBehavior() {
 		Sender: adminAddr.String(),
 		Params: &types.OptionalParams{ //nolint:exhaustruct // Added nolint because update tests intentionally set only the field being patched.
 			MaxLabelsPerSubmission: []uint64{before.MaxLabelsPerSubmission + 1},
+			MaxWhitelistLabelSize:  []uint64{before.MaxWhitelistLabelSize + 1},
 		},
 	})
 	require.NoError(err)
@@ -196,6 +199,7 @@ func (s *MsgServerTestSuite) TestUpdateParams_LabelLimitOptionalBehavior() {
 	afterEpochOnly, err := k.GetParams(ctx)
 	require.NoError(err)
 	require.Equal(before.MaxLabelsPerSubmission+1, afterEpochOnly.MaxLabelsPerSubmission)
+	require.Equal(before.MaxWhitelistLabelSize+1, afterEpochOnly.MaxWhitelistLabelSize)
 
 	_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
 		Sender: adminAddr.String(),
@@ -206,4 +210,5 @@ func (s *MsgServerTestSuite) TestUpdateParams_LabelLimitOptionalBehavior() {
 	afterNoChange, err := k.GetParams(ctx)
 	require.NoError(err)
 	require.Equal(afterEpochOnly.MaxLabelsPerSubmission, afterNoChange.MaxLabelsPerSubmission)
+	require.Equal(afterEpochOnly.MaxWhitelistLabelSize, afterNoChange.MaxWhitelistLabelSize)
 }

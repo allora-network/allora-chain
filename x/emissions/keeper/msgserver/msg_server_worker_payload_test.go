@@ -1068,8 +1068,13 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_MaxLabelsPerSubmis
 
 	params, err := k.GetParams(s.Ctx())
 	s.Require().NoError(err)
-	params.MaxLabelsPerSubmission = 2
+	params.MaxLabelsPerSubmission = 10
 	s.Require().NoError(k.SetParams(s.Ctx(), params))
+
+	topic, err := k.GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	topic.MaxLabelsPerSubmission = 2
+	s.Require().NoError(k.SetTopic(s.Ctx(), topicId, topic))
 
 	err = k.AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
@@ -1108,6 +1113,67 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_MaxLabelsPerSubmis
 	})
 }
 
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_LabelWhitelistFiltering() {
+	s.SetupTest()
+
+	k := s.EmissionsKeeper()
+	msgServer := s.EmissionsMsgServer()
+	pk := secp256k1.GenPrivKey()
+
+	msg, topicId := s.setUpMsgInsertWorkerPayload(pk)
+	nonce := msg.WorkerDataBundle.Nonce.BlockHeight
+	s.WithBlockHeight(nonce)
+	s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, false, "0")
+
+	topic, err := k.GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	topic.MaxLabelsPerSubmission = 3
+	topic.LabelWhitelist = []string{"a", "b"}
+	s.Require().NoError(k.SetTopic(s.Ctx(), topicId, topic))
+
+	err = k.AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+
+	s.Run("filters_non_whitelisted_labels", func() {
+		msg.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+			{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+			{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("3")},
+			{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+		}
+
+		_, err := msgServer.InsertWorkerPayload(s.Ctx(), &msg)
+		s.Require().NoError(err)
+
+		got, err := k.GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+		s.Require().NoError(err)
+		s.Require().Len(got.Values, 2)
+		s.Require().Equal("1", got.Values[0].String())
+		s.Require().Equal("2", got.Values[1].String())
+	})
+
+	s.Run("rejects_when_all_labels_filtered_out", func() {
+		msg2, _ := s.setUpMsgInsertWorkerPayload(pk)
+		msg2.Sender = msg.Sender
+		msg2.WorkerDataBundle.Worker = msg.WorkerDataBundle.Worker
+		msg2.WorkerDataBundle.TopicId = topicId
+		msg2.WorkerDataBundle.Nonce.BlockHeight = nonce
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = topicId
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer = msg.WorkerDataBundle.Worker
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = topicId
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster = msg.WorkerDataBundle.Worker
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+		msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+			{Label: "x", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+			{Label: "y", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+		}
+
+		_, err := msgServer.InsertWorkerPayload(s.Ctx(), &msg2)
+		s.Require().Error(err)
+		s.Require().ErrorIs(err, types.ErrLabelWhitelistFilteredSubmissionEmpty)
+	})
+}
+
 func (s *MsgServerTestSuite) setTopicArityAndUnity(
 	topicId uint64,
 	outputArity types.TopicOutputArity,
@@ -1123,6 +1189,13 @@ func (s *MsgServerTestSuite) setTopicArityAndUnity(
 	topic.OutputArity = outputArity
 	topic.RequireUnity = requireUnity
 	topic.UnityTolerance = alloraMath.MustNewDecFromString(unityTol)
+	if outputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		params, err := k.GetParams(ctx)
+		s.Require().NoError(err)
+		topic.MaxLabelsPerSubmission = params.MaxLabelsPerSubmission
+	} else {
+		topic.MaxLabelsPerSubmission = 1
+	}
 
 	err = k.SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)

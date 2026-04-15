@@ -67,7 +67,8 @@ func DefaultParams() Params {
 		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
-		MaxLabelsPerSubmission:              uint64(8),                                   // maximum number of labels accepted in a single MULTI worker submission
+		MaxLabelsPerSubmission:              uint64(256),                                 // module-level cap for topic-level max_labels_per_submission
+		MaxWhitelistLabelSize:               uint64(256),                                 // maximum number of labels allowed in a topic-level label whitelist
 	}
 }
 
@@ -228,6 +229,9 @@ func (p Params) Validate() error {
 	}
 	if err := validateMaxLabelsPerSubmission(p.MaxLabelsPerSubmission); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max labels per submission")
+	}
+	if err := validateMaxWhitelistLabelSize(p.MaxWhitelistLabelSize); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max whitelist label size")
 	}
 	return nil
 }
@@ -690,6 +694,15 @@ func validateMinWeightThresholdForStdnorm(i alloraMath.Dec) error {
 // Maximum number of labels accepted in a single MULTI submission.
 // Must be at least 1.
 func validateMaxLabelsPerSubmission(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// Maximum number of labels allowed in a topic-level label whitelist.
+// Must be at least 1.
+func validateMaxWhitelistLabelSize(i uint64) error {
 	if i == 0 {
 		return ErrValidationMustBeGreaterthanZero
 	}

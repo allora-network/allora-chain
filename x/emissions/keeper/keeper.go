@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -3898,6 +3899,7 @@ func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topi
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting params")
 	}
+	topic.LabelWhitelist = canonicalizeTopicLabelWhitelist(topic.LabelWhitelist)
 	if err := topic.Validate(params); err != nil {
 		return errorsmod.Wrap(err, "set topic validation failure")
 	}
@@ -3945,12 +3947,56 @@ func (k *Keeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopi
 			}
 		}
 	}
+	if !equalCanonicalTopicLabelWhitelist(topic.LabelWhitelist, updatedTopic.LabelWhitelist) {
+		isActive, err := k.IsTopicActive(ctx, topic.Id)
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
+		}
+		if isActive {
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			blockHeight := sdkCtx.BlockHeight()
+			nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topic.Id)
+			if err != nil {
+				return types.Topic{}, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
+			}
+			if len(nonces.Nonces) > 0 {
+				lastNonce := nonces.Nonces[0]
+				withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *lastNonce, blockHeight)
+				if err != nil {
+					return types.Topic{}, errorsmod.Wrap(err, "failed to check worker submission window")
+				}
+				if withinWindow {
+					return types.Topic{}, errorsmod.Wrap(
+						types.ErrWorkerNonceWindowNotAvailable,
+						"cannot update label_whitelist while worker window is open",
+					)
+				}
+			}
+		}
+	}
 
 	if err := k.SetTopic(ctx, topic.Id, updatedTopic); err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "failed to apply topic update")
 	}
 
 	return updatedTopic, nil
+}
+
+func canonicalizeTopicLabelWhitelist(labels []string) []string {
+	if labels == nil {
+		return nil
+	}
+	out := make([]string, len(labels))
+	for i, label := range labels {
+		out[i] = strings.TrimSpace(label)
+	}
+	return out
+}
+
+func equalCanonicalTopicLabelWhitelist(a, b []string) bool {
+	ca := canonicalizeTopicLabelWhitelist(a)
+	cb := canonicalizeTopicLabelWhitelist(b)
+	return slices.Equal(ca, cb)
 }
 
 // Returns the number of topics that are active in the network
@@ -5870,14 +5916,39 @@ func (k *Keeper) NormalizeInputInference(
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "error getting params")
 		}
-		if uint64(len(in.Values)) > moduleParams.MaxLabelsPerSubmission {
+		filteredValues := in.Values
+		if len(topic.LabelWhitelist) > 0 {
+			allowedLabels := make(map[string]struct{}, len(topic.LabelWhitelist))
+			for _, allowed := range canonicalizeTopicLabelWhitelist(topic.LabelWhitelist) {
+				allowedLabels[allowed] = struct{}{}
+			}
+			tmp := make([]*types.InputLabeledValue, 0, len(in.Values))
+			for _, lv := range in.Values {
+				if lv == nil {
+					return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "nil labeled value in inference")
+				}
+				if _, ok := allowedLabels[strings.TrimSpace(lv.Label)]; ok {
+					tmp = append(tmp, lv)
+				}
+			}
+			if len(tmp) == 0 {
+				return nil, errorsmod.Wrap(
+					types.ErrLabelWhitelistFilteredSubmissionEmpty,
+					"submission has no labels remaining after topic label whitelist filtering",
+				)
+			}
+			filteredValues = tmp
+		}
+		topicMaxLabels := getEffectiveTopicMaxLabelsPerSubmission(topic, moduleParams)
+		if uint64(len(filteredValues)) > topicMaxLabels {
 			return nil, errorsmod.Wrapf(
 				types.ErrMaxLabelsPerSubmissionExceeded,
 				"labels=%d max=%d",
-				len(in.Values),
-				moduleParams.MaxLabelsPerSubmission,
+				len(filteredValues),
+				topicMaxLabels,
 			)
 		}
+		in.Values = filteredValues
 	default:
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
@@ -5937,4 +6008,14 @@ func (k *Keeper) NormalizeInputInference(
 		ExtraData:   in.ExtraData,
 		Proof:       in.Proof,
 	}, nil
+}
+
+func getEffectiveTopicMaxLabelsPerSubmission(topic types.Topic, moduleParams types.Params) uint64 {
+	if topic.MaxLabelsPerSubmission != 0 {
+		return topic.MaxLabelsPerSubmission
+	}
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		return 1
+	}
+	return moduleParams.MaxLabelsPerSubmission
 }

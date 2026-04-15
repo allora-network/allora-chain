@@ -64,7 +64,8 @@ func TestDefaultParams(t *testing.T) {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
-		MaxLabelsPerSubmission:              uint64(8),
+		MaxLabelsPerSubmission:              uint64(256),
+		MaxWhitelistLabelSize:               uint64(256),
 	}
 
 	params := DefaultParams()
@@ -77,5 +78,9 @@ func TestParamsValidate_LabelLimits(t *testing.T) {
 	require.NoError(t, params.Validate())
 
 	params.MaxLabelsPerSubmission = 0
+	require.Error(t, params.Validate())
+
+	params = DefaultParams()
+	params.MaxWhitelistLabelSize = 0
 	require.Error(t, params.Validate())
 }

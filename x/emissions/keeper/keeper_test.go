@@ -4472,6 +4472,7 @@ func mockUninitializedParams() types.Params {
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
 		MaxLabelsPerSubmission:              uint64(8),
+		MaxWhitelistLabelSize:               uint64(256),
 	}
 }
 
@@ -6303,6 +6304,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 		wantValuesStr []string
 		wantRegLabels []string
+		topicMax      uint64
 	}
 
 	cases := []tc{
@@ -6382,6 +6384,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			},
 			wantValuesStr: []string{"1", "2", "3", "4", "5", "6", "7", "8"},
 			wantRegLabels: []string{"a", "b", "c", "d", "e", "f", "g", "h"},
+			topicMax:      8,
 		},
 		{
 			name:         "MULTI_rejects_submission_over_max_labels_per_submission",
@@ -6405,6 +6408,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			},
 			wantErr:   true,
 			wantErrIs: types.ErrMaxLabelsPerSubmissionExceeded,
+			topicMax:  8,
 		},
 		{
 			name:         "MULTI_registers_labels_and_aligns_dense",
@@ -6535,6 +6539,13 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			topic.OutputArity = c.arity
 			topic.RequireUnity = c.requireUnity
 			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
+			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+				if c.topicMax > 0 {
+					topic.MaxLabelsPerSubmission = c.topicMax
+				} else {
+					topic.MaxLabelsPerSubmission = types.DefaultParams().MaxLabelsPerSubmission
+				}
+			}
 			s.Require().NoError(k.SetTopic(ctx, topicId, topic))
 
 			for _, l := range c.preRegisterLabels {
@@ -6599,6 +6610,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 		topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
 		topic.RequireUnity = false
 		topic.UnityTolerance = alloraMath.ZeroDec()
+		topic.MaxLabelsPerSubmission = types.DefaultParams().MaxLabelsPerSubmission
 		s.Require().NoError(k.SetTopic(ctx, topicId, topic))
 
 		nonce := types.BlockHeight(1)
@@ -6661,6 +6673,9 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		topic.OutputArity = arity
 		topic.RequireUnity = false
 		topic.UnityTolerance = alloraMath.ZeroDec()
+		if arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+			topic.MaxLabelsPerSubmission = types.DefaultParams().MaxLabelsPerSubmission
+		}
 		err = k.SetTopic(ctx, topicId, topic)
 		s.Require().NoError(err)
 	}

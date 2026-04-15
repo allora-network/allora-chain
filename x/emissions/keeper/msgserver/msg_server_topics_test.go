@@ -938,3 +938,83 @@ func (s *MsgServerTestSuite) TestUpdateTopicUnityFields() {
 	require.True(topic.RequireUnity)
 	require.Equal(alloraMath.MustNewDecFromString("0.01"), topic.UnityTolerance)
 }
+
+func (s *MsgServerTestSuite) TestUpdateTopicLabelWhitelistBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.WithBlockHeight(10)
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	create := s.MockTopicMsg()
+	create.Creator = sender
+	create.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	create.MaxLabelsPerSubmission = 4
+	create.LabelWhitelist = []string{"a", "b"}
+	res, err := msgServer.CreateNewTopic(ctx, create)
+	require.NoError(err)
+	topicId := res.TopicId
+	require.NoError(s.EmissionsKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.EmissionsKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	upd := &types.UpdateTopicRequest{
+		Sender: sender, TopicId: topicId,
+		Metadata: "metadata", LossMethod: "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("3.0"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:        false,
+		UnityTolerance:      alloraMath.MustNewDecFromString("0.01"),
+		LabelWhitelist:      []string{"a"},
+	}
+	_, err = msgServer.UpdateTopic(ctx, upd)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+}
+
+func (s *MsgServerTestSuite) TestCreateUpdateTopicLabelPolicyFields() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	senderAddr := s.Addrs(0)
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+
+	create := s.MockTopicMsg()
+	create.Creator = sender
+	create.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	create.MaxLabelsPerSubmission = 5
+	create.LabelWhitelist = []string{"  a ", "b"}
+	res, err := msgServer.CreateNewTopic(ctx, create)
+	require.NoError(err)
+
+	topic, err := s.EmissionsKeeper().GetTopic(ctx, res.TopicId)
+	require.NoError(err)
+	require.Equal(uint64(5), topic.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b"}, topic.LabelWhitelist)
+
+	upd := &types.UpdateTopicRequest{
+		Sender: sender, TopicId: res.TopicId,
+		Metadata: topic.Metadata, LossMethod: topic.LossMethod,
+		AlphaRegret:         topic.AlphaRegret,
+		MeritSortitionAlpha: topic.MeritSortitionAlpha,
+		PNorm:               topic.PNorm,
+		CNorm:               topic.CNorm,
+		RequireUnity:        topic.RequireUnity,
+		UnityTolerance:      topic.UnityTolerance,
+		MaxLabelsPerSubmission: 3,
+		LabelWhitelist:         []string{},
+	}
+	_, err = msgServer.UpdateTopic(ctx, upd)
+	require.NoError(err)
+
+	updated, err := s.EmissionsKeeper().GetTopic(ctx, res.TopicId)
+	require.NoError(err)
+	require.Equal(uint64(3), updated.MaxLabelsPerSubmission)
+	require.Empty(updated.LabelWhitelist)
+}

@@ -719,6 +719,28 @@ func TestTopicValidate(t *testing.T) {
 			},
 			wantErr: false, errContains: "",
 		},
+		{
+			name: "multi topic requires max labels per submission",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				tp.MaxLabelsPerSubmission = 0
+			},
+			wantErr: true, errContains: "max_labels_per_submission",
+		},
+		{
+			name: "topic max labels cannot exceed module cap",
+			mutate: func(tp *Topic, p *Params) {
+				tp.MaxLabelsPerSubmission = p.MaxLabelsPerSubmission + 1
+			},
+			wantErr: true, errContains: "cannot exceed module cap",
+		},
+		{
+			name: "label whitelist rejects duplicates after trim",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.LabelWhitelist = []string{" a ", "a"}
+			},
+			wantErr: true, errContains: "duplicate",
+		},
 	}
 
 	for _, tc := range tests {
@@ -767,6 +789,8 @@ func validTopic(p Params) Topic {
 		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
+		MaxLabelsPerSubmission:   8,
+		LabelWhitelist:           nil,
 	}
 }
 
@@ -776,5 +800,7 @@ func validParams() Params {
 		MaxStringLength:               256,
 		MinEpochLength:                10,
 		MaxUnfulfilledReputerRequests: 5,
+		MaxLabelsPerSubmission:        256,
+		MaxWhitelistLabelSize:         256,
 	}
 }

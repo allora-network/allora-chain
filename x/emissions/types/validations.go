@@ -1,6 +1,9 @@
 package types
 
 import (
+	"fmt"
+	"strings"
+
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -894,6 +897,47 @@ func (topic Topic) Validate(params Params) error {
 	}
 	if topic.TopicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topic.TopicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
+	}
+	if topic.MaxLabelsPerSubmission == 0 && topic.OutputArity == TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic max_labels_per_submission must be greater than zero for MULTI topics")
+	}
+	if topic.MaxLabelsPerSubmission > params.MaxLabelsPerSubmission {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidType,
+			"topic max_labels_per_submission (%d) cannot exceed module cap (%d)",
+			topic.MaxLabelsPerSubmission,
+			params.MaxLabelsPerSubmission,
+		)
+	}
+	if err := validateTopicLabelWhitelist(topic.LabelWhitelist, params); err != nil {
+		return errors.Wrap(err, "topic label whitelist invalid")
+	}
+
+	return nil
+}
+
+func validateTopicLabelWhitelist(labels []string, params Params) error {
+	if uint64(len(labels)) > params.MaxWhitelistLabelSize {
+		return fmt.Errorf(
+			"topic label_whitelist length (%d) cannot exceed module max_whitelist_label_size (%d)",
+			len(labels),
+			params.MaxWhitelistLabelSize,
+		)
+	}
+
+	seen := make(map[string]struct{}, len(labels))
+	for _, label := range labels {
+		trimmed := strings.TrimSpace(label)
+		if trimmed == "" {
+			return fmt.Errorf("label_whitelist entries must be non-empty after trimming")
+		}
+		if uint64(len(trimmed)) > params.MaxStringLength {
+			return fmt.Errorf("label_whitelist entry length exceeds max string length (%d)", params.MaxStringLength)
+		}
+		if _, ok := seen[trimmed]; ok {
+			return fmt.Errorf("label_whitelist contains duplicate label %q", trimmed)
+		}
+		seen[trimmed] = struct{}{}
 	}
 
 	return nil
