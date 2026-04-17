@@ -69,8 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* [#910](https://github.com/allora-network/allora-chain/pull/910) Regret norm to use MAD + adjust quantiles
-* [#919](https://github.com/allora-network/allora-chain/pull/919) Keeper refactor + upgrade testing improvements
+* [#945](https://github.com/allora-network/allora-chain/pull/945) Fix parameter advertising in autocli
 
 ### Deprecated
 
