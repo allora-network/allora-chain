@@ -30,7 +30,7 @@ func TestSimulateKeyring_EmptyUID(t *testing.T) {
 
 	pk, ok := rec.PubKey.GetCachedValue().(cryptotypes.PubKey)
 	require.True(t, ok)
-	require.IsType(t, &secp256k1.PubKey{}, pk)
+	require.IsType(t, &secp256k1.PubKey{}, pk) //nolint:exhaustruct // creating an empty Pubkey for the test check only
 	require.Len(t, pk.Bytes(), secp256k1.PubKeySize)
 }
 

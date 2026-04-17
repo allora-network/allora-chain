@@ -6,7 +6,7 @@ import (
 )
 
 // Compile-time check that simulateKeyring satisfies keyring.Keyring.
-var _ keyring.Keyring = simulateKeyring{}
+var _ keyring.Keyring = simulateKeyring{} //nolint:exhaustruct // creating an empty simulateKeyring is valid
 
 // simulateKeyring wraps a keyring.Keyring to gracefully handle empty key name
 // lookups during transaction simulation.
