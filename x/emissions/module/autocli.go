@@ -1103,7 +1103,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "FundTopic",
-					Use:       "fund-topic [sender] [topic_id] [amount] [extra_data]",
+					Use:       "fund-topic [sender] [topic_id] [amount]",
 					Short:     "send funds to a topic to pay for inferences",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
