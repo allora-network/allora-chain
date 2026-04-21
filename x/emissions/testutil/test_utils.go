@@ -623,29 +623,59 @@ func generateWorkerDataBundles(
 		panic("invalid worker values length")
 	}
 
+	// For MULTI-arity topics, callers populate tv.Values with non-empty
+	// labels and each element is emitted as an InputLabeledValue. For
+	// SINGLE-arity topics, we return nil and let the caller populate
+	// InputInference.Value directly. The legacy pattern of emitting a single
+	// InputLabeledValue with an empty label is no longer accepted by
+	// InputInference.ValidateWithLimits; callers that used to pass one
+	// `{Label:"", Value: v}` entry to mean "scalar v" are transparently
+	// normalized to the scalar path here so that existing SINGLE-topic
+	// tests keep working.
+	allLabelsEmpty := func(vs []TestLabeledValue) bool {
+		for _, v := range vs {
+			if v.Label != "" {
+				return false
+			}
+		}
+		return true
+	}
+
 	toInputLabeledValues := func(tv TestWorkerValue) []*types.InputLabeledValue {
-		if len(tv.Values) > 0 {
-			out := make([]*types.InputLabeledValue, len(tv.Values))
-			for i, v := range tv.Values {
-				out[i] = &types.InputLabeledValue{
-					Label: v.Label,
-					Value: alloraMath.MustNewBoundedExp40DecFromString(v.Value),
+		if len(tv.Values) == 0 {
+			return nil
+		}
+		if allLabelsEmpty(tv.Values) {
+			return nil
+		}
+		out := make([]*types.InputLabeledValue, len(tv.Values))
+		for i, v := range tv.Values {
+			out[i] = &types.InputLabeledValue{
+				Label: v.Label,
+				Value: alloraMath.MustNewBoundedExp40DecFromString(v.Value),
+			}
+		}
+		return out
+	}
+
+	singleScalarValue := func(tv TestWorkerValue) alloraMath.BoundedExp40Dec {
+		inferenceValueStr := tv.Value
+		// Legacy SINGLE callers that stashed a scalar inside
+		// tv.Values[0].Value (with an empty label) still work: pick the
+		// first non-empty Value.
+		if inferenceValueStr == "" && len(tv.Values) > 0 && allLabelsEmpty(tv.Values) {
+			for _, v := range tv.Values {
+				if v.Value != "" {
+					inferenceValueStr = v.Value
+					break
 				}
 			}
-			return out
 		}
-		// backward-compatible SINGLE default
-		inferenceValueStr := tv.Value
 		if inferenceValueStr == "" {
 			//nolint:gosec
 			inferenceValueStr = strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
 		}
-		return []*types.InputLabeledValue{
-			{
-				Label: "",
-				Value: alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr),
-			},
-		}
+		return alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr)
 	}
 
 	getForecastValueStr := func(tv TestWorkerValue) string {
@@ -670,6 +700,10 @@ func generateWorkerDataBundles(
 		}
 
 		inferenceValues := toInputLabeledValues(tv)
+		var inferenceScalar alloraMath.BoundedExp40Dec
+		if inferenceValues == nil {
+			inferenceScalar = singleScalarValue(tv)
+		}
 		forecastValueStr := getForecastValueStr(tv)
 
 		forecastTargets := []int{
@@ -698,6 +732,7 @@ func generateWorkerDataBundles(
 				TopicId:     topicId,
 				BlockHeight: nonce,
 				Inferer:     s.accounts[workerIdx].addrStr,
+				Value:       inferenceScalar,
 				Values:      inferenceValues,
 				ExtraData:   nil,
 				Proof:       "",

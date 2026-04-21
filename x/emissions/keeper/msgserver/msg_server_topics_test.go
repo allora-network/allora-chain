@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	"strings"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -873,4 +874,212 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	current, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("0.3"), current.MeritSortitionAlpha)
+}
+
+// createTopicForWSWTests builds a topic that is active with a worker
+// submission window currently covering the block height set by the caller.
+// Returns the topic id.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) createTopicForWSWTests(sender string) uint64 {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+	senderAddr, err := sdk.AccAddressFromBech32(sender)
+	require.NoError(err)
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	create := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "wsw test",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   4,
+		LabelWhitelist:           []string{"a", "b", "c"},
+	}
+	resp, err := msgServer.CreateNewTopic(ctx, create)
+	require.NoError(err)
+	return resp.TopicId
+}
+
+// TestSetTopicCanonicalizesLabelWhitelist asserts that
+// CreateNewTopic canonicalizes the whitelist in place: trimmed, NFC-normalized,
+// and deduplicated.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.MintTokensToAddress(s.Addrs(0), types.DefaultParams().CreateTopicFee)
+	create := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "canon whitelist",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		// NFD form (e + combining acute), plus whitespace padding; a
+		// canonical duplicate should be rejected with ErrInvalidLabelName.
+		LabelWhitelist: []string{"  foo  ", "e\u0301", "\u00e9"},
+	}
+	_, err := msgServer.CreateNewTopic(ctx, create)
+	require.ErrorIs(err, types.ErrInvalidLabelName, "canonical duplicate must be rejected at SetTopic")
+
+	create.LabelWhitelist = []string{"  foo  ", "e\u0301"}
+	resp, err := msgServer.CreateNewTopic(ctx, create)
+	require.NoError(err)
+	stored, err := s.TopicKeeper().GetTopic(ctx, resp.TopicId)
+	require.NoError(err)
+	require.Equal([]string{"foo", "\u00e9"}, stored.LabelWhitelist,
+		"whitelist must be persisted in canonical (NFC+trimmed) form")
+}
+
+// TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen asserts the generalized
+// WSW lock now also guards max_labels_per_submission mutations.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: 8, // changed -> must be rejected
+		LabelWhitelist:         []string{"a", "b", "c"},
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission,
+		"MaxLabelsPerSubmission must not have changed while WSW was open")
+}
+
+// TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen asserts the generalized
+// WSW lock now also guards label_whitelist mutations.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"a", "b"}, // changed: dropped "c"
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist,
+		"LabelWhitelist must not have changed while WSW was open")
+}
+
+// TestUpdateTopicWhitelistAllowedAfterWSWClosed confirms the WSW lock is
+// time-bounded: once the submission window has closed for the outstanding
+// nonce, whitelist/cap mutations are accepted again (and the whitelist is
+// canonicalized by SetTopic on its way in).
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	// 5 + 10 = 15, so block 16 is strictly past the window.
+	s.WithBlockHeight(16)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         []string{"  a  ", "e\u0301"},
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(8), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "\u00e9"}, got.LabelWhitelist,
+		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
 }

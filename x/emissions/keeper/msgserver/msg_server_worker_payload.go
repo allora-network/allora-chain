@@ -13,6 +13,23 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// effectiveMaxLabelsPerSubmission returns the effective per-submission label
+// cap for a topic: min(params.MaxLabelsPerSubmission, topic.cap_if_nonzero).
+// A zero topic cap means "inherit the module-level cap", which matches how
+// other optional topic fields work on the chain.
+func effectiveMaxLabelsPerSubmission(paramsCap, topicCap uint64) uint64 {
+	switch {
+	case topicCap == 0:
+		return paramsCap
+	case paramsCap == 0:
+		return topicCap
+	case topicCap < paramsCap:
+		return topicCap
+	default:
+		return paramsCap
+	}
+}
+
 // InsertWorkerPayload accepts an individual inference and forecast and possibly returns an error.
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields.
 // Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
@@ -88,7 +105,19 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, err
 	}
 
-	normalized, err := ms.wk.NormalizeWorkerDataBundle(topic, msg.WorkerDataBundle)
+	// Pre-validate the raw input inference with the effective per-topic cap
+	// and whitelist. ValidateWithLimits canonicalizes labels in place on the
+	// inbound InputInference; subsequent Normalize + AppendInference +
+	// SetWorkerLatestInputInference see canonical forms only.
+	if rawInput := msg.WorkerDataBundle.GetInferenceForecastsBundle().GetInference(); rawInput != nil {
+		effectiveCap := effectiveMaxLabelsPerSubmission(moduleParams.MaxLabelsPerSubmission, topic.MaxLabelsPerSubmission)
+		whitelist := types.CanonicalLabelSet(topic.LabelWhitelist)
+		if err := rawInput.ValidateWithLimits(effectiveCap, whitelist); err != nil {
+			return nil, errorsmod.Wrapf(err, "input inference failed label validation")
+		}
+	}
+
+	wdb, err := ms.wk.NewWorkerDataBundleFromInput(ctx, topic, nonce.BlockHeight, msg.WorkerDataBundle)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Worker bad data format for block: %d", blockHeight)
 	}
@@ -104,9 +133,24 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 				"inferer not using the same topic as bundle")
 		}
 
-		err = ms.wk.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
+		// AppendInference admits/rejects based on EMA scoring using the
+		// (already canonicalized) raw input inference. On success we stage
+		// the raw submission + bump the per-label refcount.
+		rawInput := msg.WorkerDataBundle.InferenceForecastsBundle.GetInference()
+		err = ms.wk.AppendInference(sdkCtx, topic, nonce.BlockHeight, rawInput, moduleParams.MaxTopInferersToReward)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "Error appending inference")
+		}
+
+		// Persist raw submission AFTER AppendInference so an admission failure
+		// cannot leave a ghost entry. Then bump the per-label refcount,
+		// which reads the just-staged InputInference. The order matters:
+		// Set-then-Increment keeps the refcount in lock-step with the store.
+		if err := ms.wk.SetWorkerLatestInputInference(ctx, topic.Id, rawInput.Inferer, *rawInput); err != nil {
+			return nil, errorsmod.Wrap(err, "Error staging worker input inference")
+		}
+		if err := ms.wk.IncrementStagedLabelRefCount(ctx, topic, nonce.BlockHeight, rawInput.Inferer); err != nil {
+			return nil, errorsmod.Wrap(err, "Error incrementing active inferer label refcount")
 		}
 
 		types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)

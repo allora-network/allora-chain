@@ -75,6 +75,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		OutputArity:              msg.OutputArity,
 		RequireUnity:             msg.RequireUnity,
 		UnityTolerance:           msg.UnityTolerance,
+		// Label registry v2 fields. Canonicalization of LabelWhitelist is
+		// applied by SetTopic; zero MaxLabelsPerSubmission means "fall back
+		// to Params.MaxLabelsPerSubmission" at worker-payload submission.
+		MaxLabelsPerSubmission: msg.MaxLabelsPerSubmission,
+		LabelWhitelist:         msg.LabelWhitelist,
 	}
 	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {
@@ -130,6 +135,13 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
+	// Label registry v2: always apply the requested value for
+	// max_labels_per_submission and label_whitelist. The keeper's UpdateTopic
+	// rejects mutations that change these fields while any worker submission
+	// window for the topic is open and canonicalizes the whitelist so the
+	// persisted form is exact byte-equality with submitted labels.
+	updatedTopic.MaxLabelsPerSubmission = msg.MaxLabelsPerSubmission
+	updatedTopic.LabelWhitelist = msg.LabelWhitelist
 
 	updatedTopic, err = ms.tk.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {

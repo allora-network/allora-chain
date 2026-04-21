@@ -1102,3 +1102,100 @@ func validParams() Params {
 		MaxUnfulfilledReputerRequests: 5,
 	}
 }
+
+// baseValidInput returns a minimal InputInference whose basic fields pass
+// InputInference.Validate(); each sub-test overrides Values as needed.
+//
+//nolint:exhaustruct
+func baseValidInput(t *testing.T) *InputInference {
+	t.Helper()
+	return &InputInference{
+		TopicId:     1,
+		BlockHeight: 100,
+		Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+	}
+}
+
+// TestInputInference_ValidateWithLimits_EffectiveCap covers the cap
+// enforcement: exactly cap labels ok, one over cap rejected, zero cap
+// rejected defensively.
+func TestInputInference_ValidateWithLimits_EffectiveCap(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "a", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "b", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.NoError(t, in.ValidateWithLimits(2, nil))
+	require.Error(t, in.ValidateWithLimits(1, nil))
+	require.Error(t, in.ValidateWithLimits(0, nil))
+}
+
+// TestInputInference_ValidateWithLimits_CanonicalizesAndDedupes covers the
+// canonicalization of label names and the post-canon dedupe check, plus
+// ensures the canonical form is written back to the input slice in place.
+func TestInputInference_ValidateWithLimits_CanonicalizesAndDedupes(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "  y  ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, in.ValidateWithLimits(4, nil))
+	require.Equal(t, "y", in.Values[0].Label, "label should be canonicalized in place")
+
+	// NFD e-acute and NFC e-acute canonicalize to the same form → duplicate.
+	dup := baseValidInput(t)
+	dup.Values = []*InputLabeledValue{
+		{Label: "e\u0301", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "\u00e9", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.Error(t, dup.ValidateWithLimits(4, nil))
+}
+
+// TestInputInference_ValidateWithLimits_Whitelist covers the whitelist
+// check: nil whitelist means unrestricted; a non-nil whitelist requires
+// membership post-canonicalization; and a canonical whitelist entry matches
+// a non-canonical input.
+func TestInputInference_ValidateWithLimits_Whitelist(t *testing.T) {
+	okWhitelist := map[string]struct{}{"y": {}, "n": {}}
+
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "y", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, in.ValidateWithLimits(4, nil), "nil whitelist is unrestricted")
+	require.NoError(t, in.ValidateWithLimits(4, okWhitelist))
+
+	bad := baseValidInput(t)
+	bad.Values = []*InputLabeledValue{
+		{Label: "other", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, bad.ValidateWithLimits(4, okWhitelist))
+
+	// Whitelist canonical form matches a whitespace-wrapped submission.
+	wrap := baseValidInput(t)
+	wrap.Values = []*InputLabeledValue{
+		{Label: "  y  ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, wrap.ValidateWithLimits(4, okWhitelist))
+}
+
+// TestInputInference_ValidateWithLimits_RejectsInvalidLabel covers each of
+// the canonicalizer's rejection paths when called through
+// ValidateWithLimits, including nil LabeledValue entries.
+func TestInputInference_ValidateWithLimits_RejectsInvalidLabel(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "   ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in.ValidateWithLimits(4, nil))
+
+	in2 := baseValidInput(t)
+	in2.Values = []*InputLabeledValue{
+		{Label: "fo\u200bo", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in2.ValidateWithLimits(4, nil))
+
+	in3 := baseValidInput(t)
+	in3.Values = []*InputLabeledValue{nil}
+	require.Error(t, in3.ValidateWithLimits(4, nil))
+}

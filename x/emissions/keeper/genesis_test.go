@@ -844,3 +844,60 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 		})
 	}
 }
+
+// TestGenesisLabelRegistryV2RoundTrip covers the round-trip of the two new
+// v2 stores (workerLatestInputInferences and activeInfererLabelRefCount)
+// through ExportGenesis -> InitGenesis on a fresh suite.
+//
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestGenesisLabelRegistryV2RoundTrip() {
+	ctx := s.Ctx()
+	topicId := uint64(1)
+	nonceHeight := int64(42)
+	inferer := s.AddrsStr(0)
+
+	input := types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: nonceHeight,
+		Inferer:     inferer,
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("0.5")},
+			{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("0.3")},
+		},
+		ExtraData: []byte("gdata"),
+	}
+	s.Require().NoError(
+		s.WorkerKeeper().SetWorkerLatestInputInference(ctx, topicId, inferer, input),
+	)
+	s.Require().NoError(
+		s.TopicKeeper().IncrementLabelRefCount(ctx, topicId, nonceHeight, []string{"a", "b"}),
+	)
+
+	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(exported.WorkerLatestInputInferences, 1,
+		"exported genesis should include the staged input inference")
+	s.Require().Len(exported.ActiveInfererLabelRefcount, 2,
+		"exported genesis should include both refcount entries")
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported))
+
+	got, err := fresh.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(fresh.Ctx(), topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, got.TopicId)
+	s.Require().Equal(inferer, got.Inferer)
+	s.Require().Equal(nonceHeight, got.BlockHeight)
+	s.Require().Len(got.Values, 2)
+	s.Require().Equal("a", got.Values[0].Label)
+	s.Require().Equal("b", got.Values[1].Label)
+	s.Require().Equal([]byte("gdata"), got.ExtraData)
+
+	// Refcounts must round-trip with identical values (1 each).
+	countA, err := fresh.TopicKeeper().GetLabelRefCount(fresh.Ctx(), topicId, nonceHeight, "a")
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(1), countA)
+	countB, err := fresh.TopicKeeper().GetLabelRefCount(fresh.Ctx(), topicId, nonceHeight, "b")
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(1), countB)
+}

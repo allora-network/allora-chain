@@ -60,53 +60,51 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
-	// MULTI: ensure epoch label registry exists for this nonce (and has labels)
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "a")
-	s.Require().NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "b")
-	s.Require().NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "c")
-	s.Require().NoError(err)
-
-	reg, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce.BlockHeight)
-	s.Require().NoError(err)
-	s.Require().NotEmpty(reg.GetLabels())
-
-	// Create and insert inferences (Values length must match registry length)
-	inf0 := types.Inference{
+	// v2: stage raw InputInference per worker and bump the label refcount,
+	// instead of pre-registering the EpochLabelRegistry and persisting
+	// pre-aligned Inferences. The registry is materialized at CloseWorkerNonce
+	// time from activeInfererLabelRefCount.
+	labels := []string{"a", "b", "c"}
+	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
+		return alloraMath.MustNewBoundedExp40DecFromString(x)
+	}
+	input0 := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Inferer:     worker0,
 		ExtraData:   nil,
 		Proof:       "",
-		Values: []alloraMath.Dec{
-			alloraMath.MustNewDecFromString("-0.035995138925040600"),
-			alloraMath.MustNewDecFromString("0.100000000000000000"),
-			alloraMath.MustNewDecFromString("0.200000000000000000"),
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("-0.035995138925040600")},
+			{Label: "b", Value: mustBounded("0.100000000000000000")},
+			{Label: "c", Value: mustBounded("0.200000000000000000")},
 		},
 	}
-	inf1 := types.Inference{
+	input1 := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Inferer:     worker1,
 		ExtraData:   nil,
 		Proof:       "",
-		Values: []alloraMath.Dec{
-			alloraMath.MustNewDecFromString("-0.07333303938740420"),
-			alloraMath.MustNewDecFromString("0.110000000000000000"),
-			alloraMath.MustNewDecFromString("0.210000000000000000"),
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("-0.07333303938740420")},
+			{Label: "b", Value: mustBounded("0.110000000000000000")},
+			{Label: "c", Value: mustBounded("0.210000000000000000")},
 		},
 	}
 
-	s.Require().Equal(len(reg.GetLabels()), len(inf0.Values))
-	s.Require().Equal(len(reg.GetLabels()), len(inf1.Values))
-
-	err = s.WorkerKeeper().InsertInference(s.Ctx(), topicId, inf0)
+	err = s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker0, input0)
 	s.Require().NoError(err)
-	err = s.WorkerKeeper().InsertInference(s.Ctx(), topicId, inf1)
+	err = s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker1, input1)
 	s.Require().NoError(err)
 
-	// Artificially add the workers as active inferers
+	err = s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, nonce.BlockHeight, labels)
+	s.Require().NoError(err)
+	err = s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, nonce.BlockHeight, labels)
+	s.Require().NoError(err)
+
 	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0)
 	s.Require().NoError(err)
 	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1)

@@ -983,6 +983,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "enable_reputer_whitelist"},
 						{ProtoField: "c_norm"},
 					},
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"max_labels_per_submission": {
+							Name:  "max-labels-per-submission",
+							Usage: "Per-topic cap on the number of canonical labels per worker submission. Zero means use params.MaxLabelsPerSubmission.",
+						},
+						"label_whitelist": {
+							Name:  "label-whitelist",
+							Usage: "Per-topic canonical label allowlist. Empty means unrestricted. Stored canonicalized.",
+						},
+					},
 				},
 				{
 					RpcMethod: "UpdateTopic",
@@ -997,6 +1007,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "merit_sortition_alpha"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "c_norm"},
+					},
+					FlagOptions: map[string]*autocliv1.FlagOptions{
+						"max_labels_per_submission": {
+							Name:  "max-labels-per-submission",
+							Usage: "Per-topic cap on labels per worker submission. Rejected while any worker submission window is open.",
+						},
+						"label_whitelist": {
+							Name:  "label-whitelist",
+							Usage: "Per-topic canonical label allowlist. Empty clears the whitelist. Rejected while any worker submission window is open.",
+						},
 					},
 				},
 				{

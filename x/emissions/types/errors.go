@@ -98,4 +98,22 @@ var (
 	ErrTopicAlreadyActive                        = errors.Register(ModuleName, 93, "topic already active")
 	ErrTopicCannotBeActivated                    = errors.Register(ModuleName, 94, "topic cannot be activated")
 	ErrInvalidLabelName                          = errors.Register(ModuleName, 95, "invalid label name")
+	// Epoch label registry v2 errors (codes 96-99).
+	// ErrEpochLabelRegistryFrozen is raised when an external caller tries to
+	// mutate the EpochLabelRegistry directly during an open worker submission
+	// window. Only the close-time materializer is permitted to write it.
+	ErrEpochLabelRegistryFrozen = errors.Register(ModuleName, 96, "epoch label registry is frozen: only CloseWorkerNonce may register labels")
+	// ErrLabelNotInWhitelist is raised when a worker submits a label that is
+	// not in the topic's label_whitelist (post-canonicalization). Returned as
+	// part of InputInference.ValidateWithLimits.
+	ErrLabelNotInWhitelist = errors.Register(ModuleName, 97, "label is not in the topic's label whitelist")
+	// ErrTooManyLabelsPerSubmission is raised when a worker submits more
+	// labels than the effective cap = min(params.MaxLabelsPerSubmission,
+	// topic.MaxLabelsPerSubmission_if_nonzero).
+	ErrTooManyLabelsPerSubmission = errors.Register(ModuleName, 98, "too many labels in one submission (exceeds effective cap)")
+	// ErrEpochLabelRegistryEmpty is raised at CloseWorkerNonce when the
+	// active set produced zero surviving labels for a MULTI-output topic.
+	// This normally indicates no qualifying inferers and is accompanied by
+	// the usual empty-active-set handling upstream.
+	ErrEpochLabelRegistryEmpty = errors.Register(ModuleName, 99, "epoch label registry is empty: no active inferers contributed labels")
 )

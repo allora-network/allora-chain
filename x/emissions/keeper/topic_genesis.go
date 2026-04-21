@@ -193,14 +193,32 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 		}
 	}
 
-	// topicLabelRegistry []EpochLabelRegistry
-	for _, registry := range data.EpochLabelRegistries {
-		if registry != nil {
-			// nolint:gosec
-			key := collections.Join(registry.TopicId, BlockHeight(registry.EpochId))
-			if err := k.topicLabelRegistry.Set(ctx, key, *registry); err != nil {
-				return errors.Wrap(err, "error setting topicLabelRegistry")
-			}
+	// ActiveInfererLabelRefCount []*TopicIdBlockHeightLabelRefCount
+	//
+	// Per-(topicId, nonce, canonical label) refcount of active inferers
+	// using a given label inside an open worker submission window. Only
+	// relevant mid-WSW; a well-formed post-close genesis export has this
+	// list empty.
+	for _, row := range data.ActiveInfererLabelRefcount {
+		if row == nil {
+			continue
+		}
+		if err := types.ValidateTopicId(row.TopicId); err != nil {
+			return errors.Wrap(err, "active_inferer_label_refcount: topic id invalid")
+		}
+		if err := types.ValidateBlockHeight(row.BlockHeight); err != nil {
+			return errors.Wrap(err, "active_inferer_label_refcount: block height invalid")
+		}
+		if row.Label == "" {
+			return errors.Wrap(types.ErrInvalidLabelName, "active_inferer_label_refcount: label cannot be empty")
+		}
+		if row.Count == 0 {
+			return errors.Wrap(types.ErrInvalidValue, "active_inferer_label_refcount: count must be > 0")
+		}
+		if err := k.activeInfererLabelRefCount.Set(ctx,
+			collections.Join3(row.TopicId, row.BlockHeight, row.Label),
+			row.Count); err != nil {
+			return errors.Wrap(err, "error setting active_inferer_label_refcount")
 		}
 	}
 
@@ -483,24 +501,25 @@ func (k *TopicKeeper) ExportGenesis(ctx context.Context, data *types.GenesisStat
 	}
 	data.MadInferences = madInferences
 
-	// labelRegistries
-	labelRegistries := make([]*types.EpochLabelRegistry, 0)
-	labelRegistriesIter, err := k.topicLabelRegistry.Iterate(ctx, nil)
+	// activeInfererLabelRefCount (Epoch Label Registry v2)
+	refCounts := make([]*types.TopicIdBlockHeightLabelRefCount, 0)
+	refCountsIter, err := k.activeInfererLabelRefCount.Iterate(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to iterate topic label registries")
+		return errors.Wrap(err, "failed to iterate active_inferer_label_refcount")
 	}
-	for ; labelRegistriesIter.Valid(); labelRegistriesIter.Next() {
-		keyValue, err := labelRegistriesIter.KeyValue()
+	for ; refCountsIter.Valid(); refCountsIter.Next() {
+		keyValue, err := refCountsIter.KeyValue()
 		if err != nil {
-			return errors.Wrap(err, "failed to get key value: LabelRegistriesIter")
+			return errors.Wrap(err, "failed to get key value: refCountsIter")
 		}
-		labelRegistries = append(labelRegistries, &types.EpochLabelRegistry{
-			TopicId: keyValue.Key.K1(),
-			EpochId: uint64(keyValue.Key.K2()),
-			Labels:  keyValue.Value.GetLabels(),
+		refCounts = append(refCounts, &types.TopicIdBlockHeightLabelRefCount{
+			TopicId:     keyValue.Key.K1(),
+			BlockHeight: keyValue.Key.K2(),
+			Label:       keyValue.Key.K3(),
+			Count:       keyValue.Value,
 		})
 	}
-	data.EpochLabelRegistries = labelRegistries
+	data.ActiveInfererLabelRefcount = refCounts
 
 	return nil
 }

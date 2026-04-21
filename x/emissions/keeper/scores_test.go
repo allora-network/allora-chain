@@ -620,7 +620,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	s.Require().NoError(err)
 
 	// Append the inference
-	err = s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, inference, 4)
+	err = s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, toInputInference(inference), 4)
 	s.Require().NoError(err)
 
 	// Verify the worker received the initial EMA score
@@ -773,7 +773,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 
 	// Submit inference - should not trigger EMA update using quantile since it's first submission
 	// and score is lower than active set
-	err = s.WorkerKeeper().AppendInference(ctx, topic, 2, inference, params.MaxTopInferersToReward)
+	err = s.WorkerKeeper().AppendInference(ctx, topic, 2, toInputInference(inference), params.MaxTopInferersToReward)
 	s.Require().NoError(err)
 
 	// Verify score remains at initial value
@@ -822,7 +822,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	s.Require().NoError(err)
 
 	// Append the inference
-	err = s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, inference, 4)
+	err = s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, toInputInference(inference), 4)
 	s.Require().NoError(err)
 
 	// Verify the worker's EMA score trended toward the topic initial score especially when there is a lapse in their
