@@ -234,6 +234,8 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 
 	types.EmitNewTopicUpdatedEvent(ctx, topic)

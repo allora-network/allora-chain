@@ -144,6 +144,8 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		RequireUnity:             true,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.001"),
+		MaxLabelsPerSubmission:   8,
+		LabelWhitelist:           nil,
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
 

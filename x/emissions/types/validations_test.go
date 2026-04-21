@@ -767,6 +767,8 @@ func validTopic(p Params) Topic {
 		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
+		MaxLabelsPerSubmission:   8,
+		LabelWhitelist:           nil,
 	}
 }
 

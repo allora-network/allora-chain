@@ -287,6 +287,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -299,16 +301,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Updated metadata",
-		LossMethod:          "mae",
-		AlphaRegret:         alloraMath.NewDecFromInt64(1),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.NewDecFromInt64(3),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -358,6 +362,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -366,16 +372,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              otherUser,
-		TopicId:             topicId,
-		Metadata:            "Updated metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.NewDecFromInt64(1),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.NewDecFromInt64(3),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 otherUser,
+		TopicId:                topicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -391,16 +399,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             nonexistentTopicId,
-		Metadata:            "Updated metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                nonexistentTopicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -418,16 +428,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "valid metadata",
-		LossMethod:          "",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "valid metadata",
+		LossMethod:             "",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -436,16 +448,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long loss method
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "valid metadata",
-		LossMethod:          strings.Repeat("a", 257),
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "valid metadata",
+		LossMethod:             strings.Repeat("a", 257),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -454,16 +468,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            strings.Repeat("a", 257),
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               strings.Repeat("a", 257),
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -505,6 +521,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -519,16 +537,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Test successful update
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "updated metadata",
-		LossMethod:          "mae",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "updated metadata",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -576,22 +596,26 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
 	topicId := createResult.TopicId
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -605,16 +629,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm with valid values
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("50.5"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("50.5"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -625,16 +651,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value -100
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("-100"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("-100"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -645,16 +673,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value 100
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("100"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("100"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -669,16 +699,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	s.WithBlockHeight(50)
 	ctx = s.Ctx()
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.4"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("100"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.4"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("100"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -693,80 +725,90 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid alpha_regret (<=0)
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.ZeroDec(),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.ZeroDec(),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "alpha regret")
 
 	// Invalid merit_sortition_alpha (>1)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("1.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("1.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "merit sortition alpha")
 
 	// Invalid p_norm (below range)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("2.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("2.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "p-norm")
 
 	// Invalid c_norm (below -100)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("-101"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("-101"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
 
 	// Invalid c_norm (above 100)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("101"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("101"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -803,6 +845,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -818,16 +862,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -869,6 +915,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -881,16 +929,18 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-		RequireUnity:        false,
-		UnityTolerance:      alloraMath.Dec{},
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)

@@ -162,6 +162,8 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -217,6 +219,8 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
@@ -359,6 +363,8 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
