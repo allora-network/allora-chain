@@ -243,7 +243,18 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 	return addresses, weights
 }
 
-// Returns a map of active inferer addresses to their latest inference and the inferences themselves
+// closeActiveInferencesSet materializes the EpochLabelRegistry from the
+// activeInfererLabelRefCount store, then projects each worker's raw
+// InputInference (staged in workerLatestInputInferences during the WSW) into
+// a committed types.Inference aligned to that registry.
+//
+// This is where the v2 classification design transitions from label names to
+// label ids: before CloseWorkerNonce we only tracked names (refcounts),
+// after this call every downstream consumer sees a dense Values slice.
+//
+// Returns (inferer address set, materialized inferences) and also emits
+// EventEpochLabelRegistryFrozen so offchain indexers can reconstruct the
+// registry without reaching into state.
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
@@ -253,7 +264,16 @@ func closeActiveInferencesSet(
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	inferences, err = k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce.BlockHeight, activeInfererAddresses)
+	registry, err := k.GetTopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce.BlockHeight)
+	if err != nil {
+		return nil, nil, errorsmod.Wrapf(err, "failed to build final epoch label registry for topic %d nonce %d", topic.Id, nonce.BlockHeight)
+	}
+
+	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, registry)
+
+	inferences, err = k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
+		ctx, topic, nonce.BlockHeight, activeInfererAddresses, registry,
+	)
 	if err != nil {
 		return nil, nil, err
 	}

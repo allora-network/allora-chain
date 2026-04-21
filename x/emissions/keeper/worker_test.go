@@ -17,6 +17,30 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// toInputInference is a test helper that adapts a legacy scalar *Inference
+// (still used by many older tests that predate Epoch Label Registry v2) to
+// the *InputInference signature AppendInference now takes. Callers that need
+// multi-label or boundary-tested payloads should build InputInference
+// literally instead.
+func toInputInference(inf *types.Inference) *types.InputInference {
+	if inf == nil {
+		return nil
+	}
+	var v alloraMath.BoundedExp40Dec
+	if len(inf.Values) > 0 {
+		v = alloraMath.MustNewBoundedExp40Dec(inf.Values[0])
+	}
+	return &types.InputInference{
+		TopicId:     inf.TopicId,
+		BlockHeight: inf.BlockHeight,
+		Inferer:     inf.Inferer,
+		Value:       v,
+		Values:      nil,
+		ExtraData:   inf.ExtraData,
+		Proof:       inf.Proof,
+	}
+}
+
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
@@ -156,6 +180,11 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
+// TestGetWorkerLatestInferenceByTopicId exercises the v2 shim: reads now come
+// from workerLatestInputInferences (populated by SetWorkerLatestInputInference),
+// not the legacy per-worker inferences store. The shim projects an
+// InputInference into a best-effort committed Inference so existing callers
+// keep compiling.
 func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
@@ -167,32 +196,41 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	s.Require().Error(err, "Retrieving an inference that does not exist should result in an error")
 
 	blockHeight1 := int64(12345)
-	newInference1 := types.Inference{
+	firstInput := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     workerAccStr,
-		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("10"),
+		Values:      nil,
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	err = k.InsertInference(ctx, topicId, newInference1)
-	s.Require().NoError(err, "Inserting inferences should not fail")
+	err = k.SetWorkerLatestInputInference(ctx, topicId, workerAccStr, firstInput)
+	s.Require().NoError(err, "Staging the first input inference should not fail")
 
 	blockHeight2 := int64(12346)
-	newInference2 := types.Inference{
+	secondInput := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     workerAccStr,
-		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("10"),
+		Values:      nil,
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	err = k.InsertInference(ctx, topicId, newInference2)
-	s.Require().NoError(err, "Inserting inferences should not fail")
+	err = k.SetWorkerLatestInputInference(ctx, topicId, workerAccStr, secondInput)
+	s.Require().NoError(err, "Overwriting the staged input inference should not fail")
 
 	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
 	s.Require().NoError(err, "Retrieving an existing inference should not fail")
-	s.Require().Equal(newInference2, retrievedInference, "Retrieved inference should match the inserted one")
+	s.Require().Equal(types.Inference{
+		TopicId:     topicId,
+		BlockHeight: blockHeight2,
+		Inferer:     workerAccStr,
+		Values:      []alloraMath.Dec{secondInput.Value.ToDec()},
+		ExtraData:   []byte("data"),
+		Proof:       "proof123",
+	}, retrievedInference, "Retrieved inference should match the latest staged input")
 }
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
@@ -381,7 +419,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		},
 	}
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 	}
 
@@ -394,7 +432,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference, params.MaxTopInferersToReward)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference), params.MaxTopInferersToReward)
 	s.Require().NoError(err)
 	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -410,7 +448,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		Proof:       "",
 	}
 
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference2), params.MaxTopInferersToReward)
 	s.Require().NoError(err)
 	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -461,7 +499,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference2), params.MaxTopInferersToReward)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
 	// Confirm no change in EMA score
 	updateAttemptForWorker2, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, worker2)
@@ -532,7 +570,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 
 	allInferences := types.Inferences{Inferences: inferences}
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 	}
 
@@ -573,7 +611,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	allInferences = types.Inferences{Inferences: inferences}
 	nonce.BlockHeight++
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 	}
 
@@ -643,6 +681,7 @@ func mockUninitializedParams() types.Params {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		MaxLabelsPerSubmission:              types.DefaultMaxLabelsPerSubmission,
 	}
 }
 
@@ -904,38 +943,43 @@ func (s *KeeperTestSuite) TestRemoveForecast() {
 	s.Require().Error(err) // Expect an error since the forecast should be removed
 }
 
+// TestRemoveInference verifies that RemoveInference scrubs the worker's raw
+// staged InputInference from the workerLatestInputInferences store, not the
+// legacy deprecated inferences store. The compatibility shim on
+// GetWorkerLatestInferenceByTopicId projects that raw row, so reading it back
+// after removal must error.
 func (s *KeeperTestSuite) TestRemoveInference() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
 	topicId := s.CreateTopic()
 	inferer := s.AddrsStr(0)
 
-	// Create an inference
-	inference := types.Inference{
+	input := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: 100,
-		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 		Inferer:     inferer,
+		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(1)),
+		Values:      nil,
 		ExtraData:   []byte("data"),
 		Proof:       "",
 	}
 
-	// Insert the inference
-	err := k.InsertInference(ctx, topicId, inference)
+	err := k.SetWorkerLatestInputInference(ctx, topicId, inferer, input)
 	s.Require().NoError(err)
 
-	// Verify the inference was added
 	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
 	s.Require().NoError(err)
-	s.Require().Equal(inference, retrievedInference)
+	s.Require().Equal(topicId, retrievedInference.TopicId)
+	s.Require().Equal(int64(100), retrievedInference.BlockHeight)
+	s.Require().Equal(inferer, retrievedInference.Inferer)
+	s.Require().Equal(1, len(retrievedInference.Values))
+	s.Require().Equal("1", retrievedInference.Values[0].String())
 
-	// Remove the inference
-	err = k.RemoveInference(ctx, topicId, inferer)
+	err = k.RemoveWorkerLatestInputInference(ctx, topicId, inferer)
 	s.Require().NoError(err)
 
-	// Verify the inference was removed
 	_, err = k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
-	s.Require().Error(err) // Expect an error since the inference should be removed
+	s.Require().Error(err)
 }
 
 func (s *KeeperTestSuite) TestNewInferenceForecastBundleFromInput() {
@@ -998,152 +1042,91 @@ func (s *KeeperTestSuite) TestNewInferenceForecastBundleFromInput() {
 	}
 }
 
+// TestNormalizeInputInference covers the v2 contract for
+// NormalizeInputInference: callers MUST have already canonicalized labels
+// (via InputInference.ValidateWithLimits); Normalize is only responsible for
+// (a) SINGLE-arity scalar/labeled selection, (b) MULTI-arity alphabetical
+// sorting, and (c) RequireUnity enforcement. It no longer registers labels
+// or pads against a pre-existing registry - that happens at close time via
+// BuildFinalEpochLabelRegistryFromActiveSet.
+//
 //nolint:exhaustruct
 func (s *KeeperTestSuite) TestNormalizeInputInference() {
+	type labeledInput struct {
+		label string
+		value string
+	}
 	type tc struct {
 		name         string
 		arity        types.TopicOutputArity
 		requireUnity bool
 		unityTol     string
-
-		nonce int64
-
-		preRegisterLabels []string
+		nonce        int64
 
 		scalarValue string
-		labeled     []struct {
-			label string
-			value string
-		}
+		labeled     []labeledInput
 
 		wantErr   bool
 		wantErrIs error
 
 		wantValuesStr []string
-		wantRegLabels []string
 	}
 
 	cases := []tc{
 		{
-			name:         "SINGLE_uses_labeled_when_len1_over_scalar",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			scalarValue:  "999",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "x", value: "7"},
-			},
-			wantValuesStr: []string{"7"},
-			wantRegLabels: nil,
-		},
-		{
 			name:          "SINGLE_uses_scalar_when_no_labeled",
 			arity:         types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			requireUnity:  false,
-			unityTol:      "0",
 			nonce:         1,
 			scalarValue:   "42",
-			labeled:       nil,
 			wantValuesStr: []string{"42"},
-			wantRegLabels: nil,
 		},
 		{
-			name:         "SINGLE_rejects_when_labeled_len_gt_1",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			scalarValue:  "1",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "x", value: "1"},
-				{label: "y", value: "2"},
+			name:          "SINGLE_accepts_canonical_y_label",
+			arity:         types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			nonce:         1,
+			scalarValue:   "999",
+			labeled:       []labeledInput{{label: "y", value: "7"}},
+			wantValuesStr: []string{"7"},
+		},
+		{
+			name:        "SINGLE_rejects_non_y_label",
+			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			nonce:       1,
+			scalarValue: "1",
+			labeled:     []labeledInput{{label: "x", value: "1"}},
+			wantErr:     true,
+			wantErrIs:   sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:        "SINGLE_rejects_when_labeled_len_gt_1",
+			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			nonce:       1,
+			scalarValue: "1",
+			labeled: []labeledInput{
+				{label: "y", value: "1"},
+				{label: "z", value: "2"},
 			},
 			wantErr:   true,
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_requires_labeled_values",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			scalarValue:  "123",
-			labeled:      nil,
-			wantErr:      true,
-			wantErrIs:    sdkerrors.ErrInvalidRequest,
-		},
-		{
-			name:         "MULTI_registers_labels_and_aligns_dense",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.2"},
-				{label: "B", value: "0.8"},
-			},
-			wantValuesStr: []string{"0.2", "0.8"},
-			wantRegLabels: []string{"A", "B"},
-		},
-		{
-			name:         "MULTI_duplicate_label_rejected",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.1"},
-				{label: "A", value: "0.2"},
-			},
+			name:      "MULTI_requires_labeled_values",
+			arity:     types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce:     1,
+			labeled:   nil,
 			wantErr:   true,
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_empty_label_rejected",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "   ", value: "0.1"},
+			name:  "MULTI_sorts_alphabetically",
+			arity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce: 1,
+			labeled: []labeledInput{
+				{label: "b", value: "0.7"},
+				{label: "a", value: "0.3"},
 			},
-			wantErr:   true,
-			wantErrIs: sdkerrors.ErrInvalidRequest,
-		},
-		{
-			name:         "MULTI_missing_labels_are_zero_against_existing_registry",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			preRegisterLabels: []string{
-				"a", "b", "c",
-			},
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "a", value: "1"},
-				{label: "b", value: "2"},
-			},
-			wantValuesStr: []string{"1", "2", "0"},
-			wantRegLabels: []string{"a", "b", "c"},
+			// Output is sorted by canonical label name.
+			wantValuesStr: []string{"0.3", "0.7"},
 		},
 		{
 			name:         "MULTI_require_unity_ok",
@@ -1151,15 +1134,11 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			requireUnity: true,
 			unityTol:     "0.000001",
 			nonce:        1,
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.2"},
-				{label: "B", value: "0.8"},
+			labeled: []labeledInput{
+				{label: "a", value: "0.2"},
+				{label: "b", value: "0.8"},
 			},
 			wantValuesStr: []string{"0.2", "0.8"},
-			wantRegLabels: []string{"A", "B"},
 		},
 		{
 			name:         "MULTI_require_unity_rejected_outside_tol",
@@ -1167,30 +1146,23 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			requireUnity: true,
 			unityTol:     "0.01",
 			nonce:        1,
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.2"},
-				{label: "B", value: "0.7"},
+			labeled: []labeledInput{
+				{label: "a", value: "0.2"},
+				{label: "b", value: "0.7"},
 			},
 			wantErr:   true,
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_trims_labels_and_is_idempotent_on_registry",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "  Z  ", value: "5"},
-			},
-			wantValuesStr: []string{"5"},
-			wantRegLabels: []string{"Z"},
+			// Normalize is defensive: if a caller forgets to canonicalize,
+			// Normalize rejects empty labels rather than silently building
+			// an invalid intermediate Inference.
+			name:      "MULTI_defensive_rejects_empty_label",
+			arity:     types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce:     1,
+			labeled:   []labeledInput{{label: "", value: "0.5"}},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 	}
 
@@ -1199,27 +1171,30 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			s.SetupTest()
 
 			ctx := s.Ctx()
-			k := s.TopicKeeper()
+			tk := s.TopicKeeper()
 
 			topicId := s.CreateTopic()
-			topic, err := k.GetTopic(ctx, topicId)
+			topic, err := tk.GetTopic(ctx, topicId)
 			s.Require().NoError(err)
 
 			topic.OutputArity = c.arity
 			topic.RequireUnity = c.requireUnity
-			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
-			s.Require().NoError(k.SetTopic(ctx, topicId, topic))
-
-			for _, l := range c.preRegisterLabels {
-				_, err := k.RegisterEpochLabel(ctx, topicId, c.nonce, l)
-				s.Require().NoError(err)
+			tol := c.unityTol
+			if tol == "" {
+				tol = "0"
 			}
+			topic.UnityTolerance = alloraMath.MustNewDecFromString(tol)
+			s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
 
+			scalar := c.scalarValue
+			if scalar == "" {
+				scalar = "0"
+			}
 			in := &types.InputInference{
 				TopicId:     topicId,
 				BlockHeight: c.nonce,
 				Inferer:     "inferer",
-				Value:       alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue),
+				Value:       alloraMath.MustNewBoundedExp40DecFromString(scalar),
 			}
 			if c.labeled != nil {
 				in.Values = make([]*types.InputLabeledValue, 0, len(c.labeled))
@@ -1246,74 +1221,18 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			for i := range c.wantValuesStr {
 				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
 			}
-
-			reg, err := k.GetEpochLabelRegistry(ctx, topicId, c.nonce)
-			s.Require().NoError(err)
-
-			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Len(reg.Labels, 1)
-				return
-			}
-
-			s.Require().Equal(len(c.wantRegLabels), len(reg.Labels))
-			for i := range c.wantRegLabels {
-				s.Require().Equal(c.wantRegLabels[i], reg.Labels[i].Name)
-			}
 		})
 	}
-
-	s.Run("MULTI_preserves_label_ids_across_calls_even_if_submission_order_changes", func() {
-		s.SetupTest()
-
-		ctx := s.Ctx()
-		k := s.TopicKeeper()
-
-		topicId := s.CreateTopic()
-		topic, err := k.GetTopic(ctx, topicId)
-		s.Require().NoError(err)
-		topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
-		topic.RequireUnity = false
-		topic.UnityTolerance = alloraMath.ZeroDec()
-		s.Require().NoError(k.SetTopic(ctx, topicId, topic))
-
-		nonce := types.BlockHeight(1)
-
-		in1 := &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: 1,
-			Inferer:     "inferer",
-			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
-			Values: []*types.InputLabeledValue{
-				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
-				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
-			},
-		}
-		got1, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, nonce, in1)
-		s.Require().NoError(err)
-		s.Require().Equal([]string{"1", "2"}, []string{got1.Values[0].String(), got1.Values[1].String()})
-
-		in2 := &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: 1,
-			Inferer:     "inferer",
-			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
-			Values: []*types.InputLabeledValue{
-				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
-				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
-			},
-		}
-		got2, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, nonce, in2)
-		s.Require().NoError(err)
-		s.Require().Equal([]string{"10", "20"}, []string{got2.Values[0].String(), got2.Values[1].String()})
-
-		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-		s.Require().NoError(err)
-		s.Require().Len(reg.Labels, 2)
-		s.Require().Equal("a", reg.Labels[0].Name)
-		s.Require().Equal("b", reg.Labels[1].Name)
-	})
 }
 
+// TestGetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose exercises
+// the v2 close-time materializer. It replaces the deleted
+// TestGetWorkersLatestInferencesByTopicIdValuesPadded: instead of reading
+// from a legacy committed-Inference store and padding against a registry
+// that was registered during the WSW, the materializer projects each
+// worker's raw staged InputInference through a registry that was freshly
+// built from activeInfererLabelRefCount.
+//
 //nolint:exhaustruct
 func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() {
 	topicId := keeper.TopicId(1)
@@ -1328,7 +1247,9 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		wantValues   map[int][]string
 	}
 
-	mustDec := func(x string) alloraMath.Dec { return alloraMath.MustNewDecFromString(x) }
+	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
+		return alloraMath.MustNewBoundedExp40DecFromString(x)
+	}
 
 	setTopic := func(ctx context.Context, k *keeper.Keeper, topicId uint64, arity types.TopicOutputArity) {
 		topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
@@ -1340,9 +1261,38 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		s.Require().NoError(err)
 	}
 
-	setLatestInf := func(ctx context.Context, k *keeper.Keeper, topicId uint64, inf types.Inference) {
-		err := k.GetWorkerKeeper().InsertInference(ctx, topicId, inf)
+	// stageInput stages a raw InputInference and bumps each label's refcount
+	// in one shot, mimicking what the msgserver does when a worker is
+	// admitted into the active set.
+	stageInput := func(
+		ctx context.Context,
+		k *keeper.Keeper,
+		topicId uint64,
+		nonce int64,
+		inferer string,
+		scalar alloraMath.BoundedExp40Dec,
+		values []*types.InputLabeledValue,
+	) {
+		in := types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: nonce,
+			Inferer:     inferer,
+			Value:       scalar,
+			Values:      values,
+		}
+		err := k.GetWorkerKeeper().SetWorkerLatestInputInference(ctx, topicId, inferer, in)
 		s.Require().NoError(err)
+		labels := make([]string, 0, len(values))
+		for _, lv := range values {
+			if lv == nil || lv.Label == "" {
+				continue
+			}
+			labels = append(labels, lv.Label)
+		}
+		if len(labels) > 0 {
+			err := k.GetTopicKeeper().IncrementLabelRefCount(ctx, topicId, nonce, labels)
+			s.Require().NoError(err)
+		}
 	}
 
 	cases := []tc{
@@ -1350,12 +1300,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			name:        "SINGLE_scalar_only_populates_values_len1",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("42")},
-				})
+				stageInput(ctx, k, topicId, nonce, w1, mustBounded("42"), nil)
 			},
 			workersOrder: []int{0},
 			wantValues: map[int][]string{
@@ -1363,14 +1308,11 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			},
 		},
 		{
-			name:        "SINGLE_values_len1_used_and_consistent_with_scalar",
+			name:        "SINGLE_values_len1_used_over_scalar",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("7")},
+				stageInput(ctx, k, topicId, nonce, w1, mustBounded("999"), []*types.InputLabeledValue{
+					{Label: "y", Value: mustBounded("7")},
 				})
 			},
 			workersOrder: []int{0},
@@ -1379,50 +1321,23 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			},
 		},
 		{
-			name:        "SINGLE_scalar_and_values_mismatch_canonicalizes_to_values0",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("2")},
-				})
-			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"2"},
-			},
-		}, {
 			name:        "SINGLE_rejects_values_len_gt_1",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2")},
+				stageInput(ctx, k, topicId, nonce, w1, mustBounded("1"), []*types.InputLabeledValue{
+					{Label: "y", Value: mustBounded("1")},
+					{Label: "z", Value: mustBounded("2")},
 				})
 			},
 			workersOrder: []int{0},
 			wantErrIs:    sdkerrors.ErrLogic,
 		},
 		{
-			name:        "SINGLE_two_workers_scalar_only_both_values_len1_and_sorted_by_inferer",
+			name:        "SINGLE_two_workers_scalar_only_sorted_by_inferer",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("42")},
-				})
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w2,
-					Values:      []alloraMath.Dec{mustDec("7")},
-				})
+				stageInput(ctx, k, topicId, nonce, w1, mustBounded("42"), nil)
+				stageInput(ctx, k, topicId, nonce, w2, mustBounded("7"), nil)
 			},
 			workersOrder: []int{1, 0},
 			wantValues: map[int][]string{
@@ -1431,29 +1346,21 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			},
 		},
 		{
-			name:        "MULTI_pads_shorter_values_to_registry_len_and_sorts_inferers",
+			name:        "MULTI_registry_union_pads_missing_labels_to_zero",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "c")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "d")
-				s.Require().NoError(err)
-
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
+				// w1 sees only {a,b,c}, w2 sees {a,b,d}. After close-time
+				// lex-sort of the union, the registry is [a,b,c,d] with
+				// ids 1..4; each worker's missing labels are filled with 0.
+				stageInput(ctx, k, topicId, nonce, w1, mustBounded("0"), []*types.InputLabeledValue{
+					{Label: "a", Value: mustBounded("1")},
+					{Label: "b", Value: mustBounded("2")},
+					{Label: "c", Value: mustBounded("3")},
 				})
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w2,
-					Values:      []alloraMath.Dec{mustDec("10"), mustDec("20"), mustDec("0"), mustDec("40")},
+				stageInput(ctx, k, topicId, nonce, w2, mustBounded("0"), []*types.InputLabeledValue{
+					{Label: "a", Value: mustBounded("10")},
+					{Label: "b", Value: mustBounded("20")},
+					{Label: "d", Value: mustBounded("40")},
 				})
 			},
 			workersOrder: []int{1, 0},
@@ -1463,104 +1370,16 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			},
 		},
 		{
-			name:        "MULTI_values_longer_than_registry_rejected",
+			name:        "MULTI_empty_active_set_errors_empty_registry",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
-				})
+				// Nothing staged, nothing incremented => refcount store
+				// empty => BuildFinalEpochLabelRegistryFromActiveSet returns
+				// types.ErrEpochLabelRegistryEmpty which this test consumes
+				// indirectly.
 			},
 			workersOrder: []int{0},
-			wantErrIs:    sdkerrors.ErrLogic,
-		}, {
-			name:        "MULTI_registry_len_zero_rejects_any_nonempty_inference_values",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				// do NOT register labels => registry len = 0
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1")},
-				})
-			},
-			workersOrder: []int{0},
-			wantErrIs:    sdkerrors.ErrLogic,
-		},
-		{
-			name:        "MULTI_registry_len_zero_allows_empty_values_no_padding_needed",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				// registry len = 0
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{},
-				})
-			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {},
-			},
-		},
-		{
-			name:        "MULTI_pads_multiple_missing_entries_not_just_one",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "c")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "d")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "e")
-				s.Require().NoError(err)
-
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1")}, // should become [1,0,0,0,0]
-				})
-			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"1", "0", "0", "0", "0"},
-			},
-		},
-		{
-			name:        "MULTI_does_not_mutate_stored_inference_when_padding",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "c")
-				s.Require().NoError(err)
-
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("9")}, // stored len=1
-				})
-			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"9", "0", "0"},
-			},
+			wantErrIs:    types.ErrEpochLabelRegistryEmpty,
 		},
 	}
 
@@ -1589,7 +1408,13 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 			s.Require().NoError(err)
 
-			got, err := k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce, reqWorkers)
+			reg, err := k.GetTopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+			if c.wantErrIs != nil && errorsmod.IsOf(err, c.wantErrIs) {
+				return
+			}
+			s.Require().NoError(err)
+
+			got, err := k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(ctx, topic, nonce, reqWorkers, reg)
 			if c.wantErrIs != nil {
 				s.Require().ErrorIs(err, c.wantErrIs)
 				return

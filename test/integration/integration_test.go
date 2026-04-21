@@ -45,6 +45,8 @@ func TestExternalTestSuite(t *testing.T) {
 	TopicWeightDistributionChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(testConfig)
+	t.Log(">>> Test Label Registry v2 Classification Scenarios <<<")
+	LabelRegistryClassificationChecks(testConfig)
 	t.Log(">>> Test Reputer Un-Staking <<<")
 	UnstakingChecks(testConfig)
 }

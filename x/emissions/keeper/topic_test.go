@@ -693,7 +693,7 @@ func (s *KeeperTestSuite) TestEpochLabelRegistry() {
 				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
 				s.Require().NoError(err)
 				s.Require().Equal(topicId, reg.TopicId)
-				s.Require().Equal(uint64(nonce), reg.EpochId)
+				s.Require().Equal(uint64(nonce), reg.EpochId) //nolint:gosec // nonce is a non-negative block height; cast is safe
 				s.Require().Empty(reg.Labels)
 			},
 		},

@@ -159,6 +159,84 @@ func (inputInference *InputInference) Validate() error {
 	return nil
 }
 
+// ValidateWithLimits validates an InputInference against the per-topic and
+// per-submission constraints that apply to the worker payload path:
+//
+//   - effectiveCap is min(params.MaxLabelsPerSubmission,
+//     topic.MaxLabelsPerSubmission when non-zero). It is the maximum number
+//     of distinct canonical labels the submission may carry. Must be >= 1.
+//   - whitelist, when non-nil, is the set of canonical labels accepted by
+//     the topic. A nil whitelist means the topic is unrestricted (any
+//     canonical label is accepted). An empty (non-nil) whitelist would mean
+//     "no label is accepted" and is not produced by the msgserver (which
+//     distinguishes empty-slice from nil when building the set).
+//
+// In addition to the basic InputInference.Validate() checks, this function:
+//
+//   - canonicalizes each labeled value's Label via CanonicalLabelName and
+//     rewrites the value in place so downstream consumers see canonical
+//     bytes only;
+//   - rejects duplicates after canonicalization (ErrInvalidLabelName);
+//   - enforces the effective cap (ErrTooManyLabelsPerSubmission);
+//   - enforces whitelist membership post-canonicalization
+//     (ErrLabelNotInWhitelist).
+//
+// The canonicalized slice is left in its submitted order; deterministic
+// ordering is enforced later at close-time via lex-sort over the
+// activeInfererLabelRefCount store.
+func (inputInference *InputInference) ValidateWithLimits(
+	effectiveCap uint64,
+	whitelist map[string]struct{},
+) error {
+	if err := inputInference.Validate(); err != nil {
+		return err
+	}
+	if effectiveCap == 0 {
+		// Defensive: the msgserver computes effectiveCap as
+		// min(params, topic) and Params.Validate rejects zero, so a zero
+		// here indicates a programming error rather than user input.
+		return errors.Wrap(ErrValidationMustBeGreaterthanZero,
+			"effective per-submission label cap must be >= 1")
+	}
+	n := uint64(len(inputInference.Values))
+	if n > effectiveCap {
+		return errors.Wrapf(ErrTooManyLabelsPerSubmission,
+			"submission has %d labels, effective cap is %d", n, effectiveCap)
+	}
+	seen := make(map[string]struct{}, len(inputInference.Values))
+	for i, lv := range inputInference.Values {
+		if lv == nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest,
+				"input labeled value at index %d is nil", i)
+		}
+		c, err := CanonicalLabelName(lv.Label)
+		if err != nil {
+			return errors.Wrapf(err, "input labeled value at index %d", i)
+		}
+		if _, dup := seen[c]; dup {
+			return errors.Wrapf(ErrInvalidLabelName,
+				"duplicate label after canonicalization at index %d: %q", i, c)
+		}
+		seen[c] = struct{}{}
+		if whitelist != nil {
+			if _, ok := whitelist[c]; !ok {
+				return errors.Wrapf(ErrLabelNotInWhitelist,
+					"label %q is not in topic label whitelist", c)
+			}
+		}
+		// BoundedExp40Dec is intrinsically bounded on decode; convert to
+		// alloraMath.Dec and reuse ValidateDec so the validator only rejects
+		// explicitly-NaN values (the same rule applied to scalar Inference.Value).
+		if err := ValidateDec(lv.Value.ToDec()); err != nil {
+			return errors.Wrapf(err, "input labeled value %q", c)
+		}
+		// Rewrite in place to the canonical form so the persisted
+		// workerLatestInputInferences entry is already canonical.
+		lv.Label = c
+	}
+	return nil
+}
+
 func ValidateForecastContents(topicId uint64, forecaster string, blockHeight BlockHeight) error {
 	if err := ValidateTopicId(topicId); err != nil {
 		return errors.Wrap(err, "forecast topic id is invalid")

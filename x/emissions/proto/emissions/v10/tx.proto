@@ -266,6 +266,7 @@ message OptionalParams {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  repeated uint64 max_labels_per_submission = 61;
 }
 
 message UpdateParamsRequest {
@@ -334,6 +335,12 @@ message CreateNewTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // Per-topic cap on labels per worker submission. Zero means "use module
+  // default". Effective cap at the msgserver is min(params, this) when this
+  // is non-zero.
+  uint64 max_labels_per_submission = 26;
+  // Per-topic canonical label allowlist. Empty means unrestricted.
+  repeated string label_whitelist = 27;
 }
 
 message CreateNewTopicResponse {
@@ -370,6 +377,14 @@ message UpdateTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // Per-topic cap on labels per worker submission. Zero means "unchanged" in
+  // UpdateTopic (the existing value is preserved). Topic keeper rejects
+  // mutations while any worker submission window is open for this topic.
+  uint64 max_labels_per_submission = 11;
+  // Per-topic canonical label allowlist. Nil means "unchanged" in UpdateTopic;
+  // an empty (non-nil) list means "clear the whitelist" (unrestricted).
+  // Topic keeper rejects mutations while any worker submission window is open.
+  repeated string label_whitelist = 12;
 }
 
 message UpdateTopicResponse {}

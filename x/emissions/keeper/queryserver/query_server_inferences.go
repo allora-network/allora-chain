@@ -28,6 +28,7 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 		return nil, err
 	}
 
+	//nolint:staticcheck // SA1019: GetWorkerLatestInferenceByTopicId is intentionally the compatibility shim used by the public query.
 	inference, err := qs.wk.GetWorkerLatestInferenceByTopicId(ctx, req.TopicId, req.WorkerAddress)
 	if err != nil {
 		return nil, err

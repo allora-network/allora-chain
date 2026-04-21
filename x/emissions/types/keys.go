@@ -22,19 +22,25 @@ var (
 	DelegatorStakeKey         = collections.NewPrefix(8)
 	DelegateStakePlacementKey = collections.NewPrefix(9)
 	TargetStakeKey            = collections.NewPrefix(10)
-	InferencesKey             = collections.NewPrefix(11)
-	ForecastsKey              = collections.NewPrefix(12)
-	WorkerNodesKey            = collections.NewPrefix(13)
-	ReputerNodesKey           = collections.NewPrefix(14)
-	LatestInferencesTsKey     = collections.NewPrefix(15)
-	ActiveTopicsKey           = collections.NewPrefix(16)
-	AllInferencesKey          = collections.NewPrefix(17)
-	AllForecastsKey           = collections.NewPrefix(18)
-	AllLossBundlesKey         = collections.NewPrefix(19)
-	StakeRemovalKey           = collections.NewPrefix(20)
-	StakeByReputerAndTopicId  = collections.NewPrefix(21)
-	DelegateStakeRemovalKey   = collections.NewPrefix(22)
-	AllTopicStakeSumKey       = collections.NewPrefix(23)
+	// Deprecated: InferencesKey is the legacy per-worker Inference store keyed
+	// by EpochLabelRegistry indices. As of the v15 migration it is no longer
+	// written by AppendInference; remaining entries are migrated into
+	// WorkerLatestInputInferenceKey and the prefix is left in place only for
+	// genesis round-trip and defensive clears. See
+	// migrations/v15/MigrateInferencesToWorkerLatestInputInferences.
+	InferencesKey            = collections.NewPrefix(11)
+	ForecastsKey             = collections.NewPrefix(12)
+	WorkerNodesKey           = collections.NewPrefix(13)
+	ReputerNodesKey          = collections.NewPrefix(14)
+	LatestInferencesTsKey    = collections.NewPrefix(15)
+	ActiveTopicsKey          = collections.NewPrefix(16)
+	AllInferencesKey         = collections.NewPrefix(17)
+	AllForecastsKey          = collections.NewPrefix(18)
+	AllLossBundlesKey        = collections.NewPrefix(19)
+	StakeRemovalKey          = collections.NewPrefix(20)
+	StakeByReputerAndTopicId = collections.NewPrefix(21)
+	DelegateStakeRemovalKey  = collections.NewPrefix(22)
+	AllTopicStakeSumKey      = collections.NewPrefix(23)
 	// AddressTopicsKey                                  = collections.NewPrefix(24)
 	WhitelistAdminsKey               = collections.NewPrefix(24)
 	ChurnableTopicsKey               = collections.NewPrefix(25)
@@ -122,4 +128,14 @@ var (
 	TopicLabelRegistryKey                     = collections.NewPrefix(106)
 	NetworkInferenceBundleKey                 = collections.NewPrefix(107)
 	OutlierResistantNetworkInferenceBundleKey = collections.NewPrefix(108)
+	// WorkerLatestInputInferenceKey stores the raw per-worker InputInference
+	// staged during the worker submission window. Replaces InferencesKey at
+	// runtime as of v15. Keyed (topicId, inferer) -> types.InputInference.
+	WorkerLatestInputInferenceKey = collections.NewPrefix(109)
+	// ActiveInfererLabelRefCountKey stores per-(topic, nonce, canonicalLabel)
+	// refcounts: how many currently-active inferers are using this label
+	// inside the open worker submission window. Feeds the lex-sorted
+	// EpochLabelRegistry materialized at CloseWorkerNonce. Keyed
+	// (topicId, nonceBlockHeight, canonicalLabel) -> uint64.
+	ActiveInfererLabelRefCountKey = collections.NewPrefix(110)
 )

@@ -65,6 +65,14 @@ message Topic {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // Per-topic cap on the number of labels a single worker may submit in one
+  // payload. Effective cap is min(params.MaxLabelsPerSubmission, this)
+  // when this is non-zero; when zero, falls back to the module parameter.
+  uint64 max_labels_per_submission = 27;
+  // Optional per-topic allowlist of canonicalized label names. When empty, the
+  // topic is unrestricted; when non-empty, submitted labels must match (after
+  // canonicalization) an entry in this list. Stored in canonical form.
+  repeated string label_whitelist = 28;
 }
 
 enum TopicType {

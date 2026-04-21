@@ -42,6 +42,7 @@ func NewTopicKeeper(
 		topicLastWorkerCommit:            collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerCommit:           collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLabelRegistry:               collections.NewMap(sb, types.TopicLabelRegistryKey, "topic_label_registry", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.EpochLabelRegistry](cdc)),
+		activeInfererLabelRefCount:       collections.NewMap(sb, types.ActiveInfererLabelRefCountKey, "active_inferer_label_refcount", collections.TripleKeyCodec(collections.Uint64Key, collections.Int64Key, collections.StringKey), collections.Uint64Value),
 		paramsKeeper:                     paramsKeeper,
 		nonceKeeper:                      nonceKeeper,
 		stakingKeeper:                    stakingKeeper,
@@ -84,6 +85,11 @@ type TopicKeeper struct {
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
 	// topic epoch label registry - keyed by [topic_id, nonce]
 	topicLabelRegistry collections.Map[collections.Pair[TopicId, BlockHeight], types.EpochLabelRegistry]
+	// Per-(topicId, nonceBlockHeight, canonicalLabel) reference count of
+	// currently-active inferers whose last submission contains this label.
+	// Feeds BuildFinalEpochLabelRegistryFromActiveSet at close time.
+	// Rows are deleted when their count reaches zero.
+	activeInfererLabelRefCount collections.Map[collections.Triple[TopicId, BlockHeight, string], uint64]
 	// params keeper
 	paramsKeeper *ParamsKeeper
 	// nonce keeper
@@ -242,11 +248,19 @@ func (k *TopicKeeper) GetTopic(ctx context.Context, topicId TopicId) (types.Topi
 	return topic, nil
 }
 
-// Sets a topic config on a topicId
+// Sets a topic config on a topicId. Canonicalizes LabelWhitelist in place
+// (dedup + NFC + trim) so downstream whitelist lookups are exact byte-equality.
 func (k *TopicKeeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topic) error {
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting params")
+	}
+	if len(topic.LabelWhitelist) > 0 {
+		canonical, err := types.CanonicalizeLabelList(topic.LabelWhitelist, true)
+		if err != nil {
+			return errorsmod.Wrap(err, "topic label_whitelist canonicalization failed")
+		}
+		topic.LabelWhitelist = canonical
 	}
 	if err := topic.Validate(params); err != nil {
 		return errorsmod.Wrap(err, "set topic validation failure")
@@ -259,40 +273,124 @@ func (k *TopicKeeper) TopicExists(ctx context.Context, topicId TopicId) (bool, e
 	return k.topics.Has(ctx, topicId)
 }
 
-// UpdateTopic applies allowed changes to a topic.
+// isAnyUnfulfilledWorkerNonceWithinWindow reports true iff the topic is
+// active and at least one of its unfulfilled worker nonces is currently
+// inside a worker submission window. It is the shared guard for topic
+// parameter mutations that must not race worker payload submission for an
+// open epoch (merit_sortition_alpha, max_labels_per_submission, label
+// whitelist). Unlike the original v14-era check this iterates every
+// unfulfilled nonce rather than just the newest, because workers can submit
+// against any currently-open nonce.
+func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
+	ctx context.Context,
+	topic types.Topic,
+) (bool, error) {
+	isActive, err := k.IsTopicActive(ctx, topic.Id)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "failed to check topic active status")
+	}
+	if !isActive {
+		return false, nil
+	}
+	nonces, err := k.nonceKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
+	}
+	if len(nonces.Nonces) == 0 {
+		return false, nil
+	}
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
+	for _, nonce := range nonces.Nonces {
+		if nonce == nil {
+			continue
+		}
+		withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+		if err != nil {
+			return false, errorsmod.Wrap(err, "failed to check worker submission window")
+		}
+		if withinWindow {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// labelWhitelistChanged compares two whitelists for semantic inequality in
+// their canonicalized forms. The caller is expected to have already run
+// CanonicalizeLabelList over the updatedTopic slice (via SetTopic) if it is
+// going to be persisted; this comparison treats "preserve existing" (nil)
+// distinctly from "clear to empty" ([]string{}) at the msgserver layer, but
+// at the keeper layer equal-length-and-contents means "no change".
+func labelWhitelistChanged(a, b []string) bool {
+	if len(a) != len(b) {
+		return true
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return true
+		}
+	}
+	return false
+}
+
+// UpdateTopic applies allowed changes to a topic. Fields that are unsafe to
+// mutate while a worker submission window is open for ANY currently
+// unfulfilled nonce are guarded with isAnyUnfulfilledWorkerNonceWithinWindow
+// and rejected with ErrWorkerNonceWindowNotAvailable. Those fields are:
+//   - merit_sortition_alpha (reward-math continuity)
+//   - max_labels_per_submission (per-submission label cap)
+//   - label_whitelist (per-topic label allowlist)
+//
+// This is stricter than the v14 behavior (which only checked the newest
+// unfulfilled nonce) to match the v2 Epoch Label Registry semantics, where
+// label-related topic parameters must be stable across the entire lifetime
+// of every open WSW.
 func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "error getting params")
 	}
 
+	// Canonicalize the whitelist on the proposed update before any
+	// comparison or validation so the WSW guard and persisted state both
+	// agree on the canonical form.
+	if len(updatedTopic.LabelWhitelist) > 0 {
+		canonical, err := types.CanonicalizeLabelList(updatedTopic.LabelWhitelist, true)
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "updated topic label_whitelist canonicalization failed")
+		}
+		updatedTopic.LabelWhitelist = canonical
+	}
+
 	if err := updatedTopic.Validate(params); err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
 	}
 
-	// Check merit_sortition_alpha update restriction when topic is active and worker window is open
-	if !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha) {
-		isActive, err := k.IsTopicActive(ctx, topic.Id)
+	meritChanged := !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha)
+	maxLabelsChanged := topic.MaxLabelsPerSubmission != updatedTopic.MaxLabelsPerSubmission
+	whitelistChanged := labelWhitelistChanged(topic.LabelWhitelist, updatedTopic.LabelWhitelist)
+
+	if meritChanged || maxLabelsChanged || whitelistChanged {
+		withinWindow, err := k.isAnyUnfulfilledWorkerNonceWithinWindow(ctx, topic)
 		if err != nil {
-			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
+			return types.Topic{}, err
 		}
-		if isActive {
-			sdkCtx := sdk.UnwrapSDKContext(ctx)
-			blockHeight := sdkCtx.BlockHeight()
-			nonces, err := k.nonceKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
-			if err != nil {
-				return types.Topic{}, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
+		if withinWindow {
+			var which string
+			switch {
+			case meritChanged:
+				which = "merit_sortition_alpha"
+			case maxLabelsChanged:
+				which = "max_labels_per_submission"
+			default:
+				which = "label_whitelist"
 			}
-			if len(nonces.Nonces) > 0 {
-				lastNonce := nonces.Nonces[0]
-				withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *lastNonce, blockHeight)
-				if err != nil {
-					return types.Topic{}, errorsmod.Wrap(err, "failed to check worker submission window")
-				}
-				if withinWindow {
-					return types.Topic{}, errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable, "cannot update merit_sortition_alpha while worker window is open")
-				}
-			}
+			return types.Topic{}, errorsmod.Wrapf(
+				types.ErrWorkerNonceWindowNotAvailable,
+				"cannot update %s while a worker submission window is open",
+				which,
+			)
 		}
 	}
 
@@ -749,19 +847,53 @@ func (k *TopicKeeper) GetEpochLabelRegistry(
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.EpochLabelRegistry{
 				TopicId: topicId,
-				EpochId: uint64(nonce),
+				EpochId: uint64(nonce), //nolint:gosec // nonce is a non-negative block height; cast is safe
 				Labels:  nil,
 			}, nil
 		}
 		return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error getting topic label registry")
 	}
 	registry.TopicId = topicId
-	registry.EpochId = uint64(nonce)
+	registry.EpochId = uint64(nonce) //nolint:gosec // nonce is a non-negative block height; cast is safe
 	return registry, nil
+}
+
+// isWorkerNonceClosedForLabelRegistration reports whether external writers
+// are allowed to mutate the EpochLabelRegistry for (topicId, nonce).
+//
+// In v2 of the Epoch Label Registry the registry is built at CloseWorkerNonce
+// time from activeInfererLabelRefCount, not incrementally during the Worker
+// Submission Window. While the WSW is open (the worker nonce is in the
+// unfulfilled set) the registry must be treated as frozen so that a buggy or
+// malicious external caller cannot force-assign label ids that diverge from
+// the refcount-derived materialization.
+//
+// Returns true iff the nonce is NOT in the unfulfilled worker nonces set for
+// the topic (i.e. either already closed, or never opened - both cases are
+// legal for the close-time materializer path and for downstream tests that
+// pre-populate a registry without going through AddWorkerNonce).
+func (k *TopicKeeper) isWorkerNonceClosedForLabelRegistration(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+) (bool, error) {
+	isUnfulfilled, err := k.nonceKeeper.IsWorkerNonceUnfulfilled(ctx, topicId, &types.Nonce{BlockHeight: nonce})
+	if err != nil {
+		return false, errorsmod.Wrap(err, "error checking worker nonce status for label registration")
+	}
+	return !isUnfulfilled, nil
 }
 
 // RegisterEpochLabel ensures labelName exists in the registry for (topicId, nonce).
 // If it already exists, it returns the existing id (idempotent).
+//
+// Deprecated: in v2 the registry is materialized at CloseWorkerNonce from
+// activeInfererLabelRefCount via BuildFinalEpochLabelRegistryFromActiveSet;
+// callers should not write to the registry incrementally. This method remains
+// as the low-level primitive used by the materializer and by tests that
+// pre-populate a registry outside of a WSW, but it is guarded with
+// isWorkerNonceClosedForLabelRegistration: attempts to register during an
+// open WSW fail with ErrEpochLabelRegistryFrozen.
 func (k *TopicKeeper) RegisterEpochLabel(
 	ctx context.Context,
 	topicId types.TopicId,
@@ -771,6 +903,18 @@ func (k *TopicKeeper) RegisterEpochLabel(
 	labelName = strings.TrimSpace(labelName)
 	if labelName == "" {
 		return 0, errorsmod.Wrap(types.ErrInvalidLabelName, "label name cannot be empty")
+	}
+
+	closed, err := k.isWorkerNonceClosedForLabelRegistration(ctx, topicId, nonce)
+	if err != nil {
+		return 0, err
+	}
+	if !closed {
+		return 0, errorsmod.Wrapf(
+			types.ErrEpochLabelRegistryFrozen,
+			"topic %d nonce %d worker submission window is open",
+			topicId, nonce,
+		)
 	}
 
 	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)

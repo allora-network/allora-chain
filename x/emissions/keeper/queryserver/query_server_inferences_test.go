@@ -82,20 +82,21 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	)
 	s.Require().Error(err, "Should return an error for non-existent worker address")
 
-	// Assume a correct insertion happened
+	// Assume a correct insertion happened. In v2, inferences are staged via
+	// SetWorkerLatestInputInference during the WSW; the legacy InsertInference
+	// path is no longer written by msgservers.
 	blockHeight := int64(100)
-	inference := types.Inference{
+	input := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Inferer:     workerAddress,
-		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("123.456")},
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("123.456"),
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = s.WorkerKeeper().InsertInference(ctx, topicId, inference)
-	s.Require().NoError(err, "Inserting inferences should succeed")
+	err = s.WorkerKeeper().SetWorkerLatestInputInference(ctx, topicId, workerAddress, input)
+	s.Require().NoError(err, "Staging latest input inference should succeed")
 
-	// Testing successful retrieval
 	response, err := queryServer.GetWorkerLatestInferenceByTopicId(
 		ctx,
 		&types.GetWorkerLatestInferenceByTopicIdRequest{
@@ -105,7 +106,14 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	)
 	s.Require().NoError(err, "Retrieving latest inference should succeed")
 	s.Require().NotNil(response.LatestInference, "Response should contain a latest inference")
-	s.Require().Equal(&inference, response.LatestInference, "The latest inference should match the expected data")
+	s.Require().Equal(types.Inference{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Inferer:     workerAddress,
+		Values:      []alloraMath.Dec{input.Value.ToDec()},
+		ExtraData:   nil,
+		Proof:       "",
+	}, *response.LatestInference, "The latest inference should match the expected data")
 }
 
 //nolint:exhaustruct
