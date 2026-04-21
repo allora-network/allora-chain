@@ -1205,6 +1205,8 @@ func (s *TestSuite) MockTopic() types.Topic {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 }
 
@@ -1232,6 +1234,8 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		OutputArity:              topic.OutputArity,
 		RequireUnity:             topic.RequireUnity,
 		UnityTolerance:           topic.UnityTolerance,
+		MaxLabelsPerSubmission:   topic.MaxLabelsPerSubmission,
+		LabelWhitelist:           topic.LabelWhitelist,
 	}
 }
 

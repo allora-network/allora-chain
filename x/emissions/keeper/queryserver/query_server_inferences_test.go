@@ -93,6 +93,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		Value:       alloraMath.MustNewBoundedExp40DecFromString("123.456"),
 		ExtraData:   nil,
 		Proof:       "",
+		Values:      nil,
 	}
 	err = s.WorkerKeeper().SetWorkerLatestInputInference(ctx, topicId, workerAddress, input)
 	s.Require().NoError(err, "Staging latest input inference should succeed")

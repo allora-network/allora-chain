@@ -44,6 +44,8 @@ func createTopic(
 		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
 	}
 
 	ctx := context.Background()
