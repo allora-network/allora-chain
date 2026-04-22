@@ -33,6 +33,7 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 		workerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(workerValues),
 	)
 
@@ -70,6 +71,7 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 		reputerIndexes,
 		testutil.WithTopicID(topicId),
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(workerValues),
 	)
 
@@ -208,6 +210,7 @@ func (s *RewardsTestSuite) TestMultiLabelLabelIndependence() {
 		workerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(workerValues),
 	)
 
@@ -330,6 +333,7 @@ func (s *RewardsTestSuite) TestMultiLabelPermutationInvariance() {
 		baseWorkerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(baseWorkerValues),
 	)
 
@@ -349,6 +353,7 @@ func (s *RewardsTestSuite) TestMultiLabelPermutationInvariance() {
 		permutedWorkerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(permutedWorkerValues),
 		testutil.WithAccounts(accounts),
 	)
@@ -461,6 +466,7 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				workerIndexes,
 				reputerIndexes,
 				testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+				testutil.WithLabelCaseSensitive(true),
 				testutil.WithWorkerValues(tc.workerValues),
 			)
 
@@ -510,6 +516,7 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				reputerIndexes,
 				testutil.WithTopicID(topicId),
 				testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+				testutil.WithLabelCaseSensitive(true),
 				testutil.WithWorkerValues(tc.workerValues),
 			)
 
@@ -583,6 +590,7 @@ func (s *RewardsTestSuite) TestMultiLabelWorkerInfluence() {
 		workerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(workerValues),
 	)
 
@@ -605,6 +613,7 @@ func (s *RewardsTestSuite) TestMultiLabelWorkerInfluence() {
 		workerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(workerValues),
 	)
 
@@ -668,6 +677,7 @@ func (s *RewardsTestSuite) TestMultiLabelNaiveEqualsCombinedWhenEqualWeights() {
 		workerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(workerValues),
 	)
 
@@ -725,6 +735,7 @@ func (s *RewardsTestSuite) TestMultiLabelMatchesSingleLabelPerLabel() {
 		workerIndexes,
 		reputerIndexes,
 		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
 		testutil.WithWorkerValues(multiValues),
 	)
 

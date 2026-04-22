@@ -236,7 +236,7 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
-		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	types.EmitNewTopicUpdatedEvent(ctx, topic)

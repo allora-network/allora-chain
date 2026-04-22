@@ -121,4 +121,9 @@ duplicate-routes:
 	@echo "--> Running duplicate route linter"
 	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
 
+integration-test:
+	@echo "--> Running tests"
+	@bash test/local_testnet_l1.sh  <<< "y"
+	INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
+
 .PHONY: all install build lint build-maprange-linter maprange duplicate-routes

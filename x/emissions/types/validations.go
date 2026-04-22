@@ -171,6 +171,12 @@ func (inputInference *InputInference) Validate() error {
 //   - whitelist, when non-empty, is the set of canonical labels accepted by the
 //     topic. Nil and empty whitelists both mean unrestricted because repeated
 //     fields do not preserve a nil-vs-empty distinction across serialization.
+//   - maxLabelBytes is Params.MaxCanonicalLabelByteLength; it is threaded
+//     into CanonicalLabelName as the per-label byte cap.
+//   - labelCaseSensitive is the topic's LabelCaseSensitive flag; it is
+//     threaded into CanonicalLabelName so submission-time canonicalization
+//     matches the whitelist canonicalization the keeper applied in
+//     SetTopic/UpdateTopic.
 //
 // In addition to the basic InputInference.Validate() checks, this function:
 //
@@ -187,6 +193,8 @@ func (inputInference *InputInference) Validate() error {
 func (inputInference *InputInference) ValidateWithLimits(
 	labelCap uint64,
 	whitelist map[string]struct{},
+	maxLabelBytes uint64,
+	labelCaseSensitive bool,
 ) error {
 	if err := inputInference.Validate(); err != nil {
 		return err
@@ -208,7 +216,7 @@ func (inputInference *InputInference) ValidateWithLimits(
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest,
 				"input labeled value at index %d is nil", i)
 		}
-		c, err := CanonicalLabelName(lv.Label)
+		c, err := CanonicalLabelName(lv.Label, maxLabelBytes, labelCaseSensitive)
 		if err != nil {
 			return errors.Wrapf(err, "input labeled value at index %d", i)
 		}

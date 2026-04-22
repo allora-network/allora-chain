@@ -75,10 +75,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		OutputArity:              msg.OutputArity,
 		RequireUnity:             msg.RequireUnity,
 		UnityTolerance:           msg.UnityTolerance,
-		// SetTopic canonicalizes LabelWhitelist before persistence.
+		// Label registry fields. Canonicalization of LabelWhitelist is
+		// applied by SetTopic.
 		MaxLabelsPerSubmission: msg.MaxLabelsPerSubmission,
 		LabelWhitelist:         msg.LabelWhitelist,
 		LabelDefaultValue:      msg.LabelDefaultValue,
+		// LabelCaseSensitive is immutable after creation (UpdateTopic never
+		// changes it because updatedTopic is derived from the existing topic).
+		LabelCaseSensitive: msg.LabelCaseSensitive,
 	}
 	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {

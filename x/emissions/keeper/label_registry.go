@@ -120,7 +120,11 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 ) error {
 	//nolint:gosec // EpochId was originally produced from a validated non-negative block height.
 	nonce := types.BlockHeight(registry.EpochId)
-	if err := validateEpochLabelRegistry(registry.TopicId, nonce, registry); err != nil {
+	topic, err := k.GetTopic(ctx, registry.TopicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to get topic for epoch label registry validation")
+	}
+	if err := validateTemporaryRegistry(topic, nonce, registry); err != nil {
 		return err
 	}
 	return k.topicLabelRegistry.Set(ctx, collections.Join(registry.TopicId, nonce), registry)
@@ -282,14 +286,15 @@ func validateTemporaryRegistry(
 	nonce types.BlockHeight,
 	registry types.EpochLabelRegistry,
 ) error {
-	return validateEpochLabelRegistry(topic.Id, nonce, registry)
+	return validateEpochLabelRegistry(topic, nonce, registry)
 }
 
 func validateEpochLabelRegistry(
-	topicId types.TopicId,
+	topic types.Topic,
 	nonce types.BlockHeight,
 	registry types.EpochLabelRegistry,
 ) error {
+	topicId := topic.Id
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
@@ -312,7 +317,11 @@ func validateEpochLabelRegistry(
 		if lbl.Id != expectedID {
 			return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry label %q has id %d expected %d", lbl.Name, lbl.Id, expectedID)
 		}
-		canonicalLabel, err := types.CanonicalLabelName(lbl.Name)
+		canonicalLabel, err := types.CanonicalLabelName(
+			lbl.Name,
+			types.MaxMaxCanonicalLabelByteLength,
+			topic.LabelCaseSensitive,
+		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "registry label at index %d is invalid", i)
 		}

@@ -124,7 +124,12 @@ func (ms msgServer) processWorkerInferencePayload(
 ) error {
 	labelCap := topic.MaxLabelsPerSubmission
 	whitelist := types.CanonicalLabelSet(topic.LabelWhitelist)
-	if err := rawInference.ValidateWithLimits(labelCap, whitelist); err != nil {
+	if err := rawInference.ValidateWithLimits(
+		labelCap,
+		whitelist,
+		moduleParams.MaxCanonicalLabelByteLength,
+		topic.LabelCaseSensitive,
+	); err != nil {
 		return errorsmod.Wrapf(err, "input inference failed label validation")
 	}
 

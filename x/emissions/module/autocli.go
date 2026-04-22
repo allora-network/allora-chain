@@ -962,7 +962,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value] [label_case_sensitive]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -985,6 +985,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "max_labels_per_submission"},
 						{ProtoField: "label_whitelist"},
 						{ProtoField: "label_default_value"},
+						{ProtoField: "label_case_sensitive"},
 					},
 				},
 				{

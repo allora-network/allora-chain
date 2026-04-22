@@ -345,6 +345,11 @@ message CreateNewTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // When false (the default), label names are lowercased during canonicalization
+  // so that "Cat", "CAT" and "cat" all collapse to "cat". When true, casing is
+  // preserved and labels that differ only in case are treated as distinct.
+  // The field is immutable after topic creation.
+  bool label_case_sensitive = 29;
 }
 
 message CreateNewTopicResponse {

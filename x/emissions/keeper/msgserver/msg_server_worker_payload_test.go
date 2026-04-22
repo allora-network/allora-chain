@@ -883,6 +883,9 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
+			// Under the default caseSensitive=false topic, submitted
+			// uppercase labels "A"/"B" lowercase to "a"/"b" and are
+			// refcounted under the canonical form.
 			name:         "MULTI_registers_labels_and_aligns",
 			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			requireUnity: false,
@@ -894,7 +897,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 				}
 			},
 			wantValuesStr: []string{"0.2", "0.8"},
-			wantReg:       []string{"A", "B"},
+			wantReg:       []string{"a", "b"},
 		},
 		{
 			name:         "MULTI_require_unity_ok",
@@ -908,7 +911,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 				}
 			},
 			wantValuesStr: []string{"0.2", "0.8"},
-			wantReg:       []string{"A", "B"},
+			wantReg:       []string{"a", "b"},
 		},
 		{
 			name:         "MULTI_require_unity_rejected",
@@ -927,7 +930,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 		{
 			// Duplicate labels are rejected by
 			// InputInference.ValidateWithLimits with ErrInvalidLabelName
-			// (wrapped by msgserver).
+			// (wrapped by msgserver). Under caseSensitive=false, "A" and
+			// "a" also collapse to the same canonical form and dedupe.
 			name:         "MULTI_duplicate_label_rejected",
 			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			requireUnity: false,
@@ -935,7 +939,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			mutate: func(m *types.InsertWorkerPayloadRequest) {
 				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
 					{Label: "A", Value: alloraMath.MustNewBoundedExp40DecFromString("0.1")},
-					{Label: "A", Value: alloraMath.MustNewBoundedExp40DecFromString("0.2")},
+					{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("0.2")},
 				}
 			},
 			wantErr:   true,
