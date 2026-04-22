@@ -159,7 +159,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, "y")
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, simpleNonce.BlockHeight)
 	require.NoError(err)
 
 	err = s.WorkerKeeper().InsertActiveForecasts(s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts)
@@ -351,7 +351,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, "y")
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, simpleNonce.BlockHeight)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.GetNetworkInferences(
@@ -399,7 +399,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, "y")
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, simpleNonce.BlockHeight)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
@@ -478,7 +478,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, "y")
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, simpleNonce.BlockHeight)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
@@ -631,7 +631,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, "y")
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, simpleNonce.BlockHeight)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
@@ -773,7 +773,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	require.NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, "y")
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, simpleNonce.BlockHeight)
 	require.NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(
@@ -884,6 +884,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 	topicId := uint64(1)
 	blockHeight := int64(300)
 
+	topic := s.MockTopic()
+
 	inferer1 := s.AddrsStr(1)
 	inferer2 := s.AddrsStr(2)
 	inferer3 := s.AddrsStr(3)
@@ -915,7 +917,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 	err := keeper.GetWorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, nonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "y")
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, nonce.BlockHeight)
 	s.Require().NoError(err)
 
 	result, err := inferencesynthesis.GetNetworkInferences(

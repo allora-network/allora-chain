@@ -3,6 +3,8 @@ package actorutils_test
 import (
 	"testing"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -235,7 +237,9 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	forecaster0 := s.AddrsStr(4)
 	forecaster1 := s.AddrsStr(5)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight)
 	require.NoError(err)
 
 	// Create inferences where worker3 is an obvious outlier
@@ -435,7 +439,9 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight)
 	require.NoError(err)
 
 	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
@@ -475,4 +481,138 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		regularVal.Equal(outlierVal),
 		"Combined values should match when no outliers exist",
 	)
+}
+
+// countFrozenEvents returns the number of EventEpochLabelRegistryFrozen
+// events currently on the given SDK context's event manager, along with the
+// RegistrySize field from the last such event (so callers can assert on it).
+// It uses sdk.ParseTypedEvent to reconstruct the typed event from its ABCI
+// representation, which keeps the helper agnostic to the proto package
+// version (e.g. v10 -> v11 bumps require no test changes) and reads
+// registry_size as a typed uint64 rather than a stringified attribute.
+func countFrozenEvents(ctx sdk.Context) (int, uint64) {
+	count := 0
+	var lastSize uint64
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		frozen, ok := msg.(*types.EventEpochLabelRegistryFrozen)
+		if !ok {
+			continue
+		}
+		count++
+		lastSize = frozen.RegistrySize
+	}
+	return count, lastSize
+}
+
+// TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFrozenEventOnce pins
+// the close-time contract: exactly one EventEpochLabelRegistryFrozen is
+// emitted per successful CloseWorkerNonce, carrying the registry's cardinality
+// as the registry_size attribute. A regression that double-emitted (e.g. by
+// emitting both pre- and post-write) or skipped emission would be caught here.
+func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFrozenEventOnce() {
+	blockHeight := int64(101)
+	s.WithBlockHeight(blockHeight)
+
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	worker0 := s.AddrsStr(0)
+	worker1 := s.AddrsStr(1)
+	for _, w := range []string{worker0, worker1} {
+		_, err = s.EmissionsMsgServer().Register(s.Ctx(), &types.RegisterRequest{
+			Sender:    w,
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     s.AddrsStr(4),
+		})
+		s.Require().NoError(err)
+	}
+
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
+		return alloraMath.MustNewBoundedExp40DecFromString(x)
+	}
+
+	input0 := types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Inferer:     worker0,
+		ExtraData:   nil,
+		Proof:       "",
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("0.1")},
+			{Label: "b", Value: mustBounded("0.2")},
+			{Label: "c", Value: mustBounded("0.3")},
+		},
+	}
+	input1 := types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Inferer:     worker1,
+		ExtraData:   nil,
+		Proof:       "",
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("0.15")},
+			{Label: "b", Value: mustBounded("0.25")},
+			{Label: "d", Value: mustBounded("0.35")},
+		},
+	}
+	s.Require().NoError(s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker0, input0))
+	s.Require().NoError(s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker1, input1))
+
+	s.Require().NoError(s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, blockHeight, []string{"a", "b", "c"}))
+	s.Require().NoError(s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, blockHeight, []string{"a", "b", "d"}))
+
+	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0))
+	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1))
+
+	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+
+	before, _ := countFrozenEvents(s.Ctx())
+
+	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
+
+	after, size := countFrozenEvents(s.Ctx())
+	s.Require().Equal(before+1, after,
+		"CloseWorkerNonce must emit exactly one EventEpochLabelRegistryFrozen")
+	s.Require().Equal(uint64(4), size,
+		"registry_size must match the union of canonical labels {a,b,c,d}")
+}
+
+// TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty pins the negative
+// branch: when the active inferer set is empty at close time, CloseWorkerNonce
+// short-circuits with ErrNoQualifiedInferers before reaching the registry
+// materializer, and therefore EventEpochLabelRegistryFrozen must NOT be
+// emitted. A regression that moved the emission in front of the active-set
+// gate would be caught here.
+func (s *WorkerTestSuite) TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty() {
+	blockHeight := int64(101)
+	s.WithBlockHeight(blockHeight)
+
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+
+	before, _ := countFrozenEvents(s.Ctx())
+
+	err = actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce)
+	s.Require().ErrorIs(err, types.ErrNoQualifiedInferers)
+
+	after, _ := countFrozenEvents(s.Ctx())
+	s.Require().Equal(before, after,
+		"EventEpochLabelRegistryFrozen must not be emitted when the active inferer set is empty")
 }

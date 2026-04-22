@@ -52,7 +52,7 @@ func (k *TopicKeeper) IncrementLabelRefCount(
 // cannot see orphaned labels from evicted workers. Labels must already be in
 // canonical form. Missing rows and underflows are turned into errors: the
 // algebra must be exact (each inferer admit increments once, each eviction
-// decrements once; any deviation is a logic bug we want to surface).
+// decrements once; any deviation is a logic bug).
 func (k *TopicKeeper) DecrementLabelRefCount(
 	ctx context.Context,
 	topicId types.TopicId,

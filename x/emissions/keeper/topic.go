@@ -11,7 +11,6 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -860,95 +859,6 @@ func (k *TopicKeeper) GetEpochLabelRegistry(
 	registry.TopicId = topicId
 	registry.EpochId = uint64(nonce) //nolint:gosec // nonce is a non-negative block height; cast is safe
 	return registry, nil
-}
-
-// isWorkerNonceClosedForLabelRegistration reports whether external writers
-// are allowed to mutate the EpochLabelRegistry for (topicId, nonce).
-//
-// In v2 of the Epoch Label Registry the registry is built at CloseWorkerNonce
-// time from activeInfererLabelRefCount, not incrementally during the Worker
-// Submission Window. While the WSW is open (the worker nonce is in the
-// unfulfilled set) the registry must be treated as frozen so that a buggy or
-// malicious external caller cannot force-assign label ids that diverge from
-// the refcount-derived materialization.
-//
-// Returns true iff the nonce is NOT in the unfulfilled worker nonces set for
-// the topic (i.e. either already closed, or never opened - both cases are
-// legal for the close-time materializer path and for downstream tests that
-// pre-populate a registry without going through AddWorkerNonce).
-func (k *TopicKeeper) isWorkerNonceClosedForLabelRegistration(
-	ctx context.Context,
-	topicId types.TopicId,
-	nonce types.BlockHeight,
-) (bool, error) {
-	isUnfulfilled, err := k.nonceKeeper.IsWorkerNonceUnfulfilled(ctx, topicId, &types.Nonce{BlockHeight: nonce})
-	if err != nil {
-		return false, errorsmod.Wrap(err, "error checking worker nonce status for label registration")
-	}
-	return !isUnfulfilled, nil
-}
-
-// RegisterEpochLabel ensures labelName exists in the registry for (topicId, nonce).
-// If it already exists, it returns the existing id (idempotent).
-//
-// Deprecated: in v2 the registry is materialized at CloseWorkerNonce from
-// activeInfererLabelRefCount via BuildFinalEpochLabelRegistryFromActiveSet;
-// callers should not write to the registry incrementally. This method remains
-// as the low-level primitive used by the materializer and by tests that
-// pre-populate a registry outside of a WSW, but it is guarded with
-// isWorkerNonceClosedForLabelRegistration: attempts to register during an
-// open WSW fail with ErrEpochLabelRegistryFrozen.
-func (k *TopicKeeper) RegisterEpochLabel(
-	ctx context.Context,
-	topicId types.TopicId,
-	nonce types.BlockHeight,
-	labelName string,
-) (LabelId, error) {
-	labelName = strings.TrimSpace(labelName)
-	if labelName == "" {
-		return 0, errorsmod.Wrap(types.ErrInvalidLabelName, "label name cannot be empty")
-	}
-
-	closed, err := k.isWorkerNonceClosedForLabelRegistration(ctx, topicId, nonce)
-	if err != nil {
-		return 0, err
-	}
-	if !closed {
-		return 0, errorsmod.Wrapf(
-			types.ErrEpochLabelRegistryFrozen,
-			"topic %d nonce %d worker submission window is open",
-			topicId, nonce,
-		)
-	}
-
-	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-	if err != nil {
-		return 0, err
-	}
-
-	// TODO: consider making this cheaper at some point
-	for _, lbl := range registry.Labels {
-		if lbl != nil && lbl.Name == labelName {
-			if lbl.Id == 0 {
-				return 0, errorsmod.Wrap(sdkerrors.ErrLogic, "label id zero")
-			}
-			return lbl.Id, nil
-		}
-	}
-
-	//nolint:gosec
-	newID := LabelId(len(registry.Labels)) + 1
-
-	registry.Labels = append(registry.Labels, &types.TopicLabel{
-		Id:   newID,
-		Name: labelName,
-	})
-
-	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicId, nonce), registry); err != nil {
-		return 0, errorsmod.Wrap(err, "error setting topic label registry")
-	}
-
-	return newID, nil
 }
 
 // GetEpochLabelId returns the label id for labelName, if present.

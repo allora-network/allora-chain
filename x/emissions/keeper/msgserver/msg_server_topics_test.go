@@ -1157,3 +1157,52 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 	require.Equal([]string{"a", "\u00e9"}, got.LabelWhitelist,
 		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
 }
+
+// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the
+// generalization from the v14 "newest unfulfilled nonce only" WSW guard to
+// the v2 "any unfulfilled nonce" guard. With WorkerSubmissionWindow=10 and
+// two outstanding worker nonces, the topic has two open WSWs. A param
+// update must be rejected if *any* of them is currently open, regardless
+// of whether the open one is the newest. At block 12 the newest nonce
+// (200) is not yet inside its submission window [200, 210], while the
+// older nonce (5) is still inside its window [5, 15] and covers block 12.
+// A regression to the newest-only check would therefore accept the
+// update; the generalized check must reject it.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 200}))
+	s.WithBlockHeight(12)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: 8, // changed -> must be rejected
+		LabelWhitelist:         []string{"a", "b", "c"},
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,
+		"UpdateTopic must reject mutations while any unfulfilled nonce is within its WSW, not only the newest")
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission,
+		"MaxLabelsPerSubmission must not change while an older nonce's WSW remains open")
+}

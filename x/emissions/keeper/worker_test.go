@@ -1448,3 +1448,241 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		})
 	}
 }
+
+// setupMultiTopic creates a topic and flips it to MULTI arity (with
+// RequireUnity disabled) so that BuildFinalEpochLabelRegistryFromActiveSet
+// runs through the MULTI branch. Returns the topic and its id.
+func (s *KeeperTestSuite) setupMultiTopic() (types.Topic, uint64) {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	topic, err := tk.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.RequireUnity = false
+	topic.UnityTolerance = alloraMath.ZeroDec()
+	s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
+	return topic, topicId
+}
+
+// TestBuildFinalEpochLabelRegistryFromActiveSet_MultiDuplicateLabelDedupes
+// pins the invariant that BuildFinalEpochLabelRegistryFromActiveSet produces
+// exactly one registry entry when multiple workers stage the same canonical
+// label. In v1 this was enforced by RegisterEpochLabel's scan-and-reuse loop;
+// in v2 it falls out of the refcount store's keying (topicId, nonce, label)
+// so each IncrementLabelRefCount bumps a single row instead of appending.
+func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_MultiDuplicateLabelDedupes() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"UP"}))
+	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"UP"}))
+
+	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(reg.Labels, 1)
+	s.Require().Equal(uint32(1), reg.Labels[0].Id)
+	s.Require().Equal("UP", reg.Labels[0].Name)
+
+	gotID, ok, err := tk.GetEpochLabelId(ctx, topicId, nonce, "UP")
+	s.Require().NoError(err)
+	s.Require().True(ok)
+	s.Require().Equal(keeper.LabelId(1), gotID)
+}
+
+// TestBuildFinalEpochLabelRegistryFromActiveSet_MultiLookupHelpersRoundTrip
+// exercises GetEpochLabelId / GetEpochLabelName against a freshly materialized
+// registry. The "hit" cases pin the id<->name round-trip for canonical labels
+// in lex order, and the "miss" cases pin the no-error / ok=false contract that
+// the materializer relies on when a worker submits labels that were not part
+// of the frozen registry.
+func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_MultiLookupHelpersRoundTrip() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b"}))
+
+	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(reg.Labels, 2)
+	s.Require().Equal(uint32(1), reg.Labels[0].Id)
+	s.Require().Equal("a", reg.Labels[0].Name)
+	s.Require().Equal(uint32(2), reg.Labels[1].Id)
+	s.Require().Equal("b", reg.Labels[1].Name)
+
+	gotID, ok, err := tk.GetEpochLabelId(ctx, topicId, nonce, "a")
+	s.Require().NoError(err)
+	s.Require().True(ok)
+	s.Require().Equal(keeper.LabelId(1), gotID)
+
+	gotName, ok, err := tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(2))
+	s.Require().NoError(err)
+	s.Require().True(ok)
+	s.Require().Equal("b", gotName)
+
+	_, ok, err = tk.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
+	s.Require().NoError(err)
+	s.Require().False(ok)
+
+	_, ok, err = tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
+	s.Require().NoError(err)
+	s.Require().False(ok)
+}
+
+// TestBuildFinalEpochLabelRegistryFromActiveSet_ReleasesLabelsOnEviction
+// simulates the active->inactive eviction path that
+// trackActiveInfererLabelsOnRemoval triggers inside AppendInference. Two
+// MULTI workers are admitted, then the second worker's labels are
+// decremented directly (mimicking eviction within the WSW). BuildFinal must
+// surface only the remaining workers' labels - in particular, the label
+// that was unique to the evicted worker must not appear.
+func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_ReleasesLabelsOnEviction() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "c"}))
+	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "d"}))
+
+	s.Require().NoError(tk.DecrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "d"}))
+
+	countD, err := tk.GetLabelRefCount(ctx, topicId, nonce, "d")
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(0), countD)
+
+	visited := make(map[string]uint64)
+	s.Require().NoError(tk.IterateLabelsForNonce(ctx, topicId, nonce, func(label string, c uint64) (bool, error) {
+		visited[label] = c
+		return false, nil
+	}))
+	s.Require().NotContains(visited, "d", "evicted-worker-unique label must be deleted, not zero-valued")
+
+	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(reg.Labels, 3)
+	s.Require().Equal("a", reg.Labels[0].Name)
+	s.Require().Equal(uint32(1), reg.Labels[0].Id)
+	s.Require().Equal("b", reg.Labels[1].Name)
+	s.Require().Equal(uint32(2), reg.Labels[1].Id)
+	s.Require().Equal("c", reg.Labels[2].Name)
+	s.Require().Equal(uint32(3), reg.Labels[2].Id)
+}
+
+// TestTrackActiveInfererLabelsOnAdmission_NoopForSingleArity pins that the
+// admission-side refcount tracker (IncrementStagedLabelRefCount) is a
+// no-op on SINGLE topics. The invariant matters because in v2 SINGLE
+// topics short-circuit BuildFinal to a 1-entry {Id:1, Name:"y"} registry
+// without ever consulting activeInfererLabelRefCount; writing refcount
+// rows for SINGLE would be wasted state and could mislead future
+// MULTI-only callers that iterate the refcount store.
+func (s *KeeperTestSuite) TestTrackActiveInfererLabelsOnAdmission_NoopForSingleArity() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+	wk := s.WorkerKeeper()
+
+	topicId := s.CreateTopic()
+	topic, err := tk.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, topic.OutputArity)
+
+	nonce := types.BlockHeight(7)
+	inferer := s.AddrsStr(0)
+
+	in := types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     inferer,
+		ExtraData:   nil,
+		Proof:       "",
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
+		Values: []*types.InputLabeledValue{
+			{Label: "y", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+		},
+	}
+	s.Require().NoError(wk.SetWorkerLatestInputInference(ctx, topicId, inferer, in))
+
+	s.Require().NoError(wk.IncrementStagedLabelRefCount(ctx, topic, nonce, inferer))
+
+	count, err := tk.GetLabelRefCount(ctx, topicId, nonce, "y")
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(0), count, "SINGLE topic must not write refcount rows on admission")
+}
+
+// TestBuildFinalEpochLabelRegistryFromActiveSet_InvalidInputs exercises the
+// three fast-fail validation branches at the top of the materializer so
+// regressions that silently accept malformed (topic, nonce) cannot go
+// unnoticed.
+func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_InvalidInputs() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	{
+		bad := types.Topic{Id: 0, OutputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE} //nolint:exhaustruct
+		_, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, bad, 7)
+		s.Require().Error(err)
+	}
+
+	{
+		topic, _ := s.setupMultiTopic()
+		_, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, -1)
+		s.Require().Error(err)
+	}
+
+	{
+		topicId := s.CreateTopic()
+		topic, err := tk.GetTopic(ctx, topicId)
+		s.Require().NoError(err)
+		topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED
+		_, err = tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, 7)
+		s.Require().Error(err)
+		s.Require().ErrorIs(err, sdkerrors.ErrInvalidRequest)
+	}
+}
+
+// TestBuildFinalEpochLabelRegistryFromActiveSet_IdempotentRebuild pins two
+// consensus-relevant determinism guarantees:
+//  1. Running BuildFinal twice against an unchanged refcount store yields
+//     byte-equal registries (same label order, same id assignment). Any
+//     non-determinism here would break replay.
+//  2. After a label is decremented to zero, a rebuild produces a compacted
+//     registry with ids reassigned 1..L (no "hole" at the removed label's
+//     former slot).
+func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_IdempotentRebuild() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "c"}))
+
+	reg1, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	s.Require().NoError(err)
+	reg2, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(reg1, reg2, "repeated BuildFinal with unchanged refcount must be byte-equal")
+
+	s.Require().Len(reg1.Labels, 3)
+	s.Require().Equal([]string{"a", "b", "c"},
+		[]string{reg1.Labels[0].Name, reg1.Labels[1].Name, reg1.Labels[2].Name})
+	s.Require().Equal([]uint32{1, 2, 3},
+		[]uint32{reg1.Labels[0].Id, reg1.Labels[1].Id, reg1.Labels[2].Id})
+
+	s.Require().NoError(tk.DecrementLabelRefCount(ctx, topicId, nonce, []string{"b"}))
+
+	reg3, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(reg3.Labels, 2)
+	s.Require().Equal("a", reg3.Labels[0].Name)
+	s.Require().Equal(uint32(1), reg3.Labels[0].Id)
+	s.Require().Equal("c", reg3.Labels[1].Name)
+	s.Require().Equal(uint32(2), reg3.Labels[1].Id, "ids must be reassigned contiguously after compaction")
+}

@@ -2,10 +2,8 @@ package keeper_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -670,115 +668,18 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
 
-//nolint:staticcheck
-func (s *KeeperTestSuite) TestEpochLabelRegistry() {
-	type testCase struct {
-		name string
-		run  func(ctx sdk.Context, k *keeper.TopicKeeper)
-	}
+// TestGetEpochLabelRegistryEmpty pins the invariant that GetEpochLabelRegistry
+// returns an empty-but-well-formed registry (no error) when nothing has been
+// materialized for (topicId, nonce).
+func (s *KeeperTestSuite) TestGetEpochLabelRegistryEmpty() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
 
-	newFixture := func() (sdk.Context, *keeper.TopicKeeper, types.TopicId, types.BlockHeight) {
-		ctx := s.Ctx()
-		k := s.TopicKeeper()
-		topicId := s.CreateTopic()
-		nonce := types.BlockHeight(7)
-		return ctx, k, topicId, nonce
-	}
-
-	tests := []testCase{
-		{
-			name: "Get empty registry returns empty (no error)",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				_, _, topicId, nonce := newFixture()
-				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-				s.Require().NoError(err)
-				s.Require().Equal(topicId, reg.TopicId)
-				s.Require().Equal(uint64(nonce), reg.EpochId) //nolint:gosec // nonce is a non-negative block height; cast is safe
-				s.Require().Empty(reg.Labels)
-			},
-		},
-		{
-			name: "Register one label assigns ID=1 and persists",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				id, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(1), id)
-
-				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-				s.Require().NoError(err)
-				s.Require().Len(reg.Labels, 1)
-				s.Require().Equal(uint32(1), reg.Labels[0].Id)
-				s.Require().Equal("UP", reg.Labels[0].Name)
-			},
-		},
-		{
-			name: "Register two labels assigns ID=2 on second label",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-
-				id, err := k.RegisterEpochLabel(ctx, topicId, nonce, "DOWN")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(2), id)
-
-				gotID, ok, err := k.GetEpochLabelId(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().True(ok)
-				s.Require().Equal(keeper.LabelId(1), gotID)
-
-				gotName, ok, err := k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(2))
-				s.Require().NoError(err)
-				s.Require().True(ok)
-				s.Require().Equal("DOWN", gotName)
-			},
-		},
-		{
-			name: "Duplicate register does not create new ID or new label",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				id1, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(1), id1)
-
-				id2, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(1), id2)
-
-				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-				s.Require().NoError(err)
-				s.Require().Len(reg.Labels, 1)
-				s.Require().Equal(uint32(1), reg.Labels[0].Id)
-				s.Require().Equal("UP", reg.Labels[0].Name)
-			},
-		},
-		{
-			name: "Missing lookups return ok=false (no error)",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-
-				_, ok, err := k.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
-				s.Require().NoError(err)
-				s.Require().False(ok)
-
-				_, ok, err = k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
-				s.Require().NoError(err)
-				s.Require().False(ok)
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		s.Run(tc.name, func() {
-			ctx, k, _, _ := newFixture()
-			tc.run(ctx, k)
-		})
-	}
+	reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, reg.TopicId)
+	s.Require().Equal(uint64(nonce), reg.EpochId) //nolint:gosec // nonce is a non-negative block height; cast is safe
+	s.Require().Empty(reg.Labels)
 }
