@@ -306,7 +306,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferences)
 	require.NoError(err)
 
-	_, err = keeper.GetTopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, inferenceNonce.BlockHeight, "y")
+	_, err = keeper.GetTopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, inferenceNonce.BlockHeight)
 	require.NoError(err)
 
 	forecasts := getForecastsForBlockHeight(workers, forecasters, inferenceBlockHeight, topicId)
