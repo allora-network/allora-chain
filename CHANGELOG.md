@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#945](https://github.com/allora-network/allora-chain/pull/945) Fix parameter advertising in autocli
 * [#946](https://github.com/allora-network/allora-chain/pull/946) Fix dry-run and auto-gas issues. Add keyring simulation
+* [#949](https://github.com/allora-network/allora-chain/pull/949) Increase p_norm available range
 
 ### Deprecated
 
