@@ -621,7 +621,21 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		LossMethod:          "mse",
 		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("2.0"),
+		PNorm:               alloraMath.MustNewDecFromString("0.5"),
+		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+	}
+	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.ErrorContains(err, "p-norm")
+
+	// Invalid p_norm (above range)
+	updateTopicMsg = &types.UpdateTopicRequest{
+		Sender:              sender,
+		TopicId:             topicId,
+		Metadata:            "metadata",
+		LossMethod:          "mse",
+		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
+		PNorm:               alloraMath.MustNewDecFromString("10.1"),
 		CNorm:               alloraMath.MustNewDecFromString("0.75"),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)

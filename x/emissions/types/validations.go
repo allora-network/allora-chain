@@ -880,8 +880,8 @@ func (topic Topic) Validate(params Params) error {
 	if err := ValidateDec(topic.PNorm); err != nil {
 		return errors.Wrap(err, "topic p-norm is invalid")
 	}
-	if topic.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || topic.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic p-norm must be between 2.5 and 4.5")
+	if topic.PNorm.Lt(alloraMath.MustNewDecFromString("1")) || topic.PNorm.Gt(alloraMath.MustNewDecFromString("10")) {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic p-norm must be between 1 and 10")
 	}
 	if err := ValidateDec(topic.Epsilon); err != nil {
 		return errors.Wrap(err, "topic epsilon is invalid")
@@ -1206,8 +1206,8 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) || ValidateDec(msg.AlphaRegret) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
 	}
-	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(msg.PNorm) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
+	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("1")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("10")) || ValidateDec(msg.PNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 1 and 10")
 	}
 	if msg.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || msg.CNorm.Gt(alloraMath.MustNewDecFromString("100")) || ValidateDec(msg.CNorm) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "c_norm must be between -100 and 100")
