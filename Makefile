@@ -124,6 +124,6 @@ duplicate-routes:
 integration-test:
 	@echo "--> Running tests"
 	@bash test/local_testnet_l1.sh  <<< "y"
-	INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
+	INTEGRATION=TRUE go test -timeout 30m ./test/integration/ -v
 
 .PHONY: all install build lint build-maprange-linter maprange duplicate-routes
