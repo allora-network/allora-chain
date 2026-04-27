@@ -55,9 +55,8 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// Staged raw worker submissions inside an open worker submission window.
 	// Does NOT call InputInference.ValidateWithLimits here because the
 	// effective cap/whitelist depend on runtime topic/module state that is
-	// itself being imported; instead we rely on the payload having been
-	// validated at submission time and on migrate.go to produce
-	// well-formed entries from the legacy inferences store.
+	// itself being imported. Stateless validation and key/payload consistency
+	// are still enforced before import.
 	for _, row := range data.WorkerLatestInputInferences {
 		if row == nil {
 			continue
@@ -70,6 +69,15 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 		}
 		if err := types.ValidateBech32(row.ActorId); err != nil {
 			return errors.Wrap(err, "worker_latest_input_inferences: actor id invalid")
+		}
+		if err := row.InputInference.Validate(); err != nil {
+			return errors.Wrap(err, "worker_latest_input_inferences: input_inference invalid")
+		}
+		if row.InputInference.TopicId != row.TopicId {
+			return errors.Wrap(types.ErrInvalidValue, "worker_latest_input_inferences: topic id mismatch between key and payload")
+		}
+		if row.InputInference.Inferer != row.ActorId {
+			return errors.Wrap(types.ErrInvalidValue, "worker_latest_input_inferences: actor id mismatch between key and payload")
 		}
 		if err := k.workerLatestInputInferences.Set(ctx,
 			collections.Join(row.TopicId, row.ActorId),

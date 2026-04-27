@@ -614,6 +614,7 @@ func EmitNewWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId Topic
 // exactly once, from closeActiveInferencesSet, after
 // BuildFinalEpochLabelRegistryFromActiveSet returns.
 func EmitNewEpochLabelRegistryFrozenEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, registry EpochLabelRegistry) {
+	metrics.IncrProducerEventCount(metrics.EPOCH_LABEL_REGISTRY_FROZEN_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := sdkCtx.EventManager().EmitTypedEvent(NewEpochLabelRegistryFrozenEventBase(topicId, nonceBlockHeight, registry))
 	if err != nil {

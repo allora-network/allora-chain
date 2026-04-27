@@ -54,9 +54,6 @@ func CanonicalLabelName(s string) (string, error) {
 		return "", errorsmod.Wrap(ErrInvalidLabelName, "label is empty after trimming")
 	}
 	for _, r := range trimmed {
-		if r == utf8.RuneError {
-			return "", errorsmod.Wrap(ErrInvalidLabelName, "label contains an invalid UTF-8 rune")
-		}
 		if unicode.In(r, unicode.Cc, unicode.Cf) {
 			return "", errorsmod.Wrapf(ErrInvalidLabelName,
 				"label contains a disallowed control/format rune: U+%04X", r)
