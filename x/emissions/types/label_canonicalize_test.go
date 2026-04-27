@@ -145,6 +145,24 @@ func TestCanonicalLabelName_Rejects(t *testing.T) {
 	}
 }
 
+// TestCanonicalLabelName_RejectsReplacementCharacter documents that a literal
+// Unicode replacement character is valid UTF-8 but outside the ASCII-only label
+// charset, so it must be rejected by the charset check rather than the UTF-8
+// validity gate.
+func TestCanonicalLabelName_RejectsReplacementCharacter(t *testing.T) {
+	t.Parallel()
+	got, err := types.CanonicalLabelName("\uFFFD", testMaxBytes, false)
+	if err == nil {
+		t.Fatalf("expected error for literal replacement character, got %q", got)
+	}
+	if got != "" {
+		t.Fatalf("expected empty result on error, got %q", got)
+	}
+	if !strings.Contains(err.Error(), "disallowed character: U+FFFD") {
+		t.Fatalf("expected disallowed-character error for U+FFFD, got %v", err)
+	}
+}
+
 // TestCanonicalLabelName_RejectsZeroMaxBytes covers the defensive check for
 // a zero cap. Params.Validate rejects zero so this path is not reachable
 // through normal load, but the canonicalizer must still reject it cleanly.

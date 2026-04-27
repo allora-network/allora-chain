@@ -64,6 +64,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
@@ -143,6 +144,7 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
