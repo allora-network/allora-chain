@@ -123,8 +123,8 @@ func local_request_QueryService_GetTopic_0(ctx context.Context, marshaler runtim
 
 }
 
-func request_QueryService_GetWorkerLatestInferenceByTopicId_0(ctx context.Context, marshaler runtime.Marshaler, client QueryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetWorkerLatestInferenceByTopicIdRequest
+func request_QueryService_GetWorkerLatestInputInferenceByTopicId_0(ctx context.Context, marshaler runtime.Marshaler, client QueryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetWorkerLatestInputInferenceByTopicIdRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -156,13 +156,13 @@ func request_QueryService_GetWorkerLatestInferenceByTopicId_0(ctx context.Contex
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "worker_address", err)
 	}
 
-	msg, err := client.GetWorkerLatestInferenceByTopicId(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetWorkerLatestInputInferenceByTopicId(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_QueryService_GetWorkerLatestInferenceByTopicId_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetWorkerLatestInferenceByTopicIdRequest
+func local_request_QueryService_GetWorkerLatestInputInferenceByTopicId_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetWorkerLatestInputInferenceByTopicIdRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -194,7 +194,7 @@ func local_request_QueryService_GetWorkerLatestInferenceByTopicId_0(ctx context.
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "worker_address", err)
 	}
 
-	msg, err := server.GetWorkerLatestInferenceByTopicId(ctx, &protoReq)
+	msg, err := server.GetWorkerLatestInputInferenceByTopicId(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -6822,7 +6822,7 @@ func RegisterQueryServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
-	mux.Handle("GET", pattern_QueryService_GetWorkerLatestInferenceByTopicId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_QueryService_GetWorkerLatestInputInferenceByTopicId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -6833,7 +6833,7 @@ func RegisterQueryServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QueryService_GetWorkerLatestInferenceByTopicId_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QueryService_GetWorkerLatestInputInferenceByTopicId_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -6841,7 +6841,7 @@ func RegisterQueryServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 			return
 		}
 
-		forward_QueryService_GetWorkerLatestInferenceByTopicId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QueryService_GetWorkerLatestInputInferenceByTopicId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -9315,7 +9315,7 @@ func RegisterQueryServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
-	mux.Handle("GET", pattern_QueryService_GetWorkerLatestInferenceByTopicId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_QueryService_GetWorkerLatestInputInferenceByTopicId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -9324,14 +9324,14 @@ func RegisterQueryServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QueryService_GetWorkerLatestInferenceByTopicId_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QueryService_GetWorkerLatestInputInferenceByTopicId_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QueryService_GetWorkerLatestInferenceByTopicId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QueryService_GetWorkerLatestInputInferenceByTopicId_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -11405,7 +11405,7 @@ var (
 
 	pattern_QueryService_GetTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v10", "topics", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_QueryService_GetWorkerLatestInferenceByTopicId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"emissions", "v10", "topics", "topic_id", "workers", "worker_address", "latest_inference"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_QueryService_GetWorkerLatestInputInferenceByTopicId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6}, []string{"emissions", "v10", "topics", "topic_id", "workers", "worker_address", "latest_input_inference"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_QueryService_GetInferencesAtBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v10", "inferences", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -11621,7 +11621,7 @@ var (
 
 	forward_QueryService_GetTopic_0 = runtime.ForwardResponseMessage
 
-	forward_QueryService_GetWorkerLatestInferenceByTopicId_0 = runtime.ForwardResponseMessage
+	forward_QueryService_GetWorkerLatestInputInferenceByTopicId_0 = runtime.ForwardResponseMessage
 
 	forward_QueryService_GetInferencesAtBlock_0 = runtime.ForwardResponseMessage
 

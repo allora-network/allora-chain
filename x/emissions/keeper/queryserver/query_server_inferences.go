@@ -15,9 +15,9 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
-func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInferenceByTopicIdRequest) (_ *emissionstypes.GetWorkerLatestInferenceByTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerLatestInferenceByTopicId", time.Now(), &err)
+// GetWorkerLatestInputInferenceByTopicId handles the query for the latest raw input inference by a specific worker for a given topic.
+func (qs queryServer) GetWorkerLatestInputInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInputInferenceByTopicIdRequest) (_ *emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse, err error) {
+	defer metrics.RecordMetrics("GetWorkerLatestInputInferenceByTopicId", time.Now(), &err)
 
 	if err = emissionstypes.ValidateStringIsBech32(req.WorkerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
@@ -29,13 +29,12 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 		return nil, err
 	}
 
-	//nolint:staticcheck // SA1019: GetWorkerLatestInferenceByTopicId is intentionally the compatibility shim used by the public query.
-	inference, err := qs.wk.GetWorkerLatestInferenceByTopicId(ctx, req.TopicId, req.WorkerAddress)
+	inference, err := qs.wk.GetWorkerLatestInputInferenceByTopicId(ctx, req.TopicId, req.WorkerAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	return &emissionstypes.GetWorkerLatestInferenceByTopicIdResponse{LatestInference: &inference}, nil
+	return &emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse{LatestInputInference: &inference}, nil
 }
 
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (_ *emissionstypes.GetInferencesAtBlockResponse, err error) {

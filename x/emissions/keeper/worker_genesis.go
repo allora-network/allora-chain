@@ -29,7 +29,7 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	// Inferences []*TopicIdActorIdInference
 	//
 	// Deprecated: replaced by WorkerLatestInputInferences in Epoch Label
-	// Registry v2 and drained by the v15 migration. Kept for backwards-
+	// Registry and drained by the v15 migration. Kept for backwards-
 	// compatible genesis round-trip of any in-flight entries captured
 	// pre-migration; post-upgrade this list is always empty.
 	for _, topicIdActorIdInference := range data.Inferences {

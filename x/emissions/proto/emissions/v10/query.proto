@@ -5,6 +5,7 @@ import "amino/amino.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "emissions/v10/inference.proto";
+import "emissions/v10/inputworker.proto";
 import "emissions/v10/network_inference.proto";
 import "emissions/v10/topic.proto";
 import "emissions/v3/node.proto";
@@ -37,9 +38,9 @@ service QueryService {
     option (google.api.http).get = "/emissions/v10/topics/{topic_id}";
   }
 
-  rpc GetWorkerLatestInferenceByTopicId(GetWorkerLatestInferenceByTopicIdRequest) returns (GetWorkerLatestInferenceByTopicIdResponse) {
+  rpc GetWorkerLatestInputInferenceByTopicId(GetWorkerLatestInputInferenceByTopicIdRequest) returns (GetWorkerLatestInputInferenceByTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_inference";
+    option (google.api.http).get = "/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_input_inference";
   }
 
   rpc GetInferencesAtBlock(GetInferencesAtBlockRequest) returns (GetInferencesAtBlockResponse) {
@@ -968,13 +969,13 @@ message GetForecastsAtBlockResponse {
   emissions.v3.Forecasts forecasts = 1;
 }
 
-message GetWorkerLatestInferenceByTopicIdRequest {
+message GetWorkerLatestInputInferenceByTopicIdRequest {
   uint64 topic_id = 1;
   string worker_address = 2;
 }
 
-message GetWorkerLatestInferenceByTopicIdResponse {
-  emissions.v10.Inference latest_inference = 1;
+message GetWorkerLatestInputInferenceByTopicIdResponse {
+  emissions.v10.InputInference latest_input_inference = 1;
 }
 
 message GetWorkerNodeInfoRequest {
