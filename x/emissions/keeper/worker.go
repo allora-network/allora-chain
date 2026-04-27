@@ -959,54 +959,6 @@ func (k *WorkerKeeper) InsertActiveForecasts(
 	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
-// GetWorkerLatestInferenceByTopicId is a compatibility shim over the new
-// workerLatestInputInferences store. Since v2 of the Epoch Label Registry
-// there is no standalone committed-Inference-per-worker store to read from
-// during the WSW; we project the raw InputInference into a "best effort"
-// types.Inference in submission order.
-//
-// SINGLE topics: Values is a single-element slice, from either Input.Value
-// or Input.Values[0] when present.
-//
-// MULTI topics: Values is the raw labeled values in submission order.
-// Callers that need a registry-aligned Inference MUST go through
-// GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose; this shim
-// only guarantees a shape that's consistent with the legacy readers
-// (e.g. tests that just assert presence or sanity-check a round-trip).
-//
-// Deprecated: prefer GetWorkerLatestInputInferenceByTopicId for raw reads
-// and the close-time materializer for aligned reads.
-func (k *WorkerKeeper) GetWorkerLatestInferenceByTopicId(
-	ctx context.Context,
-	topicId TopicId,
-	worker ActorId,
-) (types.Inference, error) {
-	in, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topicId, worker)
-	if err != nil {
-		return types.Inference{}, err
-	}
-	var values []alloraMath.Dec
-	if len(in.Values) > 0 {
-		values = make([]alloraMath.Dec, 0, len(in.Values))
-		for _, lv := range in.Values {
-			if lv == nil {
-				continue
-			}
-			values = append(values, lv.Value.ToDec())
-		}
-	} else {
-		values = []alloraMath.Dec{in.Value.ToDec()}
-	}
-	return types.Inference{
-		TopicId:     in.TopicId,
-		BlockHeight: in.BlockHeight,
-		Inferer:     in.Inferer,
-		Values:      values,
-		ExtraData:   in.ExtraData,
-		Proof:       in.Proof,
-	}, nil
-}
-
 func (k *WorkerKeeper) GetWorkerLatestForecastByTopicId(
 	ctx context.Context,
 	topicId TopicId,

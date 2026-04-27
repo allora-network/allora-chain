@@ -22,7 +22,7 @@ const (
 	QueryService_GetParams_FullMethodName                                   = "/emissions.v10.QueryService/GetParams"
 	QueryService_GetNextTopicId_FullMethodName                              = "/emissions.v10.QueryService/GetNextTopicId"
 	QueryService_GetTopic_FullMethodName                                    = "/emissions.v10.QueryService/GetTopic"
-	QueryService_GetWorkerLatestInferenceByTopicId_FullMethodName           = "/emissions.v10.QueryService/GetWorkerLatestInferenceByTopicId"
+	QueryService_GetWorkerLatestInputInferenceByTopicId_FullMethodName      = "/emissions.v10.QueryService/GetWorkerLatestInputInferenceByTopicId"
 	QueryService_GetInferencesAtBlock_FullMethodName                        = "/emissions.v10.QueryService/GetInferencesAtBlock"
 	QueryService_GetLatestTopicInferences_FullMethodName                    = "/emissions.v10.QueryService/GetLatestTopicInferences"
 	QueryService_GetForecastsAtBlock_FullMethodName                         = "/emissions.v10.QueryService/GetForecastsAtBlock"
@@ -138,7 +138,7 @@ type QueryServiceClient interface {
 	GetParams(ctx context.Context, in *GetParamsRequest, opts ...grpc.CallOption) (*GetParamsResponse, error)
 	GetNextTopicId(ctx context.Context, in *GetNextTopicIdRequest, opts ...grpc.CallOption) (*GetNextTopicIdResponse, error)
 	GetTopic(ctx context.Context, in *GetTopicRequest, opts ...grpc.CallOption) (*GetTopicResponse, error)
-	GetWorkerLatestInferenceByTopicId(ctx context.Context, in *GetWorkerLatestInferenceByTopicIdRequest, opts ...grpc.CallOption) (*GetWorkerLatestInferenceByTopicIdResponse, error)
+	GetWorkerLatestInputInferenceByTopicId(ctx context.Context, in *GetWorkerLatestInputInferenceByTopicIdRequest, opts ...grpc.CallOption) (*GetWorkerLatestInputInferenceByTopicIdResponse, error)
 	GetInferencesAtBlock(ctx context.Context, in *GetInferencesAtBlockRequest, opts ...grpc.CallOption) (*GetInferencesAtBlockResponse, error)
 	GetLatestTopicInferences(ctx context.Context, in *GetLatestTopicInferencesRequest, opts ...grpc.CallOption) (*GetLatestTopicInferencesResponse, error)
 	GetForecastsAtBlock(ctx context.Context, in *GetForecastsAtBlockRequest, opts ...grpc.CallOption) (*GetForecastsAtBlockResponse, error)
@@ -290,10 +290,10 @@ func (c *queryServiceClient) GetTopic(ctx context.Context, in *GetTopicRequest, 
 	return out, nil
 }
 
-func (c *queryServiceClient) GetWorkerLatestInferenceByTopicId(ctx context.Context, in *GetWorkerLatestInferenceByTopicIdRequest, opts ...grpc.CallOption) (*GetWorkerLatestInferenceByTopicIdResponse, error) {
+func (c *queryServiceClient) GetWorkerLatestInputInferenceByTopicId(ctx context.Context, in *GetWorkerLatestInputInferenceByTopicIdRequest, opts ...grpc.CallOption) (*GetWorkerLatestInputInferenceByTopicIdResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetWorkerLatestInferenceByTopicIdResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetWorkerLatestInferenceByTopicId_FullMethodName, in, out, cOpts...)
+	out := new(GetWorkerLatestInputInferenceByTopicIdResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetWorkerLatestInputInferenceByTopicId_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1340,7 +1340,7 @@ type QueryServiceServer interface {
 	GetParams(context.Context, *GetParamsRequest) (*GetParamsResponse, error)
 	GetNextTopicId(context.Context, *GetNextTopicIdRequest) (*GetNextTopicIdResponse, error)
 	GetTopic(context.Context, *GetTopicRequest) (*GetTopicResponse, error)
-	GetWorkerLatestInferenceByTopicId(context.Context, *GetWorkerLatestInferenceByTopicIdRequest) (*GetWorkerLatestInferenceByTopicIdResponse, error)
+	GetWorkerLatestInputInferenceByTopicId(context.Context, *GetWorkerLatestInputInferenceByTopicIdRequest) (*GetWorkerLatestInputInferenceByTopicIdResponse, error)
 	GetInferencesAtBlock(context.Context, *GetInferencesAtBlockRequest) (*GetInferencesAtBlockResponse, error)
 	GetLatestTopicInferences(context.Context, *GetLatestTopicInferencesRequest) (*GetLatestTopicInferencesResponse, error)
 	GetForecastsAtBlock(context.Context, *GetForecastsAtBlockRequest) (*GetForecastsAtBlockResponse, error)
@@ -1471,8 +1471,8 @@ func (UnimplementedQueryServiceServer) GetNextTopicId(context.Context, *GetNextT
 func (UnimplementedQueryServiceServer) GetTopic(context.Context, *GetTopicRequest) (*GetTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopic not implemented")
 }
-func (UnimplementedQueryServiceServer) GetWorkerLatestInferenceByTopicId(context.Context, *GetWorkerLatestInferenceByTopicIdRequest) (*GetWorkerLatestInferenceByTopicIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerLatestInferenceByTopicId not implemented")
+func (UnimplementedQueryServiceServer) GetWorkerLatestInputInferenceByTopicId(context.Context, *GetWorkerLatestInputInferenceByTopicIdRequest) (*GetWorkerLatestInputInferenceByTopicIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerLatestInputInferenceByTopicId not implemented")
 }
 func (UnimplementedQueryServiceServer) GetInferencesAtBlock(context.Context, *GetInferencesAtBlockRequest) (*GetInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferencesAtBlock not implemented")
@@ -1858,20 +1858,20 @@ func _QueryService_GetTopic_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _QueryService_GetWorkerLatestInferenceByTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWorkerLatestInferenceByTopicIdRequest)
+func _QueryService_GetWorkerLatestInputInferenceByTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkerLatestInputInferenceByTopicIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServiceServer).GetWorkerLatestInferenceByTopicId(ctx, in)
+		return srv.(QueryServiceServer).GetWorkerLatestInputInferenceByTopicId(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: QueryService_GetWorkerLatestInferenceByTopicId_FullMethodName,
+		FullMethod: QueryService_GetWorkerLatestInputInferenceByTopicId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetWorkerLatestInferenceByTopicId(ctx, req.(*GetWorkerLatestInferenceByTopicIdRequest))
+		return srv.(QueryServiceServer).GetWorkerLatestInputInferenceByTopicId(ctx, req.(*GetWorkerLatestInputInferenceByTopicIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3750,8 +3750,8 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _QueryService_GetTopic_Handler,
 		},
 		{
-			MethodName: "GetWorkerLatestInferenceByTopicId",
-			Handler:    _QueryService_GetWorkerLatestInferenceByTopicId_Handler,
+			MethodName: "GetWorkerLatestInputInferenceByTopicId",
+			Handler:    _QueryService_GetWorkerLatestInputInferenceByTopicId_Handler,
 		},
 		{
 			MethodName: "GetInferencesAtBlock",

@@ -180,20 +180,17 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
-// TestGetWorkerLatestInferenceByTopicId exercises the v2 shim: reads now come
-// from workerLatestInputInferences (populated by SetWorkerLatestInputInference),
-// not the legacy per-worker inferences store. The shim projects an
-// InputInference into a best-effort committed Inference so existing callers
-// keep compiling.
-func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
+// TestGetWorkerLatestInputInferenceByTopicId exercises the raw staged input
+// store used during the worker submission window.
+func (s *KeeperTestSuite) TestGetWorkerLatestInputInferenceByTopicId() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
 
 	topicId := uint64(1)
 	workerAccStr := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
 
-	_, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
-	s.Require().Error(err, "Retrieving an inference that does not exist should result in an error")
+	_, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topicId, workerAccStr)
+	s.Require().Error(err, "Retrieving an input inference that does not exist should result in an error")
 
 	blockHeight1 := int64(12345)
 	firstInput := types.InputInference{
@@ -221,16 +218,9 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	err = k.SetWorkerLatestInputInference(ctx, topicId, workerAccStr, secondInput)
 	s.Require().NoError(err, "Overwriting the staged input inference should not fail")
 
-	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
-	s.Require().NoError(err, "Retrieving an existing inference should not fail")
-	s.Require().Equal(types.Inference{
-		TopicId:     topicId,
-		BlockHeight: blockHeight2,
-		Inferer:     workerAccStr,
-		Values:      []alloraMath.Dec{secondInput.Value.ToDec()},
-		ExtraData:   []byte("data"),
-		Proof:       "proof123",
-	}, retrievedInference, "Retrieved inference should match the latest staged input")
+	retrievedInference, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topicId, workerAccStr)
+	s.Require().NoError(err, "Retrieving an existing input inference should not fail")
+	s.Require().Equal(secondInput, retrievedInference, "Retrieved input inference should match the latest staged input")
 }
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
@@ -945,9 +935,7 @@ func (s *KeeperTestSuite) TestRemoveForecast() {
 
 // TestRemoveInference verifies that RemoveInference scrubs the worker's raw
 // staged InputInference from the workerLatestInputInferences store, not the
-// legacy deprecated inferences store. The compatibility shim on
-// GetWorkerLatestInferenceByTopicId projects that raw row, so reading it back
-// after removal must error.
+// legacy deprecated inferences store.
 func (s *KeeperTestSuite) TestRemoveInference() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
@@ -967,18 +955,17 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 	err := k.SetWorkerLatestInputInference(ctx, topicId, inferer, input)
 	s.Require().NoError(err)
 
-	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+	retrievedInference, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topicId, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(topicId, retrievedInference.TopicId)
 	s.Require().Equal(int64(100), retrievedInference.BlockHeight)
 	s.Require().Equal(inferer, retrievedInference.Inferer)
-	s.Require().Equal(1, len(retrievedInference.Values))
-	s.Require().Equal("1", retrievedInference.Values[0].String())
+	s.Require().Equal("1", retrievedInference.Value.String())
 
 	err = k.RemoveWorkerLatestInputInference(ctx, topicId, inferer)
 	s.Require().NoError(err)
 
-	_, err = k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+	_, err = k.GetWorkerLatestInputInferenceByTopicId(ctx, topicId, inferer)
 	s.Require().Error(err)
 }
 

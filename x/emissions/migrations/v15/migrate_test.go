@@ -430,7 +430,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateInferencesToWorkerLatestInpu
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	legacyStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	legacyStore := prefix.NewStore(store, emissionstypes.InferencesKey) //nolint:staticcheck // SA1019: test seeds the legacy prefix drained by the v15 migration.
 	destStore := prefix.NewStore(store, emissionstypes.WorkerLatestInputInferenceKey)
 	registryStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
 
@@ -546,7 +546,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateInferencesToWorkerLatestInpu
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	legacyStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	legacyStore := prefix.NewStore(store, emissionstypes.InferencesKey) //nolint:staticcheck // SA1019: test seeds the legacy prefix drained by the v15 migration.
 	destStore := prefix.NewStore(store, emissionstypes.WorkerLatestInputInferenceKey)
 
 	multiTopic := emissionstypes.Topic{

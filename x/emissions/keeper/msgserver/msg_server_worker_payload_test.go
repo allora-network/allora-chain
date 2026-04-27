@@ -141,7 +141,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
 
-	inference, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	inference, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 	require.NotNil(inference)
 }
@@ -192,7 +192,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast()
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err)
 
-	inferences, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	inferences, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 	require.NotNil(inferences)
 }
@@ -988,15 +988,19 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 
 			// In v2 the raw InputInference is staged in
 			// workerLatestInputInferences; the registry is only materialized
-			// at CloseWorkerNonce. We assert (a) the staged submission looks
-			// correct when projected through the legacy shim and (b) the
-			// per-label refcount store reflects each submitted label for
-			// MULTI topics.
-			got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+			// at CloseWorkerNonce. We assert (a) the staged raw submission
+			// looks correct and (b) the per-label refcount store reflects each
+			// submitted label for MULTI topics.
+			got, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 			s.Require().NoError(err)
-			s.Require().Equal(len(c.wantValuesStr), len(got.Values))
-			for i := range c.wantValuesStr {
-				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
+			if len(got.Values) == 0 {
+				s.Require().Len(c.wantValuesStr, 1)
+				s.Require().Equal(c.wantValuesStr[0], got.Value.String())
+			} else {
+				s.Require().Equal(len(c.wantValuesStr), len(got.Values))
+				for i := range c.wantValuesStr {
+					s.Require().Equal(c.wantValuesStr[i], got.Values[i].Value.String())
+				}
 			}
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
