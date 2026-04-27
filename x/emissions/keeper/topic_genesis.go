@@ -199,6 +199,12 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// using a given label inside an open worker submission window. Only
 	// relevant mid-WSW; a well-formed post-close genesis export has this
 	// list empty.
+	type activeRefCountGenesisKey struct {
+		topicId     uint64
+		blockHeight int64
+		label       string
+	}
+	seenActiveRefCounts := make(map[activeRefCountGenesisKey]struct{}, len(data.ActiveInfererLabelRefcount))
 	for _, row := range data.ActiveInfererLabelRefcount {
 		if row == nil {
 			continue
@@ -209,14 +215,24 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 		if err := types.ValidateBlockHeight(row.BlockHeight); err != nil {
 			return errors.Wrap(err, "active_inferer_label_refcount: block height invalid")
 		}
-		if row.Label == "" {
-			return errors.Wrap(types.ErrInvalidLabelName, "active_inferer_label_refcount: label cannot be empty")
+		canonicalLabel, err := types.CanonicalLabelName(row.Label)
+		if err != nil {
+			return errors.Wrap(err, "active_inferer_label_refcount: invalid label")
 		}
 		if row.Count == 0 {
 			return errors.Wrap(types.ErrInvalidValue, "active_inferer_label_refcount: count must be > 0")
 		}
+		key := activeRefCountGenesisKey{
+			topicId:     row.TopicId,
+			blockHeight: row.BlockHeight,
+			label:       canonicalLabel,
+		}
+		if _, ok := seenActiveRefCounts[key]; ok {
+			return errors.Wrap(types.ErrInvalidValue, "active_inferer_label_refcount: duplicate canonical key")
+		}
+		seenActiveRefCounts[key] = struct{}{}
 		if err := k.activeInfererLabelRefCount.Set(ctx,
-			collections.Join3(row.TopicId, row.BlockHeight, row.Label),
+			collections.Join3(row.TopicId, row.BlockHeight, canonicalLabel),
 			row.Count); err != nil {
 			return errors.Wrap(err, "error setting active_inferer_label_refcount")
 		}

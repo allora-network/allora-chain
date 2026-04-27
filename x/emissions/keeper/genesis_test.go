@@ -786,6 +786,66 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 			wantError: "inference cannot be nil",
 		},
 		{
+			name: "worker latest input inference invalid payload",
+			mutate: func(gs *types.GenesisState) {
+				inferer := s.AddrsStr(0)
+				gs.WorkerLatestInputInferences = []*types.TopicIdActorIdInputInference{{
+					TopicId: 1,
+					ActorId: inferer,
+					InputInference: &types.InputInference{
+						TopicId:     0,
+						BlockHeight: 10,
+						Inferer:     inferer,
+						Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
+						ExtraData:   nil,
+						Proof:       "",
+						Values:      nil,
+					},
+				}}
+			},
+			wantError: "worker_latest_input_inferences: input_inference invalid",
+		},
+		{
+			name: "worker latest input inference topic mismatch",
+			mutate: func(gs *types.GenesisState) {
+				inferer := s.AddrsStr(0)
+				gs.WorkerLatestInputInferences = []*types.TopicIdActorIdInputInference{{
+					TopicId: 1,
+					ActorId: inferer,
+					InputInference: &types.InputInference{
+						TopicId:     2,
+						BlockHeight: 10,
+						Inferer:     inferer,
+						Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
+						ExtraData:   nil,
+						Proof:       "",
+						Values:      nil,
+					},
+				}}
+			},
+			wantError: "topic id mismatch between key and payload",
+		},
+		{
+			name: "worker latest input inference actor mismatch",
+			mutate: func(gs *types.GenesisState) {
+				actorId := s.AddrsStr(0)
+				gs.WorkerLatestInputInferences = []*types.TopicIdActorIdInputInference{{
+					TopicId: 1,
+					ActorId: actorId,
+					InputInference: &types.InputInference{
+						TopicId:     1,
+						BlockHeight: 10,
+						Inferer:     s.AddrsStr(1),
+						Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
+						ExtraData:   nil,
+						Proof:       "",
+						Values:      nil,
+					},
+				}}
+			},
+			wantError: "actor id mismatch between key and payload",
+		},
+		{
 			name: "all inferences nil wrapper",
 			mutate: func(gs *types.GenesisState) {
 				gs.AllInferences = []*types.TopicIdBlockHeightInferences{{TopicId: 1, BlockHeight: 10, Inferences: nil}}
@@ -833,6 +893,28 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 				gs.BlockToLowestActiveTopicWeight = []*types.BlockHeightTopicIdWeightPair{{BlockHeight: 10, TopicWeight: nil}}
 			},
 			wantError: "block to lowest active topic weight cannot be nil",
+		},
+		{
+			name: "active inferer label refcount invalid label",
+			mutate: func(gs *types.GenesisState) {
+				gs.ActiveInfererLabelRefcount = []*types.TopicIdBlockHeightLabelRefCount{{
+					TopicId:     1,
+					BlockHeight: 10,
+					Label:       "bad\u200blabel",
+					Count:       1,
+				}}
+			},
+			wantError: "active_inferer_label_refcount: invalid label",
+		},
+		{
+			name: "active inferer label refcount duplicate canonical key",
+			mutate: func(gs *types.GenesisState) {
+				gs.ActiveInfererLabelRefcount = []*types.TopicIdBlockHeightLabelRefCount{
+					{TopicId: 1, BlockHeight: 10, Label: "label", Count: 1},
+					{TopicId: 1, BlockHeight: 10, Label: " label ", Count: 1},
+				}
+			},
+			wantError: "active_inferer_label_refcount: duplicate canonical key",
 		},
 	}
 
@@ -904,4 +986,21 @@ func (s *KeeperTestSuite) TestGenesisLabelRegistryV2RoundTrip() {
 	countB, err := fresh.TopicKeeper().GetLabelRefCount(fresh.Ctx(), topicId, nonceHeight, "b")
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(1), countB)
+}
+
+func (s *KeeperTestSuite) TestInitGenesisCanonicalizesActiveInfererLabelRefcount() {
+	fresh := s.newFreshGenesisSuite()
+	genesisState := types.NewGenesisState()
+	genesisState.ActiveInfererLabelRefcount = []*types.TopicIdBlockHeightLabelRefCount{{
+		TopicId:     1,
+		BlockHeight: 10,
+		Label:       " label ",
+		Count:       3,
+	}}
+
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState))
+
+	count, err := fresh.TopicKeeper().GetLabelRefCount(fresh.Ctx(), 1, 10, "label")
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(3), count)
 }

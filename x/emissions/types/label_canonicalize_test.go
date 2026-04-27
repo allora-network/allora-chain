@@ -34,6 +34,7 @@ func TestCanonicalLabelName_Accepts(t *testing.T) {
 			in:   strings.Repeat("é", 32),
 			want: strings.Repeat("é", 32),
 		},
+		{name: "replacement character ok", in: "valid \uFFFD", want: "valid \uFFFD"},
 		{name: "emoji ok", in: "good 🚀", want: "good 🚀"},
 	}
 	for _, tc := range cases {
@@ -64,8 +65,8 @@ func TestCanonicalLabelName_Accepts(t *testing.T) {
 // must return a non-nil error; no case should return a partial result.
 func TestCanonicalLabelName_Rejects(t *testing.T) {
 	t.Parallel()
-	// 3-byte rune × (bound/3)+1 ensures strictly more than the byte cap.
-	overlongMultibyte := strings.Repeat("é", types.MaxCanonicalLabelByteLength+1)
+	// Cross the byte cap by one two-byte rune to exercise the boundary.
+	overlongMultibyte := strings.Repeat("é", types.MaxCanonicalLabelByteLength/len("é")+1)
 	cases := []struct {
 		name string
 		in   string
@@ -125,6 +126,9 @@ func TestCanonicalizeLabelList_RejectsInner(t *testing.T) {
 	got, err := types.CanonicalizeLabelList(in, true)
 	if err == nil {
 		t.Fatalf("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "index 1") {
+		t.Fatalf("expected error to include failing index 1, got %v", err)
 	}
 	if got != nil {
 		t.Fatalf("expected nil result, got %v", got)
