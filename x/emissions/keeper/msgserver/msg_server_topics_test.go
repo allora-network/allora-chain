@@ -1330,12 +1330,101 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
 }
 
-// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the WSW
-// guard across all unfulfilled worker nonces. With WorkerSubmissionWindow=10
-// and two outstanding worker nonces, a param update must be rejected if *any*
-// nonce has an open window, regardless of whether it is the newest. At block
-// 12, nonce 200 is not yet inside its submission window [200, 210], while
-// nonce 5 is still inside its window [5, 15].
+// TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission documents that
+// UpdateTopic treats max_labels_per_submission as the submitted value, not as
+// "unchanged" or "use module default". Values outside the allowed cap range
+// are rejected and the topic remains unchanged.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	cases := []struct {
+		name string
+		cap  uint64
+		err  error
+	}{
+		{name: "zero", cap: 0, err: types.ErrValidationMustBeGreaterthanZero},
+		{name: "above max", cap: types.MaxMaxLabelsPerSubmission + 1, err: types.ErrInvalidValue},
+	}
+
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			sender := s.AddrsStr(0)
+			topicId := s.createTopicForWSWTests(sender)
+
+			msg := &types.UpdateTopicRequest{
+				Sender:                 sender,
+				TopicId:                topicId,
+				Metadata:               "full payload clear",
+				LossMethod:             "mse",
+				AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+				MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RequireUnity:           false,
+				UnityTolerance:         alloraMath.Dec{},
+				MaxLabelsPerSubmission: tc.cap,
+				LabelWhitelist:         nil,
+			}
+			_, err := msgServer.UpdateTopic(ctx, msg)
+			require.ErrorIs(err, tc.err)
+
+			got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			require.NoError(err)
+			require.Equal(uint64(4), got.MaxLabelsPerSubmission,
+				"rejected max_labels_per_submission must not modify the topic")
+			require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist,
+				"rejected max_labels_per_submission must not clear the whitelist")
+		})
+	}
+}
+
+// TestUpdateTopicFullPayloadClearsLabelWhitelist documents that UpdateTopic is
+// a full-payload operation: a nil label_whitelist replaces the existing topic
+// whitelist with unrestricted, rather than preserving the old whitelist.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	topicId := s.createTopicForWSWTests(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "full payload clear",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         nil,
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(8), got.MaxLabelsPerSubmission)
+	require.Empty(got.LabelWhitelist,
+		"nil label_whitelist must clear the existing whitelist under full-payload UpdateTopic")
+}
+
+// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the
+// generalization from the v14 "newest unfulfilled nonce only" WSW guard to
+// the v2 "any unfulfilled nonce" guard. With WorkerSubmissionWindow=10 and
+// two outstanding worker nonces, the topic has two open WSWs. A param
+// update must be rejected if *any* of them is currently open, regardless
+// of whether the open one is the newest. At block 12 the newest nonce
+// (200) is not yet inside its submission window [200, 210], while the
+// older nonce (5) is still inside its window [5, 15] and covers block 12.
 // A regression to the newest-only check would therefore accept the
 // update; the generalized check must reject it.
 //

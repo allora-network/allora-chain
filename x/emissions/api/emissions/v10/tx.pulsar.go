@@ -50246,9 +50246,10 @@ type UpdateTopicRequest struct {
 	// within the topic label cap bounds. Topic keeper rejects mutations while any
 	// worker submission window is open for this topic.
 	MaxLabelsPerSubmission uint64 `protobuf:"varint,11,opt,name=max_labels_per_submission,json=maxLabelsPerSubmission,proto3" json:"max_labels_per_submission,omitempty"`
-	// Per-topic canonical label allowlist. UpdateTopic applies this value
-	// completely like other topic params. Empty means unrestricted. Topic keeper
-	// rejects mutations while any worker submission window is open.
+	// Per-topic canonical label allowlist. UpdateTopic is a full payload update:
+	// the supplied list replaces the existing whitelist. Empty or omitted means
+	// unrestricted, not "preserve existing". Topic keeper rejects mutations while
+	// any worker submission window is open.
 	LabelWhitelist []string `protobuf:"bytes,12,rep,name=label_whitelist,json=labelWhitelist,proto3" json:"label_whitelist,omitempty"`
 	// Default value for missing MULTI label slots. Topic keeper rejects
 	// mutations while any worker submission window is open.
