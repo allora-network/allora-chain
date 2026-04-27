@@ -121,6 +121,7 @@ duplicate-routes:
 	@echo "--> Running duplicate route linter"
 	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
 
+.PHONY: integration-test
 integration-test:
 	@echo "--> Running tests"
 	@bash test/local_testnet_l1.sh  <<< "y"
