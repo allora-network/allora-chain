@@ -1419,8 +1419,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
 
 // TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the
 // generalization from the v14 "newest unfulfilled nonce only" WSW guard to
-// the v2 "any unfulfilled nonce" guard. With WorkerSubmissionWindow=10 and
-// two outstanding worker nonces, the topic has two open WSWs. A param
+// the current "any unfulfilled nonce" guard. With WorkerSubmissionWindow=10
+// and two outstanding worker nonces, the topic has two open WSWs. A param
 // update must be rejected if *any* of them is currently open, regardless
 // of whether the open one is the newest. At block 12 the newest nonce
 // (200) is not yet inside its submission window [200, 210], while the
