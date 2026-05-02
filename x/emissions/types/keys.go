@@ -132,10 +132,4 @@ var (
 	// staged during the worker submission window. Replaces InferencesKey at
 	// runtime as of v15. Keyed (topicId, inferer) -> types.InputInference.
 	WorkerLatestInputInferenceKey = collections.NewPrefix(109)
-	// ActiveInfererLabelRefCountKey stores per-(topic, nonce, canonicalLabel)
-	// refcounts: how many currently-active inferers are using this label
-	// inside the open worker submission window. Feeds the lex-sorted
-	// EpochLabelRegistry materialized at CloseWorkerNonce. Keyed
-	// (topicId, nonceBlockHeight, canonicalLabel) -> uint64.
-	ActiveInfererLabelRefCountKey = collections.NewPrefix(110)
 )

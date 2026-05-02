@@ -417,8 +417,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		},
 	}
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
+		admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
 		s.Require().NoError(err)
+		s.Require().True(admitted)
 	}
 
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
@@ -430,8 +431,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference), params.MaxTopInferersToReward)
+	admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference), params.MaxTopInferersToReward)
 	s.Require().NoError(err)
+	s.Require().True(admitted)
 	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
@@ -446,8 +448,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		Proof:       "",
 	}
 
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference2), params.MaxTopInferersToReward)
+	admitted, err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference2), params.MaxTopInferersToReward)
 	s.Require().NoError(err)
+	s.Require().True(admitted)
 	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
@@ -497,7 +500,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference2), params.MaxTopInferersToReward)
+	_, err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(&newInference2), params.MaxTopInferersToReward)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
 	// Confirm no change in EMA score
 	updateAttemptForWorker2, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, worker2)
@@ -568,7 +571,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 
 	allInferences := types.Inferences{Inferences: inferences}
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
+		_, err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 	}
 
@@ -609,7 +612,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	allInferences = types.Inferences{Inferences: inferences}
 	nonce.BlockHeight++
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
+		_, err = k.AppendInference(ctx, topic, nonce.BlockHeight, toInputInference(inference), params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 	}
 
@@ -1221,15 +1224,12 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 }
 
 // TestGetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose exercises
-// the v2 close-time materializer. It replaces the deleted
-// TestGetWorkersLatestInferencesByTopicIdValuesPadded: instead of reading
-// from a legacy committed-Inference store and padding against a registry
-// that was registered during the WSW, the materializer projects each
-// worker's raw staged InputInference through a registry that was freshly
-// built from activeInfererLabelRefCount.
+// the v2 close-time materializer. It projects each active worker's raw staged
+// InputInference through a registry that was freshly built from those same
+// active inputs.
 //
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() {
+func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose() {
 	topicId := keeper.TopicId(1)
 	nonce := int64(1)
 
@@ -1256,9 +1256,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		s.Require().NoError(err)
 	}
 
-	// stageInput stages a raw InputInference and bumps each label's refcount
-	// in one shot, mimicking what the msgserver does when a worker is
-	// admitted into the active set.
 	stageInput := func(
 		ctx context.Context,
 		k *keeper.Keeper,
@@ -1277,17 +1274,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 		}
 		err := k.GetWorkerKeeper().SetWorkerLatestInputInference(ctx, topicId, inferer, in)
 		s.Require().NoError(err)
-		labels := make([]string, 0, len(values))
-		for _, lv := range values {
-			if lv == nil || lv.Label == "" {
-				continue
-			}
-			labels = append(labels, lv.Label)
-		}
-		if len(labels) > 0 {
-			err := k.GetTopicKeeper().IncrementLabelRefCount(ctx, topicId, nonce, labels)
-			s.Require().NoError(err)
-		}
 	}
 
 	cases := []tc{
@@ -1344,9 +1330,6 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			name:        "MULTI_registry_union_pads_missing_labels_to_zero",
 			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				// w1 sees only {a,b,c}, w2 sees {a,b,d}. After close-time
-				// lex-sort of the union, the registry is [a,b,c,d] with
-				// ids 1..4; each worker's missing labels are filled with 0.
 				stageInput(ctx, k, topicId, nonce, w1, mustBounded("0"), []*types.InputLabeledValue{
 					{Label: "a", Value: mustBounded("1")},
 					{Label: "b", Value: mustBounded("2")},
@@ -1365,15 +1348,9 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			},
 		},
 		{
-			name:        "MULTI_empty_active_set_errors_empty_registry",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				// Nothing staged, nothing incremented => refcount store
-				// empty => BuildFinalEpochLabelRegistryFromActiveSet returns
-				// types.ErrEpochLabelRegistryEmpty which this test consumes
-				// indirectly.
-			},
-			workersOrder: []int{0},
+			name:         "MULTI_empty_active_inputs_errors_empty_registry",
+			outputArity:  types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			workersOrder: nil,
 			wantErrIs:    types.ErrEpochLabelRegistryEmpty,
 		},
 	}
@@ -1402,14 +1379,16 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 
 			topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
 			s.Require().NoError(err)
+			activeInputs, err := k.GetWorkerKeeper().LoadActiveInfererInputsForClose(ctx, topic, nonce, reqWorkers)
+			s.Require().NoError(err)
 
-			reg, err := k.GetTopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+			reg, err := k.GetTopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce, activeInputs)
 			if c.wantErrIs != nil && errorsmod.IsOf(err, c.wantErrIs) {
 				return
 			}
 			s.Require().NoError(err)
 
-			got, err := k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(ctx, topic, nonce, reqWorkers, reg)
+			got, err := k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(ctx, topic, nonce, activeInputs, reg)
 			if c.wantErrIs != nil {
 				s.Require().ErrorIs(err, c.wantErrIs)
 				return
@@ -1452,23 +1431,49 @@ func (s *KeeperTestSuite) setupMultiTopic() (types.Topic, uint64) {
 	return topic, topicId
 }
 
+func activeInputForTest(
+	inferer string,
+	topicId uint64,
+	nonce int64,
+	labels ...string,
+) keeper.ActiveInfererInput {
+	values := make([]*types.InputLabeledValue, 0, len(labels))
+	for _, label := range labels {
+		values = append(values, &types.InputLabeledValue{
+			Label: label,
+			Value: alloraMath.MustNewBoundedExp40DecFromString("1"),
+		})
+	}
+	return keeper.ActiveInfererInput{
+		Inferer: inferer,
+		Input: types.InputInference{
+			TopicId:     topicId,
+			BlockHeight: nonce,
+			Inferer:     inferer,
+			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+			Values:      values,
+		},
+	}
+}
+
 // TestBuildFinalEpochLabelRegistryFromActiveSet_MultiDuplicateLabelDedupes
 // pins the invariant that BuildFinalEpochLabelRegistryFromActiveSet produces
-// exactly one registry entry when multiple workers stage the same canonical
-// label. In v1 this was enforced by RegisterEpochLabel's scan-and-reuse loop;
-// in v2 it falls out of the refcount store's keying (topicId, nonce, label)
-// so each IncrementLabelRefCount bumps a single row instead of appending.
+// exactly one registry entry when multiple active workers submit the same
+// canonical label.
 func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_MultiDuplicateLabelDedupes() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
 
 	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
+	w1 := s.AddrsStr(0)
+	w2 := s.AddrsStr(1)
+	activeInputs := []keeper.ActiveInfererInput{
+		activeInputForTest(w1, topicId, nonce, "UP"),
+		activeInputForTest(w2, topicId, nonce, "UP"),
+	}
 
-	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"UP"}))
-	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"UP"}))
-
-	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce, activeInputs)
 	s.Require().NoError(err)
 	s.Require().Len(reg.Labels, 1)
 	s.Require().Equal(uint32(1), reg.Labels[0].Id)
@@ -1492,10 +1497,12 @@ func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_MultiLoo
 
 	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
+	w1 := s.AddrsStr(0)
+	activeInputs := []keeper.ActiveInfererInput{
+		activeInputForTest(w1, topicId, nonce, "a", "b"),
+	}
 
-	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b"}))
-
-	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce, activeInputs)
 	s.Require().NoError(err)
 	s.Require().Len(reg.Labels, 2)
 	s.Require().Equal(uint32(1), reg.Labels[0].Id)
@@ -1522,37 +1529,25 @@ func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_MultiLoo
 	s.Require().False(ok)
 }
 
-// TestBuildFinalEpochLabelRegistryFromActiveSet_ReleasesLabelsOnEviction
-// simulates the active->inactive eviction path that
-// trackActiveInfererLabelsOnRemoval triggers inside AppendInference. Two
-// MULTI workers are admitted, then the second worker's labels are
-// decremented directly (mimicking eviction within the WSW). BuildFinal must
-// surface only the remaining workers' labels - in particular, the label
-// that was unique to the evicted worker must not appear.
+// TestBuildFinalEpochLabelRegistryFromActiveSet_UsesFinalActiveInputsOnly
+// simulates the active->inactive eviction path: BuildFinal receives only the
+// remaining final active inputs, so labels unique to evicted workers never
+// appear in the frozen registry.
 func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_ReleasesLabelsOnEviction() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
 
 	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
+	remaining := s.AddrsStr(0)
+	evicted := s.AddrsStr(1)
+	activeInputs := []keeper.ActiveInfererInput{
+		activeInputForTest(remaining, topicId, nonce, "a", "b", "c"),
+	}
 
-	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "c"}))
-	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "d"}))
+	_ = activeInputForTest(evicted, topicId, nonce, "a", "b", "d")
 
-	s.Require().NoError(tk.DecrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "d"}))
-
-	countD, err := tk.GetLabelRefCount(ctx, topicId, nonce, "d")
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(0), countD)
-
-	visited := make(map[string]uint64)
-	s.Require().NoError(tk.IterateLabelsForNonce(ctx, topicId, nonce, func(label string, c uint64) (bool, error) {
-		visited[label] = c
-		return false, nil
-	}))
-	s.Require().NotContains(visited, "d", "evicted-worker-unique label must be deleted, not zero-valued")
-
-	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	reg, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce, activeInputs)
 	s.Require().NoError(err)
 	s.Require().Len(reg.Labels, 3)
 	s.Require().Equal("a", reg.Labels[0].Name)
@@ -1561,46 +1556,6 @@ func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_Releases
 	s.Require().Equal(uint32(2), reg.Labels[1].Id)
 	s.Require().Equal("c", reg.Labels[2].Name)
 	s.Require().Equal(uint32(3), reg.Labels[2].Id)
-}
-
-// TestTrackActiveInfererLabelsOnAdmission_NoopForSingleArity pins that the
-// admission-side refcount tracker (IncrementStagedLabelRefCount) is a
-// no-op on SINGLE topics. The invariant matters because in v2 SINGLE
-// topics short-circuit BuildFinal to a 1-entry {Id:1, Name:"y"} registry
-// without ever consulting activeInfererLabelRefCount; writing refcount
-// rows for SINGLE would be wasted state and could mislead future
-// MULTI-only callers that iterate the refcount store.
-func (s *KeeperTestSuite) TestTrackActiveInfererLabelsOnAdmission_NoopForSingleArity() {
-	ctx := s.Ctx()
-	tk := s.TopicKeeper()
-	wk := s.WorkerKeeper()
-
-	topicId := s.CreateTopic()
-	topic, err := tk.GetTopic(ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().Equal(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, topic.OutputArity)
-
-	nonce := types.BlockHeight(7)
-	inferer := s.AddrsStr(0)
-
-	in := types.InputInference{
-		TopicId:     topicId,
-		BlockHeight: nonce,
-		Inferer:     inferer,
-		ExtraData:   nil,
-		Proof:       "",
-		Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
-		Values: []*types.InputLabeledValue{
-			{Label: "y", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
-		},
-	}
-	s.Require().NoError(wk.SetWorkerLatestInputInference(ctx, topicId, inferer, in))
-
-	s.Require().NoError(wk.IncrementStagedLabelRefCount(ctx, topic, nonce, inferer))
-
-	count, err := tk.GetLabelRefCount(ctx, topicId, nonce, "y")
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(0), count, "SINGLE topic must not write refcount rows on admission")
 }
 
 // TestBuildFinalEpochLabelRegistryFromActiveSet_InvalidInputs exercises the
@@ -1613,13 +1568,13 @@ func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_InvalidI
 
 	{
 		bad := types.Topic{Id: 0, OutputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE} //nolint:exhaustruct
-		_, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, bad, 7)
+		_, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, bad, 7, nil)
 		s.Require().Error(err)
 	}
 
 	{
 		topic, _ := s.setupMultiTopic()
-		_, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, -1)
+		_, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, -1, nil)
 		s.Require().Error(err)
 	}
 
@@ -1628,7 +1583,7 @@ func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_InvalidI
 		topic, err := tk.GetTopic(ctx, topicId)
 		s.Require().NoError(err)
 		topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED
-		_, err = tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, 7)
+		_, err = tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, 7, nil)
 		s.Require().Error(err)
 		s.Require().ErrorIs(err, sdkerrors.ErrInvalidRequest)
 	}
@@ -1636,26 +1591,25 @@ func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_InvalidI
 
 // TestBuildFinalEpochLabelRegistryFromActiveSet_IdempotentRebuild pins two
 // consensus-relevant determinism guarantees:
-//  1. Running BuildFinal twice against an unchanged refcount store yields
-//     byte-equal registries (same label order, same id assignment). Any
-//     non-determinism here would break replay.
-//  2. After a label is decremented to zero, a rebuild produces a compacted
-//     registry with ids reassigned 1..L (no "hole" at the removed label's
-//     former slot).
+//  1. Running BuildFinal twice against unchanged active inputs yields
+//     byte-equal registries (same label order, same id assignment).
+//  2. Removing an input label and rebuilding produces compact ids 1..L.
 func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_IdempotentRebuild() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
 
 	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
+	w1 := s.AddrsStr(0)
+	activeInputs := []keeper.ActiveInfererInput{
+		activeInputForTest(w1, topicId, nonce, "a", "b", "c"),
+	}
 
-	s.Require().NoError(tk.IncrementLabelRefCount(ctx, topicId, nonce, []string{"a", "b", "c"}))
-
-	reg1, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	reg1, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce, activeInputs)
 	s.Require().NoError(err)
-	reg2, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	reg2, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce, activeInputs)
 	s.Require().NoError(err)
-	s.Require().Equal(reg1, reg2, "repeated BuildFinal with unchanged refcount must be byte-equal")
+	s.Require().Equal(reg1, reg2, "repeated BuildFinal with unchanged active inputs must be byte-equal")
 
 	s.Require().Len(reg1.Labels, 3)
 	s.Require().Equal([]string{"a", "b", "c"},
@@ -1663,9 +1617,11 @@ func (s *KeeperTestSuite) TestBuildFinalEpochLabelRegistryFromActiveSet_Idempote
 	s.Require().Equal([]uint32{1, 2, 3},
 		[]uint32{reg1.Labels[0].Id, reg1.Labels[1].Id, reg1.Labels[2].Id})
 
-	s.Require().NoError(tk.DecrementLabelRefCount(ctx, topicId, nonce, []string{"b"}))
+	activeInputs = []keeper.ActiveInfererInput{
+		activeInputForTest(w1, topicId, nonce, "a", "c"),
+	}
 
-	reg3, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce)
+	reg3, err := tk.BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, nonce, activeInputs)
 	s.Require().NoError(err)
 	s.Require().Len(reg3.Labels, 2)
 	s.Require().Equal("a", reg3.Labels[0].Name)

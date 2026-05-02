@@ -41,7 +41,6 @@ func NewTopicKeeper(
 		topicLastWorkerCommit:            collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerCommit:           collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLabelRegistry:               collections.NewMap(sb, types.TopicLabelRegistryKey, "topic_label_registry", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.EpochLabelRegistry](cdc)),
-		activeInfererLabelRefCount:       collections.NewMap(sb, types.ActiveInfererLabelRefCountKey, "active_inferer_label_refcount", collections.TripleKeyCodec(collections.Uint64Key, collections.Int64Key, collections.StringKey), collections.Uint64Value),
 		paramsKeeper:                     paramsKeeper,
 		nonceKeeper:                      nonceKeeper,
 		stakingKeeper:                    stakingKeeper,
@@ -84,11 +83,6 @@ type TopicKeeper struct {
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
 	// topic epoch label registry - keyed by [topic_id, nonce]
 	topicLabelRegistry collections.Map[collections.Pair[TopicId, BlockHeight], types.EpochLabelRegistry]
-	// Per-(topicId, nonceBlockHeight, canonicalLabel) reference count of
-	// currently-active inferers whose last submission contains this label.
-	// Feeds BuildFinalEpochLabelRegistryFromActiveSet at close time.
-	// Rows are deleted when their count reaches zero.
-	activeInfererLabelRefCount collections.Map[collections.Triple[TopicId, BlockHeight, string], uint64]
 	// params keeper
 	paramsKeeper *ParamsKeeper
 	// nonce keeper

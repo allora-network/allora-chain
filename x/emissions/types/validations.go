@@ -200,8 +200,8 @@ func (inputInference *InputInference) Validate() error {
 //     (ErrLabelNotInWhitelist).
 //
 // The canonicalized slice is left in its submitted order; deterministic
-// ordering is enforced later at close-time via lex-sort over the
-// activeInfererLabelRefCount store.
+// registry ordering is enforced later at close-time via lex-sort over labels
+// collected from final active workers' staged inputs.
 func (inputInference *InputInference) ValidateWithLimits(
 	effectiveCap uint64,
 	whitelist map[string]struct{},

@@ -134,26 +134,23 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		}
 
 		// AppendInference admits/rejects based on EMA scoring using the
-		// (already canonicalized) raw input inference. On success we stage
-		// the raw submission + bump the per-label refcount.
+		// (already canonicalized) raw input inference. Only admitted inferers
+		// are staged for close-time registry materialization.
 		rawInput := msg.WorkerDataBundle.InferenceForecastsBundle.GetInference()
-		err = ms.wk.AppendInference(sdkCtx, topic, nonce.BlockHeight, rawInput, moduleParams.MaxTopInferersToReward)
+		admitted, err := ms.wk.AppendInference(sdkCtx, topic, nonce.BlockHeight, rawInput, moduleParams.MaxTopInferersToReward)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "Error appending inference")
 		}
+		if admitted {
+			// Persist raw submission AFTER AppendInference so an admission failure
+			// cannot leave a ghost entry and non-active workers cannot influence
+			// the registry built at CloseWorkerNonce.
+			if err := ms.wk.SetWorkerLatestInputInference(ctx, topic.Id, rawInput.Inferer, *rawInput); err != nil {
+				return nil, errorsmod.Wrap(err, "Error staging worker input inference")
+			}
 
-		// Persist raw submission AFTER AppendInference so an admission failure
-		// cannot leave a ghost entry. Then bump the per-label refcount,
-		// which reads the just-staged InputInference. The order matters:
-		// Set-then-Increment keeps the refcount in lock-step with the store.
-		if err := ms.wk.SetWorkerLatestInputInference(ctx, topic.Id, rawInput.Inferer, *rawInput); err != nil {
-			return nil, errorsmod.Wrap(err, "Error staging worker input inference")
+			types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
 		}
-		if err := ms.wk.IncrementStagedLabelRefCount(ctx, topic, nonce.BlockHeight, rawInput.Inferer); err != nil {
-			return nil, errorsmod.Wrap(err, "Error incrementing active inferer label refcount")
-		}
-
-		types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
 	}
 
 	// Process Forecasts
