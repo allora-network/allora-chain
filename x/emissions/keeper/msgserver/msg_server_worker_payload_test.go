@@ -2,7 +2,9 @@ package msgserver_test
 
 import (
 	"encoding/hex"
+	"errors"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -988,9 +990,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 
 			// In v2 the raw InputInference is staged in
 			// workerLatestInputInferences; the registry is only materialized
-			// at CloseWorkerNonce. We assert (a) the staged raw submission
-			// looks correct and (b) the per-label refcount store reflects each
-			// submitted label for MULTI topics.
+			// at CloseWorkerNonce. We assert the staged raw submission looks
+			// correct and, for MULTI topics, can drive the close-time registry.
 			got, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 			s.Require().NoError(err)
 			if len(got.Values) == 0 {
@@ -1004,15 +1005,23 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			}
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				// SINGLE topics never write refcounts during the WSW; the
-				// registry is manufactured at close time.
 				return
 			}
 
-			for _, label := range c.wantReg {
-				count, err := s.TopicKeeper().GetLabelRefCount(s.Ctx(), topicId, nonce, label)
-				s.Require().NoError(err)
-				s.Require().Equal(uint64(1), count, "expected refcount 1 for label %q", label)
+			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+			s.Require().NoError(err)
+			activeInputs, err := s.WorkerKeeper().LoadActiveInfererInputsForClose(
+				s.Ctx(),
+				topic,
+				nonce,
+				[]string{msg.WorkerDataBundle.Worker},
+			)
+			s.Require().NoError(err)
+			reg, err := s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, nonce, activeInputs)
+			s.Require().NoError(err)
+			s.Require().Len(reg.Labels, len(c.wantReg))
+			for i, label := range c.wantReg {
+				s.Require().Equal(label, reg.Labels[i].Name)
 			}
 		})
 	}
@@ -1066,22 +1075,20 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
 	s.Require().NoError(err)
 
-	// Before CloseWorkerNonce, the registry is not yet materialized;
-	// instead we should see the per-label refcount: each unique label has
-	// at least one active inferer.
-	for _, label := range []string{"a", "b", "c", "d"} {
-		cnt, err := s.TopicKeeper().GetLabelRefCount(s.Ctx(), topicId, nonce, label)
-		s.Require().NoError(err)
-		s.Require().Positive(cnt, "refcount for %q should be positive during WSW", label)
-	}
-
 	// Materialize the final registry as CloseWorkerNonce would, and
 	// assert that the projected Values slices are (a) aligned to the
 	// frozen registry and (b) carry zeros for labels the worker did not
 	// submit.
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	reg, err := s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, nonce)
+	activeInputs, err := s.WorkerKeeper().LoadActiveInfererInputsForClose(
+		s.Ctx(),
+		topic,
+		nonce,
+		[]string{msg1.WorkerDataBundle.Worker, msg2.WorkerDataBundle.Worker},
+	)
+	s.Require().NoError(err)
+	reg, err := s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, nonce, activeInputs)
 	s.Require().NoError(err)
 	s.Require().Equal(4, len(reg.Labels))
 	s.Require().Equal("a", reg.Labels[0].Name)
@@ -1091,7 +1098,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 
 	materialized, err := s.WorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
 		s.Ctx(), topic, nonce,
-		[]string{msg1.WorkerDataBundle.Worker, msg2.WorkerDataBundle.Worker},
+		activeInputs,
 		reg,
 	)
 	s.Require().NoError(err)
@@ -1170,15 +1177,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg1)
 	s.Require().NoError(err)
 
-	// At nonce1, labels "a" and "b" should have refcount 1. Per-epoch
-	// refcount keys are (topic, nonce, label), so cross-epoch leakage
-	// would surface as an unexpected count at a different nonce.
-	for _, label := range []string{"a", "b"} {
-		cnt, err := s.TopicKeeper().GetLabelRefCount(s.Ctx(), topicId, nonce1, label)
-		s.Require().NoError(err)
-		s.Require().Equal(uint64(1), cnt)
-	}
-
 	got1, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().Equal(2, len(got1.Values))
@@ -1190,26 +1188,62 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
 	s.Require().NoError(err)
 
-	// At nonce2, labels a, b, c should have refcount 1.
-	for _, label := range []string{"a", "b", "c"} {
-		cnt, err := s.TopicKeeper().GetLabelRefCount(s.Ctx(), topicId, nonce2, label)
-		s.Require().NoError(err)
-		s.Require().Equal(uint64(1), cnt)
-	}
-
-	// Crucially, nonce2's "c" does not leak into nonce1. The keying
-	// (topic, nonce, label) is what prevents the cross-epoch leakage
-	// the test is named after.
-	cntCAtNonce1, err := s.TopicKeeper().GetLabelRefCount(s.Ctx(), topicId, nonce1, "c")
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(0), cntCAtNonce1)
-
 	got2, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().Equal(3, len(got2.Values))
 	s.Require().Equal("a", got2.Values[0].Label)
 	s.Require().Equal("b", got2.Values[1].Label)
 	s.Require().Equal("c", got2.Values[2].Label)
+
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	_, err = s.WorkerKeeper().LoadActiveInfererInputsForClose(
+		s.Ctx(),
+		topic,
+		nonce1,
+		[]string{msg2.WorkerDataBundle.Worker},
+	)
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, sdkerrors.ErrLogic)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageInput() {
+	s.SetupTest()
+
+	nonce := int64(1)
+	pk := secp256k1.GenPrivKey()
+	msg, topicId := s.setUpMsgInsertWorkerPayload(pk)
+	s.WithBlockHeight(nonce)
+	msg.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
+	msg = s.signMsgInsertWorkerPayload(msg, pk)
+
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = 1
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	activeInferer := s.AddrsStr(9)
+	activeScore := types.Score{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Address:     activeInferer,
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(s.Ctx(), topicId, activeInferer, activeScore))
+	s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(s.Ctx(), topicId, activeScore))
+	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, activeInferer))
+	s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
+
+	_, err := s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
+	s.Require().NoError(err)
+
+	_, err = s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().True(errors.Is(err, collections.ErrNotFound))
+
+	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
 }
 
 func (s *MsgServerTestSuite) setTopicArityAndUnity(

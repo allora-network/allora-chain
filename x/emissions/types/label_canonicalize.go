@@ -11,9 +11,9 @@ import (
 
 // MaxCanonicalLabelByteLength bounds a canonical label name at 64 UTF-8 bytes
 // after NFC normalization and trimming. The bound is byte-level (not
-// rune-level) so that every row key in the activeInfererLabelRefCount store
-// and every EpochLabelRegistry entry has a deterministic, modest upper bound
-// on serialized size, regardless of how many codepoints the label contains.
+// rune-level) so staged InputInference labels and every EpochLabelRegistry
+// entry have a deterministic, modest upper bound on serialized size,
+// regardless of how many codepoints the label contains.
 const MaxCanonicalLabelByteLength = 64
 
 // CanonicalLabelName returns the canonical form of a user-supplied label
@@ -39,8 +39,8 @@ const MaxCanonicalLabelByteLength = 64
 //
 // Canonicalization is applied at two sites:
 //   - InputInference.ValidateWithLimits (worker payload submission-time), so
-//     that every label persisted in workerLatestInputInferences and every
-//     label counted in activeInfererLabelRefCount is already canonical.
+//     that every label persisted in workerLatestInputInferences is already
+//     canonical before close-time registry construction.
 //   - TopicKeeper.SetTopic / UpdateTopic (persisted Topic.LabelWhitelist), so
 //     that whitelist lookups are pure byte-equality against already-canonical
 //     names built by the msgserver.
@@ -73,8 +73,8 @@ func CanonicalLabelName(s string) (string, error) {
 // rejectDuplicates is true, any post-canonicalization duplicate.
 //
 // The duplicate check is exact byte-equality on the canonical form, which is
-// what downstream consumers (whitelist membership, registry lex-sort,
-// activeInfererLabelRefCount keys) rely on.
+// what downstream consumers (whitelist membership and registry lex-sort) rely
+// on.
 func CanonicalizeLabelList(labels []string, rejectDuplicates bool) ([]string, error) {
 	if len(labels) == 0 {
 		return nil, nil

@@ -248,10 +248,9 @@ func (k *WorkerKeeper) ResetActiveWorkersForTopic(ctx context.Context, topicId T
 
 // ResetWorkersIndividualSubmissionsForTopic resets the inferer individual submissions for a topic.
 //
-// Clears the new workerLatestInputInferences store (prefix 109), delegates
-// activeInfererLabelRefCount cleanup to TopicKeeper, and defensively clears
-// the deprecated inferences store (post-migration it is always a no-op).
-// Also clears per-worker forecasts.
+// Clears the new workerLatestInputInferences store (prefix 109), defensively
+// clears the deprecated inferences store (post-migration it is always a no-op),
+// and clears per-worker forecasts.
 func (k *WorkerKeeper) ResetWorkersIndividualSubmissionsForTopic(ctx context.Context, topicId TopicId) error {
 	infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.workerLatestInputInferences.Clear(ctx, infererRange); err != nil {
@@ -262,9 +261,6 @@ func (k *WorkerKeeper) ResetWorkersIndividualSubmissionsForTopic(ctx context.Con
 	// a stale entry behind.
 	if err := k.inferences.Clear(ctx, infererRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing deprecated inferences store")
-	}
-	if err := k.topicKeeper.ClearLabelRefCountsForTopic(ctx, topicId); err != nil {
-		return errorsmod.Wrap(err, "error clearing active inferer label refcount")
 	}
 	forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.forecasts.Clear(ctx, forecasterRange); err != nil {
@@ -427,41 +423,38 @@ func (k *WorkerKeeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId,
 // Append individual inference for a topic/block.
 //
 // Takes the canonicalized *InputInference (as produced by
-// InputInference.ValidateWithLimits in the msgserver). On admission to the
-// top-N active set, the worker's labels are reference-counted in
-// activeInfererLabelRefCount; on eviction by a higher-EMA newcomer, the
-// evicted worker's previously staged InputInference (from
-// workerLatestInputInferences) is used to decrement those counts.
+// InputInference.ValidateWithLimits in the msgserver). The returned bool
+// reports whether the incoming inferer entered the active set. Callers should
+// stage workerLatestInputInferences only when admitted is true.
 //
 // AppendInference no longer writes to the deprecated inferences store; the
-// msgserver persists the raw submission via SetWorkerLatestInputInference
-// after this call returns nil.
+// msgserver persists the raw submission after this call returns admitted=true.
 func (k *WorkerKeeper) AppendInference(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight BlockHeight,
 	inference *types.InputInference,
 	maxTopInferersToReward uint64,
-) error {
+) (bool, error) {
 	if inference == nil {
-		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "input inference is nil")
+		return false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "input inference is nil")
 	}
 	// Check if the inferers already submitted the inference
 	isActive, err := k.IsActiveInferer(ctx, topic.Id, inference.Inferer)
 	if err != nil {
-		return errorsmod.Wrap(err, "error checking if worker already submitted inference")
+		return false, errorsmod.Wrap(err, "error checking if worker already submitted inference")
 	} else if isActive {
-		return errors.New("inference already submitted")
+		return false, errors.New("inference already submitted")
 	}
 
 	// Get previous EMA score for the current inferer
 	previousEmaScore, err := k.scoresKeeper.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
 	if err != nil {
-		return errorsmod.Wrapf(err, "Error getting inferer score ema")
+		return false, errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
 	if previousEmaScore.BlockHeight >= nonceBlockHeight {
-		return types.ErrCantUpdateEmaMoreThanOncePerWindow
+		return false, types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
 	// Check if the inferer is new and set initial EMA score
@@ -470,7 +463,7 @@ func (k *WorkerKeeper) AppendInference(
 		firstSubmission = true
 		initialEmaScore, err := k.scoresKeeper.GetTopicInitialInfererEmaScore(ctx, topic.Id)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting topic initial ema score")
+			return false, errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
 		previousEmaScore = types.Score{
 			TopicId:     topic.Id,
@@ -480,33 +473,33 @@ func (k *WorkerKeeper) AppendInference(
 		}
 		err = k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting initial inferer score ema")
+			return false, errorsmod.Wrap(err, "error setting initial inferer score ema")
 		}
 	} else {
 		// If not new: Penalise the inferer if needed
 		previousEmaScore, err = k.actorPenaltiesKeeper.ApplyLivenessPenaltyToInferer(ctx, topic, nonceBlockHeight, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error trying to penalise inferer")
+			return false, errorsmod.Wrap(err, "error trying to penalise inferer")
 		}
 
 		// Update score nonce for liveness tracking
 		previousEmaScore.BlockHeight = nonceBlockHeight
 		err = k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting penalised inferer score ema")
+			return false, errorsmod.Wrap(err, "error setting penalised inferer score ema")
 		}
 	}
 
 	// Get lowest inferer score ema for the topic
 	lowestEmaScore, _, err := k.scoresKeeper.GetLowestInfererScoreEma(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting lowest inferer score ema")
+		return false, errorsmod.Wrap(err, "error getting lowest inferer score ema")
 	}
 
 	// Get active inferers for topic
 	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting active inferers for topic")
+		return false, errorsmod.Wrap(err, "error getting active inferers for topic")
 	}
 
 	// If there are less than maxTopInferersToReward, add the current inferer, update the lowest inferer score ema if needed, and return
@@ -515,19 +508,15 @@ func (k *WorkerKeeper) AppendInference(
 		if uint64(len(workerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
 			err = k.scoresKeeper.SetLowestInfererScoreEma(ctx, topic.Id, previousEmaScore)
 			if err != nil {
-				return errorsmod.Wrap(err, "error setting lowest inferer score ema")
+				return false, errorsmod.Wrap(err, "error setting lowest inferer score ema")
 			}
 		}
 
 		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding active inferer")
+			return false, errorsmod.Wrap(err, "error adding active inferer")
 		}
-		// Admission path: refcounts are incremented by the msgserver after
-		// it persists the InputInference via SetWorkerLatestInputInference +
-		// IncrementStagedLabelRefCount. Keeping the increment there avoids
-		// a chicken-and-egg read of an as-yet-unstaged submission here.
-		return nil
+		return true, nil
 	}
 
 	// Else ...
@@ -541,129 +530,49 @@ func (k *WorkerKeeper) AppendInference(
 			lowestEmaScore,
 		)
 		if err != nil {
-			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+			return false, errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 		}
 
 		// Check if the inferer with lowest score is active before removing it, because remove will not fail if the inferer is not active
 		isActive, err := k.IsActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error checking if inferer is active")
+			return false, errorsmod.Wrap(err, "error checking if inferer is active")
 		}
 		if !isActive {
-			return errors.New("inferer with lowest score is not active")
-		}
-
-		// Decrement label refcounts for the evicted worker BEFORE removing
-		// it from the active set so the tracker can still read the staged
-		// InputInference.
-		if err := k.trackActiveInfererLabelsOnRemoval(ctx, topic, nonceBlockHeight, lowestEmaScore.Address); err != nil {
-			return errorsmod.Wrap(err, "error tracking evicted inferer labels")
+			return false, errors.New("inferer with lowest score is not active")
 		}
 
 		// Remove inferer with lowest score
 		err = k.RemoveActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error removing active inferer")
+			return false, errorsmod.Wrap(err, "error removing active inferer")
 		}
 		// Clear the evicted worker's staged raw submission so it can't leak
 		// into close-time projection.
 		if err := k.RemoveWorkerLatestInputInference(ctx, topic.Id, lowestEmaScore.Address); err != nil {
-			return errorsmod.Wrap(err, "error removing evicted inferer staged input inference")
+			return false, errorsmod.Wrap(err, "error removing evicted inferer staged input inference")
 		}
 		// Add new active inferer
 		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding active inferer")
+			return false, errorsmod.Wrap(err, "error adding active inferer")
 		}
 		// Calculate new lowest score with updated infererAddresses
 		err = k.scoresKeeper.UpdateLowestScoreFromInfererAddresses(ctx, topic.Id, workerAddresses, inference.Inferer, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting low score from all inferences")
+			return false, errorsmod.Wrap(err, "error getting low score from all inferences")
 		}
-		// As with the < maxTopInferersToReward admission, the refcount +1
-		// for the incoming worker happens in the msgserver after it stages
-		// the InputInference.
-		return nil
+		return true, nil
 	} else {
 		// Update EMA score for the current inferer, who is the lowest score inferer
 		if !firstSubmission { // Only update if not a new inferer
 			err = k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
 			if err != nil {
-				return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+				return false, errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 			}
 		}
 	}
-	return nil
-}
-
-// trackActiveInfererLabelsOnRemoval decrements the per-label refcount for
-// each label in the evicted inferer's previously-staged InputInference.
-// SINGLE topics no-op. Called from AppendInference right before the evicted
-// inferer is removed from the active set. The evicted worker's staged
-// submission was written by a prior successful msgserver call, so it is
-// guaranteed to be present for MULTI topics.
-func (k *WorkerKeeper) trackActiveInfererLabelsOnRemoval(
-	ctx sdk.Context,
-	topic types.Topic,
-	nonceBlockHeight BlockHeight,
-	inferer ActorId,
-) error {
-	if topic.OutputArity != types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
-		return nil
-	}
-	in, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topic.Id, inferer)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			// The evicted worker had no staged submission (e.g. admitted
-			// during a previous block height or migrated pre-v15). Nothing
-			// to decrement.
-			return nil
-		}
-		return errorsmod.Wrap(err, "error reading staged input inference for removal tracking")
-	}
-	labels := labelsFromInput(in)
-	if len(labels) == 0 {
-		return nil
-	}
-	return k.topicKeeper.DecrementLabelRefCount(ctx, topic.Id, nonceBlockHeight, labels)
-}
-
-// IncrementStagedLabelRefCount bumps the refcount for the staged
-// InputInference at (topicId, inferer). Called by the msgserver right after
-// SetWorkerLatestInputInference on admission (AppendInference returned nil)
-// to keep the refcount in sync with the store. On SINGLE topics this
-// no-ops.
-func (k *WorkerKeeper) IncrementStagedLabelRefCount(
-	ctx context.Context,
-	topic types.Topic,
-	nonceBlockHeight BlockHeight,
-	inferer ActorId,
-) error {
-	if topic.OutputArity != types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
-		return nil
-	}
-	in, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topic.Id, inferer)
-	if err != nil {
-		return errorsmod.Wrap(err, "error reading staged input inference")
-	}
-	labels := labelsFromInput(in)
-	if len(labels) == 0 {
-		return nil
-	}
-	return k.topicKeeper.IncrementLabelRefCount(ctx, topic.Id, nonceBlockHeight, labels)
-}
-
-// labelsFromInput extracts canonical labels from a staged InputInference in
-// submission order. Nil/empty entries are skipped.
-func labelsFromInput(in types.InputInference) []string {
-	labels := make([]string, 0, len(in.Values))
-	for _, lv := range in.Values {
-		if lv == nil || lv.Label == "" {
-			continue
-		}
-		labels = append(labels, lv.Label)
-	}
-	return labels
+	return false, nil
 }
 
 // Insert an inference for a specific topic
@@ -743,6 +652,40 @@ func (k *WorkerKeeper) RemoveWorkerLatestInputInference(
 ) error {
 	key := collections.Join(topicId, inferer)
 	return k.workerLatestInputInferences.Remove(ctx, key)
+}
+
+// LoadActiveInfererInputsForClose reads the staged raw submissions for the
+// final active inferer set. Inputs are returned sorted by inferer address so
+// close-time registry construction and materialization are deterministic.
+func (k *WorkerKeeper) LoadActiveInfererInputsForClose(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	workers []ActorId,
+) ([]ActiveInfererInput, error) {
+	sortedWorkers := append([]ActorId(nil), workers...)
+	sort.Strings(sortedWorkers)
+
+	activeInputs := make([]ActiveInfererInput, 0, len(sortedWorkers))
+	for _, inferer := range sortedWorkers {
+		in, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topic.Id, inferer)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"missing staged input inference for active inferer %s",
+					inferer,
+				)
+			}
+			return nil, errorsmod.Wrapf(err, "error reading staged input inference for active inferer %s", inferer)
+		}
+		activeInput := ActiveInfererInput{Inferer: inferer, Input: in}
+		if err := validateActiveInfererInputForClose(topic, nonce, activeInput); err != nil {
+			return nil, err
+		}
+		activeInputs = append(activeInputs, activeInput)
+	}
+	return activeInputs, nil
 }
 
 // IterateWorkerLatestInputInferences walks every (topicId, inferer) entry in
@@ -1043,7 +986,7 @@ func (k *WorkerKeeper) NewInferenceForecastBundleFromInput(
 // NormalizeInputInference converts a worker-submitted InputInference into an
 // intermediate *types.Inference used only by AppendInference for scoring. It
 // does NOT write to the epoch label registry — registry materialization is
-// deferred to CloseWorkerNonce and driven by activeInfererLabelRefCount.
+// deferred to CloseWorkerNonce and driven by active workers' staged inputs.
 //
 // Preconditions: the caller (msgserver) must have already canonicalized and
 // validated `in` via (*InputInference).ValidateWithLimits, which enforces

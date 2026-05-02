@@ -884,28 +884,6 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 			},
 			wantError: "block to lowest active topic weight cannot be nil",
 		},
-		{
-			name: "active inferer label refcount invalid label",
-			mutate: func(gs *types.GenesisState) {
-				gs.ActiveInfererLabelRefcount = []*types.TopicIdBlockHeightLabelRefCount{{
-					TopicId:     1,
-					BlockHeight: 10,
-					Label:       "bad\u200blabel",
-					Count:       1,
-				}}
-			},
-			wantError: "active_inferer_label_refcount: invalid label",
-		},
-		{
-			name: "active inferer label refcount duplicate canonical key",
-			mutate: func(gs *types.GenesisState) {
-				gs.ActiveInfererLabelRefcount = []*types.TopicIdBlockHeightLabelRefCount{
-					{TopicId: 1, BlockHeight: 10, Label: "label", Count: 1},
-					{TopicId: 1, BlockHeight: 10, Label: " label ", Count: 1},
-				}
-			},
-			wantError: "active_inferer_label_refcount: duplicate canonical key",
-		},
 	}
 
 	for _, tc := range testCases {
@@ -921,12 +899,12 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 	}
 }
 
-// TestGenesisLabelRegistryV2RoundTrip covers the round-trip of the two new
-// v2 stores (workerLatestInputInferences and activeInfererLabelRefCount)
-// through ExportGenesis -> InitGenesis on a fresh suite.
+// TestGenesisWorkerLatestInputInferenceRoundTrip covers the round-trip of the
+// workerLatestInputInferences store through ExportGenesis -> InitGenesis on a
+// fresh suite.
 //
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestGenesisLabelRegistryV2RoundTrip() {
+func (s *KeeperTestSuite) TestGenesisWorkerLatestInputInferenceRoundTrip() {
 	ctx := s.Ctx()
 	topicId := uint64(1)
 	nonceHeight := int64(42)
@@ -945,16 +923,11 @@ func (s *KeeperTestSuite) TestGenesisLabelRegistryV2RoundTrip() {
 	s.Require().NoError(
 		s.WorkerKeeper().SetWorkerLatestInputInference(ctx, topicId, inferer, input),
 	)
-	s.Require().NoError(
-		s.TopicKeeper().IncrementLabelRefCount(ctx, topicId, nonceHeight, []string{"a", "b"}),
-	)
 
 	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
 	s.Require().NoError(err)
 	s.Require().Len(exported.WorkerLatestInputInferences, 1,
 		"exported genesis should include the staged input inference")
-	s.Require().Len(exported.ActiveInfererLabelRefcount, 2,
-		"exported genesis should include both refcount entries")
 
 	fresh := s.newFreshGenesisSuite()
 	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported))
@@ -968,29 +941,4 @@ func (s *KeeperTestSuite) TestGenesisLabelRegistryV2RoundTrip() {
 	s.Require().Equal("a", got.Values[0].Label)
 	s.Require().Equal("b", got.Values[1].Label)
 	s.Require().Equal([]byte("gdata"), got.ExtraData)
-
-	// Refcounts must round-trip with identical values (1 each).
-	countA, err := fresh.TopicKeeper().GetLabelRefCount(fresh.Ctx(), topicId, nonceHeight, "a")
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(1), countA)
-	countB, err := fresh.TopicKeeper().GetLabelRefCount(fresh.Ctx(), topicId, nonceHeight, "b")
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(1), countB)
-}
-
-func (s *KeeperTestSuite) TestInitGenesisCanonicalizesActiveInfererLabelRefcount() {
-	fresh := s.newFreshGenesisSuite()
-	genesisState := types.NewGenesisState()
-	genesisState.ActiveInfererLabelRefcount = []*types.TopicIdBlockHeightLabelRefCount{{
-		TopicId:     1,
-		BlockHeight: 10,
-		Label:       " label ",
-		Count:       3,
-	}}
-
-	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState))
-
-	count, err := fresh.TopicKeeper().GetLabelRefCount(fresh.Ctx(), 1, 10, "label")
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(3), count)
 }

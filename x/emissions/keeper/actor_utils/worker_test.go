@@ -62,11 +62,8 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
-	// v2: stage raw InputInference per worker and bump the label refcount,
-	// instead of pre-registering the EpochLabelRegistry and persisting
-	// pre-aligned Inferences. The registry is materialized at CloseWorkerNonce
-	// time from activeInfererLabelRefCount.
-	labels := []string{"a", "b", "c"}
+	// v2: stage raw InputInference per worker. The registry is materialized
+	// at CloseWorkerNonce time from the final active workers' staged inputs.
 	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
 		return alloraMath.MustNewBoundedExp40DecFromString(x)
 	}
@@ -100,11 +97,6 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	err = s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker0, input0)
 	s.Require().NoError(err)
 	err = s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker1, input1)
-	s.Require().NoError(err)
-
-	err = s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, nonce.BlockHeight, labels)
-	s.Require().NoError(err)
-	err = s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, nonce.BlockHeight, labels)
 	s.Require().NoError(err)
 
 	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0)
@@ -239,7 +231,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 
 	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight)
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight, nil)
 	require.NoError(err)
 
 	// Create inferences where worker3 is an obvious outlier
@@ -437,7 +429,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	require.NoError(err)
 	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight)
+	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight, nil)
 	require.NoError(err)
 
 	// Call the function we're testing
@@ -561,9 +553,6 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFr
 	}
 	s.Require().NoError(s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker0, input0))
 	s.Require().NoError(s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker1, input1))
-
-	s.Require().NoError(s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, blockHeight, []string{"a", "b", "c"}))
-	s.Require().NoError(s.TopicKeeper().IncrementLabelRefCount(s.Ctx(), topicId, blockHeight, []string{"a", "b", "d"}))
 
 	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0))
 	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1))

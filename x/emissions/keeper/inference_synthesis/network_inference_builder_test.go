@@ -379,7 +379,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	topic.Epsilon = epsilonTopic
 	topic.CNorm = cNorm
 
-	_, err := k.GetTopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight)
+	_, err := k.GetTopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight, nil)
 	s.Require().NoError(err)
 
 	registryVal, err := k.GetTopicKeeper().GetEpochLabelRegistry(ctx, topicId, blockHeight)
@@ -426,7 +426,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	moduleParams := emissionstypes.DefaultParams()
 	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
 
-	_, err := s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, blockHeight)
+	_, err := s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, blockHeight, nil)
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)
