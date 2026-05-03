@@ -195,7 +195,7 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 				msg.MeritSortitionAlpha = alloraMath.MustNewDecFromString("-0.1")
 			},
 			wantErr:     true,
-			errContains: "merit sortition alpha must be between 0 and 1 inclusive",
+			errContains: "merit sortition alpha must be greater than or equal to 0 and less than 1",
 		},
 		{
 			name: "zero merit sortition alpha",
@@ -211,7 +211,7 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 				msg.MeritSortitionAlpha = alloraMath.OneDec()
 			},
 			wantErr:     true,
-			errContains: "merit sortition alpha must be between 0 and 1 inclusive",
+			errContains: "merit sortition alpha must be greater than or equal to 0 and less than 1",
 		},
 		{
 			name: "negative active inferer quantile",

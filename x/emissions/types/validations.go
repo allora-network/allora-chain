@@ -914,7 +914,7 @@ func (topic Topic) Validate(params Params) error {
 		return errors.Wrap(err, "topic merit sortition alpha is invalid")
 	}
 	if !isAlloraDecZeroOrLessThanOne(topic.MeritSortitionAlpha) {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic merit sortition alpha must be between 0 and 1 inclusive")
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic merit sortition alpha must be greater than or equal to 0 and less than 1")
 	}
 	if err := ValidateDec(topic.ActiveInfererQuantile); err != nil {
 		return errors.Wrap(err, "topic active inferer quantile is invalid")
@@ -1241,7 +1241,7 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	//	AllowNegative            bool
 
 	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
 	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
