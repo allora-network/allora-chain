@@ -40,9 +40,7 @@ func MaterializeFinalEpochLabelRegistry(
 	if err := validateTemporaryRegistry(topic, nonce, tempRegistry); err != nil {
 		return types.EpochLabelRegistry{}, nil, false, err
 	}
-	sortedActive := append([]*types.Inference(nil), activeInferences...)
-	sort.Slice(sortedActive, func(i, j int) bool { return sortedActive[i].Inferer < sortedActive[j].Inferer })
-	for _, inference := range sortedActive {
+	for _, inference := range activeInferences {
 		if inference == nil {
 			return types.EpochLabelRegistry{}, nil, false, errorsmod.Wrap(sdkerrors.ErrLogic, "active inference is nil")
 		}
@@ -50,6 +48,8 @@ func MaterializeFinalEpochLabelRegistry(
 			return types.EpochLabelRegistry{}, nil, false, err
 		}
 	}
+	sortedActive := append([]*types.Inference(nil), activeInferences...)
+	sort.Slice(sortedActive, func(i, j int) bool { return sortedActive[i].Inferer < sortedActive[j].Inferer })
 
 	switch topic.OutputArity {
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
