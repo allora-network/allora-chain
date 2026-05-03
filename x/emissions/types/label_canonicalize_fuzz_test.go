@@ -11,9 +11,9 @@ import (
 //
 //  1. The function never panics, regardless of input.
 //  2. When canonicalization succeeds, the result is idempotent under a
-//     second pass. This is the property that makes the lex-sort assignment
-//     of registry IDs deterministic: two inputs that canonicalize to the
-//     same bytes are treated as the same label everywhere.
+//     second pass. This is the property that makes registry identity
+//     deterministic: two inputs that canonicalize to the same bytes are
+//     treated as the same label everywhere.
 //
 // The seed corpus exercises ASCII, NFC/NFD equivalents, composed emoji,
 // control characters, and invalid UTF-8 to push the branch coverage of the

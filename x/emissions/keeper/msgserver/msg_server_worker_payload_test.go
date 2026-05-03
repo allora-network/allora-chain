@@ -143,7 +143,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
 
-	inference, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	inference, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 	require.NotNil(inference)
 }
@@ -194,7 +194,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast()
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
 	require.NoError(err)
 
-	inferences, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	inferences, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
 	require.NoError(err)
 	require.NotNil(inferences)
 }
@@ -988,36 +988,20 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			}
 			s.Require().NoError(err)
 
-			// In v2 the raw InputInference is staged in
-			// workerLatestInputInferences; the registry is only materialized
-			// at CloseWorkerNonce. We assert the staged raw submission looks
-			// correct and, for MULTI topics, can drive the close-time registry.
-			got, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+			// The normalized temporary inference is staged only when the worker
+			// is admitted. MULTI values are aligned to temporary first-seen ids.
+			got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 			s.Require().NoError(err)
-			if len(got.Values) == 0 {
-				s.Require().Len(c.wantValuesStr, 1)
-				s.Require().Equal(c.wantValuesStr[0], got.Value.String())
-			} else {
-				s.Require().Equal(len(c.wantValuesStr), len(got.Values))
-				for i := range c.wantValuesStr {
-					s.Require().Equal(c.wantValuesStr[i], got.Values[i].Value.String())
-				}
+			s.Require().Equal(len(c.wantValuesStr), len(got.Values))
+			for i := range c.wantValuesStr {
+				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
 			}
 
 			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
 				return
 			}
 
-			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
-			s.Require().NoError(err)
-			activeInputs, err := s.WorkerKeeper().LoadActiveInfererInputsForClose(
-				s.Ctx(),
-				topic,
-				nonce,
-				[]string{msg.WorkerDataBundle.Worker},
-			)
-			s.Require().NoError(err)
-			reg, err := s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, nonce, activeInputs)
+			reg, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
 			s.Require().NoError(err)
 			s.Require().Len(reg.Labels, len(c.wantReg))
 			for i, label := range c.wantReg {
@@ -1081,27 +1065,21 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 	// submit.
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	activeInputs, err := s.WorkerKeeper().LoadActiveInfererInputsForClose(
-		s.Ctx(),
-		topic,
-		nonce,
+	tempReg, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(4, len(tempReg.Labels))
+	s.Require().Equal("a", tempReg.Labels[0].Name)
+	s.Require().Equal("b", tempReg.Labels[1].Name)
+	s.Require().Equal("c", tempReg.Labels[2].Name)
+	s.Require().Equal("d", tempReg.Labels[3].Name)
+
+	materialized, reg, reused, err := s.WorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
+		s.Ctx(), topic, nonce,
 		[]string{msg1.WorkerDataBundle.Worker, msg2.WorkerDataBundle.Worker},
 	)
 	s.Require().NoError(err)
-	reg, err := s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, nonce, activeInputs)
-	s.Require().NoError(err)
-	s.Require().Equal(4, len(reg.Labels))
-	s.Require().Equal("a", reg.Labels[0].Name)
-	s.Require().Equal("b", reg.Labels[1].Name)
-	s.Require().Equal("c", reg.Labels[2].Name)
-	s.Require().Equal("d", reg.Labels[3].Name)
-
-	materialized, err := s.WorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
-		s.Ctx(), topic, nonce,
-		activeInputs,
-		reg,
-	)
-	s.Require().NoError(err)
+	s.Require().True(reused)
+	s.Require().Equal(tempReg, reg)
 	byWorker := map[string]*types.Inference{}
 	for _, inf := range materialized.Inferences {
 		byWorker[inf.Inferer] = inf
@@ -1177,27 +1155,27 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg1)
 	s.Require().NoError(err)
 
-	got1, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	got1, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().Equal(2, len(got1.Values))
-	s.Require().Equal("a", got1.Values[0].Label)
-	s.Require().Equal("b", got1.Values[1].Label)
+	s.Require().Equal("1", got1.Values[0].String())
+	s.Require().Equal("2", got1.Values[1].String())
 
 	// submit worker2 @ nonce2
 	s.WithBlockHeight(nonce2)
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
 	s.Require().NoError(err)
 
-	got2, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	got2, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().Equal(3, len(got2.Values))
-	s.Require().Equal("a", got2.Values[0].Label)
-	s.Require().Equal("b", got2.Values[1].Label)
-	s.Require().Equal("c", got2.Values[2].Label)
+	s.Require().Equal("10", got2.Values[0].String())
+	s.Require().Equal("20", got2.Values[1].String())
+	s.Require().Equal("30", got2.Values[2].String())
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.WorkerKeeper().LoadActiveInfererInputsForClose(
+	_, err = s.WorkerKeeper().LoadActiveInfererInferencesForClose(
 		s.Ctx(),
 		topic,
 		nonce1,
@@ -1238,7 +1216,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 	_, err := s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
 	s.Require().NoError(err)
 
-	_, err = s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().True(errors.Is(err, collections.ErrNotFound))
 
 	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)

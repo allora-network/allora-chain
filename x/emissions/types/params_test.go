@@ -64,48 +64,9 @@ func TestDefaultParams(t *testing.T) {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
-		MaxLabelsPerSubmission:              DefaultMaxLabelsPerSubmission,
 	}
 
 	params := DefaultParams()
 
 	require.Equal(t, expectedParams, params)
-}
-
-// TestValidateMaxLabelsPerSubmission exercises the explicit bound on the
-// new module parameter: 0 is rejected, 1 is accepted (smallest positive
-// cap), DefaultMaxLabelsPerSubmission round-trips validation, the upper
-// bound is inclusive, and one-above-bound is rejected.
-func TestValidateMaxLabelsPerSubmission(t *testing.T) {
-	cases := []struct {
-		name string
-		in   uint64
-		ok   bool
-	}{
-		{name: "zero rejected", in: 0, ok: false},
-		{name: "one ok", in: 1, ok: true},
-		{name: "default ok", in: DefaultMaxLabelsPerSubmission, ok: true},
-		{name: "upper bound ok", in: MaxMaxLabelsPerSubmission, ok: true},
-		{name: "above upper rejected", in: MaxMaxLabelsPerSubmission + 1, ok: false},
-	}
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := validateMaxLabelsPerSubmission(tc.in)
-			if tc.ok {
-				require.NoError(t, err)
-			} else {
-				require.Error(t, err)
-			}
-		})
-	}
-}
-
-// TestParamsValidate_RejectsZeroMaxLabelsPerSubmission ensures that
-// Params.Validate does not silently accept a zero cap. The v15 migration
-// backfills zero to DefaultMaxLabelsPerSubmission, so a zero at
-// Params.Validate time indicates a genuinely invalid state.
-func TestParamsValidate_RejectsZeroMaxLabelsPerSubmission(t *testing.T) {
-	p := DefaultParams()
-	p.MaxLabelsPerSubmission = 0
-	require.Error(t, p.Validate())
 }

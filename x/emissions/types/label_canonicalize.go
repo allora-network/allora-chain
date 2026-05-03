@@ -26,8 +26,7 @@ const MaxCanonicalLabelByteLength = 64
 //  4. Checked to contain no control (Cc) or format (Cf) runes — these are
 //     invisible characters (e.g. zero-width space, bidi marks, NULs) that
 //     would otherwise allow two visually-identical labels to differ by a
-//     stealthy invisible rune and thus break the lex-sort used to assign
-//     registry ids deterministically.
+//     stealthy invisible rune and thus break deterministic registry identity.
 //  5. Bounded at MaxCanonicalLabelByteLength bytes after normalization.
 //  6. Verified to be valid UTF-8.
 //
@@ -39,7 +38,7 @@ const MaxCanonicalLabelByteLength = 64
 //
 // Canonicalization is applied at two sites:
 //   - InputInference.ValidateWithLimits (worker payload submission-time), so
-//     that every label persisted in workerLatestInputInferences is already
+//     that every label registered in the temporary EpochLabelRegistry is
 //     canonical before close-time registry construction.
 //   - TopicKeeper.SetTopic / UpdateTopic (persisted Topic.LabelWhitelist), so
 //     that whitelist lookups are pure byte-equality against already-canonical
@@ -73,8 +72,8 @@ func CanonicalLabelName(s string) (string, error) {
 // rejectDuplicates is true, any post-canonicalization duplicate.
 //
 // The duplicate check is exact byte-equality on the canonical form, which is
-// what downstream consumers (whitelist membership and registry lex-sort) rely
-// on.
+// what downstream consumers such as whitelist membership and ELR registration
+// rely on.
 func CanonicalizeLabelList(labels []string, rejectDuplicates bool) ([]string, error) {
 	if len(labels) == 0 {
 		return nil, nil

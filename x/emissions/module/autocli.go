@@ -506,15 +506,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetWorkerLatestInputInferenceByTopicId",
-					Use:       "worker-latest-input-inference [topic_id] [worker_address]",
-					Short:     "Get the latest raw input inference for a given worker and topic within a worker submission window",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-						{ProtoField: "worker_address"},
-					},
-				},
-				{
 					RpcMethod: "GetInferencesAtBlock",
 					Use:       "inferences-at-block [topic_id] [block_height]",
 					Short:     "Get All Inferences produced for a topic in a particular timestamp",
@@ -962,7 +953,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -982,21 +973,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "enable_worker_whitelist"},
 						{ProtoField: "enable_reputer_whitelist"},
 						{ProtoField: "c_norm"},
-					},
-					FlagOptions: map[string]*autocliv1.FlagOptions{
-						"max_labels_per_submission": {
-							Name:  "max-labels-per-submission",
-							Usage: "Per-topic cap on the number of canonical labels per worker submission. Zero means use params.MaxLabelsPerSubmission.",
-						},
-						"label_whitelist": {
-							Name:  "label-whitelist",
-							Usage: "Per-topic canonical label allowlist. Empty means unrestricted. Stored canonicalized.",
-						},
+						{ProtoField: "max_labels_per_submission"},
+						{ProtoField: "label_whitelist"},
+						{ProtoField: "label_default_value"},
 					},
 				},
 				{
 					RpcMethod: "UpdateTopic",
-					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm]",
+					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value]",
 					Short:     "Update an existing topic's modifiable configuration",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -1007,16 +991,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "merit_sortition_alpha"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "c_norm"},
-					},
-					FlagOptions: map[string]*autocliv1.FlagOptions{
-						"max_labels_per_submission": {
-							Name:  "max-labels-per-submission",
-							Usage: "Per-topic cap on labels per worker submission. Rejected while any worker submission window is open.",
-						},
-						"label_whitelist": {
-							Name:  "label-whitelist",
-							Usage: "Per-topic canonical label allowlist. Empty clears the whitelist. Rejected while any worker submission window is open.",
-						},
+						{ProtoField: "max_labels_per_submission"},
+						{ProtoField: "label_whitelist"},
+						{ProtoField: "label_default_value"},
 					},
 				},
 				{

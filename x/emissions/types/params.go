@@ -67,25 +67,35 @@ func DefaultParams() Params {
 		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
-		MaxLabelsPerSubmission:              DefaultMaxLabelsPerSubmission,               // cap on labels a single worker may attach to one payload
 	}
 }
 
-// DefaultMaxLabelsPerSubmission is the module-default cap on the number of
+// DefaultMaxLabelsPerSubmission is the default topic-level cap on the number of
 // distinct canonical labels a worker may attach to a single InputInference.
 // Picked to be comfortably above typical classification schemas while still
 // keeping per-epoch label cardinality bounded in a deterministic way.
 const DefaultMaxLabelsPerSubmission = uint64(32)
 
 // MinMaxLabelsPerSubmission / MaxMaxLabelsPerSubmission bound the acceptable
-// values for Params.MaxLabelsPerSubmission. The cap must be >= 1 (so SINGLE
-// topics can always submit their canonical "y" label) and <= 1024 (a safety
-// ceiling well above any realistic classification schema, designed to keep
-// the per-epoch refcount store small even under a single-topic spike).
+// per-topic cap on labels a single worker may attach to one payload.
 const (
 	MinMaxLabelsPerSubmission = uint64(1)
 	MaxMaxLabelsPerSubmission = uint64(1024)
 )
+
+func validateMaxLabelsPerSubmission(i uint64) error {
+	if i < MinMaxLabelsPerSubmission {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max labels per submission must be >= %d, got %d",
+			MinMaxLabelsPerSubmission, i)
+	}
+	if i > MaxMaxLabelsPerSubmission {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max labels per submission must be <= %d, got %d",
+			MaxMaxLabelsPerSubmission, i)
+	}
+	return nil
+}
 
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
@@ -241,28 +251,6 @@ func (p Params) Validate() error {
 	}
 	if err := validateMinWeightThresholdForStdnorm(p.MinWeightThresholdForStdnorm); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: min weight threshold for stdnorm")
-	}
-	if err := validateMaxLabelsPerSubmission(p.MaxLabelsPerSubmission); err != nil {
-		return errorsmod.Wrap(err, "params validation failure: max labels per submission")
-	}
-	return nil
-}
-
-// validateMaxLabelsPerSubmission enforces MinMaxLabelsPerSubmission <= i <=
-// MaxMaxLabelsPerSubmission. Zero is rejected because a zero cap would make
-// every worker payload fail validation; the v15 migration backfills zero to
-// DefaultMaxLabelsPerSubmission on upgrade, so this validator only ever runs
-// against backfilled or user-supplied values.
-func validateMaxLabelsPerSubmission(i uint64) error {
-	if i < MinMaxLabelsPerSubmission {
-		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
-			"max labels per submission must be >= %d, got %d",
-			MinMaxLabelsPerSubmission, i)
-	}
-	if i > MaxMaxLabelsPerSubmission {
-		return errorsmod.Wrapf(ErrInvalidValue,
-			"max labels per submission must be <= %d, got %d",
-			MaxMaxLabelsPerSubmission, i)
 	}
 	return nil
 }

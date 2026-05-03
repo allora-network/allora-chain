@@ -554,7 +554,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
@@ -642,7 +642,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
@@ -748,7 +748,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
@@ -860,7 +860,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
@@ -964,7 +964,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
@@ -1048,7 +1048,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
@@ -1118,7 +1118,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesForecaste
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)
@@ -1227,7 +1227,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesMultipleF
 
 	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
 	s.Require().NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(s.Ctx(), topic, 1, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topic.Id, 1, "y")
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, 1)

@@ -63,6 +63,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
@@ -141,6 +142,7 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.01"),
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

@@ -24,23 +24,18 @@ func NewWorkerKeeper(
 	actorPenaltiesKeeper *ActorPenaltiesKeeper,
 ) *WorkerKeeper {
 	return &WorkerKeeper{
-		topicWorkers:      collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
-		activeInferers:    collections.NewKeySet(sb, types.ActiveInferersKey, "active_inferers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
-		activeForecasters: collections.NewKeySet(sb, types.ActiveForecastersKey, "active_forecasters", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
-		workers:           collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		// Deprecated: migrated to workerLatestInputInferences in v15; kept
-		// for genesis round-trip and for the v15 migration to drain in-flight
-		// entries. Must not be written by AppendInference.
-		//nolint:staticcheck // SA1019: deprecated InferencesKey is intentionally wired for genesis round-trip and v15 migration drain.
-		inferences:                  collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
-		workerLatestInputInferences: collections.NewMap(sb, types.WorkerLatestInputInferenceKey, "worker_latest_input_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InputInference](cdc)),
-		forecasts:                   collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
-		allInferences:               collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
-		allForecasts:                collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
-		topicKeeper:                 topicKeeper,
-		scoresKeeper:                scoresKeeper,
-		paramsKeeper:                paramsKeeper,
-		actorPenaltiesKeeper:        actorPenaltiesKeeper,
+		topicWorkers:         collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		activeInferers:       collections.NewKeySet(sb, types.ActiveInferersKey, "active_inferers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		activeForecasters:    collections.NewKeySet(sb, types.ActiveForecastersKey, "active_forecasters", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		workers:              collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
+		inferences:           collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
+		forecasts:            collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
+		allInferences:        collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
+		allForecasts:         collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
+		topicKeeper:          topicKeeper,
+		scoresKeeper:         scoresKeeper,
+		paramsKeeper:         paramsKeeper,
+		actorPenaltiesKeeper: actorPenaltiesKeeper,
 	}
 }
 
@@ -53,17 +48,8 @@ type WorkerKeeper struct {
 	activeForecasters collections.KeySet[collections.Pair[TopicId, ActorId]]
 	// map of worker id to node data about that worker
 	workers collections.Map[ActorId, types.OffchainNode]
-	// map of (topic, worker) -> inference
-	// Deprecated: migrated to workerLatestInputInferences in v15. Kept only
-	// for genesis round-trip and so the v15 migration can drain in-flight
-	// pre-upgrade entries. AppendInference must NOT write to it.
+	// map of (topic, worker) -> latest active inference for the open WSW
 	inferences collections.Map[collections.Pair[TopicId, ActorId], types.Inference]
-	// map of (topic, worker) -> InputInference
-	// workerLatestInputInferences holds the latest raw labeled submission per
-	// (topicId, inferer) during an open worker submission window. It is
-	// cleared on CloseWorkerNonce and is the sole source of truth for the
-	// registry materializer and the close-time projector.
-	workerLatestInputInferences collections.Map[collections.Pair[TopicId, ActorId], types.InputInference]
 	// map of (topic, worker) -> forecast[]
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 	// map of (topic, block_height) -> Inference
@@ -246,21 +232,11 @@ func (k *WorkerKeeper) ResetActiveWorkersForTopic(ctx context.Context, topicId T
 	return nil
 }
 
-// ResetWorkersIndividualSubmissionsForTopic resets the inferer individual submissions for a topic.
-//
-// Clears the new workerLatestInputInferences store (prefix 109), defensively
-// clears the deprecated inferences store (post-migration it is always a no-op),
-// and clears per-worker forecasts.
+// ResetWorkersIndividualSubmissionsForTopic resets worker submissions for a topic.
 func (k *WorkerKeeper) ResetWorkersIndividualSubmissionsForTopic(ctx context.Context, topicId TopicId) error {
 	infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-	if err := k.workerLatestInputInferences.Clear(ctx, infererRange); err != nil {
-		return errorsmod.Wrap(err, "error clearing worker_latest_input_inferences")
-	}
-	// Deprecated defense-in-depth: migrated store is expected to be empty
-	// post-v15 but we still clear it in case a pre-v15 genesis import leaves
-	// a stale entry behind.
 	if err := k.inferences.Clear(ctx, infererRange); err != nil {
-		return errorsmod.Wrap(err, "error clearing deprecated inferences store")
+		return errorsmod.Wrap(err, "error clearing inferences")
 	}
 	forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.forecasts.Clear(ctx, forecasterRange); err != nil {
@@ -420,24 +396,17 @@ func (k *WorkerKeeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId,
 	return &forecasts, nil
 }
 
-// Append individual inference for a topic/block.
-//
-// Takes the canonicalized *InputInference (as produced by
-// InputInference.ValidateWithLimits in the msgserver). The returned bool
-// reports whether the incoming inferer entered the active set. Callers should
-// stage workerLatestInputInferences only when admitted is true.
-//
-// AppendInference no longer writes to the deprecated inferences store; the
-// msgserver persists the raw submission after this call returns admitted=true.
+// AppendInference admits an inference into the active inferer set and stores it
+// in the live WSW inferences store only when admitted.
 func (k *WorkerKeeper) AppendInference(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight BlockHeight,
-	inference *types.InputInference,
+	inference *types.Inference,
 	maxTopInferersToReward uint64,
 ) (bool, error) {
 	if inference == nil {
-		return false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "input inference is nil")
+		return false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
 	}
 	// Check if the inferers already submitted the inference
 	isActive, err := k.IsActiveInferer(ctx, topic.Id, inference.Inferer)
@@ -516,6 +485,9 @@ func (k *WorkerKeeper) AppendInference(
 		if err != nil {
 			return false, errorsmod.Wrap(err, "error adding active inferer")
 		}
+		if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
+			return false, errorsmod.Wrap(err, "error inserting inference")
+		}
 		return true, nil
 	}
 
@@ -547,10 +519,10 @@ func (k *WorkerKeeper) AppendInference(
 		if err != nil {
 			return false, errorsmod.Wrap(err, "error removing active inferer")
 		}
-		// Clear the evicted worker's staged raw submission so it can't leak
-		// into close-time projection.
-		if err := k.RemoveWorkerLatestInputInference(ctx, topic.Id, lowestEmaScore.Address); err != nil {
-			return false, errorsmod.Wrap(err, "error removing evicted inferer staged input inference")
+		// Clear the evicted worker's temporary inference so it can't leak into
+		// close-time materialization.
+		if err := k.RemoveInference(ctx, topic.Id, lowestEmaScore.Address); err != nil {
+			return false, errorsmod.Wrap(err, "error removing evicted inferer inference")
 		}
 		// Add new active inferer
 		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
@@ -561,6 +533,9 @@ func (k *WorkerKeeper) AppendInference(
 		err = k.scoresKeeper.UpdateLowestScoreFromInfererAddresses(ctx, topic.Id, workerAddresses, inference.Inferer, lowestEmaScore.Address)
 		if err != nil {
 			return false, errorsmod.Wrap(err, "error getting low score from all inferences")
+		}
+		if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
+			return false, errorsmod.Wrap(err, "error inserting inference")
 		}
 		return true, nil
 	} else {
@@ -575,12 +550,7 @@ func (k *WorkerKeeper) AppendInference(
 	return false, nil
 }
 
-// Insert an inference for a specific topic
-//
-// Deprecated: the legacy per-worker inferences store is no longer written by
-// AppendInference. Msgservers should call SetWorkerLatestInputInference after
-// AppendInference succeeds. This method is preserved only so that genesis
-// round-trip and the v15 migration keep compiling.
+// InsertInference inserts an active WSW inference for a specific topic.
 func (k *WorkerKeeper) InsertInference(
 	ctx context.Context,
 	topicId TopicId,
@@ -598,8 +568,6 @@ func (k *WorkerKeeper) InsertInference(
 }
 
 // RemoveInference removes an inference from a inferer.
-//
-// Deprecated: see InsertInference. Kept for genesis + migration paths.
 func (k *WorkerKeeper) RemoveInference(
 	ctx context.Context,
 	topicId TopicId,
@@ -609,101 +577,67 @@ func (k *WorkerKeeper) RemoveInference(
 	return k.inferences.Remove(ctx, key)
 }
 
-// SetWorkerLatestInputInference writes the raw labeled submission for a
-// worker into the workerLatestInputInferences store. Callers must canonicalize
-// and validate the input (via InputInference.ValidateWithLimits) and must
-// only call this after AppendInference has admitted the inferer. The store is
-// transient: it is cleared on CloseWorkerNonce via
-// ResetWorkersIndividualSubmissionsForTopic.
-func (k *WorkerKeeper) SetWorkerLatestInputInference(
+// GetWorkerLatestInferenceByTopicId returns the live WSW inference for
+// (topicId, inferer). Returns collections.ErrNotFound if the inferer has not
+// been admitted in the current WSW.
+func (k *WorkerKeeper) GetWorkerLatestInferenceByTopicId(
 	ctx context.Context,
 	topicId TopicId,
 	inferer ActorId,
-	input types.InputInference,
-) error {
-	if err := types.ValidateTopicId(topicId); err != nil {
-		return errorsmod.Wrap(err, "topic id validation failed")
-	}
-	if err := types.ValidateBech32(inferer); err != nil {
-		return errorsmod.Wrap(err, "inferer validation failed")
-	}
+) (types.Inference, error) {
 	key := collections.Join(topicId, inferer)
-	return k.workerLatestInputInferences.Set(ctx, key, input)
+	return k.inferences.Get(ctx, key)
 }
 
-// GetWorkerLatestInputInferenceByTopicId returns the raw labeled submission
-// for (topicId, inferer). Returns collections.ErrNotFound if the inferer has
-// not submitted in the current WSW.
-func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
-	ctx context.Context,
-	topicId TopicId,
-	inferer ActorId,
-) (types.InputInference, error) {
-	key := collections.Join(topicId, inferer)
-	return k.workerLatestInputInferences.Get(ctx, key)
-}
-
-// RemoveWorkerLatestInputInference deletes the raw labeled submission for
-// (topicId, inferer). Idempotent: does not error if no entry is present.
-func (k *WorkerKeeper) RemoveWorkerLatestInputInference(
-	ctx context.Context,
-	topicId TopicId,
-	inferer ActorId,
-) error {
-	key := collections.Join(topicId, inferer)
-	return k.workerLatestInputInferences.Remove(ctx, key)
-}
-
-// LoadActiveInfererInputsForClose reads the staged raw submissions for the
-// final active inferer set. Inputs are returned sorted by inferer address so
+// LoadActiveInfererInferencesForClose reads the temporary dense inferences for
+// the final active inferer set. Inferences are returned sorted by inferer so
 // close-time registry construction and materialization are deterministic.
-func (k *WorkerKeeper) LoadActiveInfererInputsForClose(
+func (k *WorkerKeeper) LoadActiveInfererInferencesForClose(
 	ctx context.Context,
 	topic types.Topic,
 	nonce BlockHeight,
 	workers []ActorId,
-) ([]ActiveInfererInput, error) {
+) ([]*types.Inference, error) {
 	sortedWorkers := append([]ActorId(nil), workers...)
 	sort.Strings(sortedWorkers)
 
-	activeInputs := make([]ActiveInfererInput, 0, len(sortedWorkers))
+	activeInferences := make([]*types.Inference, 0, len(sortedWorkers))
 	for _, inferer := range sortedWorkers {
-		in, err := k.GetWorkerLatestInputInferenceByTopicId(ctx, topic.Id, inferer)
+		in, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, inferer)
 		if err != nil {
 			if errors.Is(err, collections.ErrNotFound) {
 				return nil, errorsmod.Wrapf(
 					sdkerrors.ErrLogic,
-					"missing staged input inference for active inferer %s",
+					"missing temporary inference for active inferer %s",
 					inferer,
 				)
 			}
-			return nil, errorsmod.Wrapf(err, "error reading staged input inference for active inferer %s", inferer)
+			return nil, errorsmod.Wrapf(err, "error reading temporary inference for active inferer %s", inferer)
 		}
-		activeInput := ActiveInfererInput{Inferer: inferer, Input: in}
-		if err := validateActiveInfererInputForClose(topic, nonce, activeInput); err != nil {
+		if err := validateActiveInferenceForClose(topic, nonce, inferer, in); err != nil {
 			return nil, err
 		}
-		activeInputs = append(activeInputs, activeInput)
+		inference := in
+		activeInferences = append(activeInferences, &inference)
 	}
-	return activeInputs, nil
+	return activeInferences, nil
 }
 
-// IterateWorkerLatestInputInferences walks every (topicId, inferer) entry in
-// workerLatestInputInferences. Iteration order is deterministic (collections
-// store order: topic asc, then inferer bech32 asc).
-func (k *WorkerKeeper) IterateWorkerLatestInputInferences(
+// IterateInferences walks every live WSW inference. Iteration order is
+// deterministic (collections store order: topic asc, then inferer bech32 asc).
+func (k *WorkerKeeper) IterateInferences(
 	ctx context.Context,
-	cb func(topicId TopicId, inferer ActorId, input types.InputInference) (stop bool, err error),
+	cb func(topicId TopicId, inferer ActorId, inference types.Inference) (stop bool, err error),
 ) error {
-	iter, err := k.workerLatestInputInferences.Iterate(ctx, nil)
+	iter, err := k.inferences.Iterate(ctx, nil)
 	if err != nil {
-		return errorsmod.Wrap(err, "error iterating worker_latest_input_inferences")
+		return errorsmod.Wrap(err, "error iterating inferences")
 	}
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
-			return errorsmod.Wrap(err, "error reading worker_latest_input_inferences entry")
+			return errorsmod.Wrap(err, "error reading inferences entry")
 		}
 		stop, err := cb(kv.Key.K1(), kv.Key.K2(), kv.Value)
 		if err != nil {
@@ -983,10 +917,9 @@ func (k *WorkerKeeper) NewInferenceForecastBundleFromInput(
 	return inferenceForecastBundle, nil
 }
 
-// NormalizeInputInference converts a worker-submitted InputInference into an
-// intermediate *types.Inference used only by AppendInference for scoring. It
-// does NOT write to the epoch label registry — registry materialization is
-// deferred to CloseWorkerNonce and driven by active workers' staged inputs.
+// NormalizeInputInference converts a worker-submitted InputInference into a
+// dense temporary *types.Inference aligned to the WSW temporary
+// EpochLabelRegistry.
 //
 // Preconditions: the caller (msgserver) must have already canonicalized and
 // validated `in` via (*InputInference).ValidateWithLimits, which enforces
@@ -998,11 +931,10 @@ func (k *WorkerKeeper) NewInferenceForecastBundleFromInput(
 //	1-element labeled Values list (the latter wins if present and the label
 //	is canonical "y"; mismatched single-value labels are rejected).
 //
-// MULTI: Values is an unpadded slice in canonical-label order (sorted
+// MULTI: registers non-default submitted labels in first-seen order, initializes
 //
-//	lexicographically). Callers must not persist this intermediate shim as
-//	the committed Inference; the frozen registry is applied at close time
-//	via GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose.
+//	the dense vector with topic.LabelDefaultValue, and scatters non-default
+//	values into their temporary registry ids.
 //
 // The unity check (topic.RequireUnity) runs here because it depends only on
 // the submitted labeled values, not on the registry.
@@ -1015,8 +947,6 @@ func (k *WorkerKeeper) NormalizeInputInference(
 	if in == nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
 	}
-	_ = ctx
-	_ = nonce
 
 	switch topic.OutputArity {
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
@@ -1043,6 +973,9 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		if dec.IsNaN() || !dec.IsFinite() {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
+		if _, err := k.topicKeeper.RegisterEpochLabel(ctx, topic.Id, nonce, "y"); err != nil {
+			return nil, errorsmod.Wrap(err, "failed to register single-arity label")
+		}
 		return &types.Inference{
 			TopicId:     in.TopicId,
 			BlockHeight: in.BlockHeight,
@@ -1061,9 +994,6 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires labeled values")
 	}
 
-	// The msgserver has already canonicalized + dedup'd labels. We still
-	// defensively sort by label so the intermediate Inference is stable and
-	// so unity summation iterates in a deterministic order.
 	submitted := make([]*types.InputLabeledValue, 0, len(in.Values))
 	for _, lv := range in.Values {
 		if lv == nil {
@@ -1074,10 +1004,12 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		}
 		submitted = append(submitted, lv)
 	}
-	sort.Slice(submitted, func(i, j int) bool { return submitted[i].Label < submitted[j].Label })
-
 	sumSubmitted := alloraMath.ZeroDec()
-	values := make([]alloraMath.Dec, 0, len(submitted))
+	type scatteredValue struct {
+		id    LabelId
+		value alloraMath.Dec
+	}
+	scattered := make([]scatteredValue, 0, len(submitted))
 	for _, lv := range submitted {
 		dec := lv.Value.ToDec()
 		if dec.IsNaN() || !dec.IsFinite() {
@@ -1088,7 +1020,13 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		if err != nil {
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to sum submitted value: %s", err)
 		}
-		values = append(values, dec)
+		if !dec.Equal(topic.LabelDefaultValue) {
+			id, err := k.topicKeeper.RegisterEpochLabel(ctx, topic.Id, nonce, lv.Label)
+			if err != nil {
+				return nil, errorsmod.Wrapf(err, "failed to register label %s", lv.Label)
+			}
+			scattered = append(scattered, scatteredValue{id: id, value: dec})
+		}
 	}
 
 	if topic.RequireUnity {
@@ -1107,6 +1045,21 @@ func (k *WorkerKeeper) NormalizeInputInference(
 				sumSubmitted.String(), topic.UnityTolerance.String(),
 			)
 		}
+	}
+
+	registry, err := k.topicKeeper.GetEpochLabelRegistry(ctx, topic.Id, nonce)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to get temporary epoch label registry")
+	}
+	values := make([]alloraMath.Dec, len(registry.Labels))
+	for i := range values {
+		values[i] = topic.LabelDefaultValue
+	}
+	for _, item := range scattered {
+		if item.id == 0 || int(item.id) > len(values) {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "registered label id %d out of range", item.id)
+		}
+		values[int(item.id)-1] = item.value
 	}
 
 	return &types.Inference{

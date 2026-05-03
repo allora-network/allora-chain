@@ -79,6 +79,7 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -629,6 +630,7 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -776,66 +778,6 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 			wantError: "inference cannot be nil",
 		},
 		{
-			name: "worker latest input inference invalid payload",
-			mutate: func(gs *types.GenesisState) {
-				inferer := s.AddrsStr(0)
-				gs.WorkerLatestInputInferences = []*types.TopicIdActorIdInputInference{{
-					TopicId: 1,
-					ActorId: inferer,
-					InputInference: &types.InputInference{
-						TopicId:     0,
-						BlockHeight: 10,
-						Inferer:     inferer,
-						Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
-						ExtraData:   nil,
-						Proof:       "",
-						Values:      nil,
-					},
-				}}
-			},
-			wantError: "worker_latest_input_inferences: input_inference invalid",
-		},
-		{
-			name: "worker latest input inference topic mismatch",
-			mutate: func(gs *types.GenesisState) {
-				inferer := s.AddrsStr(0)
-				gs.WorkerLatestInputInferences = []*types.TopicIdActorIdInputInference{{
-					TopicId: 1,
-					ActorId: inferer,
-					InputInference: &types.InputInference{
-						TopicId:     2,
-						BlockHeight: 10,
-						Inferer:     inferer,
-						Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
-						ExtraData:   nil,
-						Proof:       "",
-						Values:      nil,
-					},
-				}}
-			},
-			wantError: "topic id mismatch between key and payload",
-		},
-		{
-			name: "worker latest input inference actor mismatch",
-			mutate: func(gs *types.GenesisState) {
-				actorId := s.AddrsStr(0)
-				gs.WorkerLatestInputInferences = []*types.TopicIdActorIdInputInference{{
-					TopicId: 1,
-					ActorId: actorId,
-					InputInference: &types.InputInference{
-						TopicId:     1,
-						BlockHeight: 10,
-						Inferer:     s.AddrsStr(1),
-						Value:       alloraMath.MustNewBoundedExp40DecFromString("1"),
-						ExtraData:   nil,
-						Proof:       "",
-						Values:      nil,
-					},
-				}}
-			},
-			wantError: "actor id mismatch between key and payload",
-		},
-		{
 			name: "all inferences nil wrapper",
 			mutate: func(gs *types.GenesisState) {
 				gs.AllInferences = []*types.TopicIdBlockHeightInferences{{TopicId: 1, BlockHeight: 10, Inferences: nil}}
@@ -899,46 +841,42 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 	}
 }
 
-// TestGenesisWorkerLatestInputInferenceRoundTrip covers the round-trip of the
-// workerLatestInputInferences store through ExportGenesis -> InitGenesis on a
-// fresh suite.
+// TestGenesisInferenceRoundTrip covers the round-trip of the live temporary
+// inferences store through ExportGenesis -> InitGenesis on a fresh suite.
 //
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestGenesisWorkerLatestInputInferenceRoundTrip() {
+func (s *KeeperTestSuite) TestGenesisInferenceRoundTrip() {
 	ctx := s.Ctx()
 	topicId := uint64(1)
 	nonceHeight := int64(42)
 	inferer := s.AddrsStr(0)
 
-	input := types.InputInference{
+	inference := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: nonceHeight,
 		Inferer:     inferer,
-		Values: []*types.InputLabeledValue{
-			{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("0.5")},
-			{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("0.3")},
-		},
-		ExtraData: []byte("gdata"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.5"), alloraMath.MustNewDecFromString("0.3")},
+		ExtraData:   []byte("gdata"),
 	}
 	s.Require().NoError(
-		s.WorkerKeeper().SetWorkerLatestInputInference(ctx, topicId, inferer, input),
+		s.WorkerKeeper().InsertInference(ctx, topicId, inference),
 	)
 
 	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
 	s.Require().NoError(err)
-	s.Require().Len(exported.WorkerLatestInputInferences, 1,
-		"exported genesis should include the staged input inference")
+	s.Require().Len(exported.Inferences, 1,
+		"exported genesis should include the temporary inference")
 
 	fresh := s.newFreshGenesisSuite()
 	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported))
 
-	got, err := fresh.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(fresh.Ctx(), topicId, inferer)
+	got, err := fresh.WorkerKeeper().GetWorkerLatestInferenceByTopicId(fresh.Ctx(), topicId, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(topicId, got.TopicId)
 	s.Require().Equal(inferer, got.Inferer)
 	s.Require().Equal(nonceHeight, got.BlockHeight)
 	s.Require().Len(got.Values, 2)
-	s.Require().Equal("a", got.Values[0].Label)
-	s.Require().Equal("b", got.Values[1].Label)
+	s.Require().Equal("0.5", got.Values[0].String())
+	s.Require().Equal("0.3", got.Values[1].String())
 	s.Require().Equal([]byte("gdata"), got.ExtraData)
 }

@@ -131,7 +131,7 @@ func (s *RewardsTestSuite) TestCloseWorkerNonce_DeferExecWhenError() {
 	s.Require().Equal(len(workerIndexes), len(activeInferers))
 
 	for _, idx := range workerIndexes {
-		submissions, err := s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topic.Id, s.AddrsStr(idx))
+		submissions, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topic.Id, s.AddrsStr(idx))
 		s.Require().NoError(err)
 		s.Require().NotNil(submissions)
 	}
@@ -155,7 +155,7 @@ func (s *RewardsTestSuite) TestCloseWorkerNonce_DeferExecWhenError() {
 	s.Require().Equal(0, len(activeInferers))
 
 	for _, idx := range workerIndexes {
-		_, err = s.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(s.Ctx(), topic.Id, s.AddrsStr(idx))
+		_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topic.Id, s.AddrsStr(idx))
 		s.Require().ErrorIs(err, collections.ErrNotFound)
 	}
 }

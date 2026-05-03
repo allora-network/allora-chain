@@ -27,11 +27,6 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 	}
 
 	// Inferences []*TopicIdActorIdInference
-	//
-	// Deprecated: replaced by WorkerLatestInputInferences in Epoch Label
-	// Registry and drained by the v15 migration. Kept for backwards-
-	// compatible genesis round-trip of any in-flight entries captured
-	// pre-migration; post-upgrade this list is always empty.
 	for _, topicIdActorIdInference := range data.Inferences {
 		if topicIdActorIdInference != nil {
 			if topicIdActorIdInference.Inference == nil {
@@ -47,42 +42,6 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 				*topicIdActorIdInference.Inference); err != nil {
 				return errors.Wrap(err, "error setting inferences")
 			}
-		}
-	}
-
-	// WorkerLatestInputInferences []*TopicIdActorIdInputInference
-	//
-	// Staged raw worker submissions inside an open worker submission window.
-	// Does NOT call InputInference.ValidateWithLimits here because the
-	// effective cap/whitelist depend on runtime topic/module state that is
-	// itself being imported. Stateless validation and key/payload consistency
-	// are still enforced before import.
-	for _, row := range data.WorkerLatestInputInferences {
-		if row == nil {
-			continue
-		}
-		if row.InputInference == nil {
-			return errors.Wrap(types.ErrInvalidValue, "worker_latest_input_inferences: input_inference cannot be nil")
-		}
-		if err := types.ValidateTopicId(row.TopicId); err != nil {
-			return errors.Wrap(err, "worker_latest_input_inferences: topic id invalid")
-		}
-		if err := types.ValidateBech32(row.ActorId); err != nil {
-			return errors.Wrap(err, "worker_latest_input_inferences: actor id invalid")
-		}
-		if err := row.InputInference.Validate(); err != nil {
-			return errors.Wrap(err, "worker_latest_input_inferences: input_inference invalid")
-		}
-		if row.InputInference.TopicId != row.TopicId {
-			return errors.Wrap(types.ErrInvalidValue, "worker_latest_input_inferences: topic id mismatch between key and payload")
-		}
-		if row.InputInference.Inferer != row.ActorId {
-			return errors.Wrap(types.ErrInvalidValue, "worker_latest_input_inferences: actor id mismatch between key and payload")
-		}
-		if err := k.workerLatestInputInferences.Set(ctx,
-			collections.Join(row.TopicId, row.ActorId),
-			*row.InputInference); err != nil {
-			return errors.Wrap(err, "error setting worker_latest_input_inferences")
 		}
 	}
 
@@ -207,7 +166,8 @@ func (k *WorkerKeeper) ExportGenesis(ctx context.Context, data *types.GenesisSta
 	}
 	data.TopicWorkers = topicWorkers
 
-	// inferences (deprecated: see InitGenesis)
+	// inferences: live WSW temporary vectors, or genesis round-trip state if
+	// a worker submission window is open at export time.
 	inferences := make([]*types.TopicIdActorIdInference, 0)
 	inferencesIter, err := k.inferences.Iterate(ctx, nil)
 	if err != nil {
@@ -227,26 +187,6 @@ func (k *WorkerKeeper) ExportGenesis(ctx context.Context, data *types.GenesisSta
 		inferences = append(inferences, &topicIdActorIdInference)
 	}
 	data.Inferences = inferences
-
-	// workerLatestInputInferences (v2)
-	workerInputs := make([]*types.TopicIdActorIdInputInference, 0)
-	workerInputsIter, err := k.workerLatestInputInferences.Iterate(ctx, nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to iterate worker_latest_input_inferences")
-	}
-	for ; workerInputsIter.Valid(); workerInputsIter.Next() {
-		keyValue, err := workerInputsIter.KeyValue()
-		if err != nil {
-			return errors.Wrap(err, "failed to get key value: workerInputsIter")
-		}
-		value := keyValue.Value
-		workerInputs = append(workerInputs, &types.TopicIdActorIdInputInference{
-			TopicId:        keyValue.Key.K1(),
-			ActorId:        keyValue.Key.K2(),
-			InputInference: &value,
-		})
-	}
-	data.WorkerLatestInputInferences = workerInputs
 
 	// forecasts
 	forecasts := make([]*types.TopicIdActorIdForecast, 0)

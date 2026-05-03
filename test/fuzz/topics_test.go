@@ -46,6 +46,7 @@ func createTopic(
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 
 	ctx := context.Background()
