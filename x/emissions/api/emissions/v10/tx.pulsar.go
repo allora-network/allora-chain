@@ -49925,8 +49925,8 @@ type CreateNewTopicRequest struct {
 	OutputArity              TopicOutputArity `protobuf:"varint,23,opt,name=output_arity,json=outputArity,proto3,enum=emissions.v10.TopicOutputArity" json:"output_arity,omitempty"`
 	RequireUnity             bool             `protobuf:"varint,24,opt,name=require_unity,json=requireUnity,proto3" json:"require_unity,omitempty"`
 	UnityTolerance           string           `protobuf:"bytes,25,opt,name=unity_tolerance,json=unityTolerance,proto3" json:"unity_tolerance,omitempty"`
-	// Per-topic cap on labels per worker submission. Zero means use the default
-	// topic cap.
+	// Per-topic cap on labels per worker submission. Must be within the topic
+	// label cap bounds.
 	MaxLabelsPerSubmission uint64 `protobuf:"varint,26,opt,name=max_labels_per_submission,json=maxLabelsPerSubmission,proto3" json:"max_labels_per_submission,omitempty"`
 	// Per-topic canonical label allowlist. Empty means unrestricted.
 	LabelWhitelist []string `protobuf:"bytes,27,rep,name=label_whitelist,json=labelWhitelist,proto3" json:"label_whitelist,omitempty"`
@@ -50173,9 +50173,10 @@ type UpdateTopicRequest struct {
 	CNorm               string `protobuf:"bytes,8,opt,name=c_norm,json=cNorm,proto3" json:"c_norm,omitempty"`
 	RequireUnity        bool   `protobuf:"varint,9,opt,name=require_unity,json=requireUnity,proto3" json:"require_unity,omitempty"`
 	UnityTolerance      string `protobuf:"bytes,10,opt,name=unity_tolerance,json=unityTolerance,proto3" json:"unity_tolerance,omitempty"`
-	// Per-topic cap on labels per worker submission. UpdateTopic applies this
-	// value completely like other topic params. Topic keeper rejects mutations
-	// while any worker submission window is open for this topic.
+	// Per-topic cap on labels per worker submission. UpdateTopic is a full
+	// payload update: the supplied value replaces the existing value and must be
+	// within the topic label cap bounds. Topic keeper rejects mutations while any
+	// worker submission window is open for this topic.
 	MaxLabelsPerSubmission uint64 `protobuf:"varint,11,opt,name=max_labels_per_submission,json=maxLabelsPerSubmission,proto3" json:"max_labels_per_submission,omitempty"`
 	// Per-topic canonical label allowlist. UpdateTopic applies this value
 	// completely like other topic params. Empty means unrestricted. Topic keeper
