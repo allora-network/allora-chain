@@ -162,14 +162,12 @@ func (inputInference *InputInference) Validate() error {
 // ValidateWithLimits validates an InputInference against the per-topic and
 // per-submission constraints that apply to the worker payload path:
 //
-//   - effectiveCap is min(params.MaxLabelsPerSubmission,
-//     topic.MaxLabelsPerSubmission when non-zero). It is the maximum number
-//     of distinct canonical labels the submission may carry. Must be >= 1.
-//   - whitelist, when non-nil, is the set of canonical labels accepted by
-//     the topic. A nil whitelist means the topic is unrestricted (any
-//     canonical label is accepted). An empty (non-nil) whitelist would mean
-//     "no label is accepted" and is not produced by the msgserver (which
-//     distinguishes empty-slice from nil when building the set).
+//   - labelCap is the topic MaxLabelsPerSubmission value applied to this
+//     payload. It is the maximum number of distinct canonical labels the
+//     submission may carry. Must be >= 1.
+//   - whitelist, when non-empty, is the set of canonical labels accepted by the
+//     topic. Nil and empty whitelists both mean unrestricted because repeated
+//     fields do not preserve a nil-vs-empty distinction across serialization.
 //
 // In addition to the basic InputInference.Validate() checks, this function:
 //
@@ -177,30 +175,29 @@ func (inputInference *InputInference) Validate() error {
 //     rewrites the value in place so downstream consumers see canonical
 //     bytes only;
 //   - rejects duplicates after canonicalization (ErrInvalidLabelName);
-//   - enforces the effective cap (ErrTooManyLabelsPerSubmission);
+//   - enforces the label cap (ErrTooManyLabelsPerSubmission);
 //   - enforces whitelist membership post-canonicalization
 //     (ErrLabelNotInWhitelist).
 //
 // The canonicalized slice is left in its submitted order so temporary ELR
 // registration can preserve first-seen label order during the WSW.
 func (inputInference *InputInference) ValidateWithLimits(
-	effectiveCap uint64,
+	labelCap uint64,
 	whitelist map[string]struct{},
 ) error {
 	if err := inputInference.Validate(); err != nil {
 		return err
 	}
-	if effectiveCap == 0 {
-		// Defensive: the msgserver computes effectiveCap as
-		// min(params, topic) and Params.Validate rejects zero, so a zero
-		// here indicates a programming error rather than user input.
+	if labelCap == 0 {
+		// Defensive: topic validation rejects zero, so a zero here indicates a
+		// programming error rather than user input.
 		return errors.Wrap(ErrValidationMustBeGreaterthanZero,
-			"effective per-submission label cap must be >= 1")
+			"per-submission label cap must be >= 1")
 	}
 	n := uint64(len(inputInference.Values))
-	if n > effectiveCap {
+	if n > labelCap {
 		return errors.Wrapf(ErrTooManyLabelsPerSubmission,
-			"submission has %d labels, effective cap is %d", n, effectiveCap)
+			"submission has %d labels, per-topic cap is %d", n, labelCap)
 	}
 	seen := make(map[string]struct{}, len(inputInference.Values))
 	for i, lv := range inputInference.Values {

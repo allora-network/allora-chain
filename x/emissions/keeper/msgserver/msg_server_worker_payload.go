@@ -88,13 +88,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, err
 	}
 
-	// Pre-validate the inbound InputInference with the effective per-topic cap
-	// and whitelist. ValidateWithLimits canonicalizes labels in place; subsequent
-	// Normalize + AppendInference see canonical forms only.
+	// Pre-validate the inbound InputInference with the topic cap and whitelist.
+	// ValidateWithLimits canonicalizes labels in place; subsequent Normalize +
+	// AppendInference see canonical forms only.
 	if rawInput := msg.WorkerDataBundle.GetInferenceForecastsBundle().GetInference(); rawInput != nil {
-		effectiveCap := topic.MaxLabelsPerSubmission
+		labelCap := topic.MaxLabelsPerSubmission
 		whitelist := types.CanonicalLabelSet(topic.LabelWhitelist)
-		if err := rawInput.ValidateWithLimits(effectiveCap, whitelist); err != nil {
+		if err := rawInput.ValidateWithLimits(labelCap, whitelist); err != nil {
 			return nil, errorsmod.Wrapf(err, "input inference failed label validation")
 		}
 	}

@@ -1199,8 +1199,8 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 		TopicId: 1,
 		EpochId: uint64(nonce),
 		Labels: []*types.TopicLabel{
-			{Id: 1, Name: "a"},
-			{Id: 2, Name: "b"},
+			{Id: 1, Name: "b"},
+			{Id: 2, Name: "a"},
 			{Id: 3, Name: "c"},
 			{Id: 4, Name: "d"},
 		},
@@ -1220,7 +1220,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("1", "2", "0", "4")},
 				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("0", "5")},
 			},
-			wantLabels: []string{"a", "b", "d"},
+			wantLabels: []string{"b", "a", "d"},
 			wantValues: map[string][]string{
 				s.AddrsStr(0): {"1", "2", "4"},
 				s.AddrsStr(1): {"0", "5", "0"},
@@ -1232,7 +1232,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("1")},
 				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("0", "2", "3", "4")},
 			},
-			wantLabels: []string{"a", "b", "c", "d"},
+			wantLabels: []string{"b", "a", "c", "d"},
 			wantValues: map[string][]string{
 				s.AddrsStr(0): {"1", "0", "0", "0"},
 				s.AddrsStr(1): {"0", "2", "3", "4"},
@@ -1246,13 +1246,21 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 			},
 			wantErrIs: types.ErrEpochLabelRegistryEmpty,
 		},
+		{
+			name: "errors_when_active_inference_nil_before_sort",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("1")},
+				nil,
+			},
+			wantErrIs: sdkerrors.ErrLogic,
+		},
 	}
 
 	for _, c := range cases {
 		s.Run(c.name, func() {
 			reg, got, reused, err := keeper.MaterializeFinalEpochLabelRegistry(topic, nonce, tempRegistry, c.active)
 			if c.wantErrIs != nil {
-				s.Require().ErrorIs(err, c.wantErrIs)
+				s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
 				return
 			}
 			s.Require().NoError(err)

@@ -105,8 +105,8 @@ var (
 	// part of InputInference.ValidateWithLimits.
 	ErrLabelNotInWhitelist = errors.Register(ModuleName, 97, "label is not in the topic's label whitelist")
 	// ErrTooManyLabelsPerSubmission is raised when a worker submits more
-	// labels than the topic-level cap.
-	ErrTooManyLabelsPerSubmission = errors.Register(ModuleName, 98, "too many labels in one submission (exceeds effective cap)")
+	// labels than the configured per-topic cap.
+	ErrTooManyLabelsPerSubmission = errors.Register(ModuleName, 98, "too many labels in one submission (exceeds per-topic cap)")
 	// ErrEpochLabelRegistryEmpty is raised at CloseWorkerNonce when the
 	// active set produced zero surviving labels for a MULTI-output topic.
 	// This normally indicates no qualifying inferers and is accompanied by
