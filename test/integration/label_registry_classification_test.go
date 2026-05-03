@@ -18,7 +18,7 @@ import (
 //  1. CLASSIFICATION + MULTI-arity topic with a label_whitelist and
 //     max_labels_per_submission round-trips through storage and the
 //     whitelist is persisted canonicalized (NFC/trim).
-//  2. Zero max_labels_per_submission at create time uses the default topic cap.
+//  2. CreateNewTopic rejects zero max_labels_per_submission.
 //  3. CreateNewTopic rejects a whitelist containing a canonical duplicate
 //     (post-NFC) via ErrInvalidLabelName.
 //  4. CreateNewTopic rejects a whitelist containing a control character
@@ -84,22 +84,18 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 		stored.Topic.LabelWhitelist,
 		"LabelWhitelist must be persisted canonicalized (scenario 1, 5)")
 
-	// Scenario 2: zero MaxLabelsPerSubmission at create time uses the default topic cap.
+	// Scenario 2: zero MaxLabelsPerSubmission is rejected.
 	zeroCapReq := baseReq()
 	zeroCapReq.MaxLabelsPerSubmission = 0
 	zeroCapReq.LabelWhitelist = []string{"y"}
 	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, zeroCapReq)
-	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	require.NoError(m.T, err)
-	createResp2 := &emissionstypes.CreateNewTopicResponse{}
-	require.NoError(m.T, txResp.Decode(createResp2))
-	stored2, err := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.GetTopicRequest{
-		TopicId: createResp2.TopicId,
-	})
-	require.NoError(m.T, err)
-	require.Equal(m.T, emissionstypes.DefaultMaxLabelsPerSubmission, stored2.Topic.MaxLabelsPerSubmission,
-		"Zero MaxLabelsPerSubmission must use the default topic cap")
+	zeroCapErr := err
+	if err == nil {
+		_, zeroCapErr = m.Client.WaitForTx(ctx, txResp.TxHash)
+	}
+	require.Error(m.T, zeroCapErr,
+		"zero MaxLabelsPerSubmission must be rejected (scenario 2)")
+	require.ErrorContains(m.T, zeroCapErr, "max labels per submission")
 
 	// Scenario 3: canonical duplicate whitelist rejected.
 	dupReq := baseReq()
