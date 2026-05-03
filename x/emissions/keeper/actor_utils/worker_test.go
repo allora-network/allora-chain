@@ -62,8 +62,9 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
-	// v2: stage raw InputInference per worker. The registry is materialized
-	// at CloseWorkerNonce time from the final active workers' staged inputs.
+	// v2: normalize each worker's input into a temporary-ELR-aligned dense
+	// Inference. CloseWorkerNonce then filters and remaps the final active
+	// workers' temporary vectors into the compact final registry.
 	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
 		return alloraMath.MustNewBoundedExp40DecFromString(x)
 	}
@@ -94,10 +95,12 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 		},
 	}
 
-	err = s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker0, input0)
+	inf0, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input0)
 	s.Require().NoError(err)
-	err = s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker1, input1)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf0))
+	inf1, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input1)
 	s.Require().NoError(err)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf1))
 
 	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0)
 	s.Require().NoError(err)
@@ -158,6 +161,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -215,6 +219,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
@@ -229,9 +234,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	forecaster0 := s.AddrsStr(4)
 	forecaster1 := s.AddrsStr(5)
 
-	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
-	require.NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
 	require.NoError(err)
 
 	// Create inferences where worker3 is an obvious outlier
@@ -365,6 +368,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
@@ -431,9 +435,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
-	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
-	require.NoError(err)
-	_, err = s.TopicKeeper().BuildFinalEpochLabelRegistryFromActiveSet(ctx, topic, blockHeight, nil)
+	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
 	require.NoError(err)
 
 	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
@@ -558,8 +560,12 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFr
 			{Label: "d", Value: mustBounded("0.35")},
 		},
 	}
-	s.Require().NoError(s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker0, input0))
-	s.Require().NoError(s.WorkerKeeper().SetWorkerLatestInputInference(s.Ctx(), topicId, worker1, input1))
+	inf0, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input0)
+	s.Require().NoError(err)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf0))
+	inf1, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input1)
+	s.Require().NoError(err)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf1))
 
 	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0))
 	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1))

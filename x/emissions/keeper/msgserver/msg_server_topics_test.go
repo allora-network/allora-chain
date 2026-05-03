@@ -159,6 +159,32 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			expectSuccess: true,
 		},
 		{
+			name: "Fails with zero max labels per submission",
+			setup: func() *types.CreateNewTopicRequest {
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.MaxLabelsPerSubmission = 0
+				return msg
+			},
+			expectedError: "max labels per submission",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails with max labels per submission above max",
+			setup: func() *types.CreateNewTopicRequest {
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.MaxLabelsPerSubmission = types.MaxMaxLabelsPerSubmission + 1
+				return msg
+			},
+			expectedError: "max labels per submission",
+			expectSuccess: false,
+		},
+		{
 			name: "Fails when require_unity true with SINGLE output_arity",
 			setup: func() *types.CreateNewTopicRequest {
 				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
@@ -195,6 +221,20 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 				return msg
 			},
 			expectedError: "unity_tolerance must be in",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails when require_unity true and label_default_value nonzero",
+			setup: func() *types.CreateNewTopicRequest {
+				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				msg := s.MockTopicMsg()
+				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
+				msg.LabelDefaultValue = alloraMath.OneDec()
+				return msg
+			},
+			expectedError: "label_default_value must be zero when require_unity is true",
 			expectSuccess: false,
 		},
 		{
@@ -289,6 +329,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -313,6 +354,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -328,6 +370,107 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.Equal(originalTopic.OutputArity, updatedTopic.OutputArity)
 	require.Equal(originalTopic.RequireUnity, updatedTopic.RequireUnity)
 	require.Equal(originalTopic.UnityTolerance, updatedTopic.UnityTolerance)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRange() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	testCases := []struct {
+		name string
+		cap  uint64
+	}{
+		{
+			name: "zero",
+			cap:  0,
+		},
+		{
+			name: "above max",
+			cap:  types.MaxMaxLabelsPerSubmission + 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			senderAddr := s.Addrs(0)
+			sender := s.AddrsStr(0)
+
+			s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+			createTopicMsg := s.MockTopicMsg()
+
+			createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+			require.NoError(err)
+			require.NotNil(createResult)
+
+			originalTopic, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+			require.NoError(err)
+
+			updateTopicMsg := &types.UpdateTopicRequest{
+				Sender:                 sender,
+				TopicId:                createResult.TopicId,
+				Metadata:               originalTopic.Metadata,
+				LossMethod:             originalTopic.LossMethod,
+				AlphaRegret:            originalTopic.AlphaRegret,
+				MeritSortitionAlpha:    originalTopic.MeritSortitionAlpha,
+				PNorm:                  originalTopic.PNorm,
+				CNorm:                  originalTopic.CNorm,
+				RequireUnity:           originalTopic.RequireUnity,
+				UnityTolerance:         originalTopic.UnityTolerance,
+				MaxLabelsPerSubmission: tc.cap,
+				LabelWhitelist:         originalTopic.LabelWhitelist,
+				LabelDefaultValue:      originalTopic.LabelDefaultValue,
+			}
+
+			updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+			require.Error(err)
+			require.Nil(updateResult)
+			require.ErrorContains(err, "max labels per submission")
+
+			got, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+			require.NoError(err)
+			require.Equal(originalTopic.MaxLabelsPerSubmission, got.MaxLabelsPerSubmission)
+		})
+	}
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsNonzeroLabelDefaultValueWhenRequireUnity() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := s.MockTopicMsg()
+	createTopicMsg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	createTopicMsg.RequireUnity = true
+	createTopicMsg.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
+	createTopicMsg.LabelDefaultValue = alloraMath.ZeroDec()
+
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	require.NotNil(createResult)
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                createResult.TopicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.OneDec(),
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "label_default_value must be zero when require_unity is true")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
@@ -364,6 +507,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -384,6 +528,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -411,6 +556,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -440,6 +586,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -460,6 +607,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -480,6 +628,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -523,6 +672,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -549,6 +699,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -598,6 +749,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -616,6 +768,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -641,6 +794,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -663,6 +817,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -685,6 +840,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -711,6 +867,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -737,6 +894,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "alpha regret")
@@ -755,6 +913,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "merit sortition alpha")
@@ -773,6 +932,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "p-norm")
@@ -791,6 +951,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -809,6 +970,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -847,6 +1009,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -874,6 +1037,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -917,6 +1081,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -941,6 +1106,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -985,6 +1151,7 @@ func (s *MsgServerTestSuite) createTopicForWSWTests(sender string) uint64 {
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   4,
 		LabelWhitelist:           []string{"a", "b", "c"},
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	resp, err := msgServer.CreateNewTopic(ctx, create)
 	require.NoError(err)
@@ -1021,9 +1188,11 @@ func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		// NFD form (e + combining acute), plus whitespace padding; a
 		// canonical duplicate should be rejected with ErrInvalidLabelName.
-		LabelWhitelist: []string{"  foo  ", "e\u0301", "\u00e9"},
+		LabelWhitelist:    []string{"  foo  ", "e\u0301", "\u00e9"},
+		LabelDefaultValue: alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.CreateNewTopic(ctx, create)
 	require.ErrorIs(err, types.ErrInvalidLabelName, "canonical duplicate must be rejected at SetTopic")
@@ -1067,6 +1236,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: 8, // changed -> must be rejected
 		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1106,6 +1276,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b"}, // changed: dropped "c"
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1148,6 +1319,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         []string{"  a  ", "e\u0301"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
@@ -1197,6 +1369,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWith
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: 8, // changed -> must be rejected
 		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,

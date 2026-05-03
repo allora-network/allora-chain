@@ -266,7 +266,6 @@ message OptionalParams {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  repeated uint64 max_labels_per_submission = 61;
 }
 
 message UpdateParamsRequest {
@@ -335,12 +334,17 @@ message CreateNewTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  // Per-topic cap on labels per worker submission. Zero means "use module
-  // default". Effective cap at the msgserver is min(params, this) when this
-  // is non-zero.
+  // Per-topic cap on labels per worker submission. Must be within the topic
+  // label cap bounds.
   uint64 max_labels_per_submission = 26;
   // Per-topic canonical label allowlist. Empty means unrestricted.
   repeated string label_whitelist = 27;
+  // Default value for missing MULTI label slots. Submitted labels equal to
+  // this value are treated as absent for registry inclusion.
+  string label_default_value = 28 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message CreateNewTopicResponse {
@@ -377,14 +381,21 @@ message UpdateTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  // Per-topic cap on labels per worker submission. Zero means "unchanged" in
-  // UpdateTopic (the existing value is preserved). Topic keeper rejects
-  // mutations while any worker submission window is open for this topic.
+  // Per-topic cap on labels per worker submission. UpdateTopic is a full
+  // payload update: the supplied value replaces the existing value and must be
+  // within the topic label cap bounds. Topic keeper rejects mutations while any
+  // worker submission window is open for this topic.
   uint64 max_labels_per_submission = 11;
-  // Per-topic canonical label allowlist. Nil means "unchanged" in UpdateTopic;
-  // an empty (non-nil) list means "clear the whitelist" (unrestricted).
-  // Topic keeper rejects mutations while any worker submission window is open.
+  // Per-topic canonical label allowlist. UpdateTopic applies this value
+  // completely like other topic params. Empty means unrestricted. Topic keeper
+  // rejects mutations while any worker submission window is open.
   repeated string label_whitelist = 12;
+  // Default value for missing MULTI label slots. Topic keeper rejects
+  // mutations while any worker submission window is open.
+  string label_default_value = 13 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message UpdateTopicResponse {}

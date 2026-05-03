@@ -10,32 +10,8 @@ import (
 
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
-
-// GetWorkerLatestInputInferenceByTopicId handles the query for the latest raw input inference by a specific worker for a given topic.
-func (qs queryServer) GetWorkerLatestInputInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInputInferenceByTopicIdRequest) (_ *emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerLatestInputInferenceByTopicId", time.Now(), &err)
-
-	if err = emissionstypes.ValidateStringIsBech32(req.WorkerAddress); err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
-	}
-	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
-	if !topicExists {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	} else if err != nil {
-		return nil, err
-	}
-
-	inference, err := qs.wk.GetWorkerLatestInputInferenceByTopicId(ctx, req.TopicId, req.WorkerAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	return &emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse{LatestInputInference: &inference}, nil
-}
 
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (_ *emissionstypes.GetInferencesAtBlockResponse, err error) {
 	defer metrics.RecordMetrics("GetInferencesAtBlock", time.Now(), &err)

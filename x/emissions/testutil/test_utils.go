@@ -1207,6 +1207,7 @@ func (s *TestSuite) MockTopic() types.Topic {
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 }
 
@@ -1236,6 +1237,7 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		UnityTolerance:           topic.UnityTolerance,
 		MaxLabelsPerSubmission:   topic.MaxLabelsPerSubmission,
 		LabelWhitelist:           topic.LabelWhitelist,
+		LabelDefaultValue:        topic.LabelDefaultValue,
 	}
 }
 

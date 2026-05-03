@@ -113,12 +113,8 @@ message GenesisState {
   repeated DelegatorReputerTopicIdBlockHeight delegate_stake_removals_by_actor = 31;
 
   /// MISC GLOBAL STATE
-  // Deprecated: migrated to worker_latest_input_inferences in the v15
-  // migration. Kept for backwards-compatible genesis round-trip of any
-  // in-flight entries captured pre-migration; will always be empty once the
-  // chain has applied the v15 upgrade handler.
-  // map of (topic, worker) -> inference
-  repeated TopicIdActorIdInference inferences = 32 [deprecated = true];
+  // map of (topic, worker) -> latest active temporary inference
+  repeated TopicIdActorIdInference inferences = 32;
   // map of (topic, worker) -> forecast[]
   repeated TopicIdActorIdForecast forecasts = 33;
   // map of worker id to node data about that worker
@@ -296,14 +292,6 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-
-  // EPOCH LABEL REGISTRY v2
-  // Per-worker staged raw submissions (post-canonicalization) written during
-  // the worker submission window. Replaces the legacy `inferences` map at
-  // runtime; on every CloseWorkerNonce this is drained and the active-set
-  // entries are materialized into Inference vectors aligned to the committed
-  // EpochLabelRegistry.
-  repeated TopicIdActorIdInputInference worker_latest_input_inferences = 101;
 }
 
 message TopicIdAndTopic {
@@ -419,15 +407,6 @@ message TopicIdActorIdInference {
   uint64 topic_id = 1;
   string actor_id = 2;
   emissions.v10.Inference inference = 3;
-}
-
-// Per-worker staged input inference, used by
-// GenesisState.worker_latest_input_inferences to round-trip the
-// workerLatestInputInferences store across genesis.
-message TopicIdActorIdInputInference {
-  uint64 topic_id = 1;
-  string actor_id = 2;
-  emissions.v10.InputInference input_inference = 3;
 }
 
 message TopicIdActorIdForecast {

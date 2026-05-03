@@ -1043,6 +1043,41 @@ func TestTopicValidate(t *testing.T) {
 			},
 			wantErr: false, errContains: "",
 		},
+		{
+			name: "max labels per submission accepts min",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.MaxLabelsPerSubmission = MinMaxLabelsPerSubmission
+			},
+			wantErr: false, errContains: "",
+		},
+		{
+			name: "max labels per submission accepts default",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.MaxLabelsPerSubmission = DefaultMaxLabelsPerSubmission
+			},
+			wantErr: false, errContains: "",
+		},
+		{
+			name: "max labels per submission accepts max",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.MaxLabelsPerSubmission = MaxMaxLabelsPerSubmission
+			},
+			wantErr: false, errContains: "",
+		},
+		{
+			name: "max labels per submission rejects zero",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.MaxLabelsPerSubmission = 0
+			},
+			wantErr: true, errContains: "max labels per submission",
+		},
+		{
+			name: "max labels per submission rejects above max",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.MaxLabelsPerSubmission = MaxMaxLabelsPerSubmission + 1
+			},
+			wantErr: true, errContains: "max labels per submission",
+		},
 	}
 
 	for _, tc := range tests {
@@ -1093,6 +1128,7 @@ func validTopic(p Params) Topic {
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 }
 

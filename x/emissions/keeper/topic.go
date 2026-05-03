@@ -11,6 +11,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -271,7 +272,8 @@ func (k *TopicKeeper) TopicExists(ctx context.Context, topicId TopicId) (bool, e
 // inside a worker submission window. It is the shared guard for topic
 // parameter mutations that must not race worker payload submission for an
 // open epoch (merit_sortition_alpha, max_labels_per_submission, label
-// whitelist). Unlike the original v14-era check this iterates every
+// whitelist, label_default_value). Unlike the original v14-era check this
+// iterates every
 // unfulfilled nonce rather than just the newest, because workers can submit
 // against any currently-open nonce.
 func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
@@ -334,6 +336,7 @@ func labelWhitelistChanged(a, b []string) bool {
 //   - merit_sortition_alpha (reward-math continuity)
 //   - max_labels_per_submission (per-submission label cap)
 //   - label_whitelist (per-topic label allowlist)
+//   - label_default_value (implicit missing label semantics)
 //
 // This is stricter than the v14 behavior (which only checked the newest
 // unfulfilled nonce) to match the v2 Epoch Label Registry semantics, where
@@ -363,8 +366,9 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 	meritChanged := !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha)
 	maxLabelsChanged := topic.MaxLabelsPerSubmission != updatedTopic.MaxLabelsPerSubmission
 	whitelistChanged := labelWhitelistChanged(topic.LabelWhitelist, updatedTopic.LabelWhitelist)
+	labelDefaultChanged := !topic.LabelDefaultValue.Equal(updatedTopic.LabelDefaultValue)
 
-	if meritChanged || maxLabelsChanged || whitelistChanged {
+	if meritChanged || maxLabelsChanged || whitelistChanged || labelDefaultChanged {
 		withinWindow, err := k.isAnyUnfulfilledWorkerNonceWithinWindow(ctx, topic)
 		if err != nil {
 			return types.Topic{}, err
@@ -376,8 +380,10 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 				which = "merit_sortition_alpha"
 			case maxLabelsChanged:
 				which = "max_labels_per_submission"
-			default:
+			case whitelistChanged:
 				which = "label_whitelist"
+			default:
+				which = "label_default_value"
 			}
 			return types.Topic{}, errorsmod.Wrapf(
 				types.ErrWorkerNonceWindowNotAvailable,
@@ -853,6 +859,40 @@ func (k *TopicKeeper) GetEpochLabelRegistry(
 	registry.TopicId = topicId
 	registry.EpochId = uint64(nonce) //nolint:gosec // nonce is a non-negative block height; cast is safe
 	return registry, nil
+}
+
+// RegisterEpochLabel registers a canonical label in the epoch registry using
+// first-seen 1-based ids. If the label already exists, its existing id is
+// returned.
+func (k *TopicKeeper) RegisterEpochLabel(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	labelName string,
+) (LabelId, error) {
+	canonicalLabel, err := types.CanonicalLabelName(labelName)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "label name validation failed")
+	}
+	if canonicalLabel != labelName {
+		return 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", labelName)
+	}
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return 0, err
+	}
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Name == canonicalLabel {
+			return lbl.Id, nil
+		}
+	}
+	//nolint:gosec // labels are capped per submission and by WSW throughput.
+	nextID := LabelId(len(registry.Labels) + 1)
+	registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: canonicalLabel})
+	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicId, nonce), registry); err != nil {
+		return 0, errorsmod.Wrap(err, "error setting topic label registry")
+	}
+	return nextID, nil
 }
 
 // GetEpochLabelId returns the label id for labelName, if present.

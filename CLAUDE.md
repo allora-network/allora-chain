@@ -50,3 +50,7 @@ Before the first commit in any session, run these checks. If any fail, **stop an
 
 ### Git Remote Protocol
 **Never change the git remote URL.** The remote must stay as it is unless otherwise requested. Do not switch HTTPS/SSH, do not run `git remote set-url`, and do not run `gh auth setup-git`, unless explicitly stated, requested and only execute if approved by the user. 
+
+### AUTOCLI
+Do not use FlagOptions on params. Follow existing style.
+

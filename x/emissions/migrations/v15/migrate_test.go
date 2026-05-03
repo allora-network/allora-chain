@@ -112,6 +112,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 		s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotTopic.OutputArity)
 		s.Require().False(gotTopic.RequireUnity)
 		s.Require().Equal("0", gotTopic.UnityTolerance.String())
+		s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
 	}
 }
 
@@ -147,6 +148,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.001"),
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
 
@@ -160,6 +162,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, gotTopic.OutputArity)
 	s.Require().True(gotTopic.RequireUnity)
 	s.Require().True(gotTopic.UnityTolerance.Equal(alloraMath.MustNewDecFromString("0.001")))
+	s.Require().Equal(uint64(8), gotTopic.MaxLabelsPerSubmission)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() {
@@ -226,6 +229,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotTopic.OutputArity)
 	s.Require().False(gotTopic.RequireUnity)
 	s.Require().Equal("0", gotTopic.UnityTolerance.String())
+	s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
 	s.Require().True(legacyTopic.ActiveInfererQuantile.Equal(gotTopic.ActiveInfererQuantile))
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
@@ -323,6 +327,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotTopic.OutputArity)
 	s.Require().False(gotTopic.RequireUnity)
 	s.Require().Equal("0", gotTopic.UnityTolerance.String())
+	s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
 	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)
@@ -515,213 +520,4 @@ func (s *EmissionsV15MigrationTestSuite) assertMigratedBundle(
 	s.Require().True(oldBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Value.Equal(got.OneOutInfererForecasterValues[0].CombinedInference[0].Value))
 	s.Require().Equal(oldBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[1].Worker, got.OneOutInfererForecasterValues[1].WithheldInferer)
 	s.Require().True(oldBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[1].Value.Equal(got.OneOutInfererForecasterValues[1].CombinedInference[0].Value))
-}
-
-// TestMigrateInferencesToWorkerLatestInputInferences drains the legacy
-// Inferences store into the v2 WorkerLatestInputInferences store. It covers
-// both topic arities: SINGLE topics fall back to Value; MULTI topics
-// reverse-map Values through the seeded EpochLabelRegistry.
-//
-//nolint:exhaustruct
-func (s *EmissionsV15MigrationTestSuite) TestMigrateInferencesToWorkerLatestInputInferences() {
-	storageService := s.EmissionsKeeper().GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
-	cdc := s.EmissionsKeeper().GetBinaryCodec()
-
-	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	legacyStore := prefix.NewStore(store, emissionstypes.InferencesKey) //nolint:staticcheck // SA1019: test seeds the legacy prefix drained by the v15 migration.
-	destStore := prefix.NewStore(store, emissionstypes.WorkerLatestInputInferenceKey)
-	registryStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
-
-	singleTopic := emissionstypes.Topic{
-		Id:          1,
-		OutputArity: emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-	}
-	multiTopic := emissionstypes.Topic{
-		Id:          2,
-		OutputArity: emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-	}
-	topicStore.Set(sdk.Uint64ToBigEndian(singleTopic.Id), cdc.MustMarshal(&singleTopic))
-	topicStore.Set(sdk.Uint64ToBigEndian(multiTopic.Id), cdc.MustMarshal(&multiTopic))
-
-	nonceHeight := int64(123)
-	multiRegistry := emissionstypes.EpochLabelRegistry{
-		TopicId: multiTopic.Id,
-		//nolint:gosec // non-negative
-		EpochId: uint64(nonceHeight),
-		Labels: []*emissionstypes.TopicLabel{
-			{Id: 1, Name: "a"},
-			{Id: 2, Name: "b"},
-			{Id: 3, Name: "c"},
-		},
-	}
-	regKey, err := collections.EncodeKeyWithPrefix(
-		nil,
-		collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
-		collections.Join(multiTopic.Id, nonceHeight),
-	)
-	s.Require().NoError(err)
-	registryStore.Set(regKey, cdc.MustMarshal(&multiRegistry))
-
-	singleInferer := s.Addrs(0).String()
-	multiInferer := s.Addrs(1).String()
-
-	singleInference := emissionstypes.Inference{
-		TopicId:     singleTopic.Id,
-		BlockHeight: nonceHeight,
-		Inferer:     singleInferer,
-		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.42")},
-		ExtraData:   []byte("single-extra"),
-	}
-	multiInference := emissionstypes.Inference{
-		TopicId:     multiTopic.Id,
-		BlockHeight: nonceHeight,
-		Inferer:     multiInferer,
-		Values: []alloraMath.Dec{
-			alloraMath.MustNewDecFromString("0.1"),
-			alloraMath.MustNewDecFromString("0.2"),
-			alloraMath.MustNewDecFromString("0.3"),
-		},
-		ExtraData: []byte("multi-extra"),
-	}
-
-	singleKey, err := collections.EncodeKeyWithPrefix(
-		nil,
-		collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
-		collections.Join(singleTopic.Id, singleInferer),
-	)
-	s.Require().NoError(err)
-	legacyStore.Set(singleKey, cdc.MustMarshal(&singleInference))
-
-	multiKey, err := collections.EncodeKeyWithPrefix(
-		nil,
-		collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
-		collections.Join(multiTopic.Id, multiInferer),
-	)
-	s.Require().NoError(err)
-	legacyStore.Set(multiKey, cdc.MustMarshal(&multiInference))
-
-	err = v15.MigrateInferencesToWorkerLatestInputInferences(s.Ctx(), store, cdc)
-	s.Require().NoError(err)
-
-	s.Require().False(legacyStore.Has(singleKey), "single legacy inference should be drained")
-	s.Require().False(legacyStore.Has(multiKey), "multi legacy inference should be drained")
-	s.Require().True(destStore.Has(singleKey))
-	s.Require().True(destStore.Has(multiKey))
-
-	var gotSingle emissionstypes.InputInference
-	err = gotSingle.Unmarshal(destStore.Get(singleKey))
-	s.Require().NoError(err)
-	s.Require().Equal(singleTopic.Id, gotSingle.TopicId)
-	s.Require().Equal(singleInferer, gotSingle.Inferer)
-	s.Require().Equal(nonceHeight, gotSingle.BlockHeight)
-	s.Require().Empty(gotSingle.Values)
-	s.Require().True(alloraMath.MustNewDecFromString("0.42").Equal(gotSingle.Value.ToDec()))
-	s.Require().Equal([]byte("single-extra"), gotSingle.ExtraData)
-
-	var gotMulti emissionstypes.InputInference
-	err = gotMulti.Unmarshal(destStore.Get(multiKey))
-	s.Require().NoError(err)
-	s.Require().Equal(multiTopic.Id, gotMulti.TopicId)
-	s.Require().Equal(multiInferer, gotMulti.Inferer)
-	s.Require().Len(gotMulti.Values, 3)
-	s.Require().Equal("a", gotMulti.Values[0].Label)
-	s.Require().Equal("b", gotMulti.Values[1].Label)
-	s.Require().Equal("c", gotMulti.Values[2].Label)
-	s.Require().True(alloraMath.MustNewDecFromString("0.1").Equal(gotMulti.Values[0].Value.ToDec()))
-	s.Require().True(alloraMath.MustNewDecFromString("0.2").Equal(gotMulti.Values[1].Value.ToDec()))
-	s.Require().True(alloraMath.MustNewDecFromString("0.3").Equal(gotMulti.Values[2].Value.ToDec()))
-}
-
-// TestMigrateInferencesToWorkerLatestInputInferences_DropsMultiWithMissingRegistry
-// asserts that a MULTI inference whose EpochLabelRegistry is missing or
-// shorter than the values slice is dropped (not crashed on, and the legacy
-// store is still drained).
-//
-//nolint:exhaustruct
-func (s *EmissionsV15MigrationTestSuite) TestMigrateInferencesToWorkerLatestInputInferences_DropsMultiWithMissingRegistry() {
-	storageService := s.EmissionsKeeper().GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
-	cdc := s.EmissionsKeeper().GetBinaryCodec()
-
-	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	legacyStore := prefix.NewStore(store, emissionstypes.InferencesKey) //nolint:staticcheck // SA1019: test seeds the legacy prefix drained by the v15 migration.
-	destStore := prefix.NewStore(store, emissionstypes.WorkerLatestInputInferenceKey)
-
-	multiTopic := emissionstypes.Topic{
-		Id:          3,
-		OutputArity: emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-	}
-	topicStore.Set(sdk.Uint64ToBigEndian(multiTopic.Id), cdc.MustMarshal(&multiTopic))
-
-	inferer := s.Addrs(2).String()
-	inf := emissionstypes.Inference{
-		TopicId:     multiTopic.Id,
-		BlockHeight: 42,
-		Inferer:     inferer,
-		Values: []alloraMath.Dec{
-			alloraMath.MustNewDecFromString("0.1"),
-			alloraMath.MustNewDecFromString("0.2"),
-		},
-	}
-
-	key, err := collections.EncodeKeyWithPrefix(
-		nil,
-		collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
-		collections.Join(multiTopic.Id, inferer),
-	)
-	s.Require().NoError(err)
-	legacyStore.Set(key, cdc.MustMarshal(&inf))
-
-	err = v15.MigrateInferencesToWorkerLatestInputInferences(s.Ctx(), store, cdc)
-	s.Require().NoError(err)
-
-	s.Require().False(legacyStore.Has(key))
-	s.Require().False(destStore.Has(key))
-}
-
-// TestMigrateParams_BackfillsDefault verifies that zero-valued
-// MaxLabelsPerSubmission on a pre-v15 Params object is backfilled to
-// DefaultMaxLabelsPerSubmission.
-//
-//nolint:exhaustruct
-func (s *EmissionsV15MigrationTestSuite) TestMigrateParams_BackfillsDefault() {
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	params.MaxLabelsPerSubmission = 0
-
-	// We bypass the keeper's Validate path (which already requires >=1) by
-	// writing the raw params proto directly at the collections.Item key.
-	storageService := s.EmissionsKeeper().GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
-	paramsBz, err := params.Marshal()
-	s.Require().NoError(err)
-	store.Set(emissionstypes.ParamsKey, paramsBz)
-
-	err = v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
-	s.Require().NoError(err)
-
-	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, got.MaxLabelsPerSubmission)
-}
-
-// TestMigrateParams_LeavesNonZeroAlone ensures MigrateParams does not
-// overwrite an already-populated MaxLabelsPerSubmission.
-//
-//nolint:exhaustruct
-func (s *EmissionsV15MigrationTestSuite) TestMigrateParams_LeavesNonZeroAlone() {
-	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	const custom = uint64(7)
-	params.MaxLabelsPerSubmission = custom
-	err = s.ParamsKeeper().SetParams(s.Ctx(), params)
-	s.Require().NoError(err)
-
-	err = v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
-	s.Require().NoError(err)
-
-	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	s.Require().Equal(custom, got.MaxLabelsPerSubmission)
 }

@@ -22,12 +22,10 @@ var (
 	DelegatorStakeKey         = collections.NewPrefix(8)
 	DelegateStakePlacementKey = collections.NewPrefix(9)
 	TargetStakeKey            = collections.NewPrefix(10)
-	// Deprecated: InferencesKey is the legacy per-worker Inference store keyed
-	// by EpochLabelRegistry indices. As of the v15 migration it is no longer
-	// written by AppendInference; remaining entries are migrated into
-	// WorkerLatestInputInferenceKey and the prefix is left in place only for
-	// genesis round-trip and defensive clears. See
-	// migrations/v15/MigrateInferencesToWorkerLatestInputInferences.
+	// InferencesKey stores the latest active per-worker Inference during an
+	// open worker submission window. Values are aligned to the temporary
+	// first-seen EpochLabelRegistry and remapped to the final compact registry
+	// at CloseWorkerNonce.
 	InferencesKey            = collections.NewPrefix(11)
 	ForecastsKey             = collections.NewPrefix(12)
 	WorkerNodesKey           = collections.NewPrefix(13)
@@ -128,8 +126,4 @@ var (
 	TopicLabelRegistryKey                     = collections.NewPrefix(106)
 	NetworkInferenceBundleKey                 = collections.NewPrefix(107)
 	OutlierResistantNetworkInferenceBundleKey = collections.NewPrefix(108)
-	// WorkerLatestInputInferenceKey stores the raw per-worker InputInference
-	// staged during the worker submission window. Replaces InferencesKey at
-	// runtime as of v15. Keyed (topicId, inferer) -> types.InputInference.
-	WorkerLatestInputInferenceKey = collections.NewPrefix(109)
 )

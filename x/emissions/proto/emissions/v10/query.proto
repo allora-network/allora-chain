@@ -38,11 +38,6 @@ service QueryService {
     option (google.api.http).get = "/emissions/v10/topics/{topic_id}";
   }
 
-  rpc GetWorkerLatestInputInferenceByTopicId(GetWorkerLatestInputInferenceByTopicIdRequest) returns (GetWorkerLatestInputInferenceByTopicIdResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_input_inference";
-  }
-
   rpc GetInferencesAtBlock(GetInferencesAtBlockRequest) returns (GetInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v10/inferences/{topic_id}/{block_height}";
@@ -967,15 +962,6 @@ message GetForecastsAtBlockRequest {
 // signatures required by gogoproto.
 message GetForecastsAtBlockResponse {
   emissions.v3.Forecasts forecasts = 1;
-}
-
-message GetWorkerLatestInputInferenceByTopicIdRequest {
-  uint64 topic_id = 1;
-  string worker_address = 2;
-}
-
-message GetWorkerLatestInputInferenceByTopicIdResponse {
-  emissions.v10.InputInference latest_input_inference = 1;
 }
 
 message GetWorkerNodeInfoRequest {

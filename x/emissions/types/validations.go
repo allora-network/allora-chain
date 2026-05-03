@@ -199,9 +199,8 @@ func (inputInference *InputInference) Validate() error {
 //   - enforces whitelist membership post-canonicalization
 //     (ErrLabelNotInWhitelist).
 //
-// The canonicalized slice is left in its submitted order; deterministic
-// registry ordering is enforced later at close-time via lex-sort over labels
-// collected from final active workers' staged inputs.
+// The canonicalized slice is left in its submitted order so temporary ELR
+// registration can preserve first-seen label order during the WSW.
 func (inputInference *InputInference) ValidateWithLimits(
 	effectiveCap uint64,
 	whitelist map[string]struct{},
@@ -248,8 +247,8 @@ func (inputInference *InputInference) ValidateWithLimits(
 		if err := ValidateDec(lv.Value.ToDec()); err != nil {
 			return errors.Wrapf(err, "input labeled value %q", c)
 		}
-		// Rewrite in place to the canonical form so the persisted
-		// workerLatestInputInferences entry is already canonical.
+		// Rewrite in place to the canonical form so temporary registry
+		// registration and whitelist lookups use canonical bytes only.
 		lv.Label = c
 	}
 	return nil
@@ -1076,6 +1075,15 @@ func (topic Topic) Validate(params Params) error {
 		return errors.Wrapf(sdkerrors.ErrInvalidType,
 			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
 	}
+	if err := ValidateDec(topic.LabelDefaultValue); err != nil {
+		return errors.Wrap(err, "topic label_default_value is invalid")
+	}
+	if topic.RequireUnity && !topic.LabelDefaultValue.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic label_default_value must be zero when require_unity is true")
+	}
+	if err := validateMaxLabelsPerSubmission(topic.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(err, "topic max_labels_per_submission is invalid")
+	}
 	if topic.TopicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topic.TopicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
 	}
@@ -1393,6 +1401,9 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
+	}
+	if err := validateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 
 	return nil

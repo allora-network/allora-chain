@@ -14,12 +14,11 @@ import (
 // from an end-to-end perspective. These scenarios rely only on the live
 // emissions query/tx RPCs and do not require signed worker payloads.
 //
-// The seven sub-scenarios are:
+// The six sub-scenarios are:
 //  1. CLASSIFICATION + MULTI-arity topic with a label_whitelist and
 //     max_labels_per_submission round-trips through storage and the
 //     whitelist is persisted canonicalized (NFC/trim).
-//  2. Zero max_labels_per_submission is preserved (means "fall back to
-//     Params").
+//  2. Zero max_labels_per_submission at create time uses the default topic cap.
 //  3. CreateNewTopic rejects a whitelist containing a canonical duplicate
 //     (post-NFC) via ErrInvalidLabelName.
 //  4. CreateNewTopic rejects a whitelist containing a control character
@@ -29,7 +28,6 @@ import (
 //  6. UpdateTopic can change max_labels_per_submission when the topic has
 //     no open worker submission window (covered by the freshly-created,
 //     inactive test topic).
-//  7. Params.MaxLabelsPerSubmission is queryable and non-zero by default.
 //
 //nolint:exhaustruct
 func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
@@ -37,11 +35,6 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 	m.T.Log(">>> Label Registry v2 integration scenarios <<<")
 
 	addTopicCreator(m, m.AliceAddr)
-
-	paramsResp, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
-	require.NoError(m.T, err)
-	require.NotZero(m.T, paramsResp.Params.MaxLabelsPerSubmission,
-		"Params.MaxLabelsPerSubmission must be non-zero by default (scenario 7)")
 
 	baseReq := func() *emissionstypes.CreateNewTopicRequest {
 		return &emissionstypes.CreateNewTopicRequest{
@@ -91,7 +84,7 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 		stored.Topic.LabelWhitelist,
 		"LabelWhitelist must be persisted canonicalized (scenario 1, 5)")
 
-	// Scenario 2: zero MaxLabelsPerSubmission is preserved as fallback flag.
+	// Scenario 2: zero MaxLabelsPerSubmission at create time uses the default topic cap.
 	zeroCapReq := baseReq()
 	zeroCapReq.MaxLabelsPerSubmission = 0
 	zeroCapReq.LabelWhitelist = []string{"y"}
@@ -105,8 +98,8 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 		TopicId: createResp2.TopicId,
 	})
 	require.NoError(m.T, err)
-	require.Equal(m.T, uint64(0), stored2.Topic.MaxLabelsPerSubmission,
-		"Zero MaxLabelsPerSubmission must be preserved and means 'use Params'")
+	require.Equal(m.T, emissionstypes.DefaultMaxLabelsPerSubmission, stored2.Topic.MaxLabelsPerSubmission,
+		"Zero MaxLabelsPerSubmission must use the default topic cap")
 
 	// Scenario 3: canonical duplicate whitelist rejected.
 	dupReq := baseReq()
