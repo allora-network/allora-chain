@@ -44,7 +44,11 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			// These are set for subsequent tests
 			MaxTopReputersToReward: []uint64{24},
 			MinEpochLength:         []int64{1},
-			CNorm:                  nil, // deprecated: keep for exhaustruct; ignored by chain
+			// Default chain value is 1; topic weight distribution needs ≥2 so a short (10) and long (20)
+			// epoch topic can both churn on the same block without one evicting the other from the schedule.
+			// Pushed to 5 for further cases.
+			MaxActiveTopicsPerBlock: []uint64{5},
+			CNorm:                   nil, // deprecated: keep for exhaustruct; ignored by chain, using topic's
 			// don't update the following fields
 			Version:                             nil,
 			MaxSerializedMsgLength:              nil,
@@ -81,7 +85,6 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			DataSendingFee:                      nil,
 			EpsilonSafeDiv:                      nil,
 			MaxElementsPerForecast:              nil,
-			MaxActiveTopicsPerBlock:             nil,
 			MaxStringLength:                     nil,
 			InitialRegretQuantile:               nil,
 			PNormSafeDiv:                        nil,
