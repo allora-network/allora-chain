@@ -92,6 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Changed
 
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Extended v10 `CreateNewTopic` and `UpdateTopic` with label registry fields (`max_labels_per_submission`, `label_whitelist`, `label_default_value`), and updated the corresponding AutoCLI `create-topic`/`update-topic` positional arguments.
+
 # [Released]
 
 # v0.16.0
