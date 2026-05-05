@@ -2,8 +2,10 @@ package queryserver
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"cosmossdk.io/collections"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -11,6 +13,30 @@ import (
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+func (qs queryServer) GetWorkerLatestInputInferenceByTopicId(
+	ctx context.Context,
+	req *emissionstypes.GetWorkerLatestInputInferenceByTopicIdRequest,
+) (_ *emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse, err error) {
+	defer metrics.RecordMetrics("GetWorkerLatestInputInferenceByTopicId", time.Now(), &err)
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	}
+
+	inference, err := qs.wk.GetWorkerLatestInputInferenceByTopicId(ctx, topic, req.WorkerAddress)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, status.Errorf(codes.NotFound, "latest input inference not found for topic %v worker %s", req.TopicId, req.WorkerAddress)
+		}
+		return nil, err
+	}
+
+	return &emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse{LatestInputInference: inference}, nil
+}
 
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (_ *emissionstypes.GetInferencesAtBlockResponse, err error) {
 	defer metrics.RecordMetrics("GetInferencesAtBlock", time.Now(), &err)

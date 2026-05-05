@@ -515,6 +515,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetWorkerLatestInputInferenceByTopicId",
+					Use:       "latest-input-inference [topic_id] [worker_address]",
+					Short:     "Get the latest active WSW inference materialized as an input inference",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker_address"},
+					},
+				},
+				{
 					RpcMethod: "GetWorkerNodeInfo",
 					Use:       "worker-info [address]",
 					Short:     "Get node info for worker node",

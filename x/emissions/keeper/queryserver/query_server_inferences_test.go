@@ -52,6 +52,55 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 }
 
 //nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicId() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(42)
+	worker := s.AddrsStr(0)
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.LabelDefaultValue = alloraMath.ZeroDec()
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+	s.Require().NoError(s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+			{Id: 3, Name: "c"},
+		},
+	}))
+	inference := types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     worker,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.1"), alloraMath.MustNewDecFromString("0.2")},
+		ExtraData:   []byte("query"),
+		Proof:       "proof",
+	}
+	s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, inference))
+
+	latestInput, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       topicId,
+		WorkerAddress: worker,
+	})
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, latestInput.LatestInputInference.TopicId)
+	s.Require().Equal(nonce, latestInput.LatestInputInference.BlockHeight)
+	s.Require().Equal(worker, latestInput.LatestInputInference.Inferer)
+	s.Require().Equal([]byte("query"), latestInput.LatestInputInference.ExtraData)
+	s.Require().Equal("proof", latestInput.LatestInputInference.Proof)
+	s.Require().Len(latestInput.LatestInputInference.Values, 2)
+	s.Require().Equal("a", latestInput.LatestInputInference.Values[0].Label)
+	s.Require().Equal("0.1", latestInput.LatestInputInference.Values[0].Value.String())
+	s.Require().Equal("b", latestInput.LatestInputInference.Values[1].Label)
+	s.Require().Equal("0.2", latestInput.LatestInputInference.Values[1].Value.String())
+}
+
+//nolint:exhaustruct
 func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	queryServer := s.EmissionsQueryServer()
 	require := s.Require()

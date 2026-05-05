@@ -12,18 +12,116 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// MaterializeInputInferenceFromTemporaryRegistry rebuilds the canonical
+// input-shaped view of a live WSW dense inference using the temporary ELR.
+//
+// For MULTI topics, the inference vector is aligned to the first
+// len(inference.Values) labels in the temporary registry. The registry may have
+// grown since the worker submitted, so later labels are intentionally ignored.
+func MaterializeInputInferenceFromTemporaryRegistry(
+	topic types.Topic,
+	tempRegistry types.EpochLabelRegistry,
+	inference types.Inference,
+) (*types.InputInference, error) {
+	if err := inference.Validate(); err != nil {
+		return nil, errorsmod.Wrap(err, "inference validation failed")
+	}
+	if inference.TopicId != topic.Id {
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrLogic,
+			"inference topic mismatch: got %d expected %d",
+			inference.TopicId,
+			topic.Id,
+		)
+	}
+
+	nonce := inference.BlockHeight
+	switch topic.OutputArity {
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
+		return materializeSingleInputInference(inference)
+	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
+		return materializeMultiInputInference(topic, nonce, tempRegistry, inference)
+	default:
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+	}
+}
+
+func materializeSingleInputInference(inference types.Inference) (*types.InputInference, error) {
+	if len(inference.Values) > 1 {
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrLogic,
+			"single-arity inference has %d values, expected at most 1",
+			len(inference.Values),
+		)
+	}
+	value := alloraMath.ZeroDec()
+	if len(inference.Values) == 1 {
+		value = inference.Values[0]
+	}
+	boundedValue, err := alloraMath.NewBoundedExp40Dec(value)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "single-arity inference value is out of bounded range")
+	}
+	return &types.InputInference{
+		TopicId:     inference.TopicId,
+		BlockHeight: inference.BlockHeight,
+		Inferer:     inference.Inferer,
+		Value:       boundedValue,
+		Values:      nil,
+		ExtraData:   inference.ExtraData,
+		Proof:       inference.Proof,
+	}, nil
+}
+
+func materializeMultiInputInference(
+	topic types.Topic,
+	nonce types.BlockHeight,
+	tempRegistry types.EpochLabelRegistry,
+	inference types.Inference,
+) (*types.InputInference, error) {
+	if err := validateTemporaryRegistry(topic, nonce, tempRegistry); err != nil {
+		return nil, err
+	}
+	if len(inference.Values) > len(tempRegistry.Labels) {
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrLogic,
+			"inference has %d values but temporary registry has %d labels",
+			len(inference.Values),
+			len(tempRegistry.Labels),
+		)
+	}
+
+	values := make([]*types.InputLabeledValue, 0, len(inference.Values))
+	for i, value := range inference.Values {
+		boundedValue, err := alloraMath.NewBoundedExp40Dec(value)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "multi-arity inference value at index %d is out of bounded range", i)
+		}
+		values = append(values, &types.InputLabeledValue{
+			Label: tempRegistry.Labels[i].Name,
+			Value: boundedValue,
+		})
+	}
+	return &types.InputInference{
+		TopicId:     inference.TopicId,
+		BlockHeight: inference.BlockHeight,
+		Inferer:     inference.Inferer,
+		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.ZeroDec()),
+		Values:      values,
+		ExtraData:   inference.ExtraData,
+		Proof:       inference.Proof,
+	}, nil
+}
+
 // SetEpochLabelRegistry overwrites the registry for a topic epoch.
 func (k *TopicKeeper) SetEpochLabelRegistry(
 	ctx context.Context,
 	registry types.EpochLabelRegistry,
 ) error {
-	if err := types.ValidateTopicId(registry.TopicId); err != nil {
-		return errorsmod.Wrap(err, "topic id validation failed")
-	}
 	//nolint:gosec // EpochId was originally produced from a validated non-negative block height.
 	nonce := types.BlockHeight(registry.EpochId)
-	if err := types.ValidateBlockHeight(nonce); err != nil {
-		return errorsmod.Wrap(err, "nonce block height validation failed")
+	if err := validateEpochLabelRegistry(registry.TopicId, nonce, registry); err != nil {
+		return err
 	}
 	return k.topicLabelRegistry.Set(ctx, collections.Join(registry.TopicId, nonce), registry)
 }
@@ -184,18 +282,27 @@ func validateTemporaryRegistry(
 	nonce types.BlockHeight,
 	registry types.EpochLabelRegistry,
 ) error {
-	if err := types.ValidateTopicId(topic.Id); err != nil {
+	return validateEpochLabelRegistry(topic.Id, nonce, registry)
+}
+
+func validateEpochLabelRegistry(
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	registry types.EpochLabelRegistry,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
 	if err := types.ValidateBlockHeight(nonce); err != nil {
 		return errorsmod.Wrap(err, "nonce block height validation failed")
 	}
-	if registry.TopicId != topic.Id {
-		return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry topic mismatch: got %d expected %d", registry.TopicId, topic.Id)
+	if registry.TopicId != topicId {
+		return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry topic mismatch: got %d expected %d", registry.TopicId, topicId)
 	}
 	if registry.EpochId != uint64(nonce) {
 		return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry epoch mismatch: got %d expected %d", registry.EpochId, nonce)
 	}
+	seen := make(map[string]struct{}, len(registry.Labels))
 	for i, lbl := range registry.Labels {
 		if lbl == nil {
 			return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry label at index %d is nil", i)
@@ -205,6 +312,17 @@ func validateTemporaryRegistry(
 		if lbl.Id != expectedID {
 			return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry label %q has id %d expected %d", lbl.Name, lbl.Id, expectedID)
 		}
+		canonicalLabel, err := types.CanonicalLabelName(lbl.Name)
+		if err != nil {
+			return errorsmod.Wrapf(err, "registry label at index %d is invalid", i)
+		}
+		if canonicalLabel != lbl.Name {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "registry label at index %d must be canonical: %q", i, lbl.Name)
+		}
+		if _, ok := seen[lbl.Name]; ok {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "registry label at index %d is duplicated: %q", i, lbl.Name)
+		}
+		seen[lbl.Name] = struct{}{}
 	}
 	return nil
 }
