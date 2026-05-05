@@ -85,7 +85,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Removed
 
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Removed the v10 `GetWorkerLatestInferenceByTopicId` query and REST path `/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_inference`.
+
 #### Added 
+
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Added the v10 `GetWorkerLatestInputInferenceByTopicId` query and REST path `/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_input_inference`, returning the latest active WSW inference materialized as an `InputInference`.
 
 #### Changed
 
