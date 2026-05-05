@@ -589,6 +589,24 @@ func (k *WorkerKeeper) GetWorkerLatestInferenceByTopicId(
 	return k.inferences.Get(ctx, key)
 }
 
+// GetWorkerLatestInputInferenceByTopicId materializes the live WSW dense
+// inference into its canonical input-shaped view using the temporary ELR.
+func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
+	ctx context.Context,
+	topic types.Topic,
+	inferer ActorId,
+) (*types.InputInference, error) {
+	inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, inferer)
+	if err != nil {
+		return nil, err
+	}
+	registry, err := k.topicKeeper.GetEpochLabelRegistry(ctx, topic.Id, inference.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	return MaterializeInputInferenceFromTemporaryRegistry(topic, registry, inference)
+}
+
 // LoadActiveInfererInferencesForClose reads the temporary dense inferences for
 // the final active inferer set. Inferences are returned sorted by inferer so
 // close-time registry construction and materialization are deterministic.

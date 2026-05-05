@@ -35,6 +35,37 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 			if err := topicIdActorIdInference.Inference.Validate(); err != nil {
 				return errors.Wrap(err, "inference in list is invalid")
 			}
+			if topicIdActorIdInference.TopicId != topicIdActorIdInference.Inference.TopicId {
+				return errors.Wrapf(types.ErrInvalidValue,
+					"inference topic mismatch: key %d payload %d",
+					topicIdActorIdInference.TopicId,
+					topicIdActorIdInference.Inference.TopicId,
+				)
+			}
+			if topicIdActorIdInference.ActorId != topicIdActorIdInference.Inference.Inferer {
+				return errors.Wrapf(types.ErrInvalidValue,
+					"inference actor mismatch: key %s payload %s",
+					topicIdActorIdInference.ActorId,
+					topicIdActorIdInference.Inference.Inferer,
+				)
+			}
+			topic, err := k.topicKeeper.GetTopic(ctx, topicIdActorIdInference.TopicId)
+			if err != nil {
+				return errors.Wrap(err, "error getting inference topic")
+			}
+			if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI && len(topicIdActorIdInference.Inference.Values) > 0 {
+				registry, err := k.topicKeeper.GetEpochLabelRegistry(
+					ctx,
+					topicIdActorIdInference.TopicId,
+					topicIdActorIdInference.Inference.BlockHeight,
+				)
+				if err != nil {
+					return errors.Wrap(err, "error getting inference topic label registry")
+				}
+				if _, err := MaterializeInputInferenceFromTemporaryRegistry(topic, registry, *topicIdActorIdInference.Inference); err != nil {
+					return errors.Wrap(err, "live MULTI inference is incompatible with topic label registry")
+				}
+			}
 			if err := k.inferences.Set(ctx,
 				collections.Join(
 					topicIdActorIdInference.TopicId,

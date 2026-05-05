@@ -1289,6 +1289,144 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 	}
 }
 
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
+	nonce := types.BlockHeight(7)
+	inferer := s.AddrsStr(0)
+	baseInference := types.Inference{
+		TopicId:     1,
+		BlockHeight: nonce,
+		Inferer:     inferer,
+		ExtraData:   []byte("extra"),
+		Proof:       "proof",
+	}
+	multiTopic := types.Topic{
+		Id:                1,
+		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		LabelDefaultValue: alloraMath.ZeroDec(),
+	}
+	singleTopic := types.Topic{
+		Id:          1,
+		OutputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+	}
+	registry := types.EpochLabelRegistry{
+		TopicId: 1,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+			{Id: 3, Name: "c"},
+		},
+	}
+
+	cases := []struct {
+		name            string
+		topic           types.Topic
+		registry        types.EpochLabelRegistry
+		values          []alloraMath.Dec
+		wantScalar      string
+		wantLabels      []string
+		wantValues      []string
+		wantErrContains string
+	}{
+		{
+			name:       "single_value_uses_scalar_field",
+			topic:      singleTopic,
+			registry:   types.EpochLabelRegistry{},
+			values:     decs("0.25"),
+			wantScalar: "0.25",
+		},
+		{
+			name:       "single_empty_values_materializes_zero",
+			topic:      singleTopic,
+			registry:   types.EpochLabelRegistry{},
+			values:     nil,
+			wantScalar: "0",
+		},
+		{
+			name:            "single_rejects_multiple_values",
+			topic:           singleTopic,
+			registry:        types.EpochLabelRegistry{},
+			values:          decs("0.25", "0.75"),
+			wantErrContains: "expected at most 1",
+		},
+		{
+			name:       "multi_uses_registry_prefix_when_registry_has_grown",
+			topic:      multiTopic,
+			registry:   registry,
+			values:     decs("0.1", "0.2"),
+			wantLabels: []string{"a", "b"},
+			wantValues: []string{"0.1", "0.2"},
+		},
+		{
+			name:       "multi_empty_vector_with_empty_registry",
+			topic:      multiTopic,
+			registry:   types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce)},
+			values:     nil,
+			wantLabels: []string{},
+			wantValues: []string{},
+		},
+		{
+			name:            "multi_rejects_vector_longer_than_registry",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{{Id: 1, Name: "a"}}},
+			values:          decs("0.1", "0.2"),
+			wantErrContains: "temporary registry has 1 labels",
+		},
+		{
+			name:            "multi_rejects_non_contiguous_ids",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{{Id: 2, Name: "a"}}},
+			values:          decs("0.1"),
+			wantErrContains: "expected 1",
+		},
+		{
+			name:            "multi_rejects_nil_label",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{nil}},
+			values:          decs("0.1"),
+			wantErrContains: "is nil",
+		},
+		{
+			name:            "multi_rejects_out_of_range_bounded_value",
+			topic:           multiTopic,
+			registry:        registry,
+			values:          decs("1e41"),
+			wantErrContains: "out of bounded range",
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			inference := baseInference
+			inference.Values = c.values
+
+			got, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(c.topic, c.registry, inference)
+			if c.wantErrContains != "" {
+				s.Require().Error(err)
+				s.Require().Contains(err.Error(), c.wantErrContains)
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().Equal(inference.TopicId, got.TopicId)
+			s.Require().Equal(inference.BlockHeight, got.BlockHeight)
+			s.Require().Equal(inference.Inferer, got.Inferer)
+			s.Require().Equal(inference.ExtraData, got.ExtraData)
+			s.Require().Equal(inference.Proof, got.Proof)
+			if c.topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+				s.Require().Equal(c.wantScalar, got.Value.String())
+				s.Require().Empty(got.Values)
+				return
+			}
+			s.Require().Len(got.Values, len(c.wantLabels))
+			for i := range c.wantLabels {
+				s.Require().Equal(c.wantLabels[i], got.Values[i].Label)
+				s.Require().Equal(c.wantValues[i], got.Values[i].Value.String())
+			}
+		})
+	}
+}
+
 func decs(values ...string) []alloraMath.Dec {
 	out := make([]alloraMath.Dec, 0, len(values))
 	for _, value := range values {
