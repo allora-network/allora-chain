@@ -75,6 +75,14 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
+			// Wrap keyring in simulate mode so that --dry-run combined with
+			// --gas auto does not fail with ".info: key not found". See
+			// simulateKeyring for the full explanation.
+			// Must be AFTER ReadFromClientConfig, which creates a fresh keyring.
+			if clientCtx.Simulate && clientCtx.Keyring != nil {
+				clientCtx = clientCtx.WithKeyring(simulateKeyring{clientCtx.Keyring})
+			}
+
 			// sign mode textual is only available in online mode
 			if !clientCtx.Offline {
 				// This needs to go after ReadFromClientConfig, as that function ets the RPC client needed for SIGN_MODE_TEXTUAL.

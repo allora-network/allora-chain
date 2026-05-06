@@ -65,7 +65,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetDelegateRewardPerShare",
-					Use:       "delegate-reward-per-share [topic_id] [reputer_address]",
+					Use:       "delegate-reward-per-share [topic_id] [reputer]",
 					Short:     "Get total delegate reward per share stake in a reputer for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -640,7 +640,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeRemovalInfo",
-					Use:       "stake-removal-info [address] [topic_id]",
+					Use:       "stake-removal-info [reputer] [topic_id]",
 					Short:     "Get a pending stake removal for a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "reputer"},
@@ -1001,7 +1001,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Register",
-					Use:       "register [sender] [topic_ids] [owner] [is_reputer]",
+					Use:       "register [sender] [topic_id] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -1021,8 +1021,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+
 					RpcMethod: "RemoveRegistration",
-					Use:       "remove-registration [sender] [owner] [is_reputer]",
+					Use:       "remove-registration [sender] [topic_id] [is_reputer]",
 					Short:     "Remove a reputer or worker from a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -1083,11 +1084,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CancelRemoveDelegateStake",
-					Use:       "cancel-remove-delegate-stake [sender] [topic_id] [reputer]",
+					Use:       "cancel-remove-delegate-stake [sender] [topic_id] [delegator] [reputer]",
 					Short:     "Cancel the removal of delegated stake for a delegator staking on a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
+						{ProtoField: "delegator"},
 						{ProtoField: "reputer"},
 					},
 				},
@@ -1103,7 +1105,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "FundTopic",
-					Use:       "fund-topic [sender] [topic_id] [amount] [extra_data]",
+					Use:       "fund-topic [sender] [topic_id] [amount]",
 					Short:     "send funds to a topic to pay for inferences",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
