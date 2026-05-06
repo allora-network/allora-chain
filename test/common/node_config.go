@@ -15,30 +15,33 @@ import (
 
 	"github.com/allora-network/allora-chain/app/params"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 )
 
 // handle to various node data
 type TestConfig struct {
 	T              *testing.T
-	Client         Client                // a testcommon.Client which holds several cosmosclient.Client instances
-	AlloraHomeDir  string                // home directory for the allora keystore
-	FaucetAcc      cosmosaccount.Account // account info for the faucet
-	FaucetAddr     string                // faucets address, string encoded bech32
-	UpshotAcc      cosmosaccount.Account // account info for the upshot account
-	UpshotAddr     string                // upshot address, string encoded bech32
-	AliceAcc       cosmosaccount.Account // account info for the alice test account
-	AliceAddr      string                // alice address, string encoded bech32
-	BobAcc         cosmosaccount.Account // account info for the bob test account
-	BobAddr        string                // bob address, string encoded bech32
-	Validator0Acc  cosmosaccount.Account // account info for the validator0 test account
-	Validator0Addr string                // validator0 address, string encoded bech32
-	Validator1Acc  cosmosaccount.Account // account info for the validator1 test account
-	Validator1Addr string                // validator1 address, string encoded bech32
-	Validator2Acc  cosmosaccount.Account // account info for the validator2 test account
-	Validator2Addr string                // validator2 address, string encoded bech32
-	Cdc            codec.Codec           // common codec for encoding/decoding
-	Seed           int                   // global non-mutable seed used for naming the test run
+	Client         Client                     // a testcommon.Client which holds several cosmosclient.Client instances
+	AlloraHomeDir  string                     // home directory for the allora keystore
+	FaucetAcc      cosmosaccount.Account      // account info for the faucet
+	FaucetAddr     string                     // faucets address, string encoded bech32
+	UpshotAcc      cosmosaccount.Account      // account info for the upshot account
+	UpshotAddr     string                     // upshot address, string encoded bech32
+	AliceAcc       cosmosaccount.Account      // account info for the alice test account
+	AliceAddr      string                     // alice address, string encoded bech32
+	BobAcc         cosmosaccount.Account      // account info for the bob test account
+	BobAddr        string                     // bob address, string encoded bech32
+	Validator0Acc  cosmosaccount.Account      // account info for the validator0 test account
+	Validator0Addr string                     // validator0 address, string encoded bech32
+	Validator1Acc  cosmosaccount.Account      // account info for the validator1 test account
+	Validator1Addr string                     // validator1 address, string encoded bech32
+	Validator2Acc  cosmosaccount.Account      // account info for the validator2 test account
+	Validator2Addr string                     // validator2 address, string encoded bech32
+	Cdc            codec.Codec                // common codec for encoding/decoding
+	Seed           int                        // global non-mutable seed used for naming the test run
+	TopicID        types.TopicId              // topic ID used for all the tests
+	InfererValues  []*types.InputLabeledValue // inference input labeled values
 }
 
 // create a new config that we can use
@@ -48,6 +51,7 @@ func NewTestConfig(
 	nodeRpcAddresses []string,
 	alloraHomeDir string,
 	seed int,
+	values ...*types.InputLabeledValue,
 ) TestConfig {
 	t.Helper()
 	var err error
@@ -123,5 +127,6 @@ func NewTestConfig(
 		Validator1Addr: validator1Addr,
 		Validator2Acc:  validator2Acc,
 		Validator2Addr: validator2Addr,
+		InfererValues:  values,
 	}
 }

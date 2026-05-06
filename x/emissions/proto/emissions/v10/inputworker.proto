@@ -28,6 +28,7 @@ message InputInference {
   ];
   bytes extra_data = 5;
   string proof = 6;
+  // values has precedence over value
   repeated InputLabeledValue values = 7;
 }
 

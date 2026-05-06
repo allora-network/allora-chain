@@ -59,6 +59,7 @@ allora.log
 **/.DS_Store
 
 .idea
+.vscode
 .agents
 .cursor
 .claude

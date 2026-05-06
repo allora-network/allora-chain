@@ -776,9 +776,6 @@ func (k *WorkerKeeper) GetWorkerLatestForecastByTopicId(
 //
 // SINGLE topics:
 //   - Ensures Values has length 1.
-//   - If only the scalar Value field is populated (legacy), it is converted
-//     to Values = [Value].
-//   - Value and Values[0] are kept consistent.
 //
 // MULTI topics:
 //   - Pads each inference's Values slice with zeros so that its length matches
@@ -809,8 +806,7 @@ func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesPadded(
 				)
 			}
 
-			values := make([]alloraMath.Dec, 1)
-			values[0] = inf.Values[0]
+			values := []alloraMath.Dec{inf.Values[0]}
 
 			active = append(active, &types.Inference{
 				TopicId:     inf.TopicId,
@@ -827,6 +823,11 @@ func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesPadded(
 			return nil, err
 		}
 		targetLen := len(reg.GetLabels())
+
+		if targetLen == 0 {
+			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "labels should not be empty")
+		}
+
 		zero := alloraMath.ZeroDec()
 
 		for _, addr := range workers {
@@ -866,13 +867,42 @@ func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesPadded(
 	return &types.Inferences{Inferences: active}, nil
 }
 
-// NewWorkerDataBundleFromInput converts InputWorkerDataBundle to WorkerDataBundle
-func (k *WorkerKeeper) NewWorkerDataBundleFromInput(
-	ctx context.Context,
+// normalizedInferenceInput is the result of validating an InputInference
+// without touching state. It captures everything materializeInference needs
+// to produce the final Inference.
+type normalizedInferenceInput struct {
+	// IsSingle is true if the topic is single-arity.
+	IsSingle bool
+	// ScalarValue is populated when IsSingle is true and len(labeled) == 0
+	// (i.e., the worker submitted a scalar rather than a single labeled value).
+	ScalarValue alloraMath.Dec
+	// labeled holds the (label, value) pairs for multi-arity submissions,
+	// or for single-arity submissions that arrived as a one-element labeled list.
+	Labeled []types.LabeledValue
+}
+
+// Validated mirror types. These hold input that has been checked but not yet
+// applied to state. They exist so that validation can run as a pure pass.
+type normalizedWorkerDataBundle struct {
+	worker            string
+	nonce             *types.Nonce
+	topicId           TopicId
+	inferenceForecast *normalizedInferenceForecastBundle
+}
+
+type normalizedInferenceForecastBundle struct {
+	Inference *normalizedInferenceInput // the type from before
+	Forecast  *types.Forecast           // forecast conversion is already pure; keep as-is
+	// plus whatever passthrough fields you need to construct the final types
+	inferencePassthrough *types.InputInference // for TopicId, BlockHeight, Inferer, ExtraData, Proof
+}
+
+// NormalizeWorkerDataBundle performs all input validation without state access.
+// Returns a validated tree that MaterializeWorkerDataBundle can apply.
+func (k *WorkerKeeper) NormalizeWorkerDataBundle(
 	topic types.Topic,
-	nonce BlockHeight,
 	bwdb *types.InputWorkerDataBundle,
-) (*types.WorkerDataBundle, error) {
+) (*normalizedWorkerDataBundle, error) {
 	if bwdb == nil {
 		return nil, types.ErrInvalidValue
 	}
@@ -880,73 +910,59 @@ func (k *WorkerKeeper) NewWorkerDataBundleFromInput(
 		return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "topic mismatch")
 	}
 
-	bundle, err := k.NewInferenceForecastBundleFromInput(
-		ctx,
-		topic,
-		nonce,
-		bwdb.InferenceForecastsBundle,
-	)
+	ifb, err := NormalizeInferenceForecastBundle(topic, bwdb.InferenceForecastsBundle)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to convert inference forecasts bundle")
+		return nil, errorsmod.Wrap(err, "failed to normalize inference forecasts bundle")
 	}
-	workerDataBundle := &types.WorkerDataBundle{
-		Worker:                   bwdb.Worker,
-		Nonce:                    bwdb.Nonce,
-		TopicId:                  bwdb.TopicId,
-		InferenceForecastsBundle: bundle,
-	}
-	err = workerDataBundle.Validate()
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to validate worker data bundle")
-	}
-	return workerDataBundle, nil
+
+	return &normalizedWorkerDataBundle{
+		worker:            bwdb.Worker,
+		nonce:             bwdb.Nonce,
+		topicId:           bwdb.TopicId,
+		inferenceForecast: ifb,
+	}, nil
 }
 
-// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
-func (k *WorkerKeeper) NewInferenceForecastBundleFromInput(
-	ctx context.Context,
+func NormalizeInferenceForecastBundle(
 	topic types.Topic,
-	nonce BlockHeight,
 	bifb *types.InputInferenceForecastBundle,
-) (*types.InferenceForecastBundle, error) {
+) (*normalizedInferenceForecastBundle, error) {
 	if bifb == nil {
 		return nil, types.ErrInvalidValue
 	}
-	var err error
-	var inference *types.Inference
+
+	out := &normalizedInferenceForecastBundle{}
+
 	if bifb.Inference != nil {
-		inference, err = k.NormalizeInputInference(ctx, topic, nonce, bifb.Inference)
+		normalized, err := NormalizeInputInference(topic, bifb.Inference)
 		if err != nil {
-			return nil, errorsmod.Wrap(err, "failed to convert inference")
+			return nil, errorsmod.Wrap(err, "failed to normalize inference")
 		}
+		out.Inference = normalized
+		out.inferencePassthrough = bifb.Inference
 	}
-	var forecast *types.Forecast
+
 	if bifb.Forecast != nil {
-		forecast, err = types.NewForecastFromInput(bifb.Forecast)
+		forecast, err := types.NewForecastFromInput(bifb.Forecast)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "failed to convert forecast")
 		}
+		out.Forecast = forecast
 	}
-	inferenceForecastBundle := &types.InferenceForecastBundle{
-		Inference: inference,
-		Forecast:  forecast,
-	}
-	err = inferenceForecastBundle.Validate()
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to validate inference forecast bundle")
-	}
-	return inferenceForecastBundle, nil
+
+	return out, nil
 }
 
-// NormalizeInputInference converts the worker-submitted inference into the internal Inference.
-// MULTI: labeled dictionary -> fixed-length array aligned with epoch registry (missing => 0).
-// SINGLE: if labeled dictionary length is 1 - use it, if greater than 1 reject the request, otherwise scalar submission is used
-func (k *WorkerKeeper) NormalizeInputInference(
-	ctx context.Context,
+// NormalizeInputInference performs all input validation that does not
+// require state access: nil checks, NaN/finite checks, arity branching,
+// duplicate-label detection, and the require_unity check. It returns a
+// normalizedInferenceInput describing what materializeInference should write.
+//
+// This function is pure: no keeper calls, no context use, no state mutation.
+func NormalizeInputInference(
 	topic types.Topic,
-	nonce BlockHeight,
 	in *types.InputInference,
-) (*types.Inference, error) {
+) (*normalizedInferenceInput, error) {
 	if in == nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
 	}
@@ -962,22 +978,13 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		} else {
 			dec = in.Value.ToDec()
 		}
+		// TODO: should we accept zero here?
 		if dec.IsNaN() || !dec.IsFinite() {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
-
-		_, err := k.topicKeeper.RegisterEpochLabel(ctx, in.TopicId, nonce, "y")
-		if err != nil {
-			return nil, err
-		}
-
-		return &types.Inference{
-			TopicId:     in.TopicId,
-			BlockHeight: in.BlockHeight,
-			Inferer:     in.Inferer,
-			Values:      []alloraMath.Dec{dec},
-			ExtraData:   in.ExtraData,
-			Proof:       in.Proof,
+		return &normalizedInferenceInput{
+			IsSingle:    true,
+			ScalarValue: dec,
 		}, nil
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
 		if len(in.Values) == 0 {
@@ -987,12 +994,10 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
 
+	// Multi-arity path: extract labels and values, check for duplicates and
+	// invalid values, and verify unity if required.
 	seen := make(map[string]struct{}, len(in.Values))
-	submitted := make([]struct {
-		labelId LabelId
-		value   alloraMath.Dec
-	}, 0, len(in.Values))
-
+	labeled := make([]types.LabeledValue, 0, len(in.Values))
 	sumSubmitted := alloraMath.ZeroDec()
 
 	for _, lv := range in.Values {
@@ -1010,16 +1015,9 @@ func (k *WorkerKeeper) NormalizeInputInference(
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label %s has invalid value", name)
 		}
 
-		labelId, err := k.topicKeeper.RegisterEpochLabel(ctx, in.TopicId, nonce, name)
-		if err != nil {
-			return nil, err
-		}
+		labeled = append(labeled, types.LabeledValue{LabelName: name, Value: dec})
 
-		submitted = append(submitted, struct {
-			labelId LabelId
-			value   alloraMath.Dec
-		}{labelId: labelId, value: dec})
-
+		var err error
 		sumSubmitted, err = sumSubmitted.Add(dec)
 		if err != nil {
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to sum submitted value: %s", err)
@@ -1042,6 +1040,82 @@ func (k *WorkerKeeper) NormalizeInputInference(
 				sumSubmitted.String(), topic.UnityTolerance.String(),
 			)
 		}
+	}
+
+	return &normalizedInferenceInput{
+		IsSingle: false,
+		Labeled:  labeled,
+	}, nil
+}
+
+// MaterializeWorkerDataBundle applies state changes for a validated bundle and
+// returns the final WorkerDataBundle ready for downstream processing.
+func (k *WorkerKeeper) MaterializeWorkerDataBundle(
+	ctx context.Context,
+	nonce BlockHeight,
+	v *normalizedWorkerDataBundle,
+) (*types.WorkerDataBundle, error) {
+	var inference *types.Inference
+	if v.inferenceForecast.Inference != nil {
+		var err error
+		inference, err = k.materializeInference(ctx, nonce, v.inferenceForecast.inferencePassthrough, v.inferenceForecast.Inference)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to materialize inference")
+		}
+	}
+	workerDataBundle := &types.WorkerDataBundle{
+		Worker:  v.worker,
+		Nonce:   v.nonce,
+		TopicId: v.topicId,
+		InferenceForecastsBundle: &types.InferenceForecastBundle{
+			Inference: inference,
+			Forecast:  v.inferenceForecast.Forecast,
+		},
+	}
+	if err := workerDataBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrap(err, "failed to validate worker data bundle")
+	}
+	return workerDataBundle, nil
+}
+
+// materializeInference applies the side effects implied by a validated input:
+// it registers epoch labels and constructs the final inference aligned with
+// the topic's epoch label registry.
+//
+// SINGLE: registers the canonical "y" label and produces a one-element Values slice.
+// MULTI: registers each submitted label, fetches the registry, and places each
+// submitted value at its registry-aligned index (missing indices stay zero).
+func (k *WorkerKeeper) materializeInference(
+	ctx context.Context,
+	nonce BlockHeight,
+	in *types.InputInference,
+	normalized *normalizedInferenceInput,
+) (*types.Inference, error) {
+	if normalized.IsSingle {
+		if _, err := k.topicKeeper.RegisterEpochLabel(ctx, in.TopicId, nonce, "y"); err != nil {
+			return nil, err
+		}
+		return &types.Inference{
+			TopicId:     in.TopicId,
+			BlockHeight: in.BlockHeight,
+			Inferer:     in.Inferer,
+			Values:      []alloraMath.Dec{normalized.ScalarValue},
+			ExtraData:   in.ExtraData,
+			Proof:       in.Proof,
+		}, nil
+	}
+
+	type submission struct {
+		labelId LabelId
+		value   alloraMath.Dec
+	}
+	submitted := make([]submission, 0, len(normalized.Labeled))
+	for _, lv := range normalized.Labeled {
+		labelId, err := k.topicKeeper.RegisterEpochLabel(ctx, in.TopicId, nonce, lv.LabelName)
+		if err != nil {
+			return nil, err
+		}
+		submitted = append(submitted, submission{labelId: labelId, value: lv.Value})
 	}
 
 	registry, err := k.topicKeeper.GetEpochLabelRegistry(ctx, in.TopicId, nonce)

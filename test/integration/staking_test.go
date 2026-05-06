@@ -5,19 +5,18 @@ import (
 	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/stretchr/testify/require"
 )
-
-const STAKING_TOPIC_ID = uint64(1)
 
 func addTopicReputer(m testCommon.TestConfig, address string, topicId uint64) {
 	ctx := context.Background()
 	addTopicReputerRequest := &emissionstypes.AddToTopicReputerWhitelistRequest{
 		Sender:  m.AliceAddr,
 		Address: address,
-		TopicId: topicId,
+		TopicId: m.TopicID,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, addTopicReputerRequest)
 	require.NoError(m.T, err)
@@ -28,14 +27,14 @@ func addTopicReputer(m testCommon.TestConfig, address string, topicId uint64) {
 	require.NoError(m.T, err)
 }
 
-// register alice as a reputer in topic 1, then check success
-func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
+// register alice as a reputer in topic, then check success
+func StakeAliceAsReputer(m testCommon.TestConfig) {
 	ctx := context.Background()
 	// Record Alice stake before adding more
 	aliceStakedBefore, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
 		ctx,
 		&emissionstypes.GetReputerStakeInTopicRequest{
-			TopicId: STAKING_TOPIC_ID,
+			TopicId: m.TopicID,
 			Address: m.AliceAddr,
 		},
 	)
@@ -44,12 +43,12 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	const stakeToAdd = 1000000
 
 	// Allow Alice to stake as a reputer
-	addTopicReputer(m, m.AliceAddr, STAKING_TOPIC_ID)
+	addTopicReputer(m, m.AliceAddr, m.TopicID)
 
 	// Have Alice stake more
 	addStake := &emissionstypes.AddStakeRequest{
 		Sender:  m.AliceAddr,
-		TopicId: STAKING_TOPIC_ID,
+		TopicId: m.TopicID,
 		Amount:  cosmosMath.NewInt(stakeToAdd),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, addStake)
@@ -61,7 +60,7 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	aliceStakedAfter, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
 		ctx,
 		&emissionstypes.GetReputerStakeInTopicRequest{
-			TopicId: STAKING_TOPIC_ID,
+			TopicId: m.TopicID,
 			Address: m.AliceAddr,
 		},
 	)
@@ -70,13 +69,13 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 }
 
 // integration tests the ability of bob to stake on alice as a reputer
-func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
+func StakeBobOnAliceAsReputer(m testCommon.TestConfig) {
 	ctx := context.Background()
 	// Record Bob stake before adding more
 	bobStakedBefore, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
 		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
-			TopicId:          STAKING_TOPIC_ID,
+			TopicId:          m.TopicID,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
 		},
@@ -89,7 +88,7 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 	addDelegateStake := &emissionstypes.DelegateStakeRequest{
 		Sender:  m.BobAddr,
 		Reputer: m.AliceAddr,
-		TopicId: STAKING_TOPIC_ID,
+		TopicId: m.TopicID,
 		Amount:  cosmosMath.NewInt(stakeToAdd),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, addDelegateStake)
@@ -101,7 +100,7 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
 		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
-			TopicId:          STAKING_TOPIC_ID,
+			TopicId:          m.TopicID,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
 		},
@@ -114,29 +113,29 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 func StakingChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
 	m.T.Log("--- Staking Alice as Reputer ---")
-	StakeAliceAsReputerTopic1(m)
+	StakeAliceAsReputer(m)
 
 	res, _ := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.GetTopicRequest{
-		TopicId: STAKING_TOPIC_ID,
+		TopicId: m.TopicID,
 	})
 	// Topic is not expected to be funded yet => expect 0 weight => topic not active!
 	// But we still have this conditional just in case there are > 0 funds
 	if res.EffectiveRevenue != "0" {
-		m.T.Log("--- Check reactivating Topic 1 ---")
-		CheckTopic1Activated(m)
+		m.T.Logf("--- Check reactivating Topic %d ---", m.TopicID)
+		CheckTopicActivated(m)
 	}
 
 	m.T.Log("--- Staking Bob on Alice as Reputer ---")
-	StakeBobOnAliceAsReputerTopic1(m)
+	StakeBobOnAliceAsReputer(m)
 }
 
-// Unstake Alice as a reputer in topic 1, then check success
-func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
+// Unstake Alice as a reputer in topic, then check success
+func UnstakeAliceAsReputer(m testCommon.TestConfig) {
 	ctx := context.Background()
 	aliceStakeBefore, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
 		ctx,
 		&emissionstypes.GetStakeFromReputerInTopicInSelfRequest{
-			TopicId:        STAKING_TOPIC_ID,
+			TopicId:        m.TopicID,
 			ReputerAddress: m.AliceAddr,
 		},
 	)
@@ -144,13 +143,14 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.True(
 		m.T,
 		aliceStakeBefore.Amount.GT(cosmosMath.ZeroInt()),
-		"Alice should have stake in topic 1",
+		"Alice should have stake in topic %d",
+		m.TopicID,
 	)
 
 	// Have Alice unstake
 	unstake := &emissionstypes.RemoveStakeRequest{
 		Sender:  m.AliceAddr,
-		TopicId: STAKING_TOPIC_ID,
+		TopicId: m.TopicID,
 		Amount:  aliceStakeBefore.Amount,
 	}
 
@@ -163,7 +163,7 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	stakeRemoval, err := m.Client.QueryEmissions().GetStakeRemovalInfo(
 		ctx,
 		&emissionstypes.GetStakeRemovalInfoRequest{
-			TopicId: STAKING_TOPIC_ID,
+			TopicId: m.TopicID,
 			Reputer: m.AliceAddr,
 		},
 	)
@@ -181,28 +181,29 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	aliceStakedAfter, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
 		ctx,
 		&emissionstypes.GetStakeFromReputerInTopicInSelfRequest{
-			TopicId:        STAKING_TOPIC_ID,
+			TopicId:        m.TopicID,
 			ReputerAddress: m.AliceAddr,
 		},
 	)
 	require.NoError(m.T, err)
-	require.True(
+	require.Truef(
 		m.T,
 		aliceStakedAfter.Amount.Equal(cosmosMath.ZeroInt()),
-		"Alice should have zero stake in topic 1 after unstake",
+		"Alice should have zero stake in topic %d after unstake: %v, %s, %s",
+		m.TopicID,
 		stakeRemoval.Removal,
 		aliceStakeBefore.Amount.String(),
 		aliceStakedAfter.Amount.String(),
 	)
 }
 
-// Unstake Bob as a delegator delegated to Alice in topic 1, then check success
-func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
+// Unstake Bob as a delegator delegated to Alice in topic, then check success
+func UnstakeBobAsDelegatorOnAlice(m testCommon.TestConfig) {
 	ctx := context.Background()
 	bobStake, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
 		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
-			TopicId:          STAKING_TOPIC_ID,
+			TopicId:          m.TopicID,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
 		},
@@ -211,14 +212,15 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	require.True(
 		m.T,
 		bobStake.Amount.GT(cosmosMath.ZeroInt()),
-		"Bob should have stake on Alice in topic 1",
+		"Bob should have stake on Alice in topic %d",
+		m.TopicID,
 	)
 
 	// Have Bob unstake
 	unstake := &emissionstypes.RemoveDelegateStakeRequest{
 		Sender:  m.BobAddr,
 		Reputer: m.AliceAddr,
-		TopicId: STAKING_TOPIC_ID,
+		TopicId: m.TopicID,
 		Amount:  bobStake.Amount,
 	}
 
@@ -231,7 +233,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	stakeRemoval, err := m.Client.QueryEmissions().GetDelegateStakeRemovalInfo(
 		ctx,
 		&emissionstypes.GetDelegateStakeRemovalInfoRequest{
-			TopicId:   STAKING_TOPIC_ID,
+			TopicId:   m.TopicID,
 			Delegator: m.BobAddr,
 			Reputer:   m.AliceAddr,
 		},
@@ -247,7 +249,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
 		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
-			TopicId:          STAKING_TOPIC_ID,
+			TopicId:          m.TopicID,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
 		},
@@ -263,7 +265,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 // run checks for unstaking
 func UnstakingChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Bob Unstaking as Delegator Upon Alice ---")
-	UnstakeBobAsDelegatorOnAliceTopic1(m)
+	UnstakeBobAsDelegatorOnAlice(m)
 	m.T.Log("--- Unstaking Alice as Reputer ---")
-	UnstakeAliceAsReputerTopic1(m)
+	UnstakeAliceAsReputer(m)
 }

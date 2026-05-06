@@ -63,7 +63,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 		}
 
 		forecastElementsByInferer := make(map[Worker]*emissionstypes.ForecastElement)
-		sortedInferersInForecast := make([]Worker, 0)
+		sortedInferersInForecast := make([]Worker, 0) // TODO: https://github.com/allora-network/allora-chain/pull/942#discussion_r3112785174
 
 		for _, el := range fc.ForecastElements {
 			if _, ok := args.InfererToInference[el.Inferer]; ok {
@@ -109,7 +109,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 
 				result = emissionstypes.InferenceValues{m}
 
-			} else {
+			} else if args.TopicArity == emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
 
 				out := make(alloraMath.DecArray, regLen)
 
@@ -128,6 +128,8 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 				}
 
 				result = out
+			} else {
+				return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "topic id %d has invalid arity", args.TopicId)
 			}
 
 			//nolint:exhaustruct

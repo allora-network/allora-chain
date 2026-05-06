@@ -5363,13 +5363,14 @@ type InputInference struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId     uint64               `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockHeight int64                `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	Inferer     string               `protobuf:"bytes,3,opt,name=inferer,proto3" json:"inferer,omitempty"`
-	Value       string               `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
-	ExtraData   []byte               `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
-	Proof       string               `protobuf:"bytes,6,opt,name=proof,proto3" json:"proof,omitempty"`
-	Values      []*InputLabeledValue `protobuf:"bytes,7,rep,name=values,proto3" json:"values,omitempty"`
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	Inferer     string `protobuf:"bytes,3,opt,name=inferer,proto3" json:"inferer,omitempty"`
+	Value       string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
+	ExtraData   []byte `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+	Proof       string `protobuf:"bytes,6,opt,name=proof,proto3" json:"proof,omitempty"`
+	// values has precedence over value
+	Values []*InputLabeledValue `protobuf:"bytes,7,rep,name=values,proto3" json:"values,omitempty"`
 }
 
 func (x *InputInference) Reset() {

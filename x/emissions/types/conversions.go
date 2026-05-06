@@ -207,10 +207,6 @@ func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle,
 		Signature:   brvb.Signature,
 		Pubkey:      brvb.Pubkey,
 	}
-	err = reputerValueBundle.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to validate reputer value bundle")
-	}
 	return reputerValueBundle, nil
 }
 
@@ -392,6 +388,9 @@ func ConvertInferenceValuesFromProto(
 // ConvertInferenceValuesToLabeledValues converts the internal InferenceValues representation into
 // a slice of LabeledValue suitable for RPC responses or event emission.
 func ConvertInferenceValuesToLabeledValues(iv InferenceValues, reg *EpochLabelRegistry) ([]*LabeledValue, error) {
+	if reg == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "label registry can not be nil")
+	}
 	want := len(reg.GetLabels())
 	if len(iv) != want {
 		return nil, errors.Wrapf(

@@ -291,6 +291,9 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+
+  // TOPIC LABEL REGISTRY (epoch_id used for nonce)
+  repeated EpochLabelRegistry epoch_label_registries = 101;
 }
 
 message TopicIdAndTopic {

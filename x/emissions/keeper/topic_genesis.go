@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -188,6 +189,16 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 		if topicIdDec != nil {
 			if err := k.SetMadInferences(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
 				return errors.Wrap(err, "error setting madInferences")
+			}
+		}
+	}
+
+	// topicLabelRegistry []EpochLabelRegistry
+	for _, registry := range data.EpochLabelRegistries {
+		if registry != nil {
+			key := collections.Join(registry.TopicId, BlockHeight(registry.EpochId))
+			if err := k.topicLabelRegistry.Set(ctx, key, *registry); err != nil {
+				return errors.Wrap(err, "error setting topicLabelRegistry")
 			}
 		}
 	}
@@ -470,6 +481,25 @@ func (k *TopicKeeper) ExportGenesis(ctx context.Context, data *types.GenesisStat
 		})
 	}
 	data.MadInferences = madInferences
+
+	// labelRegistries
+	labelRegistries := make([]*types.EpochLabelRegistry, 0)
+	labelRegistriesIter, err := k.topicLabelRegistry.Iterate(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to iterate topic label registries")
+	}
+	for ; labelRegistriesIter.Valid(); labelRegistriesIter.Next() {
+		keyValue, err := labelRegistriesIter.KeyValue()
+		if err != nil {
+			return errors.Wrap(err, "failed to get key value: LabelRegistriesIter")
+		}
+		labelRegistries = append(labelRegistries, &types.EpochLabelRegistry{
+			TopicId: keyValue.Key.K1(),
+			EpochId: uint64(keyValue.Key.K2()),
+			Labels:  keyValue.Value.GetLabels(),
+		})
+	}
+	data.EpochLabelRegistries = labelRegistries
 
 	return nil
 }

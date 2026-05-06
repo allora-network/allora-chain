@@ -4,19 +4,20 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/stretchr/testify/require"
 )
 
-func FundTopic1(m testCommon.TestConfig) {
+func FundTopic(m testCommon.TestConfig) {
 	ctx := context.Background()
 	txResp, err := m.Client.BroadcastTx(
 		ctx,
 		m.BobAcc,
 		&emissionstypes.FundTopicRequest{
 			Sender:  m.BobAddr,
-			TopicId: uint64(1),
+			TopicId: m.TopicID,
 			Amount:  cosmosMath.NewInt(10000),
 		},
 	)
@@ -28,12 +29,12 @@ func FundTopic1(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 }
 
-func CheckTopic1Activated(m testCommon.TestConfig) {
+func CheckTopicActivated(m testCommon.TestConfig) {
 	ctx := context.Background()
 	// Fetch only active topics
 	topicIsActive, err := m.Client.QueryEmissions().IsTopicActive(
 		ctx,
-		&emissionstypes.IsTopicActiveRequest{TopicId: 1},
+		&emissionstypes.IsTopicActiveRequest{TopicId: m.TopicID},
 	)
 	require.NoError(m.T, err, "Fetching active topics should not produce an error")
 
@@ -41,10 +42,10 @@ func CheckTopic1Activated(m testCommon.TestConfig) {
 	require.True(m.T, topicIsActive.IsActive, "Should retrieve exactly one active topics")
 }
 
-// Must come after a reputer is registered and staked in topic 1
+// Must come after a reputer is registered and staked in topic
 func TopicFundingChecks(m testCommon.TestConfig) {
-	m.T.Log("--- Check funding Topic 1 ---")
-	FundTopic1(m)
-	m.T.Log("--- Check reactivating Topic 1 ---")
-	CheckTopic1Activated(m) // Should have stake (from earlier test) AND funds by now
+	m.T.Logf("--- Check funding Topic %d ---", m.TopicID)
+	FundTopic(m)
+	m.T.Logf("--- Check reactivating Topic %d ---", m.TopicID)
+	CheckTopicActivated(m) // Should have stake (from earlier test) AND funds by now
 }

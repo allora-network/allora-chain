@@ -248,7 +248,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 				},
 			)
 			if calcErr != nil {
-				args.Logger.Debug("Error calculating forecast implied inference for forecaster", forecaster, "withheldInferer", withheldInferer, "error", calcErr)
+				args.Logger.Warn("Error calculating forecast implied inference for:", "forecaster", forecaster, "withheldInferer", withheldInferer, "error", calcErr)
 				continue
 			}
 

@@ -77,7 +77,8 @@ type InputInference struct {
 	Value       github_com_allora_network_allora_chain_math.BoundedExp40Dec `protobuf:"bytes,4,opt,name=value,proto3,customtype=github.com/allora-network/allora-chain/math.BoundedExp40Dec" json:"value"`
 	ExtraData   []byte                                                      `protobuf:"bytes,5,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
 	Proof       string                                                      `protobuf:"bytes,6,opt,name=proof,proto3" json:"proof,omitempty"`
-	Values      []*InputLabeledValue                                        `protobuf:"bytes,7,rep,name=values,proto3" json:"values,omitempty"`
+	// values has precedence over value
+	Values []*InputLabeledValue `protobuf:"bytes,7,rep,name=values,proto3" json:"values,omitempty"`
 }
 
 func (m *InputInference) Reset()         { *m = InputInference{} }

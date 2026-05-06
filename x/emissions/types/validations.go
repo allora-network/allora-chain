@@ -265,27 +265,6 @@ func (inputInferenceForecastBundle *InputInferenceForecastBundle) Validate() err
 	return nil
 }
 
-// Validate only if each component is not nil
-func (inferenceForecastBundle *InferenceForecastBundle) Validate() error {
-
-	if inferenceForecastBundle.Inference != nil {
-		if err := inferenceForecastBundle.Inference.Validate(); err != nil {
-			return errors.Wrap(err, "inference is invalid")
-		}
-	}
-	if inferenceForecastBundle.Forecast != nil {
-		if err := inferenceForecastBundle.Forecast.Validate(); err != nil {
-			return errors.Wrap(err, "forecast is invalid")
-		}
-	}
-
-	if inferenceForecastBundle.Inference == nil && inferenceForecastBundle.Forecast == nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
-	}
-
-	return nil
-}
-
 func (bundle *InputWorkerDataBundle) Validate() error {
 	if bundle == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
@@ -536,7 +515,7 @@ func (bundle *ValueBundle) Validate() error {
 	}
 	// Additional validation on zero height for bundles
 	if bundle.ReputerRequestNonce.ReputerNonce.BlockHeight <= 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than or equal to 0")
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than 0")
 	}
 	if err := ValidateBech32(bundle.Reputer); err != nil {
 		return errors.Wrap(err, "value bundle reputer address is invalid")
@@ -625,7 +604,7 @@ func (bundle *NetworkInferenceBundle) Validate() error {
 		return errors.Wrap(err, "value bundle nonce is invalid")
 	}
 	if bundle.Nonce <= 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than or equal to 0")
+		return errors.Wrap(sdkerrors.ErrInvalidType, "value bundle reputer request nonce block height must be greater than 0")
 	}
 
 	combinedValue := FromLabeledValues(bundle.CombinedValue)
@@ -1000,6 +979,9 @@ func (topic Topic) Validate(params Params) error {
 	}
 	if topic.TopicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topic.TopicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
+	}
+	if topic.OutputArity <= TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED || topic.OutputArity > TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "output_arity is invalid")
 	}
 
 	return nil

@@ -982,7 +982,7 @@ func (s *KeeperTestSuite) TestNewInferenceForecastBundleFromInput() {
 			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), validInference.TopicId)
 			s.Require().NoError(err)
 
-			got, err := s.WorkerKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
+			got, err := keeper.NormalizeInferenceForecastBundle(topic, tt.input)
 			if tt.wantErr {
 				s.Require().Error(err)
 				return
@@ -1006,10 +1006,6 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 		requireUnity bool
 		unityTol     string
 
-		nonce int64
-
-		preRegisterLabels []string
-
 		scalarValue string
 		labeled     []struct {
 			label string
@@ -1019,45 +1015,36 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 		wantErr   bool
 		wantErrIs error
 
-		wantValuesStr []string
-		wantRegLabels []string
+		wantScalarStr string   // for SINGLE
+		wantLabeled   []string // for MULTI: submitted values in submission order
 	}
 
 	cases := []tc{
 		{
-			name:         "SINGLE_uses_labeled_when_len1_over_scalar",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			scalarValue:  "999",
+			name:        "SINGLE_uses_labeled_when_len1_over_scalar",
+			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			unityTol:    "0",
+			scalarValue: "999",
 			labeled: []struct {
 				label string
 				value string
 			}{
 				{label: "x", value: "7"},
 			},
-			wantValuesStr: []string{"7"},
-			wantRegLabels: nil,
+			wantScalarStr: "7",
 		},
 		{
 			name:          "SINGLE_uses_scalar_when_no_labeled",
 			arity:         types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			requireUnity:  false,
 			unityTol:      "0",
-			nonce:         1,
 			scalarValue:   "42",
-			labeled:       nil,
-			wantValuesStr: []string{"42"},
-			wantRegLabels: nil,
+			wantScalarStr: "42",
 		},
 		{
-			name:         "SINGLE_rejects_when_labeled_len_gt_1",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			scalarValue:  "1",
+			name:        "SINGLE_rejects_when_labeled_len_gt_1",
+			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			unityTol:    "0",
+			scalarValue: "1",
 			labeled: []struct {
 				label string
 				value string
@@ -1069,22 +1056,17 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_requires_labeled_values",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			scalarValue:  "123",
-			labeled:      nil,
-			wantErr:      true,
-			wantErrIs:    sdkerrors.ErrInvalidRequest,
+			name:        "MULTI_requires_labeled_values",
+			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol:    "0",
+			scalarValue: "123",
+			wantErr:     true,
+			wantErrIs:   sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_registers_labels_and_aligns_dense",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
+			name:     "MULTI_returns_submitted_labels_in_order",
+			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol: "0",
 			labeled: []struct {
 				label string
 				value string
@@ -1092,15 +1074,12 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 				{label: "A", value: "0.2"},
 				{label: "B", value: "0.8"},
 			},
-			wantValuesStr: []string{"0.2", "0.8"},
-			wantRegLabels: []string{"A", "B"},
+			wantLabeled: []string{"0.2", "0.8"},
 		},
 		{
-			name:         "MULTI_duplicate_label_rejected",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
+			name:     "MULTI_duplicate_label_rejected",
+			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol: "0",
 			labeled: []struct {
 				label string
 				value string
@@ -1112,11 +1091,9 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_empty_label_rejected",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
+			name:     "MULTI_empty_label_rejected",
+			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol: "0",
 			labeled: []struct {
 				label string
 				value string
@@ -1127,30 +1104,10 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_missing_labels_are_zero_against_existing_registry",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
-			preRegisterLabels: []string{
-				"a", "b", "c",
-			},
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "a", value: "1"},
-				{label: "b", value: "2"},
-			},
-			wantValuesStr: []string{"1", "2", "0"},
-			wantRegLabels: []string{"a", "b", "c"},
-		},
-		{
 			name:         "MULTI_require_unity_ok",
 			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			requireUnity: true,
 			unityTol:     "0.000001",
-			nonce:        1,
 			labeled: []struct {
 				label string
 				value string
@@ -1158,15 +1115,13 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 				{label: "A", value: "0.2"},
 				{label: "B", value: "0.8"},
 			},
-			wantValuesStr: []string{"0.2", "0.8"},
-			wantRegLabels: []string{"A", "B"},
+			wantLabeled: []string{"0.2", "0.8"},
 		},
 		{
 			name:         "MULTI_require_unity_rejected_outside_tol",
 			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			requireUnity: true,
 			unityTol:     "0.01",
-			nonce:        1,
 			labeled: []struct {
 				label string
 				value string
@@ -1178,19 +1133,16 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:         "MULTI_trims_labels_and_is_idempotent_on_registry",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: false,
-			unityTol:     "0",
-			nonce:        1,
+			name:     "MULTI_trims_label_whitespace",
+			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol: "0",
 			labeled: []struct {
 				label string
 				value string
 			}{
 				{label: "  Z  ", value: "5"},
 			},
-			wantValuesStr: []string{"5"},
-			wantRegLabels: []string{"Z"},
+			wantLabeled: []string{"5"},
 		},
 	}
 
@@ -1210,15 +1162,10 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
 			s.Require().NoError(k.SetTopic(ctx, topicId, topic))
 
-			for _, l := range c.preRegisterLabels {
-				_, err := k.RegisterEpochLabel(ctx, topicId, c.nonce, l)
-				s.Require().NoError(err)
-			}
-
 			in := &types.InputInference{
 				TopicId:     topicId,
-				BlockHeight: c.nonce,
-				Inferer:     "inferer",
+				BlockHeight: 1,
+				Inferer:     s.AddrsStr(0),
 				Value:       alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue),
 			}
 			if c.labeled != nil {
@@ -1231,7 +1178,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 				}
 			}
 
-			got, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, c.nonce, in)
+			got, err := keeper.NormalizeInputInference(topic, in)
 			if c.wantErr {
 				s.Require().Error(err)
 				if c.wantErrIs != nil {
@@ -1242,76 +1189,289 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			s.Require().NoError(err)
 			s.Require().NotNil(got)
 
-			s.Require().Equal(len(c.wantValuesStr), len(got.Values))
-			for i := range c.wantValuesStr {
-				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
-			}
-
-			reg, err := k.GetEpochLabelRegistry(ctx, topicId, c.nonce)
-			s.Require().NoError(err)
-
-			if c.arity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
-				s.Require().Len(reg.Labels, 1)
-				return
-			}
-
-			s.Require().Equal(len(c.wantRegLabels), len(reg.Labels))
-			for i := range c.wantRegLabels {
-				s.Require().Equal(c.wantRegLabels[i], reg.Labels[i].Name)
+			if got.IsSingle {
+				s.Require().Equal(c.wantScalarStr, got.ScalarValue.String())
+			} else {
+				s.Require().Equal(len(c.wantLabeled), len(got.Labeled))
+				for i := range c.wantLabeled {
+					s.Require().Equal(c.wantLabeled[i], got.Labeled[i].Value.String())
+				}
 			}
 		})
 	}
+}
 
-	s.Run("MULTI_preserves_label_ids_across_calls_even_if_submission_order_changes", func() {
-		s.SetupTest()
+func (s *KeeperTestSuite) TestMaterializeWorkerDataBundle() {
+	type labeledInput struct {
+		label string
+		value string
+	}
 
-		ctx := s.Ctx()
-		k := s.TopicKeeper()
+	type tc struct {
+		name                string
+		arity               types.TopicOutputArity
+		requireUnity        bool
+		unityTol            string
+		nonce               int64
+		preRegisterLabels   []string
+		hasInference        bool
+		scalarValue         string
+		labeled             []labeledInput
+		hasForecast         bool
+		wantErr             bool
+		wantErrIs           error
+		wantInferenceValues []string
+		wantRegistryLabels  []*types.TopicLabel
+	}
 
-		topicId := s.CreateTopic()
-		topic, err := k.GetTopic(ctx, topicId)
-		s.Require().NoError(err)
-		topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
-		topic.RequireUnity = false
-		topic.UnityTolerance = alloraMath.ZeroDec()
-		s.Require().NoError(k.SetTopic(ctx, topicId, topic))
-
-		nonce := types.BlockHeight(1)
-
-		in1 := &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: 1,
-			Inferer:     "inferer",
-			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
-			Values: []*types.InputLabeledValue{
-				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
-				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+	cases := []tc{
+		{
+			name:                "SINGLE_registers_y_and_returns_scalar",
+			arity:               types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			unityTol:            "0",
+			nonce:               1,
+			hasInference:        true,
+			scalarValue:         "42",
+			wantInferenceValues: []string{"42"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "y"},
 			},
-		}
-		got1, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, nonce, in1)
-		s.Require().NoError(err)
-		s.Require().Equal([]string{"1", "2"}, []string{got1.Values[0].String(), got1.Values[1].String()})
-
-		in2 := &types.InputInference{
-			TopicId:     topicId,
-			BlockHeight: 1,
-			Inferer:     "inferer",
-			Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
-			Values: []*types.InputLabeledValue{
-				{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("20")},
-				{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
+		},
+		{
+			name:         "SINGLE_one_labeled_uses_label_value_registers_y",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			unityTol:     "0",
+			nonce:        1,
+			hasInference: true,
+			scalarValue:  "999", // ignored when labeled has length 1
+			labeled: []labeledInput{
+				{label: "anything", value: "7"},
 			},
-		}
-		got2, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, nonce, in2)
-		s.Require().NoError(err)
-		s.Require().Equal([]string{"10", "20"}, []string{got2.Values[0].String(), got2.Values[1].String()})
+			wantInferenceValues: []string{"7"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "y"},
+			},
+		},
+		{
+			name:         "MULTI_registers_new_labels_and_aligns_dense",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol:     "0",
+			nonce:        1,
+			hasInference: true,
+			labeled: []labeledInput{
+				{label: "A", value: "0.2"},
+				{label: "B", value: "0.8"},
+			},
+			wantInferenceValues: []string{"0.2", "0.8"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "A"},
+				{Id: 2, Name: "B"},
+			},
+		},
+		{
+			name:              "MULTI_missing_labels_are_zero_against_existing_registry",
+			arity:             types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol:          "0",
+			nonce:             1,
+			preRegisterLabels: []string{"a", "b", "c"},
+			hasInference:      true,
+			labeled: []labeledInput{
+				{label: "a", value: "1"},
+				{label: "b", value: "2"},
+			},
+			wantInferenceValues: []string{"1", "2", "0"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "a"},
+				{Id: 2, Name: "b"},
+				{Id: 3, Name: "c"},
+			},
+		},
+		{
+			name:              "MULTI_mix_of_existing_and_new_labels",
+			arity:             types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol:          "0",
+			nonce:             1,
+			preRegisterLabels: []string{"a", "b"},
+			hasInference:      true,
+			labeled: []labeledInput{
+				{label: "b", value: "5"},
+				{label: "c", value: "9"},
+			},
+			// Registry order after materialize: a, b, c
+			// Submitted: b=5, c=9 → a stays zero
+			wantInferenceValues: []string{"0", "5", "9"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "a"},
+				{Id: 2, Name: "b"},
+				{Id: 3, Name: "c"},
+			},
+		},
+		{
+			name:         "MULTI_submission_order_independent_of_registry_order",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol:     "0",
+			nonce:        1,
+			hasInference: true,
+			// Submitted in reverse alphabetical; registry order is by registration order.
+			labeled: []labeledInput{
+				{label: "Z", value: "10"},
+				{label: "A", value: "20"},
+			},
+			wantInferenceValues: []string{"10", "20"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "Z"},
+				{Id: 2, Name: "A"},
+			},
+		},
+		{
+			name:         "MULTI_trims_label_whitespace_before_registering",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			unityTol:     "0",
+			nonce:        1,
+			hasInference: true,
+			labeled: []labeledInput{
+				{label: "  Z  ", value: "5"},
+			},
+			wantInferenceValues: []string{"5"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "Z"},
+			},
+		},
+		{
+			name:         "MULTI_require_unity_ok_aligns_correctly",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			requireUnity: true,
+			unityTol:     "0.000001",
+			nonce:        1,
+			hasInference: true,
+			labeled: []labeledInput{
+				{label: "A", value: "0.3"},
+				{label: "B", value: "0.7"},
+			},
+			wantInferenceValues: []string{"0.3", "0.7"},
+			wantRegistryLabels: []*types.TopicLabel{
+				{Id: 1, Name: "A"},
+				{Id: 2, Name: "B"},
+			},
+		},
+		{
+			name:         "no_inference_only_forecast",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			unityTol:     "0",
+			nonce:        1,
+			hasInference: false,
+			hasForecast:  true,
+			// No inference → no labels registered
+			wantRegistryLabels: nil,
+		},
+	}
 
-		reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-		s.Require().NoError(err)
-		s.Require().Len(reg.Labels, 2)
-		s.Require().Equal("a", reg.Labels[0].Name)
-		s.Require().Equal("b", reg.Labels[1].Name)
-	})
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+
+			ctx := s.Ctx()
+			tk := s.TopicKeeper()
+			wk := s.WorkerKeeper()
+
+			topicId := s.CreateTopic()
+			topic, err := tk.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+
+			topic.OutputArity = c.arity
+			topic.RequireUnity = c.requireUnity
+			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
+			s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
+
+			for _, l := range c.preRegisterLabels {
+				_, err := tk.RegisterEpochLabel(ctx, topicId, c.nonce, l)
+				s.Require().NoError(err)
+			}
+
+			input := &types.InputWorkerDataBundle{
+				Worker:                   s.AddrsStr(0),
+				Nonce:                    &types.Nonce{BlockHeight: c.nonce},
+				TopicId:                  topicId,
+				InferenceForecastsBundle: &types.InputInferenceForecastBundle{},
+			}
+
+			if c.hasInference {
+				inf := &types.InputInference{
+					TopicId:     topicId,
+					BlockHeight: c.nonce,
+					Inferer:     s.AddrsStr(0),
+					Value:       alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue),
+				}
+				if c.labeled != nil {
+					inf.Values = make([]*types.InputLabeledValue, 0, len(c.labeled))
+					for _, lv := range c.labeled {
+						inf.Values = append(inf.Values, &types.InputLabeledValue{
+							Label: lv.label,
+							Value: alloraMath.MustNewBoundedExp40DecFromString(lv.value),
+						})
+					}
+				}
+				input.InferenceForecastsBundle.Inference = inf
+			}
+
+			if c.hasForecast {
+				input.InferenceForecastsBundle.Forecast = &types.InputForecast{
+					TopicId:     topicId,
+					BlockHeight: c.nonce,
+					Forecaster:  s.AddrsStr(0),
+					ForecastElements: []*types.InputForecastElement{
+						{
+							Inferer: s.AddrsStr(0),
+							Value:   alloraMath.MustNewBoundedExp40DecFromString("0.5"),
+						},
+					},
+				}
+			}
+
+			// Normalize first (we're testing materialize, not normalize, but
+			// we need a valid normalized input to feed in).
+			normalized, err := wk.NormalizeWorkerDataBundle(topic, input)
+			s.Require().NoError(err)
+
+			got, err := wk.MaterializeWorkerDataBundle(ctx, c.nonce, normalized)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.wantErrIs != nil {
+					s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
+				}
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().NotNil(got)
+
+			// Verify Inference.Values matches the registry-aligned expectation.
+			if c.hasInference {
+				s.Require().NotNil(got.InferenceForecastsBundle.Inference)
+				values := got.InferenceForecastsBundle.Inference.Values
+				s.Require().Equal(len(c.wantInferenceValues), len(values),
+					"inference values length mismatch")
+				for i, want := range c.wantInferenceValues {
+					s.Require().Equal(want, values[i].String(),
+						"inference value at index %d", i)
+				}
+			} else {
+				s.Require().Nil(got.InferenceForecastsBundle.Inference)
+			}
+
+			// Verify the registry contents and order after materialize.
+			registry, err := tk.GetEpochLabelRegistry(ctx, topicId, c.nonce)
+			if len(c.wantRegistryLabels) == 0 {
+				// Either no registry exists (nothing was registered) or it's empty.
+				if err == nil {
+					s.Require().Empty(registry.Labels)
+				}
+			} else {
+				s.Require().NoError(err)
+				s.Require().Equal(c.wantRegistryLabels, registry.Labels,
+					"registry labels mismatch")
+			}
+		})
+	}
 }
 
 //nolint:exhaustruct
@@ -1511,6 +1671,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() 
 			wantValues: map[int][]string{
 				0: {},
 			},
+			wantErrIs: sdkerrors.ErrLogic,
 		},
 		{
 			name:        "MULTI_pads_multiple_missing_entries_not_just_one",

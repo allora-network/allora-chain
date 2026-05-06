@@ -88,9 +88,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, err
 	}
 
-	wdb, err := ms.wk.NewWorkerDataBundleFromInput(ctx, topic, nonce.BlockHeight, msg.WorkerDataBundle)
+	normalized, err := ms.wk.NormalizeWorkerDataBundle(topic, msg.WorkerDataBundle)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Worker bad data format for block: %d", blockHeight)
+	}
+	wdb, err := ms.wk.MaterializeWorkerDataBundle(ctx, nonce.BlockHeight, normalized)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "failed to materialize worker data bundle for block: %d", blockHeight)
 	}
 
 	// Process Inferences

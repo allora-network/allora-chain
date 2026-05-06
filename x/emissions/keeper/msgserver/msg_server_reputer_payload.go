@@ -16,6 +16,10 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
+	if err = msg.ReputerValueBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrap(err, "failed to validate reputer value bundle")
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 

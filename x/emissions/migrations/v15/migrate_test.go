@@ -16,6 +16,7 @@ import (
 	v14 "github.com/allora-network/allora-chain/x/emissions/migrations/v14"
 	v14oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v14/oldtypes"
 	v15 "github.com/allora-network/allora-chain/x/emissions/migrations/v15"
+	"github.com/allora-network/allora-chain/x/emissions/migrations/v15/oldtypes"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -193,7 +194,27 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	oldNetworkStore.Set(key, cdc.MustMarshal(&oldBundle))
 	oldOutlierStore.Set(key, cdc.MustMarshal(&oldBundle))
 
-	err := v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
+	legacyInference := s.makeLegacyInference()
+	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
+	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
+	_, err := infKeyCodec.Encode(infKeyBytes, collections.Join(legacyInference.TopicId, legacyInference.Inferer))
+	s.Require().NoError(err)
+	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
+
+	blockHeight := emissionstypes.BlockHeight(100)
+	legacyAllInference := s.makeLegacyInference()
+	legacyAllInferences := oldtypes.Inferences{
+		Inferences: []*oldtypes.Inference{&legacyAllInference},
+	}
+	allInferencesStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
+	allInfKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	allInfKeyBytes := make([]byte, allInfKeyCodec.Size(collections.Join(legacyAllInference.TopicId, blockHeight)))
+	_, err = allInfKeyCodec.Encode(allInfKeyBytes, collections.Join(legacyAllInference.TopicId, blockHeight))
+	s.Require().NoError(err)
+	allInferencesStore.Set(allInfKeyBytes, cdc.MustMarshal(&legacyAllInferences))
+
+	err = v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	gotTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), legacyTopic.Id)
@@ -206,6 +227,17 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
 	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)
+
+	gotInference, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), legacyInference.TopicId, legacyInference.Inferer)
+	s.Require().NoError(err)
+	s.assertInference(legacyInference, gotInference)
+
+	gotAllInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), legacyAllInference.TopicId, blockHeight, false)
+	s.Require().NoError(err)
+	s.Require().NotNil(gotAllInferences)
+	s.Require().NotEmpty(gotAllInferences.Inferences)
+	s.Require().NotNil(gotAllInferences.Inferences[0])
+	s.assertInference(legacyAllInference, *gotAllInferences.Inferences[0])
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV014AndV015() {
@@ -241,7 +273,27 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	prefix.NewStore(store, emissionstypes.NetworkInferencesKey).Set(key, cdc.MustMarshal(&oldBundle))
 	prefix.NewStore(store, emissionstypes.OutlierResistantNetworkInferencesKey).Set(key, cdc.MustMarshal(&oldBundle))
 
-	err := v14.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
+	legacyInference := s.makeLegacyInference()
+	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
+	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
+	_, err := infKeyCodec.Encode(infKeyBytes, collections.Join(legacyInference.TopicId, legacyInference.Inferer))
+	s.Require().NoError(err)
+	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
+
+	blockHeight := emissionstypes.BlockHeight(100)
+	legacyAllInference := s.makeLegacyInference()
+	legacyAllInferences := oldtypes.Inferences{
+		Inferences: []*oldtypes.Inference{&legacyAllInference},
+	}
+	allInferencesStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
+	allInfKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	allInfKeyBytes := make([]byte, allInfKeyCodec.Size(collections.Join(legacyAllInference.TopicId, blockHeight)))
+	_, err = allInfKeyCodec.Encode(allInfKeyBytes, collections.Join(legacyAllInference.TopicId, blockHeight))
+	s.Require().NoError(err)
+	allInferencesStore.Set(allInfKeyBytes, cdc.MustMarshal(&legacyAllInferences))
+
+	err = v14.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	err = v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
@@ -259,6 +311,17 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
 	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)
+
+	gotInference, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), legacyInference.TopicId, legacyInference.Inferer)
+	s.Require().NoError(err)
+	s.assertInference(legacyInference, gotInference)
+
+	gotAllInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), legacyAllInference.TopicId, blockHeight, false)
+	s.Require().NoError(err)
+	s.Require().NotNil(gotAllInferences)
+	s.Require().NotEmpty(gotAllInferences.Inferences)
+	s.Require().NotNil(gotAllInferences.Inferences[0])
+	s.assertInference(legacyAllInference, *gotAllInferences.Inferences[0])
 }
 
 func (s *EmissionsV15MigrationTestSuite) makeLegacyValueBundle(topicID uint64, blockHeight int64) emissionstypes.ValueBundle {
@@ -330,6 +393,18 @@ func (s *EmissionsV15MigrationTestSuite) makeLegacyTopic(apply func(*v14oldtypes
 	}
 
 	return topic
+}
+
+func (s *EmissionsV15MigrationTestSuite) makeLegacyInference() oldtypes.Inference {
+	oldInference := oldtypes.Inference{
+		TopicId:     1,
+		BlockHeight: 100,
+		Inferer:     s.AddrsStr(0),
+		Value:       alloraMath.MustNewDecFromString("100"),
+		ExtraData:   []byte("extra_data"),
+		Proof:       "proof",
+	}
+	return oldInference
 }
 
 func (s *EmissionsV15MigrationTestSuite) assertMigratedBundle(
@@ -414,4 +489,13 @@ func (s *EmissionsV15MigrationTestSuite) assertMigratedBundle(
 	s.Require().True(oldBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Value.Equal(got.OneOutInfererForecasterValues[0].CombinedInference[0].Value))
 	s.Require().Equal(oldBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[1].Worker, got.OneOutInfererForecasterValues[1].WithheldInferer)
 	s.Require().True(oldBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[1].Value.Equal(got.OneOutInfererForecasterValues[1].CombinedInference[0].Value))
+}
+
+func (s *EmissionsV15MigrationTestSuite) assertInference(legacyInference oldtypes.Inference, gotInference emissionstypes.Inference) {
+	s.Require().Equal(legacyInference.Inferer, gotInference.Inferer)
+	s.Require().Equal(legacyInference.BlockHeight, gotInference.BlockHeight)
+	s.Require().Equal(legacyInference.TopicId, gotInference.TopicId)
+	s.Require().Equal(legacyInference.ExtraData, gotInference.ExtraData)
+	s.Require().Equal(legacyInference.Proof, gotInference.Proof)
+	s.Require().Equal(legacyInference.Value, gotInference.Values[0])
 }

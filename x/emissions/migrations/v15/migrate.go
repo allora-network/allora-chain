@@ -13,6 +13,7 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/migrations/v15/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -37,6 +38,16 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 	if err := MigrateOutlierResistantNetworkInferences(ctx, store, cdc); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateOutlierResistantNetworkInferences() FROM VERSION 14 TO VERSION 15")
+		return err
+	}
+
+	if err := MigrateInferences(ctx, store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateInferences() FROM VERSION 14 TO VERSION 15")
+		return err
+	}
+
+	if err := MigrateAllInferences(ctx, store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateAllInferences() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
 
@@ -144,14 +155,6 @@ func migrateInferenceBundles(
 		}
 
 		networkInferenceBundle := emissionstypes.ValueBundleToNetworkInferenceBundle(&oldNetworkInference)
-		if networkInferenceBundle == nil {
-			return errorsmod.Wrapf(
-				emissionstypes.ErrInvalidValue,
-				"converted %s bundle is nil; topicId: %d",
-				logName,
-				oldNetworkInference.TopicId,
-			)
-		}
 
 		if err := networkInferenceBundle.Validate(); err != nil {
 			return errorsmod.Wrapf(err, "failed to validate %s", logName)
@@ -170,5 +173,109 @@ func migrateInferenceBundles(
 	}
 
 	ctx.Logger().Info("MIGRATION V15: network inference bundle migration completed", "store", logName, "entriesUpdated", len(updates))
+	return nil
+}
+
+func MigrateInferences(
+	ctx sdk.Context,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+) error {
+	store = prefix.NewStore(store, emissionstypes.InferencesKey)
+	iterator := store.Iterator(nil, nil)
+	defer iterator.Close()
+
+	type kv struct {
+		key   []byte
+		value []byte
+	}
+
+	updates := make([]kv, 0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		var oldInference oldtypes.Inference
+		if err := cdc.Unmarshal(iterator.Value(), &oldInference); err != nil {
+			return errorsmod.Wrap(err, "failed to unmarshal inferences")
+		}
+
+		inference := &emissionstypes.Inference{
+			TopicId:     oldInference.TopicId,
+			BlockHeight: oldInference.BlockHeight,
+			Inferer:     oldInference.Inferer,
+			Values:      []alloraMath.Dec{oldInference.Value},
+			ExtraData:   oldInference.ExtraData,
+			Proof:       oldInference.Proof,
+		}
+
+		if err := inference.Validate(); err != nil {
+			return errorsmod.Wrap(err, "failed to validate inferences")
+		}
+
+		updates = append(updates, kv{
+			key:   append([]byte(nil), iterator.Key()...),
+			value: cdc.MustMarshal(inference),
+		})
+	}
+
+	for _, u := range updates {
+		store.Set(u.key, u.value)
+	}
+
+	ctx.Logger().Info("MIGRATION V15: inferences migration completed", "store", "entriesUpdated", len(updates))
+	return nil
+}
+
+func MigrateAllInferences(
+	ctx sdk.Context,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+) error {
+	store = prefix.NewStore(store, emissionstypes.AllInferencesKey)
+	iterator := store.Iterator(nil, nil)
+	defer iterator.Close()
+
+	type kv struct {
+		key   []byte
+		value []byte
+	}
+
+	updates := make([]kv, 0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		var oldInferences oldtypes.Inferences
+		if err := cdc.Unmarshal(iterator.Value(), &oldInferences); err != nil {
+			return errorsmod.Wrapf(err, "failed to unmarshal all inferences")
+		}
+
+		allInferences := &emissionstypes.Inferences{
+			Inferences: make([]*emissionstypes.Inference, len(oldInferences.Inferences)),
+		}
+
+		for i, oldInference := range oldInferences.Inferences {
+			allInferences.Inferences[i] = &emissionstypes.Inference{
+				TopicId:     oldInference.TopicId,
+				BlockHeight: oldInference.BlockHeight,
+				Inferer:     oldInference.Inferer,
+				Values:      []alloraMath.Dec{oldInference.Value},
+				ExtraData:   oldInference.ExtraData,
+				Proof:       oldInference.Proof,
+			}
+
+			if err := allInferences.Inferences[i].Validate(); err != nil {
+				return errorsmod.Wrapf(err, "failed to validate all inferences")
+			}
+		}
+
+		updates = append(updates, kv{
+			key:   append([]byte(nil), iterator.Key()...),
+			value: cdc.MustMarshal(allInferences),
+		})
+	}
+
+	for _, u := range updates {
+		store.Set(u.key, u.value)
+	}
+
+	ctx.Logger().Info("MIGRATION V15: all inferences migration completed", "store", "entriesUpdated", len(updates))
 	return nil
 }

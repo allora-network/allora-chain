@@ -778,6 +778,7 @@ func (k *TopicKeeper) RegisterEpochLabel(
 		return 0, err
 	}
 
+	// TODO: consider making this cheaper at some point
 	for _, lbl := range registry.Labels {
 		if lbl != nil && lbl.Name == labelName {
 			if lbl.Id == 0 {
