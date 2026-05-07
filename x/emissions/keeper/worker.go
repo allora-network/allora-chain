@@ -1029,6 +1029,12 @@ func (k *WorkerKeeper) NormalizeInputInference(
 			scattered = append(scattered, scatteredValue{id: id, value: dec})
 		}
 	}
+	if len(scattered) == 0 {
+		return nil, errorsmod.Wrap(
+			sdkerrors.ErrInvalidRequest,
+			"multi-arity inference requires at least one non-default label value",
+		)
+	}
 
 	if topic.RequireUnity {
 		diff, err := sumSubmitted.Sub(alloraMath.OneDec())
