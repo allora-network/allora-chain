@@ -15,6 +15,60 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// InferenceAdmissionKind is the read-only admission outcome computed before an
+// input inference is normalized into the temporary ELR label space.
+type InferenceAdmissionKind uint8
+
+const (
+	// InferenceAdmissionNotAdmitted preserves passive score/liveness side
+	// effects, but does not store an inference.
+	InferenceAdmissionNotAdmitted InferenceAdmissionKind = iota
+	// InferenceAdmissionOpenSlot admits the inferer without evicting anyone.
+	InferenceAdmissionOpenSlot
+	// InferenceAdmissionEvictLowest admits the inferer by replacing the current
+	// lowest-scoring active inferer.
+	InferenceAdmissionEvictLowest
+)
+
+// InferenceAdmissionPlan carries the exact admission decision and score snapshot
+// that CommitPlannedInference will apply. Planning must not mutate active sets,
+// inference stores, score stores, or the temporary epoch label registry.
+type InferenceAdmissionPlan struct {
+	Kind             InferenceAdmissionKind
+	Inferer          ActorId
+	PreviousEmaScore types.Score
+	LowestEmaScore   types.Score
+	WorkerAddresses  []ActorId
+	FirstSubmission  bool
+}
+
+func newInferenceAdmissionPlan(inferer ActorId) InferenceAdmissionPlan {
+	return InferenceAdmissionPlan{
+		Kind:    InferenceAdmissionNotAdmitted,
+		Inferer: inferer,
+		PreviousEmaScore: types.Score{
+			TopicId:     0,
+			BlockHeight: 0,
+			Address:     "",
+			Score:       alloraMath.ZeroDec(),
+		},
+		LowestEmaScore: types.Score{
+			TopicId:     0,
+			BlockHeight: 0,
+			Address:     "",
+			Score:       alloraMath.ZeroDec(),
+		},
+		WorkerAddresses: nil,
+		FirstSubmission: false,
+	}
+}
+
+// Admitted reports whether a planned inference is allowed to be normalized and
+// stored. Non-admitted plans may still commit score/liveness side effects.
+func (p InferenceAdmissionPlan) Admitted() bool {
+	return p.Kind == InferenceAdmissionOpenSlot || p.Kind == InferenceAdmissionEvictLowest
+}
+
 func NewWorkerKeeper(
 	cdc codec.BinaryCodec,
 	sb *collections.SchemaBuilder,
@@ -408,22 +462,40 @@ func (k *WorkerKeeper) AppendInference(
 	if inference == nil {
 		return false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
 	}
-	// Check if the inferers already submitted the inference
-	isActive, err := k.IsActiveInferer(ctx, topic.Id, inference.Inferer)
+	plan, err := k.PlanAppendInference(ctx, topic, nonceBlockHeight, inference.Inferer, maxTopInferersToReward)
 	if err != nil {
-		return false, errorsmod.Wrap(err, "error checking if worker already submitted inference")
+		return false, err
+	}
+	if err := k.CommitPlannedInference(ctx, topic, nonceBlockHeight, inference, plan); err != nil {
+		return false, err
+	}
+	return plan.Admitted(), nil
+}
+
+func (k *WorkerKeeper) PlanAppendInference(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	inferer ActorId,
+	maxTopInferersToReward uint64,
+) (InferenceAdmissionPlan, error) {
+	plan := newInferenceAdmissionPlan(inferer)
+	// Check if the inferers already submitted the inference
+	isActive, err := k.IsActiveInferer(ctx, topic.Id, inferer)
+	if err != nil {
+		return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error checking if worker already submitted inference")
 	} else if isActive {
-		return false, errors.New("inference already submitted")
+		return InferenceAdmissionPlan{}, errors.New("inference already submitted")
 	}
 
 	// Get previous EMA score for the current inferer
-	previousEmaScore, err := k.scoresKeeper.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
+	previousEmaScore, err := k.scoresKeeper.GetInfererScoreEma(ctx, topic.Id, inferer)
 	if err != nil {
-		return false, errorsmod.Wrapf(err, "Error getting inferer score ema")
+		return InferenceAdmissionPlan{}, errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
 	if previousEmaScore.BlockHeight >= nonceBlockHeight {
-		return false, types.ErrCantUpdateEmaMoreThanOncePerWindow
+		return InferenceAdmissionPlan{}, types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
 	// Check if the inferer is new and set initial EMA score
@@ -432,122 +504,220 @@ func (k *WorkerKeeper) AppendInference(
 		firstSubmission = true
 		initialEmaScore, err := k.scoresKeeper.GetTopicInitialInfererEmaScore(ctx, topic.Id)
 		if err != nil {
-			return false, errorsmod.Wrap(err, "error getting topic initial ema score")
+			return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
 		previousEmaScore = types.Score{
 			TopicId:     topic.Id,
-			Address:     inference.Inferer,
+			Address:     inferer,
 			BlockHeight: nonceBlockHeight,
 			Score:       initialEmaScore,
 		}
-		err = k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, previousEmaScore)
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error setting initial inferer score ema")
-		}
 	} else {
 		// If not new: Penalise the inferer if needed
-		previousEmaScore, err = k.actorPenaltiesKeeper.ApplyLivenessPenaltyToInferer(ctx, topic, nonceBlockHeight, previousEmaScore)
+		previousEmaScore, err = k.actorPenaltiesKeeper.CalculateLivenessPenaltyToInferer(ctx, topic, nonceBlockHeight, previousEmaScore)
 		if err != nil {
-			return false, errorsmod.Wrap(err, "error trying to penalise inferer")
+			return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error trying to penalise inferer")
 		}
 
 		// Update score nonce for liveness tracking
 		previousEmaScore.BlockHeight = nonceBlockHeight
-		err = k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, previousEmaScore)
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error setting penalised inferer score ema")
-		}
 	}
 
 	// Get lowest inferer score ema for the topic
 	lowestEmaScore, _, err := k.scoresKeeper.GetLowestInfererScoreEma(ctx, topic.Id)
 	if err != nil {
-		return false, errorsmod.Wrap(err, "error getting lowest inferer score ema")
+		return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error getting lowest inferer score ema")
 	}
 
 	// Get active inferers for topic
 	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
-		return false, errorsmod.Wrap(err, "error getting active inferers for topic")
+		return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error getting active inferers for topic")
 	}
+
+	plan.PreviousEmaScore = previousEmaScore
+	plan.LowestEmaScore = lowestEmaScore
+	plan.WorkerAddresses = workerAddresses
+	plan.FirstSubmission = firstSubmission
 
 	// If there are less than maxTopInferersToReward, add the current inferer, update the lowest inferer score ema if needed, and return
 	if uint64(len(workerAddresses)) < maxTopInferersToReward {
-		// Update lowest inferer score ema if needed
-		if uint64(len(workerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
-			err = k.scoresKeeper.SetLowestInfererScoreEma(ctx, topic.Id, previousEmaScore)
-			if err != nil {
-				return false, errorsmod.Wrap(err, "error setting lowest inferer score ema")
-			}
-		}
-
-		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error adding active inferer")
-		}
-		if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
-			return false, errorsmod.Wrap(err, "error inserting inference")
-		}
-		return true, nil
+		plan.Kind = InferenceAdmissionOpenSlot
+		return plan, nil
 	}
 
-	// Else ...
-	// Checks if the inferer's previous EMA score is greater than the lowest EMA score
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
-		// Update EMA score for the lowest score inferer, who is not the current inferer
-		err = k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
-			ctx,
-			topic,
-			nonceBlockHeight,
-			lowestEmaScore,
+		plan.Kind = InferenceAdmissionEvictLowest
+	}
+	return plan, nil
+}
+
+func (k *WorkerKeeper) CommitPlannedInference(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	inference *types.Inference,
+	plan InferenceAdmissionPlan,
+) error {
+	if err := validateInferenceAdmissionPlan(inference, plan); err != nil {
+		return err
+	}
+	if err := k.commitPlannedInfererScore(ctx, topic, plan); err != nil {
+		return err
+	}
+
+	switch plan.Kind {
+	case InferenceAdmissionOpenSlot:
+		return k.commitOpenSlotInferencePlan(ctx, topic, inference, plan)
+	case InferenceAdmissionEvictLowest:
+		return k.commitEvictionInferencePlan(ctx, topic, nonceBlockHeight, inference, plan)
+	case InferenceAdmissionNotAdmitted:
+		return k.commitNotAdmittedInferencePlan(ctx, topic, nonceBlockHeight, plan)
+	}
+	return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unknown inference admission kind: %d", plan.Kind)
+}
+
+func validateInferenceAdmissionPlan(inference *types.Inference, plan InferenceAdmissionPlan) error {
+	if plan.Inferer == "" {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inferer is empty")
+	}
+	if inference != nil && inference.Inferer != plan.Inferer {
+		return errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"inference inferer %s does not match admission plan inferer %s",
+			inference.Inferer,
+			plan.Inferer,
 		)
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+	}
+	if plan.PreviousEmaScore.Address != plan.Inferer {
+		return errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"planned EMA score address %s does not match inferer %s",
+			plan.PreviousEmaScore.Address,
+			plan.Inferer,
+		)
+	}
+	switch plan.Kind {
+	case InferenceAdmissionOpenSlot, InferenceAdmissionEvictLowest:
+		if inference == nil {
+			return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "admitted inference is nil")
 		}
+	case InferenceAdmissionNotAdmitted:
+		// Non-admitted plans still commit score/liveness side effects, but no
+		// inference is required because it will not be stored.
+	default:
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unknown inference admission kind: %d", plan.Kind)
+	}
+	return nil
+}
 
-		// Check if the inferer with lowest score is active before removing it, because remove will not fail if the inferer is not active
-		isActive, err := k.IsActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error checking if inferer is active")
+func (k *WorkerKeeper) commitPlannedInfererScore(
+	ctx sdk.Context,
+	topic types.Topic,
+	plan InferenceAdmissionPlan,
+) error {
+	// Preserve the existing EMA/liveness side effects for every admission
+	// outcome before applying outcome-specific active-set changes.
+	if err := k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, plan.Inferer, plan.PreviousEmaScore); err != nil {
+		if plan.FirstSubmission {
+			return errorsmod.Wrap(err, "error setting initial inferer score ema")
 		}
-		if !isActive {
-			return false, errors.New("inferer with lowest score is not active")
-		}
+		return errorsmod.Wrap(err, "error setting penalised inferer score ema")
+	}
+	return nil
+}
 
-		// Remove inferer with lowest score
-		err = k.RemoveActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
+func (k *WorkerKeeper) commitOpenSlotInferencePlan(
+	ctx sdk.Context,
+	topic types.Topic,
+	inference *types.Inference,
+	plan InferenceAdmissionPlan,
+) error {
+	// Update lowest inferer score ema if needed
+	if uint64(len(plan.WorkerAddresses)) == 0 || plan.LowestEmaScore.Score.Gt(plan.PreviousEmaScore.Score) {
+		err := k.scoresKeeper.SetLowestInfererScoreEma(ctx, topic.Id, plan.PreviousEmaScore)
 		if err != nil {
-			return false, errorsmod.Wrap(err, "error removing active inferer")
-		}
-		// Clear the evicted worker's temporary inference so it can't leak into
-		// close-time materialization.
-		if err := k.RemoveInference(ctx, topic.Id, lowestEmaScore.Address); err != nil {
-			return false, errorsmod.Wrap(err, "error removing evicted inferer inference")
-		}
-		// Add new active inferer
-		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error adding active inferer")
-		}
-		// Calculate new lowest score with updated infererAddresses
-		err = k.scoresKeeper.UpdateLowestScoreFromInfererAddresses(ctx, topic.Id, workerAddresses, inference.Inferer, lowestEmaScore.Address)
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error getting low score from all inferences")
-		}
-		if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
-			return false, errorsmod.Wrap(err, "error inserting inference")
-		}
-		return true, nil
-	} else {
-		// Update EMA score for the current inferer, who is the lowest score inferer
-		if !firstSubmission { // Only update if not a new inferer
-			err = k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
-			if err != nil {
-				return false, errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
-			}
+			return errorsmod.Wrap(err, "error setting lowest inferer score ema")
 		}
 	}
-	return false, nil
+
+	err := k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
+	if err != nil {
+		return errorsmod.Wrap(err, "error adding active inferer")
+	}
+	if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
+		return errorsmod.Wrap(err, "error inserting inference")
+	}
+	return nil
+}
+
+func (k *WorkerKeeper) commitEvictionInferencePlan(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	inference *types.Inference,
+	plan InferenceAdmissionPlan,
+) error {
+	// Update EMA score for the lowest score inferer, who is not the current inferer
+	err := k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
+		ctx,
+		topic,
+		nonceBlockHeight,
+		plan.LowestEmaScore,
+	)
+	if err != nil {
+		return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+	}
+
+	// Check if the inferer with lowest score is active before removing it, because remove will not fail if the inferer is not active
+	isActive, err := k.IsActiveInferer(ctx, topic.Id, plan.LowestEmaScore.Address)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking if inferer is active")
+	}
+	if !isActive {
+		return errors.New("inferer with lowest score is not active")
+	}
+
+	// Remove inferer with lowest score
+	err = k.RemoveActiveInferer(ctx, topic.Id, plan.LowestEmaScore.Address)
+	if err != nil {
+		return errorsmod.Wrap(err, "error removing active inferer")
+	}
+	// Clear the evicted worker's temporary inference so it can't leak into
+	// close-time materialization.
+	if err := k.RemoveInference(ctx, topic.Id, plan.LowestEmaScore.Address); err != nil {
+		return errorsmod.Wrap(err, "error removing evicted inferer inference")
+	}
+	// Add new active inferer
+	err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
+	if err != nil {
+		return errorsmod.Wrap(err, "error adding active inferer")
+	}
+	// Calculate new lowest score with updated infererAddresses
+	err = k.scoresKeeper.UpdateLowestScoreFromInfererAddresses(ctx, topic.Id, plan.WorkerAddresses, inference.Inferer, plan.LowestEmaScore.Address)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting low score from all inferences")
+	}
+	if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
+		return errorsmod.Wrap(err, "error inserting inference")
+	}
+	return nil
+}
+
+func (k *WorkerKeeper) commitNotAdmittedInferencePlan(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	plan InferenceAdmissionPlan,
+) error {
+	// Update EMA score for the current inferer, who is the lowest score inferer
+	if !plan.FirstSubmission { // Only update if not a new inferer
+		err := k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, plan.PreviousEmaScore)
+		if err != nil {
+			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+		}
+	}
+	return nil
 }
 
 // InsertInference inserts an active WSW inference for a specific topic.

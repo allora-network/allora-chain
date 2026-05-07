@@ -88,90 +88,158 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, err
 	}
 
-	// Pre-validate the inbound InputInference with the topic cap and whitelist.
-	// ValidateWithLimits canonicalizes labels in place; subsequent Normalize +
-	// AppendInference see canonical forms only.
-	if rawInput := msg.WorkerDataBundle.GetInferenceForecastsBundle().GetInference(); rawInput != nil {
-		labelCap := topic.MaxLabelsPerSubmission
-		whitelist := types.CanonicalLabelSet(topic.LabelWhitelist)
-		if err := rawInput.ValidateWithLimits(labelCap, whitelist); err != nil {
-			return nil, errorsmod.Wrapf(err, "input inference failed label validation")
-		}
-	}
-
-	wdb, err := ms.wk.NewWorkerDataBundleFromInput(ctx, topic, nonce.BlockHeight, msg.WorkerDataBundle)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Worker bad data format for block: %d", blockHeight)
-	}
-
-	// Process Inferences
-	if inference := wdb.InferenceForecastsBundle.GetInference(); inference != nil {
-		if inference.TopicId != wdb.TopicId {
-			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId,
-				"inferer not using the same topic as bundle")
-		}
-
-		// AppendInference admits/rejects based on EMA scoring. Normalization has
-		// already registered temporary first-seen labels for the received input;
-		// only admitted inferers are written to the live inferences store.
-		admitted, err := ms.wk.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
+	inputBundle := msg.WorkerDataBundle
+	inferenceForecastsBundle := inputBundle.GetInferenceForecastsBundle()
+	var forecast *types.Forecast
+	if rawForecast := inferenceForecastsBundle.GetForecast(); rawForecast != nil {
+		forecast, err = ms.convertWorkerForecastPayload(inputBundle, rawForecast)
 		if err != nil {
-			return nil, errorsmod.Wrap(err, "Error appending inference")
-		}
-		if admitted {
-			types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
+			return nil, err
 		}
 	}
-
-	// Process Forecasts
-	if forecast := wdb.InferenceForecastsBundle.GetForecast(); forecast != nil {
-		if len(forecast.ForecastElements) == 0 {
-			return nil, errorsmod.Wrapf(types.ErrNoValidForecastElements, "No valid forecast elements found in Forecast")
+	if rawInference := inferenceForecastsBundle.GetInference(); rawInference != nil {
+		err = ms.processWorkerInferencePayload(ctx, sdkCtx, topic, nonce.BlockHeight, msg, rawInference, moduleParams)
+		if err != nil {
+			return nil, err
 		}
-		if forecast.TopicId != wdb.TopicId {
-			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "forecaster not using the same topic as bundle")
+	}
+	if forecast != nil {
+		err = ms.processWorkerForecastPayload(ctx, sdkCtx, topic, nonce.BlockHeight, inputBundle, forecast, moduleParams)
+		if err != nil {
+			return nil, err
 		}
-
-		// Limit forecast elements to top inferers
-		latestScoresForForecastedInferers := make([]types.Score, 0)
-		for _, el := range forecast.ForecastElements {
-			score, err := ms.sck.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
-			if err != nil {
-				continue
-			}
-			latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
-		}
-
-		_, _, topNInferer := actorutils.FindTopNByScoreDesc(
-			sdkCtx,
-			moduleParams.MaxElementsPerForecast,
-			latestScoresForForecastedInferers,
-			forecast.BlockHeight,
-		)
-
-		// Remove duplicate forecast elements
-		acceptedForecastElements := make([]*types.ForecastElement, 0)
-		seenInferers := make(map[string]bool)
-		for _, el := range forecast.ForecastElements {
-			notAlreadySeen := !seenInferers[el.Inferer]
-			_, isTopInferer := topNInferer[el.Inferer]
-			if notAlreadySeen && isTopInferer {
-				acceptedForecastElements = append(acceptedForecastElements, el)
-				seenInferers[el.Inferer] = true
-			}
-		}
-
-		if len(acceptedForecastElements) > 0 {
-			forecast.ForecastElements = acceptedForecastElements
-			err = ms.wk.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
-			if err != nil {
-				return nil, errorsmod.Wrapf(err,
-					"Error appending forecast")
-			}
-		}
-
-		types.EmitNewInsertForecasterPayloadEvent(ctx, wdb)
 	}
 
 	return &types.InsertWorkerPayloadResponse{}, nil
+}
+
+func (ms msgServer) processWorkerInferencePayload(
+	ctx context.Context,
+	sdkCtx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight types.BlockHeight,
+	msg *types.InsertWorkerPayloadRequest,
+	rawInference *types.InputInference,
+	moduleParams types.Params,
+) error {
+	labelCap := topic.MaxLabelsPerSubmission
+	whitelist := types.CanonicalLabelSet(topic.LabelWhitelist)
+	if err := rawInference.ValidateWithLimits(labelCap, whitelist); err != nil {
+		return errorsmod.Wrapf(err, "input inference failed label validation")
+	}
+
+	plan, err := ms.wk.PlanAppendInference(
+		sdkCtx,
+		topic,
+		nonceBlockHeight,
+		rawInference.Inferer,
+		moduleParams.MaxTopInferersToReward,
+	)
+	if err != nil {
+		return errorsmod.Wrap(err, "Error planning inference admission")
+	}
+
+	if !plan.Admitted() {
+		// Preserve the existing score/liveness side effects for non-admitted
+		// inferers, but do not normalize: normalization registers ELR labels.
+		if err := ms.wk.CommitPlannedInference(sdkCtx, topic, nonceBlockHeight, nil, plan); err != nil {
+			return errorsmod.Wrap(err, "Error committing non-admitted inference")
+		}
+		return nil
+	}
+
+	// This is the only worker-payload path that normalizes inference labels.
+	// At this point the worker is admitted, so ELR registration is intentional.
+	inference, err := ms.wk.NormalizeInputInference(ctx, topic, nonceBlockHeight, rawInference)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to normalize admitted inference")
+	}
+	if inference.TopicId != msg.WorkerDataBundle.TopicId {
+		return errorsmod.Wrapf(types.ErrInvalidTopicId, "inferer not using the same topic as bundle")
+	}
+	if err := inference.Validate(); err != nil {
+		return errorsmod.Wrap(err, "inference is invalid")
+	}
+	if err := ms.wk.CommitPlannedInference(sdkCtx, topic, nonceBlockHeight, inference, plan); err != nil {
+		return errorsmod.Wrap(err, "Error committing planned inference")
+	}
+	types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
+	return nil
+}
+
+func (ms msgServer) convertWorkerForecastPayload(
+	inputBundle *types.InputWorkerDataBundle,
+	rawForecast *types.InputForecast,
+) (*types.Forecast, error) {
+	// Forecast conversion is independent of inference admission and does not
+	// touch the epoch label registry.
+	forecast, err := types.NewForecastFromInput(rawForecast)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to convert forecast")
+	}
+	if len(forecast.ForecastElements) == 0 {
+		return nil, errorsmod.Wrapf(types.ErrNoValidForecastElements, "No valid forecast elements found in Forecast")
+	}
+	if forecast.TopicId != inputBundle.TopicId {
+		return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "forecaster not using the same topic as bundle")
+	}
+	return forecast, nil
+}
+
+func (ms msgServer) processWorkerForecastPayload(
+	ctx context.Context,
+	sdkCtx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight types.BlockHeight,
+	inputBundle *types.InputWorkerDataBundle,
+	forecast *types.Forecast,
+	moduleParams types.Params,
+) error {
+	// Limit forecast elements to top inferers.
+	latestScoresForForecastedInferers := make([]types.Score, 0)
+	for _, el := range forecast.ForecastElements {
+		score, err := ms.sck.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
+		if err != nil {
+			continue
+		}
+		latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
+	}
+
+	_, _, topNInferer := actorutils.FindTopNByScoreDesc(
+		sdkCtx,
+		moduleParams.MaxElementsPerForecast,
+		latestScoresForForecastedInferers,
+		forecast.BlockHeight,
+	)
+
+	// Remove duplicate forecast elements.
+	acceptedForecastElements := make([]*types.ForecastElement, 0)
+	seenInferers := make(map[string]bool)
+	for _, el := range forecast.ForecastElements {
+		notAlreadySeen := !seenInferers[el.Inferer]
+		_, isTopInferer := topNInferer[el.Inferer]
+		if notAlreadySeen && isTopInferer {
+			acceptedForecastElements = append(acceptedForecastElements, el)
+			seenInferers[el.Inferer] = true
+		}
+	}
+
+	if len(acceptedForecastElements) > 0 {
+		forecast.ForecastElements = acceptedForecastElements
+		if err := ms.wk.AppendForecast(sdkCtx, topic, nonceBlockHeight, forecast, moduleParams.MaxTopForecastersToReward); err != nil {
+			return errorsmod.Wrapf(err, "Error appending forecast")
+		}
+	}
+
+	eventBundle := &types.WorkerDataBundle{
+		Worker:  inputBundle.Worker,
+		Nonce:   inputBundle.Nonce,
+		TopicId: inputBundle.TopicId,
+		InferenceForecastsBundle: &types.InferenceForecastBundle{
+			Inference: nil,
+			Forecast:  forecast,
+		},
+	}
+	types.EmitNewInsertForecasterPayloadEvent(ctx, eventBundle)
+	return nil
 }

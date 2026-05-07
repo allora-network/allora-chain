@@ -85,6 +85,67 @@ func TestInputInference_Validate(t *testing.T) {
 	}
 }
 
+func TestInference_Validate(t *testing.T) {
+	tests := []struct {
+		name      string
+		inference *Inference
+		wantErr   bool
+	}{
+		{
+			name: "valid inference",
+			inference: &Inference{
+				TopicId:     1,
+				BlockHeight: 100,
+				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("1")},
+				ExtraData:   nil,
+				Proof:       "",
+			},
+			wantErr: false,
+		},
+		{
+			name:      "nil inference",
+			inference: nil,
+			wantErr:   true,
+		},
+		{
+			name: "empty values",
+			inference: &Inference{
+				TopicId:     1,
+				BlockHeight: 100,
+				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Values:      []alloraMath.Dec{},
+				ExtraData:   nil,
+				Proof:       "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "nil values",
+			inference: &Inference{
+				TopicId:     1,
+				BlockHeight: 100,
+				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+				Values:      nil,
+				ExtraData:   nil,
+				Proof:       "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.inference.Validate()
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestInputForecast_Validate(t *testing.T) {
 	validElement := &InputForecastElement{
 		Inferer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",

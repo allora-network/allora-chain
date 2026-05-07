@@ -13,7 +13,7 @@ import (
 )
 
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestApplyLivenessPenaltyToInferer() {
+func (s *KeeperTestSuite) TestCalculateLivenessPenaltyToInferer() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
 
@@ -31,7 +31,7 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToInferer() {
 	}
 	s.Require().NoError(k.GetScoresKeeper().SetTopicInitialInfererEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
 
-	newScore, err := k.GetActorPenaltiesKeeper().ApplyLivenessPenaltyToInferer(ctx, givenTopic, 105, givenPreviousScore)
+	newScore, err := k.GetActorPenaltiesKeeper().CalculateLivenessPenaltyToInferer(ctx, givenTopic, 105, givenPreviousScore)
 	s.Require().NoError(err)
 	s.Require().Equal(givenPreviousScore.TopicId, newScore.TopicId)
 	s.Require().Equal(givenPreviousScore.Address, newScore.Address)

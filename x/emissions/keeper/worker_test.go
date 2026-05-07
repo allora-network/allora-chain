@@ -476,6 +476,546 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().Equal(updateAttemptForWorker2.BlockHeight, updatedWorker2Score.BlockHeight, "unchanged height")
 }
 
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestPlanAppendInference() {
+	type tc struct {
+		name      string
+		setup     func(ctx sdk.Context, topicId uint64, inferer string) uint64
+		wantKind  keeper.InferenceAdmissionKind
+		wantFirst bool
+		wantErr   bool
+	}
+
+	cases := []tc{
+		{
+			name: "already_active_inferer_errors",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, inferer))
+				return 1
+			},
+			wantErr: true,
+		},
+		{
+			name:      "first_submission_with_open_slot_plans_admission",
+			setup:     func(sdk.Context, uint64, string) uint64 { return 2 },
+			wantKind:  keeper.InferenceAdmissionOpenSlot,
+			wantFirst: true,
+		},
+		{
+			name: "experienced_worker_with_open_slot_plans_admission",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				score := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, score))
+				return 2
+			},
+			wantKind: keeper.InferenceAdmissionOpenSlot,
+		},
+		{
+			name: "full_active_set_and_lower_score_plans_not_admitted",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				activeInferer := s.AddrsStr(1)
+				activeScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(100)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, activeScore))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, candidateScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, activeScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return 1
+			},
+			wantKind: keeper.InferenceAdmissionNotAdmitted,
+		},
+		{
+			name: "full_active_set_and_higher_score_plans_eviction",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				activeInferer := s.AddrsStr(1)
+				activeScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, activeScore))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, candidateScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, activeScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return 1
+			},
+			wantKind: keeper.InferenceAdmissionEvictLowest,
+		},
+		{
+			name:      "zero_max_top_inferers_plans_not_admitted",
+			setup:     func(sdk.Context, uint64, string) uint64 { return 0 },
+			wantKind:  keeper.InferenceAdmissionNotAdmitted,
+			wantFirst: true,
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			topicId := s.CreateTopic()
+			topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			nonce := types.BlockHeight(10)
+			inferer := s.AddrsStr(0)
+
+			maxTopInferersToReward := c.setup(ctx, topicId, inferer)
+			activeBefore, err := s.WorkerKeeper().GetActiveInferersForTopic(ctx, topicId)
+			s.Require().NoError(err)
+			scoreBefore, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+			s.Require().NoError(err)
+			registryBefore, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
+			s.Require().NoError(err)
+
+			plan, err := s.WorkerKeeper().PlanAppendInference(ctx, topic, nonce, inferer, maxTopInferersToReward)
+			if c.wantErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().Equal(c.wantKind, plan.Kind)
+			s.Require().Equal(c.wantFirst, plan.FirstSubmission)
+			s.Require().Equal(inferer, plan.Inferer)
+
+			activeAfter, err := s.WorkerKeeper().GetActiveInferersForTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(activeBefore, activeAfter)
+			scoreAfter, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+			s.Require().NoError(err)
+			s.Require().Equal(scoreBefore, scoreAfter)
+			registryAfter, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
+			s.Require().NoError(err)
+			s.Require().Equal(registryBefore, registryAfter)
+		})
+	}
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestCommitPlannedInference() {
+	makeInference := func(topicId uint64, nonce types.BlockHeight, inferer string, value string) *types.Inference {
+		return &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: nonce,
+			Inferer:     inferer,
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(value)},
+		}
+	}
+
+	type tc struct {
+		name            string
+		setup           func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference)
+		assert          func(ctx sdk.Context, topicId uint64, inferer string)
+		wantErr         bool
+		errIsReq        bool
+		wantErrContains string
+	}
+
+	cases := []tc{
+		{
+			name: "open_slot_adds_active_inferer_inserts_inference_and_updates_lowest",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					WorkerAddresses:  []string{},
+					FirstSubmission:  true,
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("1", got.Values[0].String())
+				lowest, found, err := s.ScoresKeeper().GetLowestInfererScoreEma(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().True(found)
+				s.Require().Equal(inferer, lowest.Address)
+			},
+		},
+		{
+			name: "eviction_removes_lowest_active_inference_and_adds_candidate",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				evicted := s.AddrsStr(1)
+				evictedScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: evicted, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, evicted, evictedScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, evictedScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, evicted))
+				s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, *makeInference(topicId, nonce, evicted, "0.1")))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   evictedScore,
+					WorkerAddresses:  []string{evicted},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				evictedActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, s.AddrsStr(1))
+				s.Require().NoError(err)
+				s.Require().False(evictedActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, s.AddrsStr(1))
+				s.Require().Error(err)
+				got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("1", got.Values[0].String())
+			},
+		},
+		{
+			name: "open_slot_keeps_existing_lowest_when_candidate_score_is_higher",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				activeInferer := s.AddrsStr(1)
+				lowestScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, lowestScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, lowestScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   lowestScore,
+					WorkerAddresses:  []string{activeInferer},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				lowest, found, err := s.ScoresKeeper().GetLowestInfererScoreEma(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().True(found)
+				s.Require().Equal(s.AddrsStr(1), lowest.Address)
+				s.Require().Equal("10", lowest.Score.String())
+			},
+		},
+		{
+			name: "not_admitted_existing_worker_updates_passive_ema_without_inference",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					FirstSubmission:  false,
+				}, nil
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().False(isActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+				score, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal(types.BlockHeight(10), score.BlockHeight)
+				s.Require().True(score.Score.Gt(alloraMath.NewDecFromInt64(10)))
+			},
+		},
+		{
+			name: "not_admitted_first_submission_sets_initial_ema_without_inference",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(25)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					FirstSubmission:  true,
+				}, nil
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				score, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("25", score.Score.String())
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+			},
+		},
+		{
+			name: "mismatched_inference_and_plan_inferer_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, makeInference(topicId, nonce, s.AddrsStr(1), "1")
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "open_slot_plan_with_nil_inference_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "eviction_plan_with_nil_inference_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "unknown_plan_kind_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionKind(255),
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "empty_plan_inferer_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, _ string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: "", Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          "",
+					PreviousEmaScore: score,
+					FirstSubmission:  true,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "planned_score_address_mismatch_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: s.AddrsStr(1), Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					FirstSubmission:  true,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "eviction_plan_with_inactive_lowest_inferer_errors",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				inactiveLowest := s.AddrsStr(1)
+				lowestScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inactiveLowest, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inactiveLowest, lowestScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, lowestScore))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   lowestScore,
+					WorkerAddresses:  []string{inactiveLowest},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			wantErr:         true,
+			wantErrContains: "inferer with lowest score is not active",
+		},
+		{
+			name: "eviction_missing_evicted_inference_documents_remove_behavior",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				evicted := s.AddrsStr(1)
+				evictedScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: evicted, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, evicted, evictedScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, evictedScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, evicted))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   evictedScore,
+					WorkerAddresses:  []string{evicted},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				evictedActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, s.AddrsStr(1))
+				s.Require().NoError(err)
+				s.Require().False(evictedActive)
+				got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("1", got.Values[0].String())
+			},
+		},
+		{
+			name: "malformed_planned_score_errors_before_outcome_side_effects",
+			setup: func(_ sdk.Context, topicId uint64, _ types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: -1, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, makeInference(topicId, 10, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().False(isActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+			},
+			wantErr: true,
+		},
+		{
+			name: "open_slot_malformed_inference_errors_after_adding_active_inferer",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				inference := makeInference(topicId, nonce, inferer, "1")
+				inference.Values = nil
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					WorkerAddresses:  []string{},
+					FirstSubmission:  true,
+				}, inference
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			topicId := s.CreateTopic()
+			topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			nonce := types.BlockHeight(10)
+			inferer := s.AddrsStr(0)
+
+			plan, inference := c.setup(ctx, topicId, nonce, inferer)
+			err = s.WorkerKeeper().CommitPlannedInference(ctx, topic, nonce, inference, plan)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.errIsReq {
+					s.Require().True(errorsmod.IsOf(err, sdkerrors.ErrInvalidRequest))
+				}
+				if c.wantErrContains != "" {
+					s.Require().ErrorContains(err, c.wantErrContains)
+				}
+				if c.assert != nil {
+					c.assert(ctx, topicId, inferer)
+				}
+				return
+			}
+			s.Require().NoError(err)
+			c.assert(ctx, topicId, inferer)
+		})
+	}
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestAppendInferenceWrapper() {
+	type tc struct {
+		name      string
+		setup     func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) uint64
+		wantAdmit bool
+		wantErr   bool
+	}
+
+	cases := []tc{
+		{
+			name:    "nil_inference_errors",
+			setup:   func(sdk.Context, uint64, types.BlockHeight, string) uint64 { return 1 },
+			wantErr: true,
+		},
+		{
+			name:      "open_slot_admits_and_stores_inference",
+			setup:     func(sdk.Context, uint64, types.BlockHeight, string) uint64 { return 1 },
+			wantAdmit: true,
+		},
+		{
+			name: "full_active_set_low_score_returns_false_without_storing_inference",
+			setup: func(ctx sdk.Context, topicId uint64, _ types.BlockHeight, inferer string) uint64 {
+				activeInferer := s.AddrsStr(1)
+				activeScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(100)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, activeScore))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, candidateScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, activeScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return 1
+			},
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			topicId := s.CreateTopic()
+			topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			nonce := types.BlockHeight(10)
+			inferer := s.AddrsStr(0)
+			maxTopInferersToReward := c.setup(ctx, topicId, nonce, inferer)
+
+			var inference *types.Inference
+			if c.name != "nil_inference_errors" {
+				inference = &types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     inferer,
+					Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+				}
+			}
+
+			admitted, err := s.WorkerKeeper().AppendInference(ctx, topic, nonce, inference, maxTopInferersToReward)
+			if c.wantErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().Equal(c.wantAdmit, admitted)
+			_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+			if c.wantAdmit {
+				s.Require().NoError(err)
+			} else {
+				s.Require().Error(err)
+			}
+		})
+	}
+}
+
 func getNewAddress() string {
 	addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
 	return addr.String()
@@ -1355,11 +1895,11 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			wantScalar: "0.25",
 		},
 		{
-			name:       "single_empty_values_materializes_zero",
-			topic:      singleTopic,
-			registry:   types.EpochLabelRegistry{},
-			values:     nil,
-			wantScalar: "0",
+			name:            "single_empty_values_rejected",
+			topic:           singleTopic,
+			registry:        types.EpochLabelRegistry{},
+			values:          nil,
+			wantErrContains: "inference values cannot be empty",
 		},
 		{
 			name:            "single_rejects_multiple_values",
@@ -1377,12 +1917,11 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			wantValues: []string{"0.1", "0.2"},
 		},
 		{
-			name:       "multi_empty_vector_with_empty_registry",
-			topic:      multiTopic,
-			registry:   types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce)},
-			values:     nil,
-			wantLabels: []string{},
-			wantValues: []string{},
+			name:            "multi_empty_vector_rejected",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce)},
+			values:          nil,
+			wantErrContains: "inference values cannot be empty",
 		},
 		{
 			name:            "multi_rejects_vector_longer_than_registry",
