@@ -1022,8 +1022,9 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 		unityTol     string
 		nonce        int64
 
-		scalarValue string
-		labeled     []labeledInput
+		scalarValue       string
+		labelDefaultValue string
+		labeled           []labeledInput
 
 		wantErr   bool
 		wantErrIs error
@@ -1112,6 +1113,28 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
+			name:              "MULTI_rejects_when_all_labels_equal_default_value",
+			arity:             types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce:             1,
+			labelDefaultValue: "0.5",
+			labeled: []labeledInput{
+				{label: "a", value: "0.5"},
+				{label: "b", value: "0.5"},
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:  "MULTI_accepts_one_non_default_label_and_ignores_default_labels",
+			arity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce: 1,
+			labeled: []labeledInput{
+				{label: "a", value: "1"},
+				{label: "b", value: "0"},
+			},
+			wantValuesStr: []string{"1"},
+		},
+		{
 			// Normalize is defensive: if a caller forgets to canonicalize,
 			// Normalize rejects empty labels rather than silently building
 			// an invalid intermediate Inference.
@@ -1137,6 +1160,9 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 
 			topic.OutputArity = c.arity
 			topic.RequireUnity = c.requireUnity
+			if c.labelDefaultValue != "" {
+				topic.LabelDefaultValue = alloraMath.MustNewDecFromString(c.labelDefaultValue)
+			}
 			tol := c.unityTol
 			if tol == "" {
 				tol = "0"
