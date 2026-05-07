@@ -156,6 +156,9 @@ func (inference *Inference) Validate() error {
 	if err := validateInferenceContents(inference.TopicId, inference.Inferer, inference.BlockHeight); err != nil {
 		return errors.Wrap(err, "inference contents are invalid")
 	}
+	if len(inference.Values) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference values cannot be empty")
+	}
 	if err := ValidateDecs(inference.Values); err != nil {
 		return errors.Wrap(err, "inference values are invalid")
 	}
