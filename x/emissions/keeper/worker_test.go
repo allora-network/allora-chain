@@ -1855,7 +1855,6 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 	}
 }
 
-//nolint:exhaustruct
 func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 	nonce := types.BlockHeight(7)
 	inferer := s.AddrsStr(0)
@@ -1865,15 +1864,21 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 		Inferer:     inferer,
 		ExtraData:   []byte("extra"),
 		Proof:       "proof",
+		Values:      nil,
 	}
-	multiTopic := types.Topic{
-		Id:                1,
-		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-		LabelDefaultValue: alloraMath.ZeroDec(),
-	}
-	singleTopic := types.Topic{
-		Id:          1,
-		OutputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+	var multiTopic types.Topic
+	multiTopic.Id = 1
+	multiTopic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	multiTopic.LabelDefaultValue = alloraMath.ZeroDec()
+
+	var singleTopic types.Topic
+	singleTopic.Id = 1
+	singleTopic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+
+	emptyRegistry := types.EpochLabelRegistry{
+		TopicId: 0,
+		EpochId: 0,
+		Labels:  nil,
 	}
 	registry := types.EpochLabelRegistry{
 		TopicId: 1,
@@ -1896,39 +1901,53 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 		wantErrContains string
 	}{
 		{
-			name:       "single_value_uses_scalar_field",
-			topic:      singleTopic,
-			registry:   types.EpochLabelRegistry{},
-			values:     decs("0.25"),
-			wantScalar: "0.25",
+			name:            "single_value_uses_scalar_field",
+			topic:           singleTopic,
+			registry:        emptyRegistry,
+			values:          decs("0.25"),
+			wantScalar:      "0.25",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "",
 		},
 		{
 			name:            "single_empty_values_rejected",
 			topic:           singleTopic,
-			registry:        types.EpochLabelRegistry{},
+			registry:        emptyRegistry,
 			values:          nil,
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
 			wantErrContains: "inference values cannot be empty",
 		},
 		{
 			name:            "single_rejects_multiple_values",
 			topic:           singleTopic,
-			registry:        types.EpochLabelRegistry{},
+			registry:        emptyRegistry,
 			values:          decs("0.25", "0.75"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
 			wantErrContains: "expected at most 1",
 		},
 		{
-			name:       "multi_uses_registry_prefix_when_registry_has_grown",
-			topic:      multiTopic,
-			registry:   registry,
-			values:     decs("0.1", "0.2"),
-			wantLabels: []string{"a", "b"},
-			wantValues: []string{"0.1", "0.2"},
+			name:            "multi_uses_registry_prefix_when_registry_has_grown",
+			topic:           multiTopic,
+			registry:        registry,
+			values:          decs("0.1", "0.2"),
+			wantScalar:      "",
+			wantLabels:      []string{"a", "b"},
+			wantValues:      []string{"0.1", "0.2"},
+			wantErrContains: "",
 		},
 		{
 			name:            "multi_empty_vector_rejected",
 			topic:           multiTopic,
-			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce)},
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: nil},
 			values:          nil,
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
 			wantErrContains: "inference values cannot be empty",
 		},
 		{
@@ -1936,6 +1955,9 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			topic:           multiTopic,
 			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{{Id: 1, Name: "a"}}},
 			values:          decs("0.1", "0.2"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
 			wantErrContains: "temporary registry has 1 labels",
 		},
 		{
@@ -1943,6 +1965,9 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			topic:           multiTopic,
 			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{{Id: 2, Name: "a"}}},
 			values:          decs("0.1"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
 			wantErrContains: "expected 1",
 		},
 		{
@@ -1950,6 +1975,9 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			topic:           multiTopic,
 			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{nil}},
 			values:          decs("0.1"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
 			wantErrContains: "is nil",
 		},
 		{
@@ -1957,6 +1985,9 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			topic:           multiTopic,
 			registry:        registry,
 			values:          decs("1e41"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
 			wantErrContains: "out of bounded range",
 		},
 	}
