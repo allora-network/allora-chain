@@ -63,3 +63,5 @@ allora.log
 .claude
 .worktrees/
 
+.idea/
+.vscode/
