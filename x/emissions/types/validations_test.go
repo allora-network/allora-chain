@@ -927,17 +927,19 @@ func TestInputInference_ValidateWithLimits_CanonicalizesAndDedupes(t *testing.T)
 }
 
 // TestInputInference_ValidateWithLimits_Whitelist covers the whitelist
-// check: nil whitelist means unrestricted; a non-nil whitelist requires
-// membership post-canonicalization; and a canonical whitelist entry matches
-// a non-canonical input.
+// check: nil and empty whitelists mean unrestricted; a non-empty whitelist
+// requires membership post-canonicalization; and a canonical whitelist entry
+// matches a non-canonical input.
 func TestInputInference_ValidateWithLimits_Whitelist(t *testing.T) {
 	okWhitelist := map[string]struct{}{"y": {}, "n": {}}
+	emptyWhitelist := map[string]struct{}{}
 
 	in := baseValidInput(t)
 	in.Values = []*InputLabeledValue{
 		{Label: "y", Value: mustNewBoundedExp40Dec(t, "1")},
 	}
 	require.NoError(t, in.ValidateWithLimits(4, nil), "nil whitelist is unrestricted")
+	require.NoError(t, in.ValidateWithLimits(4, emptyWhitelist), "empty whitelist is unrestricted")
 	require.NoError(t, in.ValidateWithLimits(4, okWhitelist))
 
 	bad := baseValidInput(t)
