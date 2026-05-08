@@ -133,7 +133,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 
 	// Verify outlier resistant network inferences were created
 	outlierResistantInferences, err := s.EmissionsKeeper().GetOutlierResistantNetworkInferences(s.Ctx(), topic, blockHeight)
-	s.Require().Error(err)
+	s.Require().ErrorContains(err, "outlier resistant network inferences are not supported for multi-label topics")
 	s.Require().Nil(outlierResistantInferences, "Outlier resistant network inferences should not exist")
 }
 

@@ -211,7 +211,7 @@ func (k *Keeper) InsertOutlierResistantNetworkInferenceBundle(ctx context.Contex
 // Get Outlier Resistant Network Inferences
 func (k *Keeper) GetOutlierResistantNetworkInferences(ctx context.Context, topic types.Topic, blockHeight BlockHeight) (*types.NetworkInferenceBundle, error) {
 	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
-		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "outlier resistant network inferences are not supported for mutli-label topics")
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "outlier resistant network inferences are not supported for multi-label topics")
 	}
 	key := collections.Join(topic.Id, blockHeight)
 	networkInferences, err := k.outlierResistantNetworkInferenceBundle.Get(ctx, key)
