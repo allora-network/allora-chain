@@ -127,6 +127,7 @@ func NewTestConfig(
 		Validator1Addr: validator1Addr,
 		Validator2Acc:  validator2Acc,
 		Validator2Addr: validator2Addr,
+		TopicID:        0, // to be set after topic creation
 		InfererValues:  values,
 	}
 }

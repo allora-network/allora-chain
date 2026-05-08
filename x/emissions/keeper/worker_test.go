@@ -44,8 +44,11 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	err := k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err)
 
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
 	// Retrieve inferences
-	actualInferences, err := k.GetInferencesAtBlock(ctx, topicId, block, false)
+	actualInferences, err := k.GetInferencesAtBlock(ctx, topic, block, false)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedInferences, actualInferences)
 }
@@ -90,12 +93,15 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
 	err = k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err)
 
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
 	// Confirm the non-or keeps all inferences
-	actualInferences, err := k.GetInferencesAtBlock(ctx, topicId, block, false)
+	actualInferences, err := k.GetInferencesAtBlock(ctx, topic, block, false)
 	s.Require().NoError(err)
 	s.Require().Len(actualInferences.Inferences, 3)
 
-	actualInferences, err = k.GetInferencesAtBlock(ctx, topicId, block, true)
+	actualInferences, err = k.GetInferencesAtBlock(ctx, topic, block, true)
 	s.Require().NoError(err)
 	s.Require().Len(actualInferences.Inferences, 2)
 	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Values[0])
@@ -108,9 +114,11 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	k := s.WorkerKeeper()
 
 	topicId := uint64(1)
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
 
 	// Initially, there should be no inferences, so we expect an empty result
-	emptyInferences, emptyBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId, false)
+	emptyInferences, emptyBlockHeight, err := k.GetLatestTopicInferences(ctx, topic, false)
 	s.Require().NoError(err, "Retrieving latest inferences when none exist should not result in an error")
 	s.Require().Equal(&types.Inferences{Inferences: []*types.Inference{}}, emptyInferences, "Expected no inferences initially")
 	s.Require().Equal(types.BlockHeight(0), emptyBlockHeight, "Expected block height to be zero initially")
@@ -150,7 +158,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
-	latestInferences, latestBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId, false)
+	latestInferences, latestBlockHeight, err := k.GetLatestTopicInferences(ctx, topic, false)
 	s.Require().NoError(err, "Retrieving latest inferences should not fail")
 	s.Require().Equal(&inferences2, latestInferences, "Latest inferences should match the second inserted set")
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
@@ -1201,6 +1209,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	}
 }
 
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestMaterializeWorkerDataBundle() {
 	type labeledInput struct {
 		label string

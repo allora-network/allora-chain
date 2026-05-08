@@ -132,9 +132,9 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	s.Require().NotNil(networkInferences, "Network inferences should exist")
 
 	// Verify outlier resistant network inferences were created
-	outlierResistantInferences, err := s.EmissionsKeeper().GetOutlierResistantNetworkInferences(s.Ctx(), topicId, blockHeight)
-	s.Require().NoError(err)
-	s.Require().NotNil(outlierResistantInferences, "Outlier resistant network inferences should exist")
+	outlierResistantInferences, err := s.EmissionsKeeper().GetOutlierResistantNetworkInferences(s.Ctx(), topic, blockHeight)
+	s.Require().Error(err)
+	s.Require().Nil(outlierResistantInferences, "Outlier resistant network inferences should not exist")
 }
 
 func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
@@ -289,14 +289,18 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
 
+	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+
 	// Call the function we're testing
-	err = actorutils.ProcessAndStoreNetworkInferences(keeper, ctx, topicId, blockHeight, inferences, forecasts)
+	err = actorutils.ProcessAndStoreNetworkInferences(keeper, ctx, topic, blockHeight, inferences, forecasts)
 	require.NoError(err)
 
 	// Retrieve both regular and outlier-resistant network inferences
 	regularInferences, err := keeper.GetNetworkInferences(ctx, topicId, blockHeight)
 	require.NoError(err)
-	outlierResistantInferences, err := keeper.GetOutlierResistantNetworkInferences(ctx, topicId, blockHeight)
+
+	outlierResistantInferences, err := keeper.GetOutlierResistantNetworkInferences(ctx, topic, blockHeight)
 	require.NoError(err)
 
 	// Regular network inferences should include all values
@@ -430,13 +434,16 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
 	require.NoError(err)
 
+	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+
 	// Call the function we're testing
-	err = actorutils.ProcessAndStoreNetworkInferences(keeper, ctx, topicId, blockHeight, inferences, forecasts)
+	err = actorutils.ProcessAndStoreNetworkInferences(keeper, ctx, topic, blockHeight, inferences, forecasts)
 	require.NoError(err)
 	// Retrieve both regular and outlier-resistant network inferences
 	regularInferences, err := keeper.GetNetworkInferences(ctx, topicId, blockHeight)
 	require.NoError(err)
-	outlierResistantInferences, err := keeper.GetOutlierResistantNetworkInferences(ctx, topicId, blockHeight)
+	outlierResistantInferences, err := keeper.GetOutlierResistantNetworkInferences(ctx, topic, blockHeight)
 	require.NoError(err)
 
 	// Both should include all values

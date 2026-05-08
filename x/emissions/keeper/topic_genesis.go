@@ -196,6 +196,7 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 	// topicLabelRegistry []EpochLabelRegistry
 	for _, registry := range data.EpochLabelRegistries {
 		if registry != nil {
+			// nolint:gosec
 			key := collections.Join(registry.TopicId, BlockHeight(registry.EpochId))
 			if err := k.topicLabelRegistry.Set(ctx, key, *registry); err != nil {
 				return errors.Wrap(err, "error setting topicLabelRegistry")

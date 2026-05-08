@@ -245,8 +245,8 @@ func (k *WorkerKeeper) ResetWorkersIndividualSubmissionsForTopic(ctx context.Con
 	return nil
 }
 
-func (k *WorkerKeeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, outlierResistant bool) (*types.Inferences, error) {
-	key := collections.Join(topicId, block)
+func (k *WorkerKeeper) GetInferencesAtBlock(ctx context.Context, topic types.Topic, block BlockHeight, outlierResistant bool) (*types.Inferences, error) {
+	key := collections.Join(topic.Id, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
 		return &types.Inferences{Inferences: []*types.Inference{}}, nil
@@ -255,7 +255,7 @@ func (k *WorkerKeeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId
 	}
 
 	if outlierResistant {
-		filteredInferences, err := k.topicKeeper.FilterOutlierResistantInferences(ctx, topicId, inferences)
+		filteredInferences, err := k.topicKeeper.FilterOutlierResistantInferences(ctx, topic, inferences)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "error filtering outlier resistant inferences")
 		}
@@ -265,8 +265,8 @@ func (k *WorkerKeeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId
 }
 
 // GetLatestTopicInferences retrieves the latest topic inferences and its block height.
-func (k *WorkerKeeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId, outlierResistant bool) (*types.Inferences, BlockHeight, error) {
-	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
+func (k *WorkerKeeper) GetLatestTopicInferences(ctx context.Context, topic types.Topic, outlierResistant bool) (*types.Inferences, BlockHeight, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topic.Id).Descending()
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
 	if err != nil {
@@ -288,7 +288,7 @@ func (k *WorkerKeeper) GetLatestTopicInferences(ctx context.Context, topicId Top
 		blockHeight = keyValue.Key.K2()
 
 		if outlierResistant {
-			filteredInferences, err := k.topicKeeper.FilterOutlierResistantInferences(ctx, topicId, *inferences)
+			filteredInferences, err := k.topicKeeper.FilterOutlierResistantInferences(ctx, topic, *inferences)
 			if err != nil {
 				return nil, 0, errorsmod.Wrap(err, "error filtering outlier resistant inferences")
 			}
@@ -303,18 +303,18 @@ func (k *WorkerKeeper) GetLatestTopicInferences(ctx context.Context, topicId Top
 // (MAD and median) for a given topic and with inferences from the given block height
 func (k *WorkerKeeper) UpdateNetworkInferencesOutlierMetrics(
 	ctx sdk.Context,
-	topicId TopicId,
+	topic types.Topic,
 	inferenceBlockHeight BlockHeight,
 ) error {
-	ctx.Logger().Debug("Updating network inferences outlier metrics", "topicId", topicId, "blockHeight", inferenceBlockHeight)
+	ctx.Logger().Debug("Updating network inferences outlier metrics", "topicId", topic.Id, "blockHeight", inferenceBlockHeight)
 	// Get all inferences at the block height
-	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferenceBlockHeight, false)
+	inferences, err := k.GetInferencesAtBlock(ctx, topic, inferenceBlockHeight, false)
 	if err != nil {
 		return errorsmod.Wrap(err, "while getting inferences")
 	}
 	if len(inferences.Inferences) == 0 {
 		// If there are no inferences, do not update the metrics
-		ctx.Logger().Info("no inferences found, skipping update of outlier metrics", "topicId", topicId, "blockHeight", inferenceBlockHeight)
+		ctx.Logger().Info("no inferences found, skipping update of outlier metrics", "topicId", topic.Id, "blockHeight", inferenceBlockHeight)
 		return nil
 	}
 
@@ -345,7 +345,7 @@ func (k *WorkerKeeper) UpdateNetworkInferencesOutlierMetrics(
 
 	var newMad alloraMath.Dec
 	// Get current mad
-	previousMad, err := k.topicKeeper.GetMadInferences(ctx, topicId)
+	previousMad, err := k.topicKeeper.GetMadInferences(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting last mad")
 	}
@@ -367,16 +367,16 @@ func (k *WorkerKeeper) UpdateNetworkInferencesOutlierMetrics(
 		}
 	}
 
-	ctx.Logger().Info("Setting new outlier-resistant mad", "newMad", newMad, "median", median, "topicId", topicId)
+	ctx.Logger().Info("Setting new outlier-resistant mad", "newMad", newMad, "median", median, "topicId", topic.Id)
 
 	// Set last mad inferences
-	err = k.topicKeeper.SetMadInferences(ctx, topicId, newMad)
+	err = k.topicKeeper.SetMadInferences(ctx, topic.Id, newMad)
 	if err != nil {
 		return errorsmod.Wrap(err, "error setting last mad inferences")
 	}
 
 	// Set last median inferences
-	err = k.topicKeeper.SetLastMedianInferences(ctx, topicId, median)
+	err = k.topicKeeper.SetLastMedianInferences(ctx, topic.Id, median)
 	if err != nil {
 		return errorsmod.Wrap(err, "error setting last median inferences")
 	}
@@ -931,7 +931,7 @@ func NormalizeInferenceForecastBundle(
 		return nil, types.ErrInvalidValue
 	}
 
-	out := &normalizedInferenceForecastBundle{}
+	out := new(normalizedInferenceForecastBundle)
 
 	if bifb.Inference != nil {
 		normalized, err := NormalizeInputInference(topic, bifb.Inference)
@@ -978,13 +978,13 @@ func NormalizeInputInference(
 		} else {
 			dec = in.Value.ToDec()
 		}
-		// TODO: should we accept zero here?
 		if dec.IsNaN() || !dec.IsFinite() {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
 		return &normalizedInferenceInput{
 			IsSingle:    true,
 			ScalarValue: dec,
+			Labeled:     nil,
 		}, nil
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
 		if len(in.Values) == 0 {
@@ -1015,7 +1015,7 @@ func NormalizeInputInference(
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label %s has invalid value", name)
 		}
 
-		labeled = append(labeled, types.LabeledValue{LabelName: name, Value: dec})
+		labeled = append(labeled, types.LabeledValue{LabelId: 0, LabelName: name, Value: dec})
 
 		var err error
 		sumSubmitted, err = sumSubmitted.Add(dec)
@@ -1043,8 +1043,9 @@ func NormalizeInputInference(
 	}
 
 	return &normalizedInferenceInput{
-		IsSingle: false,
-		Labeled:  labeled,
+		IsSingle:    false,
+		ScalarValue: alloraMath.Dec{},
+		Labeled:     labeled,
 	}, nil
 }
 

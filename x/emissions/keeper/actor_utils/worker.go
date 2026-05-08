@@ -130,14 +130,16 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
-	// Once inferences are closed, update the network inferences outlier metrics
-	err = k.GetWorkerKeeper().UpdateNetworkInferencesOutlierMetrics(ctx, topic.Id, nonce.BlockHeight)
-	if err != nil {
-		return err
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		// Once inferences are closed, update the network inferences outlier metrics
+		err = k.GetWorkerKeeper().UpdateNetworkInferencesOutlierMetrics(ctx, topic, nonce.BlockHeight)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Computes and stores both regular and outlier-resistant network inferences
-	err = ProcessAndStoreNetworkInferences(k, ctx, topic.Id, nonce.BlockHeight, activeInferences, activeForecasts)
+	err = ProcessAndStoreNetworkInferences(k, ctx, topic, nonce.BlockHeight, activeInferences, activeForecasts)
 	if err != nil {
 		return err
 	}
@@ -153,7 +155,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 func ProcessAndStoreNetworkInferences(
 	k *keeper.Keeper,
 	ctx sdk.Context,
-	topicId uint64,
+	topic types.Topic,
 	nonce int64,
 	activeInferences *types.Inferences,
 	activeForecasts *types.Forecasts,
@@ -162,18 +164,17 @@ func ProcessAndStoreNetworkInferences(
 	networkInferencesResult, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		*k,
-		topicId,
+		topic.Id,
 		&nonce,
 		activeInferences,
 		activeForecasts,
-		false,
 	)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to calculate network inferences")
 	}
 
 	// Store regular network inferences
-	if err := k.InsertNetworkInferenceBundle(ctx, topicId, nonce, *networkInferencesResult.NetworkInferences); err != nil {
+	if err := k.InsertNetworkInferenceBundle(ctx, topic.Id, nonce, *networkInferencesResult.NetworkInferences); err != nil {
 		return errorsmod.Wrap(err, "failed to insert network inference")
 	}
 
@@ -182,45 +183,39 @@ func ProcessAndStoreNetworkInferences(
 	// Emit packed network inference weight events
 	infererAddresses, infererWeights := buildSortedAddressWeights(networkInferencesResult.InfererToWeight)
 	if len(infererAddresses) > 0 {
-		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topicId, nonce, infererAddresses, infererWeights)
+		types.EmitNewNetworkInferenceInfererWeightsSetEvent(ctx, topic.Id, nonce, infererAddresses, infererWeights)
 	}
 
 	forecasterAddresses, forecasterWeights := buildSortedAddressWeights(networkInferencesResult.ForecasterToWeight)
 	if len(forecasterAddresses) > 0 {
-		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topicId, nonce, forecasterAddresses, forecasterWeights)
+		types.EmitNewNetworkInferenceForecasterWeightsSetEvent(ctx, topic.Id, nonce, forecasterAddresses, forecasterWeights)
 	}
 
-	// Get outlier resistant inferences
-	outlierResistantFilteredInferences, err := k.GetTopicKeeper().FilterOutlierResistantInferences(ctx, topicId, *activeInferences)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to filter outlier resistant inferences")
-	}
-
-	// Initialize outlier resistant result with regular result
-	outlierResistantNetworkInferencesResult := networkInferencesResult
-
-	// Recalculate only if outlier filtering changed the inference set
-	if len(outlierResistantFilteredInferences.Inferences) != len(activeInferences.Inferences) {
-		outlierResistantNetworkInferencesResult, err = synth.GetNetworkInferences(
-			sdk.UnwrapSDKContext(ctx),
-			*k,
-			topicId,
-			&nonce,
-			&outlierResistantFilteredInferences,
-			activeForecasts,
-			true,
-		)
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		// Get outlier resistant inferences
+		outlierResistantFilteredInferences, err := k.GetTopicKeeper().FilterOutlierResistantInferences(ctx, topic, *activeInferences)
 		if err != nil {
-			return errorsmod.Wrap(err, "failed to calculate outlier resistant network inferences")
+			return errorsmod.Wrap(err, "failed to filter outlier resistant inferences")
 		}
-	}
 
-	// Store outlier resistant network inferences
-	if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, topicId, nonce, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
-		return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
-	}
+		// Initialize outlier resistant result with regular result
+		outlierResistantNetworkInferencesResult := networkInferencesResult
 
-	types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, *outlierResistantNetworkInferencesResult.NetworkInferences)
+		// Recalculate only if outlier filtering changed the inference set
+		if len(outlierResistantFilteredInferences.Inferences) != len(activeInferences.Inferences) {
+			outlierResistantNetworkInferencesResult, err = synth.GetNetworkInferences(sdk.UnwrapSDKContext(ctx), *k, topic.Id, &nonce, &outlierResistantFilteredInferences, activeForecasts)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to calculate outlier resistant network inferences")
+			}
+		}
+
+		// Store outlier resistant network inferences
+		if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, topic.Id, nonce, *outlierResistantNetworkInferencesResult.NetworkInferences); err != nil {
+			return errorsmod.Wrap(err, "failed to insert outlier resistant network inference")
+		}
+
+		types.EmitNewOutlierResistantNetworkInferencesEvent(ctx, *outlierResistantNetworkInferencesResult.NetworkInferences)
+	}
 
 	return nil
 }

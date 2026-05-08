@@ -463,15 +463,19 @@ func (k *TopicKeeper) UpdateTopicWeightAfterStakeChange(
 }
 
 // Remove the inferences that are outliers
-func (k *TopicKeeper) FilterOutlierResistantInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Inferences, error) {
-	lastMedian, err := k.GetLastMedianInferences(ctx, topicId)
+func (k *TopicKeeper) FilterOutlierResistantInferences(ctx context.Context, topic types.Topic, inferences types.Inferences) (types.Inferences, error) {
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return types.Inferences{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "outlier resistant inferences are not supported for multi-label topics")
+	}
+
+	lastMedian, err := k.GetLastMedianInferences(ctx, topic.Id)
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting last median inferences")
 	}
 	if lastMedian.IsZero() {
 		return inferences, nil
 	}
-	mad, err := k.GetMadInferences(ctx, topicId)
+	mad, err := k.GetMadInferences(ctx, topic.Id)
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting mad inferences")
 	}

@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -39,14 +40,14 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (_ *emissionstypes.GetInferencesAtBlockResponse, err error) {
 	defer metrics.RecordMetrics("GetInferencesAtBlock", time.Now(), &err)
 
-	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
-	if !topicExists {
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
+	if errors.Is(err, emissionstypes.ErrTopicDoesNotExist) {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
 	} else if err != nil {
 		return nil, err
 	}
 
-	inferences, err := qs.wk.GetInferencesAtBlock(ctx, req.TopicId, req.BlockHeight, false)
+	inferences, err := qs.wk.GetInferencesAtBlock(ctx, topic, req.BlockHeight, false)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +91,7 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	result, err := qs.k.GetOutlierResistantNetworkInferences(ctx, req.TopicId, req.BlockHeightLastInference)
+	result, err := qs.k.GetOutlierResistantNetworkInferences(ctx, topic, req.BlockHeightLastInference)
 	if err != nil {
 		return nil, err
 	}
@@ -136,14 +137,14 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 
 func (qs queryServer) GetLatestTopicInferences(ctx context.Context, req *emissionstypes.GetLatestTopicInferencesRequest) (_ *emissionstypes.GetLatestTopicInferencesResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestTopicInferences", time.Now(), &err)
-	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
-	if !topicExists {
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
+	if errors.Is(err, emissionstypes.ErrTopicDoesNotExist) {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
 	} else if err != nil {
 		return nil, err
 	}
 
-	inferences, blockHeight, err := qs.wk.GetLatestTopicInferences(ctx, req.TopicId, false)
+	inferences, blockHeight, err := qs.wk.GetLatestTopicInferences(ctx, topic, false)
 	if err != nil {
 		return nil, err
 	}

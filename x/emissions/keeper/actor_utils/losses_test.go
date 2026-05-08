@@ -143,7 +143,10 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 		},
 	}
 
-	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(a.EmissionsKeeper(), a.Ctx(), 1, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, valueBundle)
+	topic, err := a.TopicKeeper().GetTopic(a.Ctx(), 1)
+	a.Require().NoError(err)
+
+	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(a.EmissionsKeeper(), a.Ctx(), topic, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, valueBundle)
 	a.Require().NoError(err)
 
 	// Validate the bundle

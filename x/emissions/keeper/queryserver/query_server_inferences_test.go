@@ -316,7 +316,6 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		&inferenceNonce.BlockHeight,
 		ptr.To(inferences),
 		ptr.To(forecasts),
-		false,
 	)
 	require.NoError(err)
 

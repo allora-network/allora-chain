@@ -27,7 +27,6 @@ func GetNetworkInferences(
 	inferencesNonce *BlockHeight,
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
-	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
 	if inferencesNonce == nil {
 		return nil, errorsmod.Wrap(emissions.ErrNotFound, "no inferences nonce provided")

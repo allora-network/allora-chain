@@ -87,7 +87,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWhenNoInferences()
 			&blockHeight,
 			inferences,
 			nil,
-			false,
 		)
 	require.Error(err)
 	require.Contains(err.Error(), "no inferences found")
@@ -100,7 +99,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWhenNoInferences()
 			nil,
 			inferences,
 			nil,
-			false,
 		)
 	require.Error(err)
 	require.Contains(err.Error(), "no inferences nonce provided")
@@ -187,7 +185,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		&blockHeight,
 		&inferences,
 		&forecasts,
-		false,
 	)
 	require.NoError(err)
 	s.Require().Equal(result.LossBlockHeight, blockHeightPreviousLosses)
@@ -364,7 +361,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 		&blockHeight,
 		&inferences,
 		nil,
-		false,
 	)
 	s.Require().NoError(err)
 	testutil.InEpsilon5(s.T(), result.NetworkInferences.CombinedValue[0].Value, "0.1545011958768693516000000000000000")
@@ -418,7 +414,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 		&blockHeight,
 		&inferences,
 		nil,
-		false,
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
@@ -512,7 +507,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 		&blockHeight,
 		&inferences,
 		&forecasts,
-		false,
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
@@ -658,7 +652,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 		&blockHeight,
 		&inferences,
 		&forecasts,
-		false,
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences
@@ -803,7 +796,6 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 		&blockHeightInferences,
 		&inferences,
 		&forecasts,
-		false,
 	)
 	require.NoError(err)
 	valueBundle := result.NetworkInferences
@@ -933,7 +925,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 		&blockHeight,
 		&inferences,
 		nil,
-		false,
 	)
 	s.Require().NoError(err)
 	valueBundle := result.NetworkInferences

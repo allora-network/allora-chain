@@ -140,7 +140,7 @@ func CloseReputerNonce(
 		// A check of their registration and other filters have already been applied when their inferences were inserted.
 		// We keep what we can, ignoring the reputer and their contribution (losses) entirely
 		// if they're left with no valid losses.
-		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topic.Id, *bundle.ReputerRequestNonce, &bundle)
+		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topic, *bundle.ReputerRequestNonce, &bundle)
 		if err != nil {
 			ctx.Logger().Warn("Could not filter bundle for reputer, skipping", "reputer", bundle.Reputer, "topicId", topic.Id, "error", err)
 			continue // Skip this reputer
@@ -314,14 +314,14 @@ func CloseReputerNonce(
 func FilterUnacceptedWorkersFromReputerValueBundle(
 	k *keeper.Keeper,
 	ctx context.Context,
-	topicId uint64,
+	topic types.Topic,
 	reputerRequestNonce types.ReputerRequestNonce,
 	reputerValueBundle *types.LossBundle,
 ) (*types.LossBundle, error) {
 	// Get the accepted inferers of the associated worker response payload
-	inferences, err := k.GetWorkerKeeper().GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight, false)
+	inferences, err := k.GetWorkerKeeper().GetInferencesAtBlock(ctx, topic, reputerRequestNonce.ReputerNonce.BlockHeight, false)
 	if errors.Is(err, collections.ErrNotFound) {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrNotFound, "no inferences found at block height %d for topic %d", reputerRequestNonce.ReputerNonce.BlockHeight, topicId)
+		return nil, errorsmod.Wrapf(sdkerrors.ErrNotFound, "no inferences found at block height %d for topic %d", reputerRequestNonce.ReputerNonce.BlockHeight, topic.Id)
 	} else if err != nil {
 		return nil, err
 	}
@@ -332,7 +332,7 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	// Get the accepted forecasters of the associated worker response payload
-	forecasts, err := k.GetWorkerKeeper().GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
+	forecasts, err := k.GetWorkerKeeper().GetForecastsAtBlock(ctx, topic.Id, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}

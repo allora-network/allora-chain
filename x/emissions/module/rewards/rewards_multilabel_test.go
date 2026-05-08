@@ -170,7 +170,7 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 	}
 
 	// Spot-check that inferer submissions were aligned to registry size.
-	activeInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, secondInferenceNonce, false)
+	activeInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topic, secondInferenceNonce, false)
 	require.NoError(err)
 	require.Len(activeInferences.Inferences, len(workerIndexes))
 
@@ -178,6 +178,10 @@ func (s *RewardsTestSuite) TestMultiLabelRewardsPipeline() {
 		require.NotNil(inf, "active inference %d is nil", i)
 		require.Len(inf.Values, numLabels, "active inference %d not padded/aligned to registry size", i)
 	}
+
+	inferences, err := s.EmissionsKeeper().GetOutlierResistantNetworkInferences(s.Ctx(), topic, secondInferenceNonce)
+	require.Error(err)
+	require.Nil(inferences)
 }
 
 func (s *RewardsTestSuite) TestMultiLabelLabelIndependence() {
@@ -488,7 +492,10 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				expectedAligned,
 			)
 
-			activeInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, firstNonce, false)
+			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+			s.Require().NoError(err)
+
+			activeInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topic, firstNonce, false)
 			require.NoError(err)
 			assertActiveInferencesMatchExpected(require, activeInferences, expectedAligned)
 
@@ -535,7 +542,7 @@ func (s *RewardsTestSuite) TestMultiLabelEpochLabelSpaceConstruction() {
 				expectedAligned,
 			)
 
-			activeInferencesSecond, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, secondNonce, false)
+			activeInferencesSecond, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topic, secondNonce, false)
 			require.NoError(err)
 			assertActiveInferencesMatchExpected(require, activeInferencesSecond, expectedAligned)
 

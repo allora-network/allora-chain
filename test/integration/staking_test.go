@@ -11,7 +11,7 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func addTopicReputer(m testCommon.TestConfig, address string, topicId uint64) {
+func addTopicReputer(m testCommon.TestConfig, address string) {
 	ctx := context.Background()
 	addTopicReputerRequest := &emissionstypes.AddToTopicReputerWhitelistRequest{
 		Sender:  m.AliceAddr,
@@ -43,7 +43,7 @@ func StakeAliceAsReputer(m testCommon.TestConfig) {
 	const stakeToAdd = 1000000
 
 	// Allow Alice to stake as a reputer
-	addTopicReputer(m, m.AliceAddr, m.TopicID)
+	addTopicReputer(m, m.AliceAddr)
 
 	// Have Alice stake more
 	addStake := &emissionstypes.AddStakeRequest{

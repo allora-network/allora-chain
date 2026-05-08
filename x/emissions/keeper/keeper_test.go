@@ -120,8 +120,11 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	err = s.ReputerLossKeeper().InsertNetworkLossBundleAtBlock(s.Ctx(), topicId, block, networkLosses)
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
 
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
 	// Check if the records are set
-	_, err = s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, block, false)
+	_, err = s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topic, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
 	_, err = s.WorkerKeeper().GetForecastsAtBlock(s.Ctx(), topicId, block)
 	s.Require().NoError(err, "Getting forecasts should not fail")
@@ -136,7 +139,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "Pruning records after rewards should not fail")
 
 	// Check if the records are pruned
-	inferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topicId, block, false)
+	inferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topic, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
 	s.Require().Empty(inferences.Inferences, "Must be pruned")
 	forecasts, err := s.WorkerKeeper().GetForecastsAtBlock(s.Ctx(), topicId, block)
@@ -273,8 +276,12 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 	inferencesWrapper := types.Inferences{Inferences: inferences}
 	err := s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, blockHeight, inferencesWrapper)
 	s.Require().NoError(err)
+
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
 	// Test the update function
-	err = s.WorkerKeeper().UpdateNetworkInferencesOutlierMetrics(s.Ctx(), topicId, blockHeight)
+	err = s.WorkerKeeper().UpdateNetworkInferencesOutlierMetrics(s.Ctx(), topic, blockHeight)
 	s.Require().NoError(err)
 
 	// Verify results
@@ -292,7 +299,7 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, blockHeight, inferencesWrapper)
 	s.Require().NoError(err)
 
-	err = s.WorkerKeeper().UpdateNetworkInferencesOutlierMetrics(s.Ctx(), topicId, blockHeight)
+	err = s.WorkerKeeper().UpdateNetworkInferencesOutlierMetrics(s.Ctx(), topic, blockHeight)
 	s.Require().NoError(err)
 
 	mad, err = s.TopicKeeper().GetMadInferences(s.Ctx(), topicId)
@@ -306,13 +313,15 @@ func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
 
 func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 	topicId := s.CreateTopic()
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
 
 	// Ensure param is set to 11
 	params := types.DefaultParams()
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("11")
 
 	// Set the maximum number of unfulfilled worker nonces via the SetParams method
-	err := s.EmissionsKeeper().SetParams(s.Ctx(), params)
+	err = s.EmissionsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
 
 	testCases := []struct {
@@ -418,7 +427,7 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 		s.Run(tc.name, func() {
 			tc.setupMetrics()
 
-			filtered, err := s.TopicKeeper().FilterOutlierResistantInferences(s.Ctx(), topicId, tc.inferences)
+			filtered, err := s.TopicKeeper().FilterOutlierResistantInferences(s.Ctx(), topic, tc.inferences)
 			s.Require().NoError(err)
 
 			s.Require().Len(filtered.Inferences, tc.expectedCount)

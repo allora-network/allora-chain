@@ -168,10 +168,11 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	key := []byte("topic-1/block-123")
 	oldNetworkStore := prefix.NewStore(store, emissionstypes.NetworkInferencesKey)
 	oldOutlierStore := prefix.NewStore(store, emissionstypes.OutlierResistantNetworkInferencesKey)
+	topicId := uint64(1)
 
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	legacyTopic := s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
-		topic.Id = 1
+		topic.Id = topicId
 		topic.Creator = s.Addrs(0).String()
 		topic.Metadata = "legacy-topic"
 		topic.LossMethod = "mse"
@@ -190,11 +191,11 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	})
 	topicStore.Set(sdk.Uint64ToBigEndian(legacyTopic.Id), cdc.MustMarshal(&legacyTopic))
 
-	oldBundle := s.makeLegacyValueBundle(1, 123)
+	oldBundle := s.makeLegacyValueBundle(topicId, 123)
 	oldNetworkStore.Set(key, cdc.MustMarshal(&oldBundle))
 	oldOutlierStore.Set(key, cdc.MustMarshal(&oldBundle))
 
-	legacyInference := s.makeLegacyInference()
+	legacyInference := s.makeLegacyInference(topicId)
 	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
 	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
 	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
@@ -203,7 +204,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
 
 	blockHeight := emissionstypes.BlockHeight(100)
-	legacyAllInference := s.makeLegacyInference()
+	legacyAllInference := s.makeLegacyInference(topicId)
 	legacyAllInferences := oldtypes.Inferences{
 		Inferences: []*oldtypes.Inference{&legacyAllInference},
 	}
@@ -232,12 +233,23 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	s.Require().NoError(err)
 	s.assertInference(legacyInference, gotInference)
 
-	gotAllInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), legacyAllInference.TopicId, blockHeight, false)
+	gotAllInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), gotTopic, blockHeight, false)
 	s.Require().NoError(err)
 	s.Require().NotNil(gotAllInferences)
 	s.Require().NotEmpty(gotAllInferences.Inferences)
 	s.Require().NotNil(gotAllInferences.Inferences[0])
 	s.assertInference(legacyAllInference, *gotAllInferences.Inferences[0])
+
+	expLabelRegistry := emissionstypes.EpochLabelRegistry{
+		TopicId: legacyInference.TopicId,
+		EpochId: uint64(legacyInference.BlockHeight),
+		Labels: []*emissionstypes.TopicLabel{
+			{Id: 1, Name: "y"},
+		},
+	}
+	gotRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), legacyInference.TopicId, legacyInference.BlockHeight)
+	s.Require().NoError(err)
+	s.Require().Equal(expLabelRegistry, gotRegistry)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV014AndV015() {
@@ -245,9 +257,10 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 
+	topicId := uint64(7)
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	oldTopic := v14oldtypes.Topic{
-		Id:                       7,
+		Id:                       topicId,
 		Creator:                  s.Addrs(0).String(),
 		Metadata:                 "pre-v016-topic",
 		LossMethod:               "mse",
@@ -273,7 +286,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	prefix.NewStore(store, emissionstypes.NetworkInferencesKey).Set(key, cdc.MustMarshal(&oldBundle))
 	prefix.NewStore(store, emissionstypes.OutlierResistantNetworkInferencesKey).Set(key, cdc.MustMarshal(&oldBundle))
 
-	legacyInference := s.makeLegacyInference()
+	legacyInference := s.makeLegacyInference(topicId)
 	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
 	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
 	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
@@ -282,7 +295,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
 
 	blockHeight := emissionstypes.BlockHeight(100)
-	legacyAllInference := s.makeLegacyInference()
+	legacyAllInference := s.makeLegacyInference(topicId)
 	legacyAllInferences := oldtypes.Inferences{
 		Inferences: []*oldtypes.Inference{&legacyAllInference},
 	}
@@ -316,12 +329,23 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	s.Require().NoError(err)
 	s.assertInference(legacyInference, gotInference)
 
-	gotAllInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), legacyAllInference.TopicId, blockHeight, false)
+	gotAllInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), gotTopic, blockHeight, false)
 	s.Require().NoError(err)
 	s.Require().NotNil(gotAllInferences)
 	s.Require().NotEmpty(gotAllInferences.Inferences)
 	s.Require().NotNil(gotAllInferences.Inferences[0])
 	s.assertInference(legacyAllInference, *gotAllInferences.Inferences[0])
+
+	expLabelRegistry := emissionstypes.EpochLabelRegistry{
+		TopicId: legacyInference.TopicId,
+		EpochId: uint64(legacyInference.BlockHeight),
+		Labels: []*emissionstypes.TopicLabel{
+			{Id: 1, Name: "y"},
+		},
+	}
+	gotRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), legacyInference.TopicId, legacyInference.BlockHeight)
+	s.Require().NoError(err)
+	s.Require().Equal(expLabelRegistry, gotRegistry)
 }
 
 func (s *EmissionsV15MigrationTestSuite) makeLegacyValueBundle(topicID uint64, blockHeight int64) emissionstypes.ValueBundle {
@@ -395,9 +419,9 @@ func (s *EmissionsV15MigrationTestSuite) makeLegacyTopic(apply func(*v14oldtypes
 	return topic
 }
 
-func (s *EmissionsV15MigrationTestSuite) makeLegacyInference() oldtypes.Inference {
+func (s *EmissionsV15MigrationTestSuite) makeLegacyInference(topicId emissionstypes.TopicId) oldtypes.Inference {
 	oldInference := oldtypes.Inference{
-		TopicId:     1,
+		TopicId:     topicId,
 		BlockHeight: 100,
 		Inferer:     s.AddrsStr(0),
 		Value:       alloraMath.MustNewDecFromString("100"),

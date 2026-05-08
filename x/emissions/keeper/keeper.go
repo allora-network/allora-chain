@@ -4,6 +4,7 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 
 	cosmosMath "cosmossdk.io/math"
@@ -208,12 +209,15 @@ func (k *Keeper) InsertOutlierResistantNetworkInferenceBundle(ctx context.Contex
 }
 
 // Get Outlier Resistant Network Inferences
-func (k *Keeper) GetOutlierResistantNetworkInferences(ctx context.Context, topicId TopicId, blockHeight BlockHeight) (*types.NetworkInferenceBundle, error) {
-	key := collections.Join(topicId, blockHeight)
+func (k *Keeper) GetOutlierResistantNetworkInferences(ctx context.Context, topic types.Topic, blockHeight BlockHeight) (*types.NetworkInferenceBundle, error) {
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "outlier resistant network inferences are not supported for mutli-label topics")
+	}
+	key := collections.Join(topic.Id, blockHeight)
 	networkInferences, err := k.outlierResistantNetworkInferenceBundle.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
 		return &types.NetworkInferenceBundle{
-			TopicId:                       topicId,
+			TopicId:                       topic.Id,
 			Nonce:                         0,
 			CombinedValue:                 []*types.LabeledValue{},
 			InfererValues:                 nil,
@@ -364,11 +368,11 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx sdk.Context, topicId TopicId, bloc
 }
 
 func (k *Keeper) pruneNetworkInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	return k.networkInferences.Clear(ctx, blockRange)
+	return k.networkInferenceBundle.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) pruneOutlierResistantNetworkInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	return k.outlierResistantNetworkInferences.Clear(ctx, blockRange)
+	return k.outlierResistantNetworkInferenceBundle.Clear(ctx, blockRange)
 }
 
 // GetRewardCurrentBlockEmission retrieves the current block emission reward.

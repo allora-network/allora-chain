@@ -181,8 +181,11 @@ func MigrateInferences(
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
 ) error {
-	store = prefix.NewStore(store, emissionstypes.InferencesKey)
-	iterator := store.Iterator(nil, nil)
+	infStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	labelStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
+	lblKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+
+	iterator := infStore.Iterator(nil, nil)
 	defer iterator.Close()
 
 	type kv struct {
@@ -191,6 +194,7 @@ func MigrateInferences(
 	}
 
 	updates := make([]kv, 0)
+	lblUpdates := make([]kv, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
 		var oldInference oldtypes.Inference
@@ -215,10 +219,32 @@ func MigrateInferences(
 			key:   append([]byte(nil), iterator.Key()...),
 			value: cdc.MustMarshal(inference),
 		})
+
+		lblKeyBytes := make([]byte, lblKeyCodec.Size(collections.Join(oldInference.TopicId, oldInference.BlockHeight)))
+		if _, err := lblKeyCodec.Encode(lblKeyBytes, collections.Join(oldInference.TopicId, oldInference.BlockHeight)); err != nil {
+			return errorsmod.Wrap(err, "failed to encode label store key")
+		}
+		if labelStore.Has(lblKeyBytes) {
+			continue
+		}
+		registry := emissionstypes.EpochLabelRegistry{
+			TopicId: oldInference.TopicId,
+			EpochId: uint64(oldInference.BlockHeight),
+			Labels: []*emissionstypes.TopicLabel{
+				{Id: 1, Name: "y"},
+			},
+		}
+		lblUpdates = append(lblUpdates, kv{
+			key:   lblKeyBytes,
+			value: cdc.MustMarshal(&registry),
+		})
 	}
 
 	for _, u := range updates {
-		store.Set(u.key, u.value)
+		infStore.Set(u.key, u.value)
+	}
+	for _, u := range lblUpdates {
+		labelStore.Set(u.key, u.value)
 	}
 
 	ctx.Logger().Info("MIGRATION V15: inferences migration completed", "store", "entriesUpdated", len(updates))
@@ -230,8 +256,8 @@ func MigrateAllInferences(
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
 ) error {
-	store = prefix.NewStore(store, emissionstypes.AllInferencesKey)
-	iterator := store.Iterator(nil, nil)
+	infStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
+	iterator := infStore.Iterator(nil, nil)
 	defer iterator.Close()
 
 	type kv struct {
@@ -273,7 +299,7 @@ func MigrateAllInferences(
 	}
 
 	for _, u := range updates {
-		store.Set(u.key, u.value)
+		infStore.Set(u.key, u.value)
 	}
 
 	ctx.Logger().Info("MIGRATION V15: all inferences migration completed", "store", "entriesUpdated", len(updates))
