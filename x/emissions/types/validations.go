@@ -235,7 +235,7 @@ func (inputInference *InputInference) ValidateWithLimits(
 				"duplicate label after canonicalization at index %d: %q", i, c)
 		}
 		seen[c] = struct{}{}
-		if whitelist != nil {
+		if len(whitelist) > 0 {
 			if _, ok := whitelist[c]; !ok {
 				return errors.Wrapf(ErrLabelNotInWhitelist,
 					"label %q is not in topic label whitelist", c)
