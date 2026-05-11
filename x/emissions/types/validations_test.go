@@ -1,11 +1,331 @@
 package types
 
 import (
+	"strings"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/stretchr/testify/require"
 )
+
+func validCreateNewTopicRequest() *CreateNewTopicRequest {
+	return &CreateNewTopicRequest{
+		Creator:                  "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		Metadata:                 "metadata",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		PNorm:                    alloraMath.MustNewDecFromString("3"),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		WorkerSubmissionWindow:   10,
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+	}
+}
+
+func TestCreateNewTopicRequest_Validate(t *testing.T) {
+	const maxStringLen uint64 = 256
+
+	tests := []struct {
+		name        string
+		mutate      func(*CreateNewTopicRequest)
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:        "valid request",
+			mutate:      func(*CreateNewTopicRequest) {},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "empty loss method",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.LossMethod = ""
+			},
+			wantErr:     true,
+			errContains: "loss method invalid",
+		},
+		{
+			name: "loss method too long",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.LossMethod = strings.Repeat("a", int(maxStringLen)+1)
+			},
+			wantErr:     true,
+			errContains: "loss method invalid",
+		},
+		{
+			name: "metadata too long",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.Metadata = strings.Repeat("a", int(maxStringLen)+1)
+			},
+			wantErr:     true,
+			errContains: "metadata invalid",
+		},
+		{
+			name: "zero epoch length",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.EpochLength = 0
+			},
+			wantErr:     true,
+			errContains: "epoch length must be greater than zero",
+		},
+		{
+			name: "negative epoch length",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.EpochLength = -1
+			},
+			wantErr:     true,
+			errContains: "epoch length must be greater than zero",
+		},
+		{
+			name: "zero worker submission window",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.WorkerSubmissionWindow = 0
+			},
+			wantErr:     true,
+			errContains: "worker submission window must be greater than zero",
+		},
+		{
+			name: "negative worker submission window",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.WorkerSubmissionWindow = -1
+			},
+			wantErr:     true,
+			errContains: "worker submission window must be greater than zero",
+		},
+		{
+			name: "worker submission window greater than epoch length",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.WorkerSubmissionWindow = msg.EpochLength + 1
+			},
+			wantErr:     true,
+			errContains: "worker submission window cannot be higher than epoch length",
+		},
+		{
+			name: "ground truth lag lower than epoch length",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.GroundTruthLag = msg.EpochLength - 1
+			},
+			wantErr:     true,
+			errContains: "ground truth lag cannot be lower than epoch length",
+		},
+		{
+			name: "zero alpha regret",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.AlphaRegret = alloraMath.ZeroDec()
+			},
+			wantErr:     true,
+			errContains: "alpha regret must be greater than 0 and less than or equal to 1",
+		},
+		{
+			name: "negative alpha regret",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.AlphaRegret = alloraMath.MustNewDecFromString("-0.1")
+			},
+			wantErr:     true,
+			errContains: "alpha regret must be greater than 0 and less than or equal to 1",
+		},
+		{
+			name: "alpha regret greater than one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.AlphaRegret = alloraMath.MustNewDecFromString("1.1")
+			},
+			wantErr:     true,
+			errContains: "alpha regret must be greater than 0 and less than or equal to 1",
+		},
+		{
+			name: "p-norm below one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.PNorm = alloraMath.MustNewDecFromString("0.9")
+			},
+			wantErr:     true,
+			errContains: "p-norm must be between 1 and 10",
+		},
+		{
+			name: "p-norm above ten",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.PNorm = alloraMath.MustNewDecFromString("10.1")
+			},
+			wantErr:     true,
+			errContains: "p-norm must be between 1 and 10",
+		},
+		{
+			name: "c-norm below negative one hundred",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.CNorm = alloraMath.MustNewDecFromString("-100.1")
+			},
+			wantErr:     true,
+			errContains: "c_norm must be between -100 and 100",
+		},
+		{
+			name: "c-norm above one hundred",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.CNorm = alloraMath.MustNewDecFromString("100.1")
+			},
+			wantErr:     true,
+			errContains: "c_norm must be between -100 and 100",
+		},
+		{
+			name: "zero epsilon",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.Epsilon = alloraMath.ZeroDec()
+			},
+			wantErr:     true,
+			errContains: "epsilon must be greater than 0",
+		},
+		{
+			name: "negative epsilon",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.Epsilon = alloraMath.MustNewDecFromString("-0.1")
+			},
+			wantErr:     true,
+			errContains: "epsilon must be greater than 0",
+		},
+		{
+			name: "negative merit sortition alpha",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.MeritSortitionAlpha = alloraMath.MustNewDecFromString("-0.1")
+			},
+			wantErr:     true,
+			errContains: "merit sortition alpha must be greater than or equal to 0 and less than 1",
+		},
+		{
+			name: "zero merit sortition alpha",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.MeritSortitionAlpha = alloraMath.ZeroDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "merit sortition alpha equal to one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.MeritSortitionAlpha = alloraMath.OneDec()
+			},
+			wantErr:     true,
+			errContains: "merit sortition alpha must be greater than or equal to 0 and less than 1",
+		},
+		{
+			name: "negative active inferer quantile",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveInfererQuantile = alloraMath.MustNewDecFromString("-0.1")
+			},
+			wantErr:     true,
+			errContains: "active inferer quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name: "active inferer quantile equal to zero",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveInfererQuantile = alloraMath.ZeroDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "active inferer quantile equal to one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveInfererQuantile = alloraMath.OneDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "active inferer quantile greater than one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveInfererQuantile = alloraMath.MustNewDecFromString("1.1")
+			},
+			wantErr:     true,
+			errContains: "active inferer quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name: "negative active forecaster quantile",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("-0.1")
+			},
+			wantErr:     true,
+			errContains: "active forecaster quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name: "active forecaster quantile equal to zero",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveForecasterQuantile = alloraMath.ZeroDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "active forecaster quantile equal to one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveForecasterQuantile = alloraMath.OneDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "active forecaster quantile greater than one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("1.1")
+			},
+			wantErr:     true,
+			errContains: "active forecaster quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name: "negative active reputer quantile",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveReputerQuantile = alloraMath.MustNewDecFromString("-0.1")
+			},
+			wantErr:     true,
+			errContains: "active reputer quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name: "active reputer quantile equal to zero",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveReputerQuantile = alloraMath.ZeroDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "active reputer quantile equal to one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveReputerQuantile = alloraMath.OneDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
+		{
+			name: "active reputer quantile greater than one",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.ActiveReputerQuantile = alloraMath.MustNewDecFromString("1.1")
+			},
+			wantErr:     true,
+			errContains: "active reputer quantile must be between 0 and 1 inclusive",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			msg := validCreateNewTopicRequest()
+			tt.mutate(msg)
+
+			err := msg.Validate(maxStringLen)
+			if tt.wantErr {
+				require.Error(t, err)
+				require.ErrorContains(t, err, tt.errContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
 
 func TestInputInference_Validate(t *testing.T) {
 	tests := []struct {

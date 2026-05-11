@@ -12,7 +12,25 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+const (
+	validationMinLossMethodLength       = 1
+	validationMinPositiveIntValue int64 = 1
+	validationMinEpochLastEnded   int64 = 0
+
+	validationZeroDecString     = "0"
+	validationOneDecString      = "1"
+	validationPNormMaxDecString = "10"
+	validationCNormMinDecString = "-100"
+	validationCNormMaxDecString = "100"
+)
+
 var (
+	validationZeroDec     = alloraMath.MustNewDecFromString(validationZeroDecString)
+	validationOneDec      = alloraMath.MustNewDecFromString(validationOneDecString)
+	validationPNormMaxDec = alloraMath.MustNewDecFromString(validationPNormMaxDecString)
+	validationCNormMinDec = alloraMath.MustNewDecFromString(validationCNormMinDecString)
+	validationCNormMaxDec = alloraMath.MustNewDecFromString(validationCNormMaxDecString)
+
 	reputerValueBundleBufferPool       = utils.NewBytesPool(1024, 0)
 	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
@@ -841,22 +859,22 @@ func (topic Topic) Validate(params Params) error {
 	if uint64(len(topic.Metadata)) > params.MaxStringLength {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic metadata invalid")
 	}
-	if len(topic.LossMethod) == 0 || uint64(len(topic.LossMethod)) > params.MaxStringLength {
+	if len(topic.LossMethod) < validationMinLossMethodLength || uint64(len(topic.LossMethod)) > params.MaxStringLength {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic loss method invalid")
 	}
-	if topic.EpochLastEnded < 0 {
+	if topic.EpochLastEnded < validationMinEpochLastEnded {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epoch last ended cannot be negative")
 	}
-	if topic.EpochLength <= 0 {
+	if topic.EpochLength < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epoch length must be greater than zero")
 	}
 	if topic.EpochLength < params.MinEpochLength {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epoch length must be greater than minimum epoch length")
 	}
-	if topic.WorkerSubmissionWindow == 0 {
+	if topic.WorkerSubmissionWindow < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic worker submission window must be greater than zero")
 	}
-	if topic.GroundTruthLag <= 0 {
+	if topic.GroundTruthLag < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic ground truth lag must be greater than zero")
 	}
 	if topic.GroundTruthLag < topic.EpochLength {
@@ -865,7 +883,7 @@ func (topic Topic) Validate(params Params) error {
 	if uint64(topic.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(topic.EpochLength) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic ground truth lag cannot be higher than max unfulfilled reputer requests")
 	}
-	if topic.WorkerSubmissionWindow <= 0 {
+	if topic.WorkerSubmissionWindow < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic worker submission window must be greater than zero")
 	}
 	if topic.WorkerSubmissionWindow > topic.EpochLength {
@@ -874,19 +892,19 @@ func (topic Topic) Validate(params Params) error {
 	if err := ValidateDec(topic.AlphaRegret); err != nil {
 		return errors.Wrap(err, "topic alpha regret is invalid")
 	}
-	if topic.AlphaRegret.Lte(alloraMath.ZeroDec()) || topic.AlphaRegret.Gt(alloraMath.OneDec()) {
+	if topic.AlphaRegret.Lte(validationZeroDec) || topic.AlphaRegret.Gt(validationOneDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic alpha regret must be greater than 0 and less than or equal to 1")
 	}
 	if err := ValidateDec(topic.PNorm); err != nil {
 		return errors.Wrap(err, "topic p-norm is invalid")
 	}
-	if topic.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || topic.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic p-norm must be between 2.5 and 4.5")
+	if topic.PNorm.Lt(validationOneDec) || topic.PNorm.Gt(validationPNormMaxDec) {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic p-norm must be between 1 and 10")
 	}
 	if err := ValidateDec(topic.Epsilon); err != nil {
 		return errors.Wrap(err, "topic epsilon is invalid")
 	}
-	if topic.Epsilon.Lte(alloraMath.ZeroDec()) {
+	if topic.Epsilon.Lte(validationZeroDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic epsilon must be greater than 0")
 	}
 	// no validation on AllowNegative because either it is true or false
@@ -896,30 +914,30 @@ func (topic Topic) Validate(params Params) error {
 		return errors.Wrap(err, "topic merit sortition alpha is invalid")
 	}
 	if !isAlloraDecZeroOrLessThanOne(topic.MeritSortitionAlpha) {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic merit sortition alpha must be between 0 and 1 inclusive")
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic merit sortition alpha must be greater than or equal to 0 and less than 1")
 	}
 	if err := ValidateDec(topic.ActiveInfererQuantile); err != nil {
 		return errors.Wrap(err, "topic active inferer quantile is invalid")
 	}
-	if !isAlloraDecZeroOrLessThanOne(topic.ActiveInfererQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(topic.ActiveInfererQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active inferer quantile must be between 0 and 1 inclusive")
 	}
 	if err := ValidateDec(topic.ActiveForecasterQuantile); err != nil {
 		return errors.Wrap(err, "topic active forecaster quantile is invalid")
 	}
-	if !isAlloraDecZeroOrLessThanOne(topic.ActiveForecasterQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(topic.ActiveForecasterQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active forecaster quantile must be between 0 and 1 inclusive")
 	}
 	if err := ValidateDec(topic.ActiveReputerQuantile); err != nil {
 		return errors.Wrap(err, "topic active reputer quantile is invalid")
 	}
-	if !isAlloraDecZeroOrLessThanOne(topic.ActiveReputerQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(topic.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic active reputer quantile must be between 0 and 1 inclusive")
 	}
 	if err := ValidateDec(topic.CNorm); err != nil {
 		return errors.Wrap(err, "topic c_norm is invalid")
 	}
-	if topic.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || topic.CNorm.Gt(alloraMath.MustNewDecFromString("100")) {
+	if topic.CNorm.Lt(validationCNormMinDec) || topic.CNorm.Gt(validationCNormMaxDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
 	}
 
@@ -1188,13 +1206,13 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 		return errors.Wrap(err, "invalid msg Creator address")
 	}
 
-	if len(msg.LossMethod) == 0 || uint64(len(msg.LossMethod)) > maxStringLen {
+	if len(msg.LossMethod) < validationMinLossMethodLength || uint64(len(msg.LossMethod)) > maxStringLen {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
 	}
-	if msg.EpochLength <= 0 {
+	if msg.EpochLength < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
 	}
-	if msg.WorkerSubmissionWindow == 0 {
+	if msg.WorkerSubmissionWindow < validationMinPositiveIntValue {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window must be greater than zero")
 	}
 	if msg.GroundTruthLag < msg.EpochLength {
@@ -1203,16 +1221,16 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	if msg.WorkerSubmissionWindow > msg.EpochLength {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window cannot be higher than epoch length")
 	}
-	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) || ValidateDec(msg.AlphaRegret) != nil {
+	if msg.AlphaRegret.Lte(validationZeroDec) || msg.AlphaRegret.Gt(validationOneDec) || ValidateDec(msg.AlphaRegret) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
 	}
-	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(msg.PNorm) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
+	if msg.PNorm.Lt(validationOneDec) || msg.PNorm.Gt(validationPNormMaxDec) || ValidateDec(msg.PNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 1 and 10")
 	}
-	if msg.CNorm.Lt(alloraMath.MustNewDecFromString("-100")) || msg.CNorm.Gt(alloraMath.MustNewDecFromString("100")) || ValidateDec(msg.CNorm) != nil {
+	if msg.CNorm.Lt(validationCNormMinDec) || msg.CNorm.Gt(validationCNormMaxDec) || ValidateDec(msg.CNorm) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "c_norm must be between -100 and 100")
 	}
-	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
+	if msg.Epsilon.Lte(validationZeroDec) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
 	if uint64(len(msg.Metadata)) > maxStringLen {
@@ -1223,15 +1241,15 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	//	AllowNegative            bool
 
 	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
 	}
-	if !isAlloraDecZeroOrLessThanOne(msg.ActiveInfererQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
 	}
-	if !isAlloraDecZeroOrLessThanOne(msg.ActiveForecasterQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveForecasterQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be between 0 and 1 inclusive")
 	}
-	if !isAlloraDecZeroOrLessThanOne(msg.ActiveReputerQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
 
