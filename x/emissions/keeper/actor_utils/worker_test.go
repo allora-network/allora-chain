@@ -62,9 +62,9 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
-	// v2: normalize each worker's input into a temporary-ELR-aligned dense
-	// Inference. CloseWorkerNonce then filters and remaps the final active
-	// workers' temporary vectors into the compact final registry.
+	// Normalize each worker's input into a dense Inference aligned to the
+	// temporary registry. CloseWorkerNonce then filters and remaps the final
+	// active workers' vectors into the compact final registry.
 	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
 		return alloraMath.MustNewBoundedExp40DecFromString(x)
 	}

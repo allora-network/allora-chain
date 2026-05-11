@@ -75,8 +75,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		OutputArity:              msg.OutputArity,
 		RequireUnity:             msg.RequireUnity,
 		UnityTolerance:           msg.UnityTolerance,
-		// Label registry v2 fields. Canonicalization of LabelWhitelist is
-		// applied by SetTopic.
+		// SetTopic canonicalizes LabelWhitelist before persistence.
 		MaxLabelsPerSubmission: msg.MaxLabelsPerSubmission,
 		LabelWhitelist:         msg.LabelWhitelist,
 		LabelDefaultValue:      msg.LabelDefaultValue,
@@ -135,10 +134,10 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
-	// Label registry v2 fields are passed through like other topic params.
-	// The keeper's UpdateTopic rejects mutations that change these fields while
-	// any worker submission window for the topic is open and canonicalizes the
-	// whitelist so the persisted form is exact byte-equality with submitted labels.
+	// Label registry fields follow the same full-payload update path as other
+	// topic params. The keeper rejects unsafe mutations while any worker
+	// submission window is open and canonicalizes LabelWhitelist before
+	// persistence.
 	updatedTopic.MaxLabelsPerSubmission = msg.MaxLabelsPerSubmission
 	updatedTopic.LabelWhitelist = msg.LabelWhitelist
 	updatedTopic.LabelDefaultValue = msg.LabelDefaultValue

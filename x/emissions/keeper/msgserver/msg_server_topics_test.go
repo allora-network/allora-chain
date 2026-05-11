@@ -1330,14 +1330,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
 }
 
-// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the
-// generalization from the v14 "newest unfulfilled nonce only" WSW guard to
-// the v2 "any unfulfilled nonce" guard. With WorkerSubmissionWindow=10 and
-// two outstanding worker nonces, the topic has two open WSWs. A param
-// update must be rejected if *any* of them is currently open, regardless
-// of whether the open one is the newest. At block 12 the newest nonce
-// (200) is not yet inside its submission window [200, 210], while the
-// older nonce (5) is still inside its window [5, 15] and covers block 12.
+// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the WSW
+// guard across all unfulfilled worker nonces. With WorkerSubmissionWindow=10
+// and two outstanding worker nonces, a param update must be rejected if *any*
+// nonce has an open window, regardless of whether it is the newest. At block
+// 12, nonce 200 is not yet inside its submission window [200, 210], while
+// nonce 5 is still inside its window [5, 15].
 // A regression to the newest-only check would therefore accept the
 // update; the generalized check must reject it.
 //

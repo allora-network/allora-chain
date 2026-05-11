@@ -272,10 +272,8 @@ func (k *TopicKeeper) TopicExists(ctx context.Context, topicId TopicId) (bool, e
 // inside a worker submission window. It is the shared guard for topic
 // parameter mutations that must not race worker payload submission for an
 // open epoch (merit_sortition_alpha, max_labels_per_submission, label
-// whitelist, label_default_value). Unlike the original v14-era check this
-// iterates every
-// unfulfilled nonce rather than just the newest, because workers can submit
-// against any currently-open nonce.
+// whitelist, label_default_value). It checks every unfulfilled nonce because
+// workers can submit against any currently-open nonce.
 func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
 	ctx context.Context,
 	topic types.Topic,
@@ -338,10 +336,8 @@ func labelWhitelistChanged(a, b []string) bool {
 //   - label_whitelist (per-topic label allowlist)
 //   - label_default_value (implicit missing label semantics)
 //
-// This is stricter than the v14 behavior (which only checked the newest
-// unfulfilled nonce) to match the v2 Epoch Label Registry semantics, where
-// label-related topic parameters must be stable across the entire lifetime
-// of every open WSW.
+// Label-related topic parameters must stay stable across every open WSW, so
+// the guard checks all unfulfilled nonces rather than only the newest one.
 func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
