@@ -18,8 +18,9 @@ type ActorPenaltiesKeeper struct {
 	scoresKeeper *ScoresKeeper
 }
 
-// CalculateLivenessPenaltyToInferer penalises an inferer for missing previous epochs. It only returns the updated EMA score.
-// If the inferer didn't miss any epochs this is a no-op, the EMA score is returned as is.
+// CalculateLivenessPenaltyToInferer returns the inferer's EMA score after
+// applying missed-epoch liveness penalties. If no epochs were missed, this is
+// a no-op.
 func (k *ActorPenaltiesKeeper) CalculateLivenessPenaltyToInferer(
 	ctx sdk.Context,
 	topic types.Topic,

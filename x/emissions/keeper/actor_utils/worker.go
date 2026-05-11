@@ -238,9 +238,9 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 	return addresses, weights
 }
 
-// closeActiveInferencesSet materializes the EpochLabelRegistry from final
-// active workers' temporary Inferences, then remaps each vector into a
-// committed types.Inference aligned to the final compact registry.
+// closeActiveInferencesSet freezes the active workers' surviving labels into a
+// compact final EpochLabelRegistry, then remaps each vector into a committed
+// types.Inference aligned to the final compact registry.
 //
 // This is where the classification design transitions from temporary label
 // ids to final label ids: during the WSW, active inferences are dense vectors

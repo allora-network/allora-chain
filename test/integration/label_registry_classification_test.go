@@ -10,9 +10,9 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// LabelRegistryClassificationChecks exercises the v2 Epoch Label Registry
-// from an end-to-end perspective. These scenarios rely only on the live
-// emissions query/tx RPCs and do not require signed worker payloads.
+// LabelRegistryClassificationChecks exercises label registry topic settings
+// end-to-end through the live emissions query/tx RPCs. These scenarios do not
+// require signed worker payloads.
 //
 // The six sub-scenarios are:
 //  1. CLASSIFICATION + MULTI-arity topic with a label_whitelist and
@@ -32,14 +32,14 @@ import (
 //nolint:exhaustruct
 func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
-	m.T.Log(">>> Label Registry v2 integration scenarios <<<")
+	m.T.Log(">>> Label Registry integration scenarios <<<")
 
 	addTopicCreator(m, m.AliceAddr)
 
 	baseReq := func() *emissionstypes.CreateNewTopicRequest {
 		return &emissionstypes.CreateNewTopicRequest{
 			Creator:                  m.AliceAddr,
-			Metadata:                 "label registry v2 integration",
+			Metadata:                 "label registry integration",
 			LossMethod:               "mse",
 			EpochLength:              5,
 			GroundTruthLag:           10,

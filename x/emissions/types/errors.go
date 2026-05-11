@@ -98,8 +98,8 @@ var (
 	ErrTopicAlreadyActive                        = errors.Register(ModuleName, 93, "topic already active")
 	ErrTopicCannotBeActivated                    = errors.Register(ModuleName, 94, "topic cannot be activated")
 	ErrInvalidLabelName                          = errors.Register(ModuleName, 95, "invalid label name")
-	// Epoch label registry v2 errors (codes 97-99; code 96 retired with
-	// the removal of the deprecated RegisterEpochLabel external entry point).
+	// Epoch label registry errors. Code 96 was retired with the removal of the
+	// deprecated RegisterEpochLabel external entry point.
 	// ErrLabelNotInWhitelist is raised when a worker submits a label that is
 	// not in the topic's label_whitelist (post-canonicalization). Returned as
 	// part of InputInference.ValidateWithLimits.

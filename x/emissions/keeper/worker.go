@@ -669,7 +669,8 @@ func (k *WorkerKeeper) commitEvictionInferencePlan(
 		return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 	}
 
-	// Check if the inferer with lowest score is active before removing it, because remove will not fail if the inferer is not active
+	// RemoveActiveInferer is a no-op for inactive inferers, so verify the
+	// planned eviction target is active first.
 	isActive, err := k.IsActiveInferer(ctx, topic.Id, plan.LowestEmaScore.Address)
 	if err != nil {
 		return errorsmod.Wrap(err, "error checking if inferer is active")
