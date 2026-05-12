@@ -98,6 +98,13 @@ func validateMaxLabelsPerSubmission(i uint64) error {
 	return nil
 }
 
+// MinMaxCanonicalLabelByteLength / MaxMaxCanonicalLabelByteLength bound the
+// acceptable values for Params.MaxCanonicalLabelByteLength.
+const (
+	MinMaxCanonicalLabelByteLength = uint64(1)
+	MaxMaxCanonicalLabelByteLength = uint64(1024)
+)
+
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
 	if err := validateVersion(p.Version); err != nil {

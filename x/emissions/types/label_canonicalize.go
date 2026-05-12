@@ -8,22 +8,6 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-// MinMaxCanonicalLabelByteLength / MaxMaxCanonicalLabelByteLength bound the
-// acceptable values for Params.MaxCanonicalLabelByteLength and are the only
-// guardrails enforced on param changes (validateMaxCanonicalLabelByteLength
-// uses them at genesis, gov param-change, and migration-backfill time). The
-// floor keeps the shortest tolerated "y"-style single-character label well
-// below the cap; the ceiling is a safety bound. The effective bound used at runtime is the
-// Params.MaxCanonicalLabelByteLength value, which the keeper loads and
-// threads through CanonicalLabelName/CanonicalizeLabelList. Because the
-// canonical form is restricted to ASCII, the byte cap is equivalent to
-// character count. It is still enforced as bytes so every EpochLabelRegistry entry has
-// a deterministic, modest upper bound on serialized size.
-const (
-	MinMaxCanonicalLabelByteLength = uint64(1)
-	MaxMaxCanonicalLabelByteLength = uint64(1024)
-)
-
 // isAllowedLabelByte reports whether r belongs to the canonical label charset.
 //
 // The canonical charset is ASCII only:
@@ -50,41 +34,10 @@ func isAllowedLabelByte(r rune) bool {
 	return false
 }
 
-// CanonicalLabelName returns the canonical form of a user-supplied label
-// name. The canonical form is:
-//
-//  1. Valid UTF-8 (rejected otherwise).
-//  2. NFC-normalized (Unicode Normalization Form C). Kept as a defensive
-//     invariant even though the charset is ASCII-only, so that any NFC-equal
-//     pre-canonical inputs collapse before the charset check rejects them.
-//  3. Trimmed of leading and trailing Unicode whitespace (strings.TrimSpace).
-//  4. Checked to be non-empty after trimming.
-//  5. When labelCaseSensitive is false, lowercased in ASCII so that "Cat",
-//     "CAT" and "cat" all collapse to "cat". When true, case is preserved.
-//  6. Restricted to the ASCII charset: a-z, A-Z (only when
-//     labelCaseSensitive), 0-9, underscore, hyphen-minus, space, forward
-//     slash, dot. Any other rune is rejected.
-//  7. Bounded at maxBytes bytes after normalization.
-//
-// The function is idempotent when called with the same (maxBytes,
-// labelCaseSensitive) tuple: CanonicalLabelName(c, m, cs) == c for every c
-// already in canonical form for that case mode, because NFC is idempotent,
-// TrimSpace is idempotent on trimmed input, ASCII lowercasing is
-// idempotent, and the charset / byte-length checks are pure validations
-// that do not mutate the string. This invariant is exercised by
-// FuzzCanonicalLabelName.
-//
-// Canonicalization is applied at two sites:
-//   - InputInference.ValidateWithLimits (worker payload submission-time), so
-//     that every label registered in the temporary EpochLabelRegistry is
-//     canonical before close-time registry construction.
-//   - TopicKeeper.SetTopic / UpdateTopic (persisted Topic.LabelWhitelist), so
-//     that whitelist lookups are pure byte-equality against already-canonical
-//     names built by the msgserver.
-//
-// maxBytes must be >= 1; callers are expected to pass
-// Params.MaxCanonicalLabelByteLength, which Params.Validate constrains to
-// [MinMaxCanonicalLabelByteLength, MaxMaxCanonicalLabelByteLength].
+// CanonicalLabelName validates and canonicalizes a label for storage/key use.
+// It requires valid UTF-8, NFC-normalizes, trims, optionally lowercases, then
+// enforces the ASCII label charset and max byte length.
+// The result is idempotent for the same maxBytes and labelCaseSensitive values.
 func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (string, error) {
 	if maxBytes == 0 {
 		// Defensive: Params.Validate rejects zero; a zero here means the
