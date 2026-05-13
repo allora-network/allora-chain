@@ -3687,11 +3687,7 @@ type Params struct {
 	MaxWhitelistInputArrayLength       uint64 `protobuf:"varint,59,opt,name=max_whitelist_input_array_length,json=maxWhitelistInputArrayLength,proto3" json:"max_whitelist_input_array_length,omitempty"`
 	MinWeightThresholdForStdnorm       string `protobuf:"bytes,60,opt,name=min_weight_threshold_for_stdnorm,json=minWeightThresholdForStdnorm,proto3" json:"min_weight_threshold_for_stdnorm,omitempty"`
 	// Max byte length of a canonical label name after NFC normalization and
-	// trimming. Enforced by CanonicalLabelName at both submission time and
-	// topic whitelist canonicalization. Because the canonical form is ASCII
-	// only, this is equivalent to character count. Stored as bytes so every
-	// EpochLabelRegistry label entry has a deterministic upper bound on
-	// serialized size.
+	// trimming.
 	MaxCanonicalLabelByteLength uint64 `protobuf:"varint,61,opt,name=max_canonical_label_byte_length,json=maxCanonicalLabelByteLength,proto3" json:"max_canonical_label_byte_length,omitempty"`
 }
 
