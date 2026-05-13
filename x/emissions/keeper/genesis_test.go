@@ -80,6 +80,7 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -631,6 +632,7 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)

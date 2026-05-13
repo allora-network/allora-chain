@@ -162,6 +162,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -220,6 +221,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
@@ -365,6 +367,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)

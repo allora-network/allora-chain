@@ -148,6 +148,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
 
@@ -162,6 +163,77 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	s.Require().True(gotTopic.RequireUnity)
 	s.Require().True(gotTopic.UnityTolerance.Equal(alloraMath.MustNewDecFromString("0.001")))
 	s.Require().Equal(uint64(8), gotTopic.MaxLabelsPerSubmission)
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicLabelWhitelistsCanonicalizesAndFilters() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 5
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	caseInsensitiveTopic := emissionstypes.Topic{ //nolint:exhaustruct
+		Id:                 51,
+		LabelWhitelist:     []string{"  Foo  ", "foo", "bar", "bad!", "toolong"},
+		LabelCaseSensitive: false,
+	}
+	caseSensitiveTopic := emissionstypes.Topic{ //nolint:exhaustruct
+		Id:                 52,
+		LabelWhitelist:     []string{"Foo", "foo", "Foo", "bad!"},
+		LabelCaseSensitive: true,
+	}
+	topicStore.Set(sdk.Uint64ToBigEndian(caseInsensitiveTopic.Id), cdc.MustMarshal(&caseInsensitiveTopic))
+	topicStore.Set(sdk.Uint64ToBigEndian(caseSensitiveTopic.Id), cdc.MustMarshal(&caseSensitiveTopic))
+
+	err := v15.MigrateTopicLabelWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	gotCaseInsensitive, err := s.TopicKeeper().GetTopic(s.Ctx(), caseInsensitiveTopic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal([]string{"foo", "bar"}, gotCaseInsensitive.LabelWhitelist)
+
+	gotCaseSensitive, err := s.TopicKeeper().GetTopic(s.Ctx(), caseSensitiveTopic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal([]string{"Foo", "foo"}, gotCaseSensitive.LabelWhitelist)
+
+	err = v15.MigrateTopicLabelWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	s.Require().NoError(err)
+	gotAfterSecondRun, err := s.TopicKeeper().GetTopic(s.Ctx(), caseInsensitiveTopic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal(gotCaseInsensitive.LabelWhitelist, gotAfterSecondRun.LabelWhitelist)
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalLabelByteLength() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	err := v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	got, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, got.MaxCanonicalLabelByteLength)
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsPreservesExistingMaxCanonicalLabelByteLength() {
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 32
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	err := v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	got, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(32), got.MaxCanonicalLabelByteLength)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() {

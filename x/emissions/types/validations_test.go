@@ -769,6 +769,7 @@ func validTopic(p Params) Topic {
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
 	}
 }

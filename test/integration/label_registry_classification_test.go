@@ -17,10 +17,10 @@ import (
 // The six sub-scenarios are:
 //  1. CLASSIFICATION + MULTI-arity topic with a label_whitelist and
 //     max_labels_per_submission round-trips through storage and the
-//     whitelist is persisted canonicalized (NFC/trim).
+//     whitelist is persisted canonicalized (trim/case fold).
 //  2. CreateNewTopic rejects zero max_labels_per_submission.
 //  3. CreateNewTopic rejects a whitelist containing a canonical duplicate
-//     (post-NFC) via ErrInvalidLabelName.
+//     (post-trim/case fold) via ErrInvalidLabelName.
 //  4. CreateNewTopic rejects a whitelist containing a control character
 //     via ErrInvalidLabelName.
 //  5. Topic.LabelWhitelist is stored in sorted/canonical form that is
@@ -60,7 +60,7 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 			RequireUnity:             true,
 			UnityTolerance:           alloraMath.MustNewDecFromString("0.01"),
 			MaxLabelsPerSubmission:   3,
-			LabelWhitelist:           []string{"  bull  ", "e\u0301", "bear"},
+			LabelWhitelist:           []string{"  bull  ", "Bear/Cub", "bear"},
 		}
 	}
 
@@ -80,7 +80,7 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 	require.Equal(m.T, uint64(3), stored.Topic.MaxLabelsPerSubmission,
 		"MaxLabelsPerSubmission must round-trip (scenario 1)")
 	require.ElementsMatch(m.T,
-		[]string{"bull", "\u00e9", "bear"},
+		[]string{"bull", "bear/cub", "bear"},
 		stored.Topic.LabelWhitelist,
 		"LabelWhitelist must be persisted canonicalized (scenario 1, 5)")
 
@@ -99,7 +99,7 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 
 	// Scenario 3: canonical duplicate whitelist rejected.
 	dupReq := baseReq()
-	dupReq.LabelWhitelist = []string{"\u00e9", "e\u0301"}
+	dupReq.LabelWhitelist = []string{"Foo", " foo "}
 	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, dupReq)
 	if err == nil {
 		_, waitErr := m.Client.WaitForTx(ctx, txResp.TxHash)
