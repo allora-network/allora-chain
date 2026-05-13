@@ -1187,6 +1187,7 @@ func mockUninitializedParams() types.Params {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		MaxCanonicalLabelByteLength:         64,
 	}
 }
 

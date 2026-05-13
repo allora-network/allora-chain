@@ -11,6 +11,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -889,6 +890,52 @@ func (k *TopicKeeper) GetEpochLabelRegistry(
 	registry.TopicId = topicId
 	registry.EpochId = uint64(nonce) //nolint:gosec // nonce is a non-negative block height; cast is safe
 	return registry, nil
+}
+
+// RegisterEpochLabel registers a canonical label in the epoch registry using
+// first-seen 1-based ids. If the label already exists, its existing id is
+// returned.
+func (k *TopicKeeper) RegisterEpochLabel(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+	labelName string,
+) (LabelId, error) {
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "failed to get topic for label registration")
+	}
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "failed to get params for label registration")
+	}
+	canonicalLabel, err := types.CanonicalLabelName(
+		labelName,
+		params.MaxCanonicalLabelByteLength,
+		topic.LabelCaseSensitive,
+	)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "label name validation failed")
+	}
+	if canonicalLabel != labelName {
+		return 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", labelName)
+	}
+	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	if err != nil {
+		return 0, err
+	}
+	for _, lbl := range registry.Labels {
+		if lbl != nil && lbl.Name == canonicalLabel {
+			return lbl.Id, nil
+		}
+	}
+	//nolint:gosec // labels are capped per submission and by WSW throughput.
+	nextID := LabelId(len(registry.Labels) + 1)
+	registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: canonicalLabel})
+	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicId, nonce), registry); err != nil {
+		return 0, errorsmod.Wrap(err, "error setting topic label registry")
+	}
+	return nextID, nil
 }
 
 // GetEpochLabelId returns the label id for labelName, if present.

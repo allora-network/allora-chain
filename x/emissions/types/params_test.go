@@ -64,7 +64,6 @@ func TestDefaultParams(t *testing.T) {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
-		MaxLabelsPerSubmission:              DefaultMaxLabelsPerSubmission,
 		MaxCanonicalLabelByteLength:         64,
 	}
 
@@ -74,9 +73,9 @@ func TestDefaultParams(t *testing.T) {
 }
 
 // TestValidateMaxLabelsPerSubmission exercises the explicit bound on the
-// new module parameter: 0 is rejected, 1 is accepted (smallest positive
-// cap), DefaultMaxLabelsPerSubmission round-trips validation, the upper
-// bound is inclusive, and one-above-bound is rejected.
+// per-topic cap: 0 is rejected, 1 is accepted (smallest positive cap),
+// DefaultMaxLabelsPerSubmission round-trips validation, the upper bound is
+// inclusive, and one-above-bound is rejected.
 func TestValidateMaxLabelsPerSubmission(t *testing.T) {
 	cases := []struct {
 		name string
@@ -99,16 +98,6 @@ func TestValidateMaxLabelsPerSubmission(t *testing.T) {
 			}
 		})
 	}
-}
-
-// TestParamsValidate_RejectsZeroMaxLabelsPerSubmission ensures that
-// Params.Validate does not silently accept a zero cap. The v15 migration
-// backfills zero to DefaultMaxLabelsPerSubmission, so a zero at
-// Params.Validate time indicates a genuinely invalid state.
-func TestParamsValidate_RejectsZeroMaxLabelsPerSubmission(t *testing.T) {
-	p := DefaultParams()
-	p.MaxLabelsPerSubmission = 0
-	require.Error(t, p.Validate())
 }
 
 // TestValidateMaxCanonicalLabelByteLength exercises the explicit bound on

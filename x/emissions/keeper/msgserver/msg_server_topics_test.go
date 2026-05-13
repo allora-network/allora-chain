@@ -424,7 +424,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRa
 			updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 			require.Error(err)
 			require.Nil(updateResult)
-			require.ErrorContains(err, "max labels per submission")
+			require.ErrorContains(err, "max_labels_per_submission")
 
 			got, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
 			require.NoError(err)
@@ -1189,21 +1189,21 @@ func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
-		// NFD form (e + combining acute), plus whitespace padding; a
-		// canonical duplicate should be rejected with ErrInvalidLabelName.
-		LabelWhitelist:    []string{"  foo  ", "e\u0301", "\u00e9"},
+		// Whitespace and case collapse under the default case-insensitive
+		// canonicalizer; a canonical duplicate should be rejected.
+		LabelWhitelist:    []string{"  Foo  ", "foo"},
 		LabelDefaultValue: alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.CreateNewTopic(ctx, create)
 	require.ErrorIs(err, types.ErrInvalidLabelName, "canonical duplicate must be rejected at SetTopic")
 
-	create.LabelWhitelist = []string{"  foo  ", "e\u0301"}
+	create.LabelWhitelist = []string{"  Foo  ", "bar/baz"}
 	resp, err := msgServer.CreateNewTopic(ctx, create)
 	require.NoError(err)
 	stored, err := s.TopicKeeper().GetTopic(ctx, resp.TopicId)
 	require.NoError(err)
-	require.Equal([]string{"foo", "\u00e9"}, stored.LabelWhitelist,
-		"whitelist must be persisted in canonical (NFC+trimmed) form")
+	require.Equal([]string{"foo", "bar/baz"}, stored.LabelWhitelist,
+		"whitelist must be persisted in canonical form")
 }
 
 // TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen asserts the generalized
@@ -1318,7 +1318,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		RequireUnity:           false,
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: 8,
-		LabelWhitelist:         []string{"  a  ", "e\u0301"},
+		LabelWhitelist:         []string{"  A  ", "b/c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
@@ -1326,7 +1326,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(uint64(8), got.MaxLabelsPerSubmission)
-	require.Equal([]string{"a", "\u00e9"}, got.LabelWhitelist,
+	require.Equal([]string{"a", "b/c"}, got.LabelWhitelist,
 		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
 }
 
