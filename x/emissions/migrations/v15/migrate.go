@@ -94,8 +94,8 @@ func MigrateTopicLabelWhitelists(
 	maxBytes := params.MaxCanonicalLabelByteLength
 	if maxBytes == 0 {
 		// Defensive: MigrateParams should have backfilled this already to
-		// the module-initial cap of 64 bytes.
-		maxBytes = 64
+		// the module-initial cap.
+		maxBytes = emissionstypes.DefaultParams().MaxCanonicalLabelByteLength
 	}
 
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
@@ -191,10 +191,10 @@ func labelWhitelistEqual(a, b []string) bool {
 // left unchanged.
 //
 // Backfilled fields:
-//   - MaxCanonicalLabelByteLength: defaults to 64 (the module-initial cap)
-//     when zero. Backfilled before MigrateTopicLabelWhitelists runs because
-//     the whitelist canonicalizer reads this cap; a zero cap would reject
-//     every label.
+//   - MaxCanonicalLabelByteLength: defaults to the module-initial cap when
+//     zero. Backfilled before MigrateTopicLabelWhitelists runs because the
+//     whitelist canonicalizer reads this cap; a zero cap would reject every
+//     label.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
@@ -203,7 +203,7 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 	changed := false
 	if params.MaxCanonicalLabelByteLength == 0 {
-		params.MaxCanonicalLabelByteLength = 64
+		params.MaxCanonicalLabelByteLength = emissionstypes.DefaultParams().MaxCanonicalLabelByteLength
 		changed = true
 	}
 

@@ -775,7 +775,16 @@ func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
 	if err != nil {
 		return nil, err
 	}
-	return MaterializeInputInferenceFromTemporaryRegistry(topic, registry, inference)
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "error getting params for input inference materialization")
+	}
+	return MaterializeInputInferenceFromTemporaryRegistry(
+		topic,
+		registry,
+		inference,
+		params.MaxCanonicalLabelByteLength,
+	)
 }
 
 // LoadActiveInfererInferencesForClose reads the temporary dense inferences for

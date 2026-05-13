@@ -1762,6 +1762,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 		LabelDefaultValue: alloraMath.ZeroDec(),
 	} //nolint:exhaustruct
 	nonce := types.BlockHeight(7)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
 	tempRegistry := types.EpochLabelRegistry{
 		TopicId: 1,
 		EpochId: uint64(nonce),
@@ -1825,7 +1826,13 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 
 	for _, c := range cases {
 		s.Run(c.name, func() {
-			reg, got, reused, err := keeper.MaterializeFinalEpochLabelRegistry(topic, nonce, tempRegistry, c.active)
+			reg, got, reused, err := keeper.MaterializeFinalEpochLabelRegistry(
+				topic,
+				nonce,
+				tempRegistry,
+				c.active,
+				maxLabelBytes,
+			)
 			if c.wantErrIs != nil {
 				s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
 				return
@@ -1851,6 +1858,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 	nonce := types.BlockHeight(7)
 	inferer := s.AddrsStr(0)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
 	baseInference := types.Inference{
 		TopicId:     1,
 		BlockHeight: nonce,
@@ -1990,7 +1998,12 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			inference := baseInference
 			inference.Values = c.values
 
-			got, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(c.topic, c.registry, inference)
+			got, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(
+				c.topic,
+				c.registry,
+				inference,
+				maxLabelBytes,
+			)
 			if c.wantErrContains != "" {
 				s.Require().Error(err)
 				s.Require().Contains(err.Error(), c.wantErrContains)
@@ -2014,6 +2027,69 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			}
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestSetEpochLabelRegistryUsesLiveLabelByteCap() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+
+	params := types.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 3
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	err := s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abcd"},
+		},
+	})
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
+
+	err = s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abc"},
+		},
+	})
+	s.Require().NoError(err)
+}
+
+func (s *KeeperTestSuite) TestMaterializersUsePassedLabelByteCap() {
+	nonce := types.BlockHeight(7)
+	topic, _ := s.setupMultiTopic()
+	registry := types.EpochLabelRegistry{
+		TopicId: topic.Id,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abcd"},
+		},
+	}
+	inference := types.Inference{
+		TopicId:     topic.Id,
+		BlockHeight: nonce,
+		Inferer:     s.AddrsStr(0),
+		Values:      decs("0.1"),
+		ExtraData:   nil,
+		Proof:       "",
+	}
+
+	_, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(topic, registry, inference, 3)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
+
+	_, _, _, err = keeper.MaterializeFinalEpochLabelRegistry(
+		topic,
+		nonce,
+		registry,
+		[]*types.Inference{&inference},
+		3,
+	)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
 }
 
 func decs(values ...string) []alloraMath.Dec {

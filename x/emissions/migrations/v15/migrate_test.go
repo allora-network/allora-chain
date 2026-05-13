@@ -206,6 +206,35 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicLabelWhitelistsCanonica
 	s.Require().Equal(gotCaseInsensitive.LabelWhitelist, gotAfterSecondRun.LabelWhitelist)
 }
 
+func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicLabelWhitelistsZeroParamFallbackUsesDefaultCap() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	defaultCap := emissionstypes.DefaultParams().MaxCanonicalLabelByteLength
+	atDefaultCap := repeatedLabelByte('a', defaultCap)
+	overDefaultCap := repeatedLabelByte('b', defaultCap+1)
+
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	topic := emissionstypes.Topic{ //nolint:exhaustruct
+		Id:                 53,
+		LabelWhitelist:     []string{atDefaultCap, overDefaultCap},
+		LabelCaseSensitive: false,
+	}
+	topicStore.Set(sdk.Uint64ToBigEndian(topic.Id), cdc.MustMarshal(&topic))
+
+	err := v15.MigrateTopicLabelWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal([]string{atDefaultCap}, got.LabelWhitelist)
+}
+
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalLabelByteLength() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
@@ -221,6 +250,14 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalL
 	got, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, got.MaxCanonicalLabelByteLength)
+}
+
+func repeatedLabelByte(b byte, count uint64) string {
+	buf := make([]byte, 0)
+	for i := uint64(0); i < count; i++ {
+		buf = append(buf, b)
+	}
+	return string(buf)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsPreservesExistingMaxCanonicalLabelByteLength() {

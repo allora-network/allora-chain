@@ -22,6 +22,7 @@ func MaterializeInputInferenceFromTemporaryRegistry(
 	topic types.Topic,
 	tempRegistry types.EpochLabelRegistry,
 	inference types.Inference,
+	maxLabelBytes uint64,
 ) (*types.InputInference, error) {
 	if err := inference.Validate(); err != nil {
 		return nil, errorsmod.Wrap(err, "inference validation failed")
@@ -40,7 +41,7 @@ func MaterializeInputInferenceFromTemporaryRegistry(
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
 		return materializeSingleInputInference(inference)
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
-		return materializeMultiInputInference(topic, nonce, tempRegistry, inference)
+		return materializeMultiInputInference(topic, nonce, tempRegistry, inference, maxLabelBytes)
 	default:
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
@@ -78,8 +79,9 @@ func materializeMultiInputInference(
 	nonce types.BlockHeight,
 	tempRegistry types.EpochLabelRegistry,
 	inference types.Inference,
+	maxLabelBytes uint64,
 ) (*types.InputInference, error) {
-	if err := validateTemporaryRegistry(topic, nonce, tempRegistry); err != nil {
+	if err := validateTemporaryRegistry(topic, nonce, tempRegistry, maxLabelBytes); err != nil {
 		return nil, err
 	}
 	if len(inference.Values) > len(tempRegistry.Labels) {
@@ -124,7 +126,11 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get topic for epoch label registry validation")
 	}
-	if err := validateTemporaryRegistry(topic, nonce, registry); err != nil {
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to get params for epoch label registry validation")
+	}
+	if err := validateTemporaryRegistry(topic, nonce, registry, params.MaxCanonicalLabelByteLength); err != nil {
 		return err
 	}
 	return k.topicLabelRegistry.Set(ctx, collections.Join(registry.TopicId, nonce), registry)
@@ -138,8 +144,9 @@ func MaterializeFinalEpochLabelRegistry(
 	nonce types.BlockHeight,
 	tempRegistry types.EpochLabelRegistry,
 	activeInferences []*types.Inference,
+	maxLabelBytes uint64,
 ) (types.EpochLabelRegistry, *types.Inferences, bool, error) {
-	if err := validateTemporaryRegistry(topic, nonce, tempRegistry); err != nil {
+	if err := validateTemporaryRegistry(topic, nonce, tempRegistry, maxLabelBytes); err != nil {
 		return types.EpochLabelRegistry{}, nil, false, err
 	}
 	for _, inference := range activeInferences {
@@ -285,14 +292,16 @@ func validateTemporaryRegistry(
 	topic types.Topic,
 	nonce types.BlockHeight,
 	registry types.EpochLabelRegistry,
+	maxLabelBytes uint64,
 ) error {
-	return validateEpochLabelRegistry(topic, nonce, registry)
+	return validateEpochLabelRegistry(topic, nonce, registry, maxLabelBytes)
 }
 
 func validateEpochLabelRegistry(
 	topic types.Topic,
 	nonce types.BlockHeight,
 	registry types.EpochLabelRegistry,
+	maxLabelBytes uint64,
 ) error {
 	topicId := topic.Id
 	if err := types.ValidateTopicId(topicId); err != nil {
@@ -319,7 +328,7 @@ func validateEpochLabelRegistry(
 		}
 		canonicalLabel, err := types.CanonicalLabelName(
 			lbl.Name,
-			types.MaxMaxCanonicalLabelByteLength,
+			maxLabelBytes,
 			topic.LabelCaseSensitive,
 		)
 		if err != nil {
@@ -403,7 +412,17 @@ func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesMaterializedAtCl
 	if err != nil {
 		return nil, types.EpochLabelRegistry{}, false, err
 	}
-	finalRegistry, inferences, reusedTemporary, err := MaterializeFinalEpochLabelRegistry(topic, nonce, tempRegistry, activeInferences)
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return nil, types.EpochLabelRegistry{}, false, errorsmod.Wrap(err, "error getting params for epoch label registry materialization")
+	}
+	finalRegistry, inferences, reusedTemporary, err := MaterializeFinalEpochLabelRegistry(
+		topic,
+		nonce,
+		tempRegistry,
+		activeInferences,
+		params.MaxCanonicalLabelByteLength,
+	)
 	if err != nil {
 		return nil, types.EpochLabelRegistry{}, false, err
 	}
