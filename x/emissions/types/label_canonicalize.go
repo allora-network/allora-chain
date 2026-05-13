@@ -16,8 +16,8 @@ import (
 //   - separators: underscore, hyphen-minus, space
 //   - hierarchy: forward slash, dot
 //
-// Callers that want case-insensitive canonicalization MUST lowercase before
-// calling this predicate on each rune.
+// Case-insensitive canonicalization should apply ASCII-only lowercasing after
+// this predicate has rejected non-ASCII input.
 func isAllowedLabelByte(r rune) bool {
 	switch {
 	case r >= 'a' && r <= 'z':
@@ -35,8 +35,9 @@ func isAllowedLabelByte(r rune) bool {
 }
 
 // CanonicalLabelName validates and canonicalizes a label for storage/key use.
-// It requires valid UTF-8, NFC-normalizes, trims, optionally lowercases, then
-// enforces the ASCII label charset and max byte length.
+// It requires valid UTF-8, trims, enforces the ASCII label charset,
+// NFC-normalizes, optionally lowercases ASCII letters, then enforces max byte
+// length.
 // The result is idempotent for the same maxBytes and labelCaseSensitive values.
 func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (string, error) {
 	if maxBytes == 0 {
@@ -48,26 +49,9 @@ func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (str
 	if !utf8.ValidString(s) {
 		return "", errorsmod.Wrap(ErrInvalidLabelName, "label is not valid UTF-8")
 	}
-	normalized := norm.NFC.String(s)
-	trimmed := strings.TrimSpace(normalized)
+	trimmed := strings.TrimSpace(s)
 	if trimmed == "" {
 		return "", errorsmod.Wrap(ErrInvalidLabelName, "label is empty after trimming")
-	}
-	if !labelCaseSensitive {
-		// Using strings.ToLower on ASCII-only input produces ASCII-only
-		// output; non-ASCII runes would be rejected by the charset check
-		// that follows regardless. Lowercasing before the charset check
-		// keeps the rejection message accurate even when the input had
-		// uppercase letters that would have been legal under
-		// label_case_sensitive.
-		trimmed = strings.ToLower(trimmed)
-	}
-	// Enforce byte cap before iterating so we do not spend work on inputs
-	// that the byte-length check will reject anyway.
-	if uint64(len(trimmed)) > maxBytes {
-		return "", errorsmod.Wrapf(ErrInvalidLabelName,
-			"label exceeds %d bytes after normalization (got %d)",
-			maxBytes, len(trimmed))
 	}
 	for _, r := range trimmed {
 		if !isAllowedLabelByte(r) {
@@ -75,7 +59,26 @@ func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (str
 				"label contains a disallowed character: U+%04X", r)
 		}
 	}
+	trimmed = norm.NFC.String(trimmed)
+	if !labelCaseSensitive {
+		trimmed = lowerASCII(trimmed)
+	}
+	if uint64(len(trimmed)) > maxBytes {
+		return "", errorsmod.Wrapf(ErrInvalidLabelName,
+			"label exceeds %d bytes after normalization (got %d)",
+			maxBytes, len(trimmed))
+	}
 	return trimmed, nil
+}
+
+func lowerASCII(s string) string {
+	out := []byte(s)
+	for i, b := range out {
+		if b >= 'A' && b <= 'Z' {
+			out[i] = b + ('a' - 'A')
+		}
+	}
+	return string(out)
 }
 
 // CanonicalizeLabelList canonicalizes each entry in the input slice and

@@ -119,6 +119,7 @@ func TestCanonicalLabelName_Rejects(t *testing.T) {
 		{name: "at sign", in: "bad@good", labelCaseSensitive: false},
 		{name: "hash", in: "bad#good", labelCaseSensitive: false},
 		{name: "unicode letter", in: "é", labelCaseSensitive: false},
+		{name: "unicode kelvin sign folds to ascii k", in: "\u212A", labelCaseSensitive: false},
 		{name: "emoji", in: "good 🚀", labelCaseSensitive: false},
 		{name: "nfd e-acute", in: "e\u0301", labelCaseSensitive: false},
 		{name: "nfc e-acute", in: "\u00e9", labelCaseSensitive: false},
