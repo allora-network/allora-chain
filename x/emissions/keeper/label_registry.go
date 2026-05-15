@@ -81,7 +81,13 @@ func materializeMultiInputInference(
 	inference types.Inference,
 	maxLabelBytes uint64,
 ) (*types.InputInference, error) {
-	if err := validateTemporaryRegistry(topic, nonce, tempRegistry, maxLabelBytes); err != nil {
+	if err := validateTemporaryRegistry(
+		topic.Id,
+		topic.LabelCaseSensitive,
+		nonce,
+		tempRegistry,
+		maxLabelBytes,
+	); err != nil {
 		return nil, err
 	}
 	if len(inference.Values) > len(tempRegistry.Labels) {
@@ -130,7 +136,13 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get params for epoch label registry validation")
 	}
-	if err := validateTemporaryRegistry(topic, nonce, registry, params.MaxCanonicalLabelByteLength); err != nil {
+	if err := validateTemporaryRegistry(
+		registry.TopicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		registry,
+		params.MaxCanonicalLabelByteLength,
+	); err != nil {
 		return err
 	}
 	return k.topicLabelRegistry.Set(ctx, collections.Join(registry.TopicId, nonce), registry)
@@ -146,7 +158,13 @@ func MaterializeFinalEpochLabelRegistry(
 	activeInferences []*types.Inference,
 	maxLabelBytes uint64,
 ) (types.EpochLabelRegistry, *types.Inferences, bool, error) {
-	if err := validateTemporaryRegistry(topic, nonce, tempRegistry, maxLabelBytes); err != nil {
+	if err := validateTemporaryRegistry(
+		topic.Id,
+		topic.LabelCaseSensitive,
+		nonce,
+		tempRegistry,
+		maxLabelBytes,
+	); err != nil {
 		return types.EpochLabelRegistry{}, nil, false, err
 	}
 	for _, inference := range activeInferences {
@@ -289,29 +307,30 @@ func activeNonDefaultLabelMask(
 }
 
 func validateTemporaryRegistry(
-	topic types.Topic,
+	topicID types.TopicId,
+	labelCaseSensitive bool,
 	nonce types.BlockHeight,
 	registry types.EpochLabelRegistry,
 	maxLabelBytes uint64,
 ) error {
-	return validateEpochLabelRegistry(topic, nonce, registry, maxLabelBytes)
+	return validateEpochLabelRegistry(topicID, labelCaseSensitive, nonce, registry, maxLabelBytes)
 }
 
 func validateEpochLabelRegistry(
-	topic types.Topic,
+	topicID types.TopicId,
+	labelCaseSensitive bool,
 	nonce types.BlockHeight,
 	registry types.EpochLabelRegistry,
 	maxLabelBytes uint64,
 ) error {
-	topicId := topic.Id
-	if err := types.ValidateTopicId(topicId); err != nil {
+	if err := types.ValidateTopicId(topicID); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
 	if err := types.ValidateBlockHeight(nonce); err != nil {
 		return errorsmod.Wrap(err, "nonce block height validation failed")
 	}
-	if registry.TopicId != topicId {
-		return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry topic mismatch: got %d expected %d", registry.TopicId, topicId)
+	if registry.TopicId != topicID {
+		return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry topic mismatch: got %d expected %d", registry.TopicId, topicID)
 	}
 	if registry.EpochId != uint64(nonce) {
 		return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry epoch mismatch: got %d expected %d", registry.EpochId, nonce)
@@ -329,7 +348,7 @@ func validateEpochLabelRegistry(
 		canonicalLabel, err := types.CanonicalLabelName(
 			lbl.Name,
 			maxLabelBytes,
-			topic.LabelCaseSensitive,
+			labelCaseSensitive,
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "registry label at index %d is invalid", i)

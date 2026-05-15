@@ -893,17 +893,21 @@ func (k *TopicKeeper) GetEpochLabelRegistry(
 }
 
 // RegisterEpochLabel registers a canonical label in the epoch registry using
-// first-seen 1-based ids. If the label already exists, its existing id is
-// returned.
+// first-seen 1-based ids. Callers must pass the topic's case-sensitivity
+// setting so registry canonicalization matches submission and whitelist
+// validation. If the label already exists, its existing id is returned.
 func (k *TopicKeeper) RegisterEpochLabel(
 	ctx context.Context,
-	topicId types.TopicId,
+	topicID types.TopicId,
+	labelCaseSensitive bool,
 	nonce types.BlockHeight,
 	labelName string,
 ) (LabelId, error) {
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return 0, errorsmod.Wrap(err, "failed to get topic for label registration")
+	if err := types.ValidateTopicId(topicID); err != nil {
+		return 0, errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(nonce); err != nil {
+		return 0, errorsmod.Wrap(err, "nonce block height validation failed")
 	}
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
@@ -912,7 +916,7 @@ func (k *TopicKeeper) RegisterEpochLabel(
 	canonicalLabel, err := types.CanonicalLabelName(
 		labelName,
 		params.MaxCanonicalLabelByteLength,
-		topic.LabelCaseSensitive,
+		labelCaseSensitive,
 	)
 	if err != nil {
 		return 0, errorsmod.Wrap(err, "label name validation failed")
@@ -920,7 +924,7 @@ func (k *TopicKeeper) RegisterEpochLabel(
 	if canonicalLabel != labelName {
 		return 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", labelName)
 	}
-	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	registry, err := k.GetEpochLabelRegistry(ctx, topicID, nonce)
 	if err != nil {
 		return 0, err
 	}
@@ -932,7 +936,7 @@ func (k *TopicKeeper) RegisterEpochLabel(
 	//nolint:gosec // labels are capped per submission and by WSW throughput.
 	nextID := LabelId(len(registry.Labels) + 1)
 	registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: canonicalLabel})
-	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicId, nonce), registry); err != nil {
+	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicID, nonce), registry); err != nil {
 		return 0, errorsmod.Wrap(err, "error setting topic label registry")
 	}
 	return nextID, nil

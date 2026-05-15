@@ -265,6 +265,68 @@ func (s *RewardsTestSuite) TestMultiLabelLabelIndependence() {
 	}
 }
 
+func (s *RewardsTestSuite) TestMultiLabelCaseInsensitiveLabelsCanonicalizedInRewards() {
+	require := s.Require()
+
+	workerIndexes := testutil.ReturnIndexes(5, 3)
+	reputerIndexes := testutil.ReturnIndexes(0, 3)
+	workerValues := []testutil.TestWorkerValue{
+		{
+			Index: workerIndexes[0],
+			Values: []testutil.TestLabeledValue{
+				{Label: "Cat", Value: "0.1"},
+				{Label: "DOG", Value: "0.4"},
+			},
+		},
+		{
+			Index: workerIndexes[1],
+			Values: []testutil.TestLabeledValue{
+				{Label: "cat", Value: "0.2"},
+				{Label: "dog", Value: "0.5"},
+			},
+		},
+		{
+			Index: workerIndexes[2],
+			Values: []testutil.TestLabeledValue{
+				{Label: "CAT", Value: "0.3"},
+				{Label: "Dog", Value: "0.6"},
+			},
+		},
+	}
+
+	topicID, nonce := s.FullTopicPass(
+		workerIndexes,
+		reputerIndexes,
+		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithWorkerValues(workerValues),
+	)
+
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicID)
+	require.NoError(err)
+	require.False(topic.LabelCaseSensitive)
+
+	wantNames := []string{"cat", "dog"}
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicID, nonce)
+	require.NoError(err)
+	assertRegistryLabelNames(require, &registry, wantNames)
+
+	bundle, err := s.EmissionsKeeper().GetNetworkInferences(s.Ctx(), topicID, nonce)
+	require.NoError(err)
+	require.NotNil(bundle)
+	assertLabeledValuesMatchNames(require, bundle.CombinedValue, wantNames, "combined value")
+	assertLabeledValuesMatchNames(require, bundle.NaiveValue, wantNames, "naive value")
+
+	combined := labeledValuesToMap(bundle.CombinedValue)
+	_, ok := combined["Cat"]
+	require.False(ok)
+	_, ok = combined["DOG"]
+	require.False(ok)
+
+	naive := labeledValuesToMap(bundle.NaiveValue)
+	testutil2.InEpsilon5(s.T(), naive["cat"], "0.2")
+	testutil2.InEpsilon5(s.T(), naive["dog"], "0.5")
+}
+
 func (s *RewardsTestSuite) TestMultiLabelPermutationInvariance() {
 	require := s.Require()
 

@@ -1171,7 +1171,13 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		if dec.IsNaN() || !dec.IsFinite() {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
-		if _, err := k.topicKeeper.RegisterEpochLabel(ctx, topic.Id, nonce, "y"); err != nil {
+		if _, err := k.topicKeeper.RegisterEpochLabel(
+			ctx,
+			topic.Id,
+			topic.LabelCaseSensitive,
+			nonce,
+			"y",
+		); err != nil {
 			return nil, errorsmod.Wrap(err, "failed to register single-arity label")
 		}
 		return &types.Inference{
@@ -1219,7 +1225,13 @@ func (k *WorkerKeeper) NormalizeInputInference(
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to sum submitted value: %s", err)
 		}
 		if !dec.Equal(topic.LabelDefaultValue) {
-			id, err := k.topicKeeper.RegisterEpochLabel(ctx, topic.Id, nonce, lv.Label)
+			id, err := k.topicKeeper.RegisterEpochLabel(
+				ctx,
+				topic.Id,
+				topic.LabelCaseSensitive,
+				nonce,
+				lv.Label,
+			)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err, "failed to register label %s", lv.Label)
 			}

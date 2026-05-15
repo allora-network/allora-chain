@@ -226,6 +226,8 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
 	topicId := res.TopicId
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
 	blockHeight := int64(100)
 
 	// Set up workers/forecasters using existing suite addresses
@@ -236,7 +238,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	forecaster0 := s.AddrsStr(4)
 	forecaster1 := s.AddrsStr(5)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, blockHeight, "y")
 	require.NoError(err)
 
 	// Create inferences where worker3 is an obvious outlier
@@ -372,6 +374,8 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
 	topicId := res.TopicId
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
 	blockHeight := int64(100)
 
 	// Set up workers/forecasters using existing suite addresses
@@ -434,7 +438,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, blockHeight, "y")
 	require.NoError(err)
 
 	// Call the function we're testing
