@@ -6,6 +6,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
@@ -122,15 +123,8 @@ func (ms msgServer) processWorkerInferencePayload(
 	rawInference *types.InputInference,
 	moduleParams types.Params,
 ) error {
-	labelCap := topic.MaxLabelsPerSubmission
-	whitelist := types.CanonicalLabelSet(topic.LabelWhitelist)
-	if err := rawInference.ValidateWithLimits(
-		labelCap,
-		whitelist,
-		moduleParams.MaxCanonicalLabelByteLength,
-		topic.LabelCaseSensitive,
-	); err != nil {
-		return errorsmod.Wrapf(err, "input inference failed label validation")
+	if err := validateWorkerInferenceLabels(topic, rawInference, moduleParams); err != nil {
+		return err
 	}
 
 	plan, err := ms.wk.PlanAppendInference(
@@ -169,6 +163,33 @@ func (ms msgServer) processWorkerInferencePayload(
 		return errorsmod.Wrap(err, "Error committing planned inference")
 	}
 	types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
+	return nil
+}
+
+func validateWorkerInferenceLabels(
+	topic types.Topic,
+	rawInference *types.InputInference,
+	moduleParams types.Params,
+) error {
+	labelCap := topic.MaxLabelsPerSubmission
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+		labelCap = 1
+	}
+	whitelist := types.CanonicalLabelSet(topic.LabelWhitelist)
+	if err := rawInference.ValidateWithLimits(
+		labelCap,
+		whitelist,
+		moduleParams.MaxCanonicalLabelByteLength,
+		topic.LabelCaseSensitive,
+	); err != nil {
+		return errorsmod.Wrapf(err, "input inference failed label validation")
+	}
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE && len(rawInference.Values) == 1 {
+		label := rawInference.Values[0].Label
+		if label != "" && label != "y" {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "single-arity label must be \"y\", got %q", label)
+		}
+	}
 	return nil
 }
 

@@ -880,7 +880,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 				}
 			},
 			wantErr:   true,
-			wantErrIs: sdkerrors.ErrInvalidRequest,
+			wantErrIs: types.ErrTooManyLabelsPerSubmission,
 		},
 		{
 			// Under the default caseSensitive=false topic, submitted
@@ -1226,6 +1226,131 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().False(isActive)
+}
+
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_SingleArityValidationBeforePlanning() {
+	type labeledValue struct {
+		label string
+		value string
+	}
+	type tc struct {
+		name             string
+		scalarValue      string
+		values           []labeledValue
+		makeNonAdmitted  bool
+		wantErrIs        error
+		wantStoredScalar string
+	}
+
+	cases := []tc{
+		{
+			name:             "scalar_payload_still_succeeds",
+			scalarValue:      "100",
+			wantStoredScalar: "100",
+		},
+		{
+			name: "canonical_y_label_payload_still_succeeds",
+			values: []labeledValue{
+				{label: "  Y  ", value: "7"},
+			},
+			wantStoredScalar: "7",
+		},
+		{
+			name: "two_labeled_values_rejected_before_non_admitted_score_update",
+			values: []labeledValue{
+				{label: "y", value: "1"},
+				{label: "z", value: "2"},
+			},
+			makeNonAdmitted: true,
+			wantErrIs:       types.ErrTooManyLabelsPerSubmission,
+		},
+		{
+			name: "non_y_single_label_rejected_before_non_admitted_score_update",
+			values: []labeledValue{
+				{label: "x", value: "1"},
+			},
+			makeNonAdmitted: true,
+			wantErrIs:       sdkerrors.ErrInvalidRequest,
+		},
+	}
+
+	makeWorkerNonAdmitted := func(topicId uint64, worker string, nonce types.BlockHeight) {
+		params := types.DefaultParams()
+		params.MaxTopInferersToReward = 1
+		s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+		activeInferer := s.AddrsStr(9)
+		activeScore := types.Score{
+			TopicId:     topicId,
+			BlockHeight: nonce,
+			Address:     activeInferer,
+			Score:       alloraMath.NewDecFromInt64(100),
+		}
+		s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(s.Ctx(), topicId, activeInferer, activeScore))
+		s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(s.Ctx(), topicId, activeScore))
+		s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, activeInferer))
+		score, err := s.ScoresKeeper().GetInfererScoreEma(s.Ctx(), topicId, worker)
+		s.Require().NoError(err)
+		s.Require().Equal(types.BlockHeight(0), score.BlockHeight)
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+
+			workerPrivateKey := secp256k1.GenPrivKey()
+			msg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+			nonce := msg.WorkerDataBundle.Nonce.BlockHeight
+			s.WithBlockHeight(nonce)
+			s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, false, "0")
+
+			inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
+			if c.scalarValue != "" {
+				inference.Value = alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue)
+			}
+			inference.Values = make([]*types.InputLabeledValue, 0, len(c.values))
+			for _, value := range c.values {
+				inference.Values = append(inference.Values, &types.InputLabeledValue{
+					Label: value.label,
+					Value: alloraMath.MustNewBoundedExp40DecFromString(value.value),
+				})
+			}
+			if len(c.values) == 0 {
+				inference.Values = nil
+			}
+			msg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
+			if c.makeNonAdmitted {
+				makeWorkerNonAdmitted(topicId, msg.WorkerDataBundle.Worker, nonce)
+			}
+
+			msg = s.signMsgInsertWorkerPayload(msg, workerPrivateKey)
+			s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
+
+			_, err := s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
+			if c.wantErrIs != nil {
+				s.Require().Error(err)
+				s.Require().ErrorIs(err, c.wantErrIs)
+
+				score, scoreErr := s.ScoresKeeper().GetInfererScoreEma(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+				s.Require().NoError(scoreErr)
+				s.Require().Equal(types.BlockHeight(0), score.BlockHeight)
+
+				isActive, activeErr := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+				s.Require().NoError(activeErr)
+				s.Require().False(isActive)
+				_, inferenceErr := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+				s.Require().True(errors.Is(inferenceErr, collections.ErrNotFound), "expected no stored inference, got %v", inferenceErr)
+				return
+			}
+
+			s.Require().NoError(err)
+			stored, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+			s.Require().NoError(err)
+			s.Require().Len(stored.Values, 1)
+			s.Require().Equal(c.wantStoredScalar, stored.Values[0].String())
+		})
+	}
 }
 
 //nolint:exhaustruct
