@@ -17,21 +17,17 @@ import (
 )
 
 // MigrateStore migrates the emissions module from version 14 to version 15.
-// It backfills topic defaults required by the classification feature and
-// migrates stored network inference bundles to the new labeled bundle format.
-// It also canonicalizes per-topic label whitelists under the stricter v15
-// label rules (ASCII charset; optional lowercasing controlled by
-// topic.LabelCaseSensitive, which proto-defaults to false for pre-v15 topics).
+// It backfills params and topic defaults required by the classification
+// feature, then migrates stored network inference bundles to the new labeled
+// bundle format.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 14 TO VERSION 15")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	// Params must be backfilled before any migration step that consults
-	// label-related caps (MigrateTopicLabelWhitelists reads
-	// MaxCanonicalLabelByteLength), otherwise pre-v15 stored Params would
-	// decode zero for the new cap and reject every whitelist entry.
+	// Params must be backfilled before post-v15 code reads label-related caps;
+	// pre-v15 stored Params decode zero for MaxCanonicalLabelByteLength.
 	if err := MigrateParams(ctx, emissionsKeeper); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 14 TO VERSION 15")
 		return err
@@ -39,11 +35,6 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 	if err := MigrateTopics(ctx, store, cdc); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 14 TO VERSION 15")
-		return err
-	}
-
-	if err := MigrateTopicLabelWhitelists(ctx, store, cdc, emissionsKeeper); err != nil {
-		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopicLabelWhitelists() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
 
@@ -61,140 +52,13 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-// MigrateTopicLabelWhitelists iterates all topics and re-canonicalizes
-// LabelWhitelist entries under the v15 rules. The migration is idempotent:
-// running it twice yields the same canonical whitelist because
-// CanonicalizeLabelList is idempotent on already-canonical input.
-//
-// For each topic:
-//   - LabelWhitelist is filtered to entries that canonicalize successfully
-//     under topic.LabelCaseSensitive and Params.MaxCanonicalLabelByteLength.
-//   - Duplicates post-canonicalization are collapsed (first occurrence wins).
-//   - Labels that fail the new canonicalizer (for example, labels that carry
-//     characters outside the ASCII charset) are dropped with a Warn log
-//     rather than aborting the migration: on a live chain we prefer to clear
-//     obviously-unusable whitelist entries than to halt the upgrade, because
-//     a whitelisted label that cannot be submitted is already a silent dead
-//     end.
-//   - If the filtered whitelist differs from the stored one, the topic is
-//     persisted.
-//
-// EpochLabelRegistry entries are left untouched: they are nonce-scoped and
-// were already persisted under the previous rules.
-func MigrateTopicLabelWhitelists(
-	ctx sdk.Context,
-	store storetypes.KVStore,
-	cdc codec.BinaryCodec,
-	emissionsKeeper keeper.Keeper,
-) error {
-	params, err := emissionsKeeper.GetParams(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V15: failed to get params for whitelist canonicalization")
-	}
-	maxBytes := params.MaxCanonicalLabelByteLength
-	if maxBytes == 0 {
-		// Defensive: MigrateParams should have backfilled this already to
-		// the module-initial cap.
-		maxBytes = emissionstypes.DefaultParams().MaxCanonicalLabelByteLength
-	}
-
-	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	iterator := topicStore.Iterator(nil, nil)
-	defer iterator.Close()
-
-	type kv struct {
-		key   []byte
-		value []byte
-	}
-
-	updates := make([]kv, 0)
-	topicsTouched := 0
-	labelsDropped := 0
-
-	for ; iterator.Valid(); iterator.Next() {
-		var topic emissionstypes.Topic
-		if err := cdc.Unmarshal(iterator.Value(), &topic); err != nil {
-			return errorsmod.Wrapf(err, "failed to unmarshal topic during v15 migration")
-		}
-
-		if len(topic.LabelWhitelist) == 0 {
-			continue
-		}
-
-		filtered := make([]string, 0, len(topic.LabelWhitelist))
-		seen := make(map[string]struct{}, len(topic.LabelWhitelist))
-		droppedForTopic := 0
-		for _, raw := range topic.LabelWhitelist {
-			canonical, err := emissionstypes.CanonicalLabelName(raw, maxBytes, topic.LabelCaseSensitive)
-			if err != nil {
-				droppedForTopic++
-				ctx.Logger().Warn(
-					"MIGRATION V15: dropping non-canonical whitelist entry",
-					"topicId", topic.Id,
-					"label", raw,
-					"error", err.Error(),
-				)
-				continue
-			}
-			if _, dup := seen[canonical]; dup {
-				droppedForTopic++
-				continue
-			}
-			seen[canonical] = struct{}{}
-			filtered = append(filtered, canonical)
-		}
-
-		labelsDropped += droppedForTopic
-		if !labelWhitelistEqual(topic.LabelWhitelist, filtered) {
-			topic.LabelWhitelist = filtered
-			raw, err := cdc.Marshal(&topic)
-			if err != nil {
-				return errorsmod.Wrapf(err, "failed to marshal migrated topic %d", topic.Id)
-			}
-			updates = append(updates, kv{
-				key:   append([]byte(nil), iterator.Key()...),
-				value: raw,
-			})
-			topicsTouched++
-		}
-	}
-
-	for _, u := range updates {
-		topicStore.Set(u.key, u.value)
-	}
-
-	ctx.Logger().Info(
-		"MIGRATION V15: topic label whitelist canonicalization completed",
-		"topicsTouched", topicsTouched,
-		"labelsDropped", labelsDropped,
-	)
-	return nil
-}
-
-// labelWhitelistEqual reports whether two ordered whitelists are byte-equal.
-// Treated separately from the keeper's labelWhitelistChanged so the migration
-// has no keeper-layer dependency.
-func labelWhitelistEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
 // MigrateParams backfills module params fields introduced for v15 label
 // canonicalization. Only zero-valued fields are touched; all other params are
 // left unchanged.
 //
 // Backfilled fields:
 //   - MaxCanonicalLabelByteLength: defaults to the module-initial cap when
-//     zero. Backfilled before MigrateTopicLabelWhitelists runs because the
-//     whitelist canonicalizer reads this cap; a zero cap would reject every
-//     label.
+//     zero. A zero cap would reject every label after v15.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {

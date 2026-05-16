@@ -165,76 +165,6 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	s.Require().Equal(uint64(8), gotTopic.MaxLabelsPerSubmission)
 }
 
-func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicLabelWhitelistsCanonicalizesAndFilters() {
-	storageService := s.EmissionsKeeper().GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
-	cdc := s.EmissionsKeeper().GetBinaryCodec()
-
-	params := emissionstypes.DefaultParams()
-	params.MaxCanonicalLabelByteLength = 5
-	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
-
-	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	caseInsensitiveTopic := emissionstypes.Topic{ //nolint:exhaustruct
-		Id:                 51,
-		LabelWhitelist:     []string{"  Foo  ", "foo", "bar", "bad!", "toolong"},
-		LabelCaseSensitive: false,
-	}
-	caseSensitiveTopic := emissionstypes.Topic{ //nolint:exhaustruct
-		Id:                 52,
-		LabelWhitelist:     []string{"Foo", "foo", "Foo", "bad!"},
-		LabelCaseSensitive: true,
-	}
-	topicStore.Set(sdk.Uint64ToBigEndian(caseInsensitiveTopic.Id), cdc.MustMarshal(&caseInsensitiveTopic))
-	topicStore.Set(sdk.Uint64ToBigEndian(caseSensitiveTopic.Id), cdc.MustMarshal(&caseSensitiveTopic))
-
-	err := v15.MigrateTopicLabelWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
-	s.Require().NoError(err)
-
-	gotCaseInsensitive, err := s.TopicKeeper().GetTopic(s.Ctx(), caseInsensitiveTopic.Id)
-	s.Require().NoError(err)
-	s.Require().Equal([]string{"foo", "bar"}, gotCaseInsensitive.LabelWhitelist)
-
-	gotCaseSensitive, err := s.TopicKeeper().GetTopic(s.Ctx(), caseSensitiveTopic.Id)
-	s.Require().NoError(err)
-	s.Require().Equal([]string{"Foo", "foo"}, gotCaseSensitive.LabelWhitelist)
-
-	err = v15.MigrateTopicLabelWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
-	s.Require().NoError(err)
-	gotAfterSecondRun, err := s.TopicKeeper().GetTopic(s.Ctx(), caseInsensitiveTopic.Id)
-	s.Require().NoError(err)
-	s.Require().Equal(gotCaseInsensitive.LabelWhitelist, gotAfterSecondRun.LabelWhitelist)
-}
-
-func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicLabelWhitelistsZeroParamFallbackUsesDefaultCap() {
-	storageService := s.EmissionsKeeper().GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
-	cdc := s.EmissionsKeeper().GetBinaryCodec()
-
-	params := emissionstypes.DefaultParams()
-	params.MaxCanonicalLabelByteLength = 0
-	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
-
-	defaultCap := emissionstypes.DefaultParams().MaxCanonicalLabelByteLength
-	atDefaultCap := repeatedLabelByte('a', defaultCap)
-	overDefaultCap := repeatedLabelByte('b', defaultCap+1)
-
-	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	topic := emissionstypes.Topic{ //nolint:exhaustruct
-		Id:                 53,
-		LabelWhitelist:     []string{atDefaultCap, overDefaultCap},
-		LabelCaseSensitive: false,
-	}
-	topicStore.Set(sdk.Uint64ToBigEndian(topic.Id), cdc.MustMarshal(&topic))
-
-	err := v15.MigrateTopicLabelWhitelists(s.Ctx(), store, cdc, *s.EmissionsKeeper())
-	s.Require().NoError(err)
-
-	got, err := s.TopicKeeper().GetTopic(s.Ctx(), topic.Id)
-	s.Require().NoError(err)
-	s.Require().Equal([]string{atDefaultCap}, got.LabelWhitelist)
-}
-
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalLabelByteLength() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
@@ -250,14 +180,6 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalL
 	got, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, got.MaxCanonicalLabelByteLength)
-}
-
-func repeatedLabelByte(b byte, count uint64) string {
-	buf := make([]byte, 0)
-	for i := uint64(0); i < count; i++ {
-		buf = append(buf, b)
-	}
-	return string(buf)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsPreservesExistingMaxCanonicalLabelByteLength() {
@@ -307,6 +229,10 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	oldNetworkStore.Set(key, cdc.MustMarshal(&oldBundle))
 	oldOutlierStore.Set(key, cdc.MustMarshal(&oldBundle))
 
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
 	err := v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
@@ -318,6 +244,10 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	s.Require().Equal("0", gotTopic.UnityTolerance.String())
 	s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
 	s.Require().True(legacyTopic.ActiveInfererQuantile.Equal(gotTopic.ActiveInfererQuantile))
+
+	gotParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, gotParams.MaxCanonicalLabelByteLength)
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
 	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)
