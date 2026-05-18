@@ -78,6 +78,13 @@ message Topic {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // When false (the default), label names are lowercased during canonicalization
+  // so that "Cat", "CAT" and "cat" all collapse to "cat". When true, casing is
+  // preserved and labels that differ only in case are treated as distinct.
+  // This field is immutable after topic creation because flipping it would
+  // change the canonical form of every already-persisted label (whitelist
+  // entries and epoch registry names).
+  bool label_case_sensitive = 30;
 }
 
 enum TopicType {

@@ -2,68 +2,83 @@ package types
 
 import (
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	errorsmod "cosmossdk.io/errors"
 	"golang.org/x/text/unicode/norm"
 )
 
-// MaxCanonicalLabelByteLength bounds a canonical label name at 64 UTF-8 bytes
-// after NFC normalization and trimming. The bound is byte-level (not
-// rune-level) so staged InputInference labels and every EpochLabelRegistry
-// entry have a deterministic, modest upper bound on serialized size,
-// regardless of how many codepoints the label contains.
-const MaxCanonicalLabelByteLength = 64
+// isAllowedLabelByte reports whether r belongs to the canonical label charset.
+//
+// The canonical charset is ASCII only:
+//   - letters: a-z (and A-Z when the topic is label-case-sensitive)
+//   - digits: 0-9
+//   - separators: underscore, hyphen-minus, space
+//   - hierarchy: forward slash, dot
+//
+// Case-insensitive canonicalization should apply ASCII-only lowercasing after
+// this predicate has rejected non-ASCII input.
+func isAllowedLabelByte(r rune) bool {
+	switch {
+	case r >= 'a' && r <= 'z':
+		return true
+	case r >= 'A' && r <= 'Z':
+		return true
+	case r >= '0' && r <= '9':
+		return true
+	}
+	switch r {
+	case '_', '-', ' ', '/', '.':
+		return true
+	}
+	return false
+}
 
-// CanonicalLabelName returns the canonical form of a user-supplied label
-// name. The canonical form is:
-//
-//  1. NFC-normalized (Unicode Normalization Form C), so that visually
-//     identical sequences always compare byte-equal.
-//  2. Trimmed of leading and trailing Unicode whitespace (strings.TrimSpace).
-//  3. Checked to be non-empty after trimming.
-//  4. Checked to contain no control (Cc) or format (Cf) runes — these are
-//     invisible characters (e.g. zero-width space, bidi marks, NULs) that
-//     would otherwise allow two visually-identical labels to differ by a
-//     stealthy invisible rune and thus break deterministic registry identity.
-//  5. Bounded at MaxCanonicalLabelByteLength bytes after normalization.
-//  6. Verified to be valid UTF-8.
-//
-// The function is idempotent by construction: CanonicalLabelName(c) == c for
-// every c already in canonical form, because NFC is idempotent, TrimSpace is
-// idempotent on trimmed input, and the Cc/Cf / byte-length / UTF-8 checks
-// are pure validations that do not mutate the string. This invariant is
-// exercised by FuzzCanonicalLabelName.
-//
-// Canonicalization is applied at two sites:
-//   - InputInference.ValidateWithLimits (worker payload submission-time), so
-//     that every label registered in the temporary EpochLabelRegistry is
-//     canonical before close-time registry construction.
-//   - TopicKeeper.SetTopic / UpdateTopic (persisted Topic.LabelWhitelist), so
-//     that whitelist lookups are pure byte-equality against already-canonical
-//     names built by the msgserver.
-func CanonicalLabelName(s string) (string, error) {
+// CanonicalLabelName validates and canonicalizes a label for storage/key use.
+// It requires valid UTF-8, trims, enforces the ASCII label charset,
+// NFC-normalizes, optionally lowercases ASCII letters, then enforces max byte
+// length.
+// The result is idempotent for the same maxBytes and labelCaseSensitive values.
+func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (string, error) {
+	if maxBytes == 0 {
+		// Defensive: Params.Validate rejects zero; a zero here means the
+		// caller threaded an un-loaded / zero-value params struct.
+		return "", errorsmod.Wrap(ErrInvalidLabelName,
+			"max canonical label byte length must be >= 1")
+	}
 	if !utf8.ValidString(s) {
 		return "", errorsmod.Wrap(ErrInvalidLabelName, "label is not valid UTF-8")
 	}
-	normalized := norm.NFC.String(s)
-	trimmed := strings.TrimSpace(normalized)
+	trimmed := strings.TrimSpace(s)
 	if trimmed == "" {
 		return "", errorsmod.Wrap(ErrInvalidLabelName, "label is empty after trimming")
 	}
 	for _, r := range trimmed {
-		if unicode.In(r, unicode.Cc, unicode.Cf) {
+		if !isAllowedLabelByte(r) {
 			return "", errorsmod.Wrapf(ErrInvalidLabelName,
-				"label contains a disallowed control/format rune: U+%04X", r)
+				"label contains a disallowed character: U+%04X", r)
 		}
 	}
-	if len(trimmed) > MaxCanonicalLabelByteLength {
+	trimmed = norm.NFC.String(trimmed)
+	if !labelCaseSensitive {
+		trimmed = lowerASCII(trimmed)
+	}
+	if uint64(len(trimmed)) > maxBytes {
 		return "", errorsmod.Wrapf(ErrInvalidLabelName,
-			"label exceeds %d UTF-8 bytes after normalization (got %d)",
-			MaxCanonicalLabelByteLength, len(trimmed))
+			"label exceeds %d bytes after normalization (got %d)",
+			maxBytes, len(trimmed))
 	}
 	return trimmed, nil
+}
+
+func lowerASCII(s string) string {
+	out := []byte(s)
+	for i, b := range out {
+		if b >= 'A' && b <= 'Z' {
+			out[i] = b + ('a' - 'A')
+		}
+	}
+	return string(out)
 }
 
 // CanonicalizeLabelList canonicalizes each entry in the input slice and
@@ -71,10 +86,15 @@ func CanonicalLabelName(s string) (string, error) {
 // (returns an error for) any entry that fails CanonicalLabelName and, when
 // rejectDuplicates is true, any post-canonicalization duplicate.
 //
+// maxBytes and labelCaseSensitive are threaded through to CanonicalLabelName;
+// callers should pass Params.MaxCanonicalLabelByteLength and the topic's
+// LabelCaseSensitive field so that whitelist canonicalization matches
+// submission-time canonicalization byte-for-byte.
+//
 // The duplicate check is exact byte-equality on the canonical form, which is
-// what downstream consumers such as whitelist membership and ELR registration
-// rely on.
-func CanonicalizeLabelList(labels []string, rejectDuplicates bool) ([]string, error) {
+// what downstream consumers (whitelist membership, registry lex-sort,
+// registry keys) rely on.
+func CanonicalizeLabelList(labels []string, rejectDuplicates bool, maxBytes uint64, labelCaseSensitive bool) ([]string, error) {
 	if len(labels) == 0 {
 		return nil, nil
 	}
@@ -84,7 +104,7 @@ func CanonicalizeLabelList(labels []string, rejectDuplicates bool) ([]string, er
 		seen = make(map[string]struct{}, len(labels))
 	}
 	for i, raw := range labels {
-		c, err := CanonicalLabelName(raw)
+		c, err := CanonicalLabelName(raw, maxBytes, labelCaseSensitive)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "label at index %d", i)
 		}

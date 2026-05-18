@@ -237,6 +237,7 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	types.EmitNewTopicUpdatedEvent(ctx, topic)

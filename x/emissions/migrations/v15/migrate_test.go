@@ -149,6 +149,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
 
@@ -163,6 +164,36 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	s.Require().True(gotTopic.RequireUnity)
 	s.Require().True(gotTopic.UnityTolerance.Equal(alloraMath.MustNewDecFromString("0.001")))
 	s.Require().Equal(uint64(8), gotTopic.MaxLabelsPerSubmission)
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalLabelByteLength() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	err := v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	got, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, got.MaxCanonicalLabelByteLength)
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsPreservesExistingMaxCanonicalLabelByteLength() {
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 32
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	err := v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
+	s.Require().NoError(err)
+
+	got, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(32), got.MaxCanonicalLabelByteLength)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() {
@@ -200,27 +231,11 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	oldNetworkStore.Set(key, cdc.MustMarshal(&oldBundle))
 	oldOutlierStore.Set(key, cdc.MustMarshal(&oldBundle))
 
-	legacyInference := s.makeLegacyInference(topicId)
-	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
-	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
-	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
-	_, err := infKeyCodec.Encode(infKeyBytes, collections.Join(legacyInference.TopicId, legacyInference.Inferer))
-	s.Require().NoError(err)
-	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
+	params := emissionstypes.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
 
-	blockHeight := emissionstypes.BlockHeight(100)
-	legacyAllInference := s.makeLegacyInference(topicId)
-	legacyAllInferences := oldtypes.Inferences{
-		Inferences: []*oldtypes.Inference{&legacyAllInference},
-	}
-	allInferencesStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
-	allInfKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
-	allInfKeyBytes := make([]byte, allInfKeyCodec.Size(collections.Join(legacyAllInference.TopicId, blockHeight)))
-	_, err = allInfKeyCodec.Encode(allInfKeyBytes, collections.Join(legacyAllInference.TopicId, blockHeight))
-	s.Require().NoError(err)
-	allInferencesStore.Set(allInfKeyBytes, cdc.MustMarshal(&legacyAllInferences))
-
-	err = v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
+	err := v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	gotTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), legacyTopic.Id)
@@ -231,6 +246,10 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	s.Require().Equal("0", gotTopic.UnityTolerance.String())
 	s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
 	s.Require().True(legacyTopic.ActiveInfererQuantile.Equal(gotTopic.ActiveInfererQuantile))
+
+	gotParams, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, gotParams.MaxCanonicalLabelByteLength)
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
 	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)

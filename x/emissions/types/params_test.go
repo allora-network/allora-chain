@@ -64,9 +64,77 @@ func TestDefaultParams(t *testing.T) {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		MaxCanonicalLabelByteLength:         64,
 	}
 
 	params := DefaultParams()
 
 	require.Equal(t, expectedParams, params)
+}
+
+// TestValidateMaxLabelsPerSubmission exercises the explicit bound on the
+// per-topic cap: 0 is rejected, 1 is accepted (smallest positive cap),
+// DefaultMaxLabelsPerSubmission round-trips validation, the upper bound is
+// inclusive, and one-above-bound is rejected.
+func TestValidateMaxLabelsPerSubmission(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: 1, ok: true},
+		{name: "default ok", in: DefaultMaxLabelsPerSubmission, ok: true},
+		{name: "upper bound ok", in: MaxMaxLabelsPerSubmission, ok: true},
+		{name: "above upper rejected", in: MaxMaxLabelsPerSubmission + 1, ok: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxLabelsPerSubmission(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+// TestValidateMaxCanonicalLabelByteLength exercises the explicit bound on
+// the canonical label byte cap: 0 is rejected, 1 is accepted (smallest
+// positive cap), the default round-trips, the upper bound is inclusive,
+// and one-above-bound is rejected. The migration backfills zero to the
+// default, so Params.Validate must reject the zero value.
+func TestValidateMaxCanonicalLabelByteLength(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: MinMaxCanonicalLabelByteLength, ok: true},
+		{name: "module-initial 64 ok", in: 64, ok: true},
+		{name: "upper bound ok", in: MaxMaxCanonicalLabelByteLength, ok: true},
+		{name: "above upper rejected", in: MaxMaxCanonicalLabelByteLength + 1, ok: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxCanonicalLabelByteLength(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+// TestParamsValidate_RejectsZeroMaxCanonicalLabelByteLength documents that
+// Params.Validate rejects a zero cap; the v15 migration is the only code
+// path that may observe zero and it backfills to the module-initial 64
+// before calling Validate.
+func TestParamsValidate_RejectsZeroMaxCanonicalLabelByteLength(t *testing.T) {
+	p := DefaultParams()
+	p.MaxCanonicalLabelByteLength = 0
+	require.Error(t, p.Validate())
 }

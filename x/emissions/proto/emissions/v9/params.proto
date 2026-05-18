@@ -181,4 +181,7 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // Max byte length of a canonical label name after NFC normalization and
+  // trimming.
+  uint64 max_canonical_label_byte_length = 61;
 }

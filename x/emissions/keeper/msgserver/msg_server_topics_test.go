@@ -330,6 +330,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -424,7 +425,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRa
 			updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 			require.Error(err)
 			require.Nil(updateResult)
-			require.ErrorContains(err, "max labels per submission")
+			require.ErrorContains(err, "max_labels_per_submission")
 
 			got, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
 			require.NoError(err)
@@ -508,6 +509,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -673,6 +675,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -750,6 +753,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -1010,6 +1014,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -1082,6 +1087,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -1189,21 +1195,21 @@ func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
-		// NFD form (e + combining acute), plus whitespace padding; a
-		// canonical duplicate should be rejected with ErrInvalidLabelName.
-		LabelWhitelist:    []string{"  foo  ", "e\u0301", "\u00e9"},
+		// Whitespace and case collapse under the default case-insensitive
+		// canonicalizer; a canonical duplicate should be rejected.
+		LabelWhitelist:    []string{"  Foo  ", "foo"},
 		LabelDefaultValue: alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.CreateNewTopic(ctx, create)
 	require.ErrorIs(err, types.ErrInvalidLabelName, "canonical duplicate must be rejected at SetTopic")
 
-	create.LabelWhitelist = []string{"  foo  ", "e\u0301"}
+	create.LabelWhitelist = []string{"  Foo  ", "bar/baz"}
 	resp, err := msgServer.CreateNewTopic(ctx, create)
 	require.NoError(err)
 	stored, err := s.TopicKeeper().GetTopic(ctx, resp.TopicId)
 	require.NoError(err)
-	require.Equal([]string{"foo", "\u00e9"}, stored.LabelWhitelist,
-		"whitelist must be persisted in canonical (NFC+trimmed) form")
+	require.Equal([]string{"foo", "bar/baz"}, stored.LabelWhitelist,
+		"whitelist must be persisted in canonical form")
 }
 
 // TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen asserts the generalized
@@ -1286,6 +1292,47 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen
 		"LabelWhitelist must not have changed while WSW was open")
 }
 
+// TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowOpen asserts the generalized
+// WSW lock also guards label_default_value mutations.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.OneDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	require.ErrorContains(err, "label_default_value")
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.True(got.LabelDefaultValue.Equal(alloraMath.ZeroDec()),
+		"LabelDefaultValue must not have changed while WSW was open")
+}
+
 // TestUpdateTopicWhitelistAllowedAfterWSWClosed confirms the WSW lock is
 // time-bounded: once the submission window has closed for the outstanding
 // nonce, whitelist/cap mutations are accepted again (and the whitelist is
@@ -1318,7 +1365,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		RequireUnity:           false,
 		UnityTolerance:         alloraMath.Dec{},
 		MaxLabelsPerSubmission: 8,
-		LabelWhitelist:         []string{"  a  ", "e\u0301"},
+		LabelWhitelist:         []string{"  A  ", "b/c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
@@ -1326,16 +1373,105 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(uint64(8), got.MaxLabelsPerSubmission)
-	require.Equal([]string{"a", "\u00e9"}, got.LabelWhitelist,
+	require.Equal([]string{"a", "b/c"}, got.LabelWhitelist,
 		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
 }
 
-// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the WSW
-// guard across all unfulfilled worker nonces. With WorkerSubmissionWindow=10
-// and two outstanding worker nonces, a param update must be rejected if *any*
-// nonce has an open window, regardless of whether it is the newest. At block
-// 12, nonce 200 is not yet inside its submission window [200, 210], while
-// nonce 5 is still inside its window [5, 15].
+// TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission documents that
+// UpdateTopic treats max_labels_per_submission as the submitted value, not as
+// "unchanged" or "use module default". Values outside the allowed cap range
+// are rejected and the topic remains unchanged.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	cases := []struct {
+		name string
+		cap  uint64
+		err  error
+	}{
+		{name: "zero", cap: 0, err: types.ErrValidationMustBeGreaterthanZero},
+		{name: "above max", cap: types.MaxMaxLabelsPerSubmission + 1, err: types.ErrInvalidValue},
+	}
+
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			sender := s.AddrsStr(0)
+			topicId := s.createTopicForWSWTests(sender)
+
+			msg := &types.UpdateTopicRequest{
+				Sender:                 sender,
+				TopicId:                topicId,
+				Metadata:               "full payload clear",
+				LossMethod:             "mse",
+				AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+				MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RequireUnity:           false,
+				UnityTolerance:         alloraMath.Dec{},
+				MaxLabelsPerSubmission: tc.cap,
+				LabelWhitelist:         nil,
+			}
+			_, err := msgServer.UpdateTopic(ctx, msg)
+			require.ErrorIs(err, tc.err)
+
+			got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			require.NoError(err)
+			require.Equal(uint64(4), got.MaxLabelsPerSubmission,
+				"rejected max_labels_per_submission must not modify the topic")
+			require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist,
+				"rejected max_labels_per_submission must not clear the whitelist")
+		})
+	}
+}
+
+// TestUpdateTopicFullPayloadClearsLabelWhitelist documents that UpdateTopic is
+// a full-payload operation: a nil label_whitelist replaces the existing topic
+// whitelist with unrestricted, rather than preserving the old whitelist.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	topicId := s.createTopicForWSWTests(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "full payload clear",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		RequireUnity:           false,
+		UnityTolerance:         alloraMath.Dec{},
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         nil,
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(8), got.MaxLabelsPerSubmission)
+	require.Empty(got.LabelWhitelist,
+		"nil label_whitelist must clear the existing whitelist under full-payload UpdateTopic")
+}
+
+// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the
+// generalization from the v14 "newest unfulfilled nonce only" WSW guard to
+// the current "any unfulfilled nonce" guard. With WorkerSubmissionWindow=10
+// and two outstanding worker nonces, the topic has two open WSWs. A param
+// update must be rejected if *any* of them is currently open, regardless
+// of whether the open one is the newest. At block 12 the newest nonce
+// (200) is not yet inside its submission window [200, 210], while the
+// older nonce (5) is still inside its window [5, 15] and covers block 12.
 // A regression to the newest-only check would therefore accept the
 // update; the generalized check must reject it.
 //

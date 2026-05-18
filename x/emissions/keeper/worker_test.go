@@ -1195,6 +1195,7 @@ func mockUninitializedParams() types.Params {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		MaxCanonicalLabelByteLength:         64,
 	}
 }
 
@@ -1769,6 +1770,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 		LabelDefaultValue: alloraMath.ZeroDec(),
 	} //nolint:exhaustruct
 	nonce := types.BlockHeight(7)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
 	tempRegistry := types.EpochLabelRegistry{
 		TopicId: 1,
 		EpochId: uint64(nonce),
@@ -1832,7 +1834,13 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 
 	for _, c := range cases {
 		s.Run(c.name, func() {
-			reg, got, reused, err := keeper.MaterializeFinalEpochLabelRegistry(topic, nonce, tempRegistry, c.active)
+			reg, got, reused, err := keeper.MaterializeFinalEpochLabelRegistry(
+				topic,
+				nonce,
+				tempRegistry,
+				c.active,
+				maxLabelBytes,
+			)
 			if c.wantErrIs != nil {
 				s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
 				return
@@ -1858,6 +1866,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 	nonce := types.BlockHeight(7)
 	inferer := s.AddrsStr(0)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
 	baseInference := types.Inference{
 		TopicId:     1,
 		BlockHeight: nonce,
@@ -1997,7 +2006,12 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			inference := baseInference
 			inference.Values = c.values
 
-			got, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(c.topic, c.registry, inference)
+			got, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(
+				c.topic,
+				c.registry,
+				inference,
+				maxLabelBytes,
+			)
 			if c.wantErrContains != "" {
 				s.Require().Error(err)
 				s.Require().Contains(err.Error(), c.wantErrContains)
@@ -2021,6 +2035,69 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			}
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestSetEpochLabelRegistryUsesLiveLabelByteCap() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+
+	params := types.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 3
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	err := s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abcd"},
+		},
+	})
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
+
+	err = s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abc"},
+		},
+	})
+	s.Require().NoError(err)
+}
+
+func (s *KeeperTestSuite) TestMaterializersUsePassedLabelByteCap() {
+	nonce := types.BlockHeight(7)
+	topic, _ := s.setupMultiTopic()
+	registry := types.EpochLabelRegistry{
+		TopicId: topic.Id,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abcd"},
+		},
+	}
+	inference := types.Inference{
+		TopicId:     topic.Id,
+		BlockHeight: nonce,
+		Inferer:     s.AddrsStr(0),
+		Values:      decs("0.1"),
+		ExtraData:   nil,
+		Proof:       "",
+	}
+
+	_, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(topic, registry, inference, 3)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
+
+	_, _, _, err = keeper.MaterializeFinalEpochLabelRegistry(
+		topic,
+		nonce,
+		registry,
+		[]*types.Inference{&inference},
+		3,
+	)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
 }
 
 func decs(values ...string) []alloraMath.Dec {
@@ -2050,14 +2127,14 @@ func (s *KeeperTestSuite) TestRegisterEpochLabel_FirstSeenIdempotent() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
 
-	_, topicId := s.setupMultiTopic()
+	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
 
-	idB, err := tk.RegisterEpochLabel(ctx, topicId, nonce, "b")
+	idB, err := tk.RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, nonce, "b")
 	s.Require().NoError(err)
-	idA, err := tk.RegisterEpochLabel(ctx, topicId, nonce, "a")
+	idA, err := tk.RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, nonce, "a")
 	s.Require().NoError(err)
-	idBAgain, err := tk.RegisterEpochLabel(ctx, topicId, nonce, "b")
+	idBAgain, err := tk.RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, nonce, "b")
 	s.Require().NoError(err)
 	s.Require().Equal(keeper.LabelId(1), idB)
 	s.Require().Equal(keeper.LabelId(2), idA)
@@ -2088,6 +2165,80 @@ func (s *KeeperTestSuite) TestRegisterEpochLabel_FirstSeenIdempotent() {
 	_, ok, err = tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
 	s.Require().NoError(err)
 	s.Require().False(ok)
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesTopicCaseSensitivity() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+	nonce := types.BlockHeight(7)
+
+	caseInsensitiveTopic, caseInsensitiveTopicID := s.setupMultiTopic()
+	_, err := tk.RegisterEpochLabel(
+		ctx,
+		caseInsensitiveTopicID,
+		caseInsensitiveTopic.LabelCaseSensitive,
+		nonce,
+		"Cat",
+	)
+	s.Require().Error(err)
+	s.Require().ErrorContains(err, "label name must be canonical")
+
+	lowerID, err := tk.RegisterEpochLabel(
+		ctx,
+		caseInsensitiveTopicID,
+		caseInsensitiveTopic.LabelCaseSensitive,
+		nonce,
+		"cat",
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(keeper.LabelId(1), lowerID)
+
+	caseSensitiveTopic, caseSensitiveTopicID := s.setupMultiTopic()
+	caseSensitiveTopic.LabelCaseSensitive = true
+	s.Require().NoError(tk.SetTopic(ctx, caseSensitiveTopicID, caseSensitiveTopic))
+	caseSensitiveTopic, err = tk.GetTopic(ctx, caseSensitiveTopicID)
+	s.Require().NoError(err)
+
+	upperID, err := tk.RegisterEpochLabel(
+		ctx,
+		caseSensitiveTopicID,
+		caseSensitiveTopic.LabelCaseSensitive,
+		nonce,
+		"Cat",
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(keeper.LabelId(1), upperID)
+
+	distinctLowerID, err := tk.RegisterEpochLabel(
+		ctx,
+		caseSensitiveTopicID,
+		caseSensitiveTopic.LabelCaseSensitive,
+		nonce,
+		"cat",
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(keeper.LabelId(2), distinctLowerID)
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesCanonicalByteLimit() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxCanonicalLabelByteLength = 3
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topic, topicID := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	_, err = tk.RegisterEpochLabel(ctx, topicID, topic.LabelCaseSensitive, nonce, "abcd")
+	s.Require().Error(err)
+	s.Require().ErrorContains(err, "label exceeds 3 bytes")
+
+	id, err := tk.RegisterEpochLabel(ctx, topicID, topic.LabelCaseSensitive, nonce, "abc")
+	s.Require().NoError(err)
+	s.Require().Equal(keeper.LabelId(1), id)
 }
 
 func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose_OverwritesFinalRegistry() {

@@ -75,10 +75,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		OutputArity:              msg.OutputArity,
 		RequireUnity:             msg.RequireUnity,
 		UnityTolerance:           msg.UnityTolerance,
-		// SetTopic canonicalizes LabelWhitelist before persistence.
+		// Label registry fields. Canonicalization of LabelWhitelist is
+		// applied by SetTopic.
 		MaxLabelsPerSubmission: msg.MaxLabelsPerSubmission,
 		LabelWhitelist:         msg.LabelWhitelist,
 		LabelDefaultValue:      msg.LabelDefaultValue,
+		// LabelCaseSensitive is immutable after creation (UpdateTopic never
+		// changes it because updatedTopic is derived from the existing topic).
+		LabelCaseSensitive: msg.LabelCaseSensitive,
 	}
 	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {
@@ -134,10 +138,10 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
-	// Label registry fields follow the same full-payload update path as other
-	// topic params. The keeper rejects unsafe mutations while any worker
-	// submission window is open and canonicalizes LabelWhitelist before
-	// persistence.
+	// Label registry settings: always apply the requested value for
+	// max_labels_per_submission, label_whitelist, and label_default_value. The
+	// keeper rejects unsafe mutations while a worker submission window is open
+	// and canonicalizes the whitelist before persistence.
 	updatedTopic.MaxLabelsPerSubmission = msg.MaxLabelsPerSubmission
 	updatedTopic.LabelWhitelist = msg.LabelWhitelist
 	updatedTopic.LabelDefaultValue = msg.LabelDefaultValue

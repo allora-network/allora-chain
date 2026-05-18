@@ -215,6 +215,7 @@ type (
 		reputerValues         []TestReputerValue
 		skipNetworkInferences bool
 		outputArity           types.TopicOutputArity
+		labelCaseSensitive    bool
 		reputerStake          *cosmosMath.Int
 		accounts              []account
 	}
@@ -313,6 +314,16 @@ func WithSkipNetworkInferences() Option {
 func WithOutputArity(outputArity types.TopicOutputArity) Option {
 	return func(p *customParams) {
 		p.outputArity = outputArity
+	}
+}
+
+// WithLabelCaseSensitive lets tests opt into case-sensitive label handling
+// on the topic they set up. When unset, topics default to case-insensitive
+// (labels are lowercased during canonicalization), matching the chain's
+// default.
+func WithLabelCaseSensitive(labelCaseSensitive bool) Option {
+	return func(p *customParams) {
+		p.labelCaseSensitive = labelCaseSensitive
 	}
 }
 
@@ -1165,6 +1176,7 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 	if p.outputArity != types.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED {
 		newTopicMsg.OutputArity = p.outputArity
 	}
+	newTopicMsg.LabelCaseSensitive = p.labelCaseSensitive
 
 	res, err := s.emissionsMsgServer.CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)

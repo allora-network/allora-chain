@@ -110,4 +110,9 @@ var (
 	// This normally indicates no qualifying inferers and is accompanied by
 	// the usual empty-active-set handling upstream.
 	ErrEpochLabelRegistryEmpty = errors.Register(ModuleName, 98, "epoch label registry is empty: no active inferers contributed labels")
+	// ErrInvalidTopicUpdate is raised when UpdateTopic is called with a change
+	// to an immutable field (e.g. case_sensitive). The msgserver builds the
+	// updatedTopic from the existing topic, so this error surfaces only if a
+	// caller bypasses that by constructing an updatedTopic directly.
+	ErrInvalidTopicUpdate = errors.Register(ModuleName, 99, "invalid topic update")
 )

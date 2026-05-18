@@ -250,7 +250,12 @@ func (k *TopicKeeper) SetTopic(ctx context.Context, topicId TopicId, topic types
 		return errorsmod.Wrap(err, "error getting params")
 	}
 	if len(topic.LabelWhitelist) > 0 {
-		canonical, err := types.CanonicalizeLabelList(topic.LabelWhitelist, true)
+		canonical, err := types.CanonicalizeLabelList(
+			topic.LabelWhitelist,
+			true,
+			params.MaxCanonicalLabelByteLength,
+			topic.LabelCaseSensitive,
+		)
 		if err != nil {
 			return errorsmod.Wrap(err, "topic label_whitelist canonicalization failed")
 		}
@@ -272,8 +277,9 @@ func (k *TopicKeeper) TopicExists(ctx context.Context, topicId TopicId) (bool, e
 // inside a worker submission window. It is the shared guard for topic
 // parameter mutations that must not race worker payload submission for an
 // open epoch (merit_sortition_alpha, max_labels_per_submission, label
-// whitelist, label_default_value). It checks every unfulfilled nonce because
-// workers can submit against any currently-open nonce.
+// whitelist). Unlike the original v14-era check this iterates every
+// unfulfilled nonce rather than just the newest, because workers can submit
+// against any currently-open nonce.
 func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
 	ctx context.Context,
 	topic types.Topic,
@@ -312,9 +318,8 @@ func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
 // labelWhitelistChanged compares two whitelists for semantic inequality in
 // their canonicalized forms. The caller is expected to have already run
 // CanonicalizeLabelList over the updatedTopic slice (via SetTopic) if it is
-// going to be persisted; this comparison treats "preserve existing" (nil)
-// distinctly from "clear to empty" ([]string{}) at the msgserver layer, but
-// at the keeper layer equal-length-and-contents means "no change".
+// going to be persisted; at the keeper layer equal-length-and-contents means
+// "no change" because UpdateTopic receives a full replacement topic.
 func labelWhitelistChanged(a, b []string) bool {
 	if len(a) != len(b) {
 		return true
@@ -336,19 +341,53 @@ func labelWhitelistChanged(a, b []string) bool {
 //   - label_whitelist (per-topic label allowlist)
 //   - label_default_value (implicit missing label semantics)
 //
-// Label-related topic parameters must stay stable across every open WSW, so
-// the guard checks all unfulfilled nonces rather than only the newest one.
+// This is stricter than the v14 behavior (which only checked the newest
+// unfulfilled nonce) to match multilabel registry semantics, where label-
+// related topic parameters must be stable across the entire lifetime of every
+// open WSW.
 func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "error getting params")
 	}
 
+	// LabelCaseSensitive is immutable after topic creation: flipping it would
+	// change the canonical form of every persisted label (whitelist entries and
+	// epoch registry names). Reject any divergence here so
+	// the msgserver does not have to know about this invariant on its own.
+	if topic.LabelCaseSensitive != updatedTopic.LabelCaseSensitive {
+		return types.Topic{}, errorsmod.Wrap(
+			types.ErrInvalidTopicUpdate,
+			"label_case_sensitive is immutable after topic creation",
+		)
+	}
+	if updatedTopic.MaxLabelsPerSubmission < types.MinMaxLabelsPerSubmission {
+		return types.Topic{}, errorsmod.Wrapf(
+			types.ErrValidationMustBeGreaterthanZero,
+			"max_labels_per_submission must be >= %d, got %d",
+			types.MinMaxLabelsPerSubmission,
+			updatedTopic.MaxLabelsPerSubmission,
+		)
+	}
+	if updatedTopic.MaxLabelsPerSubmission > types.MaxMaxLabelsPerSubmission {
+		return types.Topic{}, errorsmod.Wrapf(
+			types.ErrInvalidValue,
+			"max_labels_per_submission must be <= %d, got %d",
+			types.MaxMaxLabelsPerSubmission,
+			updatedTopic.MaxLabelsPerSubmission,
+		)
+	}
+
 	// Canonicalize the whitelist on the proposed update before any
 	// comparison or validation so the WSW guard and persisted state both
 	// agree on the canonical form.
 	if len(updatedTopic.LabelWhitelist) > 0 {
-		canonical, err := types.CanonicalizeLabelList(updatedTopic.LabelWhitelist, true)
+		canonical, err := types.CanonicalizeLabelList(
+			updatedTopic.LabelWhitelist,
+			true,
+			params.MaxCanonicalLabelByteLength,
+			updatedTopic.LabelCaseSensitive,
+		)
 		if err != nil {
 			return types.Topic{}, errorsmod.Wrap(err, "updated topic label_whitelist canonicalization failed")
 		}
@@ -858,22 +897,38 @@ func (k *TopicKeeper) GetEpochLabelRegistry(
 }
 
 // RegisterEpochLabel registers a canonical label in the epoch registry using
-// first-seen 1-based ids. If the label already exists, its existing id is
-// returned.
+// first-seen 1-based ids. Callers must pass the topic's case-sensitivity
+// setting so registry canonicalization matches submission and whitelist
+// validation. If the label already exists, its existing id is returned.
 func (k *TopicKeeper) RegisterEpochLabel(
 	ctx context.Context,
-	topicId types.TopicId,
+	topicID types.TopicId,
+	labelCaseSensitive bool,
 	nonce types.BlockHeight,
 	labelName string,
 ) (LabelId, error) {
-	canonicalLabel, err := types.CanonicalLabelName(labelName)
+	if err := types.ValidateTopicId(topicID); err != nil {
+		return 0, errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(nonce); err != nil {
+		return 0, errorsmod.Wrap(err, "nonce block height validation failed")
+	}
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "failed to get params for label registration")
+	}
+	canonicalLabel, err := types.CanonicalLabelName(
+		labelName,
+		params.MaxCanonicalLabelByteLength,
+		labelCaseSensitive,
+	)
 	if err != nil {
 		return 0, errorsmod.Wrap(err, "label name validation failed")
 	}
 	if canonicalLabel != labelName {
 		return 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", labelName)
 	}
-	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	registry, err := k.GetEpochLabelRegistry(ctx, topicID, nonce)
 	if err != nil {
 		return 0, err
 	}
@@ -885,7 +940,7 @@ func (k *TopicKeeper) RegisterEpochLabel(
 	//nolint:gosec // labels are capped per submission and by WSW throughput.
 	nextID := LabelId(len(registry.Labels) + 1)
 	registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: canonicalLabel})
-	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicId, nonce), registry); err != nil {
+	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicID, nonce), registry); err != nil {
 		return 0, errorsmod.Wrap(err, "error setting topic label registry")
 	}
 	return nextID, nil

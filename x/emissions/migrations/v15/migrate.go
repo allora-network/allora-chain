@@ -18,13 +18,21 @@ import (
 )
 
 // MigrateStore migrates the emissions module from version 14 to version 15.
-// It backfills topic defaults required by the classification feature and
-// migrates stored network inference bundles to the new labeled bundle format.
+// It backfills params and topic defaults required by the classification
+// feature, then migrates stored network inference bundles to the new labeled
+// bundle format.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 14 TO VERSION 15")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
+
+	// Params must be backfilled before post-v15 code reads label-related caps;
+	// pre-v15 stored Params decode zero for MaxCanonicalLabelByteLength.
+	if err := MigrateParams(ctx, emissionsKeeper); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 14 TO VERSION 15")
+		return err
+	}
 
 	if err := MigrateTopics(ctx, store, cdc); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 14 TO VERSION 15")
@@ -42,6 +50,44 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("MIGRATION EMISSIONS MODULE FROM VERSION 14 TO VERSION 15 COMPLETE")
+	return nil
+}
+
+// MigrateParams backfills module params fields introduced for v15 label
+// canonicalization. Only zero-valued fields are touched; all other params are
+// left unchanged.
+//
+// Backfilled fields:
+//   - MaxCanonicalLabelByteLength: defaults to the module-initial cap when
+//     zero. A zero cap would reject every label after v15.
+func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	params, err := emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: failed to get existing params")
+	}
+
+	changed := false
+	if params.MaxCanonicalLabelByteLength == 0 {
+		params.MaxCanonicalLabelByteLength = emissionstypes.DefaultParams().MaxCanonicalLabelByteLength
+		changed = true
+	}
+
+	if !changed {
+		ctx.Logger().Info("MIGRATION V15: params backfill skipped (all fields already populated)")
+		return nil
+	}
+
+	if err := params.Validate(); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: backfilled params failed validation")
+	}
+	if err := emissionsKeeper.SetParams(ctx, params); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: failed to persist backfilled params")
+	}
+
+	ctx.Logger().Info(
+		"MIGRATION V15: params backfill completed",
+		"maxCanonicalLabelByteLength", params.MaxCanonicalLabelByteLength,
+	)
 	return nil
 }
 

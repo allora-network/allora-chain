@@ -11,6 +11,11 @@ import (
 
 // InitGenesis initializes the WorkerKeeper state from a genesis state.
 func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return errors.Wrap(err, "error getting params")
+	}
+
 	// TopicWorkers []*TopicAndActorId
 	for _, topicAndActorId := range data.TopicWorkers {
 		if topicAndActorId != nil {
@@ -62,7 +67,12 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 				if err != nil {
 					return errors.Wrap(err, "error getting inference topic label registry")
 				}
-				if _, err := MaterializeInputInferenceFromTemporaryRegistry(topic, registry, *topicIdActorIdInference.Inference); err != nil {
+				if _, err := MaterializeInputInferenceFromTemporaryRegistry(
+					topic,
+					registry,
+					*topicIdActorIdInference.Inference,
+					params.MaxCanonicalLabelByteLength,
+				); err != nil {
 					return errors.Wrap(err, "live MULTI inference is incompatible with topic label registry")
 				}
 			}

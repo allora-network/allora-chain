@@ -67,6 +67,7 @@ func DefaultParams() Params {
 		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
+		MaxCanonicalLabelByteLength:         64,                                          // cap on canonical label name byte length after NFC + trim; bounded by [Min,Max]MaxCanonicalLabelByteLength
 	}
 }
 
@@ -96,6 +97,13 @@ func validateMaxLabelsPerSubmission(i uint64) error {
 	}
 	return nil
 }
+
+// MinMaxCanonicalLabelByteLength / MaxMaxCanonicalLabelByteLength bound the
+// acceptable values for Params.MaxCanonicalLabelByteLength.
+const (
+	MinMaxCanonicalLabelByteLength = uint64(1)
+	MaxMaxCanonicalLabelByteLength = uint64(1024)
+)
 
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
@@ -251,6 +259,29 @@ func (p Params) Validate() error {
 	}
 	if err := validateMinWeightThresholdForStdnorm(p.MinWeightThresholdForStdnorm); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: min weight threshold for stdnorm")
+	}
+	if err := validateMaxCanonicalLabelByteLength(p.MaxCanonicalLabelByteLength); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max canonical label byte length")
+	}
+	return nil
+}
+
+// validateMaxCanonicalLabelByteLength enforces
+// MinMaxCanonicalLabelByteLength <= i <= MaxMaxCanonicalLabelByteLength on
+// every param change (genesis, gov param-change, and migration-backfill).
+// Zero is rejected because a zero cap would reject every label; the v15
+// migration backfills zero to 64 on upgrade, so this validator only ever
+// runs against backfilled or user-supplied values.
+func validateMaxCanonicalLabelByteLength(i uint64) error {
+	if i < MinMaxCanonicalLabelByteLength {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max canonical label byte length must be >= %d, got %d",
+			MinMaxCanonicalLabelByteLength, i)
+	}
+	if i > MaxMaxCanonicalLabelByteLength {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max canonical label byte length must be <= %d, got %d",
+			MaxMaxCanonicalLabelByteLength, i)
 	}
 	return nil
 }
