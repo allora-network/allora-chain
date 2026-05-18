@@ -26,7 +26,7 @@ func TopicWeightDistributionChecks(m testCommon.TestConfig) {
 	topic1Id := createTestTopic(m, m.AliceAddr, "Topic 1 - Short Epoch", 10) // Example Epoch Length: 10
 	m.T.Logf("Created Topic 1 with ID: %d and Epoch Length: 10", topic1Id)
 
-	// Topic 2: Long Epoch Length
+	// Topic 2: Long Epoch Length (2× short epoch so both churn together when the long topic completes its first epoch)
 	topic2Id := createTestTopic(m, m.AliceAddr, "Topic 2 - Long Epoch", 20) // Example Epoch Length: 20
 	m.T.Logf("Created Topic 2 with ID: %d and Epoch Length: 20", topic2Id)
 

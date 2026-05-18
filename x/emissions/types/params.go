@@ -603,18 +603,18 @@ func validatePNormSafeDiv(i alloraMath.Dec) error {
 
 // Whether an alloraDec is between the value of [0, 1] inclusive
 func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
-	return a.Gte(alloraMath.ZeroDec()) && a.Lte(alloraMath.OneDec())
+	return a.Gte(validationZeroDec) && a.Lte(validationOneDec)
 }
 
 // Whether an alloraDec is between the value of (0, 1) exclusive
 func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
-	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+	return a.Gt(validationZeroDec) && a.Lt(validationOneDec)
 }
 
 // Whether an alloraDec is between the values of [0, 1)
 // inclusive on 0 and exclusive on 1
 func isAlloraDecZeroOrLessThanOne(a alloraMath.Dec) bool {
-	return a.Gte(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+	return a.Gte(validationZeroDec) && a.Lt(validationOneDec)
 }
 
 // How much workers and reputers must pay to send data.
