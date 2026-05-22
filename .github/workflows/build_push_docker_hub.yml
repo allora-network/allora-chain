@@ -46,12 +46,6 @@ jobs:
           fi
 
           # Build a docker container and push it to Docker Hub.
-          # GH_TOKEN was previously passed as a --build-arg, which embeds the
-          # value in image layer metadata (visible via `docker history`/`docker
-          # inspect`) and would persist in the OCI manifest forever. The
-          # Dockerfile declared `ARG GH_TOKEN` but never consumed it (the build
-          # uses public Go modules only), so removing both is safe and closes
-          # the leak. See DEVOP-586.
           docker build --pull -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG .
           docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG
 
