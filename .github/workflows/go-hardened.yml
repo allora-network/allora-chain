@@ -15,5 +15,8 @@ jobs:
   hardened-install:
     uses: allora-network/ci-workflows-private/.github/workflows/go-install-hardened.yml@0d80a856ef798b01a39f65cb88a5cf7e74e4ebf9
     with:
-      go_version: stable
+      # Pinned to match the `toolchain` directive in go.mod (and the version
+      # used by golangci-lint.yml). Keeps hardened install checks deterministic
+      # across runs instead of tracking whatever "stable" resolves to.
+      go_version: '1.23.5'
       cgo_enabled: '1'
