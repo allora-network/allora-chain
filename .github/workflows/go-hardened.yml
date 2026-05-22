@@ -4,6 +4,7 @@ on:
     paths:
       - 'go.mod'
       - 'go.sum'
+      - 'go.env'
       - '**/*.go'
       - '.github/workflows/go-hardened.yml'
   push:
