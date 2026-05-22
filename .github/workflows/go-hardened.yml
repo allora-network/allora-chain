@@ -1,0 +1,18 @@
+name: Go hardened install
+on:
+  pull_request:
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+      - '**/*.go'
+      - '.github/workflows/go-hardened.yml'
+  push:
+    branches: [main, master, dev, staging]
+permissions:
+  contents: read
+jobs:
+  hardened-install:
+    uses: allora-network/ci-workflows-private/.github/workflows/go-install-hardened.yml@fa8a0e1361216ec0c75e4d822f648248083e229b
+    with:
+      go_version: stable
+      cgo_enabled: '1'
