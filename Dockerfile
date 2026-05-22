@@ -1,5 +1,10 @@
 FROM golang:1.22-bookworm AS builder
 
+# SECURITY: Do not pass credentials via `--build-arg` / `ARG` -- they are
+# embedded in image metadata (`docker history`, OCI provenance) and leak to
+# anyone with pull access. If a private Go module is ever needed, use a
+# BuildKit secret (`RUN --mount=type=secret,id=...`). See DEVOP-586.
+
 ADD . /src
 WORKDIR /src
 
