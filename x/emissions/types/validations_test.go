@@ -28,6 +28,10 @@ func validCreateNewTopicRequest() *CreateNewTopicRequest {
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
 	}
 }
 
@@ -961,13 +965,13 @@ func TestTopicValidate(t *testing.T) {
 		},
 		{
 			name:    "p-norm out of range low",
-			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("2.4") },
-			wantErr: true, errContains: "topic p-norm must be between 2.5 and 4.5",
+			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("0.9") },
+			wantErr: true, errContains: "topic p-norm must be between 1 and 10",
 		},
 		{
 			name:    "p-norm out of range high",
-			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("4.6") },
-			wantErr: true, errContains: "topic p-norm must be between 2.5 and 4.5",
+			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("11") },
+			wantErr: true, errContains: "topic p-norm must be between 1 and 10",
 		},
 		{
 			name:    "epsilon <= 0",
@@ -977,7 +981,7 @@ func TestTopicValidate(t *testing.T) {
 		{
 			name:    "merit sortition alpha > 1",
 			mutate:  func(tp *Topic, _ *Params) { tp.MeritSortitionAlpha = alloraMath.MustNewDecFromString("1.1") },
-			wantErr: true, errContains: "topic merit sortition alpha must be between 0 and 1 inclusive",
+			wantErr: true, errContains: "topic merit sortition alpha must be greater than or equal to 0 and less than 1",
 		},
 		{
 			name:    "active inferer quantile < 0",
