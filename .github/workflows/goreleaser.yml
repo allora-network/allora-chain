@@ -8,6 +8,18 @@ on:
 permissions:
   contents: write
 
+# Shai-Hulud defense: pin module integrity for every `go` invocation in this
+# workflow (goreleaser shells out to `go build`). Mirrors the env exported by
+# the reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=1 is
+# required by cosmwasm/wasmvm (a transitive Cosmos SDK dep) and is tracked
+# for removal in ENGN-8441 once wasmvm is fully retired. Do not flip to 0
+# without that work.
+env:
+  GOPROXY: "https://proxy.golang.org,direct"
+  GOSUMDB: "sum.golang.org"
+  GOFLAGS: "-mod=readonly"
+  CGO_ENABLED: "1"
+
 jobs:
   goreleaser:
     runs-on: ubuntu-24.04

@@ -1,0 +1,33 @@
+name: Go vulnerability scan (scheduled)
+
+# Companion to .github/workflows/go-hardened.yml (per-PR enforcement).
+# This workflow catches newly-disclosed vulnerabilities between PR runs by
+# running govulncheck weekly against the default branch's module graph.
+#
+# Pin notes: the reusable workflow is pinned to the current HEAD of
+# ci-workflows-private PR #17 (DEVOP-616). That SHA is addressable today and
+# stays addressable after PR #17 merges. Re-pin to the merged-to-main SHA in a
+# follow-up once PR #17 lands.
+
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  govulncheck:
+    uses: allora-network/ci-workflows-private/.github/workflows/go-vuln-scan.yml@185ec34dc707e6779bcc06fe2a592e07f29de8ed
+    with:
+      # Matches go.mod's toolchain directive and the pin used by
+      # go-hardened.yml / go-install-hardened.yml.
+      go_version: '1.23.5'
+      fail_on_findings: true
+    secrets:
+      slack_webhook_url: ${{ secrets.SLACK_SECURITY_WEBHOOK }}
