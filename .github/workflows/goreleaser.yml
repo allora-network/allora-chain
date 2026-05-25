@@ -10,10 +10,12 @@ permissions:
 
 # Shai-Hulud defense: pin module integrity for every `go` invocation in this
 # workflow (goreleaser shells out to `go build`). Mirrors the env exported by
-# the reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=1 is
-# required by cosmwasm/wasmvm (a transitive Cosmos SDK dep) and is tracked
-# for removal in ENGN-8441 once wasmvm is fully retired. Do not flip to 0
-# without that work.
+# the reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=1
+# here is effectively a no-op for the release build itself: .goreleaser.yaml
+# sets CGO_ENABLED=0 per-build (netgo + pebbledb + ledger tags), and the
+# per-build env wins over the workflow-level env. Keeping it at "1" keeps a
+# single Shai-Hulud env block reusable across CI workflows; if/when the
+# goreleaser config flips to CGO=1, this line already matches.
 env:
   GOPROXY: "https://proxy.golang.org,direct"
   GOSUMDB: "sum.golang.org"

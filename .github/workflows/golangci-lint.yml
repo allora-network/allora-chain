@@ -14,9 +14,10 @@ permissions:
 
 # Shai-Hulud defense: pin module integrity for every `go` invocation in this
 # workflow. Mirrors the env exported by the reusable hardened-install workflow
-# in go-hardened.yml. CGO_ENABLED=1 is required by cosmwasm/wasmvm (a
-# transitive Cosmos SDK dep) and is tracked for removal in ENGN-8441 once
-# wasmvm is fully retired. Do not flip to 0 without that work.
+# in go-hardened.yml. CGO_ENABLED=1 matches the convention go-hardened.yml
+# uses for its hardened-install caller. Linters themselves do not link C, but
+# this keeps a single Shai-Hulud env block reusable across CI workflows; flip
+# only after auditing every workflow that consumes it.
 env:
   GOPROXY: "https://proxy.golang.org,direct"
   GOSUMDB: "sum.golang.org"

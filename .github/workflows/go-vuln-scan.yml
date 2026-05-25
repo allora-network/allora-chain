@@ -5,9 +5,14 @@ name: Go vulnerability scan (scheduled)
 # running govulncheck weekly against the default branch's module graph.
 #
 # Pin notes: the reusable workflow is pinned to the current HEAD of
-# ci-workflows-private PR #17 (DEVOP-616). That SHA is addressable today and
-# stays addressable after PR #17 merges. Re-pin to the merged-to-main SHA in a
-# follow-up once PR #17 lands.
+# ci-workflows-private PR #17 (DEVOP-616). That SHA is reachable today via
+# refs/pull/17/head and stays reachable after PR #17 merges (it becomes part
+# of the default-branch history). GC risk: if PR #17 were *closed without
+# merging* the head branch could be deleted and GitHub would garbage-collect
+# the commit after ~90 days, breaking this pin. Mitigation: re-pin to the
+# merged-to-main SHA in a follow-up once PR #17 lands; until then the
+# scheduled run resolves the SHA on each cron tick and a broken pin will
+# surface immediately as a workflow failure rather than silently regressing.
 
 on:
   schedule:

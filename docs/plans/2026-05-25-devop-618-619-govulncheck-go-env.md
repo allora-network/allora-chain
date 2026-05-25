@@ -31,11 +31,27 @@ returned no hits.
 
 ## CGO_ENABLED=1 carve-out
 
-`allora-chain` pulls `cosmwasm/wasmvm` transitively via the Cosmos SDK; wasmvm
-requires cgo to link `libwasmvm`. Forcing `CGO_ENABLED=0` would break every
-go-invoking workflow. The carve-out mirrors `go-hardened.yml` (which already
-passes `cgo_enabled: '1'` to the reusable workflow). Removal of wasmvm — and
-therefore this carve-out — is tracked separately in ENGN-8441.
+DEVOP-619 defaults to `CGO_ENABLED=0`. allora-chain's existing `go-hardened.yml`
+passes `cgo_enabled: '1'` to the reusable hardened-install workflow, so this
+PR mirrors that convention for consistency across the Shai-Hulud env block.
+
+Notes:
+
+- `wasmvm` / `libwasmvm` is NOT a dependency of this repo (confirmed against
+  `go.mod` and `go.sum`); the comment that originally cited it has been
+  removed. Real CGO-linking deps in the graph are `cockroachdb/pebble` and
+  cosmos-ledger transitives (under the `pebbledb`/`ledger` build tags).
+- Release binaries override this to `CGO_ENABLED=0` per-build via
+  `.goreleaser.yaml` (`env: [CGO_ENABLED=0]`), so the goreleaser workflow's
+  workflow-level env is effectively unused for the actual `go build` step.
+- For `format_and_test.yml`, integration tests build/run the chain via
+  `test/local_testnet_l1.sh` against the CGO-enabled build path.
+- For `golangci-lint.yml`, the linters themselves do not link C; the env is
+  carried for uniformity with the rest of the Shai-Hulud block.
+
+If the future audit finds that `CGO_ENABLED=0` works for the test/lint path
+without behavioral change, flipping it is straightforward. Until then, "1"
+keeps a single env block reusable.
 
 ## Reusable workflow pin
 
