@@ -694,7 +694,6 @@ type calcOneInValueArgs struct {
 	AllInferersAreNew                    bool
 	Inferers                             []Inferer
 	InfererToInference                   map[Inferer]*emissions.Inference
-	ForecasterToForecast                 map[Forecaster]*emissions.Forecast
 	ForecasterToForecastImpliedInference map[Forecaster]*emissions.Inference
 	EpsilonTopic                         alloraMath.Dec
 	EpsilonSafeDiv                       alloraMath.Dec
@@ -713,7 +712,9 @@ func calcOneInValue(args calcOneInValueArgs) (
 
 	// In each loop, remove all forecast-implied inferences except one
 	singleForecastImpliedInference := make(map[Worker]*emissions.Inference, 1)
-	singleForecastImpliedInference[args.OneInForecaster] = args.ForecasterToForecastImpliedInference[args.OneInForecaster]
+	if inferred, ok := args.ForecasterToForecastImpliedInference[args.OneInForecaster]; ok && inferred != nil {
+		singleForecastImpliedInference[args.OneInForecaster] = inferred
+	}
 
 	// Get self regret for the forecaster
 	singleForecasterRegret := make(map[Worker]*Regret, 1)
@@ -725,10 +726,6 @@ func calcOneInValue(args calcOneInValueArgs) (
 
 	// get self forecast list
 	singleForecaster := []Worker{args.OneInForecaster}
-
-	// get map of Forecaster to their forecast for the single forecaster
-	singleForecasterToForecast := make(map[Forecaster]*emissions.Forecast, 1)
-	singleForecasterToForecast[args.OneInForecaster] = args.ForecasterToForecast[args.OneInForecaster]
 
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
 	infererToRegretForSingleForecaster := make(map[Inferer]*Regret)
@@ -773,7 +770,7 @@ func calcOneInValue(args calcOneInValueArgs) (
 		infererToRegret:                      infererToRegretForSingleForecaster,
 		forecasters:                          singleForecaster,
 		forecasterToRegret:                   singleForecasterRegret,
-		forecasterToForecastImpliedInference: args.ForecasterToForecastImpliedInference,
+		forecasterToForecastImpliedInference: singleForecastImpliedInference,
 		weights:                              weights,
 		epsilonSafeDiv:                       args.EpsilonSafeDiv,
 	})
@@ -825,7 +822,6 @@ func GetOneInForecasterInferences(args GetOneInForecasterInferencesArgs) (
 					AllInferersAreNew:                    args.AllInferersAreNew,
 					Inferers:                             args.Inferers,
 					InfererToInference:                   args.InfererToInference,
-					ForecasterToForecast:                 args.ForecasterToForecast,
 					ForecasterToForecastImpliedInference: args.ForecasterToForecastImpliedInference,
 					EpsilonTopic:                         args.EpsilonTopic,
 					EpsilonSafeDiv:                       args.EpsilonSafeDiv,

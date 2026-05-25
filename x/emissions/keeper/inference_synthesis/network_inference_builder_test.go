@@ -727,6 +727,40 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValuesEpoch4() {
 	s.testCorrectOneInForecasterValuesForEpoch(304)
 }
 
+func (s *InferenceSynthesisTestSuite) TestGetOneInForecasterInferencesHandlesNilForecastImpliedEntry() {
+	ctx, k, logger, topicId, allInferersAreNew,
+		inferers, inferenceByWorker, _,
+		forecasters, forecastByWorker, forecastImpliedInferenceByWorker, _,
+		_, epsilonTopic, epsilonSafeDiv, pNorm, cNorm, _ := s.getEpochValueBundleByEpoch(302)
+
+	s.Require().Greater(len(forecasters), 1)
+	forecastImpliedInferenceByWorker[forecasters[0]] = nil
+
+	s.Require().NotPanics(func() {
+		oneInForecasterValues, err := inferencesynthesis.GetOneInForecasterInferences(
+			inferencesynthesis.GetOneInForecasterInferencesArgs{
+				Ctx:                                  ctx,
+				K:                                    k,
+				Logger:                               logger,
+				TopicId:                              topicId,
+				Inferers:                             inferers,
+				InfererToInference:                   inferenceByWorker,
+				AllInferersAreNew:                    allInferersAreNew,
+				Forecasters:                          forecasters,
+				ForecasterToForecast:                 forecastByWorker,
+				ForecasterToForecastImpliedInference: forecastImpliedInferenceByWorker,
+				EpsilonTopic:                         epsilonTopic,
+				EpsilonSafeDiv:                       epsilonSafeDiv,
+				PNorm:                                pNorm,
+				CNorm:                                cNorm,
+				RegretScalePlusEpsilon:               alloraMath.ZeroDec(),
+			},
+		)
+		s.Require().NoError(err)
+		s.Require().Len(oneInForecasterValues, len(forecasters))
+	})
+}
+
 func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData() {
 	k := *s.EmissionsKeeper()
 	ctx := s.Ctx()
