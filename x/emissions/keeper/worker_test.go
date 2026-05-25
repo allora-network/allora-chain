@@ -1084,8 +1084,9 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 
 	allInferences := types.Inferences{Inferences: inferences}
 	for _, inference := range allInferences.Inferences {
-		_, err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
+		s.Require().True(admitted)
 	}
 
 	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
@@ -1125,8 +1126,9 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	allInferences = types.Inferences{Inferences: inferences}
 	nonce.BlockHeight++
 	for _, inference := range allInferences.Inferences {
-		_, err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
+		s.Require().True(admitted)
 	}
 
 	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)

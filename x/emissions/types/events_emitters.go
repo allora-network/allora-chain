@@ -613,10 +613,10 @@ func EmitNewWorkerSubmissionWindowClosedEvent(ctx context.Context, topicId Topic
 // per-epoch label registry for (topicId, nonce) has been frozen. Emitted
 // exactly once, from closeActiveInferencesSet, after the temporary registry is
 // compacted/remapped into its final form.
-func EmitNewEpochLabelRegistryFrozenEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, registry EpochLabelRegistry) {
+func EmitNewEpochLabelRegistryFrozenEvent(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, registrySize uint64) {
 	metrics.IncrProducerEventCount(metrics.EPOCH_LABEL_REGISTRY_FROZEN_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewEpochLabelRegistryFrozenEventBase(topicId, nonceBlockHeight, registry))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewEpochLabelRegistryFrozenEventBase(topicId, nonceBlockHeight, registrySize))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting EpochLabelRegistryFrozenEvent", "error", err)
 	}

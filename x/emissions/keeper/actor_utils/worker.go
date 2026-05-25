@@ -248,8 +248,8 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 // consumer sees dense Values aligned to the final compact ELR.
 //
 // Returns (inferer address set, materialized inferences) and also emits
-// EventEpochLabelRegistryFrozen so offchain indexers can reconstruct the
-// registry without reaching into state.
+// EventEpochLabelRegistryFrozen so offchain indexers can track the committed
+// registry size for this epoch.
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
@@ -266,7 +266,9 @@ func closeActiveInferencesSet(
 		return nil, nil, errorsmod.Wrapf(err, "failed to materialize active inferences for topic %d nonce %d", topic.Id, nonce.BlockHeight)
 	}
 
-	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, registry)
+	//nolint:gosec // registry size is bounded by MaxLabelsPerSubmission (uint64), safe to cast
+	registrySize := uint64(len(registry.Labels))
+	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, registrySize)
 
 	for _, inference := range inferences.Inferences {
 		activeInfererAddressesMap[inference.Inferer] = true

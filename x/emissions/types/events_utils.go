@@ -780,11 +780,10 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 // CloseWorkerNonce time. Offchain indexers can reconstruct the full
 // registry by looking up topicLabelRegistry at the same key, but we
 // advertise the size here so explorers don't have to read state.
-func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int64, registry EpochLabelRegistry) proto.Message {
+func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int64, registrySize uint64) proto.Message {
 	return &EventEpochLabelRegistryFrozen{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
-		//nolint:gosec // registry size is bounded by MaxLabelsPerSubmission (uint64), safe to cast
-		RegistrySize: uint64(len(registry.Labels)),
+		RegistrySize:     registrySize,
 	}
 }

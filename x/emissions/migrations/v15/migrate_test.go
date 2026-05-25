@@ -147,7 +147,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 		RequireUnity:             true,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.001"),
 		MaxLabelsPerSubmission:   8,
-		LabelWhitelist:           nil,
+		LabelWhitelist:           []string{"bear", "bull"},
 		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
 	}
@@ -164,6 +164,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	s.Require().True(gotTopic.RequireUnity)
 	s.Require().True(gotTopic.UnityTolerance.Equal(alloraMath.MustNewDecFromString("0.001")))
 	s.Require().Equal(uint64(8), gotTopic.MaxLabelsPerSubmission)
+	s.Require().Equal([]string{"bear", "bull"}, gotTopic.LabelWhitelist)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalLabelByteLength() {

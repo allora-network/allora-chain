@@ -67,6 +67,7 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 				if err != nil {
 					return errors.Wrap(err, "error getting inference topic label registry")
 				}
+				// Decode once to verify the stored live inference matches the registry before importing it.
 				if _, err := MaterializeInputInferenceFromTemporaryRegistry(
 					topic,
 					registry,

@@ -12,12 +12,15 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// MaterializeInputInferenceFromTemporaryRegistry rebuilds the canonical
-// input-shaped view of a live WSW dense inference using the temporary ELR.
+// MaterializeInputInferenceFromTemporaryRegistry rebuilds the input-shaped view
+// of a live WSW dense inference using the open-window temporary registry passed
+// by the caller. "Temporary" is a lifecycle contract: before CloseWorkerNonce,
+// MULTI inference values are aligned to first-seen labels in this registry; the
+// final compact registry is materialized later from active non-default labels.
 //
-// For MULTI topics, the inference vector is aligned to the first
-// len(inference.Values) labels in the temporary registry. The registry may have
-// grown since the worker submitted, so later labels are intentionally ignored.
+// For MULTI topics, only the first len(inference.Values) temporary labels are
+// projected back into InputLabeledValue entries. The temporary registry may have
+// grown after the worker submitted, so later labels are intentionally ignored.
 func MaterializeInputInferenceFromTemporaryRegistry(
 	topic types.Topic,
 	tempRegistry types.EpochLabelRegistry,
@@ -81,7 +84,7 @@ func materializeMultiInputInference(
 	inference types.Inference,
 	maxLabelBytes uint64,
 ) (*types.InputInference, error) {
-	if err := validateTemporaryRegistry(
+	if err := validateEpochLabelRegistry(
 		topic.Id,
 		topic.LabelCaseSensitive,
 		nonce,
@@ -136,7 +139,7 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get params for epoch label registry validation")
 	}
-	if err := validateTemporaryRegistry(
+	if err := validateEpochLabelRegistry(
 		registry.TopicId,
 		topic.LabelCaseSensitive,
 		nonce,
@@ -148,9 +151,15 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 	return k.topicLabelRegistry.Set(ctx, collections.Join(registry.TopicId, nonce), registry)
 }
 
-// MaterializeFinalEpochLabelRegistry filters a temporary first-seen registry to
-// active non-default labels, compacts IDs to 1..L, and returns active
-// inferences aligned to that final registry.
+// MaterializeFinalEpochLabelRegistry freezes the close-time view of an epoch
+// label registry. It validates the temporary first-seen registry, filters out
+// labels that have no active non-default value, compacts surviving label IDs to
+// 1..L, and remaps active inference vectors from temporary label positions into
+// that final compact ID space.
+//
+// The returned reusedTemporary flag is true only when every temporary label
+// survives unchanged, allowing callers to skip rewriting identical registry
+// state.
 func MaterializeFinalEpochLabelRegistry(
 	topic types.Topic,
 	nonce types.BlockHeight,
@@ -158,7 +167,7 @@ func MaterializeFinalEpochLabelRegistry(
 	activeInferences []*types.Inference,
 	maxLabelBytes uint64,
 ) (types.EpochLabelRegistry, *types.Inferences, bool, error) {
-	if err := validateTemporaryRegistry(
+	if err := validateEpochLabelRegistry(
 		topic.Id,
 		topic.LabelCaseSensitive,
 		nonce,
@@ -306,16 +315,8 @@ func activeNonDefaultLabelMask(
 	return used
 }
 
-func validateTemporaryRegistry(
-	topicID types.TopicId,
-	labelCaseSensitive bool,
-	nonce types.BlockHeight,
-	registry types.EpochLabelRegistry,
-	maxLabelBytes uint64,
-) error {
-	return validateEpochLabelRegistry(topicID, labelCaseSensitive, nonce, registry, maxLabelBytes)
-}
-
+// validateEpochLabelRegistry guards the stored registry invariant for a topic epoch.
+// It ensures identity, label IDs, canonical names, and uniqueness stay consistent.
 func validateEpochLabelRegistry(
 	topicID types.TopicId,
 	labelCaseSensitive bool,
