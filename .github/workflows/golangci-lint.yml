@@ -13,16 +13,20 @@ permissions:
   checks: write
 
 # Shai-Hulud defense: pin module integrity for every `go` invocation in this
-# workflow. Mirrors the env exported by the reusable hardened-install workflow
-# in go-hardened.yml. CGO_ENABLED=1 matches the convention go-hardened.yml
-# uses for its hardened-install caller. Linters themselves do not link C, but
-# this keeps a single Shai-Hulud env block reusable across CI workflows; flip
-# only after auditing every workflow that consumes it.
+# workflow. Mirrors the GOPROXY / GOSUMDB / GOFLAGS env exported by the
+# reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=0 matches
+# the release path (.goreleaser.yaml sets CGO_ENABLED=0 per-build); linters
+# do not link C and no source in this repo does `import "C"`. go-hardened.yml
+# currently passes cgo_enabled: '1' to the reusable hardened-install caller,
+# which is inconsistent with the rest of CI; tracked as a follow-up to flip
+# after a separate audit.
+# TODO(DEVOP-619 follow-up): revisit if wasmvm or another CGO-linking dep is
+# reintroduced.
 env:
   GOPROXY: "https://proxy.golang.org,direct"
   GOSUMDB: "sum.golang.org"
   GOFLAGS: "-mod=readonly"
-  CGO_ENABLED: "1"
+  CGO_ENABLED: "0"
 
 jobs:
   golangci:

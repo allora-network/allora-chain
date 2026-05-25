@@ -13,7 +13,10 @@ Tickets: [DEVOP-618](https://linear.app/allora/issue/DEVOP-618), [DEVOP-619](htt
 2. Adds a top-level `env:` block to the three workflows that invoke `go` at the
    runner level: `format_and_test.yml`, `golangci-lint.yml`, `goreleaser.yml`.
    Block: `GOPROXY=https://proxy.golang.org,direct`, `GOSUMDB=sum.golang.org`,
-   `GOFLAGS=-mod=readonly`, `CGO_ENABLED=1`.
+   `GOFLAGS=-mod=readonly`, `CGO_ENABLED=0`.
+3. Pins `actions/setup-go` in `goreleaser.yml` to Go `1.23.5` so release
+   artifacts are produced by the same Go toolchain as the hardened CI path
+   (was `1.22.2`, drifted from `go.mod`'s `toolchain go1.23.5` directive).
 
 ## Workflows audited
 
@@ -29,29 +32,41 @@ Tickets: [DEVOP-618](https://linear.app/allora/issue/DEVOP-618), [DEVOP-619](htt
 Audit for forbidden env (`rg 'GONOSUMCHECK|GOFLAGS:.*-insecure|GOSUMDB:.*off' .github/workflows/`)
 returned no hits.
 
-## CGO_ENABLED=1 carve-out
+## CGO_ENABLED=0 alignment
 
-DEVOP-619 defaults to `CGO_ENABLED=0`. allora-chain's existing `go-hardened.yml`
-passes `cgo_enabled: '1'` to the reusable hardened-install workflow, so this
-PR mirrors that convention for consistency across the Shai-Hulud env block.
+DEVOP-619 defaults to `CGO_ENABLED=0`. This PR sets `CGO_ENABLED=0` in all
+three workflow-level env blocks (`format_and_test.yml`, `golangci-lint.yml`,
+`goreleaser.yml`).
 
-Notes:
+Evidence collected during review of PR #952:
 
-- `wasmvm` / `libwasmvm` is NOT a dependency of this repo (confirmed against
-  `go.mod` and `go.sum`); the comment that originally cited it has been
-  removed. Real CGO-linking deps in the graph are `cockroachdb/pebble` and
-  cosmos-ledger transitives (under the `pebbledb`/`ledger` build tags).
-- Release binaries override this to `CGO_ENABLED=0` per-build via
-  `.goreleaser.yaml` (`env: [CGO_ENABLED=0]`), so the goreleaser workflow's
-  workflow-level env is effectively unused for the actual `go build` step.
+- `wasmvm` / `libwasmvm` / `cosmwasm` is NOT a dependency of this repo:
+  `rg -i 'wasmvm|libwasmvm|cosmwasm' go.mod go.sum` returns zero matches.
+- No Go source in this repo does `import "C"` (confirmed via repo-wide search).
+- Release binaries are explicitly `CGO_ENABLED=0` per-build via
+  `.goreleaser.yaml` (`env: [CGO_ENABLED=0]`) with `netgo + pebbledb + ledger`
+  build tags. The fact that the release build succeeds with CGO=0 + those
+  tags proves none of `cockroachdb/pebble`, cosmos-ledger transitives, or
+  any other dep in the graph forces CGO at link time.
 - For `format_and_test.yml`, integration tests build/run the chain via
-  `test/local_testnet_l1.sh` against the CGO-enabled build path.
-- For `golangci-lint.yml`, the linters themselves do not link C; the env is
-  carried for uniformity with the rest of the Shai-Hulud block.
+  `test/local_testnet_l1.sh`, which matches the CGO=0 release toolchain.
+- For `golangci-lint.yml`, the linters themselves do not link C.
 
-If the future audit finds that `CGO_ENABLED=0` works for the test/lint path
-without behavioral change, flipping it is straightforward. Until then, "1"
-keeps a single env block reusable.
+Conclusion: setting `CGO_ENABLED=0` across CI both removes a divergence
+between `goreleaser.yml`'s workflow-level env and its underlying
+`.goreleaser.yaml`'s per-build env, AND removes a misleading wasmvm-based
+justification flagged by cubic (P3) and xmariachi on PR #952.
+
+Out of scope for this PR: `go-hardened.yml` (added by merged PR #951) still
+passes `cgo_enabled: '1'` to the reusable hardened-install caller. After
+this PR lands, that pin is inconsistent with every other workflow. Tracked
+as a follow-up to flip to `cgo_enabled: '0'` in a separate PR so it can be
+reviewed on its own merits.
+
+If `wasmvm` (or any other CGO-linking dep) is reintroduced in the future,
+flip these workflow env blocks back to `CGO_ENABLED=1` and revisit the
+`.goreleaser.yaml` per-build env at the same time. The `TODO(DEVOP-619
+follow-up)` comments in each workflow point to this section.
 
 ## Reusable workflow pin
 

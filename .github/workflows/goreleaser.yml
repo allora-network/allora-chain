@@ -9,18 +9,21 @@ permissions:
   contents: write
 
 # Shai-Hulud defense: pin module integrity for every `go` invocation in this
-# workflow (goreleaser shells out to `go build`). Mirrors the env exported by
-# the reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=1
-# here is effectively a no-op for the release build itself: .goreleaser.yaml
-# sets CGO_ENABLED=0 per-build (netgo + pebbledb + ledger tags), and the
-# per-build env wins over the workflow-level env. Keeping it at "1" keeps a
-# single Shai-Hulud env block reusable across CI workflows; if/when the
-# goreleaser config flips to CGO=1, this line already matches.
+# workflow (goreleaser shells out to `go build`). Mirrors the GOPROXY / GOSUMDB
+# / GOFLAGS env exported by the reusable hardened-install workflow in
+# go-hardened.yml. CGO_ENABLED=0 matches .goreleaser.yaml's per-build env
+# (netgo + pebbledb + ledger tags compile pure-Go); no source in this repo
+# does `import "C"` and no transitive dep (no wasmvm/libwasmvm/cosmwasm in
+# go.mod or go.sum) forces CGO. go-hardened.yml currently passes cgo_enabled:
+# '1' to the reusable hardened-install caller, which is inconsistent with the
+# rest of CI; tracked as a follow-up to flip after a separate audit.
+# TODO(DEVOP-619 follow-up): revisit if wasmvm or another CGO-linking dep is
+# reintroduced.
 env:
   GOPROXY: "https://proxy.golang.org,direct"
   GOSUMDB: "sum.golang.org"
   GOFLAGS: "-mod=readonly"
-  CGO_ENABLED: "1"
+  CGO_ENABLED: "0"
 
 jobs:
   goreleaser:
@@ -47,7 +50,10 @@ jobs:
         name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.22.2
+          # Matches go.mod's toolchain directive and the pin used by
+          # go-hardened.yml / go-vuln-scan.yml so release artifacts are
+          # produced by the same Go version as the hardened CI path.
+          go-version: '1.23.5'
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
