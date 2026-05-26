@@ -93,11 +93,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockMultilabel(
 			getLabeled := func(vals []*emissionstypes.LabeledValue) []alloraMath.Dec {
 				require.Len(vals, labelCount)
 				out := make([]alloraMath.Dec, labelCount)
+				seen := make([]bool, labelCount)
 				for _, lv := range vals {
-					// LabelId is 1-based (RegisterEpochLabel assigns ids from 1).
 					idx := int(lv.LabelId) - 1
 					require.GreaterOrEqual(idx, 0)
 					require.Less(idx, labelCount)
+					require.False(seen[idx], "duplicate LabelId %d in labeled values", lv.LabelId)
+					seen[idx] = true
 					out[idx] = lv.Value
 				}
 				return out
