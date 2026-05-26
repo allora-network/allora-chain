@@ -17,14 +17,22 @@ Tickets: [DEVOP-618](https://linear.app/allora/issue/DEVOP-618), [DEVOP-619](htt
 3. Pins `actions/setup-go` in `goreleaser.yml` to Go `1.23.5` so release
    artifacts are produced by the same Go toolchain as the hardened CI path
    (was `1.22.2`, drifted from `go.mod`'s `toolchain go1.23.5` directive).
+4. Aligns `go-hardened.yml`'s `cgo_enabled` input to the reusable
+   hardened-install workflow from `'1'` to `'0'` so the entire CI matrix
+   agrees on `CGO_ENABLED=0`. The earlier `cosmwasm/wasmvm requires CGO`
+   justification was incorrect — see the `CGO_ENABLED=0 alignment` section
+   below for the evidence chain. Originally surfaced by cubic-dev-ai (P2)
+   and xmariachi on PR #952.
 
 ## Workflows audited
 
 - `format_and_test.yml` — calls `setup-go` + `go test`. **env block added**.
 - `golangci-lint.yml` — calls `setup-go` + `go run` for custom linters. **env block added**.
 - `goreleaser.yml` — calls `setup-go` + goreleaser (which shells out to `go`). **env block added**.
-- `go-hardened.yml` — calls the reusable hardened-install workflow which sets these
-  env vars internally. **Skipped (already covered)**.
+- `go-hardened.yml` — calls the reusable hardened-install workflow which sets the
+  Shai-Hulud env vars (GOPROXY/GOSUMDB/GOFLAGS) internally, so no top-level
+  `env:` block is needed. **`cgo_enabled` input flipped from `'1'` to `'0'`**
+  to match the rest of the matrix (see `CGO_ENABLED=0 alignment` below).
 - `buf-ci.yaml` — only runs `bufbuild/buf-action`; no `go` at runner level. **Skipped**.
 - `build_push_docker_hub.yml`, `build_push_upgrader_docker_hub.yml` — only invoke
   `docker build`; `go` runs inside the container, not the runner. **Skipped**.
@@ -34,9 +42,11 @@ returned no hits.
 
 ## CGO_ENABLED=0 alignment
 
-DEVOP-619 defaults to `CGO_ENABLED=0`. This PR sets `CGO_ENABLED=0` in all
-three workflow-level env blocks (`format_and_test.yml`, `golangci-lint.yml`,
-`goreleaser.yml`).
+DEVOP-619 defaults to `CGO_ENABLED=0`. This PR sets `CGO_ENABLED=0` across
+all four CI surfaces: the three new workflow-level env blocks
+(`format_and_test.yml`, `golangci-lint.yml`, `goreleaser.yml`) and the
+`cgo_enabled` input passed to the reusable hardened-install workflow from
+`go-hardened.yml`.
 
 Evidence collected during review of PR #952:
 
@@ -55,18 +65,16 @@ Evidence collected during review of PR #952:
 Conclusion: setting `CGO_ENABLED=0` across CI both removes a divergence
 between `goreleaser.yml`'s workflow-level env and its underlying
 `.goreleaser.yaml`'s per-build env, AND removes a misleading wasmvm-based
-justification flagged by cubic (P3) and xmariachi on PR #952.
-
-Out of scope for this PR: `go-hardened.yml` (added by merged PR #951) still
-passes `cgo_enabled: '1'` to the reusable hardened-install caller. After
-this PR lands, that pin is inconsistent with every other workflow. Tracked
-as a follow-up to flip to `cgo_enabled: '0'` in a separate PR so it can be
-reviewed on its own merits.
+justification flagged by cubic (P3) and xmariachi on PR #952. The same flip
+is applied to `go-hardened.yml`'s `cgo_enabled` input (originally `'1'`,
+added by merged PR #951) so the entire CI matrix agrees on a single value.
 
 If `wasmvm` (or any other CGO-linking dep) is reintroduced in the future,
-flip these workflow env blocks back to `CGO_ENABLED=1` and revisit the
-`.goreleaser.yaml` per-build env at the same time. The `TODO(DEVOP-619
-follow-up)` comments in each workflow point to this section.
+flip these workflow env blocks back to `CGO_ENABLED=1`, flip
+`go-hardened.yml`'s `cgo_enabled` input back to `'1'`, and revisit the
+`.goreleaser.yaml` per-build env at the same time. The `ENGN-8441`
+references in each workflow's CGO_ENABLED comment block point to the
+broader wasmvm question being tracked there.
 
 ## Reusable workflow pin
 
