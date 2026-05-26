@@ -17,11 +17,9 @@ permissions:
 # reusable hardened-install workflow in go-hardened.yml. CGO_ENABLED=0 matches
 # the release path (.goreleaser.yaml sets CGO_ENABLED=0 per-build); linters
 # do not link C and no source in this repo does `import "C"`. go-hardened.yml
-# currently passes cgo_enabled: '1' to the reusable hardened-install caller,
-# which is inconsistent with the rest of CI; tracked as a follow-up to flip
-# after a separate audit.
-# TODO(DEVOP-619 follow-up): revisit if wasmvm or another CGO-linking dep is
-# reintroduced.
+# is now aligned to cgo_enabled='0'; revisit all four CGO_ENABLED values
+# together if a CGO-linking dep is reintroduced (ENGN-8441 tracks the broader
+# wasmvm question).
 env:
   GOPROXY: "https://proxy.golang.org,direct"
   GOSUMDB: "sum.golang.org"

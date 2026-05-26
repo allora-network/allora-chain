@@ -13,11 +13,9 @@ permissions:
 # `import "C"` and no transitive dep (no wasmvm/libwasmvm/cosmwasm in go.mod
 # or go.sum) forces CGO. Integration tests here build/run the chain via
 # test/local_testnet_l1.sh, which matches the CGO=0 release toolchain.
-# go-hardened.yml currently passes cgo_enabled: '1' to the reusable
-# hardened-install caller, which is inconsistent with the rest of CI; tracked
-# as a follow-up to flip after a separate audit.
-# TODO(DEVOP-619 follow-up): revisit if wasmvm or another CGO-linking dep is
-# reintroduced.
+# go-hardened.yml is now aligned to cgo_enabled='0'; revisit all four
+# CGO_ENABLED values together if a CGO-linking dep is reintroduced
+# (ENGN-8441 tracks the broader wasmvm question).
 env:
   GOPROXY: "https://proxy.golang.org,direct"
   GOSUMDB: "sum.golang.org"

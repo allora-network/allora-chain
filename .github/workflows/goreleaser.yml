@@ -14,11 +14,10 @@ permissions:
 # go-hardened.yml. CGO_ENABLED=0 matches .goreleaser.yaml's per-build env
 # (netgo + pebbledb + ledger tags compile pure-Go); no source in this repo
 # does `import "C"` and no transitive dep (no wasmvm/libwasmvm/cosmwasm in
-# go.mod or go.sum) forces CGO. go-hardened.yml currently passes cgo_enabled:
-# '1' to the reusable hardened-install caller, which is inconsistent with the
-# rest of CI; tracked as a follow-up to flip after a separate audit.
-# TODO(DEVOP-619 follow-up): revisit if wasmvm or another CGO-linking dep is
-# reintroduced.
+# go.mod or go.sum) forces CGO. go-hardened.yml is now aligned to
+# cgo_enabled='0'; revisit all four CGO_ENABLED values together if a
+# CGO-linking dep is reintroduced (ENGN-8441 tracks the broader wasmvm
+# question).
 env:
   GOPROXY: "https://proxy.golang.org,direct"
   GOSUMDB: "sum.golang.org"
