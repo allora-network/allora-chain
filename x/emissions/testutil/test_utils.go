@@ -1220,6 +1220,7 @@ func (s *TestSuite) MockTopic() types.Topic {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 }
 

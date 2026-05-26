@@ -378,6 +378,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	topic.PNorm = pNorm
 	topic.Epsilon = epsilonTopic
 	topic.CNorm = cNorm
+	topic.LabelCaseSensitive = false
 
 	_, err := k.GetTopicKeeper().RegisterEpochLabel(
 		ctx,
@@ -428,6 +429,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	topic.Epsilon = epsilonTopic
 	topic.PNorm = pNorm
 	topic.CNorm = cNorm
+	topic.LabelCaseSensitive = false
 
 	moduleParams := emissionstypes.DefaultParams()
 	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
