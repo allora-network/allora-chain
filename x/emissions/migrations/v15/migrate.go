@@ -128,6 +128,12 @@ func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 			topic.MaxLabelsPerSubmission = emissionstypes.DefaultMaxLabelsPerSubmission
 			changed = true
 		}
+		if topic.LabelDefaultValue.IsNaN() {
+			topic.LabelDefaultValue = alloraMath.ZeroDec()
+			changed = true
+		} else if topic.LabelDefaultValue.IsZero() {
+			topic.LabelDefaultValue = alloraMath.ZeroDec()
+		}
 
 		if !changed {
 			continue

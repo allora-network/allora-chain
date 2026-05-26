@@ -12,7 +12,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// MaterializeInputInferenceFromTemporaryRegistry rebuilds the input-shaped view
+// MaterializeInputInferenceFromLabelRegistry rebuilds the input-shaped view
 // of a live WSW dense inference using the open-window temporary registry passed
 // by the caller. "Temporary" is a lifecycle contract: before CloseWorkerNonce,
 // MULTI inference values are aligned to first-seen labels in this registry; the
@@ -21,9 +21,9 @@ import (
 // For MULTI topics, only the first len(inference.Values) temporary labels are
 // projected back into InputLabeledValue entries. The temporary registry may have
 // grown after the worker submitted, so later labels are intentionally ignored.
-func MaterializeInputInferenceFromTemporaryRegistry(
+func MaterializeInputInferenceFromLabelRegistry(
 	topic types.Topic,
-	tempRegistry types.EpochLabelRegistry,
+	epochLabelRegistry types.EpochLabelRegistry,
 	inference types.Inference,
 	maxLabelBytes uint64,
 ) (*types.InputInference, error) {
@@ -44,7 +44,7 @@ func MaterializeInputInferenceFromTemporaryRegistry(
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
 		return materializeSingleInputInference(inference)
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
-		return materializeMultiInputInference(topic, nonce, tempRegistry, inference, maxLabelBytes)
+		return materializeMultiInputInference(topic, nonce, epochLabelRegistry, inference, maxLabelBytes)
 	default:
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
@@ -58,11 +58,13 @@ func materializeSingleInputInference(inference types.Inference) (*types.InputInf
 			len(inference.Values),
 		)
 	}
-	value := alloraMath.ZeroDec()
-	if len(inference.Values) == 1 {
-		value = inference.Values[0]
+	if len(inference.Values) == 0 {
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrLogic,
+			"single-arity inference must contain inferences, has none",
+		)
 	}
-	boundedValue, err := alloraMath.NewBoundedExp40Dec(value)
+	boundedValue, err := alloraMath.NewBoundedExp40Dec(inference.Values[0])
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "single-arity inference value is out of bounded range")
 	}
@@ -80,7 +82,7 @@ func materializeSingleInputInference(inference types.Inference) (*types.InputInf
 func materializeMultiInputInference(
 	topic types.Topic,
 	nonce types.BlockHeight,
-	tempRegistry types.EpochLabelRegistry,
+	labelRegistry types.EpochLabelRegistry,
 	inference types.Inference,
 	maxLabelBytes uint64,
 ) (*types.InputInference, error) {
@@ -88,17 +90,17 @@ func materializeMultiInputInference(
 		topic.Id,
 		topic.LabelCaseSensitive,
 		nonce,
-		tempRegistry,
+		labelRegistry,
 		maxLabelBytes,
 	); err != nil {
 		return nil, err
 	}
-	if len(inference.Values) > len(tempRegistry.Labels) {
+	if len(inference.Values) > len(labelRegistry.Labels) {
 		return nil, errorsmod.Wrapf(
 			sdkerrors.ErrLogic,
 			"inference has %d values but temporary registry has %d labels",
 			len(inference.Values),
-			len(tempRegistry.Labels),
+			len(labelRegistry.Labels),
 		)
 	}
 
@@ -109,7 +111,7 @@ func materializeMultiInputInference(
 			return nil, errorsmod.Wrapf(err, "multi-arity inference value at index %d is out of bounded range", i)
 		}
 		values = append(values, &types.InputLabeledValue{
-			Label: tempRegistry.Labels[i].Name,
+			Label: labelRegistry.Labels[i].Name,
 			Value: boundedValue,
 		})
 	}
@@ -151,7 +153,7 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 	return k.topicLabelRegistry.Set(ctx, collections.Join(registry.TopicId, nonce), registry)
 }
 
-// MaterializeFinalEpochLabelRegistry freezes the close-time view of an epoch
+// CompactRegistryAndRemapInferences freezes the close-time view of an epoch
 // label registry. It validates the temporary first-seen registry, filters out
 // labels that have no active non-default value, compacts surviving label IDs to
 // 1..L, and remaps active inference vectors from temporary label positions into
@@ -160,7 +162,7 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 // The returned reusedTemporary flag is true only when every temporary label
 // survives unchanged, allowing callers to skip rewriting identical registry
 // state.
-func MaterializeFinalEpochLabelRegistry(
+func CompactRegistryAndRemapInferences(
 	topic types.Topic,
 	nonce types.BlockHeight,
 	tempRegistry types.EpochLabelRegistry,
@@ -415,10 +417,9 @@ func copyInferenceWithValues(inference *types.Inference, values []alloraMath.Dec
 	}
 }
 
-// GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose loads active
-// temporary inferences, freezes/overwrites the final registry, and returns the
-// committed inferences aligned to final compact ids.
-func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
+// MaterializeInferencesAndRegistryAtClose loads active temporary inferences and
+// returns the final compact registry with committed inferences aligned to it.
+func (k *WorkerKeeper) MaterializeInferencesAndRegistryAtClose(
 	ctx context.Context,
 	topic types.Topic,
 	nonce types.BlockHeight,
@@ -436,7 +437,7 @@ func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesMaterializedAtCl
 	if err != nil {
 		return nil, types.EpochLabelRegistry{}, false, errorsmod.Wrap(err, "error getting params for epoch label registry materialization")
 	}
-	finalRegistry, inferences, reusedTemporary, err := MaterializeFinalEpochLabelRegistry(
+	finalRegistry, inferences, reusedTemporary, err := CompactRegistryAndRemapInferences(
 		topic,
 		nonce,
 		tempRegistry,
@@ -445,11 +446,6 @@ func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesMaterializedAtCl
 	)
 	if err != nil {
 		return nil, types.EpochLabelRegistry{}, false, err
-	}
-	if !reusedTemporary || !epochLabelRegistriesEqual(tempRegistry, finalRegistry) {
-		if err := k.topicKeeper.SetEpochLabelRegistry(ctx, finalRegistry); err != nil {
-			return nil, types.EpochLabelRegistry{}, false, errorsmod.Wrap(err, "error setting final epoch label registry")
-		}
 	}
 	return inferences, finalRegistry, reusedTemporary, nil
 }

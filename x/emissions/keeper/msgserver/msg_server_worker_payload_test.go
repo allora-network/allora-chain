@@ -1077,7 +1077,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 	s.Require().Equal("c", tempReg.Labels[2].Name)
 	s.Require().Equal("d", tempReg.Labels[3].Name)
 
-	materialized, reg, reused, err := s.WorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
+	materialized, reg, reused, err := s.WorkerKeeper().MaterializeInferencesAndRegistryAtClose(
 		s.Ctx(), topic, nonce,
 		[]string{msg1.WorkerDataBundle.Worker, msg2.WorkerDataBundle.Worker},
 	)

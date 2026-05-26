@@ -259,11 +259,16 @@ func closeActiveInferencesSet(
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	inferences, registry, _, err := k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
+	inferences, registry, _, err := k.GetWorkerKeeper().MaterializeInferencesAndRegistryAtClose(
 		ctx, topic, nonce.BlockHeight, activeInfererAddresses,
 	)
 	if err != nil {
 		return nil, nil, errorsmod.Wrapf(err, "failed to materialize active inferences for topic %d nonce %d", topic.Id, nonce.BlockHeight)
+	}
+
+	err = k.GetTopicKeeper().SetEpochLabelRegistry(ctx, registry)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "error setting final epoch label registry")
 	}
 
 	//nolint:gosec // registry size is bounded by MaxLabelsPerSubmission (uint64), safe to cast

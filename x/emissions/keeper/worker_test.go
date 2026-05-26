@@ -1760,12 +1760,12 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	}
 }
 
-// TestMaterializeFinalEpochLabelRegistry exercises the close-time materializer
+// TestCompactRegistryAndRemapInferences exercises the close-time materializer
 // that filters the temporary ELR to active non-default labels and remaps dense
 // vectors into compact final ids.
 //
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
+func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 	topic := types.Topic{
 		Id:                1,
 		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
@@ -1836,7 +1836,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 
 	for _, c := range cases {
 		s.Run(c.name, func() {
-			reg, got, reused, err := keeper.MaterializeFinalEpochLabelRegistry(
+			reg, got, reused, err := keeper.CompactRegistryAndRemapInferences(
 				topic,
 				nonce,
 				tempRegistry,
@@ -1865,7 +1865,7 @@ func (s *KeeperTestSuite) TestMaterializeFinalEpochLabelRegistry() {
 	}
 }
 
-func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
+func (s *KeeperTestSuite) TestMaterializeInputInferenceFromLabelRegistry() {
 	nonce := types.BlockHeight(7)
 	inferer := s.AddrsStr(0)
 	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
@@ -2008,7 +2008,7 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromTemporaryRegistry() {
 			inference := baseInference
 			inference.Values = c.values
 
-			got, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(
+			got, err := keeper.MaterializeInputInferenceFromLabelRegistry(
 				c.topic,
 				c.registry,
 				inference,
@@ -2087,11 +2087,11 @@ func (s *KeeperTestSuite) TestMaterializersUsePassedLabelByteCap() {
 		Proof:       "",
 	}
 
-	_, err := keeper.MaterializeInputInferenceFromTemporaryRegistry(topic, registry, inference, 3)
+	_, err := keeper.MaterializeInputInferenceFromLabelRegistry(topic, registry, inference, 3)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
 
-	_, _, _, err = keeper.MaterializeFinalEpochLabelRegistry(
+	_, _, _, err = keeper.CompactRegistryAndRemapInferences(
 		topic,
 		nonce,
 		registry,
@@ -2243,7 +2243,7 @@ func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesCanonicalByteLimit() {
 	s.Require().Equal(keeper.LabelId(1), id)
 }
 
-func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose_OverwritesFinalRegistry() {
+func (s *KeeperTestSuite) TestMaterializeInferencesAndRegistryAtClose_DoesNotPersistFinalRegistry() {
 	ctx := s.Ctx()
 	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
@@ -2276,7 +2276,7 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesMateriali
 		Proof:       "",
 	}))
 
-	got, reg, reused, err := s.WorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesMaterializedAtClose(
+	got, reg, reused, err := s.WorkerKeeper().MaterializeInferencesAndRegistryAtClose(
 		ctx,
 		topic,
 		nonce,
@@ -2295,5 +2295,11 @@ func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesMateriali
 
 	stored, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
 	s.Require().NoError(err)
-	s.Require().Equal(reg, stored)
+	s.Require().Len(stored.Labels, 4)
+	s.Require().Equal([]string{"a", "b", "c", "d"}, []string{
+		stored.Labels[0].Name,
+		stored.Labels[1].Name,
+		stored.Labels[2].Name,
+		stored.Labels[3].Name,
+	})
 }

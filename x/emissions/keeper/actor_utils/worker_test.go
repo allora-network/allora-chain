@@ -575,7 +575,6 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFr
 	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf1))
 
 	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0))
-	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1))
 
 	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
 
@@ -586,8 +585,15 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFr
 	after, size := countFrozenEvents(s.Ctx())
 	s.Require().Equal(before+1, after,
 		"CloseWorkerNonce must emit exactly one EventEpochLabelRegistryFrozen")
-	s.Require().Equal(uint64(4), size,
-		"registry_size must match the union of canonical labels {a,b,c,d}")
+	s.Require().Equal(uint64(3), size,
+		"registry_size must match the final active registry {a,b,c}")
+
+	storedRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)
+	s.Require().NoError(err)
+	s.Require().Len(storedRegistry.Labels, 3)
+	s.Require().Equal("a", storedRegistry.Labels[0].Name)
+	s.Require().Equal("b", storedRegistry.Labels[1].Name)
+	s.Require().Equal("c", storedRegistry.Labels[2].Name)
 }
 
 // TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty pins the negative

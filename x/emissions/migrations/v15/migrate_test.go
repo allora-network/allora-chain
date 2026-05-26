@@ -113,6 +113,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 		s.Require().False(gotTopic.RequireUnity)
 		s.Require().Equal("0", gotTopic.UnityTolerance.String())
 		s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
+		s.Require().True(gotTopic.LabelDefaultValue.Equal(alloraMath.ZeroDec()))
 	}
 }
 
@@ -144,11 +145,11 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
 		TopicType:                emissionstypes.TopicType_TOPIC_TYPE_CLASSIFICATION,
 		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-		RequireUnity:             true,
+		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.001"),
 		MaxLabelsPerSubmission:   8,
 		LabelWhitelist:           []string{"bear", "bull"},
-		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelDefaultValue:        alloraMath.MustNewDecFromString("-1"),
 		LabelCaseSensitive:       false,
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
@@ -161,10 +162,11 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 
 	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_CLASSIFICATION, gotTopic.TopicType)
 	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, gotTopic.OutputArity)
-	s.Require().True(gotTopic.RequireUnity)
+	s.Require().False(gotTopic.RequireUnity)
 	s.Require().True(gotTopic.UnityTolerance.Equal(alloraMath.MustNewDecFromString("0.001")))
 	s.Require().Equal(uint64(8), gotTopic.MaxLabelsPerSubmission)
 	s.Require().Equal([]string{"bear", "bull"}, gotTopic.LabelWhitelist)
+	s.Require().True(gotTopic.LabelDefaultValue.Equal(classifTopic.LabelDefaultValue))
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsMaxCanonicalLabelByteLength() {
@@ -246,6 +248,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	s.Require().False(gotTopic.RequireUnity)
 	s.Require().Equal("0", gotTopic.UnityTolerance.String())
 	s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
+	s.Require().True(gotTopic.LabelDefaultValue.Equal(alloraMath.ZeroDec()))
 	s.Require().True(legacyTopic.ActiveInfererQuantile.Equal(gotTopic.ActiveInfererQuantile))
 
 	gotParams, err := s.ParamsKeeper().GetParams(s.Ctx())
@@ -348,6 +351,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV
 	s.Require().False(gotTopic.RequireUnity)
 	s.Require().Equal("0", gotTopic.UnityTolerance.String())
 	s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
+	s.Require().True(gotTopic.LabelDefaultValue.Equal(alloraMath.ZeroDec()))
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
 	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)

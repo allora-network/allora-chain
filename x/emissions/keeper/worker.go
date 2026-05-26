@@ -779,7 +779,7 @@ func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting params for input inference materialization")
 	}
-	return MaterializeInputInferenceFromTemporaryRegistry(
+	return MaterializeInputInferenceFromLabelRegistry(
 		topic,
 		registry,
 		inference,
