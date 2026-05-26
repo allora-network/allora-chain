@@ -21,8 +21,9 @@ Tickets: [DEVOP-618](https://linear.app/allora/issue/DEVOP-618), [DEVOP-619](htt
    hardened-install workflow from `'1'` to `'0'` so the entire CI matrix
    agrees on `CGO_ENABLED=0`. The earlier `cosmwasm/wasmvm requires CGO`
    justification was incorrect — see the `CGO_ENABLED=0 alignment` section
-   below for the evidence chain. Originally surfaced by cubic-dev-ai (P2)
-   and xmariachi on PR #952.
+   below for the evidence chain. Surfaced by two cubic-dev-ai callouts
+   (P3 on the misleading wasmvm justification, P2 on the cross-workflow
+   alignment) plus xmariachi's review comment on PR #952.
 
 ## Workflows audited
 
