@@ -1032,7 +1032,7 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 		topicRewards[id] = &reward
 	}
 
-	types.EmitNewTopicRewardSetEvent(ctx, topicRewards)
+	types.EmitNewTopicRewardSetEvent(ctx, topicRewards, nil)
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 

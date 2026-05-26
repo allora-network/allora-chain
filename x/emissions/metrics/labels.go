@@ -67,6 +67,7 @@ const (
 	REPUTER_LAST_COMMIT_EVENT                               = "reputer_last_commit_event"
 	FORECAST_TASK_SCORE_EVENT                               = "forecast_task_score_event"
 	TOPIC_REWARD_EVENT                                      = "topic_reward_event"
+	REWARD_REDIRECTED_TO_ECOSYSTEM_EVENT                    = "reward_redirected_to_ecosystem_event"
 	WORKER_EMA_SCORE_EVENT                                  = "worker_ema_score_event"
 	LISTENING_COEFFICIENTS_EVENT                            = "listening_coefficients_event"
 	INFERER_NETWORK_REGRET_EVENT                            = "inferer_network_regret_event"

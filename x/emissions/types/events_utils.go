@@ -442,15 +442,25 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx Bloc
 	}
 }
 
-func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.Message {
+func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec, redirectedTopicIds []uint64) proto.Message {
 	ids := alloraMath.GetSortedKeys(topicRewards)
 	rewardValues := make([]alloraMath.Dec, 0)
 	for _, id := range ids {
 		rewardValues = append(rewardValues, *topicRewards[id])
 	}
 	return &EventTopicRewardsSet{
-		TopicIds: ids,
-		Rewards:  rewardValues,
+		TopicIds:           ids,
+		Rewards:            rewardValues,
+		RedirectedTopicIds: redirectedTopicIds,
+	}
+}
+
+func NewRewardRedirectedToEcosystemEventBase(topicId TopicId, rewardAmount alloraMath.Dec, reason string, blockHeight BlockHeight) proto.Message {
+	return &EventRewardRedirectedToEcosystem{
+		TopicId:      topicId,
+		RewardAmount: rewardAmount,
+		Reason:       reason,
+		BlockHeight:  blockHeight,
 	}
 }
 

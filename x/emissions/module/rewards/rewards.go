@@ -124,18 +124,24 @@ func EmitRewards(args EmitRewardsArgs) error {
 	// Process rewards for each topic, pruning at the end of epoch
 	totalMonthlyReputerRewards := cosmosMath.ZeroInt()
 	totalMonthlyTopicRewards := cosmosMath.ZeroInt()
+	// Track topic IDs whose rewards were redirected to ecosystem
+	redirectedTopicIds := make([]uint64, 0)
+
 	for _, topicId := range sortedRewardableTopics {
 		topicRewardNonce, err := args.K.GetTopicKeeper().GetTopicRewardNonce(args.Ctx, topicId)
 		if err != nil || topicRewardNonce == 0 {
 			// return reward to ecosystem account
-			err = args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
+			rewardAmount := *topicRewards[topicId]
+			err = args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, rewardAmount)
 			if err != nil {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", err)
 				panic(err)
 			}
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
-			Logger(args.Ctx).Info("Topic has no valid reward nonce, skipping", "topicId", topicId)
+			Logger(args.Ctx).Warn("Topic has no valid reward nonce, redirecting reward to ecosystem", "topicId", topicId, "rewardAmount", rewardAmount.String())
+			types.EmitNewRewardRedirectedToEcosystemEvent(args.Ctx, topicId, rewardAmount, "no_valid_reward_nonce", args.BlockHeight)
+			redirectedTopicIds = append(redirectedTopicIds, topicId)
 			continue
 		}
 		// Defer pruning records after rewards payout
@@ -156,14 +162,17 @@ func EmitRewards(args EmitRewardsArgs) error {
 		})
 		if err != nil {
 			// return reward to ecosystem account
-			errMC := args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, *topicRewards[topicId])
+			rewardAmount := *topicRewards[topicId]
+			errMC := args.K.GetBankingKeeper().MoveCoinsFromAlloraRewardsToEcosystem(args.Ctx, rewardAmount)
 			if errMC != nil {
 				Logger(args.Ctx).Error("Failed to move coins from allora rewards to ecosystem", "topicId", topicId, "error", errMC)
 				panic(errMC)
 			}
 			*topicRewards[topicId] = alloraMath.ZeroDec()
 
-			Logger(args.Ctx).Error("Failed to process rewards", "topicId", topicId, "error", err)
+			Logger(args.Ctx).Error("Failed to process rewards, redirecting to ecosystem", "topicId", topicId, "rewardAmount", rewardAmount.String(), "error", err)
+			types.EmitNewRewardRedirectedToEcosystemEvent(args.Ctx, topicId, rewardAmount, "reward_distribution_failed", args.BlockHeight)
+			redirectedTopicIds = append(redirectedTopicIds, topicId)
 			continue
 		}
 
@@ -188,8 +197,8 @@ func EmitRewards(args EmitRewardsArgs) error {
 		return errors.Wrapf(err, "failed to add monthly rewards")
 	}
 
-	// Emit reward of each topic
-	types.EmitNewTopicRewardSetEvent(args.Ctx, topicRewards)
+	// Emit reward of each topic, including redirected topic IDs
+	types.EmitNewTopicRewardSetEvent(args.Ctx, topicRewards, redirectedTopicIds)
 	return nil
 }
 

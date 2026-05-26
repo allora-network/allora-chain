@@ -455,12 +455,21 @@ func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx context.Context, blockHei
 	}
 }
 
-func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*alloraMath.Dec) {
+func EmitNewTopicRewardSetEvent(ctx context.Context, topicRewards map[uint64]*alloraMath.Dec, redirectedTopicIds []uint64) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_REWARD_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardSetEventBase(topicRewards))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicRewardSetEventBase(topicRewards, redirectedTopicIds))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting NewTopicRewardSetEvent", "error", err)
+	}
+}
+
+func EmitNewRewardRedirectedToEcosystemEvent(ctx context.Context, topicId TopicId, rewardAmount alloraMath.Dec, reason string, blockHeight BlockHeight) {
+	metrics.IncrProducerEventCount(metrics.REWARD_REDIRECTED_TO_ECOSYSTEM_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRewardRedirectedToEcosystemEventBase(topicId, rewardAmount, reason, blockHeight))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting RewardRedirectedToEcosystemEvent", "error", err)
 	}
 }
 
