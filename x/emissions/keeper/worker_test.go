@@ -1537,7 +1537,7 @@ func (s *KeeperTestSuite) TestNewInferenceForecastBundleFromInput() {
 			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), validInference.TopicId)
 			s.Require().NoError(err)
 
-			got, err := keeper.NormalizeInferenceForecastBundle(topic, tt.input)
+			got, err := s.WorkerKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
 			if tt.wantErr {
 				s.Require().Error(err)
 				return
@@ -1741,7 +1741,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 				}
 			}
 
-			got, err := keeper.NormalizeInputInference(topic, in)
+			got, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, c.nonce, in)
 			if c.wantErr {
 				s.Require().Error(err)
 				if c.wantErrIs != nil {

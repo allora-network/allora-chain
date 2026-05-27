@@ -234,11 +234,31 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	oldNetworkStore.Set(key, cdc.MustMarshal(&oldBundle))
 	oldOutlierStore.Set(key, cdc.MustMarshal(&oldBundle))
 
+	legacyInference := s.makeLegacyInference(topicId)
+	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
+	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
+	_, err := infKeyCodec.Encode(infKeyBytes, collections.Join(legacyInference.TopicId, legacyInference.Inferer))
+	s.Require().NoError(err)
+	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
+
+	blockHeight := emissionstypes.BlockHeight(100)
+	legacyAllInference := s.makeLegacyInference(topicId)
+	legacyAllInferences := oldtypes.Inferences{
+		Inferences: []*oldtypes.Inference{&legacyAllInference},
+	}
+	allInferencesStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
+	allInfKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	allInfKeyBytes := make([]byte, allInfKeyCodec.Size(collections.Join(legacyAllInference.TopicId, blockHeight)))
+	_, err = allInfKeyCodec.Encode(allInfKeyBytes, collections.Join(legacyAllInference.TopicId, blockHeight))
+	s.Require().NoError(err)
+	allInferencesStore.Set(allInfKeyBytes, cdc.MustMarshal(&legacyAllInferences))
+
 	params := emissionstypes.DefaultParams()
 	params.MaxCanonicalLabelByteLength = 0
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
 
-	err := v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
+	err = v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
 	s.Require().NoError(err)
 
 	gotTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), legacyTopic.Id)
@@ -460,6 +480,16 @@ func (s *EmissionsV15MigrationTestSuite) makeLegacyInference(topicId emissionsty
 		Proof:       "proof",
 	}
 	return oldInference
+}
+
+func (s *EmissionsV15MigrationTestSuite) assertInference(want oldtypes.Inference, got emissionstypes.Inference) {
+	s.Require().Equal(want.TopicId, got.TopicId)
+	s.Require().Equal(want.BlockHeight, got.BlockHeight)
+	s.Require().Equal(want.Inferer, got.Inferer)
+	s.Require().Len(got.Values, 1)
+	s.Require().True(want.Value.Equal(got.Values[0]))
+	s.Require().Equal(want.ExtraData, got.ExtraData)
+	s.Require().Equal(want.Proof, got.Proof)
 }
 
 func (s *EmissionsV15MigrationTestSuite) assertMigratedBundle(

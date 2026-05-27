@@ -32,6 +32,10 @@ func validCreateNewTopicRequest() *CreateNewTopicRequest {
 		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   DefaultMaxLabelsPerSubmission,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
+		LabelWhitelist:           nil,
 	}
 }
 

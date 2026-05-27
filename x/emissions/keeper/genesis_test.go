@@ -108,8 +108,8 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 	s.Require().NoError(err)
 	err = s.TopicKeeper().SetTotalSumPreviousTopicWeights(ctx, alloraMath.MustNewDecFromString("100.0"))
 	s.Require().NoError(err)
-	label := "TESTLABEL"
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, label)
+	label := "testlabel"
+	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, false, blockHeight, label)
 	s.Require().NoError(err)
 
 	// WORKER
@@ -280,11 +280,17 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 	s.Require().NotEmpty(genesisState2.ActiveTopics)
 
 	// Labels
-	s.Require().Equal(len(genesisState2.EpochLabelRegistries), 1)
-	s.Require().Equal(len(genesisState2.EpochLabelRegistries), len(genesisState.EpochLabelRegistries))
-	s.Require().Equal(len(genesisState2.EpochLabelRegistries[0].Labels), 1)
-	s.Require().Equal(len(genesisState2.EpochLabelRegistries[0].Labels), len(genesisState.EpochLabelRegistries[0].Labels))
-	s.Require().Equal(genesisState2.EpochLabelRegistries[0].Labels[0].Name, genesisState.EpochLabelRegistries[0].Labels[0].Name)
+	s.Require().Equal(len(genesisState2.TopicLabelRegistries), 1)
+	s.Require().Equal(len(genesisState2.TopicLabelRegistries), len(genesisState.TopicLabelRegistries))
+	s.Require().Len(genesisState2.TopicLabelRegistries[0].EpochLabelRegistry.Labels, 1)
+	s.Require().Equal(
+		len(genesisState2.TopicLabelRegistries[0].EpochLabelRegistry.Labels),
+		len(genesisState.TopicLabelRegistries[0].EpochLabelRegistry.Labels),
+	)
+	s.Require().Equal(
+		genesisState2.TopicLabelRegistries[0].EpochLabelRegistry.Labels[0].Name,
+		genesisState.TopicLabelRegistries[0].EpochLabelRegistry.Labels[0].Name,
+	)
 
 	// Staking
 	s.Require().True(genesisState2.TotalStake.Equal(genesisState.TotalStake))

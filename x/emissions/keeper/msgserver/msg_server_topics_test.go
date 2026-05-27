@@ -930,7 +930,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 		LossMethod:             "mse",
 		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
 		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
-		PNorm:                  alloraMath.MustNewDecFromString("2.0"),
+		PNorm:                  alloraMath.MustNewDecFromString("0.9"),
 		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
 		RequireUnity:           false,
 		UnityTolerance:         alloraMath.Dec{},

@@ -49,6 +49,16 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
+	if err := MigrateInferences(ctx, store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateInferences() FROM VERSION 14 TO VERSION 15")
+		return err
+	}
+
+	if err := MigrateAllInferences(ctx, store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateAllInferences() FROM VERSION 14 TO VERSION 15")
+		return err
+	}
+
 	ctx.Logger().Info("MIGRATION EMISSIONS MODULE FROM VERSION 14 TO VERSION 15 COMPLETE")
 	return nil
 }
@@ -201,6 +211,14 @@ func migrateInferenceBundles(
 		}
 
 		networkInferenceBundle := emissionstypes.ValueBundleToNetworkInferenceBundle(&oldNetworkInference)
+		if networkInferenceBundle == nil {
+			return errorsmod.Wrapf(
+				emissionstypes.ErrInvalidValue,
+				"converted %s bundle is nil; topicId: %d",
+				logName,
+				oldNetworkInference.TopicId,
+			)
+		}
 
 		if err := networkInferenceBundle.Validate(); err != nil {
 			return errorsmod.Wrapf(err, "failed to validate %s", logName)

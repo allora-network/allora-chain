@@ -132,6 +132,7 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 		UnityTolerance:         stored.Topic.UnityTolerance,
 		MaxLabelsPerSubmission: 5,
 		LabelWhitelist:         stored.Topic.LabelWhitelist,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, updateReq)
 	require.NoError(m.T, err)

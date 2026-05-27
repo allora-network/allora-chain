@@ -7940,11 +7940,19 @@ func (m *UpdateTopicRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		if _, err := m.UnityTolerance.MarshalTo(dAtA[i:]); err != nil {
 			return 0, err
 		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
-	if m.MaxLabelsPerSubmission != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.MaxLabelsPerSubmission))
+	i--
+	dAtA[i] = 0x52
+	if m.RequireUnity {
 		i--
-		dAtA[i] = 0x58
+		if m.RequireUnity {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x48
 	}
 	{
 		size := m.CNorm.Size()

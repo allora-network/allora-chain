@@ -282,21 +282,6 @@ func CanReuseTemporaryRegistryAsFinal(
 	return true
 }
 
-func epochLabelRegistriesEqual(a, b types.EpochLabelRegistry) bool {
-	if a.TopicId != b.TopicId || a.EpochId != b.EpochId || len(a.Labels) != len(b.Labels) {
-		return false
-	}
-	for i := range a.Labels {
-		if a.Labels[i] == nil || b.Labels[i] == nil {
-			return a.Labels[i] == b.Labels[i]
-		}
-		if a.Labels[i].Id != b.Labels[i].Id || a.Labels[i].Name != b.Labels[i].Name {
-			return false
-		}
-	}
-	return true
-}
-
 func activeNonDefaultLabelMask(
 	tempRegistry types.EpochLabelRegistry,
 	activeInferences []*types.Inference,

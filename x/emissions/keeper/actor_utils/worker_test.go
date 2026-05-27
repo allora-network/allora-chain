@@ -294,7 +294,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
 
-	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
+	topic, err = keeper.GetTopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 
 	// Call the function we're testing
@@ -445,7 +445,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, blockHeight, "y")
 	require.NoError(err)
 
-	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
+	topic, err = keeper.GetTopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 
 	// Call the function we're testing

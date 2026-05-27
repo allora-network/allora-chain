@@ -1047,8 +1047,9 @@ func (k *WorkerKeeper) GetWorkerLatestForecastByTopicId(
 func (k *WorkerKeeper) NewWorkerDataBundleFromInput(
 	ctx context.Context,
 	topic types.Topic,
+	nonce BlockHeight,
 	bwdb *types.InputWorkerDataBundle,
-) (*normalizedWorkerDataBundle, error) {
+) (*types.WorkerDataBundle, error) {
 	if bwdb == nil {
 		return nil, types.ErrInvalidValue
 	}
@@ -1056,47 +1057,58 @@ func (k *WorkerKeeper) NewWorkerDataBundleFromInput(
 		return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "topic mismatch")
 	}
 
-	ifb, err := NormalizeInferenceForecastBundle(topic, bwdb.InferenceForecastsBundle)
+	bundle, err := k.NewInferenceForecastBundleFromInput(
+		ctx,
+		topic,
+		nonce,
+		bwdb.InferenceForecastsBundle,
+	)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to normalize inference forecasts bundle")
+		return nil, errorsmod.Wrap(err, "failed to convert inference forecasts bundle")
 	}
-
-	return &normalizedWorkerDataBundle{
-		worker:            bwdb.Worker,
-		nonce:             bwdb.Nonce,
-		topicId:           bwdb.TopicId,
-		inferenceForecast: ifb,
-	}, nil
+	workerDataBundle := &types.WorkerDataBundle{
+		Worker:                   bwdb.Worker,
+		Nonce:                    bwdb.Nonce,
+		TopicId:                  bwdb.TopicId,
+		InferenceForecastsBundle: bundle,
+	}
+	err = workerDataBundle.Validate()
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to validate worker data bundle")
+	}
+	return workerDataBundle, nil
 }
 
-func NormalizeInferenceForecastBundle(
+// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
+func (k *WorkerKeeper) NewInferenceForecastBundleFromInput(
+	ctx context.Context,
 	topic types.Topic,
+	nonce BlockHeight,
 	bifb *types.InputInferenceForecastBundle,
-) (*normalizedInferenceForecastBundle, error) {
+) (*types.InferenceForecastBundle, error) {
 	if bifb == nil {
 		return nil, types.ErrInvalidValue
 	}
-
-	out := new(normalizedInferenceForecastBundle)
-
+	var err error
+	var inference *types.Inference
 	if bifb.Inference != nil {
-		normalized, err := NormalizeInputInference(topic, bifb.Inference)
+		inference, err = k.NormalizeInputInference(ctx, topic, nonce, bifb.Inference)
 		if err != nil {
-			return nil, errorsmod.Wrap(err, "failed to normalize inference")
+			return nil, errorsmod.Wrap(err, "failed to convert inference")
 		}
-		out.Inference = normalized
-		out.inferencePassthrough = bifb.Inference
 	}
-
+	var forecast *types.Forecast
 	if bifb.Forecast != nil {
-		forecast, err := types.NewForecastFromInput(bifb.Forecast)
+		forecast, err = types.NewForecastFromInput(bifb.Forecast)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "failed to convert forecast")
 		}
-		out.Forecast = forecast
 	}
-
-	return out, nil
+	inferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: inference,
+		Forecast:  forecast,
+	}
+	return inferenceForecastBundle, nil
 }
 
 // NormalizeInputInference converts a worker-submitted InputInference into a
@@ -1123,8 +1135,9 @@ func NormalizeInferenceForecastBundle(
 func (k *WorkerKeeper) NormalizeInputInference(
 	ctx context.Context,
 	topic types.Topic,
+	nonce BlockHeight,
 	in *types.InputInference,
-) (*normalizedInferenceInput, error) {
+) (*types.Inference, error) {
 	if in == nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
 	}
