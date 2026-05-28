@@ -277,9 +277,9 @@ func (k *TopicKeeper) TopicExists(ctx context.Context, topicId TopicId) (bool, e
 // inside a worker submission window. It is the shared guard for topic
 // parameter mutations that must not race worker payload submission for an
 // open epoch (merit_sortition_alpha, max_labels_per_submission, label
-// whitelist). Unlike the original v14-era check this iterates every
-// unfulfilled nonce rather than just the newest, because workers can submit
-// against any currently-open nonce.
+// whitelist, label default value). Unlike the original v14-era check this
+// iterates every unfulfilled nonce rather than just the newest, because workers
+// can submit against any currently-open nonce.
 func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
 	ctx context.Context,
 	topic types.Topic,
@@ -417,7 +417,7 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 				which = "max_labels_per_submission"
 			case whitelistChanged:
 				which = "label_whitelist"
-			default:
+			case labelDefaultChanged:
 				which = "label_default_value"
 			}
 			return types.Topic{}, errorsmod.Wrapf(

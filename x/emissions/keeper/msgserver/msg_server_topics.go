@@ -138,10 +138,9 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
-	// Label registry settings: always apply the requested value for
-	// max_labels_per_submission, label_whitelist, and label_default_value. The
-	// keeper rejects unsafe mutations while a worker submission window is open
-	// and canonicalizes the whitelist before persistence.
+	// Label registry settings: always apply the requested value. The keeper
+	// rejects unsafe mutations while a worker submission window is open and
+	// canonicalizes the whitelist before persistence.
 	updatedTopic.MaxLabelsPerSubmission = msg.MaxLabelsPerSubmission
 	updatedTopic.LabelWhitelist = msg.LabelWhitelist
 	updatedTopic.LabelDefaultValue = msg.LabelDefaultValue

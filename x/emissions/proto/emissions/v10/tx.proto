@@ -381,24 +381,19 @@ message UpdateTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  bool require_unity = 9;
-  string unity_tolerance = 10 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
   // Per-topic cap on labels per worker submission. UpdateTopic is a full
   // payload update: the supplied value replaces the existing value and must be
   // within the topic label cap bounds. Topic keeper rejects mutations while any
   // worker submission window is open for this topic.
-  uint64 max_labels_per_submission = 11;
+  uint64 max_labels_per_submission = 9;
   // Per-topic canonical label allowlist. UpdateTopic is a full payload update:
   // the supplied list replaces the existing whitelist. Empty or omitted means
   // unrestricted, not "preserve existing". Topic keeper rejects mutations while
   // any worker submission window is open.
-  repeated string label_whitelist = 12;
+  repeated string label_whitelist = 10;
   // Default value for missing MULTI label slots. Topic keeper rejects
   // mutations while any worker submission window is open.
-  string label_default_value = 13 [
+  string label_default_value = 11 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
