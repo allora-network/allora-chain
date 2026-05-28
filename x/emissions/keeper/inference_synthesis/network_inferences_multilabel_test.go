@@ -157,7 +157,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockMultilabel(
 			// per class so label lookups during synthesis resolve to the correct
 			// class index.
 			for _, name := range labelNames {
-				_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, name)
+				_, err = s.TopicKeeper().RegisterEpochLabel(
+					s.Ctx(),
+					topicId,
+					topic.LabelCaseSensitive,
+					simpleNonce.BlockHeight,
+					name,
+				)
 				require.NoError(err)
 			}
 
