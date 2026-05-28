@@ -36,3 +36,51 @@ jobs:
       fail_on_findings: true
     secrets:
       slack_webhook_url: ${{ secrets.SLACK_SECURITY_WEBHOOK }}
+
+  # Defense-in-depth notifier for workflow-level failure modes that the
+  # reusable workflow cannot catch from inside itself:
+  #   - reusable-workflow ref no longer resolves (e.g. SHA pin garbage-collected
+  #     or repo permissions changed) → the `govulncheck` job never starts;
+  #   - runner provisioning, checkout, or setup-go failure before the scanner
+  #     runs → the in-job Slack alert step is never reached;
+  #   - govulncheck exits with status 1 or 2 (scanner execution error, distinct
+  #     from exit-3 = findings) → the in-job alert step's gating condition
+  #     (`finding_count != 0`) is false and no alert is posted.
+  # On a clean run with findings, the reusable workflow already posts a
+  # detailed alert with the finding count; this job will also fire (because
+  # fail_on_findings: true causes `govulncheck` to fail) — a benign duplicate
+  # that is the acceptable cost of also covering the silent-failure modes
+  # above. Tracked as DEVOP-618 caller-side follow-up.
+  notify-on-workflow-failure:
+    needs: govulncheck
+    if: ${{ always() && needs.govulncheck.result == 'failure' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Post workflow-failure alert to Slack
+        env:
+          # Materialise the secret into an env var so the conditional below
+          # can test for its presence — `secrets.*` is not available inside
+          # `if:` expressions, and a webhook that is not yet provisioned (or
+          # was rotated) should degrade to a warning instead of a noisy red
+          # job that masks the underlying govulncheck failure.
+          SLACK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_URL:-}" ]; then
+            echo "::warning::SLACK_SECURITY_WEBHOOK not configured; skipping workflow-failure notification."
+            exit 0
+          fi
+          payload=$(jq -n --arg r "$REPO" --arg u "$RUN_URL" \
+            '{text: ":rotating_light: Scheduled govulncheck workflow FAILED in \($r). See run for details (scanner error, infra failure, or findings with fail_on_findings=true): \($u)"}')
+          # --fail-with-body matches the in-reusable-workflow alert pattern
+          # so a disabled webhook / 4xx / 5xx surfaces as a red job rather
+          # than a silently-swallowed delivery failure.
+          curl --fail-with-body --show-error --silent -X POST \
+            -H 'Content-Type: application/json' \
+            -d "$payload" \
+            "$SLACK_URL" >/dev/null
