@@ -65,6 +65,7 @@ func TestDefaultParams(t *testing.T) {
 		MaxWhitelistInputArrayLength:        uint64(2000),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
 		MaxCanonicalLabelByteLength:         64,
+		MaxTopicLabelWhitelistSize:          DefaultMaxTopicLabelWhitelistSize,
 	}
 
 	params := DefaultParams()
@@ -98,6 +99,36 @@ func TestValidateMaxLabelsPerSubmission(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestValidateMaxTopicLabelWhitelistSize(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: MinMaxTopicLabelWhitelistSize, ok: true},
+		{name: "default ok", in: DefaultMaxTopicLabelWhitelistSize, ok: true},
+		{name: "upper bound ok", in: MaxMaxTopicLabelWhitelistSize, ok: true},
+		{name: "above upper rejected", in: MaxMaxTopicLabelWhitelistSize + 1, ok: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxTopicLabelWhitelistSize(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestParamsValidate_RejectsZeroMaxTopicLabelWhitelistSize(t *testing.T) {
+	p := DefaultParams()
+	p.MaxTopicLabelWhitelistSize = 0
+	require.Error(t, p.Validate())
 }
 
 // TestValidateMaxCanonicalLabelByteLength exercises the explicit bound on

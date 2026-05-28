@@ -55,6 +55,14 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			errContains: "",
 		},
 		{
+			name: "label whitelist above max",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.LabelWhitelist = make([]string, DefaultMaxTopicLabelWhitelistSize+1)
+			},
+			wantErr:     true,
+			errContains: "topic label whitelist size",
+		},
+		{
 			name: "empty loss method",
 			mutate: func(msg *CreateNewTopicRequest) {
 				msg.LossMethod = ""
@@ -325,7 +333,7 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			msg := validCreateNewTopicRequest()
 			tt.mutate(msg)
 
-			err := msg.Validate(maxStringLen)
+			err := msg.Validate(maxStringLen, DefaultMaxTopicLabelWhitelistSize)
 			if tt.wantErr {
 				require.Error(t, err)
 				require.ErrorContains(t, err, tt.errContains)
@@ -1047,6 +1055,14 @@ func TestTopicValidate(t *testing.T) {
 			},
 			wantErr: false, errContains: "",
 		},
+		{
+			name: "label whitelist above max",
+			mutate: func(tp *Topic, p *Params) {
+				p.MaxTopicLabelWhitelistSize = 1
+				tp.LabelWhitelist = []string{"bear", "bull"}
+			},
+			wantErr: true, errContains: "topic label_whitelist is invalid",
+		},
 	}
 
 	for _, tc := range tests {
@@ -1108,6 +1124,9 @@ func validParams() Params {
 		MaxStringLength:               256,
 		MinEpochLength:                10,
 		MaxUnfulfilledReputerRequests: 5,
+		MaxTopicLabelWhitelistSize:    DefaultMaxTopicLabelWhitelistSize,
+		MaxCanonicalLabelByteLength:   64,
+		MaxWhitelistInputArrayLength:  2000,
 	}
 }
 

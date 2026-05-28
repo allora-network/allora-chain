@@ -28,7 +28,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	cdc := emissionsKeeper.GetBinaryCodec()
 
 	// Params must be backfilled before post-v15 code reads label-related caps;
-	// pre-v15 stored Params decode zero for MaxCanonicalLabelByteLength.
+	// pre-v15 stored Params decode zero for newly added label params.
 	if err := MigrateParams(ctx, emissionsKeeper); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 14 TO VERSION 15")
 		return err
@@ -70,15 +70,22 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // Backfilled fields:
 //   - MaxCanonicalLabelByteLength: defaults to the module-initial cap when
 //     zero. A zero cap would reject every label after v15.
+//   - MaxTopicLabelWhitelistSize: defaults to the module-initial cap when
+//     zero. A zero cap would allow no topic whitelist entries.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "MIGRATION V15: failed to get existing params")
 	}
 
+	defaultParams := emissionstypes.DefaultParams()
 	changed := false
 	if params.MaxCanonicalLabelByteLength == 0 {
-		params.MaxCanonicalLabelByteLength = emissionstypes.DefaultParams().MaxCanonicalLabelByteLength
+		params.MaxCanonicalLabelByteLength = defaultParams.MaxCanonicalLabelByteLength
+		changed = true
+	}
+	if params.MaxTopicLabelWhitelistSize == 0 {
+		params.MaxTopicLabelWhitelistSize = defaultParams.MaxTopicLabelWhitelistSize
 		changed = true
 	}
 
@@ -97,6 +104,7 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info(
 		"MIGRATION V15: params backfill completed",
 		"maxCanonicalLabelByteLength", params.MaxCanonicalLabelByteLength,
+		"maxTopicLabelWhitelistSize", params.MaxTopicLabelWhitelistSize,
 	)
 	return nil
 }

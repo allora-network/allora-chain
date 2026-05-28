@@ -184,4 +184,6 @@ message Params {
   // Max byte length of a canonical label name after NFC normalization and
   // trimming.
   uint64 max_canonical_label_byte_length = 61;
+  // Max number of canonical labels allowed in a topic label whitelist.
+  uint64 max_topic_label_whitelist_size = 62;
 }

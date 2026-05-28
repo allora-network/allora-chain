@@ -128,8 +128,6 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 		MeritSortitionAlpha:    stored.Topic.MeritSortitionAlpha,
 		PNorm:                  stored.Topic.PNorm,
 		CNorm:                  stored.Topic.CNorm,
-		RequireUnity:           stored.Topic.RequireUnity,
-		UnityTolerance:         stored.Topic.UnityTolerance,
 		MaxLabelsPerSubmission: 5,
 		LabelWhitelist:         stored.Topic.LabelWhitelist,
 		LabelDefaultValue:      alloraMath.ZeroDec(),

@@ -68,6 +68,7 @@ func DefaultParams() Params {
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
 		MaxCanonicalLabelByteLength:         64,                                          // cap on canonical label name byte length after NFC + trim; bounded by [Min,Max]MaxCanonicalLabelByteLength
+		MaxTopicLabelWhitelistSize:          DefaultMaxTopicLabelWhitelistSize,           // maximum number of canonical labels allowed in a topic label whitelist
 	}
 }
 
@@ -94,6 +95,42 @@ func validateMaxLabelsPerSubmission(i uint64) error {
 		return errorsmod.Wrapf(ErrInvalidValue,
 			"max labels per submission must be <= %d, got %d",
 			MaxMaxLabelsPerSubmission, i)
+	}
+	return nil
+}
+
+// DefaultMaxTopicLabelWhitelistSize is the default topic-level cap on the
+// number of canonical labels allowed in LabelWhitelist.
+const DefaultMaxTopicLabelWhitelistSize = uint64(256)
+
+// MinMaxTopicLabelWhitelistSize / MaxMaxTopicLabelWhitelistSize bound the
+// acceptable module param for topic label whitelist cardinality.
+const (
+	MinMaxTopicLabelWhitelistSize = uint64(1)
+	MaxMaxTopicLabelWhitelistSize = uint64(2000)
+)
+
+func validateMaxTopicLabelWhitelistSize(i uint64) error {
+	if i < MinMaxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max topic label whitelist size must be >= %d, got %d",
+			MinMaxTopicLabelWhitelistSize, i)
+	}
+	if i > MaxMaxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max topic label whitelist size must be <= %d, got %d",
+			MaxMaxTopicLabelWhitelistSize, i)
+	}
+	return nil
+}
+
+// ValidateTopicLabelWhitelistSize enforces the configured topic label whitelist
+// cardinality cap before canonicalization or persistence.
+func ValidateTopicLabelWhitelistSize(labelWhitelist []string, maxTopicLabelWhitelistSize uint64) error {
+	if uint64(len(labelWhitelist)) > maxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"topic label whitelist size must be <= %d, got %d",
+			maxTopicLabelWhitelistSize, len(labelWhitelist))
 	}
 	return nil
 }
@@ -262,6 +299,9 @@ func (p Params) Validate() error {
 	}
 	if err := validateMaxCanonicalLabelByteLength(p.MaxCanonicalLabelByteLength); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max canonical label byte length")
+	}
+	if err := validateMaxTopicLabelWhitelistSize(p.MaxTopicLabelWhitelistSize); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max topic label whitelist size")
 	}
 	return nil
 }

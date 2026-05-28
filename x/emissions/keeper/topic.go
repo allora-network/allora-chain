@@ -249,6 +249,9 @@ func (k *TopicKeeper) SetTopic(ctx context.Context, topicId TopicId, topic types
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting params")
 	}
+	if err := types.ValidateTopicLabelWhitelistSize(topic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
+		return errorsmod.Wrap(err, "topic label_whitelist size validation failed")
+	}
 	if len(topic.LabelWhitelist) > 0 {
 		canonical, err := types.CanonicalizeLabelList(
 			topic.LabelWhitelist,
@@ -381,6 +384,9 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 	// Canonicalize the whitelist on the proposed update before any
 	// comparison or validation so the WSW guard and persisted state both
 	// agree on the canonical form.
+	if err := types.ValidateTopicLabelWhitelistSize(updatedTopic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "updated topic label_whitelist size validation failed")
+	}
 	if len(updatedTopic.LabelWhitelist) > 0 {
 		canonical, err := types.CanonicalizeLabelList(
 			updatedTopic.LabelWhitelist,

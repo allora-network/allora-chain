@@ -1092,6 +1092,9 @@ func (topic Topic) Validate(params Params) error {
 	if err := validateMaxLabelsPerSubmission(topic.MaxLabelsPerSubmission); err != nil {
 		return errors.Wrap(err, "topic max_labels_per_submission is invalid")
 	}
+	if err := ValidateTopicLabelWhitelistSize(topic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(err, "topic label_whitelist is invalid")
+	}
 	if topic.TopicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topic.TopicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
 	}
@@ -1359,7 +1362,7 @@ func (msg *CancelRemoveStakeRequest) Validate() error {
 }
 
 // Validate checks if the given CreateNewTopicRequest is valid
-func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
+func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitelistSize uint64) error {
 	if err := ValidateBech32(msg.Creator); err != nil {
 		return errors.Wrap(err, "invalid msg Creator address")
 	}
@@ -1411,6 +1414,9 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
 	if err := validateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 

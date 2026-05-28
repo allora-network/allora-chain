@@ -1198,6 +1198,7 @@ func mockUninitializedParams() types.Params {
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
 		MaxCanonicalLabelByteLength:         64,
+		MaxTopicLabelWhitelistSize:          types.DefaultMaxTopicLabelWhitelistSize,
 	}
 }
 

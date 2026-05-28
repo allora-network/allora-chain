@@ -185,6 +185,22 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			expectSuccess: false,
 		},
 		{
+			name: "Fails with topic label whitelist above max",
+			setup: func() *types.CreateNewTopicRequest {
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.LabelWhitelist = make([]string, types.DefaultMaxTopicLabelWhitelistSize+1)
+				for i := range msg.LabelWhitelist {
+					msg.LabelWhitelist[i] = "label"
+				}
+				return msg
+			},
+			expectedError: "topic label whitelist size",
+			expectSuccess: false,
+		},
+		{
 			name: "Fails when require_unity true with SINGLE output_arity",
 			setup: func() *types.CreateNewTopicRequest {
 				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
@@ -428,6 +444,50 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRa
 			require.Equal(originalTopic.MaxLabelsPerSubmission, got.MaxLabelsPerSubmission)
 		})
 	}
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsLabelWhitelistAboveMax() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createResult, err := msgServer.CreateNewTopic(ctx, s.MockTopicMsg())
+	require.NoError(err)
+	require.NotNil(createResult)
+
+	originalTopic, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+	require.NoError(err)
+
+	oversizedWhitelist := make([]string, types.DefaultMaxTopicLabelWhitelistSize+1)
+	for i := range oversizedWhitelist {
+		oversizedWhitelist[i] = "label"
+	}
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                createResult.TopicId,
+		Metadata:               originalTopic.Metadata,
+		LossMethod:             originalTopic.LossMethod,
+		AlphaRegret:            originalTopic.AlphaRegret,
+		MeritSortitionAlpha:    originalTopic.MeritSortitionAlpha,
+		PNorm:                  originalTopic.PNorm,
+		CNorm:                  originalTopic.CNorm,
+		MaxLabelsPerSubmission: originalTopic.MaxLabelsPerSubmission,
+		LabelWhitelist:         oversizedWhitelist,
+		LabelDefaultValue:      originalTopic.LabelDefaultValue,
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "topic label whitelist size")
+
+	got, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+	require.NoError(err)
+	require.Equal(originalTopic.LabelWhitelist, got.LabelWhitelist)
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicRejectsNonzeroLabelDefaultValueWhenRequireUnity() {
