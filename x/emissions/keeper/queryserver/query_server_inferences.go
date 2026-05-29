@@ -11,6 +11,8 @@ import (
 
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -22,9 +24,14 @@ func (qs queryServer) GetWorkerLatestInputInferenceByTopicId(
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
+	if err := emissionstypes.ValidateStringIsBech32(req.WorkerAddress); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
 	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
-	if err != nil {
+	if errors.Is(err, emissionstypes.ErrTopicDoesNotExist) {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
 	}
 
 	inference, err := qs.wk.GetWorkerLatestInputInferenceByTopicId(ctx, topic, req.WorkerAddress)

@@ -5,6 +5,9 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/utils/ptr"
@@ -98,6 +101,34 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicId() {
 	s.Require().Equal("0.1", latestInput.LatestInputInference.Values[0].Value.String())
 	s.Require().Equal("b", latestInput.LatestInputInference.Values[1].Label)
 	s.Require().Equal("0.2", latestInput.LatestInputInference.Values[1].Value.String())
+}
+
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdInvalidAddress() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+
+	_, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       topicId,
+		WorkerAddress: "not-a-bech32-address",
+	})
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, sdkerrors.ErrInvalidAddress)
+}
+
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdTopicNotFound() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	worker := s.AddrsStr(0)
+
+	_, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       99999,
+		WorkerAddress: worker,
+	})
+	s.Require().Error(err)
+	s.Require().Equal(codes.NotFound, status.Code(err))
 }
 
 //nolint:exhaustruct
