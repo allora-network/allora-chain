@@ -118,7 +118,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {
 	defer metrics.RecordMetrics("UpdateTopic", time.Now(), &err)
 
-	if err := types.ValidateStringIsBech32(msg.Sender); err != nil {
+	params, err := ms.pk.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	if err := msg.Validate(params.MaxStringLength, params.MaxTopicLabelWhitelistSize); err != nil {
 		return nil, err
 	}
 

@@ -437,7 +437,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRa
 			updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 			require.Error(err)
 			require.Nil(updateResult)
-			require.ErrorContains(err, "max_labels_per_submission")
+			require.ErrorContains(err, "max labels per submission")
 
 			got, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
 			require.NoError(err)
@@ -1398,12 +1398,12 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmiss
 	require := s.Require()
 
 	cases := []struct {
-		name string
-		cap  uint64
-		err  error
+		name        string
+		cap         uint64
+		errContains string
 	}{
-		{name: "zero", cap: 0, err: types.ErrValidationMustBeGreaterthanZero},
-		{name: "above max", cap: types.MaxMaxLabelsPerSubmission + 1, err: types.ErrInvalidValue},
+		{name: "zero", cap: 0, errContains: "max labels per submission must be >="},
+		{name: "above max", cap: types.MaxMaxLabelsPerSubmission + 1, errContains: "max labels per submission must be <="},
 	}
 
 	for _, tc := range cases {
@@ -1424,7 +1424,8 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmiss
 				LabelWhitelist:         nil,
 			}
 			_, err := msgServer.UpdateTopic(ctx, msg)
-			require.ErrorIs(err, tc.err)
+			require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+			require.ErrorContains(err, tc.errContains)
 
 			got, err := s.TopicKeeper().GetTopic(ctx, topicId)
 			require.NoError(err)

@@ -1423,6 +1423,39 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhi
 	return nil
 }
 
+// Validate checks if the given UpdateTopicRequest is valid
+func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitelistSize uint64) error {
+	if err := ValidateBech32(msg.Sender); err != nil {
+		return errors.Wrap(err, "invalid msg Sender address")
+	}
+	if len(msg.LossMethod) < validationMinLossMethodLength || uint64(len(msg.LossMethod)) > maxStringLen {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
+	}
+	if msg.AlphaRegret.Lte(validationZeroDec) || msg.AlphaRegret.Gt(validationOneDec) || ValidateDec(msg.AlphaRegret) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
+	}
+	if msg.PNorm.Lt(validationOneDec) || msg.PNorm.Gt(validationPNormMaxDec) || ValidateDec(msg.PNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 1 and 10")
+	}
+	if msg.CNorm.Lt(validationCNormMinDec) || msg.CNorm.Gt(validationCNormMaxDec) || ValidateDec(msg.CNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "c_norm must be between -100 and 100")
+	}
+	if uint64(len(msg.Metadata)) > maxStringLen {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata invalid")
+	}
+	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
+	}
+	if err := validateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+
+	return nil
+}
+
 // ValidateInferenceValues verifies that the inference values are consistent
 // with the provided epoch label registry.
 func ValidateInferenceValues(iv InferenceValues, labels []*TopicLabel) error {
