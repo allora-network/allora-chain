@@ -7,8 +7,6 @@ import (
 )
 
 // NewGenesisState creates a new genesis state with default values.
-//
-//nolint:exhaustruct
 func NewGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:                                         DefaultParams(),
@@ -106,6 +104,9 @@ func NewGenesisState() *GenesisState {
 		OutlierResistantNetworkInferences:              []*TopicIdBlockHeightValueBundles{},
 		MonthlyReputerRewards:                          cosmosMath.ZeroInt(),
 		MonthlyTopicRewards:                            cosmosMath.ZeroInt(),
+		NetworkInferenceBundle:                         []*TopicIdBlockHeightNetworkInferenceBundles{},
+		OutlierResistantNetworkInferenceBundle:         []*TopicIdBlockHeightNetworkInferenceBundles{},
+		TopicLabelRegistries:                           []*TopicIdBlockHeightEpochLabelRegistry{},
 	}
 }
 
