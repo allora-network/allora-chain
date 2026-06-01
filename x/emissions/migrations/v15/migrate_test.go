@@ -67,7 +67,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 			topic.LossMethod = "mae"
 			topic.EpochLength = 7200
 			topic.EpochLastEnded = 5
-			topic.GroundTruthLag = 3600
+			topic.GroundTruthLag = 7200
 			topic.WorkerSubmissionWindow = 20
 			topic.PNorm = alloraMath.NewDecFromInt64(4)
 			topic.InitialRegret = alloraMath.MustNewDecFromString("0.001")
@@ -86,7 +86,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 		topicStore.Set(sdk.Uint64ToBigEndian(topic.Id), cdc.MustMarshal(&topic))
 	}
 
-	err := v15.MigrateTopics(s.Ctx(), store, cdc)
+	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
 	s.Require().NoError(err)
 
 	for _, topic := range topics {
@@ -154,7 +154,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
 
-	err := v15.MigrateTopics(s.Ctx(), store, cdc)
+	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
 	s.Require().NoError(err)
 
 	gotTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), classifTopic.Id)

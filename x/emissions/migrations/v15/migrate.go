@@ -34,7 +34,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
-	if err := MigrateTopics(ctx, store, cdc); err != nil {
+	if err := MigrateTopics(ctx, emissionsKeeper, store, cdc); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
@@ -118,7 +118,7 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 // MigrateTopics backfills default topic settings introduced for the
 // classification/multilabel feature without disturbing existing values.
-func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 	defer iterator.Close()
@@ -130,6 +130,10 @@ func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 
 	updates := make([]kv, 0)
 
+	params, err := emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: failed to get existing params")
+	}
 	for ; iterator.Valid(); iterator.Next() {
 		var topic emissionstypes.Topic
 		if err := cdc.Unmarshal(iterator.Value(), &topic); err != nil {
@@ -162,6 +166,11 @@ func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 
 		if !changed {
 			continue
+		}
+
+		// Safety check: validate the topic after backfill
+		if err := topic.Validate(params); err != nil {
+			return errorsmod.Wrapf(err, "v15 migration: topic %d failed validation after backfill", topic.Id)
 		}
 
 		updates = append(updates, kv{
