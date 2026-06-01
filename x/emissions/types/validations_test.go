@@ -1126,6 +1126,7 @@ func validParams() Params {
 		MaxUnfulfilledReputerRequests: 5,
 		MaxTopicLabelWhitelistSize:    DefaultMaxTopicLabelWhitelistSize,
 		MaxCanonicalLabelByteLength:   64,
+		MaxEpochLabelRegistrySize:     DefaultMaxEpochLabelRegistrySize,
 		MaxWhitelistInputArrayLength:  2000,
 	}
 }

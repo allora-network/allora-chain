@@ -66,6 +66,7 @@ func TestDefaultParams(t *testing.T) {
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
 		MaxCanonicalLabelByteLength:         64,
 		MaxTopicLabelWhitelistSize:          DefaultMaxTopicLabelWhitelistSize,
+		MaxEpochLabelRegistrySize:           DefaultMaxEpochLabelRegistrySize,
 	}
 
 	params := DefaultParams()
@@ -128,6 +129,35 @@ func TestValidateMaxTopicLabelWhitelistSize(t *testing.T) {
 func TestParamsValidate_RejectsZeroMaxTopicLabelWhitelistSize(t *testing.T) {
 	p := DefaultParams()
 	p.MaxTopicLabelWhitelistSize = 0
+	require.Error(t, p.Validate())
+}
+
+func TestValidateMaxEpochLabelRegistrySize(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: 1, ok: true},
+		{name: "default ok", in: DefaultMaxEpochLabelRegistrySize, ok: true},
+		{name: "larger than default ok", in: DefaultMaxEpochLabelRegistrySize + 1, ok: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxEpochLabelRegistrySize(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestParamsValidate_RejectsZeroMaxEpochLabelRegistrySize(t *testing.T) {
+	p := DefaultParams()
+	p.MaxEpochLabelRegistrySize = 0
 	require.Error(t, p.Validate())
 }
 

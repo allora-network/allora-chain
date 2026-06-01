@@ -72,6 +72,8 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 //     zero. A zero cap would reject every label after v15.
 //   - MaxTopicLabelWhitelistSize: defaults to the module-initial cap when
 //     zero. A zero cap would allow no topic whitelist entries.
+//   - MaxEpochLabelRegistrySize: defaults to the module-initial cap when zero.
+//     A zero cap would reject every new epoch label registration.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
@@ -86,6 +88,10 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 	if params.MaxTopicLabelWhitelistSize == 0 {
 		params.MaxTopicLabelWhitelistSize = defaultParams.MaxTopicLabelWhitelistSize
+		changed = true
+	}
+	if params.MaxEpochLabelRegistrySize == 0 {
+		params.MaxEpochLabelRegistrySize = defaultParams.MaxEpochLabelRegistrySize
 		changed = true
 	}
 
@@ -105,6 +111,7 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		"MIGRATION V15: params backfill completed",
 		"maxCanonicalLabelByteLength", params.MaxCanonicalLabelByteLength,
 		"maxTopicLabelWhitelistSize", params.MaxTopicLabelWhitelistSize,
+		"maxEpochLabelRegistrySize", params.MaxEpochLabelRegistrySize,
 	)
 	return nil
 }

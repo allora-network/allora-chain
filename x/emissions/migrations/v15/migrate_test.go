@@ -177,6 +177,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsLabelParams()
 	params := emissionstypes.DefaultParams()
 	params.MaxCanonicalLabelByteLength = 0
 	params.MaxTopicLabelWhitelistSize = 0
+	params.MaxEpochLabelRegistrySize = 0
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
 
 	err := v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
@@ -186,12 +187,14 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsLabelParams()
 	s.Require().NoError(err)
 	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, got.MaxCanonicalLabelByteLength)
 	s.Require().Equal(emissionstypes.DefaultParams().MaxTopicLabelWhitelistSize, got.MaxTopicLabelWhitelistSize)
+	s.Require().Equal(emissionstypes.DefaultParams().MaxEpochLabelRegistrySize, got.MaxEpochLabelRegistrySize)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsPreservesExistingLabelParams() {
 	params := emissionstypes.DefaultParams()
 	params.MaxCanonicalLabelByteLength = 32
 	params.MaxTopicLabelWhitelistSize = 128
+	params.MaxEpochLabelRegistrySize = 512
 	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 	err := v15.MigrateParams(s.Ctx(), *s.EmissionsKeeper())
@@ -201,6 +204,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsPreservesExistingLabel
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(32), got.MaxCanonicalLabelByteLength)
 	s.Require().Equal(uint64(128), got.MaxTopicLabelWhitelistSize)
+	s.Require().Equal(uint64(512), got.MaxEpochLabelRegistrySize)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() {
@@ -261,6 +265,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	params := emissionstypes.DefaultParams()
 	params.MaxCanonicalLabelByteLength = 0
 	params.MaxTopicLabelWhitelistSize = 0
+	params.MaxEpochLabelRegistrySize = 0
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
 
 	err = v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
@@ -280,6 +285,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	s.Require().NoError(err)
 	s.Require().Equal(emissionstypes.DefaultParams().MaxCanonicalLabelByteLength, gotParams.MaxCanonicalLabelByteLength)
 	s.Require().Equal(emissionstypes.DefaultParams().MaxTopicLabelWhitelistSize, gotParams.MaxTopicLabelWhitelistSize)
+	s.Require().Equal(emissionstypes.DefaultParams().MaxEpochLabelRegistrySize, gotParams.MaxEpochLabelRegistrySize)
 
 	s.assertMigratedBundle(store, cdc, emissionstypes.NetworkInferencesKey, emissionstypes.NetworkInferenceBundleKey, key, oldBundle)
 	s.assertMigratedBundle(store, cdc, emissionstypes.OutlierResistantNetworkInferencesKey, emissionstypes.OutlierResistantNetworkInferenceBundleKey, key, oldBundle)

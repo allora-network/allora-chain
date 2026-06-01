@@ -323,12 +323,18 @@ func validateEpochLabelRegistry(
 	if registry.EpochId != uint64(nonce) {
 		return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry epoch mismatch: got %d expected %d", registry.EpochId, nonce)
 	}
+	// NOTE: the registry size cap (Params.MaxEpochLabelRegistrySize) is enforced
+	// only at the growth point (RegisterEpochLabels). It is intentionally NOT
+	// re-checked here: this validation runs on already-persisted registries
+	// (read/close/import), and re-checking a mutable governance param against
+	// historical data would let a lowered cap retroactively invalidate valid
+	// state (e.g. aborting genesis import)
 	seen := make(map[string]struct{}, len(registry.Labels))
 	for i, lbl := range registry.Labels {
 		if lbl == nil {
 			return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry label at index %d is nil", i)
 		}
-		//nolint:gosec // registry length is bounded by per-submission caps and active windows.
+		//nolint:gosec // registry length is bounded at registration by Params.MaxEpochLabelRegistrySize.
 		expectedID := LabelId(i + 1)
 		if lbl.Id != expectedID {
 			return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry label %q has id %d expected %d", lbl.Name, lbl.Id, expectedID)

@@ -74,6 +74,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		MaxWhitelistInputArrayLength:        []uint64{10},
 		MinWeightThresholdForStdnorm:        []alloraMath.Dec{alloraMath.MustNewDecFromString("0.000001")},
 		MaxTopicLabelWhitelistSize:          []uint64{256},
+		MaxEpochLabelRegistrySize:           []uint64{1024},
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -142,6 +143,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxWhitelistInputArrayLength[0], updatedParams.MaxWhitelistInputArrayLength)
 	require.Equal(newParams.MinWeightThresholdForStdnorm[0], updatedParams.MinWeightThresholdForStdnorm)
 	require.Equal(newParams.MaxTopicLabelWhitelistSize[0], updatedParams.MaxTopicLabelWhitelistSize)
+	require.Equal(newParams.MaxEpochLabelRegistrySize[0], updatedParams.MaxEpochLabelRegistrySize)
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {

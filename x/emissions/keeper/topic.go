@@ -923,33 +923,103 @@ func (k *TopicKeeper) RegisterEpochLabel(
 	if err != nil {
 		return 0, errorsmod.Wrap(err, "failed to get params for label registration")
 	}
-	canonicalLabel, err := types.CanonicalLabelName(
-		labelName,
-		params.MaxCanonicalLabelByteLength,
+	ids, _, err := k.RegisterEpochLabels(
+		ctx,
+		topicID,
 		labelCaseSensitive,
+		nonce,
+		[]string{labelName},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
-	if err != nil {
-		return 0, errorsmod.Wrap(err, "label name validation failed")
-	}
-	if canonicalLabel != labelName {
-		return 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", labelName)
-	}
-	registry, err := k.GetEpochLabelRegistry(ctx, topicID, nonce)
 	if err != nil {
 		return 0, err
 	}
+	return ids[0], nil
+}
+
+// RegisterEpochLabels registers canonical labels for one inference with a
+// single registry read/write. It preserves first-seen 1-based ids and returns
+// ids in the same order as labelNames.
+func (k *TopicKeeper) RegisterEpochLabels(
+	ctx context.Context,
+	topicID types.TopicId,
+	labelCaseSensitive bool,
+	nonce types.BlockHeight,
+	labelNames []string,
+	maxLabelBytes uint64,
+	maxRegistrySize uint64,
+) ([]LabelId, types.EpochLabelRegistry, error) {
+	if err := types.ValidateTopicId(topicID); err != nil {
+		return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(nonce); err != nil {
+		return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "nonce block height validation failed")
+	}
+	if err := types.ValidateMaxEpochLabelRegistrySize(maxRegistrySize); err != nil {
+		return nil, types.EpochLabelRegistry{}, err
+	}
+	registry, err := k.GetEpochLabelRegistry(ctx, topicID, nonce)
+	if err != nil {
+		return nil, types.EpochLabelRegistry{}, err
+	}
+	if uint64(len(registry.Labels)) > maxRegistrySize {
+		return nil, types.EpochLabelRegistry{}, errorsmod.Wrapf(
+			types.ErrEpochLabelRegistrySaturated,
+			"topic %d nonce %d registry size %d exceeds max %d",
+			topicID,
+			nonce,
+			len(registry.Labels),
+			maxRegistrySize,
+		)
+	}
+	idsByName := make(map[string]LabelId, len(registry.Labels)+len(labelNames))
 	for _, lbl := range registry.Labels {
-		if lbl != nil && lbl.Name == canonicalLabel {
-			return lbl.Id, nil
+		if lbl != nil {
+			idsByName[lbl.Name] = lbl.Id
 		}
 	}
-	//nolint:gosec // labels are capped per submission and by WSW throughput.
-	nextID := LabelId(len(registry.Labels) + 1)
-	registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: canonicalLabel})
-	if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicID, nonce), registry); err != nil {
-		return 0, errorsmod.Wrap(err, "error setting topic label registry")
+	ids := make([]LabelId, len(labelNames))
+	changed := false
+	for i, labelName := range labelNames {
+		canonicalLabel, err := types.CanonicalLabelName(
+			labelName,
+			maxLabelBytes,
+			labelCaseSensitive,
+		)
+		if err != nil {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "label name validation failed")
+		}
+		if canonicalLabel != labelName {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", labelName)
+		}
+		if id, ok := idsByName[canonicalLabel]; ok {
+			ids[i] = id
+			continue
+		}
+		if uint64(len(registry.Labels)) >= maxRegistrySize {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrapf(
+				types.ErrEpochLabelRegistrySaturated,
+				"topic %d nonce %d registry size %d reached max %d",
+				topicID,
+				nonce,
+				len(registry.Labels),
+				maxRegistrySize,
+			)
+		}
+		//nolint:gosec // maxRegistrySize is validated and bounds the registry length.
+		nextID := LabelId(len(registry.Labels) + 1)
+		registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: canonicalLabel})
+		idsByName[canonicalLabel] = nextID
+		ids[i] = nextID
+		changed = true
 	}
-	return nextID, nil
+	if changed {
+		if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicID, nonce), registry); err != nil {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error setting topic label registry")
+		}
+	}
+	return ids, registry, nil
 }
 
 // GetEpochLabelId returns the label id for labelName, if present.

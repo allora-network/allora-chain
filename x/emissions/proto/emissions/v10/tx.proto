@@ -267,6 +267,7 @@ message OptionalParams {
     (gogoproto.nullable) = false
   ];
   repeated uint64 max_topic_label_whitelist_size = 62;
+  repeated uint64 max_epoch_label_registry_size = 63;
 }
 
 message UpdateParamsRequest {

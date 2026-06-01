@@ -69,6 +69,7 @@ func DefaultParams() Params {
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
 		MaxCanonicalLabelByteLength:         64,                                          // cap on canonical label name byte length after NFC + trim; bounded by [Min,Max]MaxCanonicalLabelByteLength
 		MaxTopicLabelWhitelistSize:          DefaultMaxTopicLabelWhitelistSize,           // maximum number of canonical labels allowed in a topic label whitelist
+		MaxEpochLabelRegistrySize:           DefaultMaxEpochLabelRegistrySize,            // maximum number of labels allowed in an epoch label registry
 	}
 }
 
@@ -133,6 +134,25 @@ func ValidateTopicLabelWhitelistSize(labelWhitelist []string, maxTopicLabelWhite
 			maxTopicLabelWhitelistSize, len(labelWhitelist))
 	}
 	return nil
+}
+
+// DefaultMaxEpochLabelRegistrySize is the default cap on labels in a single
+// (topic, nonce) epoch label registry.
+const DefaultMaxEpochLabelRegistrySize = uint64(32768)
+
+func validateMaxEpochLabelRegistrySize(i uint64) error {
+	if i == 0 {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max epoch label registry size must be greater than zero")
+	}
+	return nil
+}
+
+// ValidateMaxEpochLabelRegistrySize validates the module-level cap on labels
+// stored in a single epoch label registry. It is used by the registry growth
+// path (RegisterEpochLabels), which is the sole enforcement point for the cap.
+func ValidateMaxEpochLabelRegistrySize(i uint64) error {
+	return validateMaxEpochLabelRegistrySize(i)
 }
 
 // MinMaxCanonicalLabelByteLength / MaxMaxCanonicalLabelByteLength bound the
@@ -302,6 +322,9 @@ func (p Params) Validate() error {
 	}
 	if err := validateMaxTopicLabelWhitelistSize(p.MaxTopicLabelWhitelistSize); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max topic label whitelist size")
+	}
+	if err := validateMaxEpochLabelRegistrySize(p.MaxEpochLabelRegistrySize); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max epoch label registry size")
 	}
 	return nil
 }

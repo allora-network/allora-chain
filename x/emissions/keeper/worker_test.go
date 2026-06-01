@@ -1199,6 +1199,7 @@ func mockUninitializedParams() types.Params {
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
 		MaxCanonicalLabelByteLength:         64,
 		MaxTopicLabelWhitelistSize:          types.DefaultMaxTopicLabelWhitelistSize,
+		MaxEpochLabelRegistrySize:           types.DefaultMaxEpochLabelRegistrySize,
 	}
 }
 
@@ -2069,6 +2070,42 @@ func (s *KeeperTestSuite) TestSetEpochLabelRegistryUsesLiveLabelByteCap() {
 	s.Require().NoError(err)
 }
 
+// TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap pins the Finding 1 fix:
+// the registry size cap (MaxEpochLabelRegistrySize) is enforced only at the
+// growth point (RegisterEpochLabels), not when persisting/validating an
+// already-built registry. A registry larger than the current (e.g. lowered)
+// cap must still be storable so a later cap change cannot retroactively
+// invalidate valid state. See
+// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
+func (s *KeeperTestSuite) TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxEpochLabelRegistrySize = 1
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	err = s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+		},
+	})
+	s.Require().NoError(err, "stored registry above the live cap must not be rejected")
+
+	stored, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(stored.Labels, 2)
+}
+
+// TestMaterializersUsePassedLabelByteCap verifies the read/close materializers
+// honor the passed canonical-label byte cap. The registry size cap is NOT
+// asserted here: after the Finding 1 fix it is enforced only at the growth
+// point (RegisterEpochLabels), not in these read/close paths. See
+// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
 func (s *KeeperTestSuite) TestMaterializersUsePassedLabelByteCap() {
 	nonce := types.BlockHeight(7)
 	topic, _ := s.setupMultiTopic()
@@ -2088,7 +2125,12 @@ func (s *KeeperTestSuite) TestMaterializersUsePassedLabelByteCap() {
 		Proof:       "",
 	}
 
-	_, err := keeper.MaterializeInputInferenceFromLabelRegistry(topic, registry, inference, 3)
+	_, err := keeper.MaterializeInputInferenceFromLabelRegistry(
+		topic,
+		registry,
+		inference,
+		3,
+	)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
 
@@ -2168,6 +2210,58 @@ func (s *KeeperTestSuite) TestRegisterEpochLabel_FirstSeenIdempotent() {
 	_, ok, err = tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
 	s.Require().NoError(err)
 	s.Require().False(ok)
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchesAndEnforcesRegistryCap() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxEpochLabelRegistrySize = 2
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	ids, reg, err := tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"b", "a"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2}, ids)
+	s.Require().Len(reg.Labels, 2)
+	s.Require().Equal("b", reg.Labels[0].Name)
+	s.Require().Equal("a", reg.Labels[1].Name)
+
+	ids, reg, err = tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"a", "b"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{2, 1}, ids)
+	s.Require().Len(reg.Labels, 2)
+
+	_, _, err = tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"c"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().True(errorsmod.IsOf(err, types.ErrEpochLabelRegistrySaturated), "expected saturation error, got %v", err)
 }
 
 func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesTopicCaseSensitivity() {

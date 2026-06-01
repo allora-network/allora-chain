@@ -115,4 +115,8 @@ var (
 	// updatedTopic from the existing topic, so this error surfaces only if a
 	// caller bypasses that by constructing an updatedTopic directly.
 	ErrInvalidTopicUpdate = errors.Register(ModuleName, 99, "invalid topic update")
+	// ErrEpochLabelRegistrySaturated is raised when registering a new label
+	// would exceed Params.MaxEpochLabelRegistrySize for a (topic, nonce)
+	// registry. Existing labels remain idempotent at the cap.
+	ErrEpochLabelRegistrySaturated = errors.Register(ModuleName, 100, "epoch label registry is saturated")
 )

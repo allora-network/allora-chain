@@ -189,6 +189,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MaxTopicLabelWhitelistSize) == 1 {
 		existingParams.MaxTopicLabelWhitelistSize = newParams.MaxTopicLabelWhitelistSize[0]
 	}
+	if len(newParams.MaxEpochLabelRegistrySize) == 1 {
+		existingParams.MaxEpochLabelRegistrySize = newParams.MaxEpochLabelRegistrySize[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err

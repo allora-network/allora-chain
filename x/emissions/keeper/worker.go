@@ -1167,12 +1167,18 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		if dec.IsNaN() || !dec.IsFinite() {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
-		if _, err := k.topicKeeper.RegisterEpochLabel(
+		params, err := k.paramsKeeper.GetParams(ctx)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get params for inference normalization")
+		}
+		if _, _, err := k.topicKeeper.RegisterEpochLabels(
 			ctx,
 			topic.Id,
 			topic.LabelCaseSensitive,
 			nonce,
-			"y",
+			[]string{"y"},
+			params.MaxCanonicalLabelByteLength,
+			params.MaxEpochLabelRegistrySize,
 		); err != nil {
 			return nil, errorsmod.Wrap(err, "failed to register single-arity label")
 		}
@@ -1209,7 +1215,8 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		id    LabelId
 		value alloraMath.Dec
 	}
-	scattered := make([]scatteredValue, 0, len(submitted))
+	labelsToRegister := make([]string, 0, len(submitted))
+	valuesToScatter := make([]alloraMath.Dec, 0, len(submitted))
 	for _, lv := range submitted {
 		dec := lv.Value.ToDec()
 		if dec.IsNaN() || !dec.IsFinite() {
@@ -1221,24 +1228,35 @@ func (k *WorkerKeeper) NormalizeInputInference(
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to sum submitted value: %s", err)
 		}
 		if !dec.Equal(topic.LabelDefaultValue) {
-			id, err := k.topicKeeper.RegisterEpochLabel(
-				ctx,
-				topic.Id,
-				topic.LabelCaseSensitive,
-				nonce,
-				lv.Label,
-			)
-			if err != nil {
-				return nil, errorsmod.Wrapf(err, "failed to register label %s", lv.Label)
-			}
-			scattered = append(scattered, scatteredValue{id: id, value: dec})
+			labelsToRegister = append(labelsToRegister, lv.Label)
+			valuesToScatter = append(valuesToScatter, dec)
 		}
 	}
-	if len(scattered) == 0 {
+	if len(labelsToRegister) == 0 {
 		return nil, errorsmod.Wrap(
 			sdkerrors.ErrInvalidRequest,
 			"multi-arity inference requires at least one non-default label value",
 		)
+	}
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to get params for inference normalization")
+	}
+	registeredIDs, registry, err := k.topicKeeper.RegisterEpochLabels(
+		ctx,
+		topic.Id,
+		topic.LabelCaseSensitive,
+		nonce,
+		labelsToRegister,
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to register inference labels")
+	}
+	scattered := make([]scatteredValue, 0, len(registeredIDs))
+	for i, id := range registeredIDs {
+		scattered = append(scattered, scatteredValue{id: id, value: valuesToScatter[i]})
 	}
 
 	if topic.RequireUnity {
@@ -1259,10 +1277,6 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		}
 	}
 
-	registry, err := k.topicKeeper.GetEpochLabelRegistry(ctx, topic.Id, nonce)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to get temporary epoch label registry")
-	}
 	values := make([]alloraMath.Dec, len(registry.Labels))
 	for i := range values {
 		values[i] = topic.LabelDefaultValue
