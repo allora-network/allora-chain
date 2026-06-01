@@ -52,3 +52,6 @@ Before the first commit in any session, run these checks. If any fail, **stop an
 
 ### AUTOCLI
 Do not use FlagOptions on params. Follow existing style. "nil" and "empty" should be treated as same in types because of serialization.
+
+### REPORTS LOCATION
+Produce requested reports under a `.reports/` folder by default, unless otherwise specified. Do not commit them.
