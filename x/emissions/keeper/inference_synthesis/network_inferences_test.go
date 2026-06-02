@@ -159,12 +159,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		simpleNonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	require.NoError(err)
 
@@ -357,12 +361,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		simpleNonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
 
@@ -411,12 +419,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		simpleNonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
 
@@ -496,12 +508,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		simpleNonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
 
@@ -655,12 +671,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		simpleNonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
 
@@ -803,12 +823,16 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, simpleNonce.BlockHeight, inferences)
 	require.NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		simpleNonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	require.NoError(err)
 
@@ -953,12 +977,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 	err := keeper.GetWorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, nonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		nonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
 

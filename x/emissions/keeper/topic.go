@@ -902,42 +902,6 @@ func (k *TopicKeeper) GetEpochLabelRegistry(
 	return registry, nil
 }
 
-// RegisterEpochLabel registers a canonical label in the epoch registry using
-// first-seen 1-based ids. Callers must pass the topic's case-sensitivity
-// setting so registry canonicalization matches submission and whitelist
-// validation. If the label already exists, its existing id is returned.
-func (k *TopicKeeper) RegisterEpochLabel(
-	ctx context.Context,
-	topicID types.TopicId,
-	labelCaseSensitive bool,
-	nonce types.BlockHeight,
-	labelName string,
-) (LabelId, error) {
-	if err := types.ValidateTopicId(topicID); err != nil {
-		return 0, errorsmod.Wrap(err, "topic id validation failed")
-	}
-	if err := types.ValidateBlockHeight(nonce); err != nil {
-		return 0, errorsmod.Wrap(err, "nonce block height validation failed")
-	}
-	params, err := k.paramsKeeper.GetParams(ctx)
-	if err != nil {
-		return 0, errorsmod.Wrap(err, "failed to get params for label registration")
-	}
-	ids, _, err := k.RegisterEpochLabels(
-		ctx,
-		topicID,
-		labelCaseSensitive,
-		nonce,
-		[]string{labelName},
-		params.MaxCanonicalLabelByteLength,
-		params.MaxEpochLabelRegistrySize,
-	)
-	if err != nil {
-		return 0, err
-	}
-	return ids[0], nil
-}
-
 // RegisterEpochLabels registers canonical labels for one inference with a
 // single registry read/write. It preserves first-seen 1-based ids and returns
 // ids in the same order as labelNames.

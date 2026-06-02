@@ -2168,22 +2168,37 @@ func (s *KeeperTestSuite) setupMultiTopic() (types.Topic, uint64) {
 	return topic, topicId
 }
 
-func (s *KeeperTestSuite) TestRegisterEpochLabel_FirstSeenIdempotent() {
+func (s *KeeperTestSuite) TestRegisterEpochLabels_FirstSeenIdempotent() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
 
 	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
 
-	idB, err := tk.RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, nonce, "b")
+	// First-seen ids are assigned across separate single-label calls and are
+	// idempotent: re-registering an existing label returns its existing id
+	// without growing the registry.
+	idsB, _, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{"b"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
-	idA, err := tk.RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, nonce, "a")
+	idsA, _, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{"a"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
-	idBAgain, err := tk.RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, nonce, "b")
+	idsBAgain, _, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{"b"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
-	s.Require().Equal(keeper.LabelId(1), idB)
-	s.Require().Equal(keeper.LabelId(2), idA)
-	s.Require().Equal(idB, idBAgain)
+	s.Require().Equal([]keeper.LabelId{1}, idsB)
+	s.Require().Equal([]keeper.LabelId{2}, idsA)
+	s.Require().Equal(idsB, idsBAgain)
 
 	reg, err := tk.GetEpochLabelRegistry(ctx, topicId, nonce)
 	s.Require().NoError(err)
@@ -2210,6 +2225,44 @@ func (s *KeeperTestSuite) TestRegisterEpochLabel_FirstSeenIdempotent() {
 	_, ok, err = tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
 	s.Require().NoError(err)
 	s.Require().False(ok)
+
+	// A single batch with an intra-batch duplicate assigns first-seen ids in
+	// argument order and dedups repeated names to the same id, growing the
+	// registry by the number of distinct new labels only.
+	batchNonce := types.BlockHeight(8)
+	batchIds, batchReg, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, batchNonce, []string{"b", "a", "b"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2, 1}, batchIds)
+	s.Require().Len(batchReg.Labels, 2)
+	s.Require().Equal("b", batchReg.Labels[0].Name)
+	s.Require().Equal("a", batchReg.Labels[1].Name)
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabels_EmptyInputDoesNotWrite() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	ids, reg, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Empty(ids)
+	s.Require().Empty(reg.Labels)
+
+	// Empty input is a no-op: nothing is persisted for the registry.
+	stored, err := tk.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Empty(stored.Labels)
 }
 
 func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchesAndEnforcesRegistryCap() {
@@ -2264,31 +2317,38 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchesAndEnforcesRegistryCap(
 	s.Require().True(errorsmod.IsOf(err, types.ErrEpochLabelRegistrySaturated), "expected saturation error, got %v", err)
 }
 
-func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesTopicCaseSensitivity() {
+func (s *KeeperTestSuite) TestRegisterEpochLabels_UsesTopicCaseSensitivity() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
 	nonce := types.BlockHeight(7)
 
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
 	caseInsensitiveTopic, caseInsensitiveTopicID := s.setupMultiTopic()
-	_, err := tk.RegisterEpochLabel(
+	_, _, err = tk.RegisterEpochLabels(
 		ctx,
 		caseInsensitiveTopicID,
 		caseInsensitiveTopic.LabelCaseSensitive,
 		nonce,
-		"Cat",
+		[]string{"Cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().Error(err)
 	s.Require().ErrorContains(err, "label name must be canonical")
 
-	lowerID, err := tk.RegisterEpochLabel(
+	lowerIDs, _, err := tk.RegisterEpochLabels(
 		ctx,
 		caseInsensitiveTopicID,
 		caseInsensitiveTopic.LabelCaseSensitive,
 		nonce,
-		"cat",
+		[]string{"cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
-	s.Require().Equal(keeper.LabelId(1), lowerID)
+	s.Require().Equal([]keeper.LabelId{1}, lowerIDs)
 
 	caseSensitiveTopic, caseSensitiveTopicID := s.setupMultiTopic()
 	caseSensitiveTopic.LabelCaseSensitive = true
@@ -2296,28 +2356,32 @@ func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesTopicCaseSensitivity() {
 	caseSensitiveTopic, err = tk.GetTopic(ctx, caseSensitiveTopicID)
 	s.Require().NoError(err)
 
-	upperID, err := tk.RegisterEpochLabel(
+	upperIDs, _, err := tk.RegisterEpochLabels(
 		ctx,
 		caseSensitiveTopicID,
 		caseSensitiveTopic.LabelCaseSensitive,
 		nonce,
-		"Cat",
+		[]string{"Cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
-	s.Require().Equal(keeper.LabelId(1), upperID)
+	s.Require().Equal([]keeper.LabelId{1}, upperIDs)
 
-	distinctLowerID, err := tk.RegisterEpochLabel(
+	distinctLowerIDs, _, err := tk.RegisterEpochLabels(
 		ctx,
 		caseSensitiveTopicID,
 		caseSensitiveTopic.LabelCaseSensitive,
 		nonce,
-		"cat",
+		[]string{"cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().NoError(err)
-	s.Require().Equal(keeper.LabelId(2), distinctLowerID)
+	s.Require().Equal([]keeper.LabelId{2}, distinctLowerIDs)
 }
 
-func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesCanonicalByteLimit() {
+func (s *KeeperTestSuite) TestRegisterEpochLabels_UsesCanonicalByteLimit() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
 
@@ -2329,13 +2393,19 @@ func (s *KeeperTestSuite) TestRegisterEpochLabel_UsesCanonicalByteLimit() {
 	topic, topicID := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
 
-	_, err = tk.RegisterEpochLabel(ctx, topicID, topic.LabelCaseSensitive, nonce, "abcd")
+	_, _, err = tk.RegisterEpochLabels(
+		ctx, topicID, topic.LabelCaseSensitive, nonce, []string{"abcd"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().Error(err)
 	s.Require().ErrorContains(err, "label exceeds 3 bytes")
 
-	id, err := tk.RegisterEpochLabel(ctx, topicID, topic.LabelCaseSensitive, nonce, "abc")
+	ids, _, err := tk.RegisterEpochLabels(
+		ctx, topicID, topic.LabelCaseSensitive, nonce, []string{"abc"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
-	s.Require().Equal(keeper.LabelId(1), id)
+	s.Require().Equal([]keeper.LabelId{1}, ids)
 }
 
 func (s *KeeperTestSuite) TestMaterializeInferencesAndRegistryAtClose_DoesNotPersistFinalRegistry() {

@@ -109,7 +109,17 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 	err = s.TopicKeeper().SetTotalSumPreviousTopicWeights(ctx, alloraMath.MustNewDecFromString("100.0"))
 	s.Require().NoError(err)
 	label := "testlabel"
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, false, blockHeight, label)
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx,
+		topicId,
+		false,
+		blockHeight,
+		[]string{label},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
 
 	// WORKER

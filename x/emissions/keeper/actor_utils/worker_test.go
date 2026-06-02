@@ -238,7 +238,17 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	forecaster0 := s.AddrsStr(4)
 	forecaster1 := s.AddrsStr(5)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, blockHeight, "y")
+	registrationParams, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		registrationParams.MaxCanonicalLabelByteLength,
+		registrationParams.MaxEpochLabelRegistrySize,
+	)
 	require.NoError(err)
 
 	// Create inferences where worker3 is an obvious outlier
@@ -442,7 +452,15 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, topic.LabelCaseSensitive, blockHeight, "y")
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
 	require.NoError(err)
 
 	topic, err = keeper.GetTopicKeeper().GetTopic(ctx, topicId)

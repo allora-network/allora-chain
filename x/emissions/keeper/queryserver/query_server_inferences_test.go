@@ -320,12 +320,16 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferences)
 	require.NoError(err)
 
-	_, err = keeper.GetTopicKeeper().RegisterEpochLabel(
+	params, err := keeper.GetParamsKeeper().GetParams(s.Ctx())
+	require.NoError(err)
+	_, _, err = keeper.GetTopicKeeper().RegisterEpochLabels(
 		s.Ctx(),
 		topic.Id,
 		topic.LabelCaseSensitive,
 		inferenceNonce.BlockHeight,
-		"y",
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
 	)
 	require.NoError(err)
 
