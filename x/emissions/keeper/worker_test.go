@@ -2241,30 +2241,6 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_FirstSeenIdempotent() {
 	s.Require().Equal("a", batchReg.Labels[1].Name)
 }
 
-func (s *KeeperTestSuite) TestRegisterEpochLabels_EmptyInputDoesNotWrite() {
-	ctx := s.Ctx()
-	tk := s.TopicKeeper()
-
-	params, err := s.ParamsKeeper().GetParams(ctx)
-	s.Require().NoError(err)
-
-	topic, topicId := s.setupMultiTopic()
-	nonce := types.BlockHeight(7)
-
-	ids, reg, err := tk.RegisterEpochLabels(
-		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{},
-		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
-	)
-	s.Require().NoError(err)
-	s.Require().Empty(ids)
-	s.Require().Empty(reg.Labels)
-
-	// Empty input is a no-op: nothing is persisted for the registry.
-	stored, err := tk.GetEpochLabelRegistry(ctx, topicId, nonce)
-	s.Require().NoError(err)
-	s.Require().Empty(stored.Labels)
-}
-
 func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchesAndEnforcesRegistryCap() {
 	ctx := s.Ctx()
 	tk := s.TopicKeeper()
@@ -2467,4 +2443,299 @@ func (s *KeeperTestSuite) TestMaterializeInferencesAndRegistryAtClose_DoesNotPer
 		stored.Labels[2].Name,
 		stored.Labels[3].Name,
 	})
+}
+
+// epochLabelNames extracts the ordered label names from a registry's labels.
+// It returns nil (not an empty slice) for an empty registry so equality checks
+// against an unset expectation are unambiguous.
+func epochLabelNames(labels []*types.TopicLabel) []string {
+	if len(labels) == 0 {
+		return nil
+	}
+	names := make([]string, len(labels))
+	for i, lbl := range labels {
+		names[i] = lbl.Name
+	}
+	return names
+}
+
+// TestRegisterEpochLabels_BatchBehavior exercises the batch registration path:
+// in-batch dedup, mixed new/existing reuse, ordering, no-op writes, the two
+// saturation branches (pre-existing over cap and per-label growth), and
+// canonical/byte/utf-8 validation. Every case also asserts the persisted
+// registry, which pins the atomicity invariant: a mid-batch error must not
+// leave partial growth in state.
+//
+//nolint:exhaustruct // table-driven cases intentionally set only the fields each case exercises
+func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchBehavior() {
+	nonce := types.BlockHeight(7)
+	testCases := []struct {
+		name              string
+		seed              []*types.TopicLabel
+		caseSensitive     bool
+		maxLabelBytes     uint64
+		maxRegistrySize   uint64
+		input             []string
+		wantIDs           []keeper.LabelId
+		wantRegistryNames []string
+		wantErrIs         error
+		wantErrContains   string
+	}{
+		{
+			name:              "in-batch duplicate reuses first-seen id",
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "a"},
+			wantIDs:           []keeper.LabelId{1, 1},
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:              "in-batch duplicate interleaved",
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"b", "a", "b"},
+			wantIDs:           []keeper.LabelId{1, 2, 1},
+			wantRegistryNames: []string{"b", "a"},
+		},
+		{
+			name:              "mixed new and existing",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "b", "c"},
+			wantIDs:           []keeper.LabelId{1, 2, 3},
+			wantRegistryNames: []string{"a", "b", "c"},
+		},
+		{
+			name:              "reuse preserves stored order",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "b"}, {Id: 2, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "b"},
+			wantIDs:           []keeper.LabelId{2, 1},
+			wantRegistryNames: []string{"b", "a"},
+		},
+		{
+			name:            "empty input on empty registry does not write",
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{},
+			wantIDs:         []keeper.LabelId{},
+		},
+		{
+			name:              "empty input leaves existing labels untouched",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{},
+			wantIDs:           []keeper.LabelId{},
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:              "all existing labels is a no-op",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}, {Id: 2, Name: "b"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "b"},
+			wantIDs:           []keeper.LabelId{1, 2},
+			wantRegistryNames: []string{"a", "b"},
+		},
+		{
+			name:              "pre-existing registry over cap rejected",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}, {Id: 2, Name: "b"}, {Id: 3, Name: "c"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   2,
+			input:             []string{"a"},
+			wantErrIs:         types.ErrEpochLabelRegistrySaturated,
+			wantRegistryNames: []string{"a", "b", "c"},
+		},
+		{
+			name:              "per-label saturation does not persist partial growth",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   2,
+			input:             []string{"b", "c"},
+			wantErrIs:         types.ErrEpochLabelRegistrySaturated,
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:              "non-canonical label rejected mid-batch",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			caseSensitive:     false,
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "Cat"},
+			wantErrContains:   "label name must be canonical",
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:            "byte cap exceeded rejected",
+			maxLabelBytes:   3,
+			maxRegistrySize: 8,
+			input:           []string{"abcd"},
+			wantErrContains: "label exceeds 3 bytes",
+		},
+		{
+			name:            "empty after trim rejected",
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{"   "},
+			wantErrIs:       types.ErrInvalidLabelName,
+		},
+		{
+			name:            "invalid utf-8 rejected",
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{string([]byte{0xff})},
+			wantErrIs:       types.ErrInvalidLabelName,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			tk := s.TopicKeeper()
+			topicId := s.CreateTopic()
+			if len(tc.seed) > 0 {
+				s.Require().NoError(tk.SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+					TopicId: topicId,
+					EpochId: uint64(nonce),
+					Labels:  tc.seed,
+				}))
+			}
+
+			ids, reg, err := tk.RegisterEpochLabels(
+				ctx,
+				topicId,
+				tc.caseSensitive,
+				nonce,
+				tc.input,
+				tc.maxLabelBytes,
+				tc.maxRegistrySize,
+			)
+
+			if tc.wantErrIs != nil || tc.wantErrContains != "" {
+				s.Require().Error(err)
+				if tc.wantErrIs != nil {
+					s.Require().True(errorsmod.IsOf(err, tc.wantErrIs), "expected error %v, got %v", tc.wantErrIs, err)
+				}
+				if tc.wantErrContains != "" {
+					s.Require().ErrorContains(err, tc.wantErrContains)
+				}
+			} else {
+				s.Require().NoError(err)
+				s.Require().Equal(tc.wantIDs, ids)
+				s.Require().Equal(tc.wantRegistryNames, epochLabelNames(reg.Labels))
+			}
+
+			// The persisted registry must match the expectation. For error
+			// cases this proves no partial write happened (atomicity).
+			stored, err := tk.GetEpochLabelRegistry(ctx, topicId, nonce)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.wantRegistryNames, epochLabelNames(stored.Labels))
+		})
+	}
+}
+
+// TestRegisterEpochLabels_InputValidation covers the early validation branches
+// that return before any state is read or written.
+//
+//nolint:exhaustruct // table-driven cases intentionally set only the fields each case exercises
+func (s *KeeperTestSuite) TestRegisterEpochLabels_InputValidation() {
+	validNonce := types.BlockHeight(7)
+	testCases := []struct {
+		name            string
+		topicID         types.TopicId
+		nonce           types.BlockHeight
+		maxLabelBytes   uint64
+		maxRegistrySize uint64
+		input           []string
+		wantErrContains string
+	}{
+		{
+			name:            "zero topic id",
+			topicID:         0,
+			nonce:           validNonce,
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{"a"},
+			wantErrContains: "topic id validation failed",
+		},
+		{
+			name:            "negative nonce",
+			topicID:         1,
+			nonce:           types.BlockHeight(-1),
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{"a"},
+			wantErrContains: "nonce block height validation failed",
+		},
+		{
+			name:            "zero max registry size",
+			topicID:         1,
+			nonce:           validNonce,
+			maxLabelBytes:   32,
+			maxRegistrySize: 0,
+			input:           []string{"a"},
+			wantErrContains: "must be greater than zero",
+		},
+		{
+			name:            "zero max label bytes",
+			topicID:         1,
+			nonce:           validNonce,
+			maxLabelBytes:   0,
+			maxRegistrySize: 8,
+			input:           []string{"a"},
+			wantErrContains: "max canonical label byte length must be >= 1",
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			tk := s.TopicKeeper()
+
+			_, _, err := tk.RegisterEpochLabels(
+				ctx,
+				tc.topicID,
+				false,
+				tc.nonce,
+				tc.input,
+				tc.maxLabelBytes,
+				tc.maxRegistrySize,
+			)
+			s.Require().Error(err)
+			s.Require().ErrorContains(err, tc.wantErrContains)
+		})
+	}
+}
+
+// TestRegisterEpochLabels_Deterministic pins the determinism guarantee: the
+// same input produces identical ids and identical registry order across two
+// independent, fresh keys (no leakage from map iteration order).
+func (s *KeeperTestSuite) TestRegisterEpochLabels_Deterministic() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	const (
+		maxLabelBytes   = uint64(32)
+		maxRegistrySize = uint64(8)
+	)
+	input := []string{"b", "a", "c", "a"}
+	nonce := types.BlockHeight(7)
+
+	topicA := s.CreateTopic()
+	topicB := s.CreateTopic()
+
+	idsA, regA, err := tk.RegisterEpochLabels(ctx, topicA, false, nonce, input, maxLabelBytes, maxRegistrySize)
+	s.Require().NoError(err)
+	idsB, regB, err := tk.RegisterEpochLabels(ctx, topicB, false, nonce, input, maxLabelBytes, maxRegistrySize)
+	s.Require().NoError(err)
+
+	s.Require().Equal(idsA, idsB)
+	s.Require().Equal(epochLabelNames(regA.Labels), epochLabelNames(regB.Labels))
+	s.Require().Equal([]keeper.LabelId{1, 2, 3, 2}, idsA)
+	s.Require().Equal([]string{"b", "a", "c"}, epochLabelNames(regA.Labels))
 }
