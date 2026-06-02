@@ -946,18 +946,10 @@ func (k *TopicKeeper) RegisterEpochLabels(
 	ids := make([]LabelId, len(labelNames))
 	changed := false
 	for i, labelName := range labelNames {
-		canonicalLabel, err := types.CanonicalLabelName(
-			labelName,
-			maxLabelBytes,
-			labelCaseSensitive,
-		)
-		if err != nil {
+		if err := types.EnsureCanonicalLabelName(labelName, maxLabelBytes, labelCaseSensitive); err != nil {
 			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "label name validation failed")
 		}
-		if canonicalLabel != labelName {
-			return nil, types.EpochLabelRegistry{}, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", labelName)
-		}
-		if id, ok := idsByName[canonicalLabel]; ok {
+		if id, ok := idsByName[labelName]; ok {
 			ids[i] = id
 			continue
 		}
@@ -973,8 +965,8 @@ func (k *TopicKeeper) RegisterEpochLabels(
 		}
 		//nolint:gosec // maxRegistrySize is validated and bounds the registry length.
 		nextID := LabelId(len(registry.Labels) + 1)
-		registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: canonicalLabel})
-		idsByName[canonicalLabel] = nextID
+		registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: labelName})
+		idsByName[labelName] = nextID
 		ids[i] = nextID
 		changed = true
 	}

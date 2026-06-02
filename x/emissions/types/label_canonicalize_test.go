@@ -1,8 +1,11 @@
 package types_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
+
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -242,5 +245,86 @@ func TestCanonicalLabelSet_NilEmpty(t *testing.T) {
 	}
 	if _, ok := got["a"]; !ok {
 		t.Fatalf("missing key a")
+	}
+}
+
+// TestEnsureCanonicalLabelName_Accepts verifies that labels already in
+// canonical form pass the validation-only helper without error.
+func TestEnsureCanonicalLabelName_Accepts(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name               string
+		in                 string
+		labelCaseSensitive bool
+	}{
+		{name: "lowercase", in: "cat", labelCaseSensitive: false},
+		{name: "digits and separators", in: "model_1/v2.0", labelCaseSensitive: false},
+		{name: "uppercase when case sensitive", in: "Cat", labelCaseSensitive: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if err := types.EnsureCanonicalLabelName(tc.in, testMaxBytes, tc.labelCaseSensitive); err != nil {
+				t.Fatalf("EnsureCanonicalLabelName(%q, cs=%v) = %v, want nil", tc.in, tc.labelCaseSensitive, err)
+			}
+		})
+	}
+}
+
+// TestEnsureCanonicalLabelName_RejectsNonCanonical covers valid UTF-8 inputs
+// that are not yet in canonical form: the helper must reject them with
+// ErrInvalidRequest and a "must be canonical" message rather than rewriting.
+func TestEnsureCanonicalLabelName_RejectsNonCanonical(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name               string
+		in                 string
+		labelCaseSensitive bool
+	}{
+		{name: "uppercase when case insensitive", in: "Cat", labelCaseSensitive: false},
+		{name: "leading space", in: " cat", labelCaseSensitive: false},
+		{name: "trailing space", in: "cat ", labelCaseSensitive: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			err := types.EnsureCanonicalLabelName(tc.in, testMaxBytes, tc.labelCaseSensitive)
+			if err == nil {
+				t.Fatalf("EnsureCanonicalLabelName(%q, cs=%v) = nil, want error", tc.in, tc.labelCaseSensitive)
+			}
+			if !errors.Is(err, sdkerrors.ErrInvalidRequest) {
+				t.Fatalf("expected ErrInvalidRequest, got %v", err)
+			}
+			if !strings.Contains(err.Error(), "label name must be canonical") {
+				t.Fatalf("expected canonical-form error, got %v", err)
+			}
+		})
+	}
+}
+
+// TestEnsureCanonicalLabelName_RejectsInvalid covers inputs that fail
+// CanonicalLabelName outright; the helper must surface that underlying error.
+func TestEnsureCanonicalLabelName_RejectsInvalid(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name     string
+		in       string
+		maxBytes uint64
+	}{
+		{name: "empty", in: "", maxBytes: testMaxBytes},
+		{name: "disallowed character", in: "bad!", maxBytes: testMaxBytes},
+		{name: "over byte cap", in: "abcd", maxBytes: 3},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			err := types.EnsureCanonicalLabelName(tc.in, tc.maxBytes, false)
+			if err == nil {
+				t.Fatalf("EnsureCanonicalLabelName(%q, max=%d) = nil, want error", tc.in, tc.maxBytes)
+			}
+			if !errors.Is(err, types.ErrInvalidLabelName) {
+				t.Fatalf("expected ErrInvalidLabelName, got %v", err)
+			}
+		})
 	}
 }

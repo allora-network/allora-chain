@@ -339,16 +339,8 @@ func validateEpochLabelRegistry(
 		if lbl.Id != expectedID {
 			return errorsmod.Wrapf(sdkerrors.ErrLogic, "registry label %q has id %d expected %d", lbl.Name, lbl.Id, expectedID)
 		}
-		canonicalLabel, err := types.CanonicalLabelName(
-			lbl.Name,
-			maxLabelBytes,
-			labelCaseSensitive,
-		)
-		if err != nil {
+		if err := types.EnsureCanonicalLabelName(lbl.Name, maxLabelBytes, labelCaseSensitive); err != nil {
 			return errorsmod.Wrapf(err, "registry label at index %d is invalid", i)
-		}
-		if canonicalLabel != lbl.Name {
-			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "registry label at index %d must be canonical: %q", i, lbl.Name)
 		}
 		if _, ok := seen[lbl.Name]; ok {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "registry label at index %d is duplicated: %q", i, lbl.Name)

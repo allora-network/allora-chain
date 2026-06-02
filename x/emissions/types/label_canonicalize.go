@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -69,6 +70,23 @@ func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (str
 			maxBytes, len(trimmed))
 	}
 	return trimmed, nil
+}
+
+// EnsureCanonicalLabelName returns nil iff s is already in canonical form for
+// the given limits. It is the validation-only counterpart to CanonicalLabelName
+// for call sites that must reject (not rewrite) non-canonical input: it returns
+// the underlying CanonicalLabelName error when s is invalid, and
+// ErrInvalidRequest when s is valid UTF-8 but not canonical (needs
+// trim/lowercase/NFC/length).
+func EnsureCanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) error {
+	canonical, err := CanonicalLabelName(s, maxBytes, labelCaseSensitive)
+	if err != nil {
+		return err
+	}
+	if canonical != s {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", s)
+	}
+	return nil
 }
 
 func lowerASCII(s string) string {
