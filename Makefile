@@ -10,6 +10,9 @@ ifeq (,$(VERSION))
   endif
 endif
 
+# Sanitized version for filenames: strip leading v, replace / with -
+BUILD_VERSION := $(subst /,-,$(VERSION:v%=%))
+
 # process build tags
 LEDGER_ENABLED ?= true
 build_tags = netgo
@@ -36,6 +39,7 @@ ifeq ($(LEDGER_ENABLED),true)
 	endif
 endif
 
+build_tags += pebbledb
 build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
@@ -54,8 +58,19 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=allora \
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
-BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+gcflags = all=-N -l
+
+ifeq ($(DEBUG),true)
+	BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)' -gcflags '$(gcflags)'
+else
+	BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+endif
 BUILDDIR ?= $(CURDIR)/build
+
+# Go module mode: readonly (default, for PR/development CI) or vendor (for release/production builds)
+GO_VENDOR_MODE ?= readonly
+
+PROTO_LINT_PATHS ?= x/emissions/proto x/mint/proto
 
 ###########
 # Install #
@@ -68,30 +83,50 @@ install:
 	# @go mod verify
 	# @go mod tidy
 	# @echo "--> installing allorad"
-	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/allorad
+	@go install $(BUILD_FLAGS) -mod=$(GO_VENDOR_MODE) ./cmd/allorad
 
 init:
 	./scripts/init.sh
 
 build:
 	mkdir -p $(BUILDDIR)/
-	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
+	GOWORK=off go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
 
 build-local-edits:
 	mkdir -p $(BUILDDIR)/
-	go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
+	go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
+
+build-all-platforms:
+	mkdir -p $(BUILDDIR)/
+	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=amd64 GOWORK=off go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=arm64 GOWORK=off go build -mod=$(GO_VENDOR_MODE) $(BUILD_FLAGS) -o $(BUILDDIR)/allora-chain_$(BUILD_VERSION)_windows_arm64 github.com/allora-network/allora-chain/cmd/allorad
+
+vendor:
+	@echo "--> Vendoring dependencies (run this after changing go.mod/go.sum)"
+	go mod vendor
+	@echo "--> Vendor directory updated. Remember to commit vendor/ changes."
 
 lint:
 	@echo "--> Running linter"
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m
-	@go run ./cmd/check-defer-close .
+	@go run ./linter/check-defer-close .
+	@go run ./linter/fuzz-transitions
+	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
 
 build-maprange-linter:
 	@echo "--> Buiding maprange linter"
-	go build -o linter/bin/maprange.so -buildmode=plugin linter/maprange.go
+	cd linter/maprange && go build -o bin/maprange.so -buildmode=plugin maprange.go
 
 maprange: build-maprange-linter
 	@echo "--> Running maprange linter"
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/.golangci-maprange.yml
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/maprange/.golangci-maprange.yml
 
-.PHONY: all install build lint build-maprange-linter maprange
+duplicate-routes:
+	@echo "--> Running duplicate route linter"
+	@go run ./linter/duplicate_routes $(PROTO_LINT_PATHS)
+
+.PHONY: all install build lint build-maprange-linter maprange duplicate-routes vendor

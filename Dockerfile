@@ -5,6 +5,9 @@ ARG GH_TOKEN
 ADD . /src
 WORKDIR /src
 
+# Enforce vendored modules in production builds (DEVOP-621)
+ENV GO_VENDOR_MODE=vendor
+
 RUN make install
 
 #==============================================================

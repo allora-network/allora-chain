@@ -29,6 +29,18 @@ builds:
     env:
       - CGO_ENABLED=0
 
+    flags:
+      - -mod=vendor
+
+    flags:
+      - -mod=vendor
+
+    flags:
+      - -mod=vendor
+
+    flags:
+      - -mod=vendor
+
 archives:
   - format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"

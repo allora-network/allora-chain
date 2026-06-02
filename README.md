@@ -42,6 +42,22 @@ Note: Depending on your `go` setup you may need to add `$GOPATH/bin` to your `$P
 export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
+## Vendored Dependencies
+
+This repository vendors its Go dependencies in the `vendor/` directory (see [DEVOP-621](https://linear.app/allora/issue/DEVOP-621)). Production Dockerfiles and release builds enforce `-mod=vendor` so that every build is byte-for-byte reproducible and does not pull code from the module proxy at build time. PR/development CI continues to use `GOFLAGS=-mod=readonly` so that un-vendored PRs still fail fast while the committed `vendor/` directory is treated as the source of truth.
+
+### Updating vendor dependencies
+
+Whenever `go.mod` or `go.sum` changes, regenerate and commit the `vendor/` directory:
+
+```bash
+make vendor
+git add vendor/ go.mod go.sum
+git commit -m "chore(vendor): update vendored dependencies"
+```
+
+The CI runs a `vendor-drift` check on every PR and push to `main`/`dev`/`release-*` that fails if `vendor/modules.txt` does not match `go.mod`.
+
 ## Run a Local Network
 To run a local node for testing purposes, execute the following commands:
 ```
