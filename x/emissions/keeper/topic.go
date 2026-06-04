@@ -939,9 +939,13 @@ func (k *TopicKeeper) RegisterEpochLabels(
 	}
 	idsByName := make(map[string]LabelId, len(registry.Labels)+len(labelNames))
 	for _, lbl := range registry.Labels {
-		if lbl != nil {
-			idsByName[lbl.Name] = lbl.Id
+		if lbl == nil {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(sdkerrors.ErrLogic, "registry label cannot be nil")
 		}
+		if lbl.Id == 0 {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(sdkerrors.ErrLogic, "label id cannot be zero")
+		}
+		idsByName[lbl.Name] = lbl.Id
 	}
 	ids := make([]LabelId, len(labelNames))
 	changed := false
