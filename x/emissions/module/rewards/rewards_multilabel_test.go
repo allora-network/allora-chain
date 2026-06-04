@@ -826,12 +826,7 @@ func (s *RewardsTestSuite) TestMultiLabelMatchesSingleLabelPerLabel() {
 				if lv.Label == label {
 					values[i] = testutil.TestWorkerValue{
 						Index: workerIndexes[i],
-						Values: []testutil.TestLabeledValue{
-							{
-								Label: "",
-								Value: lv.Value,
-							},
-						},
+						Value: lv.Value,
 					}
 				}
 			}

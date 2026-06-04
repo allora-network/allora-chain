@@ -617,10 +617,20 @@ type TestLabeledValue struct {
 
 type TestWorkerValue struct {
 	Index  int
-	Value  string             // legacy / SINGLE convenience
-	Values []TestLabeledValue // MULTI or explicit SINGLE
+	Value  string             // SINGLE-arity scalar inference
+	Values []TestLabeledValue // MULTI-arity labeled inferences
 }
 
+// generateWorkerDataBundles builds signed InputWorkerDataBundles for the given
+// workers and optional per-worker TestWorkerValue fixtures.
+//
+// Inference shaping mirrors the worker payload wire format:
+//   - MULTI topics: set tv.Values with non-empty labels; each row becomes an
+//     InputLabeledValue in InputInference.Values.
+//   - SINGLE topics: set tv.Value; the scalar is carried on InputInference.Value
+//     with InputInference.Values left nil.
+//
+// When neither tv.Values nor tv.Value is set, a random scalar is used.
 func generateWorkerDataBundles(
 	s *TestSuite,
 	nonce int64,
@@ -634,29 +644,8 @@ func generateWorkerDataBundles(
 		panic("invalid worker values length")
 	}
 
-	// For MULTI-arity topics, callers populate tv.Values with non-empty
-	// labels and each element is emitted as an InputLabeledValue. For
-	// SINGLE-arity topics, we return nil and let the caller populate
-	// InputInference.Value directly. The legacy pattern of emitting a single
-	// InputLabeledValue with an empty label is no longer accepted by
-	// InputInference.ValidateWithLimits; callers that used to pass one
-	// `{Label:"", Value: v}` entry to mean "scalar v" are transparently
-	// normalized to the scalar path here so that existing SINGLE-topic
-	// tests keep working.
-	allLabelsEmpty := func(vs []TestLabeledValue) bool {
-		for _, v := range vs {
-			if v.Label != "" {
-				return false
-			}
-		}
-		return true
-	}
-
 	toInputLabeledValues := func(tv TestWorkerValue) []*types.InputLabeledValue {
 		if len(tv.Values) == 0 {
-			return nil
-		}
-		if allLabelsEmpty(tv.Values) {
 			return nil
 		}
 		out := make([]*types.InputLabeledValue, len(tv.Values))
@@ -671,17 +660,6 @@ func generateWorkerDataBundles(
 
 	singleScalarValue := func(tv TestWorkerValue) alloraMath.BoundedExp40Dec {
 		inferenceValueStr := tv.Value
-		// Legacy SINGLE callers that stashed a scalar inside
-		// tv.Values[0].Value (with an empty label) still work: pick the
-		// first non-empty Value.
-		if inferenceValueStr == "" && len(tv.Values) > 0 && allLabelsEmpty(tv.Values) {
-			for _, v := range tv.Values {
-				if v.Value != "" {
-					inferenceValueStr = v.Value
-					break
-				}
-			}
-		}
 		if inferenceValueStr == "" {
 			//nolint:gosec
 			inferenceValueStr = strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)

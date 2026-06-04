@@ -883,6 +883,41 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 			wantErrIs: types.ErrTooManyLabelsPerSubmission,
 		},
 		{
+			// An empty label in Values is rejected at the InsertWorkerPayload
+			// boundary by ValidateWithLimits -> CanonicalLabelName ("empty
+			// after trimming"), before NormalizeInputInference's permissive
+			// empty-label scalar branch can apply. Distinct from the scalar
+			// Value path (SINGLE_values_empty_uses_scalar), which is accepted.
+			name:         "SINGLE_empty_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+				}
+			},
+			wantErr:   true,
+			wantErrIs: types.ErrInvalidLabelName,
+		},
+		{
+			// A single non-"y" canonical label passes ValidateWithLimits (no
+			// whitelist, valid charset) but is rejected by the single-arity
+			// guard in validateWorkerInferenceLabels: SINGLE topics only accept
+			// the canonical label "y" (or the scalar path).
+			name:         "SINGLE_non_y_label_rejected",
+			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			requireUnity: false,
+			unityTol:     "0",
+			mutate: func(m *types.InsertWorkerPayloadRequest) {
+				m.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+					{Label: "x", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+				}
+			},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
 			// Under the default caseSensitive=false topic, submitted
 			// uppercase labels "A"/"B" lowercase to "a"/"b" and are
 			// refcounted under the canonical form.
