@@ -110,7 +110,7 @@ type Params struct {
 	MaxCanonicalLabelByteLength uint64 `protobuf:"varint,61,opt,name=max_canonical_label_byte_length,json=maxCanonicalLabelByteLength,proto3" json:"max_canonical_label_byte_length,omitempty"`
 	// Max number of canonical labels allowed in a topic label whitelist.
 	MaxTopicLabelWhitelistSize uint64 `protobuf:"varint,62,opt,name=max_topic_label_whitelist_size,json=maxTopicLabelWhitelistSize,proto3" json:"max_topic_label_whitelist_size,omitempty"`
-	// Max number of labels allowed in a temporary or final epoch label registry
+	// Max absolute number of labels allowed in an epoch label registry
 	// for a single (topic, nonce).
 	MaxEpochLabelRegistrySize uint64 `protobuf:"varint,63,opt,name=max_epoch_label_registry_size,json=maxEpochLabelRegistrySize,proto3" json:"max_epoch_label_registry_size,omitempty"`
 }

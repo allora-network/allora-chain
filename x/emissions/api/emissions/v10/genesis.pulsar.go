@@ -31629,7 +31629,7 @@ type GenesisState struct {
 	// removal in the forwards map
 	DelegateStakeRemovalsByActor []*DelegatorReputerTopicIdBlockHeight `protobuf:"bytes,31,rep,name=delegate_stake_removals_by_actor,json=delegateStakeRemovalsByActor,proto3" json:"delegate_stake_removals_by_actor,omitempty"`
 	// / MISC GLOBAL STATE
-	// map of (topic, worker) -> latest active temporary inference
+	// map of (topic, inferer) -> live WSW inference for admitted active inferers; cleared at nonce close
 	Inferences []*TopicIdActorIdInference `protobuf:"bytes,32,rep,name=inferences,proto3" json:"inferences,omitempty"`
 	// map of (topic, worker) -> forecast[]
 	Forecasts []*TopicIdActorIdForecast `protobuf:"bytes,33,rep,name=forecasts,proto3" json:"forecasts,omitempty"`

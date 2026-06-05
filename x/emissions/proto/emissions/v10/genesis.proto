@@ -112,7 +112,7 @@ message GenesisState {
   repeated DelegatorReputerTopicIdBlockHeight delegate_stake_removals_by_actor = 31;
 
   /// MISC GLOBAL STATE
-  // map of (topic, worker) -> latest active temporary inference
+  // map of (topic, inferer) -> live WSW inference for admitted active inferers; cleared at nonce close
   repeated TopicIdActorIdInference inferences = 32;
   // map of (topic, worker) -> forecast[]
   repeated TopicIdActorIdForecast forecasts = 33;
