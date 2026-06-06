@@ -620,7 +620,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	s.Require().NoError(err)
 
 	// Append the inference
-	admitted, err := s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, inference, 4)
+	admitted, err := s.appendInference(ctx, topic, blockHeight, inference, 4)
 	s.Require().NoError(err)
 	s.Require().True(admitted)
 
@@ -774,7 +774,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 
 	// Submit inference - should not trigger EMA update using quantile since it's first submission
 	// and score is lower than active set
-	admitted, err := s.WorkerKeeper().AppendInference(ctx, topic, 2, inference, params.MaxTopInferersToReward)
+	admitted, err := s.appendInference(ctx, topic, 2, inference, params.MaxTopInferersToReward)
 	s.Require().NoError(err)
 	s.Require().False(admitted)
 
@@ -824,7 +824,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	s.Require().NoError(err)
 
 	// Append the inference
-	admitted, err := s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, inference, 4)
+	admitted, err := s.appendInference(ctx, topic, blockHeight, inference, 4)
 	s.Require().NoError(err)
 	s.Require().True(admitted)
 

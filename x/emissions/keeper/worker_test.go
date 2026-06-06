@@ -337,6 +337,36 @@ func (s *KeeperTestSuite) TestRemoveWorker() {
 	s.Require().False(isRegisteredPost, "Worker should not be registered in the topic after removal")
 }
 
+// appendInference is a test-only convenience that reproduces the former
+// keeper.AppendInference wrapper: plan, then commit via the admitted or
+// non-admitted path, returning whether the inferer was admitted.
+func (s *KeeperTestSuite) appendInference(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight keeper.BlockHeight,
+	inference *types.Inference,
+	maxTopInferersToReward uint64,
+) (bool, error) {
+	k := s.WorkerKeeper()
+	if inference == nil {
+		return false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
+	}
+	plan, err := k.PlanInferenceAdmission(ctx, topic, nonceBlockHeight, inference.Inferer, maxTopInferersToReward)
+	if err != nil {
+		return false, err
+	}
+	if plan.Admitted() {
+		if err := k.CommitAdmittedInference(ctx, topic, nonceBlockHeight, inference, plan); err != nil {
+			return false, err
+		}
+	} else {
+		if err := k.CommitNonAdmittedInference(ctx, topic, nonceBlockHeight, plan); err != nil {
+			return false, err
+		}
+	}
+	return plan.Admitted(), nil
+}
+
 func (s *KeeperTestSuite) TestAppendInference() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
@@ -390,7 +420,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		},
 	}
 	for _, inference := range allInferences.Inferences {
-		admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 		s.Require().True(admitted)
 	}
@@ -404,7 +434,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference, params.MaxTopInferersToReward)
+	admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, &newInference, params.MaxTopInferersToReward)
 	s.Require().NoError(err)
 	s.Require().True(admitted)
 	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
@@ -421,7 +451,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		Proof:       "",
 	}
 
-	admitted, err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
+	admitted, err = s.appendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
 	s.Require().NoError(err)
 	s.Require().True(admitted)
 	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
@@ -473,7 +503,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	_, err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
+	_, err = s.appendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
 	// Confirm no change in EMA score
 	updateAttemptForWorker2, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, worker2)
@@ -485,7 +515,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 }
 
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestPlanAppendInference() {
+func (s *KeeperTestSuite) TestPlanInferenceAdmission() {
 	type tc struct {
 		name      string
 		setup     func(ctx sdk.Context, topicId uint64, inferer string) uint64
@@ -572,7 +602,7 @@ func (s *KeeperTestSuite) TestPlanAppendInference() {
 			registryBefore, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
 			s.Require().NoError(err)
 
-			plan, err := s.WorkerKeeper().PlanAppendInference(ctx, topic, nonce, inferer, maxTopInferersToReward)
+			plan, err := s.WorkerKeeper().PlanInferenceAdmission(ctx, topic, nonce, inferer, maxTopInferersToReward)
 			if c.wantErr {
 				s.Require().Error(err)
 				return
@@ -596,7 +626,7 @@ func (s *KeeperTestSuite) TestPlanAppendInference() {
 }
 
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestCommitPlannedInference() {
+func (s *KeeperTestSuite) TestCommitInference() {
 	makeInference := func(topicId uint64, nonce types.BlockHeight, inferer string, value string) *types.Inference {
 		return &types.Inference{
 			TopicId:     topicId,
@@ -930,7 +960,11 @@ func (s *KeeperTestSuite) TestCommitPlannedInference() {
 			inferer := s.AddrsStr(0)
 
 			plan, inference := c.setup(ctx, topicId, nonce, inferer)
-			err = s.WorkerKeeper().CommitPlannedInference(ctx, topic, nonce, inference, plan)
+			if plan.Admitted() {
+				err = s.WorkerKeeper().CommitAdmittedInference(ctx, topic, nonce, inference, plan)
+			} else {
+				err = s.WorkerKeeper().CommitNonAdmittedInference(ctx, topic, nonce, plan)
+			}
 			if c.wantErr {
 				s.Require().Error(err)
 				if c.errIsReq {
@@ -950,8 +984,61 @@ func (s *KeeperTestSuite) TestCommitPlannedInference() {
 	}
 }
 
+// TestCommitInferenceGuardsRejectWrongMethod covers the API-split guards directly:
+// CommitAdmittedInference must reject a not-admitted plan and CommitNonAdmittedInference
+// must reject an admitted plan, in both cases with a logic error and before any
+// score or active-set side effect is written. These mismatch branches are
+// unreachable from TestCommitInference, whose runner routes on plan.Admitted(), so
+// they require a dedicated test.
+//
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestAppendInferenceWrapper() {
+func (s *KeeperTestSuite) TestCommitInferenceGuardsRejectWrongMethod() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	nonce := types.BlockHeight(10)
+	inferer := s.AddrsStr(0)
+	score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+
+	// An admitted plan sent to the not-admitted commit path must be rejected.
+	admittedPlan := keeper.InferenceAdmissionPlan{
+		Kind:             keeper.InferenceAdmissionOpenSlot,
+		Inferer:          inferer,
+		PreviousEmaScore: score,
+	}
+	err = s.WorkerKeeper().CommitNonAdmittedInference(ctx, topic, nonce, admittedPlan)
+	s.Require().Error(err)
+	s.Require().True(errorsmod.IsOf(err, sdkerrors.ErrLogic))
+
+	// A not-admitted plan sent to the admitted commit path must be rejected the same
+	// way, even when a well-formed inference is supplied.
+	notAdmittedPlan := keeper.InferenceAdmissionPlan{
+		Kind:             keeper.InferenceAdmissionNotAdmitted,
+		Inferer:          inferer,
+		PreviousEmaScore: score,
+	}
+	inference := &types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     inferer,
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+	}
+	err = s.WorkerKeeper().CommitAdmittedInference(ctx, topic, nonce, inference, notAdmittedPlan)
+	s.Require().Error(err)
+	s.Require().True(errorsmod.IsOf(err, sdkerrors.ErrLogic))
+
+	// The guards fire before any side effect: the inferer was never activated and no
+	// inference was stored.
+	isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+	_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+	s.Require().Error(err)
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestAppendInferenceFlow() {
 	type tc struct {
 		name      string
 		setup     func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) uint64
@@ -1007,7 +1094,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWrapper() {
 				}
 			}
 
-			admitted, err := s.WorkerKeeper().AppendInference(ctx, topic, nonce, inference, maxTopInferersToReward)
+			admitted, err := s.appendInference(ctx, topic, nonce, inference, maxTopInferersToReward)
 			if c.wantErr {
 				s.Require().Error(err)
 				return
@@ -1084,7 +1171,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 
 	allInferences := types.Inferences{Inferences: inferences}
 	for _, inference := range allInferences.Inferences {
-		admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 		s.Require().True(admitted)
 	}
@@ -1126,7 +1213,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	allInferences = types.Inferences{Inferences: inferences}
 	nonce.BlockHeight++
 	for _, inference := range allInferences.Inferences {
-		admitted, err := k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
 		s.Require().True(admitted)
 	}
@@ -1493,66 +1580,6 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 
 	_, err = k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
 	s.Require().Error(err)
-}
-
-func (s *KeeperTestSuite) TestNewInferenceForecastBundleFromInput() {
-	validInference := &types.InputInference{
-		TopicId:     1,
-		BlockHeight: 100,
-		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-		Value:       alloraMath.MustNewBoundedExp40DecFromString("1.23"),
-		Values:      []*types.InputLabeledValue{{Label: "", Value: alloraMath.MustNewBoundedExp40DecFromString("1.23")}},
-		ExtraData:   []byte("extra"),
-		Proof:       "proof",
-	}
-
-	validForecast := &types.InputForecast{
-		TopicId:     1,
-		BlockHeight: 100,
-		Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
-		ForecastElements: []*types.InputForecastElement{
-			{
-				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:   alloraMath.MustNewBoundedExp40DecFromString("1.23"),
-			},
-		},
-		ExtraData: []byte("extra"),
-	}
-
-	tests := []struct {
-		name    string
-		input   *types.InputInferenceForecastBundle
-		wantErr bool
-	}{
-		{
-			name: "valid input",
-			input: &types.InputInferenceForecastBundle{
-				Inference: validInference,
-				Forecast:  validForecast,
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		s.Run(tt.name, func() {
-			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), validInference.TopicId)
-			s.Require().NoError(err)
-
-			got, err := s.WorkerKeeper().NewInferenceForecastBundleFromInput(s.Ctx(), topic, validInference.BlockHeight, tt.input)
-			if tt.wantErr {
-				s.Require().Error(err)
-				return
-			}
-			s.Require().NoError(err)
-			if tt.input == nil {
-				s.Require().Nil(got)
-				return
-			}
-			s.Require().NotNil(got.Inference)
-			s.Require().NotNil(got.Forecast)
-		})
-	}
 }
 
 // TestNormalizeInputInference covers the contract for

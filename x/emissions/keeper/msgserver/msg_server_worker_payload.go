@@ -91,6 +91,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 
 	inputBundle := msg.WorkerDataBundle
 	inferenceForecastsBundle := inputBundle.GetInferenceForecastsBundle()
+	// Convert (and validate) the forecast up front so a malformed forecast fails
+	// the tx before any inference state is written; it is processed after inferences.
 	var forecast *types.Forecast
 	if rawForecast := inferenceForecastsBundle.GetForecast(); rawForecast != nil {
 		forecast, err = ms.convertWorkerForecastPayload(inputBundle, rawForecast)
@@ -127,7 +129,7 @@ func (ms msgServer) processWorkerInferencePayload(
 		return err
 	}
 
-	plan, err := ms.wk.PlanAppendInference(
+	plan, err := ms.wk.PlanInferenceAdmission(
 		sdkCtx,
 		topic,
 		nonceBlockHeight,
@@ -141,7 +143,7 @@ func (ms msgServer) processWorkerInferencePayload(
 	if !plan.Admitted() {
 		// Preserve the existing score/liveness side effects for non-admitted
 		// inferers, but do not normalize: normalization registers ELR labels.
-		if err := ms.wk.CommitPlannedInference(sdkCtx, topic, nonceBlockHeight, nil, plan); err != nil {
+		if err := ms.wk.CommitNonAdmittedInference(sdkCtx, topic, nonceBlockHeight, plan); err != nil {
 			return errorsmod.Wrap(err, "Error committing non-admitted inference")
 		}
 		return nil
@@ -159,9 +161,10 @@ func (ms msgServer) processWorkerInferencePayload(
 	if err := inference.Validate(); err != nil {
 		return errorsmod.Wrap(err, "inference is invalid")
 	}
-	if err := ms.wk.CommitPlannedInference(sdkCtx, topic, nonceBlockHeight, inference, plan); err != nil {
-		return errorsmod.Wrap(err, "Error committing planned inference")
+	if err := ms.wk.CommitAdmittedInference(sdkCtx, topic, nonceBlockHeight, inference, plan); err != nil {
+		return errorsmod.Wrap(err, "Error committing admitted inference")
 	}
+	// Emitted only on admission: a not-admitted inferer returns above without an event.
 	types.EmitNewInsertInfererPayloadEvent(ctx, msg.WorkerDataBundle)
 	return nil
 }

@@ -31,8 +31,9 @@ const (
 )
 
 // InferenceAdmissionPlan carries the exact admission decision and score snapshot
-// that CommitPlannedInference will apply. Planning must not mutate active sets,
-// inference stores, score stores, or the temporary epoch label registry.
+// that CommitAdmittedInference / CommitNonAdmittedInference apply. Planning must
+// not mutate active sets, inference stores, score stores, or the temporary epoch
+// label registry.
 type InferenceAdmissionPlan struct {
 	Kind             InferenceAdmissionKind
 	Inferer          ActorId
@@ -450,29 +451,10 @@ func (k *WorkerKeeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId,
 	return &forecasts, nil
 }
 
-// AppendInference admits an inference into the active inferer set and stores it
-// in the live WSW inferences store only when admitted.
-func (k *WorkerKeeper) AppendInference(
-	ctx sdk.Context,
-	topic types.Topic,
-	nonceBlockHeight BlockHeight,
-	inference *types.Inference,
-	maxTopInferersToReward uint64,
-) (bool, error) {
-	if inference == nil {
-		return false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
-	}
-	plan, err := k.PlanAppendInference(ctx, topic, nonceBlockHeight, inference.Inferer, maxTopInferersToReward)
-	if err != nil {
-		return false, err
-	}
-	if err := k.CommitPlannedInference(ctx, topic, nonceBlockHeight, inference, plan); err != nil {
-		return false, err
-	}
-	return plan.Admitted(), nil
-}
-
-func (k *WorkerKeeper) PlanAppendInference(
+// PlanInferenceAdmission computes the admission decision and score snapshot for
+// an inferer. It is read-only: no active-set, inference, score, or epoch label
+// registry writes happen here. Apply the returned plan with the commit methods.
+func (k *WorkerKeeper) PlanInferenceAdmission(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight BlockHeight,
@@ -552,13 +534,20 @@ func (k *WorkerKeeper) PlanAppendInference(
 	return plan, nil
 }
 
-func (k *WorkerKeeper) CommitPlannedInference(
+// CommitAdmittedInference applies an admitted plan: it writes the shared score
+// snapshot and stores the (already normalized and validated) inference, evicting
+// the lowest active inferer when the plan calls for it. inference MUST be non-nil
+// and plan.Admitted() MUST be true.
+func (k *WorkerKeeper) CommitAdmittedInference(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight BlockHeight,
 	inference *types.Inference,
 	plan InferenceAdmissionPlan,
 ) error {
+	if !plan.Admitted() {
+		return errorsmod.Wrapf(sdkerrors.ErrLogic, "plan is not admitted (kind %d); use CommitNonAdmittedInference", plan.Kind)
+	}
 	if err := validateInferenceAdmissionPlan(inference, plan); err != nil {
 		return err
 	}
@@ -571,10 +560,29 @@ func (k *WorkerKeeper) CommitPlannedInference(
 		return k.commitOpenSlotInferencePlan(ctx, topic, inference, plan)
 	case InferenceAdmissionEvictLowest:
 		return k.commitEvictionInferencePlan(ctx, topic, nonceBlockHeight, inference, plan)
-	case InferenceAdmissionNotAdmitted:
-		return k.commitNotAdmittedInferencePlan(ctx, topic, nonceBlockHeight, plan)
 	}
-	return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unknown inference admission kind: %d", plan.Kind)
+	return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unexpected admitted kind: %d", plan.Kind)
+}
+
+// CommitNonAdmittedInference applies a not-admitted plan: it writes only the
+// passive score/liveness side effects and stores no inference, so it takes no
+// inference argument. plan.Admitted() MUST be false.
+func (k *WorkerKeeper) CommitNonAdmittedInference(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	plan InferenceAdmissionPlan,
+) error {
+	if plan.Admitted() {
+		return errorsmod.Wrapf(sdkerrors.ErrLogic, "plan is admitted (kind %d); use CommitAdmittedInference", plan.Kind)
+	}
+	if err := validateInferenceAdmissionPlan(nil, plan); err != nil {
+		return err
+	}
+	if err := k.commitPlannedInfererScore(ctx, topic, plan); err != nil {
+		return err
+	}
+	return k.commitNotAdmittedInferencePlan(ctx, topic, nonceBlockHeight, plan)
 }
 
 func validateInferenceAdmissionPlan(inference *types.Inference, plan InferenceAdmissionPlan) error {
@@ -616,8 +624,8 @@ func (k *WorkerKeeper) commitPlannedInfererScore(
 	topic types.Topic,
 	plan InferenceAdmissionPlan,
 ) error {
-	// Preserve the existing EMA/liveness side effects for every admission
-	// outcome before applying outcome-specific active-set changes.
+	// Shared EMA snapshot for every admission outcome. Not-admitted (non-first)
+	// then overwrites this same key with the passive-set quantile EMA.
 	if err := k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, plan.Inferer, plan.PreviousEmaScore); err != nil {
 		if plan.FirstSubmission {
 			return errorsmod.Wrap(err, "error setting initial inferer score ema")
@@ -711,7 +719,8 @@ func (k *WorkerKeeper) commitNotAdmittedInferencePlan(
 	nonceBlockHeight BlockHeight,
 	plan InferenceAdmissionPlan,
 ) error {
-	// Update EMA score for the current inferer, who is the lowest score inferer
+	// Passive-set quantile EMA for the current (lowest-scoring) inferer;
+	// intentionally re-writes the snapshot from commitPlannedInfererScore.
 	if !plan.FirstSubmission { // Only update if not a new inferer
 		err := k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, plan.PreviousEmaScore)
 		if err != nil {
@@ -1043,74 +1052,6 @@ func (k *WorkerKeeper) GetWorkerLatestForecastByTopicId(
 	return k.forecasts.Get(ctx, key)
 }
 
-// NewWorkerDataBundleFromInput converts InputWorkerDataBundle to WorkerDataBundle
-func (k *WorkerKeeper) NewWorkerDataBundleFromInput(
-	ctx context.Context,
-	topic types.Topic,
-	nonce BlockHeight,
-	bwdb *types.InputWorkerDataBundle,
-) (*types.WorkerDataBundle, error) {
-	if bwdb == nil {
-		return nil, types.ErrInvalidValue
-	}
-	if bwdb.TopicId != topic.Id {
-		return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "topic mismatch")
-	}
-
-	bundle, err := k.NewInferenceForecastBundleFromInput(
-		ctx,
-		topic,
-		nonce,
-		bwdb.InferenceForecastsBundle,
-	)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to convert inference forecasts bundle")
-	}
-	workerDataBundle := &types.WorkerDataBundle{
-		Worker:                   bwdb.Worker,
-		Nonce:                    bwdb.Nonce,
-		TopicId:                  bwdb.TopicId,
-		InferenceForecastsBundle: bundle,
-	}
-	err = workerDataBundle.Validate()
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to validate worker data bundle")
-	}
-	return workerDataBundle, nil
-}
-
-// NewInferenceForecastBundleFromInput converts InputInferenceForecastBundle to InferenceForecastBundle
-func (k *WorkerKeeper) NewInferenceForecastBundleFromInput(
-	ctx context.Context,
-	topic types.Topic,
-	nonce BlockHeight,
-	bifb *types.InputInferenceForecastBundle,
-) (*types.InferenceForecastBundle, error) {
-	if bifb == nil {
-		return nil, types.ErrInvalidValue
-	}
-	var err error
-	var inference *types.Inference
-	if bifb.Inference != nil {
-		inference, err = k.NormalizeInputInference(ctx, topic, nonce, bifb.Inference)
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "failed to convert inference")
-		}
-	}
-	var forecast *types.Forecast
-	if bifb.Forecast != nil {
-		forecast, err = types.NewForecastFromInput(bifb.Forecast)
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "failed to convert forecast")
-		}
-	}
-	inferenceForecastBundle := &types.InferenceForecastBundle{
-		Inference: inference,
-		Forecast:  forecast,
-	}
-	return inferenceForecastBundle, nil
-}
-
 // NormalizeInputInference converts a worker-submitted InputInference into a
 // dense temporary *types.Inference aligned to the WSW temporary
 // EpochLabelRegistry.
@@ -1211,6 +1152,12 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		submitted = append(submitted, lv)
 	}
 	sumSubmitted := alloraMath.ZeroDec()
+	// A "scattered" value is one submitted value paired with the registry id it
+	// will occupy. Only non-default labels are registered: a value equal to
+	// topic.LabelDefaultValue is dropped here because in the dense vector it is
+	// indistinguishable from a label that was never submitted. labelsToRegister[i]
+	// and valuesToScatter[i] are appended in lockstep so they stay positionally
+	// aligned with the ids RegisterEpochLabels returns.
 	type scatteredValue struct {
 		id    LabelId
 		value alloraMath.Dec
@@ -1277,15 +1224,21 @@ func (k *WorkerKeeper) NormalizeInputInference(
 		}
 	}
 
+	// The dense vector is sized to the WHOLE epoch registry (shared by every
+	// inferer at this topic+nonce and only growing), not to this submission's
+	// label count, so any slot we don't scatter into stays LabelDefaultValue.
 	values := make([]alloraMath.Dec, len(registry.Labels))
 	for i := range values {
 		values[i] = topic.LabelDefaultValue
 	}
+	// Scatter each value into its registry slot. Ids are 1-based and dense by
+	// construction, so this bounds check is an internal invariant (ErrLogic),
+	// not a user error.
 	for _, item := range scattered {
 		if item.id == 0 || int(item.id) > len(values) {
 			return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "registered label id %d out of range", item.id)
 		}
-		values[int(item.id)-1] = item.value
+		values[labelSlot(item.id)] = item.value
 	}
 
 	return &types.Inference{

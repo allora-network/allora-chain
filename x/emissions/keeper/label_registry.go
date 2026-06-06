@@ -12,6 +12,13 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// labelSlot maps a 1-based epoch-label id (assigned sequentially by
+// RegisterEpochLabels) to its 0-based index in a dense inference Values vector.
+// The id space and this mapping are owned by the epoch label registry, so this
+// primitive lives here and is shared by NormalizeInputInference and close-time
+// compaction.
+func labelSlot(id LabelId) int { return int(id) - 1 }
+
 // MaterializeInputInferenceFromLabelRegistry rebuilds the input-shaped view
 // of a live WSW dense inference using the open-window temporary registry passed
 // by the caller. "Temporary" is a lifecycle contract: before CloseWorkerNonce,
@@ -230,7 +237,7 @@ func CompactRegistryAndRemapInferences(
 		//nolint:gosec // finalLabels length is bounded by tempRegistry.Labels length.
 		finalID := LabelId(len(finalLabels) + 1)
 		finalLabels = append(finalLabels, &types.TopicLabel{Id: finalID, Name: lbl.Name})
-		tempToFinal[tempIdx] = int(finalID) - 1
+		tempToFinal[tempIdx] = labelSlot(finalID)
 	}
 	if len(finalLabels) == 0 {
 		return types.EpochLabelRegistry{}, nil, false, types.ErrEpochLabelRegistryEmpty
