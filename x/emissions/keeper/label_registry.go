@@ -19,16 +19,16 @@ import (
 // compaction.
 func labelSlot(id LabelId) int { return int(id) - 1 }
 
-// MaterializeInputInferenceFromLabelRegistry rebuilds the input-shaped view
+// DenormalizeInferenceToInput rebuilds the input-shaped view
 // of a live WSW dense inference using the open-window temporary registry passed
 // by the caller. "Temporary" is a lifecycle contract: before CloseWorkerNonce,
 // MULTI inference values are aligned to first-seen labels in this registry; the
-// final compact registry is materialized later from active non-default labels.
+// final compact registry is finalized later from active non-default labels.
 //
 // For MULTI topics, only the first len(inference.Values) temporary labels are
 // projected back into InputLabeledValue entries. The temporary registry may have
 // grown after the worker submitted, so later labels are intentionally ignored.
-func MaterializeInputInferenceFromLabelRegistry(
+func DenormalizeInferenceToInput(
 	topic types.Topic,
 	epochLabelRegistry types.EpochLabelRegistry,
 	inference types.Inference,
@@ -49,15 +49,15 @@ func MaterializeInputInferenceFromLabelRegistry(
 	nonce := inference.BlockHeight
 	switch topic.OutputArity {
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
-		return materializeSingleInputInference(inference)
+		return denormalizeSingleInferenceToInput(inference)
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
-		return materializeMultiInputInference(topic, nonce, epochLabelRegistry, inference, maxLabelBytes)
+		return denormalizeMultiInferenceToInput(topic, nonce, epochLabelRegistry, inference, maxLabelBytes)
 	default:
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
 }
 
-func materializeSingleInputInference(inference types.Inference) (*types.InputInference, error) {
+func denormalizeSingleInferenceToInput(inference types.Inference) (*types.InputInference, error) {
 	if len(inference.Values) > 1 {
 		return nil, errorsmod.Wrapf(
 			sdkerrors.ErrLogic,
@@ -86,7 +86,7 @@ func materializeSingleInputInference(inference types.Inference) (*types.InputInf
 	}, nil
 }
 
-func materializeMultiInputInference(
+func denormalizeMultiInferenceToInput(
 	topic types.Topic,
 	nonce types.BlockHeight,
 	labelRegistry types.EpochLabelRegistry,
@@ -250,7 +250,7 @@ func CompactRegistryAndRemapInferences(
 	}
 	reusedTemporary := CanReuseTemporaryRegistryAsFinal(tempRegistry, sortedActive, topic.LabelDefaultValue)
 
-	materialized := make([]*types.Inference, 0, len(sortedActive))
+	remapped := make([]*types.Inference, 0, len(sortedActive))
 	for _, inference := range sortedActive {
 		values := make([]alloraMath.Dec, len(finalLabels))
 		for i := range values {
@@ -264,10 +264,10 @@ func CompactRegistryAndRemapInferences(
 				values[finalIdx] = inference.Values[tempIdx]
 			}
 		}
-		materialized = append(materialized, copyInferenceWithValues(inference, values))
+		remapped = append(remapped, copyInferenceWithValues(inference, values))
 	}
 
-	return finalRegistry, &types.Inferences{Inferences: materialized}, reusedTemporary, nil
+	return finalRegistry, &types.Inferences{Inferences: remapped}, reusedTemporary, nil
 }
 
 // CanReuseTemporaryRegistryAsFinal returns true when every temporary label is
@@ -407,9 +407,9 @@ func copyInferenceWithValues(inference *types.Inference, values []alloraMath.Dec
 	}
 }
 
-// MaterializeInferencesAndRegistryAtClose loads active temporary inferences and
+// FinalizeInferencesAndRegistryAtClose loads active temporary inferences and
 // returns the final compact registry with committed inferences aligned to it.
-func (k *WorkerKeeper) MaterializeInferencesAndRegistryAtClose(
+func (k *WorkerKeeper) FinalizeInferencesAndRegistryAtClose(
 	ctx context.Context,
 	topic types.Topic,
 	nonce types.BlockHeight,
@@ -425,7 +425,7 @@ func (k *WorkerKeeper) MaterializeInferencesAndRegistryAtClose(
 	}
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
-		return nil, types.EpochLabelRegistry{}, false, errorsmod.Wrap(err, "error getting params for epoch label registry materialization")
+		return nil, types.EpochLabelRegistry{}, false, errorsmod.Wrap(err, "error getting params for epoch label registry finalization")
 	}
 	finalRegistry, inferences, reusedTemporary, err := CompactRegistryAndRemapInferences(
 		topic,

@@ -1789,7 +1789,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	}
 }
 
-// TestCompactRegistryAndRemapInferences exercises the close-time materializer
+// TestCompactRegistryAndRemapInferences exercises the close-time finalizer
 // that filters the temporary ELR to active non-default labels and remaps dense
 // vectors into compact final ids.
 //
@@ -1894,7 +1894,7 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 	}
 }
 
-func (s *KeeperTestSuite) TestMaterializeInputInferenceFromLabelRegistry() {
+func (s *KeeperTestSuite) TestDenormalizeInferenceToInput() {
 	nonce := types.BlockHeight(7)
 	inferer := s.AddrsStr(0)
 	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
@@ -2037,7 +2037,7 @@ func (s *KeeperTestSuite) TestMaterializeInputInferenceFromLabelRegistry() {
 			inference := baseInference
 			inference.Values = c.values
 
-			got, err := keeper.MaterializeInputInferenceFromLabelRegistry(
+			got, err := keeper.DenormalizeInferenceToInput(
 				c.topic,
 				c.registry,
 				inference,
@@ -2128,12 +2128,12 @@ func (s *KeeperTestSuite) TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap() 
 	s.Require().Len(stored.Labels, 2)
 }
 
-// TestMaterializersUsePassedLabelByteCap verifies the read/close materializers
+// TestDenormalizeAndFinalizeUsePassedLabelByteCap verifies the read (denormalize) and close (finalize) paths
 // honor the passed canonical-label byte cap. The registry size cap is NOT
 // asserted here: after the Finding 1 fix it is enforced only at the growth
 // point (RegisterEpochLabels), not in these read/close paths. See
 // .reports/finding-1-elr-cap-uncontained-genesis-query.md.
-func (s *KeeperTestSuite) TestMaterializersUsePassedLabelByteCap() {
+func (s *KeeperTestSuite) TestDenormalizeAndFinalizeUsePassedLabelByteCap() {
 	nonce := types.BlockHeight(7)
 	topic, _ := s.setupMultiTopic()
 	registry := types.EpochLabelRegistry{
@@ -2152,7 +2152,7 @@ func (s *KeeperTestSuite) TestMaterializersUsePassedLabelByteCap() {
 		Proof:       "",
 	}
 
-	_, err := keeper.MaterializeInputInferenceFromLabelRegistry(
+	_, err := keeper.DenormalizeInferenceToInput(
 		topic,
 		registry,
 		inference,
@@ -2411,7 +2411,7 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_UsesCanonicalByteLimit() {
 	s.Require().Equal([]keeper.LabelId{1}, ids)
 }
 
-func (s *KeeperTestSuite) TestMaterializeInferencesAndRegistryAtClose_DoesNotPersistFinalRegistry() {
+func (s *KeeperTestSuite) TestFinalizeInferencesAndRegistryAtClose_DoesNotPersistFinalRegistry() {
 	ctx := s.Ctx()
 	topic, topicId := s.setupMultiTopic()
 	nonce := types.BlockHeight(7)
@@ -2444,7 +2444,7 @@ func (s *KeeperTestSuite) TestMaterializeInferencesAndRegistryAtClose_DoesNotPer
 		Proof:       "",
 	}))
 
-	got, reg, reused, err := s.WorkerKeeper().MaterializeInferencesAndRegistryAtClose(
+	got, reg, reused, err := s.WorkerKeeper().FinalizeInferencesAndRegistryAtClose(
 		ctx,
 		topic,
 		nonce,

@@ -702,7 +702,7 @@ message EventReputerSubmissionWindowClosed {
 }
 
 // Emitted once per epoch at CloseWorkerNonce, after the EpochLabelRegistry is
-// materialized from the active set's surviving submissions and written to
+// finalized from the active set's surviving submissions and written to
 // state. `registry_size` is the number of unique canonical labels in the
 // committed registry (always 1 for SINGLE-output topics).
 message EventEpochLabelRegistryFrozen {

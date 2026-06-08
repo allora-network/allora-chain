@@ -693,7 +693,7 @@ func (k *WorkerKeeper) commitEvictionInferencePlan(
 		return errorsmod.Wrap(err, "error removing active inferer")
 	}
 	// Clear the evicted worker's temporary inference so it can't leak into
-	// close-time materialization.
+	// close-time finalization.
 	if err := k.RemoveInference(ctx, topic.Id, plan.LowestEmaScore.Address); err != nil {
 		return errorsmod.Wrap(err, "error removing evicted inferer inference")
 	}
@@ -769,7 +769,7 @@ func (k *WorkerKeeper) GetWorkerLatestInferenceByTopicId(
 	return k.inferences.Get(ctx, key)
 }
 
-// GetWorkerLatestInputInferenceByTopicId materializes the live WSW dense
+// GetWorkerLatestInputInferenceByTopicId denormalizes the live WSW dense
 // inference into its canonical input-shaped view using the temporary ELR.
 func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
 	ctx context.Context,
@@ -786,9 +786,9 @@ func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
 	}
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error getting params for input inference materialization")
+		return nil, errorsmod.Wrap(err, "error getting params for input inference denormalization")
 	}
-	return MaterializeInputInferenceFromLabelRegistry(
+	return DenormalizeInferenceToInput(
 		topic,
 		registry,
 		inference,
@@ -798,7 +798,7 @@ func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
 
 // LoadActiveInfererInferencesForClose reads the temporary dense inferences for
 // the final active inferer set. Inferences are returned sorted by inferer so
-// close-time registry construction and materialization are deterministic.
+// close-time registry construction and finalization are deterministic.
 func (k *WorkerKeeper) LoadActiveInfererInferencesForClose(
 	ctx context.Context,
 	topic types.Topic,

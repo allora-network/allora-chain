@@ -517,7 +517,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetWorkerLatestInputInferenceByTopicId",
 					Use:       "latest-input-inference [topic_id] [worker_address]",
-					Short:     "Get the latest active WSW inference materialized as an input inference",
+					Short:     "Get the latest active WSW inference as an input inference",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "worker_address"},

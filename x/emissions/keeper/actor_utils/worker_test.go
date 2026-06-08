@@ -617,7 +617,7 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFr
 // TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty pins the negative
 // branch: when the active inferer set is empty at close time, CloseWorkerNonce
 // short-circuits with ErrNoQualifiedInferers before reaching the registry
-// materializer, and therefore EventEpochLabelRegistryFrozen must NOT be
+// finalizer, and therefore EventEpochLabelRegistryFrozen must NOT be
 // emitted. A regression that moved the emission in front of the active-set
 // gate would be caught here.
 func (s *WorkerTestSuite) TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty() {

@@ -247,7 +247,7 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 // aligned to the temporary first-seen ELR; after this call every downstream
 // consumer sees dense Values aligned to the final compact ELR.
 //
-// Returns (inferer address set, materialized inferences) and also emits
+// Returns (inferer address set, finalized inferences) and also emits
 // EventEpochLabelRegistryFrozen so offchain indexers can track the committed
 // registry size for this epoch.
 func closeActiveInferencesSet(
@@ -259,11 +259,11 @@ func closeActiveInferencesSet(
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	inferences, registry, _, err := k.GetWorkerKeeper().MaterializeInferencesAndRegistryAtClose(
+	inferences, registry, _, err := k.GetWorkerKeeper().FinalizeInferencesAndRegistryAtClose(
 		ctx, topic, nonce.BlockHeight, activeInfererAddresses,
 	)
 	if err != nil {
-		return nil, nil, errorsmod.Wrapf(err, "failed to materialize active inferences for topic %d nonce %d", topic.Id, nonce.BlockHeight)
+		return nil, nil, errorsmod.Wrapf(err, "failed to finalize active inferences for topic %d nonce %d", topic.Id, nonce.BlockHeight)
 	}
 
 	err = k.GetTopicKeeper().SetEpochLabelRegistry(ctx, registry)

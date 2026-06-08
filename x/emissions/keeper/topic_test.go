@@ -670,7 +670,7 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 
 // TestGetEpochLabelRegistryEmpty pins the invariant that GetEpochLabelRegistry
 // returns an empty-but-well-formed registry (no error) when nothing has been
-// materialized for (topicId, nonce).
+// written for (topicId, nonce).
 func (s *KeeperTestSuite) TestGetEpochLabelRegistryEmpty() {
 	ctx := s.Ctx()
 	k := s.TopicKeeper()

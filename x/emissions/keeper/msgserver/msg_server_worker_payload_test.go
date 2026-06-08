@@ -1098,7 +1098,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
 	s.Require().NoError(err)
 
-	// Materialize the final registry as CloseWorkerNonce would, and
+	// Finalize the final registry as CloseWorkerNonce would, and
 	// assert that the projected Values slices are (a) aligned to the
 	// frozen registry and (b) carry zeros for labels the worker did not
 	// submit.
@@ -1112,7 +1112,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 	s.Require().Equal("c", tempReg.Labels[2].Name)
 	s.Require().Equal("d", tempReg.Labels[3].Name)
 
-	materialized, reg, reused, err := s.WorkerKeeper().MaterializeInferencesAndRegistryAtClose(
+	finalized, reg, reused, err := s.WorkerKeeper().FinalizeInferencesAndRegistryAtClose(
 		s.Ctx(), topic, nonce,
 		[]string{msg1.WorkerDataBundle.Worker, msg2.WorkerDataBundle.Worker},
 	)
@@ -1120,7 +1120,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 	s.Require().True(reused)
 	s.Require().Equal(tempReg, reg)
 	byWorker := map[string]*types.Inference{}
-	for _, inf := range materialized.Inferences {
+	for _, inf := range finalized.Inferences {
 		byWorker[inf.Inferer] = inf
 	}
 	got1 := byWorker[msg1.WorkerDataBundle.Worker]
