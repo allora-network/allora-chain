@@ -1,6 +1,7 @@
 package v15_test
 
 import (
+	"strings"
 	"testing"
 
 	"cosmossdk.io/collections"
@@ -311,6 +312,70 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	gotRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), legacyInference.TopicId, legacyInference.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(expLabelRegistry, gotRegistry)
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateNetworkInferences_AbortsOnNilReputerNonce() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	key := []byte("topic-1/block-123")
+	oldNetworkStore := prefix.NewStore(store, emissionstypes.NetworkInferencesKey)
+
+	invalidBundle := s.makeLegacyValueBundle(1, 123)
+	invalidBundle.ReputerRequestNonce = nil
+	oldNetworkStore.Set(key, cdc.MustMarshal(&invalidBundle))
+
+	err := v15.MigrateNetworkInferences(s.Ctx(), store, cdc)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "value bundle reputer request nonce block height must be greater than 0")
+	s.Require().True(oldNetworkStore.Has(key), "source bundle must remain when migration aborts")
+	s.Require().False(prefix.NewStore(store, emissionstypes.NetworkInferenceBundleKey).Has(key))
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateNetworkInferences_AbortsOnEmptyInfererValues() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	key := []byte("topic-1/block-456")
+	oldNetworkStore := prefix.NewStore(store, emissionstypes.NetworkInferencesKey)
+
+	invalidBundle := s.makeLegacyValueBundle(1, 456)
+	invalidBundle.InfererValues = nil
+	oldNetworkStore.Set(key, cdc.MustMarshal(&invalidBundle))
+
+	err := v15.MigrateNetworkInferences(s.Ctx(), store, cdc)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "value bundle inferer values cannot be nil")
+	s.Require().True(oldNetworkStore.Has(key), "source bundle must remain when migration aborts")
+	s.Require().False(prefix.NewStore(store, emissionstypes.NetworkInferenceBundleKey).Has(key))
+}
+
+func (s *EmissionsV15MigrationTestSuite) TestMigrateStore_AbortsWhenLegacyBundleWouldBeInvalid() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	key := []byte("topic-1/block-789")
+	oldNetworkStore := prefix.NewStore(store, emissionstypes.NetworkInferencesKey)
+
+	validBundle := s.makeLegacyValueBundle(1, 789)
+	oldNetworkStore.Set(key, cdc.MustMarshal(&validBundle))
+
+	invalidBundle := s.makeLegacyValueBundle(1, 790)
+	invalidBundle.ReputerRequestNonce = nil
+	oldNetworkStore.Set([]byte("topic-1/block-790"), cdc.MustMarshal(&invalidBundle))
+
+	err := v15.MigrateStore(s.Ctx(), *s.EmissionsKeeper())
+	s.Require().Error(err)
+	s.Require().True(
+		strings.Contains(err.Error(), "value bundle reputer request nonce block height must be greater than 0") ||
+			strings.Contains(err.Error(), "failed to validate network inferences"),
+		"expected bundle validation failure, got: %v", err,
+	)
+	s.Require().True(oldNetworkStore.Has(key), "valid source bundle must remain when migration aborts")
+	s.Require().False(prefix.NewStore(store, emissionstypes.NetworkInferenceBundleKey).Has(key))
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromLegacyV013StateViaV014AndV015() {
