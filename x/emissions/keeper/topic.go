@@ -415,21 +415,23 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 			return types.Topic{}, err
 		}
 		if withinWindow {
-			var which string
-			switch {
-			case meritChanged:
-				which = "merit_sortition_alpha"
-			case maxLabelsChanged:
-				which = "max_labels_per_submission"
-			case whitelistChanged:
-				which = "label_whitelist"
-			case labelDefaultChanged:
-				which = "label_default_value"
+			var changedFields []string
+			if meritChanged {
+				changedFields = append(changedFields, "merit_sortition_alpha")
+			}
+			if maxLabelsChanged {
+				changedFields = append(changedFields, "max_labels_per_submission")
+			}
+			if whitelistChanged {
+				changedFields = append(changedFields, "label_whitelist")
+			}
+			if labelDefaultChanged {
+				changedFields = append(changedFields, "label_default_value")
 			}
 			return types.Topic{}, errorsmod.Wrapf(
 				types.ErrWorkerNonceWindowNotAvailable,
 				"cannot update %s while a worker submission window is open",
-				which,
+				strings.Join(changedFields, ", "),
 			)
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -682,4 +683,34 @@ func (s *KeeperTestSuite) TestGetEpochLabelRegistryEmpty() {
 	s.Require().Equal(topicId, reg.TopicId)
 	s.Require().Equal(uint64(nonce), reg.EpochId) //nolint:gosec // nonce is a non-negative block height; cast is safe
 	s.Require().Empty(reg.Labels)
+}
+
+// TestGetEpochLabelLookupHelpersEmpty covers read-path edge cases for
+// GetEpochLabelId and GetEpochLabelName on a never-written registry.
+// Registration behavior is covered by TestRegisterEpochLabels_* in worker_test.go.
+func (s *KeeperTestSuite) TestGetEpochLabelLookupHelpersEmpty() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+
+	for _, name := range []string{"", "   "} {
+		id, ok, err := k.GetEpochLabelId(ctx, topicId, nonce, name)
+		s.Require().NoError(err)
+		s.Require().False(ok)
+		s.Require().Equal(keeper.LabelId(0), id)
+	}
+
+	name, ok, err := k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(0))
+	s.Require().NoError(err)
+	s.Require().False(ok)
+	s.Require().Empty(name)
+
+	_, ok, err = k.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
+	s.Require().NoError(err)
+	s.Require().False(ok)
+
+	_, ok, err = k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
+	s.Require().NoError(err)
+	s.Require().False(ok)
 }
