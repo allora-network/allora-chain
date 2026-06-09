@@ -273,7 +273,7 @@ func TestEnsureCanonicalLabelName_Accepts(t *testing.T) {
 
 // TestEnsureCanonicalLabelName_RejectsNonCanonical covers valid UTF-8 inputs
 // that are not yet in canonical form: the helper must reject them with
-// ErrInvalidRequest and a "must be canonical" message rather than rewriting.
+// ErrLogic and a "must be canonical" message rather than rewriting.
 func TestEnsureCanonicalLabelName_RejectsNonCanonical(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
@@ -292,10 +292,10 @@ func TestEnsureCanonicalLabelName_RejectsNonCanonical(t *testing.T) {
 			if err == nil {
 				t.Fatalf("EnsureCanonicalLabelName(%q, cs=%v) = nil, want error", tc.in, tc.labelCaseSensitive)
 			}
-			if !errors.Is(err, sdkerrors.ErrInvalidRequest) {
-				t.Fatalf("expected ErrInvalidRequest, got %v", err)
+			if !errors.Is(err, sdkerrors.ErrLogic) {
+				t.Fatalf("expected ErrLogic, got %v", err)
 			}
-			if !strings.Contains(err.Error(), "label name must be canonical") {
+			if !strings.Contains(err.Error(), "label name must already be canonical") {
 				t.Fatalf("expected canonical-form error, got %v", err)
 			}
 		})

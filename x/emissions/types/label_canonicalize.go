@@ -78,16 +78,16 @@ func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (str
 // EnsureCanonicalLabelName returns nil iff s is already in canonical form for
 // the given limits. It is the validation-only counterpart to CanonicalLabelName
 // for call sites that must reject (not rewrite) non-canonical input: it returns
-// the underlying CanonicalLabelName error when s is invalid, and
-// ErrInvalidRequest when s is valid UTF-8 but not canonical (needs
-// trim/lowercase/NFC/length).
+// the underlying CanonicalLabelName error when s is invalid, and ErrLogic when
+// s is valid UTF-8 but not canonical (needs trim/lowercase/NFC/length), which
+// signals an upstream invariant break at registry/keeper call sites.
 func EnsureCanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) error {
 	canonical, err := CanonicalLabelName(s, maxBytes, labelCaseSensitive)
 	if err != nil {
 		return err
 	}
 	if canonical != s {
-		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label name must be canonical: %q", s)
+		return errorsmod.Wrapf(sdkerrors.ErrLogic, "label name must already be canonical: %q", s)
 	}
 	return nil
 }
