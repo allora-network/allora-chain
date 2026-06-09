@@ -830,33 +830,6 @@ func (k *WorkerKeeper) LoadActiveInfererInferencesForClose(
 	return activeInferences, nil
 }
 
-// IterateInferences walks every live WSW inference. Iteration order is
-// deterministic (collections store order: topic asc, then inferer bech32 asc).
-func (k *WorkerKeeper) IterateInferences(
-	ctx context.Context,
-	cb func(topicId TopicId, inferer ActorId, inference types.Inference) (stop bool, err error),
-) error {
-	iter, err := k.inferences.Iterate(ctx, nil)
-	if err != nil {
-		return errorsmod.Wrap(err, "error iterating inferences")
-	}
-	defer iter.Close()
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return errorsmod.Wrap(err, "error reading inferences entry")
-		}
-		stop, err := cb(kv.Key.K1(), kv.Key.K2(), kv.Value)
-		if err != nil {
-			return err
-		}
-		if stop {
-			return nil
-		}
-	}
-	return nil
-}
-
 // Insert a complete set of inferences for a topic/block.
 func (k *WorkerKeeper) InsertActiveInferences(
 	ctx context.Context,
