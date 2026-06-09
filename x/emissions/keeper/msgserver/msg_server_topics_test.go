@@ -1182,6 +1182,19 @@ func (s *MsgServerTestSuite) createTopicForWSWTests(sender string) uint64 {
 	return resp.TopicId
 }
 
+// setupActiveTopicWithOpenWSW creates an active topic with an unfulfilled worker
+// nonce whose submission window covers the current block (nonce at 5, block at 6).
+func (s *MsgServerTestSuite) setupActiveTopicWithOpenWSW(sender string) (sdk.Context, uint64) {
+	ctx := s.Ctx()
+	require := s.Require()
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	return s.Ctx(), topicId
+}
+
 // TestSetTopicCanonicalizesLabelWhitelist asserts that
 // CreateNewTopic canonicalizes the whitelist in place: trimmed, NFC-normalized,
 // and deduplicated.
@@ -1517,4 +1530,144 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWith
 	require.NoError(err)
 	require.Equal(uint64(4), got.MaxLabelsPerSubmission,
 		"MaxLabelsPerSubmission must not change while an older nonce's WSW remains open")
+}
+
+// TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW confirms that metadata and
+// other non-guarded fields may be updated while a worker submission window is open.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "updated metadata during wsw",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal("updated metadata during wsw", got.Metadata)
+	require.Equal("mae", got.LossMethod)
+	require.Equal(alloraMath.MustNewDecFromString("0.1"), got.MeritSortitionAlpha)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
+	require.True(got.LabelDefaultValue.Equal(alloraMath.ZeroDec()))
+}
+
+// TestUpdateTopicWSWLockListsAllChangedGuardedFields asserts the WSW rejection
+// error lists every guarded field that changed, not just the first one.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllChangedGuardedFields() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         []string{"a", "b"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	require.ErrorContains(err, "max_labels_per_submission, label_whitelist")
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
+}
+
+// TestUpdateTopicWSWLockListsAllFourGuardedFields asserts all four WSW-guarded
+// field names appear in the rejection error when they all change at once.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllFourGuardedFields() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         []string{"a", "b"},
+		LabelDefaultValue:      alloraMath.OneDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	require.ErrorContains(err,
+		"merit_sortition_alpha, max_labels_per_submission, label_whitelist, label_default_value")
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.1"), got.MeritSortitionAlpha)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
+	require.True(got.LabelDefaultValue.Equal(alloraMath.ZeroDec()))
+}
+
+// TestUpdateTopicWhitelistCosmeticChangeAllowedDuringOpenWSW confirms that a
+// whitelist update that canonicalizes to the existing list does not trigger the WSW guard.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWhitelistCosmeticChangeAllowedDuringOpenWSW() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"  a  ", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
 }
