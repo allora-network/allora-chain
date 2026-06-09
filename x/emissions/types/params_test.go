@@ -92,7 +92,7 @@ func TestValidateMaxLabelsPerSubmission(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := validateMaxLabelsPerSubmission(tc.in)
+			err := ValidateMaxLabelsPerSubmission(tc.in)
 			if tc.ok {
 				require.NoError(t, err)
 			} else {
@@ -145,7 +145,7 @@ func TestValidateMaxEpochLabelRegistrySize(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := validateMaxEpochLabelRegistrySize(tc.in)
+			err := ValidateMaxEpochLabelRegistrySize(tc.in)
 			if tc.ok {
 				require.NoError(t, err)
 			} else {

@@ -86,7 +86,10 @@ const (
 	MaxMaxLabelsPerSubmission = uint64(1024)
 )
 
-func validateMaxLabelsPerSubmission(i uint64) error {
+// ValidateMaxLabelsPerSubmission validates the per-topic cap on the number of
+// labels a worker may attach to one submission. Exported so the keeper
+// topic-update path shares the same bound as create/update request validation.
+func ValidateMaxLabelsPerSubmission(i uint64) error {
 	if i < MinMaxLabelsPerSubmission {
 		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
 			"max labels per submission must be >= %d, got %d",
@@ -98,14 +101,6 @@ func validateMaxLabelsPerSubmission(i uint64) error {
 			MaxMaxLabelsPerSubmission, i)
 	}
 	return nil
-}
-
-// ValidateMaxLabelsPerSubmission validates the per-topic cap on labels a worker
-// may attach to one submission. Exported so the keeper topic-update path shares
-// the same bound as create/update request validation instead of re-implementing
-// it.
-func ValidateMaxLabelsPerSubmission(i uint64) error {
-	return validateMaxLabelsPerSubmission(i)
 }
 
 // DefaultMaxTopicLabelWhitelistSize is the default topic-level cap on the
@@ -148,19 +143,15 @@ func ValidateTopicLabelWhitelistSize(labelWhitelist []string, maxTopicLabelWhite
 // (topic, nonce) epoch label registry.
 const DefaultMaxEpochLabelRegistrySize = uint64(32768)
 
-func validateMaxEpochLabelRegistrySize(i uint64) error {
+// ValidateMaxEpochLabelRegistrySize validates the module-level cap on labels
+// stored in a single epoch label registry. It is used by the registry growth
+// path (RegisterEpochLabels), which is the sole enforcement point for the cap.
+func ValidateMaxEpochLabelRegistrySize(i uint64) error {
 	if i == 0 {
 		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
 			"max epoch label registry size must be greater than zero")
 	}
 	return nil
-}
-
-// ValidateMaxEpochLabelRegistrySize validates the module-level cap on labels
-// stored in a single epoch label registry. It is used by the registry growth
-// path (RegisterEpochLabels), which is the sole enforcement point for the cap.
-func ValidateMaxEpochLabelRegistrySize(i uint64) error {
-	return validateMaxEpochLabelRegistrySize(i)
 }
 
 // MinMaxCanonicalLabelByteLength / MaxMaxCanonicalLabelByteLength bound the
@@ -331,7 +322,7 @@ func (p Params) Validate() error {
 	if err := validateMaxTopicLabelWhitelistSize(p.MaxTopicLabelWhitelistSize); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max topic label whitelist size")
 	}
-	if err := validateMaxEpochLabelRegistrySize(p.MaxEpochLabelRegistrySize); err != nil {
+	if err := ValidateMaxEpochLabelRegistrySize(p.MaxEpochLabelRegistrySize); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max epoch label registry size")
 	}
 	return nil

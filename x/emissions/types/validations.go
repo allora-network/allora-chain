@@ -1089,7 +1089,7 @@ func (topic Topic) Validate(params Params) error {
 	if topic.RequireUnity && !topic.LabelDefaultValue.IsZero() {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic label_default_value must be zero when require_unity is true")
 	}
-	if err := validateMaxLabelsPerSubmission(topic.MaxLabelsPerSubmission); err != nil {
+	if err := ValidateMaxLabelsPerSubmission(topic.MaxLabelsPerSubmission); err != nil {
 		return errors.Wrap(err, "topic max_labels_per_submission is invalid")
 	}
 	if err := ValidateTopicLabelWhitelistSize(topic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
@@ -1413,7 +1413,7 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhi
 	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
-	if err := validateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
@@ -1446,7 +1446,7 @@ func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitel
 	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
 	}
-	if err := validateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
