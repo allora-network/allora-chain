@@ -212,6 +212,10 @@ func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle,
 
 // TODO: remove once the system completely moves to using NetworkInferenceBundle
 func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundle {
+	if vb == nil {
+		return nil
+	}
+
 	const (
 		label0Id   uint32 = 1
 		label0Name string = "y"
