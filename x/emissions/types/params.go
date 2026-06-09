@@ -100,6 +100,14 @@ func validateMaxLabelsPerSubmission(i uint64) error {
 	return nil
 }
 
+// ValidateMaxLabelsPerSubmission validates the per-topic cap on labels a worker
+// may attach to one submission. Exported so the keeper topic-update path shares
+// the same bound as create/update request validation instead of re-implementing
+// it.
+func ValidateMaxLabelsPerSubmission(i uint64) error {
+	return validateMaxLabelsPerSubmission(i)
+}
+
 // DefaultMaxTopicLabelWhitelistSize is the default topic-level cap on the
 // number of canonical labels allowed in LabelWhitelist.
 const DefaultMaxTopicLabelWhitelistSize = uint64(256)

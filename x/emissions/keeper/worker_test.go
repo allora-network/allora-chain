@@ -2339,7 +2339,7 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_UsesTopicCaseSensitivity() {
 		params.MaxEpochLabelRegistrySize,
 	)
 	s.Require().Error(err)
-	s.Require().ErrorContains(err, "label name must be canonical")
+	s.Require().ErrorContains(err, "label name must already be canonical")
 
 	lowerIDs, _, err := tk.RegisterEpochLabels(
 		ctx,
@@ -2592,7 +2592,7 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchBehavior() {
 			maxLabelBytes:     32,
 			maxRegistrySize:   8,
 			input:             []string{"a", "Cat"},
-			wantErrContains:   "label name must be canonical",
+			wantErrContains:   "label name must already be canonical",
 			wantRegistryNames: []string{"a"},
 		},
 		{

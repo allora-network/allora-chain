@@ -364,21 +364,8 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 			"label_case_sensitive is immutable after topic creation",
 		)
 	}
-	if updatedTopic.MaxLabelsPerSubmission < types.MinMaxLabelsPerSubmission {
-		return types.Topic{}, errorsmod.Wrapf(
-			types.ErrValidationMustBeGreaterthanZero,
-			"max_labels_per_submission must be >= %d, got %d",
-			types.MinMaxLabelsPerSubmission,
-			updatedTopic.MaxLabelsPerSubmission,
-		)
-	}
-	if updatedTopic.MaxLabelsPerSubmission > types.MaxMaxLabelsPerSubmission {
-		return types.Topic{}, errorsmod.Wrapf(
-			types.ErrInvalidValue,
-			"max_labels_per_submission must be <= %d, got %d",
-			types.MaxMaxLabelsPerSubmission,
-			updatedTopic.MaxLabelsPerSubmission,
-		)
+	if err := types.ValidateMaxLabelsPerSubmission(updatedTopic.MaxLabelsPerSubmission); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "updated topic max_labels_per_submission validation failed")
 	}
 
 	// Canonicalize the whitelist on the proposed update before any
