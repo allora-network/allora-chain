@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -667,6 +668,54 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	finalTotalSum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
+}
+
+// TestUpdateTopic_RejectsLabelCaseSensitiveChange pins the keeper-level guard
+// that LabelCaseSensitive is immutable after topic creation. The msgserver
+// rebuilds updatedTopic from the stored topic, so this branch is only reachable
+// via direct keeper calls.
+func (s *KeeperTestSuite) TestUpdateTopic_RejectsLabelCaseSensitiveChange() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	testCases := []struct {
+		name             string
+		initialSensitive bool
+		updatedSensitive bool
+	}{
+		{
+			name:             "false to true",
+			initialSensitive: false,
+			updatedSensitive: true,
+		},
+		{
+			name:             "true to false",
+			initialSensitive: true,
+			updatedSensitive: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			topicId := s.CreateTopic(testutil.WithLabelCaseSensitive(tc.initialSensitive))
+
+			storedTopic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.initialSensitive, storedTopic.LabelCaseSensitive)
+
+			updatedTopic := storedTopic
+			updatedTopic.LabelCaseSensitive = tc.updatedSensitive
+
+			_, err = k.UpdateTopic(ctx, storedTopic, updatedTopic)
+			s.Require().Error(err)
+			s.Require().True(errorsmod.IsOf(err, types.ErrInvalidTopicUpdate))
+			s.Require().ErrorContains(err, "label_case_sensitive is immutable after topic creation")
+
+			unchangedTopic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(storedTopic, unchangedTopic)
+		})
+	}
 }
 
 // TestGetEpochLabelRegistryEmpty pins the invariant that GetEpochLabelRegistry
