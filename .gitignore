@@ -62,8 +62,10 @@ allora.log
 .cursor
 .claude
 .worktrees/
-
 .idea/
 .vscode/
-
 .reports/
+
+skills/
+skills-lock.json
+
