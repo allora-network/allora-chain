@@ -35,10 +35,10 @@ func isAllowedLabelByte(r rune) bool {
 	return false
 }
 
-// CanonicalLabelName validates and canonicalizes a label for storage/key use.
-// It requires valid UTF-8, trims, enforces the ASCII label charset,
-// NFC-normalizes, optionally lowercases ASCII letters, then enforces max byte
-// length.
+// CanonicalLabelName validates and canonicalizes a label for storage/key use:
+// requires valid UTF-8, trims, enforces the ASCII-only label charset, optionally
+// lowercases ASCII letters, then caps the byte length. (NFC is applied too but
+// is inert for the ASCII charset; see the call site.)
 // The result is idempotent for the same maxBytes and labelCaseSensitive values.
 func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (string, error) {
 	if maxBytes == 0 {
@@ -60,13 +60,16 @@ func CanonicalLabelName(s string, maxBytes uint64, labelCaseSensitive bool) (str
 				"label contains a disallowed character: U+%04X", r)
 		}
 	}
+	// NFC-normalize: a no-op for today's ASCII-only charset (the loop above
+	// rejected all non-ASCII), kept so a future charset widening can't silently
+	// skip normalization. Must run before the maxBytes check below.
 	trimmed = norm.NFC.String(trimmed)
 	if !labelCaseSensitive {
 		trimmed = lowerASCII(trimmed)
 	}
 	if uint64(len(trimmed)) > maxBytes {
 		return "", errorsmod.Wrapf(ErrInvalidLabelName,
-			"label exceeds %d bytes after normalization (got %d)",
+			"label exceeds %d bytes (got %d)",
 			maxBytes, len(trimmed))
 	}
 	return trimmed, nil
