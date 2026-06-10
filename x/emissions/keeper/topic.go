@@ -916,16 +916,14 @@ func (k *TopicKeeper) RegisterEpochLabels(
 	if err != nil {
 		return nil, types.EpochLabelRegistry{}, err
 	}
-	if uint64(len(registry.Labels)) > maxRegistrySize {
-		return nil, types.EpochLabelRegistry{}, errorsmod.Wrapf(
-			types.ErrEpochLabelRegistrySaturated,
-			"topic %d nonce %d registry size %d exceeds max %d",
-			topicID,
-			nonce,
-			len(registry.Labels),
-			maxRegistrySize,
-		)
-	}
+	// No upfront cap check on the stored registry size: resubmitting an
+	// already-registered label is idempotent (it hits the fast-path below and
+	// never grows the registry), so it must succeed even when the stored
+	// registry already exceeds maxRegistrySize — which can only happen if
+	// MaxEpochLabelRegistrySize was lowered by governance after labels were
+	// registered. Only growth (a genuinely new label) is bounded, by the
+	// in-loop check below. This honors the ErrEpochLabelRegistrySaturated
+	// contract that existing labels remain idempotent at (or above) the cap.
 	idsByName := make(map[string]LabelId, len(registry.Labels)+len(labelNames))
 	for _, lbl := range registry.Labels {
 		if lbl == nil {

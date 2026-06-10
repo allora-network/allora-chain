@@ -2487,9 +2487,9 @@ func epochLabelNames(labels []*types.TopicLabel) []string {
 }
 
 // TestRegisterEpochLabels_BatchBehavior exercises the batch registration path:
-// in-batch dedup, mixed new/existing reuse, ordering, no-op writes, the two
-// saturation branches (pre-existing over cap and per-label growth), and
-// canonical/byte/utf-8 validation. Every case also asserts the persisted
+// in-batch dedup, mixed new/existing reuse, ordering, no-op writes, per-label
+// growth saturation, and canonical/byte/utf-8 validation (the over-cap
+// idempotency contract lives in topic_test.go). Every case also asserts the persisted
 // registry, which pins the atomicity invariant: a mid-batch error must not
 // leave partial growth in state.
 //
@@ -2566,15 +2566,6 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchBehavior() {
 			input:             []string{"a", "b"},
 			wantIDs:           []keeper.LabelId{1, 2},
 			wantRegistryNames: []string{"a", "b"},
-		},
-		{
-			name:              "pre-existing registry over cap rejected",
-			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}, {Id: 2, Name: "b"}, {Id: 3, Name: "c"}},
-			maxLabelBytes:     32,
-			maxRegistrySize:   2,
-			input:             []string{"a"},
-			wantErrIs:         types.ErrEpochLabelRegistrySaturated,
-			wantRegistryNames: []string{"a", "b", "c"},
 		},
 		{
 			name:              "per-label saturation does not persist partial growth",

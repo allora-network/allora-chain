@@ -718,6 +718,47 @@ func (s *KeeperTestSuite) TestUpdateTopic_RejectsLabelCaseSensitiveChange() {
 	}
 }
 
+// TestRegisterEpochLabels_OverCapAllowsIdempotentRejectsNew pins the contract
+// that once a stored registry already exceeds maxRegistrySize — only reachable
+// if MaxEpochLabelRegistrySize is lowered by governance after labels were
+// registered — resubmitting an existing label stays idempotent (no growth, no
+// error) while a genuinely new label is rejected with
+// ErrEpochLabelRegistrySaturated.
+func (s *KeeperTestSuite) TestRegisterEpochLabels_OverCapAllowsIdempotentRejectsNew() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	topicId := uint64(1)
+	nonce := int64(10)
+	maxBytes := uint64(64)
+
+	// Fill the registry up to its cap of 3 labels.
+	ids, reg, err := k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"a", "b", "c"}, maxBytes, uint64(3))
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2, 3}, ids)
+	s.Require().Len(reg.Labels, 3)
+
+	// Simulate governance lowering MaxEpochLabelRegistrySize below the current
+	// registry size: the stored registry (3) now exceeds the cap (1).
+	loweredCap := uint64(1)
+
+	// Existing labels remain idempotent even over the cap: original ids, no growth.
+	existingIds, existingReg, err := k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"b", "a"}, maxBytes, loweredCap)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{2, 1}, existingIds)
+	s.Require().Len(existingReg.Labels, 3)
+
+	// A genuinely new label over the cap is rejected.
+	_, _, err = k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"d"}, maxBytes, loweredCap)
+	s.Require().Error(err)
+	s.Require().True(errorsmod.IsOf(err, types.ErrEpochLabelRegistrySaturated))
+
+	// The rejected call must not have grown the registry.
+	finalReg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(finalReg.Labels, 3)
+}
+
 // TestGetEpochLabelRegistryEmpty pins the invariant that GetEpochLabelRegistry
 // returns an empty-but-well-formed registry (no error) when nothing has been
 // written for (topicId, nonce).
