@@ -1112,12 +1112,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonc
 	s.Require().Equal("c", tempReg.Labels[2].Name)
 	s.Require().Equal("d", tempReg.Labels[3].Name)
 
-	finalized, reg, reused, err := s.WorkerKeeper().FinalizeInferencesAndRegistryAtClose(
+	finalized, reg, err := s.WorkerKeeper().FinalizeInferencesAndRegistryAtClose(
 		s.Ctx(), topic, nonce,
 		[]string{msg1.WorkerDataBundle.Worker, msg2.WorkerDataBundle.Worker},
 	)
 	s.Require().NoError(err)
-	s.Require().True(reused)
 	s.Require().Equal(tempReg, reg)
 	byWorker := map[string]*types.Inference{}
 	for _, inf := range finalized.Inferences {

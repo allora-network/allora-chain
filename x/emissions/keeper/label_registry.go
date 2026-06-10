@@ -165,17 +165,13 @@ func (k *TopicKeeper) SetEpochLabelRegistry(
 // labels that have no active non-default value, compacts surviving label IDs to
 // 1..L, and remaps active inference vectors from temporary label positions into
 // that final compact ID space.
-//
-// The returned reusedTemporary flag is true only when every temporary label
-// survives unchanged, allowing callers to skip rewriting identical registry
-// state.
 func CompactRegistryAndRemapInferences(
 	topic types.Topic,
 	nonce types.BlockHeight,
 	tempRegistry types.EpochLabelRegistry,
 	activeInferences []*types.Inference,
 	maxLabelBytes uint64,
-) (types.EpochLabelRegistry, *types.Inferences, bool, error) {
+) (types.EpochLabelRegistry, *types.Inferences, error) {
 	if err := validateEpochLabelRegistry(
 		topic.Id,
 		topic.LabelCaseSensitive,
@@ -183,14 +179,14 @@ func CompactRegistryAndRemapInferences(
 		tempRegistry,
 		maxLabelBytes,
 	); err != nil {
-		return types.EpochLabelRegistry{}, nil, false, err
+		return types.EpochLabelRegistry{}, nil, err
 	}
 	for _, inference := range activeInferences {
 		if inference == nil {
-			return types.EpochLabelRegistry{}, nil, false, errorsmod.Wrap(sdkerrors.ErrLogic, "active inference is nil")
+			return types.EpochLabelRegistry{}, nil, errorsmod.Wrap(sdkerrors.ErrLogic, "active inference is nil")
 		}
 		if err := validateActiveInferenceForClose(topic, nonce, inference.Inferer, *inference); err != nil {
-			return types.EpochLabelRegistry{}, nil, false, err
+			return types.EpochLabelRegistry{}, nil, err
 		}
 	}
 	sortedActive := append([]*types.Inference(nil), activeInferences...)
@@ -214,15 +210,15 @@ func CompactRegistryAndRemapInferences(
 			}
 			out = append(out, copyInferenceWithValues(inference, []alloraMath.Dec{value}))
 		}
-		return registry, &types.Inferences{Inferences: out}, true, nil
+		return registry, &types.Inferences{Inferences: out}, nil
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
 		// fall through
 	default:
-		return types.EpochLabelRegistry{}, nil, false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
+		return types.EpochLabelRegistry{}, nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
 
 	if len(tempRegistry.Labels) == 0 {
-		return types.EpochLabelRegistry{}, nil, false, types.ErrEpochLabelRegistryEmpty
+		return types.EpochLabelRegistry{}, nil, types.ErrEpochLabelRegistryEmpty
 	}
 	used := activeNonDefaultLabelMask(tempRegistry, sortedActive, topic.LabelDefaultValue)
 	finalLabels := make([]*types.TopicLabel, 0, len(tempRegistry.Labels))
@@ -240,7 +236,7 @@ func CompactRegistryAndRemapInferences(
 		tempToFinal[tempIdx] = labelSlot(finalID)
 	}
 	if len(finalLabels) == 0 {
-		return types.EpochLabelRegistry{}, nil, false, types.ErrEpochLabelRegistryEmpty
+		return types.EpochLabelRegistry{}, nil, types.ErrEpochLabelRegistryEmpty
 	}
 	finalRegistry := types.EpochLabelRegistry{
 		TopicId: topic.Id,
@@ -248,8 +244,6 @@ func CompactRegistryAndRemapInferences(
 		EpochId: uint64(nonce),
 		Labels:  finalLabels,
 	}
-	reusedTemporary := CanReuseTemporaryRegistryAsFinal(tempRegistry, sortedActive, topic.LabelDefaultValue)
-
 	remapped := make([]*types.Inference, 0, len(sortedActive))
 	for _, inference := range sortedActive {
 		values := make([]alloraMath.Dec, len(finalLabels))
@@ -267,26 +261,7 @@ func CompactRegistryAndRemapInferences(
 		remapped = append(remapped, copyInferenceWithValues(inference, values))
 	}
 
-	return finalRegistry, &types.Inferences{Inferences: remapped}, reusedTemporary, nil
-}
-
-// CanReuseTemporaryRegistryAsFinal returns true when every temporary label is
-// used by at least one active inference with a non-default value.
-func CanReuseTemporaryRegistryAsFinal(
-	tempRegistry types.EpochLabelRegistry,
-	activeInferences []*types.Inference,
-	labelDefaultValue alloraMath.Dec,
-) bool {
-	if len(tempRegistry.Labels) == 0 {
-		return false
-	}
-	used := activeNonDefaultLabelMask(tempRegistry, activeInferences, labelDefaultValue)
-	for _, isUsed := range used {
-		if !isUsed {
-			return false
-		}
-	}
-	return true
+	return finalRegistry, &types.Inferences{Inferences: remapped}, nil
 }
 
 func activeNonDefaultLabelMask(
@@ -414,20 +389,20 @@ func (k *WorkerKeeper) FinalizeInferencesAndRegistryAtClose(
 	topic types.Topic,
 	nonce types.BlockHeight,
 	activeInfererAddresses []ActorId,
-) (*types.Inferences, types.EpochLabelRegistry, bool, error) {
+) (*types.Inferences, types.EpochLabelRegistry, error) {
 	activeInferences, err := k.LoadActiveInfererInferencesForClose(ctx, topic, nonce, activeInfererAddresses)
 	if err != nil {
-		return nil, types.EpochLabelRegistry{}, false, err
+		return nil, types.EpochLabelRegistry{}, err
 	}
 	tempRegistry, err := k.topicKeeper.GetEpochLabelRegistry(ctx, topic.Id, nonce)
 	if err != nil {
-		return nil, types.EpochLabelRegistry{}, false, err
+		return nil, types.EpochLabelRegistry{}, err
 	}
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
-		return nil, types.EpochLabelRegistry{}, false, errorsmod.Wrap(err, "error getting params for epoch label registry finalization")
+		return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error getting params for epoch label registry finalization")
 	}
-	finalRegistry, inferences, reusedTemporary, err := CompactRegistryAndRemapInferences(
+	finalRegistry, inferences, err := CompactRegistryAndRemapInferences(
 		topic,
 		nonce,
 		tempRegistry,
@@ -435,7 +410,7 @@ func (k *WorkerKeeper) FinalizeInferencesAndRegistryAtClose(
 		params.MaxCanonicalLabelByteLength,
 	)
 	if err != nil {
-		return nil, types.EpochLabelRegistry{}, false, err
+		return nil, types.EpochLabelRegistry{}, err
 	}
-	return inferences, finalRegistry, reusedTemporary, nil
+	return inferences, finalRegistry, nil
 }

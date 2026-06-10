@@ -1818,7 +1818,6 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 		active     []*types.Inference
 		wantLabels []string
 		wantValues map[string][]string
-		wantReuse  bool
 		wantErrIs  error
 	}{
 		{
@@ -1844,7 +1843,6 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 				s.AddrsStr(0): {"1", "0", "0", "0"},
 				s.AddrsStr(1): {"0", "2", "3", "4"},
 			},
-			wantReuse: true,
 		},
 		{
 			name: "errors_when_no_active_non_default_labels_remain",
@@ -1865,7 +1863,7 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 
 	for _, c := range cases {
 		s.Run(c.name, func() {
-			reg, got, reused, err := keeper.CompactRegistryAndRemapInferences(
+			reg, got, err := keeper.CompactRegistryAndRemapInferences(
 				topic,
 				nonce,
 				tempRegistry,
@@ -1877,7 +1875,6 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 				return
 			}
 			s.Require().NoError(err)
-			s.Require().Equal(c.wantReuse, reused)
 			gotLabels := make([]string, 0, len(reg.Labels))
 			for _, label := range reg.Labels {
 				gotLabels = append(gotLabels, label.Name)
@@ -2161,7 +2158,7 @@ func (s *KeeperTestSuite) TestDenormalizeAndFinalizeUsePassedLabelByteCap() {
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
 
-	_, _, _, err = keeper.CompactRegistryAndRemapInferences(
+	_, _, err = keeper.CompactRegistryAndRemapInferences(
 		topic,
 		nonce,
 		registry,
@@ -2444,14 +2441,13 @@ func (s *KeeperTestSuite) TestFinalizeInferencesAndRegistryAtClose_DoesNotPersis
 		Proof:       "",
 	}))
 
-	got, reg, reused, err := s.WorkerKeeper().FinalizeInferencesAndRegistryAtClose(
+	got, reg, err := s.WorkerKeeper().FinalizeInferencesAndRegistryAtClose(
 		ctx,
 		topic,
 		nonce,
 		[]string{remaining},
 	)
 	s.Require().NoError(err)
-	s.Require().False(reused)
 	s.Require().Len(reg.Labels, 3)
 	s.Require().Equal([]string{"a", "b", "d"}, []string{reg.Labels[0].Name, reg.Labels[1].Name, reg.Labels[2].Name})
 	s.Require().Len(got.Inferences, 1)

@@ -259,7 +259,7 @@ func closeActiveInferencesSet(
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	inferences, registry, _, err := k.GetWorkerKeeper().FinalizeInferencesAndRegistryAtClose(
+	inferences, registry, err := k.GetWorkerKeeper().FinalizeInferencesAndRegistryAtClose(
 		ctx, topic, nonce.BlockHeight, activeInfererAddresses,
 	)
 	if err != nil {
