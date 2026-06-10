@@ -51,9 +51,9 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		AllowNegative:            true,
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
@@ -61,6 +61,10 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
@@ -127,9 +131,9 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 		AllowNegative:            true,
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
@@ -137,6 +141,10 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		RequireUnity:             true,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.01"),
+		MaxLabelsPerSubmission:   8,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

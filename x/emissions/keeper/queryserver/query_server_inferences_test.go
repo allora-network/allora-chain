@@ -5,6 +5,9 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/utils/ptr"
@@ -51,61 +54,81 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, results.Inferences)
 }
 
-func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicId() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(42)
+	worker := s.AddrsStr(0)
 
-	topicId := uint64(1)
-	workerAddress := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
-	wrongWorkerAddress := "invalidAddress"
-
-	_, err := sdk.AccAddressFromBech32(workerAddress)
-	s.Require().NoError(err, "The worker address should be valid and convertible")
-
-	// Testing non-existent topic
-	_, err = queryServer.GetWorkerLatestInferenceByTopicId(
-		ctx,
-		&types.GetWorkerLatestInferenceByTopicIdRequest{
-			TopicId:       999, // non-existent topic
-			WorkerAddress: workerAddress,
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.LabelDefaultValue = alloraMath.ZeroDec()
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+	s.Require().NoError(s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+			{Id: 3, Name: "c"},
 		},
-	)
-	s.Require().Error(err, "Should return an error for non-existent topic")
-
-	// Testing non-existent worker
-	_, err = queryServer.GetWorkerLatestInferenceByTopicId(
-		ctx,
-		&types.GetWorkerLatestInferenceByTopicIdRequest{
-			TopicId:       topicId,
-			WorkerAddress: wrongWorkerAddress,
-		},
-	)
-	s.Require().Error(err, "Should return an error for non-existent worker address")
-
-	// Assume a correct insertion happened
-	blockHeight := int64(100)
+	}))
 	inference := types.Inference{
 		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Inferer:     workerAddress,
-		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("123.456")},
-		ExtraData:   nil,
-		Proof:       "",
+		BlockHeight: nonce,
+		Inferer:     worker,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.1"), alloraMath.MustNewDecFromString("0.2")},
+		ExtraData:   []byte("query"),
+		Proof:       "proof",
 	}
-	err = s.WorkerKeeper().InsertInference(ctx, topicId, inference)
-	s.Require().NoError(err, "Inserting inferences should succeed")
+	s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, inference))
 
-	// Testing successful retrieval
-	response, err := queryServer.GetWorkerLatestInferenceByTopicId(
-		ctx,
-		&types.GetWorkerLatestInferenceByTopicIdRequest{
-			TopicId:       topicId,
-			WorkerAddress: workerAddress,
-		},
-	)
-	s.Require().NoError(err, "Retrieving latest inference should succeed")
-	s.Require().NotNil(response.LatestInference, "Response should contain a latest inference")
-	s.Require().Equal(&inference, response.LatestInference, "The latest inference should match the expected data")
+	latestInput, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       topicId,
+		WorkerAddress: worker,
+	})
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, latestInput.LatestInputInference.TopicId)
+	s.Require().Equal(nonce, latestInput.LatestInputInference.BlockHeight)
+	s.Require().Equal(worker, latestInput.LatestInputInference.Inferer)
+	s.Require().Equal([]byte("query"), latestInput.LatestInputInference.ExtraData)
+	s.Require().Equal("proof", latestInput.LatestInputInference.Proof)
+	s.Require().Len(latestInput.LatestInputInference.Values, 2)
+	s.Require().Equal("a", latestInput.LatestInputInference.Values[0].Label)
+	s.Require().Equal("0.1", latestInput.LatestInputInference.Values[0].Value.String())
+	s.Require().Equal("b", latestInput.LatestInputInference.Values[1].Label)
+	s.Require().Equal("0.2", latestInput.LatestInputInference.Values[1].Value.String())
+}
+
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdInvalidAddress() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+
+	_, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       topicId,
+		WorkerAddress: "not-a-bech32-address",
+	})
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, sdkerrors.ErrInvalidAddress)
+}
+
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdTopicNotFound() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	worker := s.AddrsStr(0)
+
+	_, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       99999,
+		WorkerAddress: worker,
+	})
+	s.Require().Error(err)
+	s.Require().Equal(codes.NotFound, status.Code(err))
 }
 
 //nolint:exhaustruct
@@ -297,7 +320,17 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferences)
 	require.NoError(err)
 
-	_, err = keeper.GetTopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, inferenceNonce.BlockHeight, "y")
+	params, err := keeper.GetParamsKeeper().GetParams(s.Ctx())
+	require.NoError(err)
+	_, _, err = keeper.GetTopicKeeper().RegisterEpochLabels(
+		s.Ctx(),
+		topic.Id,
+		topic.LabelCaseSensitive,
+		inferenceNonce.BlockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
 	require.NoError(err)
 
 	forecasts := getForecastsForBlockHeight(workers, forecasters, inferenceBlockHeight, topicId)

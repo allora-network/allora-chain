@@ -32,6 +32,10 @@ func validCreateNewTopicRequest() *CreateNewTopicRequest {
 		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   DefaultMaxLabelsPerSubmission,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
+		LabelWhitelist:           nil,
 	}
 }
 
@@ -49,6 +53,14 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			mutate:      func(*CreateNewTopicRequest) {},
 			wantErr:     false,
 			errContains: "",
+		},
+		{
+			name: "label whitelist above max",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.LabelWhitelist = make([]string, DefaultMaxTopicLabelWhitelistSize+1)
+			},
+			wantErr:     true,
+			errContains: "topic label whitelist size",
 		},
 		{
 			name: "empty loss method",
@@ -321,7 +333,7 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			msg := validCreateNewTopicRequest()
 			tt.mutate(msg)
 
-			err := msg.Validate(maxStringLen)
+			err := msg.Validate(maxStringLen, DefaultMaxTopicLabelWhitelistSize)
 			if tt.wantErr {
 				require.Error(t, err)
 				require.ErrorContains(t, err, tt.errContains)
@@ -1043,6 +1055,14 @@ func TestTopicValidate(t *testing.T) {
 			},
 			wantErr: false, errContains: "",
 		},
+		{
+			name: "label whitelist above max",
+			mutate: func(tp *Topic, p *Params) {
+				p.MaxTopicLabelWhitelistSize = 1
+				tp.LabelWhitelist = []string{"bear", "bull"}
+			},
+			wantErr: true, errContains: "topic label_whitelist is invalid",
+		},
 	}
 
 	for _, tc := range tests {
@@ -1091,6 +1111,10 @@ func validTopic(p Params) Topic {
 		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
+		MaxLabelsPerSubmission:   8,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 }
 
@@ -1100,5 +1124,139 @@ func validParams() Params {
 		MaxStringLength:               256,
 		MinEpochLength:                10,
 		MaxUnfulfilledReputerRequests: 5,
+		MaxTopicLabelWhitelistSize:    DefaultMaxTopicLabelWhitelistSize,
+		MaxCanonicalLabelByteLength:   64,
+		MaxEpochLabelRegistrySize:     DefaultMaxEpochLabelRegistrySize,
+		MaxWhitelistInputArrayLength:  2000,
 	}
+}
+
+// baseValidInput returns a minimal InputInference whose basic fields pass
+// InputInference.Validate(); each sub-test overrides Values as needed.
+//
+//nolint:exhaustruct
+func baseValidInput(t *testing.T) *InputInference {
+	t.Helper()
+	return &InputInference{
+		TopicId:     1,
+		BlockHeight: 100,
+		Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+	}
+}
+
+// TestInputInference_ValidateWithLimits_EffectiveCap covers the cap
+// enforcement: exactly cap labels ok, one over cap rejected, zero cap
+// rejected defensively.
+func TestInputInference_ValidateWithLimits_EffectiveCap(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "a", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "b", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.NoError(t, in.ValidateWithLimits(2, nil, 64, false))
+	require.Error(t, in.ValidateWithLimits(1, nil, 64, false))
+	require.Error(t, in.ValidateWithLimits(0, nil, 64, false))
+}
+
+// TestInputInference_ValidateWithLimits_CanonicalizesAndDedupes covers the
+// canonicalization of label names and the post-canon dedupe check, plus
+// ensures the canonical form is written back to the input slice in place.
+func TestInputInference_ValidateWithLimits_CanonicalizesAndDedupes(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "  y  ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, in.ValidateWithLimits(4, nil, 64, false))
+	require.Equal(t, "y", in.Values[0].Label, "label should be canonicalized in place")
+
+	// Upper vs lower case collapse under the default caseSensitive=false.
+	dup := baseValidInput(t)
+	dup.Values = []*InputLabeledValue{
+		{Label: "Cat", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "cat", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.Error(t, dup.ValidateWithLimits(4, nil, 64, false))
+
+	// Under caseSensitive=true, the same two inputs are distinct.
+	distinct := baseValidInput(t)
+	distinct.Values = []*InputLabeledValue{
+		{Label: "Cat", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "cat", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.NoError(t, distinct.ValidateWithLimits(4, nil, 64, true))
+	require.Equal(t, "Cat", distinct.Values[0].Label, "case preserved under caseSensitive")
+	require.Equal(t, "cat", distinct.Values[1].Label, "case preserved under caseSensitive")
+}
+
+// TestInputInference_ValidateWithLimits_Whitelist covers the whitelist
+// check: nil whitelist means unrestricted; a non-nil whitelist requires
+// membership post-canonicalization; and a canonical whitelist entry matches
+// a non-canonical input.
+func TestInputInference_ValidateWithLimits_Whitelist(t *testing.T) {
+	okWhitelist := map[string]struct{}{"y": {}, "n": {}}
+
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "y", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, in.ValidateWithLimits(4, nil, 64, false), "nil whitelist is unrestricted")
+	require.NoError(t, in.ValidateWithLimits(4, okWhitelist, 64, false))
+
+	bad := baseValidInput(t)
+	bad.Values = []*InputLabeledValue{
+		{Label: "other", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, bad.ValidateWithLimits(4, okWhitelist, 64, false))
+
+	// Whitelist canonical form matches a whitespace-wrapped submission.
+	wrap := baseValidInput(t)
+	wrap.Values = []*InputLabeledValue{
+		{Label: "  y  ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, wrap.ValidateWithLimits(4, okWhitelist, 64, false))
+
+	// Case-sensitive: "Y" must match "Y" and must NOT match a lowercase
+	// whitelist entry.
+	csWhitelist := map[string]struct{}{"Y": {}}
+	cs := baseValidInput(t)
+	cs.Values = []*InputLabeledValue{
+		{Label: "Y", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, cs.ValidateWithLimits(4, csWhitelist, 64, true))
+
+	csMismatch := baseValidInput(t)
+	csMismatch.Values = []*InputLabeledValue{
+		{Label: "y", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, csMismatch.ValidateWithLimits(4, csWhitelist, 64, true))
+}
+
+// TestInputInference_ValidateWithLimits_RejectsInvalidLabel covers each of
+// the canonicalizer's rejection paths when called through
+// ValidateWithLimits, including nil LabeledValue entries.
+func TestInputInference_ValidateWithLimits_RejectsInvalidLabel(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "   ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in.ValidateWithLimits(4, nil, 64, false))
+
+	// Disallowed charset: zero-width space is rejected as an illegal rune.
+	in2 := baseValidInput(t)
+	in2.Values = []*InputLabeledValue{
+		{Label: "fo\u200bo", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in2.ValidateWithLimits(4, nil, 64, false))
+
+	in3 := baseValidInput(t)
+	in3.Values = []*InputLabeledValue{nil}
+	require.Error(t, in3.ValidateWithLimits(4, nil, 64, false))
+
+	// Punctuation outside the allowed separator set is rejected.
+	in4 := baseValidInput(t)
+	in4.Values = []*InputLabeledValue{
+		{Label: "bad!", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in4.ValidateWithLimits(4, nil, 64, false))
 }

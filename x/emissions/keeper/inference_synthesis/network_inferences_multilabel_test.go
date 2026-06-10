@@ -30,7 +30,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockMultilabel(
 	const labelCount = 3
 	// Label names registered for the epoch. Order matters: label index k in the
 	// CSV columns (network_inference_label_<k>) corresponds to the k-th label
-	// registered, which RegisterEpochLabel assigns id k+1.
+	// registered, which RegisterEpochLabels assigns id k+1.
 	labelNames := []string{"label_0", "label_1", "label_2"}
 
 	epochGet := testutil.GetSimulatedValuesGetterForMultilabelEpochs(s.T())
@@ -156,10 +156,18 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockMultilabel(
 			// single placeholder "y" label is registered; here we register one
 			// per class so label lookups during synthesis resolve to the correct
 			// class index.
-			for _, name := range labelNames {
-				_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, simpleNonce.BlockHeight, name)
-				require.NoError(err)
-			}
+			params, err := s.ParamsKeeper().GetParams(s.Ctx())
+			require.NoError(err)
+			_, _, err = s.TopicKeeper().RegisterEpochLabels(
+				s.Ctx(),
+				topicId,
+				topic.LabelCaseSensitive,
+				simpleNonce.BlockHeight,
+				labelNames,
+				params.MaxCanonicalLabelByteLength,
+				params.MaxEpochLabelRegistrySize,
+			)
+			require.NoError(err)
 
 			err = s.WorkerKeeper().InsertActiveForecasts(
 				s.Ctx(), topicId, simpleNonce.BlockHeight, forecasts,

@@ -3,6 +3,8 @@ package actorutils_test
 import (
 	"testing"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -60,53 +62,46 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	err = s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce)
 	s.Require().NoError(err)
 
-	// MULTI: ensure epoch label registry exists for this nonce (and has labels)
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "a")
-	s.Require().NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "b")
-	s.Require().NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, nonce.BlockHeight, "c")
-	s.Require().NoError(err)
-
-	reg, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce.BlockHeight)
-	s.Require().NoError(err)
-	s.Require().NotEmpty(reg.GetLabels())
-
-	// Create and insert inferences (Values length must match registry length)
-	inf0 := types.Inference{
+	// Normalize each worker's input into a dense Inference aligned to the
+	// temporary registry. CloseWorkerNonce then filters and remaps the final
+	// active workers' vectors into the compact final registry.
+	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
+		return alloraMath.MustNewBoundedExp40DecFromString(x)
+	}
+	input0 := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Inferer:     worker0,
 		ExtraData:   nil,
 		Proof:       "",
-		Values: []alloraMath.Dec{
-			alloraMath.MustNewDecFromString("-0.035995138925040600"),
-			alloraMath.MustNewDecFromString("0.100000000000000000"),
-			alloraMath.MustNewDecFromString("0.200000000000000000"),
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("-0.035995138925040600")},
+			{Label: "b", Value: mustBounded("0.100000000000000000")},
+			{Label: "c", Value: mustBounded("0.200000000000000000")},
 		},
 	}
-	inf1 := types.Inference{
+	input1 := types.InputInference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		Inferer:     worker1,
 		ExtraData:   nil,
 		Proof:       "",
-		Values: []alloraMath.Dec{
-			alloraMath.MustNewDecFromString("-0.07333303938740420"),
-			alloraMath.MustNewDecFromString("0.110000000000000000"),
-			alloraMath.MustNewDecFromString("0.210000000000000000"),
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("-0.07333303938740420")},
+			{Label: "b", Value: mustBounded("0.110000000000000000")},
+			{Label: "c", Value: mustBounded("0.210000000000000000")},
 		},
 	}
 
-	s.Require().Equal(len(reg.GetLabels()), len(inf0.Values))
-	s.Require().Equal(len(reg.GetLabels()), len(inf1.Values))
-
-	err = s.WorkerKeeper().InsertInference(s.Ctx(), topicId, inf0)
+	inf0, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input0)
 	s.Require().NoError(err)
-	err = s.WorkerKeeper().InsertInference(s.Ctx(), topicId, inf1)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf0))
+	inf1, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input1)
 	s.Require().NoError(err)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf1))
 
-	// Artificially add the workers as active inferers
 	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0)
 	s.Require().NoError(err)
 	err = s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker1)
@@ -164,6 +159,10 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -219,10 +218,16 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
 	topicId := res.TopicId
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
 	blockHeight := int64(100)
 
 	// Set up workers/forecasters using existing suite addresses
@@ -233,7 +238,17 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	forecaster0 := s.AddrsStr(4)
 	forecaster1 := s.AddrsStr(5)
 
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	registrationParams, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		registrationParams.MaxCanonicalLabelByteLength,
+		registrationParams.MaxEpochLabelRegistrySize,
+	)
 	require.NoError(err)
 
 	// Create inferences where worker3 is an obvious outlier
@@ -289,7 +304,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
 
-	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
+	topic, err = keeper.GetTopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 
 	// Call the function we're testing
@@ -365,10 +380,16 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	res, err := s.EmissionsMsgServer().CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err)
 	topicId := res.TopicId
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
 	blockHeight := int64(100)
 
 	// Set up workers/forecasters using existing suite addresses
@@ -431,10 +452,18 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("3.0") // 3 * MAD threshold
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	require.NoError(err)
-	_, err = s.TopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
 	require.NoError(err)
 
-	topic, err := keeper.GetTopicKeeper().GetTopic(ctx, topicId)
+	topic, err = keeper.GetTopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 
 	// Call the function we're testing
@@ -471,4 +500,145 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 		regularVal.Equal(outlierVal),
 		"Combined values should match when no outliers exist",
 	)
+}
+
+// countFrozenEvents returns the number of EventEpochLabelRegistryFrozen
+// events currently on the given SDK context's event manager, along with the
+// RegistrySize field from the last such event (so callers can assert on it).
+// It uses sdk.ParseTypedEvent to reconstruct the typed event from its ABCI
+// representation, which keeps the helper agnostic to the proto package
+// version (e.g. v10 -> v11 bumps require no test changes) and reads
+// registry_size as a typed uint64 rather than a stringified attribute.
+func countFrozenEvents(ctx sdk.Context) (int, uint64) {
+	count := 0
+	var lastSize uint64
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		frozen, ok := msg.(*types.EventEpochLabelRegistryFrozen)
+		if !ok {
+			continue
+		}
+		count++
+		lastSize = frozen.RegistrySize
+	}
+	return count, lastSize
+}
+
+// TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFrozenEventOnce pins
+// the close-time contract: exactly one EventEpochLabelRegistryFrozen is
+// emitted per successful CloseWorkerNonce, carrying the registry's cardinality
+// as the registry_size attribute. A regression that double-emitted (e.g. by
+// emitting both pre- and post-write) or skipped emission would be caught here.
+func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFrozenEventOnce() {
+	blockHeight := int64(101)
+	s.WithBlockHeight(blockHeight)
+
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	worker0 := s.AddrsStr(0)
+	worker1 := s.AddrsStr(1)
+	for _, w := range []string{worker0, worker1} {
+		_, err = s.EmissionsMsgServer().Register(s.Ctx(), &types.RegisterRequest{
+			Sender:    w,
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     s.AddrsStr(4),
+		})
+		s.Require().NoError(err)
+	}
+
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+	mustBounded := func(x string) alloraMath.BoundedExp40Dec {
+		return alloraMath.MustNewBoundedExp40DecFromString(x)
+	}
+
+	input0 := types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Inferer:     worker0,
+		ExtraData:   nil,
+		Proof:       "",
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("0.1")},
+			{Label: "b", Value: mustBounded("0.2")},
+			{Label: "c", Value: mustBounded("0.3")},
+		},
+	}
+	input1 := types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Inferer:     worker1,
+		ExtraData:   nil,
+		Proof:       "",
+		Value:       mustBounded("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "a", Value: mustBounded("0.15")},
+			{Label: "b", Value: mustBounded("0.25")},
+			{Label: "d", Value: mustBounded("0.35")},
+		},
+	}
+	inf0, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input0)
+	s.Require().NoError(err)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf0))
+	inf1, err := s.WorkerKeeper().NormalizeInputInference(s.Ctx(), topic, blockHeight, &input1)
+	s.Require().NoError(err)
+	s.Require().NoError(s.WorkerKeeper().InsertInference(s.Ctx(), topicId, *inf1))
+
+	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, worker0))
+
+	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+
+	before, _ := countFrozenEvents(s.Ctx())
+
+	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
+
+	after, size := countFrozenEvents(s.Ctx())
+	s.Require().Equal(before+1, after,
+		"CloseWorkerNonce must emit exactly one EventEpochLabelRegistryFrozen")
+	s.Require().Equal(uint64(3), size,
+		"registry_size must match the final active registry {a,b,c}")
+
+	storedRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)
+	s.Require().NoError(err)
+	s.Require().Len(storedRegistry.Labels, 3)
+	s.Require().Equal("a", storedRegistry.Labels[0].Name)
+	s.Require().Equal("b", storedRegistry.Labels[1].Name)
+	s.Require().Equal("c", storedRegistry.Labels[2].Name)
+}
+
+// TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty pins the negative
+// branch: when the active inferer set is empty at close time, CloseWorkerNonce
+// short-circuits with ErrNoQualifiedInferers before reaching the registry
+// finalizer, and therefore EventEpochLabelRegistryFrozen must NOT be
+// emitted. A regression that moved the emission in front of the active-set
+// gate would be caught here.
+func (s *WorkerTestSuite) TestCloseActiveInferencesSet_NoEventWhenActiveSetEmpty() {
+	blockHeight := int64(101)
+	s.WithBlockHeight(blockHeight)
+
+	topicId := s.CreateTopic(testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI))
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+
+	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
+
+	before, _ := countFrozenEvents(s.Ctx())
+
+	err = actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce)
+	s.Require().ErrorIs(err, types.ErrNoQualifiedInferers)
+
+	after, _ := countFrozenEvents(s.Ctx())
+	s.Require().Equal(before, after,
+		"EventEpochLabelRegistryFrozen must not be emitted when the active inferer set is empty")
 }

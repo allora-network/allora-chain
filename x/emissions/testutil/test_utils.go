@@ -215,6 +215,7 @@ type (
 		reputerValues         []TestReputerValue
 		skipNetworkInferences bool
 		outputArity           types.TopicOutputArity
+		labelCaseSensitive    bool
 		reputerStake          *cosmosMath.Int
 		accounts              []account
 	}
@@ -313,6 +314,16 @@ func WithSkipNetworkInferences() Option {
 func WithOutputArity(outputArity types.TopicOutputArity) Option {
 	return func(p *customParams) {
 		p.outputArity = outputArity
+	}
+}
+
+// WithLabelCaseSensitive lets tests opt into case-sensitive label handling
+// on the topic they set up. When unset, topics default to case-insensitive
+// (labels are lowercased during canonicalization), matching the chain's
+// default.
+func WithLabelCaseSensitive(labelCaseSensitive bool) Option {
+	return func(p *customParams) {
+		p.labelCaseSensitive = labelCaseSensitive
 	}
 }
 
@@ -606,10 +617,20 @@ type TestLabeledValue struct {
 
 type TestWorkerValue struct {
 	Index  int
-	Value  string             // legacy / SINGLE convenience
-	Values []TestLabeledValue // MULTI or explicit SINGLE
+	Value  string             // SINGLE-arity scalar inference
+	Values []TestLabeledValue // MULTI-arity labeled inferences
 }
 
+// generateWorkerDataBundles builds signed InputWorkerDataBundles for the given
+// workers and optional per-worker TestWorkerValue fixtures.
+//
+// Inference shaping mirrors the worker payload wire format:
+//   - MULTI topics: set tv.Values with non-empty labels; each row becomes an
+//     InputLabeledValue in InputInference.Values.
+//   - SINGLE topics: set tv.Value; the scalar is carried on InputInference.Value
+//     with InputInference.Values left nil.
+//
+// When neither tv.Values nor tv.Value is set, a random scalar is used.
 func generateWorkerDataBundles(
 	s *TestSuite,
 	nonce int64,
@@ -624,28 +645,26 @@ func generateWorkerDataBundles(
 	}
 
 	toInputLabeledValues := func(tv TestWorkerValue) []*types.InputLabeledValue {
-		if len(tv.Values) > 0 {
-			out := make([]*types.InputLabeledValue, len(tv.Values))
-			for i, v := range tv.Values {
-				out[i] = &types.InputLabeledValue{
-					Label: v.Label,
-					Value: alloraMath.MustNewBoundedExp40DecFromString(v.Value),
-				}
-			}
-			return out
+		if len(tv.Values) == 0 {
+			return nil
 		}
-		// backward-compatible SINGLE default
+		out := make([]*types.InputLabeledValue, len(tv.Values))
+		for i, v := range tv.Values {
+			out[i] = &types.InputLabeledValue{
+				Label: v.Label,
+				Value: alloraMath.MustNewBoundedExp40DecFromString(v.Value),
+			}
+		}
+		return out
+	}
+
+	singleScalarValue := func(tv TestWorkerValue) alloraMath.BoundedExp40Dec {
 		inferenceValueStr := tv.Value
 		if inferenceValueStr == "" {
 			//nolint:gosec
 			inferenceValueStr = strconv.FormatFloat(0.1+rand.Float64()*0.15, 'f', 5, 64)
 		}
-		return []*types.InputLabeledValue{
-			{
-				Label: "",
-				Value: alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr),
-			},
-		}
+		return alloraMath.MustNewBoundedExp40DecFromString(inferenceValueStr)
 	}
 
 	getForecastValueStr := func(tv TestWorkerValue) string {
@@ -670,6 +689,10 @@ func generateWorkerDataBundles(
 		}
 
 		inferenceValues := toInputLabeledValues(tv)
+		var inferenceScalar alloraMath.BoundedExp40Dec
+		if inferenceValues == nil {
+			inferenceScalar = singleScalarValue(tv)
+		}
 		forecastValueStr := getForecastValueStr(tv)
 
 		forecastTargets := []int{
@@ -698,6 +721,7 @@ func generateWorkerDataBundles(
 				TopicId:     topicId,
 				BlockHeight: nonce,
 				Inferer:     s.accounts[workerIdx].addrStr,
+				Value:       inferenceScalar,
 				Values:      inferenceValues,
 				ExtraData:   nil,
 				Proof:       "",
@@ -1130,6 +1154,7 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 	if p.outputArity != types.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED {
 		newTopicMsg.OutputArity = p.outputArity
 	}
+	newTopicMsg.LabelCaseSensitive = p.labelCaseSensitive
 
 	res, err := s.emissionsMsgServer.CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
@@ -1170,6 +1195,10 @@ func (s *TestSuite) MockTopic() types.Topic {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 }
 
@@ -1197,6 +1226,9 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		OutputArity:              topic.OutputArity,
 		RequireUnity:             topic.RequireUnity,
 		UnityTolerance:           topic.UnityTolerance,
+		MaxLabelsPerSubmission:   topic.MaxLabelsPerSubmission,
+		LabelWhitelist:           topic.LabelWhitelist,
+		LabelDefaultValue:        topic.LabelDefaultValue,
 	}
 }
 

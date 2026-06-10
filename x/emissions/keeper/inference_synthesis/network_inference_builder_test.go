@@ -378,8 +378,19 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	topic.PNorm = pNorm
 	topic.Epsilon = epsilonTopic
 	topic.CNorm = cNorm
+	topic.LabelCaseSensitive = false
 
-	_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, blockHeight, "y")
+	params, err := k.GetParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	_, _, err = k.GetTopicKeeper().RegisterEpochLabels(
+		ctx,
+		topic.Id,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
 
 	registryVal, err := k.GetTopicKeeper().GetEpochLabelRegistry(ctx, topicId, blockHeight)
@@ -422,11 +433,22 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	topic.Epsilon = epsilonTopic
 	topic.PNorm = pNorm
 	topic.CNorm = cNorm
+	topic.LabelCaseSensitive = false
 
 	moduleParams := emissionstypes.DefaultParams()
 	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
 
-	_, err := s.TopicKeeper().RegisterEpochLabel(s.Ctx(), topicId, blockHeight, "y")
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		s.Ctx(),
+		topic.Id,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
 
 	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)

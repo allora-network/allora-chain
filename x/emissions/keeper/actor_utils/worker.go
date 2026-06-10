@@ -238,7 +238,18 @@ func buildSortedAddressWeights(weightsByAddress map[string]alloraMath.Dec) ([]st
 	return addresses, weights
 }
 
-// Returns a map of active inferer addresses to their latest inference and the inferences themselves
+// closeActiveInferencesSet freezes the active workers' surviving labels into a
+// compact final EpochLabelRegistry, then remaps each vector into a committed
+// types.Inference aligned to the final compact registry.
+//
+// This is where the classification design transitions from temporary label
+// ids to final label ids: during the WSW, active inferences are dense vectors
+// aligned to the temporary first-seen ELR; after this call every downstream
+// consumer sees dense Values aligned to the final compact ELR.
+//
+// Returns (inferer address set, finalized inferences) and also emits
+// EventEpochLabelRegistryFrozen so offchain indexers can track the committed
+// registry size for this epoch.
 func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
@@ -248,10 +259,21 @@ func closeActiveInferencesSet(
 ) (activeInfererAddressesMap map[string]bool, inferences *types.Inferences, err error) {
 	activeInfererAddressesMap = make(map[string]bool, 0)
 
-	inferences, err = k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce.BlockHeight, activeInfererAddresses)
+	inferences, registry, err := k.GetWorkerKeeper().FinalizeInferencesAndRegistryAtClose(
+		ctx, topic, nonce.BlockHeight, activeInfererAddresses,
+	)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errorsmod.Wrapf(err, "failed to finalize active inferences for topic %d nonce %d", topic.Id, nonce.BlockHeight)
 	}
+
+	err = k.GetTopicKeeper().SetEpochLabelRegistry(ctx, registry)
+	if err != nil {
+		return nil, nil, errorsmod.Wrap(err, "error setting final epoch label registry")
+	}
+
+	//nolint:gosec // registry size is bounded by MaxLabelsPerSubmission (uint64), safe to cast
+	registrySize := uint64(len(registry.Labels))
+	types.EmitNewEpochLabelRegistryFrozenEvent(ctx, topic.Id, nonce.BlockHeight, registrySize)
 
 	for _, inference := range inferences.Inferences {
 		activeInfererAddressesMap[inference.Inferer] = true

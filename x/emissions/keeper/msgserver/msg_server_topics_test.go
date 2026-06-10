@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	"strings"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -158,6 +159,48 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			expectSuccess: true,
 		},
 		{
+			name: "Fails with zero max labels per submission",
+			setup: func() *types.CreateNewTopicRequest {
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.MaxLabelsPerSubmission = 0
+				return msg
+			},
+			expectedError: "max labels per submission",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails with max labels per submission above max",
+			setup: func() *types.CreateNewTopicRequest {
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.MaxLabelsPerSubmission = types.MaxMaxLabelsPerSubmission + 1
+				return msg
+			},
+			expectedError: "max labels per submission",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails with topic label whitelist above max",
+			setup: func() *types.CreateNewTopicRequest {
+				err := s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				s.Require().NoError(err)
+
+				msg := s.MockTopicMsg()
+				msg.LabelWhitelist = make([]string, types.DefaultMaxTopicLabelWhitelistSize+1)
+				for i := range msg.LabelWhitelist {
+					msg.LabelWhitelist[i] = "label"
+				}
+				return msg
+			},
+			expectedError: "topic label whitelist size",
+			expectSuccess: false,
+		},
+		{
 			name: "Fails when require_unity true with SINGLE output_arity",
 			setup: func() *types.CreateNewTopicRequest {
 				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
@@ -194,6 +237,20 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 				return msg
 			},
 			expectedError: "unity_tolerance must be in",
+			expectSuccess: false,
+		},
+		{
+			name: "Fails when require_unity true and label_default_value nonzero",
+			setup: func() *types.CreateNewTopicRequest {
+				_ = s.WhitelistsKeeper().AddToTopicCreatorWhitelist(ctx, senderAddr.String())
+				msg := s.MockTopicMsg()
+				msg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
+				msg.LabelDefaultValue = alloraMath.OneDec()
+				return msg
+			},
+			expectedError: "label_default_value must be zero when require_unity is true",
 			expectSuccess: false,
 		},
 		{
@@ -286,6 +343,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -298,14 +359,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Updated metadata",
-		LossMethod:          "mae",
-		AlphaRegret:         alloraMath.NewDecFromInt64(1),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.NewDecFromInt64(3),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -321,6 +385,147 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	require.Equal(originalTopic.OutputArity, updatedTopic.OutputArity)
 	require.Equal(originalTopic.RequireUnity, updatedTopic.RequireUnity)
 	require.Equal(originalTopic.UnityTolerance, updatedTopic.UnityTolerance)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRange() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	testCases := []struct {
+		name string
+		cap  uint64
+	}{
+		{
+			name: "zero",
+			cap:  0,
+		},
+		{
+			name: "above max",
+			cap:  types.MaxMaxLabelsPerSubmission + 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			senderAddr := s.Addrs(0)
+			sender := s.AddrsStr(0)
+
+			s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+			createTopicMsg := s.MockTopicMsg()
+
+			createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+			require.NoError(err)
+			require.NotNil(createResult)
+
+			originalTopic, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+			require.NoError(err)
+
+			updateTopicMsg := &types.UpdateTopicRequest{
+				Sender:                 sender,
+				TopicId:                createResult.TopicId,
+				Metadata:               originalTopic.Metadata,
+				LossMethod:             originalTopic.LossMethod,
+				AlphaRegret:            originalTopic.AlphaRegret,
+				MeritSortitionAlpha:    originalTopic.MeritSortitionAlpha,
+				PNorm:                  originalTopic.PNorm,
+				CNorm:                  originalTopic.CNorm,
+				MaxLabelsPerSubmission: tc.cap,
+				LabelWhitelist:         originalTopic.LabelWhitelist,
+				LabelDefaultValue:      originalTopic.LabelDefaultValue,
+			}
+
+			updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+			require.Error(err)
+			require.Nil(updateResult)
+			require.ErrorContains(err, "max labels per submission")
+
+			got, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+			require.NoError(err)
+			require.Equal(originalTopic.MaxLabelsPerSubmission, got.MaxLabelsPerSubmission)
+		})
+	}
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsLabelWhitelistAboveMax() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createResult, err := msgServer.CreateNewTopic(ctx, s.MockTopicMsg())
+	require.NoError(err)
+	require.NotNil(createResult)
+
+	originalTopic, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+	require.NoError(err)
+
+	oversizedWhitelist := make([]string, types.DefaultMaxTopicLabelWhitelistSize+1)
+	for i := range oversizedWhitelist {
+		oversizedWhitelist[i] = "label"
+	}
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                createResult.TopicId,
+		Metadata:               originalTopic.Metadata,
+		LossMethod:             originalTopic.LossMethod,
+		AlphaRegret:            originalTopic.AlphaRegret,
+		MeritSortitionAlpha:    originalTopic.MeritSortitionAlpha,
+		PNorm:                  originalTopic.PNorm,
+		CNorm:                  originalTopic.CNorm,
+		MaxLabelsPerSubmission: originalTopic.MaxLabelsPerSubmission,
+		LabelWhitelist:         oversizedWhitelist,
+		LabelDefaultValue:      originalTopic.LabelDefaultValue,
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "topic label whitelist size")
+
+	got, err := s.TopicKeeper().GetTopic(ctx, createResult.TopicId)
+	require.NoError(err)
+	require.Equal(originalTopic.LabelWhitelist, got.LabelWhitelist)
+}
+
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsNonzeroLabelDefaultValueWhenRequireUnity() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	senderAddr := s.Addrs(0)
+	sender := s.AddrsStr(0)
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	createTopicMsg := s.MockTopicMsg()
+	createTopicMsg.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	createTopicMsg.RequireUnity = true
+	createTopicMsg.UnityTolerance = alloraMath.MustNewDecFromString("0.01")
+	createTopicMsg.LabelDefaultValue = alloraMath.ZeroDec()
+
+	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
+	require.NoError(err)
+	require.NotNil(createResult)
+
+	updateTopicMsg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                createResult.TopicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.OneDec(),
+	}
+
+	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
+	require.Error(err)
+	require.Nil(updateResult)
+	require.ErrorContains(err, "label_default_value must be zero when require_unity is true")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
@@ -355,6 +560,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -363,14 +572,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              otherUser,
-		TopicId:             topicId,
-		Metadata:            "Updated metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.NewDecFromInt64(1),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.NewDecFromInt64(3),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 otherUser,
+		TopicId:                topicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -386,14 +598,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             nonexistentTopicId,
-		Metadata:            "Updated metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                nonexistentTopicId,
+		Metadata:               "Updated metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -411,14 +626,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "valid metadata",
-		LossMethod:          "",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "valid metadata",
+		LossMethod:             "",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -427,14 +645,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long loss method
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "valid metadata",
-		LossMethod:          strings.Repeat("a", 257),
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "valid metadata",
+		LossMethod:             strings.Repeat("a", 257),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -443,14 +664,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            strings.Repeat("a", 257),
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               strings.Repeat("a", 257),
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	updateResult, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.Error(err)
@@ -492,6 +716,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
@@ -506,14 +734,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Test successful update
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "updated metadata",
-		LossMethod:          "mae",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "updated metadata",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	updateResult, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -561,20 +792,27 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
 	topicId := createResult.TopicId
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
@@ -588,14 +826,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm with valid values
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("50.5"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("50.5"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -606,14 +847,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value -100
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("-100"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("-100"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -624,14 +868,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value 100
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("100"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("100"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -646,14 +893,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	s.WithBlockHeight(50)
 	ctx = s.Ctx()
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.25"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.4"),
-		PNorm:               alloraMath.MustNewDecFromString("3.5"),
-		CNorm:               alloraMath.MustNewDecFromString("100"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.25"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.4"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.5"),
+		CNorm:                  alloraMath.MustNewDecFromString("100"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -668,84 +918,85 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid alpha_regret (<=0)
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.ZeroDec(),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.ZeroDec(),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err := msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "alpha regret")
 
 	// Invalid merit_sortition_alpha (>1)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("1.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("1.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "merit sortition alpha")
 
 	// Invalid p_norm (below range)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("0.5"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
-	}
-	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
-	require.ErrorContains(err, "p-norm")
-
-	// Invalid p_norm (above range)
-	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("10.1"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("0.9"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "p-norm")
 
 	// Invalid c_norm (below -100)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("-101"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("-101"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
 
 	// Invalid c_norm (above 100)
 	updateTopicMsg = &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.1"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("101"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("101"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorContains(err, "c_norm")
@@ -782,6 +1033,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -797,14 +1052,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -846,6 +1104,10 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	createResult, err := msgServer.CreateNewTopic(ctx, createTopicMsg)
 	require.NoError(err)
@@ -858,14 +1120,17 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
-		Sender:              sender,
-		TopicId:             topicId,
-		Metadata:            "Original metadata",
-		LossMethod:          "mse",
-		AlphaRegret:         alloraMath.MustNewDecFromString("0.1"),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.3"),
-		PNorm:               alloraMath.MustNewDecFromString("3.0"),
-		CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "Original metadata",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:         nil,
+		LabelDefaultValue:      alloraMath.ZeroDec(),
 	}
 	_, err = msgServer.UpdateTopic(ctx, updateTopicMsg)
 	require.NoError(err)
@@ -873,4 +1138,536 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	current, err := s.TopicKeeper().GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.Equal(alloraMath.MustNewDecFromString("0.3"), current.MeritSortitionAlpha)
+}
+
+// createTopicForWSWTests builds a topic that is active with a worker
+// submission window currently covering the block height set by the caller.
+// Returns the topic id.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) createTopicForWSWTests(sender string) uint64 {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+	senderAddr, err := sdk.AccAddressFromBech32(sender)
+	require.NoError(err)
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+	create := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "wsw test",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    false,
+		EnableReputerWhitelist:   false,
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   4,
+		LabelWhitelist:           []string{"a", "b", "c"},
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+	}
+	resp, err := msgServer.CreateNewTopic(ctx, create)
+	require.NoError(err)
+	return resp.TopicId
+}
+
+// setupActiveTopicWithOpenWSW creates an active topic with an unfulfilled worker
+// nonce whose submission window covers the current block (nonce at 5, block at 6).
+func (s *MsgServerTestSuite) setupActiveTopicWithOpenWSW(sender string) (sdk.Context, uint64) {
+	ctx := s.Ctx()
+	require := s.Require()
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	return s.Ctx(), topicId
+}
+
+// TestSetTopicCanonicalizesLabelWhitelist asserts that
+// CreateNewTopic canonicalizes the whitelist in place: trimmed, NFC-normalized,
+// and deduplicated.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.MintTokensToAddress(s.Addrs(0), types.DefaultParams().CreateTopicFee)
+	create := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "canon whitelist",
+		LossMethod:               "mse",
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		// Whitespace and case collapse under the default case-insensitive
+		// canonicalizer; a canonical duplicate should be rejected.
+		LabelWhitelist:    []string{"  Foo  ", "foo"},
+		LabelDefaultValue: alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.CreateNewTopic(ctx, create)
+	require.ErrorIs(err, types.ErrInvalidLabelName, "canonical duplicate must be rejected at SetTopic")
+
+	create.LabelWhitelist = []string{"  Foo  ", "bar/baz"}
+	resp, err := msgServer.CreateNewTopic(ctx, create)
+	require.NoError(err)
+	stored, err := s.TopicKeeper().GetTopic(ctx, resp.TopicId)
+	require.NoError(err)
+	require.Equal([]string{"foo", "bar/baz"}, stored.LabelWhitelist,
+		"whitelist must be persisted in canonical form")
+}
+
+// TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen asserts the generalized
+// WSW lock now also guards max_labels_per_submission mutations.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8, // changed -> must be rejected
+		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission,
+		"MaxLabelsPerSubmission must not have changed while WSW was open")
+}
+
+// TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen asserts the generalized
+// WSW lock now also guards label_whitelist mutations.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"a", "b"}, // changed: dropped "c"
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist,
+		"LabelWhitelist must not have changed while WSW was open")
+}
+
+// TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowOpen asserts the generalized
+// WSW lock also guards label_default_value mutations.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowOpen() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	s.WithBlockHeight(6)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.OneDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	require.ErrorContains(err, "label_default_value")
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.True(got.LabelDefaultValue.Equal(alloraMath.ZeroDec()),
+		"LabelDefaultValue must not have changed while WSW was open")
+}
+
+// TestUpdateTopicWhitelistAllowedAfterWSWClosed confirms the WSW lock is
+// time-bounded: once the submission window has closed for the outstanding
+// nonce, whitelist/cap mutations are accepted again (and the whitelist is
+// canonicalized by SetTopic on its way in).
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	// 5 + 10 = 15, so block 16 is strictly past the window.
+	s.WithBlockHeight(16)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         []string{"  A  ", "b/c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(8), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b/c"}, got.LabelWhitelist,
+		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
+}
+
+// TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission documents that
+// UpdateTopic treats max_labels_per_submission as the submitted value, not as
+// "unchanged" or "use module default". Values outside the allowed cap range
+// are rejected and the topic remains unchanged.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	cases := []struct {
+		name        string
+		cap         uint64
+		errContains string
+	}{
+		{name: "zero", cap: 0, errContains: "max labels per submission must be >="},
+		{name: "above max", cap: types.MaxMaxLabelsPerSubmission + 1, errContains: "max labels per submission must be <="},
+	}
+
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			sender := s.AddrsStr(0)
+			topicId := s.createTopicForWSWTests(sender)
+
+			msg := &types.UpdateTopicRequest{
+				Sender:                 sender,
+				TopicId:                topicId,
+				Metadata:               "full payload clear",
+				LossMethod:             "mse",
+				AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+				MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				MaxLabelsPerSubmission: tc.cap,
+				LabelWhitelist:         nil,
+			}
+			_, err := msgServer.UpdateTopic(ctx, msg)
+			require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+			require.ErrorContains(err, tc.errContains)
+
+			got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			require.NoError(err)
+			require.Equal(uint64(4), got.MaxLabelsPerSubmission,
+				"rejected max_labels_per_submission must not modify the topic")
+			require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist,
+				"rejected max_labels_per_submission must not clear the whitelist")
+		})
+	}
+}
+
+// TestUpdateTopicFullPayloadClearsLabelWhitelist documents that UpdateTopic is
+// a full-payload operation: a nil label_whitelist replaces the existing topic
+// whitelist with unrestricted, rather than preserving the old whitelist.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	topicId := s.createTopicForWSWTests(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "full payload clear",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         nil,
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(8), got.MaxLabelsPerSubmission)
+	require.Empty(got.LabelWhitelist,
+		"nil label_whitelist must clear the existing whitelist under full-payload UpdateTopic")
+}
+
+// TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow pins the
+// generalization from the v14 "newest unfulfilled nonce only" WSW guard to
+// the current "any unfulfilled nonce" guard. With WorkerSubmissionWindow=10
+// and two outstanding worker nonces, the topic has two open WSWs. A param
+// update must be rejected if *any* of them is currently open, regardless
+// of whether the open one is the newest. At block 12 the newest nonce
+// (200) is not yet inside its submission window [200, 210], while the
+// older nonce (5) is still inside its window [5, 15] and covers block 12.
+// A regression to the newest-only check would therefore accept the
+// update; the generalized check must reject it.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWithinWindow() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 200}))
+	s.WithBlockHeight(12)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8, // changed -> must be rejected
+		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,
+		"UpdateTopic must reject mutations while any unfulfilled nonce is within its WSW, not only the newest")
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission,
+		"MaxLabelsPerSubmission must not change while an older nonce's WSW remains open")
+}
+
+// TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW confirms that metadata and
+// other non-guarded fields may be updated while a worker submission window is open.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "updated metadata during wsw",
+		LossMethod:             "mae",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal("updated metadata during wsw", got.Metadata)
+	require.Equal("mae", got.LossMethod)
+	require.Equal(alloraMath.MustNewDecFromString("0.1"), got.MeritSortitionAlpha)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
+	require.True(got.LabelDefaultValue.Equal(alloraMath.ZeroDec()))
+}
+
+// TestUpdateTopicWSWLockListsAllChangedGuardedFields asserts the WSW rejection
+// error lists every guarded field that changed, not just the first one.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllChangedGuardedFields() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         []string{"a", "b"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	require.ErrorContains(err, "max_labels_per_submission, label_whitelist")
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
+}
+
+// TestUpdateTopicWSWLockListsAllFourGuardedFields asserts all four WSW-guarded
+// field names appear in the rejection error when they all change at once.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllFourGuardedFields() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.3"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 8,
+		LabelWhitelist:         []string{"a", "b"},
+		LabelDefaultValue:      alloraMath.OneDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	require.ErrorContains(err,
+		"merit_sortition_alpha, max_labels_per_submission, label_whitelist, label_default_value")
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString("0.1"), got.MeritSortitionAlpha)
+	require.Equal(uint64(4), got.MaxLabelsPerSubmission)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
+	require.True(got.LabelDefaultValue.Equal(alloraMath.ZeroDec()))
+}
+
+// TestUpdateTopicWhitelistCosmeticChangeAllowedDuringOpenWSW confirms that a
+// whitelist update that canonicalizes to the existing list does not trigger the WSW guard.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicWhitelistCosmeticChangeAllowedDuringOpenWSW() {
+	msgServer := s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"  a  ", "b", "c"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.Equal([]string{"a", "b", "c"}, got.LabelWhitelist)
 }

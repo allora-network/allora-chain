@@ -18,15 +18,23 @@ import (
 )
 
 // MigrateStore migrates the emissions module from version 14 to version 15.
-// It backfills topic defaults required by the classification feature and
-// migrates stored network inference bundles to the new labeled bundle format.
+// It backfills params and topic defaults required by the classification
+// feature, then migrates stored network inference bundles to the new labeled
+// bundle format.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 14 TO VERSION 15")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	if err := MigrateTopics(ctx, store, cdc); err != nil {
+	// Params must be backfilled before post-v15 code reads label-related caps;
+	// pre-v15 stored Params decode zero for newly added label params.
+	if err := MigrateParams(ctx, emissionsKeeper); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 14 TO VERSION 15")
+		return err
+	}
+
+	if err := MigrateTopics(ctx, emissionsKeeper, store, cdc); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
@@ -55,9 +63,62 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
+// MigrateParams backfills module params fields introduced for v15 label
+// canonicalization. Only zero-valued fields are touched; all other params are
+// left unchanged.
+//
+// Backfilled fields:
+//   - MaxCanonicalLabelByteLength: defaults to the module-initial cap when
+//     zero. A zero cap would reject every label after v15.
+//   - MaxTopicLabelWhitelistSize: defaults to the module-initial cap when
+//     zero. A zero cap would allow no topic whitelist entries.
+//   - MaxEpochLabelRegistrySize: defaults to the module-initial cap when zero.
+//     A zero cap would reject every new epoch label registration.
+func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	params, err := emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: failed to get existing params")
+	}
+
+	defaultParams := emissionstypes.DefaultParams()
+	changed := false
+	if params.MaxCanonicalLabelByteLength == 0 {
+		params.MaxCanonicalLabelByteLength = defaultParams.MaxCanonicalLabelByteLength
+		changed = true
+	}
+	if params.MaxTopicLabelWhitelistSize == 0 {
+		params.MaxTopicLabelWhitelistSize = defaultParams.MaxTopicLabelWhitelistSize
+		changed = true
+	}
+	if params.MaxEpochLabelRegistrySize == 0 {
+		params.MaxEpochLabelRegistrySize = defaultParams.MaxEpochLabelRegistrySize
+		changed = true
+	}
+
+	if !changed {
+		ctx.Logger().Info("MIGRATION V15: params backfill skipped (all fields already populated)")
+		return nil
+	}
+
+	if err := params.Validate(); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: backfilled params failed validation")
+	}
+	if err := emissionsKeeper.SetParams(ctx, params); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: failed to persist backfilled params")
+	}
+
+	ctx.Logger().Info(
+		"MIGRATION V15: params backfill completed",
+		"maxCanonicalLabelByteLength", params.MaxCanonicalLabelByteLength,
+		"maxTopicLabelWhitelistSize", params.MaxTopicLabelWhitelistSize,
+		"maxEpochLabelRegistrySize", params.MaxEpochLabelRegistrySize,
+	)
+	return nil
+}
+
 // MigrateTopics backfills default topic settings introduced for the
 // classification/multilabel feature without disturbing existing values.
-func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 	defer iterator.Close()
@@ -69,6 +130,10 @@ func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 
 	updates := make([]kv, 0)
 
+	params, err := emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V15: failed to get existing params")
+	}
 	for ; iterator.Valid(); iterator.Next() {
 		var topic emissionstypes.Topic
 		if err := cdc.Unmarshal(iterator.Value(), &topic); err != nil {
@@ -88,9 +153,22 @@ func MigrateTopics(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 			topic.UnityTolerance = alloraMath.ZeroDec()
 			changed = true
 		}
+		if topic.MaxLabelsPerSubmission == 0 {
+			topic.MaxLabelsPerSubmission = emissionstypes.DefaultMaxLabelsPerSubmission
+			changed = true
+		}
+		if topic.LabelDefaultValue.IsNaN() {
+			topic.LabelDefaultValue = alloraMath.ZeroDec()
+			changed = true
+		}
 
 		if !changed {
 			continue
+		}
+
+		// Safety check: validate the topic after backfill
+		if err := topic.Validate(params); err != nil {
+			return errorsmod.Wrapf(err, "v15 migration: topic %d failed validation after backfill", topic.Id)
 		}
 
 		updates = append(updates, kv{
@@ -155,6 +233,14 @@ func migrateInferenceBundles(
 		}
 
 		networkInferenceBundle := emissionstypes.ValueBundleToNetworkInferenceBundle(&oldNetworkInference)
+		if networkInferenceBundle == nil {
+			return errorsmod.Wrapf(
+				emissionstypes.ErrInvalidValue,
+				"converted %s bundle is nil; topicId: %d",
+				logName,
+				oldNetworkInference.TopicId,
+			)
+		}
 
 		if err := networkInferenceBundle.Validate(); err != nil {
 			return errorsmod.Wrapf(err, "failed to validate %s", logName)

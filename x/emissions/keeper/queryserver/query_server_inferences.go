@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"cosmossdk.io/collections"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -15,26 +16,33 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
-func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInferenceByTopicIdRequest) (_ *emissionstypes.GetWorkerLatestInferenceByTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerLatestInferenceByTopicId", time.Now(), &err)
-
-	if err = emissionstypes.ValidateStringIsBech32(req.WorkerAddress); err != nil {
+func (qs queryServer) GetWorkerLatestInputInferenceByTopicId(
+	ctx context.Context,
+	req *emissionstypes.GetWorkerLatestInputInferenceByTopicIdRequest,
+) (_ *emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse, err error) {
+	defer metrics.RecordMetrics("GetWorkerLatestInputInferenceByTopicId", time.Now(), &err)
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+	if err := emissionstypes.ValidateStringIsBech32(req.WorkerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
-	topicExists, err := qs.tk.TopicExists(ctx, req.TopicId)
-	if !topicExists {
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
+	if errors.Is(err, emissionstypes.ErrTopicDoesNotExist) {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
 	} else if err != nil {
 		return nil, err
 	}
 
-	inference, err := qs.wk.GetWorkerLatestInferenceByTopicId(ctx, req.TopicId, req.WorkerAddress)
+	inference, err := qs.wk.GetWorkerLatestInputInferenceByTopicId(ctx, topic, req.WorkerAddress)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, status.Errorf(codes.NotFound, "latest input inference not found for topic %v worker %s", req.TopicId, req.WorkerAddress)
+		}
 		return nil, err
 	}
 
-	return &emissionstypes.GetWorkerLatestInferenceByTopicIdResponse{LatestInference: &inference}, nil
+	return &emissionstypes.GetWorkerLatestInputInferenceByTopicIdResponse{LatestInputInference: inference}, nil
 }
 
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (_ *emissionstypes.GetInferencesAtBlockResponse, err error) {

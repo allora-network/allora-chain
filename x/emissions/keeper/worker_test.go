@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -164,6 +163,8 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
+// TestGetWorkerLatestInferenceByTopicId exercises the live temporary inference
+// store used during the worker submission window.
 func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
@@ -175,7 +176,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	s.Require().Error(err, "Retrieving an inference that does not exist should result in an error")
 
 	blockHeight1 := int64(12345)
-	newInference1 := types.Inference{
+	firstInference := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     workerAccStr,
@@ -183,24 +184,24 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	err = k.InsertInference(ctx, topicId, newInference1)
-	s.Require().NoError(err, "Inserting inferences should not fail")
+	err = k.InsertInference(ctx, topicId, firstInference)
+	s.Require().NoError(err, "Staging the first inference should not fail")
 
 	blockHeight2 := int64(12346)
-	newInference2 := types.Inference{
+	secondInference := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     workerAccStr,
-		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("11")},
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	err = k.InsertInference(ctx, topicId, newInference2)
-	s.Require().NoError(err, "Inserting inferences should not fail")
+	err = k.InsertInference(ctx, topicId, secondInference)
+	s.Require().NoError(err, "Overwriting the staged inference should not fail")
 
 	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
 	s.Require().NoError(err, "Retrieving an existing inference should not fail")
-	s.Require().Equal(newInference2, retrievedInference, "Retrieved inference should match the inserted one")
+	s.Require().Equal(secondInference, retrievedInference, "Retrieved inference should match the latest staged inference")
 }
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
@@ -336,6 +337,36 @@ func (s *KeeperTestSuite) TestRemoveWorker() {
 	s.Require().False(isRegisteredPost, "Worker should not be registered in the topic after removal")
 }
 
+// appendInference is a test-only convenience that reproduces the former
+// keeper.AppendInference wrapper: plan, then commit via the admitted or
+// non-admitted path, returning whether the inferer was admitted.
+func (s *KeeperTestSuite) appendInference(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight keeper.BlockHeight,
+	inference *types.Inference,
+	maxTopInferersToReward uint64,
+) (bool, error) {
+	k := s.WorkerKeeper()
+	if inference == nil {
+		return false, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
+	}
+	plan, err := k.PlanInferenceAdmission(ctx, topic, nonceBlockHeight, inference.Inferer, maxTopInferersToReward)
+	if err != nil {
+		return false, err
+	}
+	if plan.Admitted() {
+		if err := k.CommitAdmittedInference(ctx, topic, nonceBlockHeight, inference, plan); err != nil {
+			return false, err
+		}
+	} else {
+		if err := k.CommitNonAdmittedInference(ctx, topic, nonceBlockHeight, plan); err != nil {
+			return false, err
+		}
+	}
+	return plan.Admitted(), nil
+}
+
 func (s *KeeperTestSuite) TestAppendInference() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
@@ -389,8 +420,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		},
 	}
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
+		s.Require().True(admitted)
 	}
 
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
@@ -402,8 +434,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference, params.MaxTopInferersToReward)
+	admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, &newInference, params.MaxTopInferersToReward)
 	s.Require().NoError(err)
+	s.Require().True(admitted)
 	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
@@ -418,8 +451,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		Proof:       "",
 	}
 
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
+	admitted, err = s.appendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
 	s.Require().NoError(err)
+	s.Require().True(admitted)
 	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
@@ -469,7 +503,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
+	_, err = s.appendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
 	// Confirm no change in EMA score
 	updateAttemptForWorker2, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, worker2)
@@ -478,6 +512,603 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().NoError(err)
 	s.Require().Equal(updateAttemptForWorker2Val, updatedWorker2ScoreVal, "unchanged score")
 	s.Require().Equal(updateAttemptForWorker2.BlockHeight, updatedWorker2Score.BlockHeight, "unchanged height")
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestPlanInferenceAdmission() {
+	type tc struct {
+		name      string
+		setup     func(ctx sdk.Context, topicId uint64, inferer string) uint64
+		wantKind  keeper.InferenceAdmissionKind
+		wantFirst bool
+		wantErr   bool
+	}
+
+	cases := []tc{
+		{
+			name: "already_active_inferer_errors",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, inferer))
+				return 1
+			},
+			wantErr: true,
+		},
+		{
+			name:      "first_submission_with_open_slot_plans_admission",
+			setup:     func(sdk.Context, uint64, string) uint64 { return 2 },
+			wantKind:  keeper.InferenceAdmissionOpenSlot,
+			wantFirst: true,
+		},
+		{
+			name: "experienced_worker_with_open_slot_plans_admission",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				score := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, score))
+				return 2
+			},
+			wantKind: keeper.InferenceAdmissionOpenSlot,
+		},
+		{
+			name: "full_active_set_and_lower_score_plans_not_admitted",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				activeInferer := s.AddrsStr(1)
+				activeScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(100)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, activeScore))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, candidateScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, activeScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return 1
+			},
+			wantKind: keeper.InferenceAdmissionNotAdmitted,
+		},
+		{
+			name: "full_active_set_and_higher_score_plans_eviction",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				activeInferer := s.AddrsStr(1)
+				activeScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, activeScore))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, candidateScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, activeScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return 1
+			},
+			wantKind: keeper.InferenceAdmissionEvictLowest,
+		},
+		{
+			name:      "zero_max_top_inferers_plans_not_admitted",
+			setup:     func(sdk.Context, uint64, string) uint64 { return 0 },
+			wantKind:  keeper.InferenceAdmissionNotAdmitted,
+			wantFirst: true,
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			topicId := s.CreateTopic()
+			topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			nonce := types.BlockHeight(10)
+			inferer := s.AddrsStr(0)
+
+			maxTopInferersToReward := c.setup(ctx, topicId, inferer)
+			activeBefore, err := s.WorkerKeeper().GetActiveInferersForTopic(ctx, topicId)
+			s.Require().NoError(err)
+			scoreBefore, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+			s.Require().NoError(err)
+			registryBefore, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
+			s.Require().NoError(err)
+
+			plan, err := s.WorkerKeeper().PlanInferenceAdmission(ctx, topic, nonce, inferer, maxTopInferersToReward)
+			if c.wantErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().Equal(c.wantKind, plan.Kind)
+			s.Require().Equal(c.wantFirst, plan.FirstSubmission)
+			s.Require().Equal(inferer, plan.Inferer)
+
+			activeAfter, err := s.WorkerKeeper().GetActiveInferersForTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(activeBefore, activeAfter)
+			scoreAfter, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+			s.Require().NoError(err)
+			s.Require().Equal(scoreBefore, scoreAfter)
+			registryAfter, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
+			s.Require().NoError(err)
+			s.Require().Equal(registryBefore, registryAfter)
+		})
+	}
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestCommitInference() {
+	makeInference := func(topicId uint64, nonce types.BlockHeight, inferer string, value string) *types.Inference {
+		return &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: nonce,
+			Inferer:     inferer,
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(value)},
+		}
+	}
+
+	type tc struct {
+		name            string
+		setup           func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference)
+		assert          func(ctx sdk.Context, topicId uint64, inferer string)
+		wantErr         bool
+		errIsReq        bool
+		wantErrContains string
+	}
+
+	cases := []tc{
+		{
+			name: "open_slot_adds_active_inferer_inserts_inference_and_updates_lowest",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					WorkerAddresses:  []string{},
+					FirstSubmission:  true,
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("1", got.Values[0].String())
+				lowest, found, err := s.ScoresKeeper().GetLowestInfererScoreEma(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().True(found)
+				s.Require().Equal(inferer, lowest.Address)
+			},
+		},
+		{
+			name: "eviction_removes_lowest_active_inference_and_adds_candidate",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				evicted := s.AddrsStr(1)
+				evictedScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: evicted, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, evicted, evictedScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, evictedScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, evicted))
+				s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, *makeInference(topicId, nonce, evicted, "0.1")))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   evictedScore,
+					WorkerAddresses:  []string{evicted},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				evictedActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, s.AddrsStr(1))
+				s.Require().NoError(err)
+				s.Require().False(evictedActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, s.AddrsStr(1))
+				s.Require().Error(err)
+				got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("1", got.Values[0].String())
+			},
+		},
+		{
+			name: "open_slot_keeps_existing_lowest_when_candidate_score_is_higher",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				activeInferer := s.AddrsStr(1)
+				lowestScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, lowestScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, lowestScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   lowestScore,
+					WorkerAddresses:  []string{activeInferer},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				lowest, found, err := s.ScoresKeeper().GetLowestInfererScoreEma(ctx, topicId)
+				s.Require().NoError(err)
+				s.Require().True(found)
+				s.Require().Equal(s.AddrsStr(1), lowest.Address)
+				s.Require().Equal("10", lowest.Score.String())
+			},
+		},
+		{
+			name: "not_admitted_existing_worker_updates_passive_ema_without_inference",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					FirstSubmission:  false,
+				}, nil
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().False(isActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+				score, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal(types.BlockHeight(10), score.BlockHeight)
+				s.Require().True(score.Score.Gt(alloraMath.NewDecFromInt64(10)))
+			},
+		},
+		{
+			name: "not_admitted_first_submission_sets_initial_ema_without_inference",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(25)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					FirstSubmission:  true,
+				}, nil
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				score, err := s.ScoresKeeper().GetInfererScoreEma(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("25", score.Score.String())
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+			},
+		},
+		{
+			name: "mismatched_inference_and_plan_inferer_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, makeInference(topicId, nonce, s.AddrsStr(1), "1")
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "open_slot_plan_with_nil_inference_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "eviction_plan_with_nil_inference_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "unknown_plan_kind_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionKind(255),
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "empty_plan_inferer_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, _ string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: "", Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          "",
+					PreviousEmaScore: score,
+					FirstSubmission:  true,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "planned_score_address_mismatch_errors",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: s.AddrsStr(1), Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionNotAdmitted,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					FirstSubmission:  true,
+				}, nil
+			},
+			wantErr:  true,
+			errIsReq: true,
+		},
+		{
+			name: "eviction_plan_with_inactive_lowest_inferer_errors",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				inactiveLowest := s.AddrsStr(1)
+				lowestScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inactiveLowest, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inactiveLowest, lowestScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, lowestScore))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   lowestScore,
+					WorkerAddresses:  []string{inactiveLowest},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			wantErr:         true,
+			wantErrContains: "inferer with lowest score is not active",
+		},
+		{
+			name: "eviction_missing_evicted_inference_documents_remove_behavior",
+			setup: func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				evicted := s.AddrsStr(1)
+				evictedScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: evicted, Score: alloraMath.NewDecFromInt64(10)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, evicted, evictedScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, evictedScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, evicted))
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionEvictLowest,
+					Inferer:          inferer,
+					PreviousEmaScore: candidateScore,
+					LowestEmaScore:   evictedScore,
+					WorkerAddresses:  []string{evicted},
+				}, makeInference(topicId, nonce, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				evictedActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, s.AddrsStr(1))
+				s.Require().NoError(err)
+				s.Require().False(evictedActive)
+				got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().Equal("1", got.Values[0].String())
+			},
+		},
+		{
+			name: "malformed_planned_score_errors_before_outcome_side_effects",
+			setup: func(_ sdk.Context, topicId uint64, _ types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: -1, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+				}, makeInference(topicId, 10, inferer, "1")
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().False(isActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+			},
+			wantErr: true,
+		},
+		{
+			name: "open_slot_malformed_inference_errors_after_adding_active_inferer",
+			setup: func(_ sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) (keeper.InferenceAdmissionPlan, *types.Inference) {
+				score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+				inference := makeInference(topicId, nonce, inferer, "1")
+				inference.Values = nil
+				return keeper.InferenceAdmissionPlan{
+					Kind:             keeper.InferenceAdmissionOpenSlot,
+					Inferer:          inferer,
+					PreviousEmaScore: score,
+					WorkerAddresses:  []string{},
+					FirstSubmission:  true,
+				}, inference
+			},
+			assert: func(ctx sdk.Context, topicId uint64, inferer string) {
+				isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+				s.Require().NoError(err)
+				s.Require().True(isActive)
+				_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+				s.Require().Error(err)
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			topicId := s.CreateTopic()
+			topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			nonce := types.BlockHeight(10)
+			inferer := s.AddrsStr(0)
+
+			plan, inference := c.setup(ctx, topicId, nonce, inferer)
+			if plan.Admitted() {
+				err = s.WorkerKeeper().CommitAdmittedInference(ctx, topic, nonce, inference, plan)
+			} else {
+				err = s.WorkerKeeper().CommitNonAdmittedInference(ctx, topic, nonce, plan)
+			}
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.errIsReq {
+					s.Require().True(errorsmod.IsOf(err, sdkerrors.ErrInvalidRequest))
+				}
+				if c.wantErrContains != "" {
+					s.Require().ErrorContains(err, c.wantErrContains)
+				}
+				if c.assert != nil {
+					c.assert(ctx, topicId, inferer)
+				}
+				return
+			}
+			s.Require().NoError(err)
+			c.assert(ctx, topicId, inferer)
+		})
+	}
+}
+
+// TestCommitInferenceGuardsRejectWrongMethod covers the API-split guards directly:
+// CommitAdmittedInference must reject a not-admitted plan and CommitNonAdmittedInference
+// must reject an admitted plan, in both cases with a logic error and before any
+// score or active-set side effect is written. These mismatch branches are
+// unreachable from TestCommitInference, whose runner routes on plan.Admitted(), so
+// they require a dedicated test.
+//
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestCommitInferenceGuardsRejectWrongMethod() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	nonce := types.BlockHeight(10)
+	inferer := s.AddrsStr(0)
+	score := types.Score{TopicId: topicId, BlockHeight: nonce, Address: inferer, Score: alloraMath.NewDecFromInt64(50)}
+
+	// An admitted plan sent to the not-admitted commit path must be rejected.
+	admittedPlan := keeper.InferenceAdmissionPlan{
+		Kind:             keeper.InferenceAdmissionOpenSlot,
+		Inferer:          inferer,
+		PreviousEmaScore: score,
+	}
+	err = s.WorkerKeeper().CommitNonAdmittedInference(ctx, topic, nonce, admittedPlan)
+	s.Require().Error(err)
+	s.Require().True(errorsmod.IsOf(err, sdkerrors.ErrLogic))
+
+	// A not-admitted plan sent to the admitted commit path must be rejected the same
+	// way, even when a well-formed inference is supplied.
+	notAdmittedPlan := keeper.InferenceAdmissionPlan{
+		Kind:             keeper.InferenceAdmissionNotAdmitted,
+		Inferer:          inferer,
+		PreviousEmaScore: score,
+	}
+	inference := &types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     inferer,
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+	}
+	err = s.WorkerKeeper().CommitAdmittedInference(ctx, topic, nonce, inference, notAdmittedPlan)
+	s.Require().Error(err)
+	s.Require().True(errorsmod.IsOf(err, sdkerrors.ErrLogic))
+
+	// The guards fire before any side effect: the inferer was never activated and no
+	// inference was stored.
+	isActive, err := s.WorkerKeeper().IsActiveInferer(ctx, topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+	_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+	s.Require().Error(err)
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestAppendInferenceFlow() {
+	type tc struct {
+		name      string
+		setup     func(ctx sdk.Context, topicId uint64, nonce types.BlockHeight, inferer string) uint64
+		wantAdmit bool
+		wantErr   bool
+	}
+
+	cases := []tc{
+		{
+			name:    "nil_inference_errors",
+			setup:   func(sdk.Context, uint64, types.BlockHeight, string) uint64 { return 1 },
+			wantErr: true,
+		},
+		{
+			name:      "open_slot_admits_and_stores_inference",
+			setup:     func(sdk.Context, uint64, types.BlockHeight, string) uint64 { return 1 },
+			wantAdmit: true,
+		},
+		{
+			name: "full_active_set_low_score_returns_false_without_storing_inference",
+			setup: func(ctx sdk.Context, topicId uint64, _ types.BlockHeight, inferer string) uint64 {
+				activeInferer := s.AddrsStr(1)
+				activeScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: activeInferer, Score: alloraMath.NewDecFromInt64(100)}
+				candidateScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
+				s.Require().NoError(s.ScoresKeeper().SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.NewDecFromInt64(1000)))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, activeInferer, activeScore))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, candidateScore))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, activeScore))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, activeInferer))
+				return 1
+			},
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			topicId := s.CreateTopic()
+			topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			nonce := types.BlockHeight(10)
+			inferer := s.AddrsStr(0)
+			maxTopInferersToReward := c.setup(ctx, topicId, nonce, inferer)
+
+			var inference *types.Inference
+			if c.name != "nil_inference_errors" {
+				inference = &types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce,
+					Inferer:     inferer,
+					Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
+				}
+			}
+
+			admitted, err := s.appendInference(ctx, topic, nonce, inference, maxTopInferersToReward)
+			if c.wantErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+			s.Require().Equal(c.wantAdmit, admitted)
+			_, err = s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+			if c.wantAdmit {
+				s.Require().NoError(err)
+			} else {
+				s.Require().Error(err)
+			}
+		})
+	}
 }
 
 func getNewAddress() string {
@@ -540,8 +1171,9 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 
 	allInferences := types.Inferences{Inferences: inferences}
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
+		s.Require().True(admitted)
 	}
 
 	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
@@ -581,8 +1213,9 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 	allInferences = types.Inferences{Inferences: inferences}
 	nonce.BlockHeight++
 	for _, inference := range allInferences.Inferences {
-		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		admitted, err := s.appendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
 		s.Require().NoError(err)
+		s.Require().True(admitted)
 	}
 
 	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
@@ -651,6 +1284,9 @@ func mockUninitializedParams() types.Params {
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
+		MaxCanonicalLabelByteLength:         64,
+		MaxTopicLabelWhitelistSize:          types.DefaultMaxTopicLabelWhitelistSize,
+		MaxEpochLabelRegistrySize:           types.DefaultMaxEpochLabelRegistrySize,
 	}
 }
 
@@ -912,245 +1548,182 @@ func (s *KeeperTestSuite) TestRemoveForecast() {
 	s.Require().Error(err) // Expect an error since the forecast should be removed
 }
 
+// TestRemoveInference verifies that RemoveInference scrubs the worker's
+// temporary inference from the live WSW store.
 func (s *KeeperTestSuite) TestRemoveInference() {
 	ctx := s.Ctx()
 	k := s.WorkerKeeper()
 	topicId := s.CreateTopic()
 	inferer := s.AddrsStr(0)
 
-	// Create an inference
 	inference := types.Inference{
 		TopicId:     topicId,
 		BlockHeight: 100,
-		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 		Inferer:     inferer,
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 		ExtraData:   []byte("data"),
 		Proof:       "",
 	}
 
-	// Insert the inference
 	err := k.InsertInference(ctx, topicId, inference)
 	s.Require().NoError(err)
 
-	// Verify the inference was added
 	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
 	s.Require().NoError(err)
-	s.Require().Equal(inference, retrievedInference)
+	s.Require().Equal(topicId, retrievedInference.TopicId)
+	s.Require().Equal(int64(100), retrievedInference.BlockHeight)
+	s.Require().Equal(inferer, retrievedInference.Inferer)
+	s.Require().Equal("1", retrievedInference.Values[0].String())
 
-	// Remove the inference
 	err = k.RemoveInference(ctx, topicId, inferer)
 	s.Require().NoError(err)
 
-	// Verify the inference was removed
 	_, err = k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
-	s.Require().Error(err) // Expect an error since the inference should be removed
+	s.Require().Error(err)
 }
 
-func (s *KeeperTestSuite) TestNewInferenceForecastBundleFromInput() {
-	validInference := &types.InputInference{
-		TopicId:     1,
-		BlockHeight: 100,
-		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-		Value:       alloraMath.MustNewBoundedExp40DecFromString("1.23"),
-		Values:      []*types.InputLabeledValue{{Label: "", Value: alloraMath.MustNewBoundedExp40DecFromString("1.23")}},
-		ExtraData:   []byte("extra"),
-		Proof:       "proof",
-	}
-
-	validForecast := &types.InputForecast{
-		TopicId:     1,
-		BlockHeight: 100,
-		Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
-		ForecastElements: []*types.InputForecastElement{
-			{
-				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:   alloraMath.MustNewBoundedExp40DecFromString("1.23"),
-			},
-		},
-		ExtraData: []byte("extra"),
-	}
-
-	tests := []struct {
-		name    string
-		input   *types.InputInferenceForecastBundle
-		wantErr bool
-	}{
-		{
-			name: "valid input",
-			input: &types.InputInferenceForecastBundle{
-				Inference: validInference,
-				Forecast:  validForecast,
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		s.Run(tt.name, func() {
-			topic, err := s.TopicKeeper().GetTopic(s.Ctx(), validInference.TopicId)
-			s.Require().NoError(err)
-
-			got, err := keeper.NormalizeInferenceForecastBundle(topic, tt.input)
-			if tt.wantErr {
-				s.Require().Error(err)
-				return
-			}
-			s.Require().NoError(err)
-			if tt.input == nil {
-				s.Require().Nil(got)
-				return
-			}
-			s.Require().NotNil(got.Inference)
-			s.Require().NotNil(got.Forecast)
-		})
-	}
-}
-
+// TestNormalizeInputInference covers the contract for
+// NormalizeInputInference: callers MUST have already canonicalized labels
+// (via InputInference.ValidateWithLimits). Normalize registers non-default
+// labels in the temporary ELR, scatters values into that temporary
+// id space, and enforces SINGLE/RequireUnity rules. CloseWorkerNonce later
+// filters that temporary ELR and remaps active vectors into final compact ids.
+//
 //nolint:exhaustruct
 func (s *KeeperTestSuite) TestNormalizeInputInference() {
+	type labeledInput struct {
+		label string
+		value string
+	}
 	type tc struct {
 		name         string
 		arity        types.TopicOutputArity
 		requireUnity bool
 		unityTol     string
+		nonce        int64
 
-		scalarValue string
-		labeled     []struct {
-			label string
-			value string
-		}
+		scalarValue       string
+		labelDefaultValue string
+		labeled           []labeledInput
 
 		wantErr   bool
 		wantErrIs error
 
-		wantScalarStr string   // for SINGLE
-		wantLabeled   []string // for MULTI: submitted values in submission order
+		wantValuesStr []string
 	}
 
 	cases := []tc{
 		{
-			name:        "SINGLE_uses_labeled_when_len1_over_scalar",
-			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			unityTol:    "0",
-			scalarValue: "999",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "x", value: "7"},
-			},
-			wantScalarStr: "7",
-		},
-		{
 			name:          "SINGLE_uses_scalar_when_no_labeled",
 			arity:         types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			unityTol:      "0",
+			nonce:         1,
 			scalarValue:   "42",
-			wantScalarStr: "42",
+			wantValuesStr: []string{"42"},
 		},
 		{
-			name:        "SINGLE_rejects_when_labeled_len_gt_1",
+			name:          "SINGLE_accepts_canonical_y_label",
+			arity:         types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			nonce:         1,
+			scalarValue:   "999",
+			labeled:       []labeledInput{{label: "y", value: "7"}},
+			wantValuesStr: []string{"7"},
+		},
+		{
+			name:        "SINGLE_rejects_non_y_label",
 			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			unityTol:    "0",
+			nonce:       1,
 			scalarValue: "1",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "x", value: "1"},
-				{label: "y", value: "2"},
-			},
-			wantErr:   true,
-			wantErrIs: sdkerrors.ErrInvalidRequest,
-		},
-		{
-			name:        "MULTI_requires_labeled_values",
-			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol:    "0",
-			scalarValue: "123",
+			labeled:     []labeledInput{{label: "x", value: "1"}},
 			wantErr:     true,
 			wantErrIs:   sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:     "MULTI_returns_submitted_labels_in_order",
-			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol: "0",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.2"},
-				{label: "B", value: "0.8"},
-			},
-			wantLabeled: []string{"0.2", "0.8"},
-		},
-		{
-			name:     "MULTI_duplicate_label_rejected",
-			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol: "0",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.1"},
-				{label: "A", value: "0.2"},
+			name:        "SINGLE_rejects_when_labeled_len_gt_1",
+			arity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			nonce:       1,
+			scalarValue: "1",
+			labeled: []labeledInput{
+				{label: "y", value: "1"},
+				{label: "z", value: "2"},
 			},
 			wantErr:   true,
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:     "MULTI_empty_label_rejected",
-			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol: "0",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "   ", value: "0.1"},
-			},
+			name:      "MULTI_requires_labeled_values",
+			arity:     types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce:     1,
+			labeled:   nil,
 			wantErr:   true,
 			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:  "MULTI_uses_temporary_first_seen_order",
+			arity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce: 1,
+			labeled: []labeledInput{
+				{label: "b", value: "0.7"},
+				{label: "a", value: "0.3"},
+			},
+			wantValuesStr: []string{"0.7", "0.3"},
 		},
 		{
 			name:         "MULTI_require_unity_ok",
 			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			requireUnity: true,
 			unityTol:     "0.000001",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.2"},
-				{label: "B", value: "0.8"},
+			nonce:        1,
+			labeled: []labeledInput{
+				{label: "a", value: "0.2"},
+				{label: "b", value: "0.8"},
 			},
-			wantLabeled: []string{"0.2", "0.8"},
+			wantValuesStr: []string{"0.2", "0.8"},
 		},
 		{
 			name:         "MULTI_require_unity_rejected_outside_tol",
 			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
 			requireUnity: true,
 			unityTol:     "0.01",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "A", value: "0.2"},
-				{label: "B", value: "0.7"},
+			nonce:        1,
+			labeled: []labeledInput{
+				{label: "a", value: "0.2"},
+				{label: "b", value: "0.7"},
 			},
 			wantErr:   true,
 			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name:     "MULTI_trims_label_whitespace",
-			arity:    types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol: "0",
-			labeled: []struct {
-				label string
-				value string
-			}{
-				{label: "  Z  ", value: "5"},
+			name:              "MULTI_rejects_when_all_labels_equal_default_value",
+			arity:             types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce:             1,
+			labelDefaultValue: "0.5",
+			labeled: []labeledInput{
+				{label: "a", value: "0.5"},
+				{label: "b", value: "0.5"},
 			},
-			wantLabeled: []string{"5"},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:  "MULTI_accepts_one_non_default_label_and_ignores_default_labels",
+			arity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce: 1,
+			labeled: []labeledInput{
+				{label: "a", value: "1"},
+				{label: "b", value: "0"},
+			},
+			wantValuesStr: []string{"1"},
+		},
+		{
+			// Normalize is defensive: if a caller forgets to canonicalize,
+			// Normalize rejects empty labels rather than silently building
+			// an invalid intermediate Inference.
+			name:      "MULTI_defensive_rejects_empty_label",
+			arity:     types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			nonce:     1,
+			labeled:   []labeledInput{{label: "", value: "0.5"}},
+			wantErr:   true,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
 		},
 	}
 
@@ -1159,22 +1732,33 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			s.SetupTest()
 
 			ctx := s.Ctx()
-			k := s.TopicKeeper()
+			tk := s.TopicKeeper()
 
 			topicId := s.CreateTopic()
-			topic, err := k.GetTopic(ctx, topicId)
+			topic, err := tk.GetTopic(ctx, topicId)
 			s.Require().NoError(err)
 
 			topic.OutputArity = c.arity
 			topic.RequireUnity = c.requireUnity
-			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
-			s.Require().NoError(k.SetTopic(ctx, topicId, topic))
+			if c.labelDefaultValue != "" {
+				topic.LabelDefaultValue = alloraMath.MustNewDecFromString(c.labelDefaultValue)
+			}
+			tol := c.unityTol
+			if tol == "" {
+				tol = "0"
+			}
+			topic.UnityTolerance = alloraMath.MustNewDecFromString(tol)
+			s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
 
+			scalar := c.scalarValue
+			if scalar == "" {
+				scalar = "0"
+			}
 			in := &types.InputInference{
 				TopicId:     topicId,
-				BlockHeight: 1,
-				Inferer:     s.AddrsStr(0),
-				Value:       alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue),
+				BlockHeight: c.nonce,
+				Inferer:     "inferer",
+				Value:       alloraMath.MustNewBoundedExp40DecFromString(scalar),
 			}
 			if c.labeled != nil {
 				in.Values = make([]*types.InputLabeledValue, 0, len(c.labeled))
@@ -1186,7 +1770,7 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 				}
 			}
 
-			got, err := keeper.NormalizeInputInference(topic, in)
+			got, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, c.nonce, in)
 			if c.wantErr {
 				s.Require().Error(err)
 				if c.wantErrIs != nil {
@@ -1197,591 +1781,975 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 			s.Require().NoError(err)
 			s.Require().NotNil(got)
 
-			if got.IsSingle {
-				s.Require().Equal(c.wantScalarStr, got.ScalarValue.String())
-			} else {
-				s.Require().Equal(len(c.wantLabeled), len(got.Labeled))
-				for i := range c.wantLabeled {
-					s.Require().Equal(c.wantLabeled[i], got.Labeled[i].Value.String())
-				}
+			s.Require().Equal(len(c.wantValuesStr), len(got.Values))
+			for i := range c.wantValuesStr {
+				s.Require().Equal(c.wantValuesStr[i], got.Values[i].String())
 			}
 		})
 	}
 }
 
+// TestCompactRegistryAndRemapInferences exercises the close-time finalizer
+// that filters the temporary ELR to active non-default labels and remaps dense
+// vectors into compact final ids.
+//
 //nolint:exhaustruct
-func (s *KeeperTestSuite) TestMaterializeWorkerDataBundle() {
-	type labeledInput struct {
-		label string
-		value string
-	}
-
-	type tc struct {
-		name                string
-		arity               types.TopicOutputArity
-		requireUnity        bool
-		unityTol            string
-		nonce               int64
-		preRegisterLabels   []string
-		hasInference        bool
-		scalarValue         string
-		labeled             []labeledInput
-		hasForecast         bool
-		wantErr             bool
-		wantErrIs           error
-		wantInferenceValues []string
-		wantRegistryLabels  []*types.TopicLabel
-	}
-
-	cases := []tc{
-		{
-			name:                "SINGLE_registers_y_and_returns_scalar",
-			arity:               types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			unityTol:            "0",
-			nonce:               1,
-			hasInference:        true,
-			scalarValue:         "42",
-			wantInferenceValues: []string{"42"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "y"},
-			},
-		},
-		{
-			name:         "SINGLE_one_labeled_uses_label_value_registers_y",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			unityTol:     "0",
-			nonce:        1,
-			hasInference: true,
-			scalarValue:  "999", // ignored when labeled has length 1
-			labeled: []labeledInput{
-				{label: "anything", value: "7"},
-			},
-			wantInferenceValues: []string{"7"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "y"},
-			},
-		},
-		{
-			name:         "MULTI_registers_new_labels_and_aligns_dense",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol:     "0",
-			nonce:        1,
-			hasInference: true,
-			labeled: []labeledInput{
-				{label: "A", value: "0.2"},
-				{label: "B", value: "0.8"},
-			},
-			wantInferenceValues: []string{"0.2", "0.8"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "A"},
-				{Id: 2, Name: "B"},
-			},
-		},
-		{
-			name:              "MULTI_missing_labels_are_zero_against_existing_registry",
-			arity:             types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol:          "0",
-			nonce:             1,
-			preRegisterLabels: []string{"a", "b", "c"},
-			hasInference:      true,
-			labeled: []labeledInput{
-				{label: "a", value: "1"},
-				{label: "b", value: "2"},
-			},
-			wantInferenceValues: []string{"1", "2", "0"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "a"},
-				{Id: 2, Name: "b"},
-				{Id: 3, Name: "c"},
-			},
-		},
-		{
-			name:              "MULTI_mix_of_existing_and_new_labels",
-			arity:             types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol:          "0",
-			nonce:             1,
-			preRegisterLabels: []string{"a", "b"},
-			hasInference:      true,
-			labeled: []labeledInput{
-				{label: "b", value: "5"},
-				{label: "c", value: "9"},
-			},
-			// Registry order after materialize: a, b, c
-			// Submitted: b=5, c=9 → a stays zero
-			wantInferenceValues: []string{"0", "5", "9"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "a"},
-				{Id: 2, Name: "b"},
-				{Id: 3, Name: "c"},
-			},
-		},
-		{
-			name:         "MULTI_submission_order_independent_of_registry_order",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol:     "0",
-			nonce:        1,
-			hasInference: true,
-			// Submitted in reverse alphabetical; registry order is by registration order.
-			labeled: []labeledInput{
-				{label: "Z", value: "10"},
-				{label: "A", value: "20"},
-			},
-			wantInferenceValues: []string{"10", "20"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "Z"},
-				{Id: 2, Name: "A"},
-			},
-		},
-		{
-			name:         "MULTI_trims_label_whitespace_before_registering",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			unityTol:     "0",
-			nonce:        1,
-			hasInference: true,
-			labeled: []labeledInput{
-				{label: "  Z  ", value: "5"},
-			},
-			wantInferenceValues: []string{"5"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "Z"},
-			},
-		},
-		{
-			name:         "MULTI_require_unity_ok_aligns_correctly",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			requireUnity: true,
-			unityTol:     "0.000001",
-			nonce:        1,
-			hasInference: true,
-			labeled: []labeledInput{
-				{label: "A", value: "0.3"},
-				{label: "B", value: "0.7"},
-			},
-			wantInferenceValues: []string{"0.3", "0.7"},
-			wantRegistryLabels: []*types.TopicLabel{
-				{Id: 1, Name: "A"},
-				{Id: 2, Name: "B"},
-			},
-		},
-		{
-			name:         "no_inference_only_forecast",
-			arity:        types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			unityTol:     "0",
-			nonce:        1,
-			hasInference: false,
-			hasForecast:  true,
-			// No inference → no labels registered
-			wantRegistryLabels: nil,
+func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
+	topic := types.Topic{
+		Id:                1,
+		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		LabelDefaultValue: alloraMath.ZeroDec(),
+	} //nolint:exhaustruct
+	nonce := types.BlockHeight(7)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
+	tempRegistry := types.EpochLabelRegistry{
+		TopicId: 1,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "b"},
+			{Id: 2, Name: "a"},
+			{Id: 3, Name: "c"},
+			{Id: 4, Name: "d"},
 		},
 	}
 
-	for _, c := range cases {
-		s.Run(c.name, func() {
-			s.SetupTest()
-
-			ctx := s.Ctx()
-			tk := s.TopicKeeper()
-			wk := s.WorkerKeeper()
-
-			topicId := s.CreateTopic()
-			topic, err := tk.GetTopic(ctx, topicId)
-			s.Require().NoError(err)
-
-			topic.OutputArity = c.arity
-			topic.RequireUnity = c.requireUnity
-			topic.UnityTolerance = alloraMath.MustNewDecFromString(c.unityTol)
-			s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
-
-			for _, l := range c.preRegisterLabels {
-				_, err := tk.RegisterEpochLabel(ctx, topicId, c.nonce, l)
-				s.Require().NoError(err)
-			}
-
-			input := &types.InputWorkerDataBundle{
-				Worker:                   s.AddrsStr(0),
-				Nonce:                    &types.Nonce{BlockHeight: c.nonce},
-				TopicId:                  topicId,
-				InferenceForecastsBundle: &types.InputInferenceForecastBundle{},
-			}
-
-			if c.hasInference {
-				inf := &types.InputInference{
-					TopicId:     topicId,
-					BlockHeight: c.nonce,
-					Inferer:     s.AddrsStr(0),
-					Value:       alloraMath.MustNewBoundedExp40DecFromString(c.scalarValue),
-				}
-				if c.labeled != nil {
-					inf.Values = make([]*types.InputLabeledValue, 0, len(c.labeled))
-					for _, lv := range c.labeled {
-						inf.Values = append(inf.Values, &types.InputLabeledValue{
-							Label: lv.label,
-							Value: alloraMath.MustNewBoundedExp40DecFromString(lv.value),
-						})
-					}
-				}
-				input.InferenceForecastsBundle.Inference = inf
-			}
-
-			if c.hasForecast {
-				input.InferenceForecastsBundle.Forecast = &types.InputForecast{
-					TopicId:     topicId,
-					BlockHeight: c.nonce,
-					Forecaster:  s.AddrsStr(0),
-					ForecastElements: []*types.InputForecastElement{
-						{
-							Inferer: s.AddrsStr(0),
-							Value:   alloraMath.MustNewBoundedExp40DecFromString("0.5"),
-						},
-					},
-				}
-			}
-
-			// Normalize first (we're testing materialize, not normalize, but
-			// we need a valid normalized input to feed in).
-			normalized, err := wk.NormalizeWorkerDataBundle(topic, input)
-			s.Require().NoError(err)
-
-			got, err := wk.MaterializeWorkerDataBundle(ctx, c.nonce, normalized)
-			if c.wantErr {
-				s.Require().Error(err)
-				if c.wantErrIs != nil {
-					s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
-				}
-				return
-			}
-			s.Require().NoError(err)
-			s.Require().NotNil(got)
-
-			// Verify Inference.Values matches the registry-aligned expectation.
-			if c.hasInference {
-				s.Require().NotNil(got.InferenceForecastsBundle.Inference)
-				values := got.InferenceForecastsBundle.Inference.Values
-				s.Require().Equal(len(c.wantInferenceValues), len(values),
-					"inference values length mismatch")
-				for i, want := range c.wantInferenceValues {
-					s.Require().Equal(want, values[i].String(),
-						"inference value at index %d", i)
-				}
-			} else {
-				s.Require().Nil(got.InferenceForecastsBundle.Inference)
-			}
-
-			// Verify the registry contents and order after materialize.
-			registry, err := tk.GetEpochLabelRegistry(ctx, topicId, c.nonce)
-			if len(c.wantRegistryLabels) == 0 {
-				// Either no registry exists (nothing was registered) or it's empty.
-				if err == nil {
-					s.Require().Empty(registry.Labels)
-				}
-			} else {
-				s.Require().NoError(err)
-				s.Require().Equal(c.wantRegistryLabels, registry.Labels,
-					"registry labels mismatch")
-			}
-		})
-	}
-}
-
-//nolint:exhaustruct
-func (s *KeeperTestSuite) TestGetWorkersLatestInferencesByTopicIdValuesPadded() {
-	topicId := keeper.TopicId(1)
-	nonce := int64(1)
-
-	type tc struct {
-		name         string
-		outputArity  types.TopicOutputArity
-		setup        func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string)
-		workersOrder []int
-		wantErrIs    error
-		wantValues   map[int][]string
-	}
-
-	mustDec := func(x string) alloraMath.Dec { return alloraMath.MustNewDecFromString(x) }
-
-	setTopic := func(ctx context.Context, k *keeper.Keeper, topicId uint64, arity types.TopicOutputArity) {
-		topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
-		s.Require().NoError(err)
-		topic.OutputArity = arity
-		topic.RequireUnity = false
-		topic.UnityTolerance = alloraMath.ZeroDec()
-		err = k.GetTopicKeeper().SetTopic(ctx, topicId, topic)
-		s.Require().NoError(err)
-	}
-
-	setLatestInf := func(ctx context.Context, k *keeper.Keeper, topicId uint64, inf types.Inference) {
-		err := k.GetWorkerKeeper().InsertInference(ctx, topicId, inf)
-		s.Require().NoError(err)
-	}
-
-	cases := []tc{
+	cases := []struct {
+		name       string
+		active     []*types.Inference
+		wantLabels []string
+		wantValues map[string][]string
+		wantErrIs  error
+	}{
 		{
-			name:        "SINGLE_scalar_only_populates_values_len1",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("42")},
-				})
+			name: "compacts_and_remaps_filtered_middle_label",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("1", "2", "0", "4")},
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("0", "5")},
 			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"42"},
+			wantLabels: []string{"b", "a", "d"},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"1", "2", "4"},
+				s.AddrsStr(1): {"0", "5", "0"},
 			},
 		},
 		{
-			name:        "SINGLE_values_len1_used_and_consistent_with_scalar",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("7")},
-				})
+			name: "reuses_temp_registry_when_all_labels_remain_used_and_pads_short_vectors",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("1")},
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("0", "2", "3", "4")},
 			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"7"},
+			wantLabels: []string{"b", "a", "c", "d"},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"1", "0", "0", "0"},
+				s.AddrsStr(1): {"0", "2", "3", "4"},
 			},
 		},
 		{
-			name:        "SINGLE_scalar_and_values_mismatch_canonicalizes_to_values0",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("2")},
-				})
+			name: "errors_when_no_active_non_default_labels_remain",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("0", "0")},
 			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"2"},
-			},
-		}, {
-			name:        "SINGLE_rejects_values_len_gt_1",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2")},
-				})
-			},
-			workersOrder: []int{0},
-			wantErrIs:    sdkerrors.ErrLogic,
+			wantErrIs: types.ErrEpochLabelRegistryEmpty,
 		},
 		{
-			name:        "SINGLE_two_workers_scalar_only_both_values_len1_and_sorted_by_inferer",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("42")},
-				})
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w2,
-					Values:      []alloraMath.Dec{mustDec("7")},
-				})
-			},
-			workersOrder: []int{1, 0},
-			wantValues: map[int][]string{
-				0: {"42"},
-				1: {"7"},
-			},
-		},
-		{
-			name:        "MULTI_pads_shorter_values_to_registry_len_and_sorts_inferers",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "c")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "d")
-				s.Require().NoError(err)
-
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
-				})
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w2,
-					Values:      []alloraMath.Dec{mustDec("10"), mustDec("20"), mustDec("0"), mustDec("40")},
-				})
-			},
-			workersOrder: []int{1, 0},
-			wantValues: map[int][]string{
-				0: {"1", "2", "3", "0"},
-				1: {"10", "20", "0", "40"},
-			},
-		},
-		{
-			name:        "MULTI_values_longer_than_registry_rejected",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1"), mustDec("2"), mustDec("3")},
-				})
-			},
-			workersOrder: []int{0},
-			wantErrIs:    sdkerrors.ErrLogic,
-		}, {
-			name:        "MULTI_registry_len_zero_rejects_any_nonempty_inference_values",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				// do NOT register labels => registry len = 0
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1")},
-				})
-			},
-			workersOrder: []int{0},
-			wantErrIs:    sdkerrors.ErrLogic,
-		},
-		{
-			name:        "MULTI_registry_len_zero_allows_empty_values_no_padding_needed",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				// registry len = 0
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{},
-				})
-			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {},
+			name: "errors_when_active_inference_nil_before_sort",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("1")},
+				nil,
 			},
 			wantErrIs: sdkerrors.ErrLogic,
 		},
-		{
-			name:        "MULTI_pads_multiple_missing_entries_not_just_one",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "c")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "d")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "e")
-				s.Require().NoError(err)
+	}
 
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("1")}, // should become [1,0,0,0,0]
-				})
-			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"1", "0", "0", "0", "0"},
-			},
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			reg, got, err := keeper.CompactRegistryAndRemapInferences(
+				topic,
+				nonce,
+				tempRegistry,
+				c.active,
+				maxLabelBytes,
+			)
+			if c.wantErrIs != nil {
+				s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
+				return
+			}
+			s.Require().NoError(err)
+			gotLabels := make([]string, 0, len(reg.Labels))
+			for _, label := range reg.Labels {
+				gotLabels = append(gotLabels, label.Name)
+			}
+			s.Require().Equal(c.wantLabels, gotLabels)
+			for _, inference := range got.Inferences {
+				want := c.wantValues[inference.Inferer]
+				s.Require().Len(inference.Values, len(want))
+				for i := range want {
+					s.Require().Equal(want[i], inference.Values[i].String())
+				}
+			}
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestDenormalizeInferenceToInput() {
+	nonce := types.BlockHeight(7)
+	inferer := s.AddrsStr(0)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
+	baseInference := types.Inference{
+		TopicId:     1,
+		BlockHeight: nonce,
+		Inferer:     inferer,
+		ExtraData:   []byte("extra"),
+		Proof:       "proof",
+		Values:      nil,
+	}
+	var multiTopic types.Topic
+	multiTopic.Id = 1
+	multiTopic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	multiTopic.LabelDefaultValue = alloraMath.ZeroDec()
+
+	var singleTopic types.Topic
+	singleTopic.Id = 1
+	singleTopic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+
+	emptyRegistry := types.EpochLabelRegistry{
+		TopicId: 0,
+		EpochId: 0,
+		Labels:  nil,
+	}
+	registry := types.EpochLabelRegistry{
+		TopicId: 1,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+			{Id: 3, Name: "c"},
+		},
+	}
+
+	cases := []struct {
+		name            string
+		topic           types.Topic
+		registry        types.EpochLabelRegistry
+		values          []alloraMath.Dec
+		wantScalar      string
+		wantLabels      []string
+		wantValues      []string
+		wantErrContains string
+	}{
+		{
+			name:            "single_value_uses_scalar_field",
+			topic:           singleTopic,
+			registry:        emptyRegistry,
+			values:          decs("0.25"),
+			wantScalar:      "0.25",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "",
 		},
 		{
-			name:        "MULTI_does_not_mutate_stored_inference_when_padding",
-			outputArity: types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
-			setup: func(ctx context.Context, k *keeper.Keeper, topicId uint64, nonce int64, w1, w2 string) {
-				_, err := k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "a")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "b")
-				s.Require().NoError(err)
-				_, err = k.GetTopicKeeper().RegisterEpochLabel(ctx, topicId, nonce, "c")
-				s.Require().NoError(err)
-
-				setLatestInf(ctx, k, topicId, types.Inference{
-					TopicId:     topicId,
-					BlockHeight: nonce,
-					Inferer:     w1,
-					Values:      []alloraMath.Dec{mustDec("9")}, // stored len=1
-				})
-			},
-			workersOrder: []int{0},
-			wantValues: map[int][]string{
-				0: {"9", "0", "0"},
-			},
+			name:            "single_empty_values_rejected",
+			topic:           singleTopic,
+			registry:        emptyRegistry,
+			values:          nil,
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "inference values cannot be empty",
+		},
+		{
+			name:            "single_rejects_multiple_values",
+			topic:           singleTopic,
+			registry:        emptyRegistry,
+			values:          decs("0.25", "0.75"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "expected at most 1",
+		},
+		{
+			name:            "multi_uses_registry_prefix_when_registry_has_grown",
+			topic:           multiTopic,
+			registry:        registry,
+			values:          decs("0.1", "0.2"),
+			wantScalar:      "",
+			wantLabels:      []string{"a", "b"},
+			wantValues:      []string{"0.1", "0.2"},
+			wantErrContains: "",
+		},
+		{
+			name:            "multi_empty_vector_rejected",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: nil},
+			values:          nil,
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "inference values cannot be empty",
+		},
+		{
+			name:            "multi_rejects_vector_longer_than_registry",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{{Id: 1, Name: "a"}}},
+			values:          decs("0.1", "0.2"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "temporary registry has 1 labels",
+		},
+		{
+			name:            "multi_rejects_non_contiguous_ids",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{{Id: 2, Name: "a"}}},
+			values:          decs("0.1"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "expected 1",
+		},
+		{
+			name:            "multi_rejects_nil_label",
+			topic:           multiTopic,
+			registry:        types.EpochLabelRegistry{TopicId: 1, EpochId: uint64(nonce), Labels: []*types.TopicLabel{nil}},
+			values:          decs("0.1"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "is nil",
+		},
+		{
+			name:            "multi_rejects_out_of_range_bounded_value",
+			topic:           multiTopic,
+			registry:        registry,
+			values:          decs("1e41"),
+			wantScalar:      "",
+			wantLabels:      nil,
+			wantValues:      nil,
+			wantErrContains: "out of bounded range",
 		},
 	}
 
 	for _, c := range cases {
 		s.Run(c.name, func() {
-			s.SetupTest()
+			inference := baseInference
+			inference.Values = c.values
 
-			ctx := s.Ctx()
-			k := s.EmissionsKeeper()
-
-			w1 := s.AddrsStr(0)
-			w2 := s.AddrsStr(1)
-			workers := []string{w1, w2}
-
-			setTopic(ctx, k, topicId, c.outputArity)
-
-			if c.setup != nil {
-				c.setup(ctx, k, topicId, nonce, w1, w2)
-			}
-
-			reqWorkers := make([]string, 0, len(c.workersOrder))
-			for _, idx := range c.workersOrder {
-				reqWorkers = append(reqWorkers, workers[idx])
-			}
-
-			topic, err := k.GetTopicKeeper().GetTopic(ctx, topicId)
-			s.Require().NoError(err)
-
-			got, err := k.GetWorkerKeeper().GetWorkersLatestInferencesByTopicIdValuesPadded(ctx, topic, nonce, reqWorkers)
-			if c.wantErrIs != nil {
-				s.Require().ErrorIs(err, c.wantErrIs)
+			got, err := keeper.DenormalizeInferenceToInput(
+				c.topic,
+				c.registry,
+				inference,
+				maxLabelBytes,
+			)
+			if c.wantErrContains != "" {
+				s.Require().Error(err)
+				s.Require().Contains(err.Error(), c.wantErrContains)
 				return
 			}
 			s.Require().NoError(err)
-			s.Require().NotNil(got)
-
-			for workerIdx, want := range c.wantValues {
-				addr := workers[workerIdx]
-				var found *types.Inference
-				for _, inf := range got.Inferences {
-					if inf.Inferer == addr {
-						found = inf
-						break
-					}
-				}
-				s.Require().NotNil(found)
-				s.Require().Equal(len(want), len(found.Values))
-				for i := range want {
-					s.Require().Equal(want[i], found.Values[i].String())
-				}
+			s.Require().Equal(inference.TopicId, got.TopicId)
+			s.Require().Equal(inference.BlockHeight, got.BlockHeight)
+			s.Require().Equal(inference.Inferer, got.Inferer)
+			s.Require().Equal(inference.ExtraData, got.ExtraData)
+			s.Require().Equal(inference.Proof, got.Proof)
+			if c.topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+				s.Require().Equal(c.wantScalar, got.Value.String())
+				s.Require().Empty(got.Values)
+				return
+			}
+			s.Require().Len(got.Values, len(c.wantLabels))
+			for i := range c.wantLabels {
+				s.Require().Equal(c.wantLabels[i], got.Values[i].Label)
+				s.Require().Equal(c.wantValues[i], got.Values[i].Value.String())
 			}
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestSetEpochLabelRegistryUsesLiveLabelByteCap() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+
+	params := types.DefaultParams()
+	params.MaxCanonicalLabelByteLength = 3
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	err := s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abcd"},
+		},
+	})
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
+
+	err = s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abc"},
+		},
+	})
+	s.Require().NoError(err)
+}
+
+// TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap pins the Finding 1 fix:
+// the registry size cap (MaxEpochLabelRegistrySize) is enforced only at the
+// growth point (RegisterEpochLabels), not when persisting/validating an
+// already-built registry. A registry larger than the current (e.g. lowered)
+// cap must still be storable so a later cap change cannot retroactively
+// invalidate valid state. See
+// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
+func (s *KeeperTestSuite) TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxEpochLabelRegistrySize = 1
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	err = s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+		},
+	})
+	s.Require().NoError(err, "stored registry above the live cap must not be rejected")
+
+	stored, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(stored.Labels, 2)
+}
+
+// TestDenormalizeAndFinalizeUsePassedLabelByteCap verifies the read (denormalize) and close (finalize) paths
+// honor the passed canonical-label byte cap. The registry size cap is NOT
+// asserted here: after the Finding 1 fix it is enforced only at the growth
+// point (RegisterEpochLabels), not in these read/close paths. See
+// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
+func (s *KeeperTestSuite) TestDenormalizeAndFinalizeUsePassedLabelByteCap() {
+	nonce := types.BlockHeight(7)
+	topic, _ := s.setupMultiTopic()
+	registry := types.EpochLabelRegistry{
+		TopicId: topic.Id,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "abcd"},
+		},
+	}
+	inference := types.Inference{
+		TopicId:     topic.Id,
+		BlockHeight: nonce,
+		Inferer:     s.AddrsStr(0),
+		Values:      decs("0.1"),
+		ExtraData:   nil,
+		Proof:       "",
+	}
+
+	_, err := keeper.DenormalizeInferenceToInput(
+		topic,
+		registry,
+		inference,
+		3,
+	)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
+
+	_, _, err = keeper.CompactRegistryAndRemapInferences(
+		topic,
+		nonce,
+		registry,
+		[]*types.Inference{&inference},
+		3,
+	)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "label exceeds 3 bytes")
+}
+
+func decs(values ...string) []alloraMath.Dec {
+	out := make([]alloraMath.Dec, 0, len(values))
+	for _, value := range values {
+		out = append(out, alloraMath.MustNewDecFromString(value))
+	}
+	return out
+}
+
+// setupMultiTopic creates a topic and flips it to MULTI arity (with
+// RequireUnity disabled). Returns the topic and its id.
+func (s *KeeperTestSuite) setupMultiTopic() (types.Topic, uint64) {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	topic, err := tk.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.RequireUnity = false
+	topic.UnityTolerance = alloraMath.ZeroDec()
+	s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
+	return topic, topicId
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabels_FirstSeenIdempotent() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	// First-seen ids are assigned across separate single-label calls and are
+	// idempotent: re-registering an existing label returns its existing id
+	// without growing the registry.
+	idsB, _, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{"b"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	idsA, _, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{"a"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	idsBAgain, _, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, nonce, []string{"b"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1}, idsB)
+	s.Require().Equal([]keeper.LabelId{2}, idsA)
+	s.Require().Equal(idsB, idsBAgain)
+
+	reg, err := tk.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(reg.Labels, 2)
+	s.Require().Equal(uint32(1), reg.Labels[0].Id)
+	s.Require().Equal("b", reg.Labels[0].Name)
+	s.Require().Equal(uint32(2), reg.Labels[1].Id)
+	s.Require().Equal("a", reg.Labels[1].Name)
+
+	gotID, ok, err := tk.GetEpochLabelId(ctx, topicId, nonce, "a")
+	s.Require().NoError(err)
+	s.Require().True(ok)
+	s.Require().Equal(keeper.LabelId(2), gotID)
+
+	gotName, ok, err := tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(1))
+	s.Require().NoError(err)
+	s.Require().True(ok)
+	s.Require().Equal("b", gotName)
+
+	_, ok, err = tk.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
+	s.Require().NoError(err)
+	s.Require().False(ok)
+
+	_, ok, err = tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
+	s.Require().NoError(err)
+	s.Require().False(ok)
+
+	// A single batch with an intra-batch duplicate assigns first-seen ids in
+	// argument order and dedups repeated names to the same id, growing the
+	// registry by the number of distinct new labels only.
+	batchNonce := types.BlockHeight(8)
+	batchIds, batchReg, err := tk.RegisterEpochLabels(
+		ctx, topicId, topic.LabelCaseSensitive, batchNonce, []string{"b", "a", "b"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2, 1}, batchIds)
+	s.Require().Len(batchReg.Labels, 2)
+	s.Require().Equal("b", batchReg.Labels[0].Name)
+	s.Require().Equal("a", batchReg.Labels[1].Name)
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchesAndEnforcesRegistryCap() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxEpochLabelRegistrySize = 2
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	ids, reg, err := tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"b", "a"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2}, ids)
+	s.Require().Len(reg.Labels, 2)
+	s.Require().Equal("b", reg.Labels[0].Name)
+	s.Require().Equal("a", reg.Labels[1].Name)
+
+	ids, reg, err = tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"a", "b"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{2, 1}, ids)
+	s.Require().Len(reg.Labels, 2)
+
+	_, _, err = tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"c"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().True(errorsmod.IsOf(err, types.ErrEpochLabelRegistrySaturated), "expected saturation error, got %v", err)
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabels_UsesTopicCaseSensitivity() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+	nonce := types.BlockHeight(7)
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	caseInsensitiveTopic, caseInsensitiveTopicID := s.setupMultiTopic()
+	_, _, err = tk.RegisterEpochLabels(
+		ctx,
+		caseInsensitiveTopicID,
+		caseInsensitiveTopic.LabelCaseSensitive,
+		nonce,
+		[]string{"Cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().Error(err)
+	s.Require().ErrorContains(err, "label name must already be canonical")
+
+	lowerIDs, _, err := tk.RegisterEpochLabels(
+		ctx,
+		caseInsensitiveTopicID,
+		caseInsensitiveTopic.LabelCaseSensitive,
+		nonce,
+		[]string{"cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1}, lowerIDs)
+
+	caseSensitiveTopic, caseSensitiveTopicID := s.setupMultiTopic()
+	caseSensitiveTopic.LabelCaseSensitive = true
+	s.Require().NoError(tk.SetTopic(ctx, caseSensitiveTopicID, caseSensitiveTopic))
+	caseSensitiveTopic, err = tk.GetTopic(ctx, caseSensitiveTopicID)
+	s.Require().NoError(err)
+
+	upperIDs, _, err := tk.RegisterEpochLabels(
+		ctx,
+		caseSensitiveTopicID,
+		caseSensitiveTopic.LabelCaseSensitive,
+		nonce,
+		[]string{"Cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1}, upperIDs)
+
+	distinctLowerIDs, _, err := tk.RegisterEpochLabels(
+		ctx,
+		caseSensitiveTopicID,
+		caseSensitiveTopic.LabelCaseSensitive,
+		nonce,
+		[]string{"cat"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{2}, distinctLowerIDs)
+}
+
+func (s *KeeperTestSuite) TestRegisterEpochLabels_UsesCanonicalByteLimit() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxCanonicalLabelByteLength = 3
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topic, topicID := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+
+	_, _, err = tk.RegisterEpochLabels(
+		ctx, topicID, topic.LabelCaseSensitive, nonce, []string{"abcd"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().Error(err)
+	s.Require().ErrorContains(err, "label exceeds 3 bytes")
+
+	ids, _, err := tk.RegisterEpochLabels(
+		ctx, topicID, topic.LabelCaseSensitive, nonce, []string{"abc"},
+		params.MaxCanonicalLabelByteLength, params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1}, ids)
+}
+
+func (s *KeeperTestSuite) TestFinalizeInferencesAndRegistryAtClose_DoesNotPersistFinalRegistry() {
+	ctx := s.Ctx()
+	topic, topicId := s.setupMultiTopic()
+	nonce := types.BlockHeight(7)
+	remaining := s.AddrsStr(0)
+	evicted := s.AddrsStr(1)
+	s.Require().NoError(s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+			{Id: 3, Name: "c"},
+			{Id: 4, Name: "d"},
+		},
+	}))
+	s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     remaining,
+		Values:      decs("1", "2", "0", "4"),
+		ExtraData:   nil,
+		Proof:       "",
+	}))
+	s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     evicted,
+		Values:      decs("0", "0", "3", "0"),
+		ExtraData:   nil,
+		Proof:       "",
+	}))
+
+	got, reg, err := s.WorkerKeeper().FinalizeInferencesAndRegistryAtClose(
+		ctx,
+		topic,
+		nonce,
+		[]string{remaining},
+	)
+	s.Require().NoError(err)
+	s.Require().Len(reg.Labels, 3)
+	s.Require().Equal([]string{"a", "b", "d"}, []string{reg.Labels[0].Name, reg.Labels[1].Name, reg.Labels[2].Name})
+	s.Require().Len(got.Inferences, 1)
+	s.Require().Equal([]string{"1", "2", "4"}, []string{
+		got.Inferences[0].Values[0].String(),
+		got.Inferences[0].Values[1].String(),
+		got.Inferences[0].Values[2].String(),
+	})
+
+	stored, err := s.TopicKeeper().GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(stored.Labels, 4)
+	s.Require().Equal([]string{"a", "b", "c", "d"}, []string{
+		stored.Labels[0].Name,
+		stored.Labels[1].Name,
+		stored.Labels[2].Name,
+		stored.Labels[3].Name,
+	})
+}
+
+// epochLabelNames extracts the ordered label names from a registry's labels.
+// It returns nil (not an empty slice) for an empty registry so equality checks
+// against an unset expectation are unambiguous.
+func epochLabelNames(labels []*types.TopicLabel) []string {
+	if len(labels) == 0 {
+		return nil
+	}
+	names := make([]string, len(labels))
+	for i, lbl := range labels {
+		names[i] = lbl.Name
+	}
+	return names
+}
+
+// TestRegisterEpochLabels_BatchBehavior exercises the batch registration path:
+// in-batch dedup, mixed new/existing reuse, ordering, no-op writes, per-label
+// growth saturation, and canonical/byte/utf-8 validation (the over-cap
+// idempotency contract lives in topic_test.go). Every case also asserts the persisted
+// registry, which pins the atomicity invariant: a mid-batch error must not
+// leave partial growth in state.
+//
+//nolint:exhaustruct // table-driven cases intentionally set only the fields each case exercises
+func (s *KeeperTestSuite) TestRegisterEpochLabels_BatchBehavior() {
+	nonce := types.BlockHeight(7)
+	testCases := []struct {
+		name              string
+		seed              []*types.TopicLabel
+		caseSensitive     bool
+		maxLabelBytes     uint64
+		maxRegistrySize   uint64
+		input             []string
+		wantIDs           []keeper.LabelId
+		wantRegistryNames []string
+		wantErrIs         error
+		wantErrContains   string
+	}{
+		{
+			name:              "in-batch duplicate reuses first-seen id",
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "a"},
+			wantIDs:           []keeper.LabelId{1, 1},
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:              "in-batch duplicate interleaved",
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"b", "a", "b"},
+			wantIDs:           []keeper.LabelId{1, 2, 1},
+			wantRegistryNames: []string{"b", "a"},
+		},
+		{
+			name:              "mixed new and existing",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "b", "c"},
+			wantIDs:           []keeper.LabelId{1, 2, 3},
+			wantRegistryNames: []string{"a", "b", "c"},
+		},
+		{
+			name:              "reuse preserves stored order",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "b"}, {Id: 2, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "b"},
+			wantIDs:           []keeper.LabelId{2, 1},
+			wantRegistryNames: []string{"b", "a"},
+		},
+		{
+			name:            "empty input on empty registry does not write",
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{},
+			wantIDs:         []keeper.LabelId{},
+		},
+		{
+			name:              "empty input leaves existing labels untouched",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{},
+			wantIDs:           []keeper.LabelId{},
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:              "all existing labels is a no-op",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}, {Id: 2, Name: "b"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "b"},
+			wantIDs:           []keeper.LabelId{1, 2},
+			wantRegistryNames: []string{"a", "b"},
+		},
+		{
+			name:              "per-label saturation does not persist partial growth",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			maxLabelBytes:     32,
+			maxRegistrySize:   2,
+			input:             []string{"b", "c"},
+			wantErrIs:         types.ErrEpochLabelRegistrySaturated,
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:              "non-canonical label rejected mid-batch",
+			seed:              []*types.TopicLabel{{Id: 1, Name: "a"}},
+			caseSensitive:     false,
+			maxLabelBytes:     32,
+			maxRegistrySize:   8,
+			input:             []string{"a", "Cat"},
+			wantErrContains:   "label name must already be canonical",
+			wantRegistryNames: []string{"a"},
+		},
+		{
+			name:            "byte cap exceeded rejected",
+			maxLabelBytes:   3,
+			maxRegistrySize: 8,
+			input:           []string{"abcd"},
+			wantErrContains: "label exceeds 3 bytes",
+		},
+		{
+			name:            "empty after trim rejected",
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{"   "},
+			wantErrIs:       types.ErrInvalidLabelName,
+		},
+		{
+			name:            "invalid utf-8 rejected",
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{string([]byte{0xff})},
+			wantErrIs:       types.ErrInvalidLabelName,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			tk := s.TopicKeeper()
+			topicId := s.CreateTopic()
+			if len(tc.seed) > 0 {
+				s.Require().NoError(tk.SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+					TopicId: topicId,
+					EpochId: uint64(nonce),
+					Labels:  tc.seed,
+				}))
+			}
+
+			ids, reg, err := tk.RegisterEpochLabels(
+				ctx,
+				topicId,
+				tc.caseSensitive,
+				nonce,
+				tc.input,
+				tc.maxLabelBytes,
+				tc.maxRegistrySize,
+			)
+
+			if tc.wantErrIs != nil || tc.wantErrContains != "" {
+				s.Require().Error(err)
+				if tc.wantErrIs != nil {
+					s.Require().True(errorsmod.IsOf(err, tc.wantErrIs), "expected error %v, got %v", tc.wantErrIs, err)
+				}
+				if tc.wantErrContains != "" {
+					s.Require().ErrorContains(err, tc.wantErrContains)
+				}
+			} else {
+				s.Require().NoError(err)
+				s.Require().Equal(tc.wantIDs, ids)
+				s.Require().Equal(tc.wantRegistryNames, epochLabelNames(reg.Labels))
+			}
+
+			// The persisted registry must match the expectation. For error
+			// cases this proves no partial write happened (atomicity).
+			stored, err := tk.GetEpochLabelRegistry(ctx, topicId, nonce)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.wantRegistryNames, epochLabelNames(stored.Labels))
+		})
+	}
+}
+
+// TestRegisterEpochLabels_InputValidation covers the early validation branches
+// that return before any state is read or written.
+//
+//nolint:exhaustruct // table-driven cases intentionally set only the fields each case exercises
+func (s *KeeperTestSuite) TestRegisterEpochLabels_InputValidation() {
+	validNonce := types.BlockHeight(7)
+	testCases := []struct {
+		name            string
+		topicID         types.TopicId
+		nonce           types.BlockHeight
+		maxLabelBytes   uint64
+		maxRegistrySize uint64
+		input           []string
+		wantErrContains string
+	}{
+		{
+			name:            "zero topic id",
+			topicID:         0,
+			nonce:           validNonce,
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{"a"},
+			wantErrContains: "topic id validation failed",
+		},
+		{
+			name:            "negative nonce",
+			topicID:         1,
+			nonce:           types.BlockHeight(-1),
+			maxLabelBytes:   32,
+			maxRegistrySize: 8,
+			input:           []string{"a"},
+			wantErrContains: "nonce block height validation failed",
+		},
+		{
+			name:            "zero max registry size",
+			topicID:         1,
+			nonce:           validNonce,
+			maxLabelBytes:   32,
+			maxRegistrySize: 0,
+			input:           []string{"a"},
+			wantErrContains: "must be greater than zero",
+		},
+		{
+			name:            "zero max label bytes",
+			topicID:         1,
+			nonce:           validNonce,
+			maxLabelBytes:   0,
+			maxRegistrySize: 8,
+			input:           []string{"a"},
+			wantErrContains: "max canonical label byte length must be >= 1",
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			tk := s.TopicKeeper()
+
+			_, _, err := tk.RegisterEpochLabels(
+				ctx,
+				tc.topicID,
+				false,
+				tc.nonce,
+				tc.input,
+				tc.maxLabelBytes,
+				tc.maxRegistrySize,
+			)
+			s.Require().Error(err)
+			s.Require().ErrorContains(err, tc.wantErrContains)
+		})
+	}
+}
+
+// TestRegisterEpochLabels_Deterministic pins the determinism guarantee: the
+// same input produces identical ids and identical registry order across two
+// independent, fresh keys (no leakage from map iteration order).
+func (s *KeeperTestSuite) TestRegisterEpochLabels_Deterministic() {
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	const (
+		maxLabelBytes   = uint64(32)
+		maxRegistrySize = uint64(8)
+	)
+	input := []string{"b", "a", "c", "a"}
+	nonce := types.BlockHeight(7)
+
+	topicA := s.CreateTopic()
+	topicB := s.CreateTopic()
+
+	idsA, regA, err := tk.RegisterEpochLabels(ctx, topicA, false, nonce, input, maxLabelBytes, maxRegistrySize)
+	s.Require().NoError(err)
+	idsB, regB, err := tk.RegisterEpochLabels(ctx, topicB, false, nonce, input, maxLabelBytes, maxRegistrySize)
+	s.Require().NoError(err)
+
+	s.Require().Equal(idsA, idsB)
+	s.Require().Equal(epochLabelNames(regA.Labels), epochLabelNames(regB.Labels))
+	s.Require().Equal([]keeper.LabelId{1, 2, 3, 2}, idsA)
+	s.Require().Equal([]string{"b", "a", "c"}, epochLabelNames(regA.Labels))
 }

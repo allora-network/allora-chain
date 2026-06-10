@@ -774,3 +774,16 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 		NonceBlockHeight: nonceBlockHeight,
 	}
 }
+
+// NewEpochLabelRegistryFrozenEventBase is emitted once per (topicId, nonce)
+// after the final active inputs have been finalized into a registry at
+// CloseWorkerNonce time. Offchain indexers can reconstruct the full
+// registry by looking up topicLabelRegistry at the same key, but we
+// advertise the size here so explorers don't have to read state.
+func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int64, registrySize uint64) proto.Message {
+	return &EventEpochLabelRegistryFrozen{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		RegistrySize:     registrySize,
+	}
+}

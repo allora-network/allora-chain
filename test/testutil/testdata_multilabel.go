@@ -158,6 +158,8 @@ func GetMultilabelInferencesFromCsv(
 			Values:      values,
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
+			ExtraData:   nil,
+			Proof:       "",
 		})
 	}
 	return emissionstypes.Inferences{Inferences: out}, nil

@@ -156,6 +156,9 @@ func (inference *Inference) Validate() error {
 	if err := validateInferenceContents(inference.TopicId, inference.Inferer, inference.BlockHeight); err != nil {
 		return errors.Wrap(err, "inference contents are invalid")
 	}
+	if len(inference.Values) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference values cannot be empty")
+	}
 	if err := ValidateDecs(inference.Values); err != nil {
 		return errors.Wrap(err, "inference values are invalid")
 	}
@@ -174,6 +177,88 @@ func (inputInference *InputInference) Validate() error {
 	}
 	// ExtraData not validated as it is not used by the chain
 	// Proof not validated as it is not used by the chain
+	return nil
+}
+
+// ValidateWithLimits validates an InputInference against the per-topic and
+// per-submission constraints that apply to the worker payload path:
+//
+//   - labelCap is the topic MaxLabelsPerSubmission value applied to this
+//     payload. It is the maximum number of distinct canonical labels the
+//     submission may carry. Must be >= 1.
+//   - whitelist, when non-empty, is the set of canonical labels accepted by the
+//     topic. Nil and empty whitelists both mean unrestricted because repeated
+//     fields do not preserve a nil-vs-empty distinction across serialization.
+//   - maxLabelBytes is Params.MaxCanonicalLabelByteLength; it is threaded
+//     into CanonicalLabelName as the per-label byte cap.
+//   - labelCaseSensitive is the topic's LabelCaseSensitive flag; it is
+//     threaded into CanonicalLabelName so submission-time canonicalization
+//     matches the whitelist canonicalization the keeper applied in
+//     SetTopic/UpdateTopic.
+//
+// In addition to the basic InputInference.Validate() checks, this function:
+//
+//   - canonicalizes each labeled value's Label via CanonicalLabelName and
+//     rewrites the value in place so downstream consumers see canonical
+//     bytes only;
+//   - rejects duplicates after canonicalization (ErrInvalidLabelName);
+//   - enforces the label cap (ErrTooManyLabelsPerSubmission);
+//   - enforces whitelist membership post-canonicalization
+//     (ErrLabelNotInWhitelist).
+//
+// The canonicalized slice is left in its submitted order so temporary ELR
+// registration can preserve first-seen label order during the WSW.
+func (inputInference *InputInference) ValidateWithLimits(
+	labelCap uint64,
+	whitelist map[string]struct{},
+	maxLabelBytes uint64,
+	labelCaseSensitive bool,
+) error {
+	if err := inputInference.Validate(); err != nil {
+		return err
+	}
+	if labelCap == 0 {
+		// Defensive: topic validation rejects zero, so a zero here indicates a
+		// programming error rather than user input.
+		return errors.Wrap(ErrValidationMustBeGreaterthanZero,
+			"per-submission label cap must be >= 1")
+	}
+	n := uint64(len(inputInference.Values))
+	if n > labelCap {
+		return errors.Wrapf(ErrTooManyLabelsPerSubmission,
+			"submission has %d labels, per-topic cap is %d", n, labelCap)
+	}
+	seen := make(map[string]struct{}, len(inputInference.Values))
+	for i, lv := range inputInference.Values {
+		if lv == nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest,
+				"input labeled value at index %d is nil", i)
+		}
+		c, err := CanonicalLabelName(lv.Label, maxLabelBytes, labelCaseSensitive)
+		if err != nil {
+			return errors.Wrapf(err, "input labeled value at index %d", i)
+		}
+		if _, dup := seen[c]; dup {
+			return errors.Wrapf(ErrInvalidLabelName,
+				"duplicate label after canonicalization at index %d: %q", i, c)
+		}
+		seen[c] = struct{}{}
+		if len(whitelist) > 0 {
+			if _, ok := whitelist[c]; !ok {
+				return errors.Wrapf(ErrLabelNotInWhitelist,
+					"label %q is not in topic label whitelist", c)
+			}
+		}
+		// BoundedExp40Dec is intrinsically bounded on decode; convert to
+		// alloraMath.Dec and reuse ValidateDec so the validator only rejects
+		// explicitly-NaN values (the same rule applied to scalar Inference.Value).
+		if err := ValidateDec(lv.Value.ToDec()); err != nil {
+			return errors.Wrapf(err, "input labeled value %q", c)
+		}
+		// Rewrite in place to the canonical form so temporary registry
+		// registration and whitelist lookups use canonical bytes only.
+		lv.Label = c
+	}
 	return nil
 }
 
@@ -998,6 +1083,18 @@ func (topic Topic) Validate(params Params) error {
 		return errors.Wrapf(sdkerrors.ErrInvalidType,
 			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
 	}
+	if err := ValidateDec(topic.LabelDefaultValue); err != nil {
+		return errors.Wrap(err, "topic label_default_value is invalid")
+	}
+	if topic.RequireUnity && !topic.LabelDefaultValue.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic label_default_value must be zero when require_unity is true")
+	}
+	if err := ValidateMaxLabelsPerSubmission(topic.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(err, "topic max_labels_per_submission is invalid")
+	}
+	if err := ValidateTopicLabelWhitelistSize(topic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(err, "topic label_whitelist is invalid")
+	}
 	if topic.TopicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topic.TopicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
 	}
@@ -1265,7 +1362,7 @@ func (msg *CancelRemoveStakeRequest) Validate() error {
 }
 
 // Validate checks if the given CreateNewTopicRequest is valid
-func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
+func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitelistSize uint64) error {
 	if err := ValidateBech32(msg.Creator); err != nil {
 		return errors.Wrap(err, "invalid msg Creator address")
 	}
@@ -1315,6 +1412,45 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
+	}
+	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+
+	return nil
+}
+
+// Validate checks if the given UpdateTopicRequest is valid
+func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitelistSize uint64) error {
+	if err := ValidateBech32(msg.Sender); err != nil {
+		return errors.Wrap(err, "invalid msg Sender address")
+	}
+	if len(msg.LossMethod) < validationMinLossMethodLength || uint64(len(msg.LossMethod)) > maxStringLen {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
+	}
+	if msg.AlphaRegret.Lte(validationZeroDec) || msg.AlphaRegret.Gt(validationOneDec) || ValidateDec(msg.AlphaRegret) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
+	}
+	if msg.PNorm.Lt(validationOneDec) || msg.PNorm.Gt(validationPNormMaxDec) || ValidateDec(msg.PNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 1 and 10")
+	}
+	if msg.CNorm.Lt(validationCNormMinDec) || msg.CNorm.Gt(validationCNormMaxDec) || ValidateDec(msg.CNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "c_norm must be between -100 and 100")
+	}
+	if uint64(len(msg.Metadata)) > maxStringLen {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata invalid")
+	}
+	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
+	}
+	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
+	}
+	if err := ValidateTopicLabelWhitelistSize(msg.LabelWhitelist, maxTopicLabelWhitelistSize); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
 
 	return nil

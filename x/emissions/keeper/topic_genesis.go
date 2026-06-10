@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -30,6 +29,35 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 			}
 			if err := k.SetTopic(ctx, topic.TopicId, *topic.Topic); err != nil {
 				return errors.Wrap(err, "error setting topic")
+			}
+		}
+	}
+	// TopicLabelRegistries []*TopicIdBlockHeightEpochLabelRegistry
+	for _, row := range data.TopicLabelRegistries {
+		if row != nil {
+			if row.EpochLabelRegistry == nil {
+				return errors.Wrap(types.ErrInvalidValue, "topic label registry cannot be nil")
+			}
+			if row.TopicId != row.EpochLabelRegistry.TopicId {
+				return errors.Wrapf(types.ErrInvalidValue,
+					"topic label registry topic mismatch: key %d payload %d",
+					row.TopicId,
+					row.EpochLabelRegistry.TopicId,
+				)
+			}
+			nonce := row.BlockHeight
+			if err := types.ValidateBlockHeight(nonce); err != nil {
+				return errors.Wrap(err, "topic label registry block height validation failed")
+			}
+			if uint64(nonce) != row.EpochLabelRegistry.EpochId {
+				return errors.Wrapf(types.ErrInvalidValue,
+					"topic label registry epoch mismatch: key %d payload %d",
+					nonce,
+					row.EpochLabelRegistry.EpochId,
+				)
+			}
+			if err := k.SetEpochLabelRegistry(ctx, *row.EpochLabelRegistry); err != nil {
+				return errors.Wrap(err, "error setting topic label registry")
 			}
 		}
 	}
@@ -193,17 +221,6 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 		}
 	}
 
-	// topicLabelRegistry []EpochLabelRegistry
-	for _, registry := range data.EpochLabelRegistries {
-		if registry != nil {
-			// nolint:gosec
-			key := collections.Join(registry.TopicId, BlockHeight(registry.EpochId))
-			if err := k.topicLabelRegistry.Set(ctx, key, *registry); err != nil {
-				return errors.Wrap(err, "error setting topicLabelRegistry")
-			}
-		}
-	}
-
 	return nil
 }
 
@@ -234,6 +251,27 @@ func (k *TopicKeeper) ExportGenesis(ctx context.Context, data *types.GenesisStat
 		topics = append(topics, &topic)
 	}
 	data.Topics = topics
+
+	// topicLabelRegistries
+	topicLabelRegistriesIter, err := k.topicLabelRegistry.Iterate(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to iterate topic label registries")
+	}
+	topicLabelRegistries := make([]*types.TopicIdBlockHeightEpochLabelRegistry, 0)
+	for ; topicLabelRegistriesIter.Valid(); topicLabelRegistriesIter.Next() {
+		keyValue, err := topicLabelRegistriesIter.KeyValue()
+		if err != nil {
+			return errors.Wrap(err, "failed to get key value: topicLabelRegistriesIter")
+		}
+		value := keyValue.Value
+		topicLabelRegistry := types.TopicIdBlockHeightEpochLabelRegistry{
+			TopicId:            keyValue.Key.K1(),
+			BlockHeight:        keyValue.Key.K2(),
+			EpochLabelRegistry: &value,
+		}
+		topicLabelRegistries = append(topicLabelRegistries, &topicLabelRegistry)
+	}
+	data.TopicLabelRegistries = topicLabelRegistries
 
 	// activeTopics
 	activeTopics := make([]uint64, 0)
@@ -482,25 +520,6 @@ func (k *TopicKeeper) ExportGenesis(ctx context.Context, data *types.GenesisStat
 		})
 	}
 	data.MadInferences = madInferences
-
-	// labelRegistries
-	labelRegistries := make([]*types.EpochLabelRegistry, 0)
-	labelRegistriesIter, err := k.topicLabelRegistry.Iterate(ctx, nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to iterate topic label registries")
-	}
-	for ; labelRegistriesIter.Valid(); labelRegistriesIter.Next() {
-		keyValue, err := labelRegistriesIter.KeyValue()
-		if err != nil {
-			return errors.Wrap(err, "failed to get key value: LabelRegistriesIter")
-		}
-		labelRegistries = append(labelRegistries, &types.EpochLabelRegistry{
-			TopicId: keyValue.Key.K1(),
-			EpochId: uint64(keyValue.Key.K2()),
-			Labels:  keyValue.Value.GetLabels(),
-		})
-	}
-	data.EpochLabelRegistries = labelRegistries
 
 	return nil
 }

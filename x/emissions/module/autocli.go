@@ -506,21 +506,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetWorkerLatestInferenceByTopicId",
-					Use:       "worker-latest-inference [topic_id] [worker_address]",
-					Short:     "Get the latest inference for a given worker and topic within a worker submission window",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-						{ProtoField: "worker_address"},
-					},
-				},
-				{
 					RpcMethod: "GetInferencesAtBlock",
 					Use:       "inferences-at-block [topic_id] [block_height]",
 					Short:     "Get All Inferences produced for a topic in a particular timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetWorkerLatestInputInferenceByTopicId",
+					Use:       "latest-input-inference [topic_id] [worker_address]",
+					Short:     "Get the latest active WSW inference as an input inference",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker_address"},
 					},
 				},
 				{
@@ -962,7 +962,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value] [label_case_sensitive]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -982,11 +982,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "enable_worker_whitelist"},
 						{ProtoField: "enable_reputer_whitelist"},
 						{ProtoField: "c_norm"},
+						{ProtoField: "max_labels_per_submission"},
+						{ProtoField: "label_whitelist"},
+						{ProtoField: "label_default_value"},
+						{ProtoField: "label_case_sensitive"},
 					},
 				},
 				{
 					RpcMethod: "UpdateTopic",
-					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm]",
+					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value]",
 					Short:     "Update an existing topic's modifiable configuration",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -997,6 +1001,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "merit_sortition_alpha"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "c_norm"},
+						{ProtoField: "max_labels_per_submission"},
+						{ProtoField: "label_whitelist"},
+						{ProtoField: "label_default_value"},
 					},
 				},
 				{

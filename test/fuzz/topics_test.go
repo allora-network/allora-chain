@@ -34,9 +34,9 @@ func createTopic(
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
 		WorkerSubmissionWindow:   10,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
@@ -44,6 +44,10 @@ func createTopic(
 		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
 		RequireUnity:             false,
 		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       true,
 	}
 
 	ctx := context.Background()

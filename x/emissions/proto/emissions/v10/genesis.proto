@@ -112,7 +112,7 @@ message GenesisState {
   repeated DelegatorReputerTopicIdBlockHeight delegate_stake_removals_by_actor = 31;
 
   /// MISC GLOBAL STATE
-  // map of (topic, worker) -> inference
+  // map of (topic, inferer) -> live WSW inference for admitted active inferers; cleared at nonce close
   repeated TopicIdActorIdInference inferences = 32;
   // map of (topic, worker) -> forecast[]
   repeated TopicIdActorIdForecast forecasts = 33;
@@ -278,6 +278,10 @@ message GenesisState {
   repeated TopicIdBlockHeightNetworkInferenceBundles network_inference_bundle = 99;
   repeated TopicIdBlockHeightNetworkInferenceBundles outlier_resistant_network_inference_bundle = 100;
 
+  // EPOCH LABEL REGISTRIES
+  // map of (topic, block_height) -> temporary or final EpochLabelRegistry
+  repeated TopicIdBlockHeightEpochLabelRegistry topic_label_registries = 101;
+
   // MONTHLY REWARDS
   string monthly_reputer_rewards = 97 [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -291,9 +295,6 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-
-  // TOPIC LABEL REGISTRY (epoch_id used for nonce)
-  repeated EpochLabelRegistry epoch_label_registries = 101;
 }
 
 message TopicIdAndTopic {
@@ -434,6 +435,12 @@ message TopicIdBlockHeightInferences {
   uint64 topic_id = 1;
   int64 block_height = 2;
   emissions.v10.Inferences inferences = 3;
+}
+
+message TopicIdBlockHeightEpochLabelRegistry {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  emissions.v10.EpochLabelRegistry epoch_label_registry = 3;
 }
 
 message TopicIdBlockHeightForecasts {

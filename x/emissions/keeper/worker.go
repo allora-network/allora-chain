@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"sort"
-	"strings"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
@@ -15,6 +14,61 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// InferenceAdmissionKind is the read-only admission outcome computed before an
+// input inference is normalized into the temporary ELR label space.
+type InferenceAdmissionKind uint8
+
+const (
+	// InferenceAdmissionNotAdmitted preserves passive score/liveness side
+	// effects, but does not store an inference.
+	InferenceAdmissionNotAdmitted InferenceAdmissionKind = iota
+	// InferenceAdmissionOpenSlot admits the inferer without evicting anyone.
+	InferenceAdmissionOpenSlot
+	// InferenceAdmissionEvictLowest admits the inferer by replacing the current
+	// lowest-scoring active inferer.
+	InferenceAdmissionEvictLowest
+)
+
+// InferenceAdmissionPlan carries the exact admission decision and score snapshot
+// that CommitAdmittedInference / CommitNonAdmittedInference apply. Planning must
+// not mutate active sets, inference stores, score stores, or the temporary epoch
+// label registry.
+type InferenceAdmissionPlan struct {
+	Kind             InferenceAdmissionKind
+	Inferer          ActorId
+	PreviousEmaScore types.Score
+	LowestEmaScore   types.Score
+	WorkerAddresses  []ActorId
+	FirstSubmission  bool
+}
+
+func newInferenceAdmissionPlan(inferer ActorId) InferenceAdmissionPlan {
+	return InferenceAdmissionPlan{
+		Kind:    InferenceAdmissionNotAdmitted,
+		Inferer: inferer,
+		PreviousEmaScore: types.Score{
+			TopicId:     0,
+			BlockHeight: 0,
+			Address:     "",
+			Score:       alloraMath.ZeroDec(),
+		},
+		LowestEmaScore: types.Score{
+			TopicId:     0,
+			BlockHeight: 0,
+			Address:     "",
+			Score:       alloraMath.ZeroDec(),
+		},
+		WorkerAddresses: nil,
+		FirstSubmission: false,
+	}
+}
+
+// Admitted reports whether a planned inference is allowed to be normalized and
+// stored. Non-admitted plans may still commit score/liveness side effects.
+func (p InferenceAdmissionPlan) Admitted() bool {
+	return p.Kind == InferenceAdmissionOpenSlot || p.Kind == InferenceAdmissionEvictLowest
+}
 
 func NewWorkerKeeper(
 	cdc codec.BinaryCodec,
@@ -49,11 +103,13 @@ type WorkerKeeper struct {
 	activeForecasters collections.KeySet[collections.Pair[TopicId, ActorId]]
 	// map of worker id to node data about that worker
 	workers collections.Map[ActorId, types.OffchainNode]
-	// map of (topic, worker) -> inference
+	// map of (topic, worker) -> latest active inference for the open WSW
 	inferences collections.Map[collections.Pair[TopicId, ActorId], types.Inference]
 	// map of (topic, worker) -> forecast[]
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 	// map of (topic, block_height) -> Inference
+	// allInferences is the committed per-epoch snapshot of accepted inferences,
+	// keyed by (topicId, nonceBlockHeight); pruned after rewards are paid.
 	allInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.Inferences]
 	// map of (topic, block_height) -> Forecast
 	allForecasts collections.Map[collections.Pair[TopicId, BlockHeight], types.Forecasts]
@@ -231,7 +287,7 @@ func (k *WorkerKeeper) ResetActiveWorkersForTopic(ctx context.Context, topicId T
 	return nil
 }
 
-// ResetWorkersIndividualSubmissionsForTopic resets the inferer individual submissions for a topic
+// ResetWorkersIndividualSubmissionsForTopic resets worker submissions for a topic.
 func (k *WorkerKeeper) ResetWorkersIndividualSubmissionsForTopic(ctx context.Context, topicId TopicId) error {
 	infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.inferences.Clear(ctx, infererRange); err != nil {
@@ -395,30 +451,33 @@ func (k *WorkerKeeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId,
 	return &forecasts, nil
 }
 
-// Append individual inference for a topic/block
-func (k *WorkerKeeper) AppendInference(
+// PlanInferenceAdmission computes the admission decision and score snapshot for
+// an inferer. It is read-only: no active-set, inference, score, or epoch label
+// registry writes happen here. Apply the returned plan with the commit methods.
+func (k *WorkerKeeper) PlanInferenceAdmission(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonceBlockHeight BlockHeight,
-	inference *types.Inference,
+	inferer ActorId,
 	maxTopInferersToReward uint64,
-) error {
+) (InferenceAdmissionPlan, error) {
+	plan := newInferenceAdmissionPlan(inferer)
 	// Check if the inferers already submitted the inference
-	isActive, err := k.IsActiveInferer(ctx, topic.Id, inference.Inferer)
+	isActive, err := k.IsActiveInferer(ctx, topic.Id, inferer)
 	if err != nil {
-		return errorsmod.Wrap(err, "error checking if worker already submitted inference")
+		return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error checking if worker already submitted inference")
 	} else if isActive {
-		return errors.New("inference already submitted")
+		return InferenceAdmissionPlan{}, errors.New("inference already submitted")
 	}
 
 	// Get previous EMA score for the current inferer
-	previousEmaScore, err := k.scoresKeeper.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
+	previousEmaScore, err := k.scoresKeeper.GetInfererScoreEma(ctx, topic.Id, inferer)
 	if err != nil {
-		return errorsmod.Wrapf(err, "Error getting inferer score ema")
+		return InferenceAdmissionPlan{}, errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
 	if previousEmaScore.BlockHeight >= nonceBlockHeight {
-		return types.ErrCantUpdateEmaMoreThanOncePerWindow
+		return InferenceAdmissionPlan{}, types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
 	// Check if the inferer is new and set initial EMA score
@@ -427,119 +486,251 @@ func (k *WorkerKeeper) AppendInference(
 		firstSubmission = true
 		initialEmaScore, err := k.scoresKeeper.GetTopicInitialInfererEmaScore(ctx, topic.Id)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting topic initial ema score")
+			return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
 		previousEmaScore = types.Score{
 			TopicId:     topic.Id,
-			Address:     inference.Inferer,
+			Address:     inferer,
 			BlockHeight: nonceBlockHeight,
 			Score:       initialEmaScore,
 		}
-		err = k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, previousEmaScore)
-		if err != nil {
-			return errorsmod.Wrap(err, "error setting initial inferer score ema")
-		}
 	} else {
 		// If not new: Penalise the inferer if needed
-		previousEmaScore, err = k.actorPenaltiesKeeper.ApplyLivenessPenaltyToInferer(ctx, topic, nonceBlockHeight, previousEmaScore)
+		previousEmaScore, err = k.actorPenaltiesKeeper.CalculateLivenessPenaltyToInferer(ctx, topic, nonceBlockHeight, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error trying to penalise inferer")
+			return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error trying to penalise inferer")
 		}
 
 		// Update score nonce for liveness tracking
 		previousEmaScore.BlockHeight = nonceBlockHeight
-		err = k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, previousEmaScore)
-		if err != nil {
-			return errorsmod.Wrap(err, "error setting penalised inferer score ema")
-		}
 	}
 
 	// Get lowest inferer score ema for the topic
 	lowestEmaScore, _, err := k.scoresKeeper.GetLowestInfererScoreEma(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting lowest inferer score ema")
+		return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error getting lowest inferer score ema")
 	}
 
 	// Get active inferers for topic
 	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting active inferers for topic")
+		return InferenceAdmissionPlan{}, errorsmod.Wrap(err, "error getting active inferers for topic")
 	}
+
+	plan.PreviousEmaScore = previousEmaScore
+	plan.LowestEmaScore = lowestEmaScore
+	plan.WorkerAddresses = workerAddresses
+	plan.FirstSubmission = firstSubmission
 
 	// If there are less than maxTopInferersToReward, add the current inferer, update the lowest inferer score ema if needed, and return
 	if uint64(len(workerAddresses)) < maxTopInferersToReward {
-		// Update lowest inferer score ema if needed
-		if uint64(len(workerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
-			err = k.scoresKeeper.SetLowestInfererScoreEma(ctx, topic.Id, previousEmaScore)
-			if err != nil {
-				return errorsmod.Wrap(err, "error setting lowest inferer score ema")
-			}
-		}
-
-		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active inferer")
-		}
-		return k.InsertInference(ctx, topic.Id, *inference)
+		plan.Kind = InferenceAdmissionOpenSlot
+		return plan, nil
 	}
 
-	// Else ...
-	// Checks if the inferer's previous EMA score is greater than the lowest EMA score
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
-		// Update EMA score for the lowest score inferer, who is not the current inferer
-		err = k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
-			ctx,
-			topic,
-			nonceBlockHeight,
-			lowestEmaScore,
+		plan.Kind = InferenceAdmissionEvictLowest
+	}
+	return plan, nil
+}
+
+// CommitAdmittedInference applies an admitted plan: it writes the shared score
+// snapshot and stores the (already normalized and validated) inference, evicting
+// the lowest active inferer when the plan calls for it. inference MUST be non-nil
+// and plan.Admitted() MUST be true.
+func (k *WorkerKeeper) CommitAdmittedInference(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	inference *types.Inference,
+	plan InferenceAdmissionPlan,
+) error {
+	if !plan.Admitted() {
+		return errorsmod.Wrapf(sdkerrors.ErrLogic, "plan is not admitted (kind %d); use CommitNonAdmittedInference", plan.Kind)
+	}
+	if err := validateInferenceAdmissionPlan(inference, plan); err != nil {
+		return err
+	}
+	if err := k.commitPlannedInfererScore(ctx, topic, plan); err != nil {
+		return err
+	}
+
+	switch plan.Kind {
+	case InferenceAdmissionOpenSlot:
+		return k.commitOpenSlotInferencePlan(ctx, topic, inference, plan)
+	case InferenceAdmissionEvictLowest:
+		return k.commitEvictionInferencePlan(ctx, topic, nonceBlockHeight, inference, plan)
+	}
+	return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unexpected admitted kind: %d", plan.Kind)
+}
+
+// CommitNonAdmittedInference applies a not-admitted plan: it writes only the
+// passive score/liveness side effects and stores no inference, so it takes no
+// inference argument. plan.Admitted() MUST be false.
+func (k *WorkerKeeper) CommitNonAdmittedInference(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	plan InferenceAdmissionPlan,
+) error {
+	if plan.Admitted() {
+		return errorsmod.Wrapf(sdkerrors.ErrLogic, "plan is admitted (kind %d); use CommitAdmittedInference", plan.Kind)
+	}
+	if err := validateInferenceAdmissionPlan(nil, plan); err != nil {
+		return err
+	}
+	if err := k.commitPlannedInfererScore(ctx, topic, plan); err != nil {
+		return err
+	}
+	return k.commitNotAdmittedInferencePlan(ctx, topic, nonceBlockHeight, plan)
+}
+
+func validateInferenceAdmissionPlan(inference *types.Inference, plan InferenceAdmissionPlan) error {
+	if plan.Inferer == "" {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inferer is empty")
+	}
+	if inference != nil && inference.Inferer != plan.Inferer {
+		return errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"inference inferer %s does not match admission plan inferer %s",
+			inference.Inferer,
+			plan.Inferer,
 		)
+	}
+	if plan.PreviousEmaScore.Address != plan.Inferer {
+		return errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"planned EMA score address %s does not match inferer %s",
+			plan.PreviousEmaScore.Address,
+			plan.Inferer,
+		)
+	}
+	switch plan.Kind {
+	case InferenceAdmissionOpenSlot, InferenceAdmissionEvictLowest:
+		if inference == nil {
+			return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "admitted inference is nil")
+		}
+	case InferenceAdmissionNotAdmitted:
+		// Non-admitted plans still commit score/liveness side effects, but no
+		// inference is required because it will not be stored.
+	default:
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "unknown inference admission kind: %d", plan.Kind)
+	}
+	return nil
+}
+
+func (k *WorkerKeeper) commitPlannedInfererScore(
+	ctx sdk.Context,
+	topic types.Topic,
+	plan InferenceAdmissionPlan,
+) error {
+	// Shared EMA snapshot for every admission outcome. Not-admitted (non-first)
+	// then overwrites this same key with the passive-set quantile EMA.
+	if err := k.scoresKeeper.SetInfererScoreEma(ctx, topic.Id, plan.Inferer, plan.PreviousEmaScore); err != nil {
+		if plan.FirstSubmission {
+			return errorsmod.Wrap(err, "error setting initial inferer score ema")
+		}
+		return errorsmod.Wrap(err, "error setting penalised inferer score ema")
+	}
+	return nil
+}
+
+func (k *WorkerKeeper) commitOpenSlotInferencePlan(
+	ctx sdk.Context,
+	topic types.Topic,
+	inference *types.Inference,
+	plan InferenceAdmissionPlan,
+) error {
+	// Update lowest inferer score ema if needed
+	if uint64(len(plan.WorkerAddresses)) == 0 || plan.LowestEmaScore.Score.Gt(plan.PreviousEmaScore.Score) {
+		err := k.scoresKeeper.SetLowestInfererScoreEma(ctx, topic.Id, plan.PreviousEmaScore)
+		if err != nil {
+			return errorsmod.Wrap(err, "error setting lowest inferer score ema")
+		}
+	}
+
+	err := k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
+	if err != nil {
+		return errorsmod.Wrap(err, "error adding active inferer")
+	}
+	if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
+		return errorsmod.Wrap(err, "error inserting inference")
+	}
+	return nil
+}
+
+func (k *WorkerKeeper) commitEvictionInferencePlan(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	inference *types.Inference,
+	plan InferenceAdmissionPlan,
+) error {
+	// Update EMA score for the lowest score inferer, who is not the current inferer
+	err := k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
+		ctx,
+		topic,
+		nonceBlockHeight,
+		plan.LowestEmaScore,
+	)
+	if err != nil {
+		return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+	}
+
+	// RemoveActiveInferer is a no-op for inactive inferers, so verify the
+	// planned eviction target is active first.
+	isActive, err := k.IsActiveInferer(ctx, topic.Id, plan.LowestEmaScore.Address)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking if inferer is active")
+	}
+	if !isActive {
+		return errors.New("inferer with lowest score is not active")
+	}
+
+	// Remove inferer with lowest score
+	err = k.RemoveActiveInferer(ctx, topic.Id, plan.LowestEmaScore.Address)
+	if err != nil {
+		return errorsmod.Wrap(err, "error removing active inferer")
+	}
+	// Clear the evicted worker's temporary inference so it can't leak into
+	// close-time finalization.
+	if err := k.RemoveInference(ctx, topic.Id, plan.LowestEmaScore.Address); err != nil {
+		return errorsmod.Wrap(err, "error removing evicted inferer inference")
+	}
+	// Add new active inferer
+	err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
+	if err != nil {
+		return errorsmod.Wrap(err, "error adding active inferer")
+	}
+	// Calculate new lowest score with updated infererAddresses
+	err = k.scoresKeeper.UpdateLowestScoreFromInfererAddresses(ctx, topic.Id, plan.WorkerAddresses, inference.Inferer, plan.LowestEmaScore.Address)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting low score from all inferences")
+	}
+	if err := k.InsertInference(ctx, topic.Id, *inference); err != nil {
+		return errorsmod.Wrap(err, "error inserting inference")
+	}
+	return nil
+}
+
+func (k *WorkerKeeper) commitNotAdmittedInferencePlan(
+	ctx sdk.Context,
+	topic types.Topic,
+	nonceBlockHeight BlockHeight,
+	plan InferenceAdmissionPlan,
+) error {
+	// Passive-set quantile EMA for the current (lowest-scoring) inferer;
+	// intentionally re-writes the snapshot from commitPlannedInfererScore.
+	if !plan.FirstSubmission { // Only update if not a new inferer
+		err := k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, plan.PreviousEmaScore)
 		if err != nil {
 			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
-		}
-
-		// Check if the inferer with lowest score is active before removing it, because remove will not fail if the inferer is not active
-		isActive, err := k.IsActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
-		if err != nil {
-			return errorsmod.Wrap(err, "error checking if inferer is active")
-		}
-		if !isActive {
-			return errors.New("inferer with lowest score is not active")
-		}
-
-		// Remove inferer with lowest score
-		err = k.RemoveActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
-		if err != nil {
-			return errorsmod.Wrap(err, "error removing active inferer")
-		}
-		// Remove inference from inferer with lowest score
-		err = k.RemoveInference(ctx, topic.Id, lowestEmaScore.Address)
-		if err != nil {
-			return errorsmod.Wrap(err, "error removing inference from inferer")
-		}
-		// Add new active inferer
-		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active inferer")
-		}
-		// Calculate new lowest score with updated infererAddresses
-		err = k.scoresKeeper.UpdateLowestScoreFromInfererAddresses(ctx, topic.Id, workerAddresses, inference.Inferer, lowestEmaScore.Address)
-		if err != nil {
-			return errorsmod.Wrap(err, "error getting low score from all inferences")
-		}
-		return k.InsertInference(ctx, topic.Id, *inference)
-	} else {
-		// Update EMA score for the current inferer, who is the lowest score inferer
-		if !firstSubmission { // Only update if not a new inferer
-			err = k.scoresKeeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
-			if err != nil {
-				return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
-			}
 		}
 	}
 	return nil
 }
 
-// Insert an inference for a specific topic
+// InsertInference inserts an active WSW inference for a specific topic.
 func (k *WorkerKeeper) InsertInference(
 	ctx context.Context,
 	topicId TopicId,
@@ -556,7 +747,7 @@ func (k *WorkerKeeper) InsertInference(
 	return k.inferences.Set(ctx, key, inference)
 }
 
-// RemoveInference removes an inference from a inferer
+// RemoveInference removes an inference from a inferer.
 func (k *WorkerKeeper) RemoveInference(
 	ctx context.Context,
 	topicId TopicId,
@@ -564,6 +755,79 @@ func (k *WorkerKeeper) RemoveInference(
 ) error {
 	key := collections.Join(topicId, inferer)
 	return k.inferences.Remove(ctx, key)
+}
+
+// GetWorkerLatestInferenceByTopicId returns the live WSW inference for
+// (topicId, inferer). Returns collections.ErrNotFound if the inferer has not
+// been admitted in the current WSW.
+func (k *WorkerKeeper) GetWorkerLatestInferenceByTopicId(
+	ctx context.Context,
+	topicId TopicId,
+	inferer ActorId,
+) (types.Inference, error) {
+	key := collections.Join(topicId, inferer)
+	return k.inferences.Get(ctx, key)
+}
+
+// GetWorkerLatestInputInferenceByTopicId denormalizes the live WSW dense
+// inference into its canonical input-shaped view using the temporary ELR.
+func (k *WorkerKeeper) GetWorkerLatestInputInferenceByTopicId(
+	ctx context.Context,
+	topic types.Topic,
+	inferer ActorId,
+) (*types.InputInference, error) {
+	inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, inferer)
+	if err != nil {
+		return nil, err
+	}
+	registry, err := k.topicKeeper.GetEpochLabelRegistry(ctx, topic.Id, inference.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "error getting params for input inference denormalization")
+	}
+	return DenormalizeInferenceToInput(
+		topic,
+		registry,
+		inference,
+		params.MaxCanonicalLabelByteLength,
+	)
+}
+
+// LoadActiveInfererInferencesForClose reads the temporary dense inferences for
+// the final active inferer set. Inferences are returned sorted by inferer so
+// close-time registry construction and finalization are deterministic.
+func (k *WorkerKeeper) LoadActiveInfererInferencesForClose(
+	ctx context.Context,
+	topic types.Topic,
+	nonce BlockHeight,
+	workers []ActorId,
+) ([]*types.Inference, error) {
+	sortedWorkers := append([]ActorId(nil), workers...)
+	sort.Strings(sortedWorkers)
+
+	activeInferences := make([]*types.Inference, 0, len(sortedWorkers))
+	for _, inferer := range sortedWorkers {
+		in, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, inferer)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				return nil, errorsmod.Wrapf(
+					sdkerrors.ErrLogic,
+					"missing temporary inference for active inferer %s",
+					inferer,
+				)
+			}
+			return nil, errorsmod.Wrapf(err, "error reading temporary inference for active inferer %s", inferer)
+		}
+		if err := validateActiveInferenceForClose(topic, nonce, inferer, in); err != nil {
+			return nil, err
+		}
+		inference := in
+		activeInferences = append(activeInferences, &inference)
+	}
+	return activeInferences, nil
 }
 
 // Insert a complete set of inferences for a topic/block.
@@ -752,15 +1016,6 @@ func (k *WorkerKeeper) InsertActiveForecasts(
 	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
-func (k *WorkerKeeper) GetWorkerLatestInferenceByTopicId(
-	ctx context.Context,
-	topicId TopicId,
-	worker ActorId,
-) (types.Inference, error) {
-	key := collections.Join(topicId, worker)
-	return k.inferences.Get(ctx, key)
-}
-
 func (k *WorkerKeeper) GetWorkerLatestForecastByTopicId(
 	ctx context.Context,
 	topicId TopicId,
@@ -770,199 +1025,33 @@ func (k *WorkerKeeper) GetWorkerLatestForecastByTopicId(
 	return k.forecasts.Get(ctx, key)
 }
 
-// GetWorkersLatestInferencesByTopicIdValuesPadded retrieves the latest inference
-// for each provided worker and guarantees that the returned Inference.Values
-// slices are aligned with the expected shape for the topic.
+// NormalizeInputInference converts a worker-submitted InputInference into a
+// dense temporary *types.Inference aligned to the WSW temporary
+// EpochLabelRegistry.
 //
-// SINGLE topics:
-//   - Ensures Values has length 1.
+// Preconditions: the caller (msgserver) must have already canonicalized and
+// validated `in` via (*InputInference).ValidateWithLimits, which enforces
+// canonical labels, post-canon dedupe, the effective per-submission cap, and
+// the topic whitelist.
 //
-// MULTI topics:
-//   - Pads each inference's Values slice with zeros so that its length matches
-//     the epoch label registry length for (topicId, nonce).
-//   - Returns an error if any inference has more values than the registry.
+// SINGLE: Values = [scalar]. Accepts both the scalar Value field and a
 //
-// Returned inferences are sorted deterministically by Inferer address.
-func (k *WorkerKeeper) GetWorkersLatestInferencesByTopicIdValuesPadded(
+//	1-element labeled Values list (the latter wins if present and the label
+//	is canonical "y"; mismatched single-value labels are rejected).
+//
+// MULTI: registers non-default submitted labels in first-seen order, initializes
+//
+//	the dense vector with topic.LabelDefaultValue, and scatters non-default
+//	values into their temporary registry ids.
+//
+// The unity check (topic.RequireUnity) runs here because it depends only on
+// the submitted labeled values, not on the registry.
+func (k *WorkerKeeper) NormalizeInputInference(
 	ctx context.Context,
 	topic types.Topic,
 	nonce BlockHeight,
-	workers []ActorId,
-) (*types.Inferences, error) {
-	active := make([]*types.Inference, 0, len(workers))
-
-	switch topic.OutputArity {
-	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE:
-		for _, addr := range workers {
-			inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
-			if err != nil {
-				return nil, err
-			}
-			if len(inf.Values) != 1 {
-				return nil, errorsmod.Wrapf(
-					sdkerrors.ErrLogic,
-					"worker %s single-arity inference must have exactly 1 value, got=%d",
-					addr, len(inf.Values),
-				)
-			}
-
-			values := []alloraMath.Dec{inf.Values[0]}
-
-			active = append(active, &types.Inference{
-				TopicId:     inf.TopicId,
-				BlockHeight: inf.BlockHeight,
-				Inferer:     inf.Inferer,
-				Values:      values,
-				ExtraData:   inf.ExtraData,
-				Proof:       inf.Proof,
-			})
-		}
-	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
-		reg, err := k.topicKeeper.GetEpochLabelRegistry(ctx, topic.Id, nonce)
-		if err != nil {
-			return nil, err
-		}
-		targetLen := len(reg.GetLabels())
-
-		if targetLen == 0 {
-			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "labels should not be empty")
-		}
-
-		zero := alloraMath.ZeroDec()
-
-		for _, addr := range workers {
-			inf, err := k.GetWorkerLatestInferenceByTopicId(ctx, topic.Id, addr)
-			if err != nil {
-				return nil, err
-			}
-			if len(inf.Values) > targetLen {
-				return nil, errorsmod.Wrapf(
-					sdkerrors.ErrLogic,
-					"worker %s inference values longer than registry: got=%d registry=%d",
-					addr, len(inf.Values), targetLen,
-				)
-			}
-
-			values := make([]alloraMath.Dec, targetLen)
-			for i := range values {
-				values[i] = zero
-			}
-
-			copy(values, inf.Values)
-
-			active = append(active, &types.Inference{
-				TopicId:     inf.TopicId,
-				BlockHeight: inf.BlockHeight,
-				Inferer:     inf.Inferer,
-				Values:      values,
-				ExtraData:   inf.ExtraData,
-				Proof:       inf.Proof,
-			})
-		}
-	default:
-		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
-	}
-
-	sort.Slice(active, func(i, j int) bool { return active[i].Inferer < active[j].Inferer })
-	return &types.Inferences{Inferences: active}, nil
-}
-
-// normalizedInferenceInput is the result of validating an InputInference
-// without touching state. It captures everything materializeInference needs
-// to produce the final Inference.
-type normalizedInferenceInput struct {
-	// IsSingle is true if the topic is single-arity.
-	IsSingle bool
-	// ScalarValue is populated when IsSingle is true and len(labeled) == 0
-	// (i.e., the worker submitted a scalar rather than a single labeled value).
-	ScalarValue alloraMath.Dec
-	// labeled holds the (label, value) pairs for multi-arity submissions,
-	// or for single-arity submissions that arrived as a one-element labeled list.
-	Labeled []types.LabeledValue
-}
-
-// Validated mirror types. These hold input that has been checked but not yet
-// applied to state. They exist so that validation can run as a pure pass.
-type normalizedWorkerDataBundle struct {
-	worker            string
-	nonce             *types.Nonce
-	topicId           TopicId
-	inferenceForecast *normalizedInferenceForecastBundle
-}
-
-type normalizedInferenceForecastBundle struct {
-	Inference *normalizedInferenceInput // the type from before
-	Forecast  *types.Forecast           // forecast conversion is already pure; keep as-is
-	// plus whatever passthrough fields you need to construct the final types
-	inferencePassthrough *types.InputInference // for TopicId, BlockHeight, Inferer, ExtraData, Proof
-}
-
-// NormalizeWorkerDataBundle performs all input validation without state access.
-// Returns a validated tree that MaterializeWorkerDataBundle can apply.
-func (k *WorkerKeeper) NormalizeWorkerDataBundle(
-	topic types.Topic,
-	bwdb *types.InputWorkerDataBundle,
-) (*normalizedWorkerDataBundle, error) {
-	if bwdb == nil {
-		return nil, types.ErrInvalidValue
-	}
-	if bwdb.TopicId != topic.Id {
-		return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "topic mismatch")
-	}
-
-	ifb, err := NormalizeInferenceForecastBundle(topic, bwdb.InferenceForecastsBundle)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "failed to normalize inference forecasts bundle")
-	}
-
-	return &normalizedWorkerDataBundle{
-		worker:            bwdb.Worker,
-		nonce:             bwdb.Nonce,
-		topicId:           bwdb.TopicId,
-		inferenceForecast: ifb,
-	}, nil
-}
-
-func NormalizeInferenceForecastBundle(
-	topic types.Topic,
-	bifb *types.InputInferenceForecastBundle,
-) (*normalizedInferenceForecastBundle, error) {
-	if bifb == nil {
-		return nil, types.ErrInvalidValue
-	}
-
-	out := new(normalizedInferenceForecastBundle)
-
-	if bifb.Inference != nil {
-		normalized, err := NormalizeInputInference(topic, bifb.Inference)
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "failed to normalize inference")
-		}
-		out.Inference = normalized
-		out.inferencePassthrough = bifb.Inference
-	}
-
-	if bifb.Forecast != nil {
-		forecast, err := types.NewForecastFromInput(bifb.Forecast)
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "failed to convert forecast")
-		}
-		out.Forecast = forecast
-	}
-
-	return out, nil
-}
-
-// NormalizeInputInference performs all input validation that does not
-// require state access: nil checks, NaN/finite checks, arity branching,
-// duplicate-label detection, and the require_unity check. It returns a
-// normalizedInferenceInput describing what materializeInference should write.
-//
-// This function is pure: no keeper calls, no context use, no state mutation.
-func NormalizeInputInference(
-	topic types.Topic,
 	in *types.InputInference,
-) (*normalizedInferenceInput, error) {
+) (*types.Inference, error) {
 	if in == nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "inference is nil")
 	}
@@ -974,54 +1063,120 @@ func NormalizeInputInference(
 		}
 		var dec alloraMath.Dec
 		if len(in.Values) == 1 {
-			dec = in.Values[0].Value.ToDec()
+			lv := in.Values[0]
+			if lv == nil {
+				return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "nil labeled value")
+			}
+			// The canonical label for a SINGLE-arity submission is always "y".
+			// Accept a missing label (legacy scalar path), accept "y", reject
+			// anything else so that operators using SINGLE topics can't smuggle
+			// in extra labels.
+			if lv.Label != "" && lv.Label != "y" {
+				return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "single-arity label must be \"y\", got %q", lv.Label)
+			}
+			dec = lv.Value.ToDec()
 		} else {
 			dec = in.Value.ToDec()
 		}
 		if dec.IsNaN() || !dec.IsFinite() {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid scalar inference value")
 		}
-		return &normalizedInferenceInput{
-			IsSingle:    true,
-			ScalarValue: dec,
-			Labeled:     nil,
+		params, err := k.paramsKeeper.GetParams(ctx)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get params for inference normalization")
+		}
+		if _, _, err := k.topicKeeper.RegisterEpochLabels(
+			ctx,
+			topic.Id,
+			topic.LabelCaseSensitive,
+			nonce,
+			[]string{"y"},
+			params.MaxCanonicalLabelByteLength,
+			params.MaxEpochLabelRegistrySize,
+		); err != nil {
+			return nil, errorsmod.Wrap(err, "failed to register single-arity label")
+		}
+		return &types.Inference{
+			TopicId:     in.TopicId,
+			BlockHeight: in.BlockHeight,
+			Inferer:     in.Inferer,
+			Values:      []alloraMath.Dec{dec},
+			ExtraData:   in.ExtraData,
+			Proof:       in.Proof,
 		}, nil
 	case types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI:
-		if len(in.Values) == 0 {
-			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires labeled values")
-		}
+		// fall through
 	default:
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "output_arity is invalid")
 	}
 
-	// Multi-arity path: extract labels and values, check for duplicates and
-	// invalid values, and verify unity if required.
-	seen := make(map[string]struct{}, len(in.Values))
-	labeled := make([]types.LabeledValue, 0, len(in.Values))
-	sumSubmitted := alloraMath.ZeroDec()
+	if len(in.Values) == 0 {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "multi-arity inference requires labeled values")
+	}
 
+	submitted := make([]*types.InputLabeledValue, 0, len(in.Values))
 	for _, lv := range in.Values {
-		name := strings.TrimSpace(lv.Label)
-		if name == "" {
-			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "label name empty")
+		if lv == nil {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "nil labeled value")
 		}
-		if _, ok := seen[name]; ok {
-			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate label in submission: %s", name)
+		if lv.Label == "" {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "label must be canonicalized before Normalize")
 		}
-		seen[name] = struct{}{}
-
+		submitted = append(submitted, lv)
+	}
+	sumSubmitted := alloraMath.ZeroDec()
+	// A "scattered" value is one submitted value paired with the registry id it
+	// will occupy. Only non-default labels are registered: a value equal to
+	// topic.LabelDefaultValue is dropped here because in the dense vector it is
+	// indistinguishable from a label that was never submitted. labelsToRegister[i]
+	// and valuesToScatter[i] are appended in lockstep so they stay positionally
+	// aligned with the ids RegisterEpochLabels returns.
+	type scatteredValue struct {
+		id    LabelId
+		value alloraMath.Dec
+	}
+	labelsToRegister := make([]string, 0, len(submitted))
+	valuesToScatter := make([]alloraMath.Dec, 0, len(submitted))
+	for _, lv := range submitted {
 		dec := lv.Value.ToDec()
 		if dec.IsNaN() || !dec.IsFinite() {
-			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label %s has invalid value", name)
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "label %s has invalid value", lv.Label)
 		}
-
-		labeled = append(labeled, types.LabeledValue{LabelId: 0, LabelName: name, Value: dec})
-
 		var err error
 		sumSubmitted, err = sumSubmitted.Add(dec)
 		if err != nil {
 			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "failed to sum submitted value: %s", err)
 		}
+		if !dec.Equal(topic.LabelDefaultValue) {
+			labelsToRegister = append(labelsToRegister, lv.Label)
+			valuesToScatter = append(valuesToScatter, dec)
+		}
+	}
+	if len(labelsToRegister) == 0 {
+		return nil, errorsmod.Wrap(
+			sdkerrors.ErrInvalidRequest,
+			"multi-arity inference requires at least one non-default label value",
+		)
+	}
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to get params for inference normalization")
+	}
+	registeredIDs, registry, err := k.topicKeeper.RegisterEpochLabels(
+		ctx,
+		topic.Id,
+		topic.LabelCaseSensitive,
+		nonce,
+		labelsToRegister,
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to register inference labels")
+	}
+	scattered := make([]scatteredValue, 0, len(registeredIDs))
+	for i, id := range registeredIDs {
+		scattered = append(scattered, scatteredValue{id: id, value: valuesToScatter[i]})
 	}
 
 	if topic.RequireUnity {
@@ -1042,100 +1197,21 @@ func NormalizeInputInference(
 		}
 	}
 
-	return &normalizedInferenceInput{
-		IsSingle:    false,
-		ScalarValue: alloraMath.Dec{},
-		Labeled:     labeled,
-	}, nil
-}
-
-// MaterializeWorkerDataBundle applies state changes for a validated bundle and
-// returns the final WorkerDataBundle ready for downstream processing.
-func (k *WorkerKeeper) MaterializeWorkerDataBundle(
-	ctx context.Context,
-	nonce BlockHeight,
-	v *normalizedWorkerDataBundle,
-) (*types.WorkerDataBundle, error) {
-	var inference *types.Inference
-	if v.inferenceForecast.Inference != nil {
-		var err error
-		inference, err = k.materializeInference(ctx, nonce, v.inferenceForecast.inferencePassthrough, v.inferenceForecast.Inference)
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "failed to materialize inference")
-		}
-	}
-	workerDataBundle := &types.WorkerDataBundle{
-		Worker:  v.worker,
-		Nonce:   v.nonce,
-		TopicId: v.topicId,
-		InferenceForecastsBundle: &types.InferenceForecastBundle{
-			Inference: inference,
-			Forecast:  v.inferenceForecast.Forecast,
-		},
-	}
-	if err := workerDataBundle.Validate(); err != nil {
-		return nil, errorsmod.Wrap(err, "failed to validate worker data bundle")
-	}
-	return workerDataBundle, nil
-}
-
-// materializeInference applies the side effects implied by a validated input:
-// it registers epoch labels and constructs the final inference aligned with
-// the topic's epoch label registry.
-//
-// SINGLE: registers the canonical "y" label and produces a one-element Values slice.
-// MULTI: registers each submitted label, fetches the registry, and places each
-// submitted value at its registry-aligned index (missing indices stay zero).
-func (k *WorkerKeeper) materializeInference(
-	ctx context.Context,
-	nonce BlockHeight,
-	in *types.InputInference,
-	normalized *normalizedInferenceInput,
-) (*types.Inference, error) {
-	if normalized.IsSingle {
-		if _, err := k.topicKeeper.RegisterEpochLabel(ctx, in.TopicId, nonce, "y"); err != nil {
-			return nil, err
-		}
-		return &types.Inference{
-			TopicId:     in.TopicId,
-			BlockHeight: in.BlockHeight,
-			Inferer:     in.Inferer,
-			Values:      []alloraMath.Dec{normalized.ScalarValue},
-			ExtraData:   in.ExtraData,
-			Proof:       in.Proof,
-		}, nil
-	}
-
-	type submission struct {
-		labelId LabelId
-		value   alloraMath.Dec
-	}
-	submitted := make([]submission, 0, len(normalized.Labeled))
-	for _, lv := range normalized.Labeled {
-		labelId, err := k.topicKeeper.RegisterEpochLabel(ctx, in.TopicId, nonce, lv.LabelName)
-		if err != nil {
-			return nil, err
-		}
-		submitted = append(submitted, submission{labelId: labelId, value: lv.Value})
-	}
-
-	registry, err := k.topicKeeper.GetEpochLabelRegistry(ctx, in.TopicId, nonce)
-	if err != nil {
-		return nil, err
-	}
-	L := len(registry.Labels)
-	zero := alloraMath.ZeroDec()
-	values := make([]alloraMath.Dec, L)
+	// The dense vector is sized to the WHOLE epoch registry (shared by every
+	// inferer at this topic+nonce and only growing), not to this submission's
+	// label count, so any slot we don't scatter into stays LabelDefaultValue.
+	values := make([]alloraMath.Dec, len(registry.Labels))
 	for i := range values {
-		values[i] = zero
+		values[i] = topic.LabelDefaultValue
 	}
-
-	for _, s := range submitted {
-		idx := int(s.labelId) - 1
-		if idx < 0 || idx >= L {
-			return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "label id out of range")
+	// Scatter each value into its registry slot. Ids are 1-based and dense by
+	// construction, so this bounds check is an internal invariant (ErrLogic),
+	// not a user error.
+	for _, item := range scattered {
+		if item.id == 0 || int(item.id) > len(values) {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "registered label id %d out of range", item.id)
 		}
-		values[idx] = s.value
+		values[labelSlot(item.id)] = item.value
 	}
 
 	return &types.Inference{

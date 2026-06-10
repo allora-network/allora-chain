@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -670,115 +670,137 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
 
-//nolint:staticcheck
-func (s *KeeperTestSuite) TestEpochLabelRegistry() {
-	type testCase struct {
-		name string
-		run  func(ctx sdk.Context, k *keeper.TopicKeeper)
-	}
+// TestUpdateTopic_RejectsLabelCaseSensitiveChange pins the keeper-level guard
+// that LabelCaseSensitive is immutable after topic creation. The msgserver
+// rebuilds updatedTopic from the stored topic, so this branch is only reachable
+// via direct keeper calls.
+func (s *KeeperTestSuite) TestUpdateTopic_RejectsLabelCaseSensitiveChange() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
 
-	newFixture := func() (sdk.Context, *keeper.TopicKeeper, types.TopicId, types.BlockHeight) {
-		ctx := s.Ctx()
-		k := s.TopicKeeper()
-		topicId := s.CreateTopic()
-		nonce := types.BlockHeight(7)
-		return ctx, k, topicId, nonce
-	}
-
-	tests := []testCase{
+	testCases := []struct {
+		name             string
+		initialSensitive bool
+		updatedSensitive bool
+	}{
 		{
-			name: "Get empty registry returns empty (no error)",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				_, _, topicId, nonce := newFixture()
-				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-				s.Require().NoError(err)
-				s.Require().Equal(topicId, reg.TopicId)
-				s.Require().Equal(uint64(nonce), reg.EpochId)
-				s.Require().Empty(reg.Labels)
-			},
+			name:             "false to true",
+			initialSensitive: false,
+			updatedSensitive: true,
 		},
 		{
-			name: "Register one label assigns ID=1 and persists",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				id, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(1), id)
-
-				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-				s.Require().NoError(err)
-				s.Require().Len(reg.Labels, 1)
-				s.Require().Equal(uint32(1), reg.Labels[0].Id)
-				s.Require().Equal("UP", reg.Labels[0].Name)
-			},
-		},
-		{
-			name: "Register two labels assigns ID=2 on second label",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-
-				id, err := k.RegisterEpochLabel(ctx, topicId, nonce, "DOWN")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(2), id)
-
-				gotID, ok, err := k.GetEpochLabelId(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().True(ok)
-				s.Require().Equal(keeper.LabelId(1), gotID)
-
-				gotName, ok, err := k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(2))
-				s.Require().NoError(err)
-				s.Require().True(ok)
-				s.Require().Equal("DOWN", gotName)
-			},
-		},
-		{
-			name: "Duplicate register does not create new ID or new label",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				id1, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(1), id1)
-
-				id2, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-				s.Require().Equal(keeper.LabelId(1), id2)
-
-				reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-				s.Require().NoError(err)
-				s.Require().Len(reg.Labels, 1)
-				s.Require().Equal(uint32(1), reg.Labels[0].Id)
-				s.Require().Equal("UP", reg.Labels[0].Name)
-			},
-		},
-		{
-			name: "Missing lookups return ok=false (no error)",
-			run: func(ctx sdk.Context, k *keeper.TopicKeeper) {
-				ctx, k, topicId, nonce := newFixture()
-
-				_, err := k.RegisterEpochLabel(ctx, topicId, nonce, "UP")
-				s.Require().NoError(err)
-
-				_, ok, err := k.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
-				s.Require().NoError(err)
-				s.Require().False(ok)
-
-				_, ok, err = k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
-				s.Require().NoError(err)
-				s.Require().False(ok)
-			},
+			name:             "true to false",
+			initialSensitive: true,
+			updatedSensitive: false,
 		},
 	}
 
-	for _, tc := range tests {
+	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			ctx, k, _, _ := newFixture()
-			tc.run(ctx, k)
+			topicId := s.CreateTopic(testutil.WithLabelCaseSensitive(tc.initialSensitive))
+
+			storedTopic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.initialSensitive, storedTopic.LabelCaseSensitive)
+
+			updatedTopic := storedTopic
+			updatedTopic.LabelCaseSensitive = tc.updatedSensitive
+
+			_, err = k.UpdateTopic(ctx, storedTopic, updatedTopic)
+			s.Require().Error(err)
+			s.Require().True(errorsmod.IsOf(err, types.ErrInvalidTopicUpdate))
+			s.Require().ErrorContains(err, "label_case_sensitive is immutable after topic creation")
+
+			unchangedTopic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(storedTopic, unchangedTopic)
 		})
 	}
+}
+
+// TestRegisterEpochLabels_OverCapAllowsIdempotentRejectsNew pins the contract
+// that once a stored registry already exceeds maxRegistrySize — only reachable
+// if MaxEpochLabelRegistrySize is lowered by governance after labels were
+// registered — resubmitting an existing label stays idempotent (no growth, no
+// error) while a genuinely new label is rejected with
+// ErrEpochLabelRegistrySaturated.
+func (s *KeeperTestSuite) TestRegisterEpochLabels_OverCapAllowsIdempotentRejectsNew() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	topicId := uint64(1)
+	nonce := int64(10)
+	maxBytes := uint64(64)
+
+	// Fill the registry up to its cap of 3 labels.
+	ids, reg, err := k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"a", "b", "c"}, maxBytes, uint64(3))
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2, 3}, ids)
+	s.Require().Len(reg.Labels, 3)
+
+	// Simulate governance lowering MaxEpochLabelRegistrySize below the current
+	// registry size: the stored registry (3) now exceeds the cap (1).
+	loweredCap := uint64(1)
+
+	// Existing labels remain idempotent even over the cap: original ids, no growth.
+	existingIds, existingReg, err := k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"b", "a"}, maxBytes, loweredCap)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{2, 1}, existingIds)
+	s.Require().Len(existingReg.Labels, 3)
+
+	// A genuinely new label over the cap is rejected.
+	_, _, err = k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"d"}, maxBytes, loweredCap)
+	s.Require().Error(err)
+	s.Require().True(errorsmod.IsOf(err, types.ErrEpochLabelRegistrySaturated))
+
+	// The rejected call must not have grown the registry.
+	finalReg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(finalReg.Labels, 3)
+}
+
+// TestGetEpochLabelRegistryEmpty pins the invariant that GetEpochLabelRegistry
+// returns an empty-but-well-formed registry (no error) when nothing has been
+// written for (topicId, nonce).
+func (s *KeeperTestSuite) TestGetEpochLabelRegistryEmpty() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+
+	reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, reg.TopicId)
+	s.Require().Equal(uint64(nonce), reg.EpochId) //nolint:gosec // nonce is a non-negative block height; cast is safe
+	s.Require().Empty(reg.Labels)
+}
+
+// TestGetEpochLabelLookupHelpersEmpty covers read-path edge cases for
+// GetEpochLabelId and GetEpochLabelName on a never-written registry.
+// Registration behavior is covered by TestRegisterEpochLabels_* in worker_test.go.
+func (s *KeeperTestSuite) TestGetEpochLabelLookupHelpersEmpty() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+
+	for _, name := range []string{"", "   "} {
+		id, ok, err := k.GetEpochLabelId(ctx, topicId, nonce, name)
+		s.Require().NoError(err)
+		s.Require().False(ok)
+		s.Require().Equal(keeper.LabelId(0), id)
+	}
+
+	name, ok, err := k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(0))
+	s.Require().NoError(err)
+	s.Require().False(ok)
+	s.Require().Empty(name)
+
+	_, ok, err = k.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
+	s.Require().NoError(err)
+	s.Require().False(ok)
+
+	_, ok, err = k.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
+	s.Require().NoError(err)
+	s.Require().False(ok)
 }

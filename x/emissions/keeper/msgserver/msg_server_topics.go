@@ -30,7 +30,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
 	}
-	if err := msg.Validate(params.MaxStringLength); err != nil {
+	if err := msg.Validate(params.MaxStringLength, params.MaxTopicLabelWhitelistSize); err != nil {
 		return nil, err
 	}
 
@@ -75,6 +75,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		OutputArity:              msg.OutputArity,
 		RequireUnity:             msg.RequireUnity,
 		UnityTolerance:           msg.UnityTolerance,
+		// Label registry fields. Canonicalization of LabelWhitelist is
+		// applied by SetTopic.
+		MaxLabelsPerSubmission: msg.MaxLabelsPerSubmission,
+		LabelWhitelist:         msg.LabelWhitelist,
+		LabelDefaultValue:      msg.LabelDefaultValue,
+		// LabelCaseSensitive is immutable after creation (UpdateTopic never
+		// changes it because updatedTopic is derived from the existing topic).
+		LabelCaseSensitive: msg.LabelCaseSensitive,
 	}
 	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {
@@ -110,7 +118,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicRequest) (_ *types.UpdateTopicResponse, err error) {
 	defer metrics.RecordMetrics("UpdateTopic", time.Now(), &err)
 
-	if err := types.ValidateStringIsBech32(msg.Sender); err != nil {
+	params, err := ms.pk.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	if err := msg.Validate(params.MaxStringLength, params.MaxTopicLabelWhitelistSize); err != nil {
 		return nil, err
 	}
 
@@ -130,6 +142,12 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
+	// Label registry settings: always apply the requested value. The keeper
+	// rejects unsafe mutations while a worker submission window is open and
+	// canonicalizes the whitelist before persistence.
+	updatedTopic.MaxLabelsPerSubmission = msg.MaxLabelsPerSubmission
+	updatedTopic.LabelWhitelist = msg.LabelWhitelist
+	updatedTopic.LabelDefaultValue = msg.LabelDefaultValue
 
 	updatedTopic, err = ms.tk.UpdateTopic(ctx, topic, updatedTopic)
 	if err != nil {

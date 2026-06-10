@@ -12,8 +12,8 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 - Params/genesis: validate every param change + authority checks; genesis is deterministic with round-trip tests.
 
 ## Go Conventions
-- Always `gofmt`/`goimports`; keep `golangci-lint` clean. Always after producing code that may be pushed.
-- Prefer table-driven tests and explicit dependency injection for easy mocking.
+- Always `gofmt`/`goimports`; `make lint` must always pass clean after producing complete code. Avoid using `nolint` statements if possible, but if you need to use it, add a comment on the reason why.
+- Prefer table-driven unit tests and explicit dependency injection for easy mocking.
 - Use `sdk.Context.Logger()` for chain logs; avoid noisy logs in consensus paths.
 - Only apply Allora Go Service patterns (brynbellomy errors, sqlc, viper, Gin, zerolog) if editing non-chain services.
 
@@ -50,3 +50,9 @@ Before the first commit in any session, run these checks. If any fail, **stop an
 
 ### Git Remote Protocol
 **Never change the git remote URL.** The remote must stay as it is unless otherwise requested. Do not switch HTTPS/SSH, do not run `git remote set-url`, and do not run `gh auth setup-git`, unless explicitly stated, requested and only execute if approved by the user. 
+
+### AUTOCLI
+Do not use FlagOptions on params. Follow existing style.
+
+### REPORTS LOCATION
+Produce requested reports under a `.reports/` folder by default, unless otherwise specified. Do not commit them.
