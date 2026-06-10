@@ -314,6 +314,60 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStoreFromCurrentV014State() 
 	s.Require().Equal(expLabelRegistry, gotRegistry)
 }
 
+// TestMigrateInferences_RegistrySeedingIsIdempotent demonstrates the only
+// scenario in which the labelStore.Has guard in MigrateInferences can fire.
+//
+// TopicLabelRegistryKey is a new store prefix in v15, so a clean
+// v0.16.0 -> v0.17.0 upgrade has no pre-existing epoch label registries, and
+// MigrateInferences is the only code that seeds them. The guard therefore never
+// triggers on a first run; it exists purely to keep a second pass over
+// already-migrated state (genesis export/import, or re-invocation) from
+// re-seeding the {"y"} registry. This test seeds once and verifies a second run
+// leaves the registry byte-for-byte intact.
+func (s *EmissionsV15MigrationTestSuite) TestMigrateInferences_RegistrySeedingIsIdempotent() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	legacyInference := s.makeLegacyInference(1)
+	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
+	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
+	_, err := infKeyCodec.Encode(infKeyBytes, collections.Join(legacyInference.TopicId, legacyInference.Inferer))
+	s.Require().NoError(err)
+	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
+
+	// The epoch label registry store is empty before migration: the prefix is new in v15,
+	// so there is never a pre-existing registry to "preserve" on a real upgrade.
+	labelStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
+	lblKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	lblKeyBytes := make([]byte, lblKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.BlockHeight)))
+	_, err = lblKeyCodec.Encode(lblKeyBytes, collections.Join(legacyInference.TopicId, legacyInference.BlockHeight))
+	s.Require().NoError(err)
+	s.Require().False(labelStore.Has(lblKeyBytes), "no epoch label registry should exist before migration")
+
+	expRegistry := emissionstypes.EpochLabelRegistry{
+		TopicId: legacyInference.TopicId,
+		EpochId: uint64(legacyInference.BlockHeight),
+		Labels:  []*emissionstypes.TopicLabel{{Id: 1, Name: "y"}},
+	}
+
+	// First run seeds the {"y"} registry.
+	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
+	s.Require().True(labelStore.Has(lblKeyBytes))
+	var gotRegistry emissionstypes.EpochLabelRegistry
+	cdc.MustUnmarshal(labelStore.Get(lblKeyBytes), &gotRegistry)
+	s.Require().Equal(expRegistry, gotRegistry)
+
+	// Second run is the only case where Has fires: the registry must be left intact.
+	// NOTE: the inference *values* are not guarded the same way on a re-run (see MIG-01);
+	// this test isolates the registry-seeding idempotency the Has guard provides.
+	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
+	var gotRegistryAfter emissionstypes.EpochLabelRegistry
+	cdc.MustUnmarshal(labelStore.Get(lblKeyBytes), &gotRegistryAfter)
+	s.Require().Equal(expRegistry, gotRegistryAfter)
+}
+
 func (s *EmissionsV15MigrationTestSuite) TestMigrateNetworkInferences_AbortsOnNilReputerNonce() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
