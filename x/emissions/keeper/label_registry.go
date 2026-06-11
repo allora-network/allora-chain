@@ -199,7 +199,7 @@ func CompactRegistryAndRemapInferences(
 			//nolint:gosec // nonce is non-negative (validated above)
 			EpochId: uint64(nonce),
 			Labels: []*types.TopicLabel{
-				{Id: 1, Name: "y"},
+				{Id: types.SingleArityCanonicalLabelID, Name: types.SingleArityCanonicalLabel},
 			},
 		}
 		out := make([]*types.Inference, 0, len(sortedActive))

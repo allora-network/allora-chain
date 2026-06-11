@@ -6,7 +6,6 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
@@ -188,9 +187,8 @@ func validateWorkerInferenceLabels(
 		return errorsmod.Wrapf(err, "input inference failed label validation")
 	}
 	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE && len(rawInference.Values) == 1 {
-		label := rawInference.Values[0].Label
-		if label != "" && label != "y" {
-			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "single-arity label must be \"y\", got %q", label)
+		if err := types.ValidateSingleArityLabel(rawInference.Values[0].Label); err != nil {
+			return err
 		}
 	}
 	return nil

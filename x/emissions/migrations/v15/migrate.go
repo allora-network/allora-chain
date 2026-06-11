@@ -328,7 +328,7 @@ func MigrateInferences(
 			TopicId: oldInference.TopicId,
 			EpochId: uint64(oldInference.BlockHeight),
 			Labels: []*emissionstypes.TopicLabel{
-				{Id: 1, Name: "y"},
+				{Id: emissionstypes.SingleArityCanonicalLabelID, Name: emissionstypes.SingleArityCanonicalLabel},
 			},
 		}
 		lblUpdates = append(lblUpdates, kv{
