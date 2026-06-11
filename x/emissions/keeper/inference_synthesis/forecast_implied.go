@@ -66,12 +66,15 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 		}
 
 		forecastElementsByInferer := make(map[Worker]*emissionstypes.ForecastElement)
-		sortedInferersInForecast := make([]Worker, 0) // TODO: https://github.com/allora-network/allora-chain/pull/942#discussion_r3112785174
+		// Built in forecast-element iteration order, which is deterministic from the
+		// stored forecast proto. Median/weighted accumulation below is order-independent;
+		// no explicit sort is required for determinism.
+		inferersInForecast := make([]Worker, 0)
 
 		for _, el := range fc.ForecastElements {
 			if _, ok := args.InfererToInference[el.Inferer]; ok {
 				forecastElementsByInferer[el.Inferer] = el
-				sortedInferersInForecast = append(sortedInferersInForecast, el.Inferer)
+				inferersInForecast = append(inferersInForecast, el.Inferer)
 			}
 		}
 
@@ -79,9 +82,9 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 
 		if args.AllInferersAreNew {
 			// ---------- MEDIAN ----------
-			vecs := make([]emissionstypes.InferenceValues, 0, len(sortedInferersInForecast))
+			vecs := make([]emissionstypes.InferenceValues, 0, len(inferersInForecast))
 
-			for _, inferer := range sortedInferersInForecast {
+			for _, inferer := range inferersInForecast {
 				inf := args.InfererToInference[inferer]
 
 				if blockHeight == 0 {
@@ -148,12 +151,12 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 		}
 
 		// ---------- WEIGHTED ----------
-		if len(sortedInferersInForecast) == 0 {
+		if len(inferersInForecast) == 0 {
 			continue
 		}
 
 		infererRegretsForThisForecaster := make(map[Inferer]*Regret, len(forecastElementsByInferer))
-		for _, infererInForecast := range sortedInferersInForecast {
+		for _, infererInForecast := range inferersInForecast {
 			r, err := (*args.NetworkCombinedLoss).Sub(forecastElementsByInferer[infererInForecast].Value)
 			if err != nil {
 				return nil, err
@@ -187,7 +190,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 		sumWeights := alloraMath.ZeroDec()
 		running := make(alloraMath.DecArray, regLen)
 
-		for _, inferer := range sortedInferersInForecast {
+		for _, inferer := range inferersInForecast {
 			w := infererWeightsForThisForecaster[inferer]
 			if w.Equal(alloraMath.ZeroDec()) {
 				continue
