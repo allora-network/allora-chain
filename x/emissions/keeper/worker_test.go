@@ -1919,6 +1919,100 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 	}
 }
 
+// TestCompactRegistryAndRemapInferencesSingleArity exercises the SINGLE branch
+// of close-time compaction: regardless of the temporary registry contents it
+// must emit the fixed canonical {"y"} registry and remap each active inference
+// to a single-value vector, taking Values[0] when present and falling back to
+// the topic LabelDefaultValue otherwise. This is the common production path and
+// is not covered by TestCompactRegistryAndRemapInferences (MULTI-only).
+//
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferencesSingleArity() {
+	topic := types.Topic{
+		Id:                1,
+		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		LabelDefaultValue: alloraMath.MustNewDecFromString("9"),
+	} //nolint:exhaustruct
+	nonce := types.BlockHeight(7)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
+	// The temporary registry is irrelevant to the SINGLE output: the branch
+	// always rebuilds the canonical {"y"} registry. It must still validate, so
+	// use the canonical single-arity label.
+	tempRegistry := types.EpochLabelRegistry{
+		TopicId: 1,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: types.SingleArityCanonicalLabelID, Name: types.SingleArityCanonicalLabel},
+		},
+	}
+
+	cases := []struct {
+		name       string
+		active     []*types.Inference
+		wantValues map[string][]string
+	}{
+		{
+			name: "remaps_scalar_values_sorted_by_inferer",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("5")},
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("3")},
+			},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"3"},
+				s.AddrsStr(1): {"5"},
+			},
+		},
+		{
+			name: "uses_default_value_for_empty_inference",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: nil},
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("5")},
+			},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"9"},
+				s.AddrsStr(1): {"5"},
+			},
+		},
+		{
+			name: "uses_first_value_when_multiple_present",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("3", "4")},
+			},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"3"},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			reg, got, err := keeper.CompactRegistryAndRemapInferences(
+				topic,
+				nonce,
+				tempRegistry,
+				c.active,
+				maxLabelBytes,
+			)
+			s.Require().NoError(err)
+			s.Require().Equal(topic.Id, reg.TopicId)
+			s.Require().Equal(uint64(nonce), reg.EpochId)
+			s.Require().Len(reg.Labels, 1)
+			s.Require().Equal(types.SingleArityCanonicalLabelID, reg.Labels[0].Id)
+			s.Require().Equal(types.SingleArityCanonicalLabel, reg.Labels[0].Name)
+
+			s.Require().Len(got.Inferences, len(c.wantValues))
+			for _, inference := range got.Inferences {
+				want, ok := c.wantValues[inference.Inferer]
+				s.Require().True(ok, "unexpected inferer %s", inference.Inferer)
+				s.Require().Len(inference.Values, len(want))
+				for i := range want {
+					s.Require().Equal(want[i], inference.Values[i].String())
+				}
+			}
+		})
+	}
+}
+
 func (s *KeeperTestSuite) TestDenormalizeInferenceToInput() {
 	nonce := types.BlockHeight(7)
 	inferer := s.AddrsStr(0)
