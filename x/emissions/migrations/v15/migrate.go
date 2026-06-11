@@ -149,7 +149,9 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 			topic.OutputArity = emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
 			changed = true
 		}
-		if topic.UnityTolerance.IsNaN() {
+		// Normalize any invalid decimal (NaN or non-finite) to zero so it
+		// cannot survive the migration and fail later unity checks.
+		if emissionstypes.ValidateDec(topic.UnityTolerance) != nil {
 			topic.UnityTolerance = alloraMath.ZeroDec()
 			changed = true
 		}
@@ -157,7 +159,7 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 			topic.MaxLabelsPerSubmission = emissionstypes.DefaultMaxLabelsPerSubmission
 			changed = true
 		}
-		if topic.LabelDefaultValue.IsNaN() {
+		if emissionstypes.ValidateDec(topic.LabelDefaultValue) != nil {
 			topic.LabelDefaultValue = alloraMath.ZeroDec()
 			changed = true
 		}
