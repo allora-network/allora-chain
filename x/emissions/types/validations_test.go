@@ -326,6 +326,73 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			wantErr:     true,
 			errContains: "active reputer quantile must be between 0 and 1 inclusive",
 		},
+		{
+			name: "unspecified topic_type",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.TopicType = TopicType_TOPIC_TYPE_UNSPECIFIED
+			},
+			wantErr:     true,
+			errContains: "topic_type is invalid",
+		},
+		{
+			name: "unspecified output_arity",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED
+			},
+			wantErr:     true,
+			errContains: "output_arity is invalid",
+		},
+		{
+			name: "require_unity with SINGLE arity",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+				msg.RequireUnity = true
+			},
+			wantErr:     true,
+			errContains: "require_unity MUST be false when output_arity is SINGLE",
+		},
+		{
+			name: "require_unity with unity tolerance NaN",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.NewNaN()
+			},
+			wantErr:     true,
+			errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with unity tolerance above max",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("1")
+			},
+			wantErr:     true,
+			errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with nonzero label_default_value",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.005")
+				msg.LabelDefaultValue = alloraMath.OneDec()
+			},
+			wantErr:     true,
+			errContains: "label_default_value must be zero when require_unity is true",
+		},
+		{
+			name: "valid require_unity with MULTI arity",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.005")
+				msg.LabelDefaultValue = alloraMath.ZeroDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
 	}
 
 	for _, tt := range tests {

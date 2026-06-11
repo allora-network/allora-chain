@@ -1073,21 +1073,14 @@ func (topic Topic) Validate(params Params) error {
 	if topic.CNorm.Lt(validationCNormMinDec) || topic.CNorm.Gt(validationCNormMaxDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
 	}
-	if topic.OutputArity == TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE && topic.RequireUnity {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic require_unity MUST be false when output_arity is SINGLE")
-	}
-	if topic.RequireUnity &&
-		(topic.UnityTolerance.IsNaN() ||
-			topic.UnityTolerance.Lt(alloraMath.ZeroDec()) ||
-			topic.UnityTolerance.Gt(alloraMath.MustNewDecFromString(maxTopicUnityTolerance))) {
-		return errors.Wrapf(sdkerrors.ErrInvalidType,
-			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
-	}
-	if err := ValidateDec(topic.LabelDefaultValue); err != nil {
-		return errors.Wrap(err, "topic label_default_value is invalid")
-	}
-	if topic.RequireUnity && !topic.LabelDefaultValue.IsZero() {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic label_default_value must be zero when require_unity is true")
+	if err := ValidateClassificationConsistency(
+		topic.TopicType,
+		topic.OutputArity,
+		topic.RequireUnity,
+		topic.UnityTolerance,
+		topic.LabelDefaultValue,
+	); err != nil {
+		return err
 	}
 	if err := ValidateMaxLabelsPerSubmission(topic.MaxLabelsPerSubmission); err != nil {
 		return errors.Wrap(err, "topic max_labels_per_submission is invalid")
@@ -1095,13 +1088,49 @@ func (topic Topic) Validate(params Params) error {
 	if err := ValidateTopicLabelWhitelistSize(topic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
 		return errors.Wrap(err, "topic label_whitelist is invalid")
 	}
-	if topic.TopicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topic.TopicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
+
+	return nil
+}
+
+// ValidateClassificationConsistency enforces the topic_type / output_arity /
+// unity invariants shared by Topic.Validate (run by SetTopic before
+// persistence) and CreateNewTopicRequest.Validate, so the message layer and
+// the keeper layer cannot drift. Field validity is checked before the
+// cross-field consistency rules that depend on it.
+//
+// UpdateTopicRequest validates only the classification field it can mutate
+// (currently label_default_value); topic_type/output_arity/require_unity are
+// immutable after creation and absent from that message, so their consistency
+// is enforced by Topic.Validate on the merged topic in the keeper.
+func ValidateClassificationConsistency(
+	topicType TopicType,
+	outputArity TopicOutputArity,
+	requireUnity bool,
+	unityTolerance alloraMath.Dec,
+	labelDefaultValue alloraMath.Dec,
+) error {
+	if topicType <= TopicType_TOPIC_TYPE_UNSPECIFIED || topicType > TopicType_TOPIC_TYPE_CLASSIFICATION {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic_type is invalid")
 	}
-	if topic.OutputArity <= TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED || topic.OutputArity > TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+	if outputArity <= TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED || outputArity > TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "output_arity is invalid")
 	}
-
+	if outputArity == TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE && requireUnity {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic require_unity MUST be false when output_arity is SINGLE")
+	}
+	if requireUnity &&
+		(unityTolerance.IsNaN() ||
+			unityTolerance.Lt(alloraMath.ZeroDec()) ||
+			unityTolerance.Gt(alloraMath.MustNewDecFromString(maxTopicUnityTolerance))) {
+		return errors.Wrapf(sdkerrors.ErrInvalidType,
+			"unity_tolerance must be in (0, %s] when require_unity is true", maxTopicUnityTolerance)
+	}
+	if err := ValidateDec(labelDefaultValue); err != nil {
+		return errors.Wrap(err, "topic label_default_value is invalid")
+	}
+	if requireUnity && !labelDefaultValue.IsZero() {
+		return errors.Wrap(sdkerrors.ErrInvalidType, "topic label_default_value must be zero when require_unity is true")
+	}
 	return nil
 }
 
@@ -1413,6 +1442,15 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhi
 	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
+	if err := ValidateClassificationConsistency(
+		msg.TopicType,
+		msg.OutputArity,
+		msg.RequireUnity,
+		msg.UnityTolerance,
+		msg.LabelDefaultValue,
+	); err != nil {
+		return err
+	}
 	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
 	}
@@ -1445,6 +1483,14 @@ func (msg *UpdateTopicRequest) Validate(maxStringLen uint64, maxTopicLabelWhitel
 	}
 	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than or equal to 0 and less than 1")
+	}
+	// label_default_value is the only classification field UpdateTopicRequest can
+	// mutate; topic_type/output_arity/require_unity are immutable after creation
+	// and absent here, so the require_unity coupling is enforced by Topic.Validate
+	// on the merged topic in the keeper. If those fields become mutable on update,
+	// switch this to ValidateClassificationConsistency.
+	if err := ValidateDec(msg.LabelDefaultValue); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "label_default_value is invalid")
 	}
 	if err := ValidateMaxLabelsPerSubmission(msg.MaxLabelsPerSubmission); err != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, err.Error())
