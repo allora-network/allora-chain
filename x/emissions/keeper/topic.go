@@ -969,58 +969,6 @@ func (k *TopicKeeper) RegisterEpochLabels(
 	return ids, registry, nil
 }
 
-// GetEpochLabelId returns the label id for labelName, if present.
-func (k *TopicKeeper) GetEpochLabelId(
-	ctx context.Context,
-	topicId types.TopicId,
-	nonce types.BlockHeight,
-	labelName string,
-) (LabelId, bool, error) {
-	labelName = strings.TrimSpace(labelName)
-	if labelName == "" {
-		return 0, false, nil
-	}
-
-	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-	if err != nil {
-		return 0, false, err
-	}
-
-	for _, lbl := range registry.Labels {
-		if lbl != nil && lbl.Name == labelName {
-			return lbl.Id, true, nil
-		}
-	}
-	return 0, false, nil
-}
-
-// GetEpochLabelName returns the label name for id, if present.
-func (k *TopicKeeper) GetEpochLabelName(
-	ctx context.Context,
-	topicId types.TopicId,
-	nonce types.BlockHeight,
-	id LabelId,
-) (string, bool, error) {
-	if id == 0 {
-		return "", false, nil
-	}
-
-	registry, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
-	if err != nil {
-		return "", false, err
-	}
-
-	idx := int(id) - 1
-	if idx < 0 || idx >= len(registry.Labels) {
-		return "", false, nil
-	}
-	lbl := registry.Labels[idx]
-	if lbl == nil || lbl.Id != id {
-		return "", false, nil
-	}
-	return lbl.Name, true, nil
-}
-
 func (k *TopicKeeper) PruneTopicLabelRegistry(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
 	return k.topicLabelRegistry.Clear(ctx, blockRange)
 }

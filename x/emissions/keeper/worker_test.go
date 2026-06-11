@@ -2260,24 +2260,6 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_FirstSeenIdempotent() {
 	s.Require().Equal(uint32(2), reg.Labels[1].Id)
 	s.Require().Equal("a", reg.Labels[1].Name)
 
-	gotID, ok, err := tk.GetEpochLabelId(ctx, topicId, nonce, "a")
-	s.Require().NoError(err)
-	s.Require().True(ok)
-	s.Require().Equal(keeper.LabelId(2), gotID)
-
-	gotName, ok, err := tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(1))
-	s.Require().NoError(err)
-	s.Require().True(ok)
-	s.Require().Equal("b", gotName)
-
-	_, ok, err = tk.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
-	s.Require().NoError(err)
-	s.Require().False(ok)
-
-	_, ok, err = tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
-	s.Require().NoError(err)
-	s.Require().False(ok)
-
 	// A single batch with an intra-batch duplicate assigns first-seen ids in
 	// argument order and dedups repeated names to the same id, growing the
 	// registry by the number of distinct new labels only.
