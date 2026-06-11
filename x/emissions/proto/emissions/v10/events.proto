@@ -71,12 +71,6 @@ message EventNetworkInferences {
   EventValueBundle bundle = 5;
 }
 
-message EventOutlierResistantNetworkInferences {
-  uint64 topic_id = 1;
-  int64 nonce = 2;
-  EventValueBundle bundle = 3;
-}
-
 message EventValueBundle {
   option (gogoproto.equal) = true;
 
