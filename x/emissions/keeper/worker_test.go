@@ -1789,6 +1789,83 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	}
 }
 
+// TestNormalizeInputInferenceDenseMultiAgainstPreGrownRegistry covers the dense
+// expansion in isolation: the registry is grown by earlier submissions to be
+// LARGER than the current sparse submission, so NormalizeInputInference must
+// size the dense vector to the whole epoch registry and leave the slots it does
+// not scatter into at topic.LabelDefaultValue. The table-driven test above
+// always starts from a fresh (empty) registry, so len(registry.Labels) there
+// equals the submission's own label count and never exercises this path.
+//
+//nolint:exhaustruct // proto input structs omit optional ExtraData/Proof fields
+func (s *KeeperTestSuite) TestNormalizeInputInferenceDenseMultiAgainstPreGrownRegistry() {
+	s.SetupTest()
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	topicId := s.CreateTopic()
+	topic, err := tk.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.RequireUnity = false
+	topic.UnityTolerance = alloraMath.ZeroDec()
+	// A distinctive non-zero default makes default-fill unambiguous: it is
+	// distinguishable both from zero and from any submitted value below.
+	topic.LabelDefaultValue = alloraMath.MustNewDecFromString("0.5")
+	s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
+
+	nonce := types.BlockHeight(7)
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	// Pre-grow the registry as if four labels had already been registered by
+	// earlier inferers at this topic+nonce. Ids are 1-based and first-seen.
+	ids, registry, err := tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"a", "b", "c", "d"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2, 3, 4}, ids)
+	s.Require().Len(registry.Labels, 4)
+
+	// Sparse submission at the SAME nonce: only b and d, both != default 0.5 so
+	// neither is dropped. a and c are intentionally absent. Re-registering b,d
+	// is idempotent and returns their existing ids (2, 4) without growing.
+	in := &types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     "inferer",
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("0.25")},
+			{Label: "d", Value: alloraMath.MustNewBoundedExp40DecFromString("0.75")},
+		},
+	}
+
+	got, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, nonce, in)
+	s.Require().NoError(err)
+	s.Require().NotNil(got)
+
+	// Vector length tracks the whole pre-grown registry (4), not the 2 values
+	// submitted: this is the regression the test exists to catch.
+	s.Require().Len(got.Values, len(registry.Labels))
+	s.Require().Len(got.Values, 4)
+
+	// Scatter + default fill, slot = id - 1. Defaults are asserted at a leading
+	// (slot 0) and an interior (slot 2) position, with filled slots on either
+	// side, to guard against off-by-one in both directions.
+	s.Require().Equal("0.5", got.Values[0].String(), "unsubmitted label a stays default")
+	s.Require().Equal("0.25", got.Values[1].String(), "label b scattered to slot 1")
+	s.Require().Equal("0.5", got.Values[2].String(), "unsubmitted label c stays default")
+	s.Require().Equal("0.75", got.Values[3].String(), "label d scattered to slot 3")
+}
+
 // TestCompactRegistryAndRemapInferences exercises the close-time finalizer
 // that filters the temporary ELR to active non-default labels and remaps dense
 // vectors into compact final ids.
