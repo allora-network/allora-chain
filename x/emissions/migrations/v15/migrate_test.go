@@ -360,15 +360,16 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateInferences_RegistrySeedingIs
 	s.Require().Equal(expRegistry, gotRegistry)
 
 	// Second run is the only case where Has fires: the registry must be left intact.
-	// NOTE: the inference *values* are not guarded the same way on a re-run (see MIG-01);
-	// this test isolates the registry-seeding idempotency the Has guard provides.
+	// NOTE: the inference *values* are not guarded the same way on a re-run; that
+	// behavior is covered by TestMigrateStore_IdempotentSecondRun. This test isolates
+	// the registry-seeding idempotency the Has guard provides.
 	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
 	var gotRegistryAfter emissionstypes.EpochLabelRegistry
 	cdc.MustUnmarshal(labelStore.Get(lblKeyBytes), &gotRegistryAfter)
 	s.Require().Equal(expRegistry, gotRegistryAfter)
 }
 
-// TestMigrateStore_IdempotentSecondRun guards against MIG-01: the per-inference
+// TestMigrateStore_IdempotentSecondRun guards against silent value loss on a second run: the per-inference
 // value moved from the old scalar Value field (field 4, now reserved) to the new
 // repeated Values field (field 7). MigrateInferences and MigrateAllInferences
 // rewrite their stores in place, so a second pass re-reads its own output. Without
@@ -423,7 +424,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStore_IdempotentSecondRun() 
 	s.assertInference(legacyAllInference, *firstAll.Inferences[0])
 
 	// Second pass over already-migrated bytes must be a no-op. Without the guards
-	// the value would be silently rewritten to 0 (MIG-01).
+	// the value would be silently rewritten to 0.
 	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
 	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
 
@@ -431,6 +432,132 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStore_IdempotentSecondRun() 
 	s.assertInference(legacyInference, secondInf)
 	s.Require().Len(secondAll.Inferences, 1)
 	s.assertInference(legacyAllInference, *secondAll.Inferences[0])
+}
+
+// seedLegacyAllInferences writes a legacy archive entry (oldtypes.Inferences)
+// at (topicId, block) and returns the encoded label-registry key for that epoch.
+func (s *EmissionsV15MigrationTestSuite) seedLegacyAllInferences(
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+	topicId emissionstypes.TopicId,
+	block emissionstypes.BlockHeight,
+) []byte {
+	legacy := s.makeLegacyInference(topicId)
+	legacy.BlockHeight = block
+	entry := oldtypes.Inferences{Inferences: []*oldtypes.Inference{&legacy}}
+
+	allInfKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	allInfKeyBytes := make([]byte, allInfKeyCodec.Size(collections.Join(topicId, block)))
+	_, err := allInfKeyCodec.Encode(allInfKeyBytes, collections.Join(topicId, block))
+	s.Require().NoError(err)
+	prefix.NewStore(store, emissionstypes.AllInferencesKey).Set(allInfKeyBytes, cdc.MustMarshal(&entry))
+
+	lblKeyBytes := make([]byte, allInfKeyCodec.Size(collections.Join(topicId, block)))
+	_, err = allInfKeyCodec.Encode(lblKeyBytes, collections.Join(topicId, block))
+	s.Require().NoError(err)
+	return lblKeyBytes
+}
+
+// TestMigrateAllInferences_SeedsHistoricalRegistries verifies that the
+// per-(topic, block) historical archive gets a {"y"} registry seeded for
+// every archived epoch, symmetrically with the latest-inference store. Without
+// it, denormalizing a historical inference through the registry would fail with
+// a values/labels length mismatch for pre-upgrade blocks.
+func (s *EmissionsV15MigrationTestSuite) TestMigrateAllInferences_SeedsHistoricalRegistries() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	type epoch struct {
+		topicId emissionstypes.TopicId
+		block   emissionstypes.BlockHeight
+	}
+	epochs := []epoch{
+		{topicId: 1, block: 100},
+		{topicId: 1, block: 200},
+		{topicId: 2, block: 150},
+	}
+	for _, e := range epochs {
+		s.seedLegacyAllInferences(store, cdc, e.topicId, e.block)
+	}
+
+	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+
+	for _, e := range epochs {
+		gotRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), e.topicId, e.block)
+		s.Require().NoError(err)
+		s.Require().Equal(
+			emissionstypes.EpochLabelRegistry{
+				TopicId: e.topicId,
+				EpochId: uint64(e.block),
+				Labels: []*emissionstypes.TopicLabel{
+					{Id: emissionstypes.SingleArityCanonicalLabelID, Name: emissionstypes.SingleArityCanonicalLabel},
+				},
+			},
+			gotRegistry,
+		)
+
+		// The migrated inference must be denormalizable through the seeded registry:
+		// a 1-element values vector against a 1-label registry, no length mismatch.
+		//nolint:exhaustruct // GetInferencesAtBlock only reads topic.Id for the store key
+		gotInferences, err := s.WorkerKeeper().GetInferencesAtBlock(
+			s.Ctx(), emissionstypes.Topic{Id: e.topicId}, e.block, false)
+		s.Require().NoError(err)
+		s.Require().Len(gotInferences.Inferences, 1)
+		s.Require().Len(gotInferences.Inferences[0].Values, 1)
+		labeled, err := emissionstypes.ConvertInferenceValuesToLabeledValues(
+			gotInferences.Inferences[0].Values, &gotRegistry)
+		s.Require().NoError(err)
+		s.Require().Len(labeled, 1)
+		s.Require().Equal(emissionstypes.SingleArityCanonicalLabel, labeled[0].LabelName)
+	}
+}
+
+// TestMigrateAllInferences_RegistrySeedingIsIdempotent verifies the labelStore.Has
+// guard: a (topic, block) whose registry was already seeded (e.g. by MigrateInferences,
+// which runs first in MigrateStore) is left byte-for-byte intact, while the remaining
+// archived epochs are still seeded.
+func (s *EmissionsV15MigrationTestSuite) TestMigrateAllInferences_RegistrySeedingIsIdempotent() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	preSeeded := s.seedLegacyAllInferences(store, cdc, 1, 100)
+	s.seedLegacyAllInferences(store, cdc, 1, 200)
+
+	// Simulate MigrateInferences having already seeded the registry for (1, 100)
+	// with a distinct sentinel so we can prove it is not overwritten.
+	labelStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
+	sentinel := emissionstypes.EpochLabelRegistry{
+		TopicId: 1,
+		EpochId: 100,
+		Labels: []*emissionstypes.TopicLabel{
+			{Id: emissionstypes.SingleArityCanonicalLabelID, Name: emissionstypes.SingleArityCanonicalLabel},
+			{Id: 2, Name: "sentinel"},
+		},
+	}
+	labelStore.Set(preSeeded, cdc.MustMarshal(&sentinel))
+
+	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+
+	// Pre-seeded registry untouched (guard fired).
+	gotPreSeeded, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), 1, 100)
+	s.Require().NoError(err)
+	s.Require().Equal(sentinel, gotPreSeeded)
+
+	// The other epoch was still seeded with the canonical {"y"} registry.
+	gotOther, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), 1, 200)
+	s.Require().NoError(err)
+	s.Require().Equal(
+		emissionstypes.EpochLabelRegistry{
+			TopicId: 1,
+			EpochId: 200,
+			Labels: []*emissionstypes.TopicLabel{
+				{Id: emissionstypes.SingleArityCanonicalLabelID, Name: emissionstypes.SingleArityCanonicalLabel},
+			},
+		},
+		gotOther,
+	)
 }
 
 func (s *EmissionsV15MigrationTestSuite) TestMigrateNetworkInferences_AbortsOnNilReputerNonce() {

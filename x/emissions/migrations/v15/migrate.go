@@ -2,6 +2,7 @@ package v15
 
 import (
 	"cosmossdk.io/collections"
+	collcodec "cosmossdk.io/collections/codec"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 
@@ -264,6 +265,49 @@ func migrateInferenceBundles(
 	return nil
 }
 
+// kvPair is a raw key/value pending write used by the v15 store migrations.
+type kvPair struct {
+	key   []byte
+	value []byte
+}
+
+// labelRegistryPairKeyCodec encodes the (topicId, blockHeight) key used by the
+// topic label registry store. It mirrors the codec the keeper registers for
+// types.TopicLabelRegistryKey.
+func labelRegistryPairKeyCodec() collcodec.KeyCodec[collections.Pair[uint64, int64]] {
+	return collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+}
+
+// seedSingleArityRegistry returns the key/value for a {"y"} EpochLabelRegistry at
+// (topicId, block) with ok=true, unless a registry already exists at that key (ok=false).
+// It is the shared, idempotent seeding step used when backfilling registries for migrated
+// single-arity inferences: the labelStore.Has guard makes re-running, or running after a
+// sibling migration that already seeded the same key, a no-op.
+func seedSingleArityRegistry(
+	labelStore prefix.Store,
+	lblKeyCodec collcodec.KeyCodec[collections.Pair[uint64, int64]],
+	cdc codec.BinaryCodec,
+	topicId uint64,
+	block int64,
+) (kvPair, bool, error) {
+	pairKey := collections.Join(topicId, block)
+	lblKeyBytes := make([]byte, lblKeyCodec.Size(pairKey))
+	if _, err := lblKeyCodec.Encode(lblKeyBytes, pairKey); err != nil {
+		return kvPair{}, false, errorsmod.Wrap(err, "failed to encode label store key") //nolint:exhaustruct // zero-value sentinel: ok=false, err set
+	}
+	if labelStore.Has(lblKeyBytes) {
+		return kvPair{}, false, nil //nolint:exhaustruct // zero-value sentinel: ok=false signals "skip, already present"
+	}
+	registry := emissionstypes.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(block), //nolint:gosec // block is a non-negative block height; cast is safe
+		Labels: []*emissionstypes.TopicLabel{
+			{Id: emissionstypes.SingleArityCanonicalLabelID, Name: emissionstypes.SingleArityCanonicalLabel},
+		},
+	}
+	return kvPair{key: lblKeyBytes, value: cdc.MustMarshal(&registry)}, true, nil
+}
+
 func MigrateInferences(
 	ctx sdk.Context,
 	store storetypes.KVStore,
@@ -271,18 +315,13 @@ func MigrateInferences(
 ) error {
 	infStore := prefix.NewStore(store, emissionstypes.InferencesKey)
 	labelStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
-	lblKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	lblKeyCodec := labelRegistryPairKeyCodec()
 
 	iterator := infStore.Iterator(nil, nil)
 	defer iterator.Close()
 
-	type kv struct {
-		key   []byte
-		value []byte
-	}
-
-	updates := make([]kv, 0)
-	lblUpdates := make([]kv, 0)
+	updates := make([]kvPair, 0)
+	lblUpdates := make([]kvPair, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
 		// Skip already-migrated records. In the new Inference type the value lives
@@ -314,29 +353,18 @@ func MigrateInferences(
 			return errorsmod.Wrap(err, "failed to validate inferences")
 		}
 
-		updates = append(updates, kv{
+		updates = append(updates, kvPair{
 			key:   append([]byte(nil), iterator.Key()...),
 			value: cdc.MustMarshal(inference),
 		})
 
-		lblKeyBytes := make([]byte, lblKeyCodec.Size(collections.Join(oldInference.TopicId, oldInference.BlockHeight)))
-		if _, err := lblKeyCodec.Encode(lblKeyBytes, collections.Join(oldInference.TopicId, oldInference.BlockHeight)); err != nil {
-			return errorsmod.Wrap(err, "failed to encode label store key")
+		lbl, ok, err := seedSingleArityRegistry(labelStore, lblKeyCodec, cdc, oldInference.TopicId, oldInference.BlockHeight)
+		if err != nil {
+			return err
 		}
-		if labelStore.Has(lblKeyBytes) {
-			continue
+		if ok {
+			lblUpdates = append(lblUpdates, lbl)
 		}
-		registry := emissionstypes.EpochLabelRegistry{
-			TopicId: oldInference.TopicId,
-			EpochId: uint64(oldInference.BlockHeight),
-			Labels: []*emissionstypes.TopicLabel{
-				{Id: emissionstypes.SingleArityCanonicalLabelID, Name: emissionstypes.SingleArityCanonicalLabel},
-			},
-		}
-		lblUpdates = append(lblUpdates, kv{
-			key:   lblKeyBytes,
-			value: cdc.MustMarshal(&registry),
-		})
 	}
 
 	for _, u := range updates {
@@ -356,15 +384,14 @@ func MigrateAllInferences(
 	cdc codec.BinaryCodec,
 ) error {
 	infStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
+	labelStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
+	lblKeyCodec := labelRegistryPairKeyCodec()
+
 	iterator := infStore.Iterator(nil, nil)
 	defer iterator.Close()
 
-	type kv struct {
-		key   []byte
-		value []byte
-	}
-
-	updates := make([]kv, 0)
+	updates := make([]kvPair, 0)
+	lblUpdates := make([]kvPair, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
 		// Skip already-migrated records. As in MigrateInferences, the per-inference
@@ -402,16 +429,40 @@ func MigrateAllInferences(
 			}
 		}
 
-		updates = append(updates, kv{
+		updates = append(updates, kvPair{
 			key:   append([]byte(nil), iterator.Key()...),
 			value: cdc.MustMarshal(allInferences),
 		})
+
+		// Seed a {"y"} registry for this archived epoch so historical inferences can
+		// be denormalized symmetrically with the latest-inference store (see
+		// MigrateInferences). The archive is keyed by a unique (topic, block) and all
+		// inferences in the entry share that block, so seed once per entry. The Has
+		// guard makes it idempotent and a no-op for keys MigrateInferences already
+		// seeded (it runs first). Writes are deferred until after iteration, matching
+		// MigrateInferences, to avoid mutating the store while the iterator is open.
+		if len(oldInferences.Inferences) > 0 {
+			first := oldInferences.Inferences[0]
+			lbl, ok, err := seedSingleArityRegistry(labelStore, lblKeyCodec, cdc, first.TopicId, first.BlockHeight)
+			if err != nil {
+				return err
+			}
+			if ok {
+				lblUpdates = append(lblUpdates, lbl)
+			}
+		}
 	}
 
 	for _, u := range updates {
 		infStore.Set(u.key, u.value)
 	}
+	for _, u := range lblUpdates {
+		labelStore.Set(u.key, u.value)
+	}
 
-	ctx.Logger().Info("MIGRATION V15: all inferences migration completed", "store", "entriesUpdated", len(updates))
+	ctx.Logger().Info(
+		"MIGRATION V15: all inferences migration completed",
+		"store", "entriesUpdated", len(updates), "registriesSeeded", len(lblUpdates),
+	)
 	return nil
 }

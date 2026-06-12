@@ -10,6 +10,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 - Protos: never change field numbers; add new optional fields; use `Request/Response` for list queries; new versions for breaking changes.
 - State layout: define keys/prefixes in `types/keys.go`; keep prefix types stable; add indexes for query-heavy data.
 - Params/genesis: validate every param change + authority checks; genesis is deterministic with round-trip tests.
+- Comments: self-contained; no issue/task IDs, PR/review links, or report names — describe the behavior, not the ticket. Applies to comments you copy or move during merges/rebases too. See `Code comments` below.
 
 ## Go Conventions
 - Always `gofmt`/`goimports`; `make lint` must always pass clean after producing complete code. Avoid using `nolint` statements if possible, but if you need to use it, add a comment on the reason why.
@@ -56,5 +57,12 @@ Do not use FlagOptions on params unless really necessary. Follow existing style.
 ## REPORTS LOCATION
 Produce requested reports under a `.reports/` folder by default, unless otherwise specified. Do not commit them.
 
-## Code comments
-Code comments must be self-contained. They will not make reference to agent conversations, issue ids, reports or other generated content that is not within the codebase itself or it will get stale soon.
+## Code comments
+Code comments must be self-contained: they explain the code to a future reader who has only the repository. Do not reference anything that lives outside the code and will go stale — issue/task IDs (e.g. `MIG-03`, `ENGN-8600`), PR or code-review links, report filenames, "see discussion", or agent-conversation context.
+
+This applies to comments you **copy, move, or inherit** as well — e.g. while resolving merge/rebase conflicts or refactoring. If you touch a comment that names a ticket or link, rewrite it to describe the behavior; do not carry the stale reference forward just because it was already there.
+
+- Bad:  `// guards against MIG-01: a second run silently zeroes the value`
+- Good: `// guards against silent value loss on a second run: the old scalar field was reserved`
+
+Refer to other code by its symbol (function/type name) — that lives in the repo and stays meaningful — rather than by ticket or PR.
