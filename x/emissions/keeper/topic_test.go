@@ -774,3 +774,76 @@ func (s *KeeperTestSuite) TestGetEpochLabelRegistryEmpty() {
 	s.Require().Equal(uint64(nonce), reg.EpochId) //nolint:gosec // nonce is a non-negative block height; cast is safe
 	s.Require().Empty(reg.Labels)
 }
+
+// TestSetTopic_CanonicalizesLabelWhitelist [TEST-17] pins that SetTopic
+// canonicalizes label_whitelist using the topic's LabelCaseSensitive flag, so
+// that create/update-time canonicalization matches submission-time
+// canonicalization byte-for-byte. A mismatch here would silently reject or
+// accept the wrong labels at submission time.
+//
+// Case-insensitive mode lowercases ASCII letters (so "Foo" and "foo" collide),
+// while case-sensitive mode preserves case (so they remain distinct). Both
+// modes trim surrounding whitespace.
+func (s *KeeperTestSuite) TestSetTopic_CanonicalizesLabelWhitelist() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	testCases := []struct {
+		name          string
+		caseSensitive bool
+		input         []string
+		expected      []string
+		expectErr     bool
+	}{
+		{
+			name:          "case-insensitive lowercases and trims mixed-case labels",
+			caseSensitive: false,
+			input:         []string{"Foo", "BAR", "  baz  "},
+			expected:      []string{"foo", "bar", "baz"},
+			expectErr:     false,
+		},
+		{
+			name:          "case-insensitive rejects entries that collide after lowercasing",
+			caseSensitive: false,
+			input:         []string{"Foo", "foo"},
+			expected:      nil,
+			expectErr:     true,
+		},
+		{
+			name:          "case-sensitive preserves case and trims mixed-case labels",
+			caseSensitive: true,
+			input:         []string{"Foo", "BAR", "  baz  "},
+			expected:      []string{"Foo", "BAR", "baz"},
+			expectErr:     false,
+		},
+		{
+			name:          "case-sensitive keeps case-differing labels distinct",
+			caseSensitive: true,
+			input:         []string{"Foo", "foo"},
+			expected:      []string{"Foo", "foo"},
+			expectErr:     false,
+		},
+	}
+
+	for i, tc := range testCases {
+		s.Run(tc.name, func() {
+			topicId := uint64(i + 1)
+			topic := s.MockTopic()
+			topic.Id = topicId
+			topic.LabelCaseSensitive = tc.caseSensitive
+			topic.LabelWhitelist = append([]string(nil), tc.input...)
+
+			err := k.SetTopic(ctx, topicId, topic)
+			if tc.expectErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+
+			stored, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.expected, stored.LabelWhitelist)
+			s.Require().Equal(tc.caseSensitive, stored.LabelCaseSensitive)
+		})
+	}
+}
