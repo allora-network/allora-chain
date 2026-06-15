@@ -73,6 +73,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		GlobalAdminWhitelistAppended:        []bool{true},
 		MaxWhitelistInputArrayLength:        []uint64{10},
 		MinWeightThresholdForStdnorm:        []alloraMath.Dec{alloraMath.MustNewDecFromString("0.000001")},
+		MaxCanonicalLabelByteLength:         []uint64{128},
 		MaxTopicLabelWhitelistSize:          []uint64{256},
 		MaxEpochLabelRegistrySize:           []uint64{1024},
 	}
@@ -142,8 +143,94 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.GlobalAdminWhitelistAppended[0], updatedParams.GlobalAdminWhitelistAppended)
 	require.Equal(newParams.MaxWhitelistInputArrayLength[0], updatedParams.MaxWhitelistInputArrayLength)
 	require.Equal(newParams.MinWeightThresholdForStdnorm[0], updatedParams.MinWeightThresholdForStdnorm)
+	require.Equal(newParams.MaxCanonicalLabelByteLength[0], updatedParams.MaxCanonicalLabelByteLength)
 	require.Equal(newParams.MaxTopicLabelWhitelistSize[0], updatedParams.MaxTopicLabelWhitelistSize)
 	require.Equal(newParams.MaxEpochLabelRegistrySize[0], updatedParams.MaxEpochLabelRegistrySize)
+}
+
+func (s *MsgServerTestSuite) TestUpdateMaxCanonicalLabelByteLength() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+
+	err := s.WhitelistsKeeper().AddWhitelistAdmin(ctx, adminAddr.String())
+	require.NoError(err)
+
+	before, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+	require.Equal(types.DefaultParams().MaxCanonicalLabelByteLength, before.MaxCanonicalLabelByteLength)
+
+	cases := []struct {
+		name    string
+		params  *types.OptionalParams
+		wantErr bool
+		apply   func(preUpdate types.Params) uint64
+	}{
+		{
+			name: "valid update",
+			params: &types.OptionalParams{ //nolint:exhaustruct
+				MaxCanonicalLabelByteLength: []uint64{32},
+			},
+			wantErr: false,
+			apply:   func(types.Params) uint64 { return 32 },
+		},
+		{
+			name: "empty repeated leaves value unchanged",
+			params: &types.OptionalParams{ //nolint:exhaustruct
+				Version: []string{"proto-01-no-op"},
+			},
+			wantErr: false,
+			apply: func(preUpdate types.Params) uint64 {
+				return preUpdate.MaxCanonicalLabelByteLength
+			},
+		},
+		{
+			name: "zero rejected",
+			params: &types.OptionalParams{ //nolint:exhaustruct
+				MaxCanonicalLabelByteLength: []uint64{0},
+			},
+			wantErr: true,
+			apply: func(preUpdate types.Params) uint64 {
+				return preUpdate.MaxCanonicalLabelByteLength
+			},
+		},
+		{
+			name: "above max rejected",
+			params: &types.OptionalParams{ //nolint:exhaustruct
+				MaxCanonicalLabelByteLength: []uint64{types.MaxMaxCanonicalLabelByteLength + 1},
+			},
+			wantErr: true,
+			apply: func(preUpdate types.Params) uint64 {
+				return preUpdate.MaxCanonicalLabelByteLength
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			preUpdate, err := s.ParamsKeeper().GetParams(ctx)
+			require.NoError(err)
+			wantStored := tc.apply(preUpdate)
+
+			response, err := msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+				Sender: adminAddr.String(),
+				Params: tc.params,
+			})
+			if tc.wantErr {
+				require.Error(err)
+				require.Nil(response)
+			} else {
+				require.NoError(err)
+				require.NotNil(response)
+			}
+
+			got, err := s.ParamsKeeper().GetParams(ctx)
+			require.NoError(err)
+			require.Equal(wantStored, got.MaxCanonicalLabelByteLength)
+		})
+	}
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
