@@ -1223,6 +1223,23 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 	s.Require().ErrorIs(err, sdkerrors.ErrLogic)
 }
 
+func (s *MsgServerTestSuite) TestLoadActiveInfererInferencesForClose_MissingTemporaryInference() {
+	s.SetupTest()
+	pk := secp256k1.GenPrivKey()
+	_, topicId := s.setUpMsgInsertWorkerPayload(pk) // proven helper → real topic
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	missingInferer := s.AddrsStr(9) // active in the set, never staged
+
+	_, err = s.WorkerKeeper().LoadActiveInfererInferencesForClose(
+		s.Ctx(), topic, int64(1), []string{missingInferer},
+	)
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, sdkerrors.ErrLogic)
+	s.Require().Contains(err.Error(), "missing temporary inference for active inferer")
+}
+
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageInput() {
 	s.SetupTest()
 
@@ -1631,6 +1648,85 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			}
 		})
 	}
+}
+
+// TestMsgInsertWorkerPayload_Multi_RegistrySaturationRejectsNewLabel exercises the
+// #947 epoch label registry cap (MaxEpochLabelRegistrySize) end-to-end through
+// InsertWorkerPayload. Keeper-level tests cover RegisterEpochLabels directly; this
+// asserts that the only worker-payload path that grows the registry (an admitted
+// worker reaching NormalizeInputInference) is bounded by the cap. With the cap at 2,
+// a first admitted payload fills the registry with two labels, and a second admitted
+// payload that introduces a third label is rejected with ErrEpochLabelRegistrySaturated
+// without partially writing the new label.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_RegistrySaturationRejectsNewLabel() {
+	s.SetupTest()
+
+	pk1 := secp256k1.GenPrivKey()
+	pk2 := secp256k1.GenPrivKey()
+	nonce := int64(1)
+
+	// Both setups run FullTopicSetup; configure arity and the cap afterwards so a
+	// re-run cannot reset them.
+	msg1, topicId := s.setUpMsgInsertWorkerPayload(pk1)
+	msg2, _ := s.setUpMsgInsertWorkerPayload(pk2)
+	s.WithBlockHeight(nonce)
+	s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, false, "0")
+
+	// Cap the epoch label registry at two labels.
+	params := types.DefaultParams()
+	params.MaxEpochLabelRegistrySize = 2
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	// worker1 fills the registry to the cap with labels a, b.
+	msg1.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+	}
+	msg1 = s.signMsgInsertWorkerPayload(msg1, pk1)
+
+	// worker2 is admitted (MaxTopInferersToReward default leaves room) and introduces
+	// a third label c; a is idempotent and does not by itself grow the registry.
+	msg2.WorkerDataBundle.TopicId = topicId
+	msg2.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
+		{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("30")},
+	}
+	msg2 = s.signMsgInsertWorkerPayload(msg2, pk2)
+
+	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+
+	// First payload succeeds; registry sits at the cap.
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg1)
+	s.Require().NoError(err)
+	reg, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(2, len(reg.Labels))
+
+	// Second admitted payload introduces a third label -> saturation.
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
+	s.Require().Error(err)
+	s.Require().True(
+		errors.Is(err, types.ErrEpochLabelRegistrySaturated),
+		"expected ErrEpochLabelRegistrySaturated, got %v", err,
+	)
+
+	// Registry is unchanged: the rejected label was not partially written.
+	reg, err = s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(2, len(reg.Labels))
+	s.Require().Equal("a", reg.Labels[0].Name)
+	s.Require().Equal("b", reg.Labels[1].Name)
 }
 
 func (s *MsgServerTestSuite) setTopicArityAndUnity(
