@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -353,6 +354,101 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	require.Equal(forecasts.ForecastElements[0].Inferer, inferer1)
 	require.Equal(forecasts.ForecastElements[1].Inferer, inferer2)
 	require.Equal(forecasts.ForecastElements[2].Inferer, inferer4)
+}
+
+// forecasterPayloadEvents returns all EventInsertForecasterPayload typed events
+// currently on the SDK context's event manager. It reconstructs each event via
+// sdk.ParseTypedEvent so the assertion stays agnostic to the proto package
+// version (e.g. v10 -> v11 bumps require no test changes).
+func forecasterPayloadEvents(ctx sdk.Context) []*types.EventInsertForecasterPayload {
+	out := make([]*types.EventInsertForecasterPayload, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventInsertForecasterPayload); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered pins the contract
+// that a forecaster payload event is emitted only when forecast elements were
+// actually stored. With MaxElementsPerForecast == 0, FindTopNByScoreDesc selects
+// no inferers, every element is filtered out, AppendForecast is skipped, and no
+// event must be emitted - mirroring the admission-gated inference path.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered() {
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	_ = s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
+
+	newParams := &types.OptionalParams{ //nolint:exhaustruct
+		MaxElementsPerForecast: []uint64{0},
+		// rest not updated
+	}
+	_, err := s.EmissionsMsgServer().UpdateParams(s.Ctx(), &types.UpdateParamsRequest{
+		Sender: adminAddr.String(),
+		Params: newParams,
+	})
+	require.NoError(err, "UpdateParams should not return an error")
+
+	blockHeight := int64(1)
+	workerBlockHeight := blockHeight + 10800
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayloadWithBlockHeight(workerPrivateKey, workerBlockHeight)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	s.WithBlockHeight(workerBlockHeight)
+
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	// Nothing was stored...
+	require.Equal(0, s.getCountForecastsAtBlock(topicId, workerBlockHeight),
+		"no forecast should be stored when all elements are filtered out")
+	// ...so no forecaster payload event should have been emitted.
+	require.Empty(forecasterPayloadEvents(s.Ctx()),
+		"no forecaster payload event should be emitted when nothing is stored")
+}
+
+// TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements guards
+// against over-correcting the gating fix: when forecast elements are accepted,
+// exactly one event must be emitted and it must advertise the actually-stored
+// (filtered) elements rather than the original unfiltered submission.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements() {
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	s.WithBlockHeight(blockHeight)
+
+	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	stored, err := s.WorkerKeeper().GetWorkerLatestForecastByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	require.NotEmpty(stored.ForecastElements)
+
+	events := forecasterPayloadEvents(s.Ctx())
+	require.Len(events, 1, "exactly one forecaster payload event should be emitted on a successful store")
+
+	storedInferers := make([]string, 0, len(stored.ForecastElements))
+	for _, el := range stored.ForecastElements {
+		storedInferers = append(storedInferers, el.Inferer)
+	}
+	require.ElementsMatch(storedInferers, events[0].InfererAddresses,
+		"event must advertise exactly the stored (filtered) forecast elements")
 }
 
 func (s *MsgServerTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeight int64) int {

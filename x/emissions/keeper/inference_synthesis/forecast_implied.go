@@ -145,9 +145,11 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 		}
 
 		// ---------- WEIGHTED ----------
-		infererRegretsForThisForecaster := make(map[Inferer]*Regret, len(forecastElementsByInferer))
-		infererWeightsForThisForecaster := make(map[Inferer]Weight, len(forecastElementsByInferer))
+		if len(sortedInferersInForecast) == 0 {
+			continue
+		}
 
+		infererRegretsForThisForecaster := make(map[Inferer]*Regret, len(forecastElementsByInferer))
 		for _, infererInForecast := range sortedInferersInForecast {
 			r, err := (*args.NetworkCombinedLoss).Sub(forecastElementsByInferer[infererInForecast].Value)
 			if err != nil {
@@ -157,34 +159,27 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 			infererRegretsForThisForecaster[infererInForecast] = &r
 		}
 
-		if len(sortedInferersInForecast) > 1 {
-			infererToRegretOut := infererRegretsForThisForecaster
-			forecasterToRegretOut := make(map[Forecaster]*Regret)
-
-			weights, err := CalcWeightsGivenWorkers(
-				CalcWeightsGivenWorkersArgs{
-					Logger:                 args.Logger,
-					Inferers:               args.Inferers,
-					Forecasters:            args.Forecasters,
-					InfererToRegret:        infererToRegretOut,
-					ForecasterToRegret:     forecasterToRegretOut,
-					EpsilonTopic:           args.EpsilonTopic,
-					PNorm:                  args.PNorm,
-					CNorm:                  args.CNorm,
-					RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
-				},
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			infererWeightsForThisForecaster = weights.Inferers
-
-		} else if len(sortedInferersInForecast) > 0 {
-			infererWeightsForThisForecaster[sortedInferersInForecast[0]] = alloraMath.OneDec()
-		} else {
-			continue
+		// The general weighting path also covers the single-inferer case: a lone
+		// inferer is trivially the maximum-regret worker and receives weight 1, and a
+		// one-element forecast-implied inference normalizes to that inferer's value.
+		weights, err := CalcWeightsGivenWorkers(
+			CalcWeightsGivenWorkersArgs{
+				Logger:                 args.Logger,
+				Inferers:               args.Inferers,
+				Forecasters:            args.Forecasters,
+				InfererToRegret:        infererRegretsForThisForecaster,
+				ForecasterToRegret:     make(map[Forecaster]*Regret),
+				EpsilonTopic:           args.EpsilonTopic,
+				PNorm:                  args.PNorm,
+				CNorm:                  args.CNorm,
+				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
+			},
+		)
+		if err != nil {
+			return nil, err
 		}
+
+		infererWeightsForThisForecaster := weights.Inferers
 
 		sumWeights := alloraMath.ZeroDec()
 		running := make(alloraMath.DecArray, regLen)

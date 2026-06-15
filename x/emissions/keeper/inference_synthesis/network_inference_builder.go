@@ -396,6 +396,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 	// To calculate one out, remove the inferer from the list of inferers
 	remainingInferers := make([]Worker, 0)
 	remainingInfererToInference := make(map[Worker]*emissions.Inference)
+	remainingInfererToRegret := make(map[Inferer]*Regret, len(args.InfererToRegret))
 	remainingInfererRegrets := make(map[string]*alloraMath.Dec)
 	for _, inferer := range args.Inferers {
 		// over just the remaining inferers
@@ -407,6 +408,9 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 				continue
 			}
 			remainingInfererToInference[inferer] = inference
+			if regret, ok := args.InfererToRegret[inferer]; ok {
+				remainingInfererToRegret[inferer] = regret
+			}
 		}
 
 		// over every inferer
@@ -420,6 +424,28 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 	remainingForecasterRegrets := make(map[string]*alloraMath.Dec)
 	forecasterToForecastImpliedInference := make(map[string]*emissions.Inference)
 	if args.NetworkCombinedLoss != nil {
+		// Strip the withheld inferer from forecast elements before recomputation,
+		// mirroring GetOneOutInfererForecastImpliedInferences.
+		remainingForecasterToForecast := make(map[Forecaster]*emissions.Forecast, len(args.ForecasterToForecast))
+		for forecaster, forecast := range args.ForecasterToForecast {
+			filteredForecastElements := make([]*emissions.ForecastElement, 0, len(forecast.ForecastElements))
+			for _, element := range forecast.ForecastElements {
+				if element.Inferer != args.WithheldInferer {
+					filteredForecastElements = append(filteredForecastElements, element)
+				}
+			}
+			if len(filteredForecastElements) == 0 {
+				continue
+			}
+			remainingForecasterToForecast[forecaster] = &emissions.Forecast{
+				TopicId:          forecast.TopicId,
+				BlockHeight:      forecast.BlockHeight,
+				Forecaster:       forecast.Forecaster,
+				ForecastElements: filteredForecastElements,
+				ExtraData:        forecast.ExtraData,
+			}
+		}
+
 		// Recalculate the forecast-implied inferences without the worker's inference
 		// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
 		forecasterToForecastImpliedInference, err = CalcForecastImpliedInferences(
@@ -429,10 +455,10 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 				TopicArity:             args.TopicArity,
 				AllInferersAreNew:      args.AllInferersAreNew,
 				Inferers:               remainingInferers,
-				InfererToInference:     args.InfererToInference,
-				InfererToRegret:        args.InfererToRegret,
+				InfererToInference:     remainingInfererToInference,
+				InfererToRegret:        remainingInfererToRegret,
 				Forecasters:            args.Forecasters,
-				ForecasterToForecast:   args.ForecasterToForecast,
+				ForecasterToForecast:   remainingForecasterToForecast,
 				ForecasterToRegret:     args.ForecasterToRegret,
 				NetworkCombinedLoss:    args.NetworkCombinedLoss,
 				EpsilonTopic:           args.EpsilonTopic,

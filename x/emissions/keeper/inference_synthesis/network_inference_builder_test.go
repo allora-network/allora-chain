@@ -1497,3 +1497,432 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 	s.Require().Len(seen[forecaster1], 2)
 	s.Require().Len(seen[forecaster2], 2)
 }
+
+// referenceOneOutInfererCombinedValue independently computes the one-out inferer
+// network inference using fully filtered recompute inputs (withheld inferer removed
+// from inferences and forecast elements). SMELL-01 regression reference.
+func (s *InferenceSynthesisTestSuite) referenceOneOutInfererCombinedValue(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	withheldInferer string,
+	calcArgs inferencesynthesis.CalcNetworkInferencesArgs,
+) (alloraMath.Dec, error) {
+	remainingInferers := make([]string, 0, len(calcArgs.Inferers))
+	remainingInfererToInference := make(map[string]*emissionstypes.Inference, len(calcArgs.InfererToInference))
+	remainingInfererToRegret := make(map[string]*alloraMath.Dec, len(calcArgs.InfererToRegret))
+	for _, inferer := range calcArgs.Inferers {
+		if inferer == withheldInferer {
+			continue
+		}
+		remainingInferers = append(remainingInferers, inferer)
+		remainingInfererToInference[inferer] = calcArgs.InfererToInference[inferer]
+		if regret, ok := calcArgs.InfererToRegret[inferer]; ok {
+			remainingInfererToRegret[inferer] = regret
+		}
+	}
+
+	remainingForecasterToForecast := make(map[string]*emissionstypes.Forecast, len(calcArgs.ForecasterToForecast))
+	for forecaster, forecast := range calcArgs.ForecasterToForecast {
+		filteredForecastElements := make([]*emissionstypes.ForecastElement, 0, len(forecast.ForecastElements))
+		for _, element := range forecast.ForecastElements {
+			if element.Inferer != withheldInferer {
+				filteredForecastElements = append(filteredForecastElements, element)
+			}
+		}
+		if len(filteredForecastElements) == 0 {
+			continue
+		}
+		remainingForecasterToForecast[forecaster] = &emissionstypes.Forecast{
+			TopicId:          forecast.TopicId,
+			BlockHeight:      forecast.BlockHeight,
+			Forecaster:       forecast.Forecaster,
+			ForecastElements: filteredForecastElements,
+			ExtraData:        forecast.ExtraData,
+		}
+	}
+
+	forecasterToForecastImpliedInference, err := inferencesynthesis.CalcForecastImpliedInferences(
+		inferencesynthesis.CalcForecastImpliedInferencesArgs{
+			Logger:                 calcArgs.Logger,
+			TopicId:                calcArgs.TopicId,
+			TopicArity:             calcArgs.TopicArity,
+			AllInferersAreNew:      calcArgs.AllInferersAreNew,
+			Inferers:               remainingInferers,
+			InfererToInference:     remainingInfererToInference,
+			InfererToRegret:        remainingInfererToRegret,
+			Forecasters:            calcArgs.Forecasters,
+			ForecasterToForecast:   remainingForecasterToForecast,
+			ForecasterToRegret:     calcArgs.ForecasterToRegret,
+			NetworkCombinedLoss:    calcArgs.NetworkCombinedLoss,
+			EpsilonTopic:           calcArgs.EpsilonTopic,
+			PNorm:                  calcArgs.PNorm,
+			CNorm:                  calcArgs.CNorm,
+			RegretScalePlusEpsilon: calcArgs.RegretScalePlusEpsilon,
+			LabelRegistry:          calcArgs.LabelRegistry,
+			NumLabels:              calcArgs.NumLabels,
+		},
+	)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	remainingInfererRegrets := make(map[string]*alloraMath.Dec, len(calcArgs.Inferers))
+	for _, inferer := range calcArgs.Inferers {
+		regret, _, err := k.GetRegretsKeeper().GetOneOutInfererInfererNetworkRegret(
+			ctx, calcArgs.TopicId, withheldInferer, inferer,
+		)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		remainingInfererRegrets[inferer] = &regret.Value
+	}
+
+	remainingForecasterRegrets := make(map[string]*alloraMath.Dec, len(calcArgs.Forecasters))
+	for _, forecaster := range calcArgs.Forecasters {
+		regret, _, err := k.GetRegretsKeeper().GetOneOutInfererForecasterNetworkRegret(
+			ctx, calcArgs.TopicId, withheldInferer, forecaster,
+		)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		remainingForecasterRegrets[forecaster] = &regret.Value
+	}
+
+	_, combinedInference, err := inferencesynthesis.GetCombinedInference(
+		inferencesynthesis.GetCombinedInferenceArgs{
+			Logger:                               calcArgs.Logger,
+			TopicId:                              calcArgs.TopicId,
+			Inferers:                             remainingInferers,
+			InfererToInference:                   remainingInfererToInference,
+			InfererToRegret:                      remainingInfererRegrets,
+			AllInferersAreNew:                    calcArgs.AllInferersAreNew,
+			Forecasters:                          calcArgs.Forecasters,
+			ForecasterToRegret:                   remainingForecasterRegrets,
+			ForecasterToForecastImpliedInference: forecasterToForecastImpliedInference,
+			EpsilonTopic:                         calcArgs.EpsilonTopic,
+			EpsilonSafeDiv:                       calcArgs.EpsilonSafeDiv,
+			PNorm:                                calcArgs.PNorm,
+			CNorm:                                calcArgs.CNorm,
+			RegretScalePlusEpsilon:               calcArgs.RegretScalePlusEpsilon,
+			NumLabels:                            calcArgs.NumLabels,
+		},
+	)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	return combinedInference[0], nil
+}
+
+func (s *InferenceSynthesisTestSuite) getOneOutInfererRecomputeLeakTestCalcArgs(
+	blockHeight int64,
+	inferences *emissionstypes.Inferences,
+	forecasts *emissionstypes.Forecasts,
+	networkCombinedLoss alloraMath.Dec,
+	epsilonTopic alloraMath.Dec,
+	epsilonSafeDiv alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
+	initialRegret alloraMath.Dec,
+) inferencesynthesis.CalcNetworkInferencesArgs {
+	topicId := uint64(1)
+	topic := s.MockTopic()
+	topic.Id = topicId
+	topic.Epsilon = epsilonTopic
+	topic.PNorm = pNorm
+	topic.CNorm = cNorm
+	topic.InitialRegret = initialRegret
+	topic.LabelCaseSensitive = false
+
+	moduleParams := emissionstypes.DefaultParams()
+	moduleParams.EpsilonSafeDiv = epsilonSafeDiv
+
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		s.Ctx(),
+		topic.Id,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)
+	s.Require().NoError(err)
+
+	var calcArgs inferencesynthesis.CalcNetworkInferencesArgs
+	calcArgs, err = inferencesynthesis.GetCalcNetworkInferenceArgs(
+		s.Ctx(),
+		*s.EmissionsKeeper(),
+		topicId,
+		inferences,
+		forecasts,
+		topic,
+		&networkCombinedLoss,
+		moduleParams,
+		blockHeight,
+		&registry,
+	)
+	s.Require().NoError(err)
+	return calcArgs
+}
+
+// TestOneOutInfererRecomputeExcludesWithheldInferer verifies SMELL-01: the one-out
+// inferer path must recompute forecast-implied inferences without the withheld inferer.
+func (s *InferenceSynthesisTestSuite) TestOneOutInfererRecomputeExcludesWithheldInferer() {
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
+	topicId := uint64(1)
+	blockHeight := int64(300)
+
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	worker3 := s.AddrsStr(3)
+	forecaster1 := s.AddrsStr(4)
+
+	inferences := &emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("100")}},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("200")}},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("99999")}},
+		},
+	}
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster1,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("150")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("250")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("350")},
+				},
+			},
+		},
+	}
+
+	networkCombinedLoss := alloraMath.MustNewDecFromString("1000")
+	epsilonTopic := alloraMath.MustNewDecFromString("0.001")
+	epsilonSafeDiv := alloraMath.MustNewDecFromString("0.0000001")
+	pNorm := alloraMath.MustNewDecFromString("2")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	rk := s.RegretsKeeper()
+	err := rk.SetInfererNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.1"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = rk.SetInfererNetworkRegret(ctx, topicId, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = rk.SetInfererNetworkRegret(ctx, topicId, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = rk.SetForecasterNetworkRegret(ctx, topicId, forecaster1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+
+	testCases := []struct {
+		name              string
+		initialRegret     alloraMath.Dec
+		allInferersAreNew bool
+	}{
+		{
+			name:              "weighted_path",
+			initialRegret:     alloraMath.MustNewDecFromString("0.0001"),
+			allInferersAreNew: false,
+		},
+		{
+			name:              "median_path",
+			initialRegret:     alloraMath.ZeroDec(),
+			allInferersAreNew: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			calcArgs := s.getOneOutInfererRecomputeLeakTestCalcArgs(
+				blockHeight, inferences, forecasts,
+				networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm,
+				tc.initialRegret,
+			)
+			s.Require().Equal(tc.allInferersAreNew, calcArgs.AllInferersAreNew)
+
+			oneOutInfererValues, err := inferencesynthesis.GetOneOutInfererInferences(
+				inferencesynthesis.GetOneOutInfererInferencesArgs{
+					Ctx:                    ctx,
+					K:                      k,
+					Logger:                 ctx.Logger(),
+					TopicId:                topicId,
+					TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+					Inferers:               calcArgs.Inferers,
+					InfererToInference:     calcArgs.InfererToInference,
+					InfererToRegret:        calcArgs.InfererToRegret,
+					AllInferersAreNew:      calcArgs.AllInferersAreNew,
+					Forecasters:            calcArgs.Forecasters,
+					ForecasterToForecast:   calcArgs.ForecasterToForecast,
+					ForecasterToRegret:     calcArgs.ForecasterToRegret,
+					NetworkCombinedLoss:    calcArgs.NetworkCombinedLoss,
+					EpsilonTopic:           calcArgs.EpsilonTopic,
+					EpsilonSafeDiv:         calcArgs.EpsilonSafeDiv,
+					PNorm:                  calcArgs.PNorm,
+					CNorm:                  calcArgs.CNorm,
+					RegretScalePlusEpsilon: calcArgs.RegretScalePlusEpsilon,
+					LabelRegistry:          calcArgs.LabelRegistry,
+					NumLabels:              calcArgs.NumLabels,
+				},
+			)
+			s.Require().NoError(err)
+			s.Require().Len(oneOutInfererValues, 3)
+
+			for _, withheldInferer := range []string{worker1, worker2, worker3} {
+				expected, err := s.referenceOneOutInfererCombinedValue(ctx, k, withheldInferer, calcArgs)
+				s.Require().NoError(err)
+
+				var actual alloraMath.Dec
+				found := false
+				for _, oneOutValue := range oneOutInfererValues {
+					if oneOutValue.WithheldInferer == withheldInferer {
+						found = true
+						actual = oneOutValue.GetCombinedInference()[0].Value
+						break
+					}
+				}
+				s.Require().True(found, "missing one-out value for withheld inferer %s", withheldInferer)
+				s.Require().True(
+					expected.Equal(actual),
+					"withheld inferer %s: expected %s got %s",
+					withheldInferer, expected.String(), actual.String(),
+				)
+			}
+		})
+	}
+}
+
+// TestOneOutInfererLeakViaSingleElementForecast is the decisive SMELL-01 regression
+// for the concrete edge case being fixed: a forecaster whose forecast has a SINGLE
+// element pointing ONLY to the withheld inferer.
+//
+// Setup (weighted path, AllInferersAreNew=false):
+//   - inferers: worker1=100, worker2=200, worker3=1_000_000 (extreme value)
+//   - forecaster1 forecast has exactly one element -> {Inferer: worker3}
+//
+// When we withhold worker3:
+//   - BUGGY code (alek/classification): the full InfererToInference map and unfiltered
+//     forecasts are passed to CalcForecastImpliedInferences. worker3 is still admitted,
+//     and since it is the ONLY inferer in forecaster1's forecast it gets weight 1.0
+//     (forecast_implied.go single-inferer shortcut). forecaster1's forecast-implied
+//     inference becomes worker3's value (1_000_000) and leaks into the one-out result.
+//   - FIXED code: worker3 is stripped from both the inference map and forecaster1's
+//     forecast elements, leaving forecaster1 with zero elements -> skipped. The one-out
+//     value is the mix of worker1 and worker2 only.
+//
+// The assertion is a magnitude check that cleanly separates the two: with the leak the
+// one-out value is pulled toward 1_000_000; without it the value stays near ~100-200.
+func (s *InferenceSynthesisTestSuite) TestOneOutInfererLeakViaSingleElementForecast() {
+	k := *s.EmissionsKeeper()
+	ctx := s.Ctx()
+	topicId := uint64(1)
+	blockHeight := int64(300)
+
+	worker1 := s.AddrsStr(1)
+	worker2 := s.AddrsStr(2)
+	worker3 := s.AddrsStr(3)
+	forecaster1 := s.AddrsStr(4)
+
+	const extremeValue = "1000000"
+
+	inferences := &emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker1, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("100")}},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker2, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString("200")}},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker3, Values: []alloraMath.Dec{alloraMath.MustNewDecFromString(extremeValue)}},
+		},
+	}
+
+	// forecaster1's forecast has a SINGLE element, pointing only to worker3.
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster1,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("350")},
+				},
+			},
+		},
+	}
+
+	networkCombinedLoss := alloraMath.MustNewDecFromString("1000")
+	epsilonTopic := alloraMath.MustNewDecFromString("0.001")
+	epsilonSafeDiv := alloraMath.MustNewDecFromString("0.0000001")
+	pNorm := alloraMath.MustNewDecFromString("2")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	rk := s.RegretsKeeper()
+	err := rk.SetInfererNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.1"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = rk.SetInfererNetworkRegret(ctx, topicId, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = rk.SetInfererNetworkRegret(ctx, topicId, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = rk.SetForecasterNetworkRegret(ctx, topicId, forecaster1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+
+	// Weighted path so the forecaster channel actually contributes.
+	calcArgs := s.getOneOutInfererRecomputeLeakTestCalcArgs(
+		blockHeight, inferences, forecasts,
+		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm,
+		alloraMath.MustNewDecFromString("0.0001"),
+	)
+	s.Require().False(calcArgs.AllInferersAreNew)
+
+	oneOutInfererValues, err := inferencesynthesis.GetOneOutInfererInferences(
+		inferencesynthesis.GetOneOutInfererInferencesArgs{
+			Ctx:                    ctx,
+			K:                      k,
+			Logger:                 ctx.Logger(),
+			TopicId:                topicId,
+			TopicArity:             emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			Inferers:               calcArgs.Inferers,
+			InfererToInference:     calcArgs.InfererToInference,
+			InfererToRegret:        calcArgs.InfererToRegret,
+			AllInferersAreNew:      calcArgs.AllInferersAreNew,
+			Forecasters:            calcArgs.Forecasters,
+			ForecasterToForecast:   calcArgs.ForecasterToForecast,
+			ForecasterToRegret:     calcArgs.ForecasterToRegret,
+			NetworkCombinedLoss:    calcArgs.NetworkCombinedLoss,
+			EpsilonTopic:           calcArgs.EpsilonTopic,
+			EpsilonSafeDiv:         calcArgs.EpsilonSafeDiv,
+			PNorm:                  calcArgs.PNorm,
+			CNorm:                  calcArgs.CNorm,
+			RegretScalePlusEpsilon: calcArgs.RegretScalePlusEpsilon,
+			LabelRegistry:          calcArgs.LabelRegistry,
+			NumLabels:              calcArgs.NumLabels,
+		},
+	)
+	s.Require().NoError(err)
+	s.Require().Len(oneOutInfererValues, 3)
+
+	var oneOutWorker3 alloraMath.Dec
+	found := false
+	for _, oneOutValue := range oneOutInfererValues {
+		if oneOutValue.WithheldInferer == worker3 {
+			found = true
+			oneOutWorker3 = oneOutValue.GetCombinedInference()[0].Value
+			break
+		}
+	}
+	s.Require().True(found, "missing one-out value for withheld inferer worker3")
+
+	// With the fix, withholding worker3 leaves only worker1 (100) and worker2 (200);
+	// the value must stay well below the extreme value. With the bug the forecaster
+	// re-injects worker3's 1_000_000 and the value blows past this threshold.
+	leakThreshold := alloraMath.MustNewDecFromString("1000")
+	s.Require().True(
+		oneOutWorker3.Lt(leakThreshold),
+		"withheld inferer worker3 leaked into one-out recompute: got %s, expected < %s",
+		oneOutWorker3.String(), leakThreshold.String(),
+	)
+}
