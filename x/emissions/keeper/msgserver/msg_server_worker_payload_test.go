@@ -1570,6 +1570,22 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			wantForecast:       true,
 			wantCandidateScore: true,
 		},
+		{
+			name: "label_not_in_whitelist_rejected_before_planning",
+			values: []labeledValue{
+				{label: "bear", value: "1"},
+			},
+			setup: func(topicId uint64, msg *types.InsertWorkerPayloadRequest) {
+				// LabelWhitelist canonicalization is applied by SetTopic/UpdateTopic
+				// in production; "bull" is already canonical, so set it directly here.
+				topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+				s.Require().NoError(err)
+				topic.LabelWhitelist = []string{"bull"}
+				s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic))
+				msg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
+			},
+			wantErrIs: types.ErrLabelNotInWhitelist,
+		},
 	}
 
 	for _, c := range cases {
