@@ -368,6 +368,71 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateInferences_RegistrySeedingIs
 	s.Require().Equal(expRegistry, gotRegistryAfter)
 }
 
+// TestMigrateStore_IdempotentSecondRun guards against MIG-01: the per-inference
+// value moved from the old scalar Value field (field 4, now reserved) to the new
+// repeated Values field (field 7). MigrateInferences and MigrateAllInferences
+// rewrite their stores in place, so a second pass re-reads its own output. Without
+// the already-migrated guards, decoding new-format bytes as the old type silently
+// drops field 7 and rewrites the value as 0 — which still passes Validate(). This
+// test runs both steps twice and asserts the migrated values are left unchanged.
+func (s *EmissionsV15MigrationTestSuite) TestMigrateStore_IdempotentSecondRun() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	const topicId = uint64(1)
+	blockHeight := emissionstypes.BlockHeight(100)
+
+	// Seed a single legacy Inference (old scalar Value field) under InferencesKey.
+	legacyInference := s.makeLegacyInference(topicId)
+	inferencesStore := prefix.NewStore(store, emissionstypes.InferencesKey)
+	infKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)
+	infKeyBytes := make([]byte, infKeyCodec.Size(collections.Join(legacyInference.TopicId, legacyInference.Inferer)))
+	_, err := infKeyCodec.Encode(infKeyBytes, collections.Join(legacyInference.TopicId, legacyInference.Inferer))
+	s.Require().NoError(err)
+	inferencesStore.Set(infKeyBytes, cdc.MustMarshal(&legacyInference))
+
+	// Seed a legacy Inferences list (old scalar Value fields) under AllInferencesKey.
+	legacyAllInference := s.makeLegacyInference(topicId)
+	legacyAllInferences := oldtypes.Inferences{
+		Inferences: []*oldtypes.Inference{&legacyAllInference},
+	}
+	allInferencesStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
+	allInfKeyCodec := collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key)
+	allInfKeyBytes := make([]byte, allInfKeyCodec.Size(collections.Join(topicId, blockHeight)))
+	_, err = allInfKeyCodec.Encode(allInfKeyBytes, collections.Join(topicId, blockHeight))
+	s.Require().NoError(err)
+	allInferencesStore.Set(allInfKeyBytes, cdc.MustMarshal(&legacyAllInferences))
+
+	// readMigrated decodes both stores with the new codec.
+	readMigrated := func() (emissionstypes.Inference, emissionstypes.Inferences) {
+		var inf emissionstypes.Inference
+		cdc.MustUnmarshal(inferencesStore.Get(infKeyBytes), &inf)
+		var all emissionstypes.Inferences
+		cdc.MustUnmarshal(allInferencesStore.Get(allInfKeyBytes), &all)
+		return inf, all
+	}
+
+	// First pass converts old -> new; the value must land in Values[0].
+	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
+	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+
+	firstInf, firstAll := readMigrated()
+	s.assertInference(legacyInference, firstInf)
+	s.Require().Len(firstAll.Inferences, 1)
+	s.assertInference(legacyAllInference, *firstAll.Inferences[0])
+
+	// Second pass over already-migrated bytes must be a no-op. Without the guards
+	// the value would be silently rewritten to 0 (MIG-01).
+	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
+	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+
+	secondInf, secondAll := readMigrated()
+	s.assertInference(legacyInference, secondInf)
+	s.Require().Len(secondAll.Inferences, 1)
+	s.assertInference(legacyAllInference, *secondAll.Inferences[0])
+}
+
 func (s *EmissionsV15MigrationTestSuite) TestMigrateNetworkInferences_AbortsOnNilReputerNonce() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
