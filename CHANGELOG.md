@@ -75,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Deprecated `types.NewInputReputerValueBundleFromInput`; use `types.NewReputerValueBundleFromInput`.
+
 ### Removed
 
 ### Fixed
@@ -86,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 * [#947](https://github.com/allora-network/allora-chain/pull/947) Removed the v10 `GetWorkerLatestInferenceByTopicId` query and REST path `/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_inference`.
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Removed `types.NewInferenceFromInput`, `types.NewInferenceForecastBundleFromInput`, and `types.NewWorkerDataBundleFromInput`. Clients build the `Input*` types directly and sign the `InputInferenceForecastBundle`.
 
 #### Added 
 

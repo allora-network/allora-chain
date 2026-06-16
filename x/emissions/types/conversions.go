@@ -193,8 +193,8 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 	return valueBundle, nil
 }
 
-// NewLossBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
-func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+// NewReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle.
+func NewReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
 	}
@@ -424,4 +424,10 @@ func ConvertLabeledValuesToDecArray(in []*LabeledValue) alloraMath.DecArray {
 		out[i] = in[i].Value
 	}
 	return out
+}
+
+// Deprecated: use NewReputerValueBundleFromInput. Retained under the v0.16
+// name so existing importers keep compiling.
+func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+	return NewReputerValueBundleFromInput(brvb)
 }
