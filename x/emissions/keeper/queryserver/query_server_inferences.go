@@ -131,6 +131,20 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 	_ *emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestNetworkInferencesOutlierResistant", time.Now(), &err)
 
+	// Load the topic so this latest query honors the same MULTI gate as the block-scoped
+	// GetNetworkInferencesAtBlockOutlierResistant; GetLatestNetworkInferences works by topicId and
+	// cannot see the topic's arity on its own.
+	topic, err := qs.tk.GetTopic(ctx, req.TopicId)
+	if errors.Is(err, emissionstypes.ErrTopicDoesNotExist) {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+	if topic.OutputArity == emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return nil, status.Error(codes.InvalidArgument,
+			"outlier resistant network inferences are not supported for multi-label topics")
+	}
+
 	result, err := qs.k.GetLatestNetworkInferences(ctx, req.TopicId, true)
 	if err != nil {
 		return nil, err
