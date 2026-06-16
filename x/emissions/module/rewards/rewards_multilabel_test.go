@@ -1091,3 +1091,87 @@ func computeExpectedNaiveByLabel(
 	}
 	return out
 }
+
+// TestMultiLabelNonZeroDefaultValuePadsMissingLabels exercises the full
+// submit -> close/compact -> synthesis pipeline for a MULTI topic whose
+// LabelDefaultValue is non-zero. Each worker submits a single, distinct label,
+// so the other two slots must be padded with the default (0.9) rather than 0,
+// both in the stored (compacted) active inferences and in the synthesized
+// naive network inference.
+//
+// Note: this is an end-to-end consistency lock. Because close-time compaction
+// already aligns/pads stored vectors to the registry with LabelDefaultValue,
+// the dedicated regression guards for the conversions padding fix live in the
+// unit tests (TestConvertInferenceValuesFromProto and
+// TestCalcForecastImpliedInferencesMultiArityPadsWithLabelDefaultValue).
+func (s *RewardsTestSuite) TestMultiLabelNonZeroDefaultValuePadsMissingLabels() {
+	require := s.Require()
+
+	const def = "0.9" // distinct from every submitted value so nothing is dropped as "default"
+
+	workerIndexes := testutil.ReturnIndexes(5, 3)
+	reputerIndexes := testutil.ReturnIndexes(0, 3)
+
+	workerValues := []testutil.TestWorkerValue{
+		{Values: []testutil.TestLabeledValue{{Label: "A", Value: "0.1"}}},
+		{Values: []testutil.TestLabeledValue{{Label: "B", Value: "0.2"}}},
+		{Values: []testutil.TestLabeledValue{{Label: "C", Value: "0.3"}}},
+	}
+	workerAddrs := make([]string, len(workerIndexes))
+	for i, idx := range workerIndexes {
+		workerAddrs[i] = s.AddrsStr(idx)
+		workerValues[i].Index = idx
+	}
+
+	topicId, nonce := s.FullTopicPass(
+		workerIndexes,
+		reputerIndexes,
+		testutil.WithOutputArity(types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI),
+		testutil.WithLabelCaseSensitive(true),
+		testutil.WithLabelDefaultValue(alloraMath.MustNewDecFromString(def)),
+		testutil.WithWorkerValues(workerValues),
+	)
+
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	require.NoError(err)
+	require.Equal(alloraMath.MustNewDecFromString(def).String(), topic.LabelDefaultValue.String())
+
+	wantNames := []string{"A", "B", "C"}
+	registry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	require.NoError(err)
+	assertRegistryLabelNames(require, &registry, wantNames)
+
+	// Stored (compacted) active inferences: missing slots padded with the default, not 0.
+	activeInferences, err := s.WorkerKeeper().GetInferencesAtBlock(s.Ctx(), topic, nonce, false)
+	require.NoError(err)
+	assertActiveInferencesMatchExpected(require, activeInferences, map[string][]string{
+		workerAddrs[0]: {"0.1", def, def},
+		workerAddrs[1]: {def, "0.2", def},
+		workerAddrs[2]: {def, def, "0.3"},
+	})
+
+	// Synthesized naive inference reflects the default in the missing slots:
+	//   A = (0.1 + 0.9 + 0.9) / 3,  B = (0.9 + 0.2 + 0.9) / 3,  C = (0.9 + 0.9 + 0.3) / 3
+	bundle, err := s.EmissionsKeeper().GetNetworkInferences(s.Ctx(), topicId, nonce)
+	require.NoError(err)
+	require.NotNil(bundle)
+	assertLabeledValuesMatchNames(require, bundle.NaiveValue, wantNames, "naive value")
+
+	three := alloraMath.MustNewDecFromString("3")
+	avg := func(sum string) string {
+		v, qerr := alloraMath.MustNewDecFromString(sum).Quo(three)
+		require.NoError(qerr)
+		return v.String()
+	}
+	naive := labeledValuesToMap(bundle.NaiveValue)
+	testutil2.InEpsilon5(s.T(), naive["A"], avg("1.9"))
+	testutil2.InEpsilon5(s.T(), naive["B"], avg("2.0"))
+	testutil2.InEpsilon5(s.T(), naive["C"], avg("2.1"))
+
+	// First pass, all-new inferers => equal weights => combined == naive per label.
+	assertLabeledValuesMatchNames(require, bundle.CombinedValue, wantNames, "combined value")
+	combined := labeledValuesToMap(bundle.CombinedValue)
+	for _, label := range wantNames {
+		testutil2.InEpsilon5(s.T(), combined[label], naive[label].String())
+	}
+}

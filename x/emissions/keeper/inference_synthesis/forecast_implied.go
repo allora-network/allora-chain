@@ -28,6 +28,9 @@ type CalcForecastImpliedInferencesArgs struct {
 	RegretScalePlusEpsilon alloraMath.Dec
 	LabelRegistry          *emissionstypes.EpochLabelRegistry
 	NumLabels              int
+	// LabelDefaultValue is topic.LabelDefaultValue, used to pad unset trailing
+	// slots when converting stored inferences (mirrors keeper semantics).
+	LabelDefaultValue alloraMath.Dec
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
@@ -85,7 +88,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 					blockHeight = inf.BlockHeight
 				}
 
-				iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, inf)
+				iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, args.LabelDefaultValue, inf)
 				if err != nil {
 					return nil, err
 				}
@@ -196,7 +199,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[
 				blockHeight = inf.BlockHeight
 			}
 
-			iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, inf)
+			iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, args.LabelDefaultValue, inf)
 			if err != nil {
 				return nil, err
 			}
