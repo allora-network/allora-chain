@@ -50,8 +50,11 @@ Before the first commit in any session, run these checks. If any fail, **stop an
 ### Git Remote Protocol
 **Never change the git remote URL.** The remote must stay as it is unless otherwise requested. Do not switch HTTPS/SSH, do not run `git remote set-url`, and do not run `gh auth setup-git`, unless explicitly stated, requested and only execute if approved by the user.
 
-### AUTOCLI
-Do not use FlagOptions on params. Follow existing style. "nil" and "empty" should be treated as same in types because of serialization.
+## AUTOCLI
+Do not use FlagOptions on params unless really necessary. Follow existing style.
 
-### REPORTS LOCATION
+## REPORTS LOCATION
 Produce requested reports under a `.reports/` folder by default, unless otherwise specified. Do not commit them.
+
+## Code comments
+Code comments must be self-contained. They will not make reference to agent conversations, issue ids, reports or other generated content that is not within the codebase itself or it will get stale soon.
