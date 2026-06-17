@@ -607,6 +607,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          registry,
 			NumLabels:              len(registry.GetLabels()),
+			LabelDefaultValue:      alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -1314,6 +1315,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          args.LabelRegistry,
 			NumLabels:              args.NumLabels,
+			LabelDefaultValue:      alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -1355,6 +1357,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          args.LabelRegistry,
 			NumLabels:              args.NumLabels,
+			LabelDefaultValue:      alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(emptyResult)
@@ -1387,7 +1390,8 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences() {
 					Name: "y",
 				}},
 			},
-			NumLabels: 1,
+			NumLabels:         1,
+			LabelDefaultValue: alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	s.Require().Empty(singleInfererResult)
@@ -1467,6 +1471,7 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 			RegretScalePlusEpsilon: alloraMath.ZeroDec(),
 			LabelRegistry:          args.LabelRegistry,
 			NumLabels:              args.NumLabels,
+			LabelDefaultValue:      alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -1560,6 +1565,7 @@ func (s *InferenceSynthesisTestSuite) referenceOneOutInfererCombinedValue(
 			RegretScalePlusEpsilon: calcArgs.RegretScalePlusEpsilon,
 			LabelRegistry:          calcArgs.LabelRegistry,
 			NumLabels:              calcArgs.NumLabels,
+			LabelDefaultValue:      alloraMath.ZeroDec(),
 		},
 	)
 	if err != nil {
@@ -1770,6 +1776,7 @@ func (s *InferenceSynthesisTestSuite) TestOneOutInfererRecomputeExcludesWithheld
 					RegretScalePlusEpsilon: calcArgs.RegretScalePlusEpsilon,
 					LabelRegistry:          calcArgs.LabelRegistry,
 					NumLabels:              calcArgs.NumLabels,
+					LabelDefaultValue:      alloraMath.ZeroDec(),
 				},
 			)
 			s.Require().NoError(err)
@@ -1900,6 +1907,7 @@ func (s *InferenceSynthesisTestSuite) TestOneOutInfererLeakViaSingleElementForec
 			RegretScalePlusEpsilon: calcArgs.RegretScalePlusEpsilon,
 			LabelRegistry:          calcArgs.LabelRegistry,
 			NumLabels:              calcArgs.NumLabels,
+			LabelDefaultValue:      alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)

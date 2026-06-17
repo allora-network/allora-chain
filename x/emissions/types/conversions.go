@@ -339,6 +339,7 @@ func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundl
 func ConvertInferenceValuesFromProto(
 	topicArity TopicOutputArity,
 	labels []*TopicLabel,
+	labelDefaultValue alloraMath.Dec,
 	inf *Inference,
 ) (InferenceValues, error) {
 	if inf == nil {
@@ -374,10 +375,13 @@ func ConvertInferenceValuesFromProto(
 			)
 		}
 
-		zero := alloraMath.ZeroDec()
+		// Pad unset trailing slots with topic.LabelDefaultValue (NOT zero): the
+		// rest of the chain (NormalizeInputInference, close-time compaction) treats
+		// an unset label slot as LabelDefaultValue, which may be non-zero when
+		// require_unity is false. Padding with zero here would silently diverge.
 		out := make(alloraMath.DecArray, regLen)
 		for i := range out {
-			out[i] = zero
+			out[i] = labelDefaultValue
 		}
 		copy(out, inf.Values)
 		if err := ValidateInferenceValues(out, labels); err != nil {

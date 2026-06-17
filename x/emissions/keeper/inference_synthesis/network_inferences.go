@@ -255,6 +255,7 @@ func GetCalcNetworkInferenceArgs(
 		InferenceBlockHeight:                 inferenceBlockHeight,
 		LabelRegistry:                        registry,
 		NumLabels:                            numLabels,
+		LabelDefaultValue:                    topic.LabelDefaultValue,
 	}
 
 	if previousLossesCombinedValue != nil {
@@ -294,6 +295,7 @@ func GetCalcNetworkInferenceArgs(
 				RegretScalePlusEpsilon: regretScalePlusEpsilon,
 				LabelRegistry:          registry,
 				NumLabels:              numLabels,
+				LabelDefaultValue:      topic.LabelDefaultValue,
 			},
 		)
 		if err != nil {

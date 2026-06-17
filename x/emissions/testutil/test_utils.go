@@ -216,6 +216,7 @@ type (
 		skipNetworkInferences bool
 		outputArity           types.TopicOutputArity
 		labelCaseSensitive    bool
+		labelDefaultValue     *alloraMath.Dec
 		reputerStake          *cosmosMath.Int
 		accounts              []account
 	}
@@ -324,6 +325,15 @@ func WithOutputArity(outputArity types.TopicOutputArity) Option {
 func WithLabelCaseSensitive(labelCaseSensitive bool) Option {
 	return func(p *customParams) {
 		p.labelCaseSensitive = labelCaseSensitive
+	}
+}
+
+// WithLabelDefaultValue sets the topic's LabelDefaultValue (the value used to
+// pad unset label slots in dense MULTI inference vectors). Defaults to zero when
+// unset. Must be zero unless require_unity is false (enforced by topic validation).
+func WithLabelDefaultValue(labelDefaultValue alloraMath.Dec) Option {
+	return func(p *customParams) {
+		p.labelDefaultValue = &labelDefaultValue
 	}
 }
 
@@ -1155,6 +1165,9 @@ func (s *TestSuite) CreateTopic(opts ...Option) uint64 {
 		newTopicMsg.OutputArity = p.outputArity
 	}
 	newTopicMsg.LabelCaseSensitive = p.labelCaseSensitive
+	if p.labelDefaultValue != nil {
+		newTopicMsg.LabelDefaultValue = *p.labelDefaultValue
+	}
 
 	res, err := s.emissionsMsgServer.CreateNewTopic(s.Ctx(), newTopicMsg)
 	s.Require().NoError(err)
