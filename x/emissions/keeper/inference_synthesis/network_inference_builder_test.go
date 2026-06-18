@@ -1504,8 +1504,9 @@ func (s *InferenceSynthesisTestSuite) TestGetOneOutInfererImpliedInferences2infe
 }
 
 // referenceOneOutInfererCombinedValue independently computes the one-out inferer
-// network inference using fully filtered recompute inputs (withheld inferer removed
-// from inferences and forecast elements). SMELL-01 regression reference.
+// network inference from fully filtered recompute inputs (withheld inferer removed
+// from both the inferences and the forecast elements). It is the expected-value
+// oracle for the one-out leak regression tests below.
 func (s *InferenceSynthesisTestSuite) referenceOneOutInfererCombinedValue(
 	ctx sdk.Context,
 	k keeper.Keeper,
@@ -1676,8 +1677,9 @@ func (s *InferenceSynthesisTestSuite) getOneOutInfererRecomputeLeakTestCalcArgs(
 	return calcArgs
 }
 
-// TestOneOutInfererRecomputeExcludesWithheldInferer verifies SMELL-01: the one-out
-// inferer path must recompute forecast-implied inferences without the withheld inferer.
+// TestOneOutInfererRecomputeExcludesWithheldInferer verifies that the one-out inferer
+// path recomputes forecast-implied inferences with the withheld inferer fully removed,
+// so its value cannot leak back into the one-out result.
 func (s *InferenceSynthesisTestSuite) TestOneOutInfererRecomputeExcludesWithheldInferer() {
 	k := *s.EmissionsKeeper()
 	ctx := s.Ctx()
@@ -1806,21 +1808,21 @@ func (s *InferenceSynthesisTestSuite) TestOneOutInfererRecomputeExcludesWithheld
 	}
 }
 
-// TestOneOutInfererLeakViaSingleElementForecast is the decisive SMELL-01 regression
-// for the concrete edge case being fixed: a forecaster whose forecast has a SINGLE
-// element pointing ONLY to the withheld inferer.
+// TestOneOutInfererLeakViaSingleElementForecast covers the decisive edge case for the
+// one-out inferer leak: a forecaster whose forecast has a SINGLE element pointing ONLY
+// to the withheld inferer.
 //
 // Setup (weighted path, AllInferersAreNew=false):
 //   - inferers: worker1=100, worker2=200, worker3=1_000_000 (extreme value)
 //   - forecaster1 forecast has exactly one element -> {Inferer: worker3}
 //
 // When we withhold worker3:
-//   - BUGGY code (alek/classification): the full InfererToInference map and unfiltered
+//   - Without the recompute filtering: the full InfererToInference map and unfiltered
 //     forecasts are passed to CalcForecastImpliedInferences. worker3 is still admitted,
 //     and since it is the ONLY inferer in forecaster1's forecast it gets weight 1.0
-//     (forecast_implied.go single-inferer shortcut). forecaster1's forecast-implied
+//     (the single-inferer shortcut in forecast_implied.go). forecaster1's forecast-implied
 //     inference becomes worker3's value (1_000_000) and leaks into the one-out result.
-//   - FIXED code: worker3 is stripped from both the inference map and forecaster1's
+//   - With the filtering: worker3 is stripped from both the inference map and forecaster1's
 //     forecast elements, leaving forecaster1 with zero elements -> skipped. The one-out
 //     value is the mix of worker1 and worker2 only.
 //

@@ -2293,13 +2293,11 @@ func (s *KeeperTestSuite) TestSetEpochLabelRegistryUsesLiveLabelByteCap() {
 	s.Require().NoError(err)
 }
 
-// TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap pins the Finding 1 fix:
-// the registry size cap (MaxEpochLabelRegistrySize) is enforced only at the
-// growth point (RegisterEpochLabels), not when persisting/validating an
-// already-built registry. A registry larger than the current (e.g. lowered)
-// cap must still be storable so a later cap change cannot retroactively
-// invalidate valid state. See
-// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
+// TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap pins that the registry size cap
+// (MaxEpochLabelRegistrySize) is enforced only at the growth point (RegisterEpochLabels),
+// not when persisting or validating an already-built registry. A registry larger than
+// the current (e.g. lowered) cap must still be storable, so that lowering the cap cannot
+// retroactively invalidate previously valid state.
 func (s *KeeperTestSuite) TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap() {
 	ctx := s.Ctx()
 	topicId := s.CreateTopic()
@@ -2324,11 +2322,10 @@ func (s *KeeperTestSuite) TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap() 
 	s.Require().Len(stored.Labels, 2)
 }
 
-// TestDenormalizeAndFinalizeUsePassedLabelByteCap verifies the read (denormalize) and close (finalize) paths
-// honor the passed canonical-label byte cap. The registry size cap is NOT
-// asserted here: after the Finding 1 fix it is enforced only at the growth
-// point (RegisterEpochLabels), not in these read/close paths. See
-// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
+// TestDenormalizeAndFinalizeUsePassedLabelByteCap verifies the read (denormalize) and
+// close (finalize) paths honor the passed canonical-label byte cap. The registry size
+// cap is NOT asserted here: it is enforced only at the growth point (RegisterEpochLabels),
+// not in these read/close paths.
 func (s *KeeperTestSuite) TestDenormalizeAndFinalizeUsePassedLabelByteCap() {
 	nonce := types.BlockHeight(7)
 	topic, _ := s.setupMultiTopic()

@@ -775,7 +775,7 @@ func (s *KeeperTestSuite) TestGetEpochLabelRegistryEmpty() {
 	s.Require().Empty(reg.Labels)
 }
 
-// TestSetTopic_CanonicalizesLabelWhitelist [TEST-17] pins that SetTopic
+// TestSetTopic_CanonicalizesLabelWhitelist pins that SetTopic
 // canonicalizes label_whitelist using the topic's LabelCaseSensitive flag, so
 // that create/update-time canonicalization matches submission-time
 // canonicalization byte-for-byte. A mismatch here would silently reject or

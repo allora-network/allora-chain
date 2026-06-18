@@ -1816,7 +1816,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 }
 
 // TestMsgInsertWorkerPayload_Multi_RegistrySaturationRejectsNewLabel exercises the
-// #947 epoch label registry cap (MaxEpochLabelRegistrySize) end-to-end through
+// epoch label registry cap (MaxEpochLabelRegistrySize) end-to-end through
 // InsertWorkerPayload. Keeper-level tests cover RegisterEpochLabels directly; this
 // asserts that the only worker-payload path that grows the registry (an admitted
 // worker reaching NormalizeInputInference) is bounded by the cap. With the cap at 2,
