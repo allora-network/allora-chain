@@ -283,6 +283,17 @@ func MigrateInferences(
 	lblUpdates := make([]kv, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
+		// Skip already-migrated records. In the new Inference type the value lives
+		// in the repeated Values field (field 7) while the old Inference type
+		// carries it in the scalar Value field (field 4, now reserved). Decoding
+		// already-migrated bytes as the old type silently drops field 7 and would
+		// rewrite the value as 0, which still passes Validate(). Guarding here keeps
+		// any second pass (re-invocation, tooling) from zeroing migrated values.
+		var maybeMigrated emissionstypes.Inference
+		if err := cdc.Unmarshal(iterator.Value(), &maybeMigrated); err == nil && len(maybeMigrated.Values) > 0 {
+			continue
+		}
+
 		var oldInference oldtypes.Inference
 		if err := cdc.Unmarshal(iterator.Value(), &oldInference); err != nil {
 			return errorsmod.Wrap(err, "failed to unmarshal inferences")
@@ -354,6 +365,17 @@ func MigrateAllInferences(
 	updates := make([]kv, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
+		// Skip already-migrated records. As in MigrateInferences, the per-inference
+		// value moved from the old scalar Value field (field 4, now reserved) to the
+		// new repeated Values field (field 7). If any inner inference already carries
+		// Values, these bytes are new-format and re-decoding them as the old type
+		// would silently zero every value while still passing Validate().
+		var maybeMigrated emissionstypes.Inferences
+		if err := cdc.Unmarshal(iterator.Value(), &maybeMigrated); err == nil &&
+			len(maybeMigrated.Inferences) > 0 && len(maybeMigrated.Inferences[0].Values) > 0 {
+			continue
+		}
+
 		var oldInferences oldtypes.Inferences
 		if err := cdc.Unmarshal(iterator.Value(), &oldInferences); err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal all inferences")

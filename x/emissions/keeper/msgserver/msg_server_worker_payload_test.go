@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -353,6 +354,101 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	require.Equal(forecasts.ForecastElements[0].Inferer, inferer1)
 	require.Equal(forecasts.ForecastElements[1].Inferer, inferer2)
 	require.Equal(forecasts.ForecastElements[2].Inferer, inferer4)
+}
+
+// forecasterPayloadEvents returns all EventInsertForecasterPayload typed events
+// currently on the SDK context's event manager. It reconstructs each event via
+// sdk.ParseTypedEvent so the assertion stays agnostic to the proto package
+// version (e.g. v10 -> v11 bumps require no test changes).
+func forecasterPayloadEvents(ctx sdk.Context) []*types.EventInsertForecasterPayload {
+	out := make([]*types.EventInsertForecasterPayload, 0)
+	for _, ev := range ctx.EventManager().Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if e, ok := msg.(*types.EventInsertForecasterPayload); ok {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered pins the contract
+// that a forecaster payload event is emitted only when forecast elements were
+// actually stored. With MaxElementsPerForecast == 0, FindTopNByScoreDesc selects
+// no inferers, every element is filtered out, AppendForecast is skipped, and no
+// event must be emitted - mirroring the admission-gated inference path.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNoForecasterEventWhenAllFiltered() {
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	_ = s.WhitelistsKeeper().AddWhitelistAdmin(s.Ctx(), adminAddr.String())
+
+	newParams := &types.OptionalParams{ //nolint:exhaustruct
+		MaxElementsPerForecast: []uint64{0},
+		// rest not updated
+	}
+	_, err := s.EmissionsMsgServer().UpdateParams(s.Ctx(), &types.UpdateParamsRequest{
+		Sender: adminAddr.String(),
+		Params: newParams,
+	})
+	require.NoError(err, "UpdateParams should not return an error")
+
+	blockHeight := int64(1)
+	workerBlockHeight := blockHeight + 10800
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayloadWithBlockHeight(workerPrivateKey, workerBlockHeight)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	s.WithBlockHeight(workerBlockHeight)
+
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	// Nothing was stored...
+	require.Equal(0, s.getCountForecastsAtBlock(topicId, workerBlockHeight),
+		"no forecast should be stored when all elements are filtered out")
+	// ...so no forecaster payload event should have been emitted.
+	require.Empty(forecasterPayloadEvents(s.Ctx()),
+		"no forecaster payload event should be emitted when nothing is stored")
+}
+
+// TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements guards
+// against over-correcting the gating fix: when forecast elements are accepted,
+// exactly one event must be emitted and it must advertise the actually-stored
+// (filtered) elements rather than the original unfiltered submission.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadEmitsForecasterEventReflectingStoredElements() {
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	s.WithBlockHeight(blockHeight)
+
+	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	stored, err := s.WorkerKeeper().GetWorkerLatestForecastByTopicId(s.Ctx(), topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	require.NotEmpty(stored.ForecastElements)
+
+	events := forecasterPayloadEvents(s.Ctx())
+	require.Len(events, 1, "exactly one forecaster payload event should be emitted on a successful store")
+
+	storedInferers := make([]string, 0, len(stored.ForecastElements))
+	for _, el := range stored.ForecastElements {
+		storedInferers = append(storedInferers, el.Inferer)
+	}
+	require.ElementsMatch(storedInferers, events[0].InfererAddresses,
+		"event must advertise exactly the stored (filtered) forecast elements")
 }
 
 func (s *MsgServerTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeight int64) int {
@@ -1223,6 +1319,23 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_NoCrossEpochRegist
 	s.Require().ErrorIs(err, sdkerrors.ErrLogic)
 }
 
+func (s *MsgServerTestSuite) TestLoadActiveInfererInferencesForClose_MissingTemporaryInference() {
+	s.SetupTest()
+	pk := secp256k1.GenPrivKey()
+	_, topicId := s.setUpMsgInsertWorkerPayload(pk) // proven helper → real topic
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+
+	missingInferer := s.AddrsStr(9) // active in the set, never staged
+
+	_, err = s.WorkerKeeper().LoadActiveInfererInferencesForClose(
+		s.Ctx(), topic, int64(1), []string{missingInferer},
+	)
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, sdkerrors.ErrLogic)
+	s.Require().Contains(err.Error(), "missing temporary inference for active inferer")
+}
+
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageInput() {
 	s.SetupTest()
 
@@ -1553,6 +1666,22 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			wantForecast:       true,
 			wantCandidateScore: true,
 		},
+		{
+			name: "label_not_in_whitelist_rejected_before_planning",
+			values: []labeledValue{
+				{label: "bear", value: "1"},
+			},
+			setup: func(topicId uint64, msg *types.InsertWorkerPayloadRequest) {
+				// LabelWhitelist canonicalization is applied by SetTopic/UpdateTopic
+				// in production; "bull" is already canonical, so set it directly here.
+				topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+				s.Require().NoError(err)
+				topic.LabelWhitelist = []string{"bull"}
+				s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic))
+				msg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
+			},
+			wantErrIs: types.ErrLabelNotInWhitelist,
+		},
 	}
 
 	for _, c := range cases {
@@ -1631,6 +1760,85 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			}
 		})
 	}
+}
+
+// TestMsgInsertWorkerPayload_Multi_RegistrySaturationRejectsNewLabel exercises the
+// #947 epoch label registry cap (MaxEpochLabelRegistrySize) end-to-end through
+// InsertWorkerPayload. Keeper-level tests cover RegisterEpochLabels directly; this
+// asserts that the only worker-payload path that grows the registry (an admitted
+// worker reaching NormalizeInputInference) is bounded by the cap. With the cap at 2,
+// a first admitted payload fills the registry with two labels, and a second admitted
+// payload that introduces a third label is rejected with ErrEpochLabelRegistrySaturated
+// without partially writing the new label.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_RegistrySaturationRejectsNewLabel() {
+	s.SetupTest()
+
+	pk1 := secp256k1.GenPrivKey()
+	pk2 := secp256k1.GenPrivKey()
+	nonce := int64(1)
+
+	// Both setups run FullTopicSetup; configure arity and the cap afterwards so a
+	// re-run cannot reset them.
+	msg1, topicId := s.setUpMsgInsertWorkerPayload(pk1)
+	msg2, _ := s.setUpMsgInsertWorkerPayload(pk2)
+	s.WithBlockHeight(nonce)
+	s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, false, "0")
+
+	// Cap the epoch label registry at two labels.
+	params := types.DefaultParams()
+	params.MaxEpochLabelRegistrySize = 2
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	// worker1 fills the registry to the cap with labels a, b.
+	msg1.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+	msg1.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("1")},
+		{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("2")},
+	}
+	msg1 = s.signMsgInsertWorkerPayload(msg1, pk1)
+
+	// worker2 is admitted (MaxTopInferersToReward default leaves room) and introduces
+	// a third label c; a is idempotent and does not by itself grow the registry.
+	msg2.WorkerDataBundle.TopicId = topicId
+	msg2.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = topicId
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight = nonce
+	msg2.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: "a", Value: alloraMath.MustNewBoundedExp40DecFromString("10")},
+		{Label: "c", Value: alloraMath.MustNewBoundedExp40DecFromString("30")},
+	}
+	msg2 = s.signMsgInsertWorkerPayload(msg2, pk2)
+
+	err := s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg1.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg2.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+
+	// First payload succeeds; registry sits at the cap.
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg1)
+	s.Require().NoError(err)
+	reg, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(2, len(reg.Labels))
+
+	// Second admitted payload introduces a third label -> saturation.
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg2)
+	s.Require().Error(err)
+	s.Require().True(
+		errors.Is(err, types.ErrEpochLabelRegistrySaturated),
+		"expected ErrEpochLabelRegistrySaturated, got %v", err,
+	)
+
+	// Registry is unchanged: the rejected label was not partially written.
+	reg, err = s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(2, len(reg.Labels))
+	s.Require().Equal("a", reg.Labels[0].Name)
+	s.Require().Equal("b", reg.Labels[1].Name)
 }
 
 func (s *MsgServerTestSuite) setTopicArityAndUnity(

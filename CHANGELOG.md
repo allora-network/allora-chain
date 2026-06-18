@@ -75,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Deprecated `types.NewInputReputerValueBundleFromInput`; use `types.NewReputerValueBundleFromInput`.
+
 ### Removed
 
 ### Fixed
@@ -85,15 +87,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Removed
 
-* [#947](https://github.com/allora-network/allora-chain/pull/947) Removed the v10 `GetWorkerLatestInferenceByTopicId` query and REST path `/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_inference`.
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Removed `types.NewInferenceFromInput`, `types.NewInferenceForecastBundleFromInput`, and `types.NewWorkerDataBundleFromInput`. Clients build the `Input*` types directly and sign the `InputInferenceForecastBundle`.
 
 #### Added 
 
-* [#947](https://github.com/allora-network/allora-chain/pull/947) Added the v10 `GetWorkerLatestInputInferenceByTopicId` query and REST path `/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_input_inference`, returning the latest active WSW inference materialized as an `InputInference`.
-
 #### Changed
 
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Renamed the v10 worker latest-inference query: gRPC `GetWorkerLatestInferenceByTopicId` → `GetWorkerLatestInputInferenceByTopicId`, REST `/emissions/v10/topics/{topic_id}/workers/{worker_address}/latest_inference` → `.../latest_input_inference`. Returns an `InputInference` instead of a dense `Inference`; gRPC/REST/CLI clients must update.
+* [#957](https://github.com/allora-network/allora-chain/pull/957) Renamed and retyped keeper methods for network inferences: `InsertNetworkInferences` → `InsertNetworkInferenceBundle`, `InsertOutlierResistantNetworkInferences` → `InsertOutlierResistantNetworkInferenceBundle`, and `GetNetworkInferences` / `GetOutlierResistantNetworkInferences` now take/return `types.NetworkInferenceBundle` instead of `types.ValueBundle`. `GetOutlierResistantNetworkInferences` also now takes a `types.Topic` (previously `topicId`) and errors on multi-label topics.
 * [#947](https://github.com/allora-network/allora-chain/pull/947) Extended v10 `CreateNewTopic` and `UpdateTopic` with label registry fields (`max_labels_per_submission`, `label_whitelist`, `label_default_value`), and updated the corresponding AutoCLI `create-topic`/`update-topic` positional arguments.
+* [#942](https://github.com/allora-network/allora-chain/pull/942) gRPC/REST query `GetLatestNetworkInferencesOutlierResistant` now returns `InvalidArgument` for multi-label (`TOPIC_OUTPUT_ARITY_MULTI`) topics and `NotFound` for unknown topics, matching `GetNetworkInferencesAtBlockOutlierResistant`. Previously it returned `OK` with an empty bundle (nonce 0) in both cases.
 
 # [Released]
 

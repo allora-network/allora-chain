@@ -131,6 +131,57 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdTopicNo
 	s.Require().Equal(codes.NotFound, status.Code(err))
 }
 
+// The latest outlier-resistant query must honor the same MULTI gate as the block-scoped
+// GetNetworkInferencesAtBlockOutlierResistant — reject MULTI topics with InvalidArgument instead of
+// returning an empty bundle with OK.
+//
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantRejectsMultiTopic() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+
+	_, err = queryServer.GetLatestNetworkInferencesOutlierResistant(ctx,
+		&types.GetLatestNetworkInferencesOutlierResistantRequest{TopicId: topicId})
+	s.Require().Error(err)
+	s.Require().Equal(codes.InvalidArgument, status.Code(err))
+}
+
+// An unknown topic must map to NotFound, matching every other topic-scoped handler in this
+// file.
+//
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantTopicNotFound() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+
+	_, err := queryServer.GetLatestNetworkInferencesOutlierResistant(ctx,
+		&types.GetLatestNetworkInferencesOutlierResistantRequest{TopicId: 99999})
+	s.Require().Error(err)
+	s.Require().Equal(codes.NotFound, status.Code(err))
+}
+
+// Boundary: a SINGLE-arity topic with no stored bundle is fine — it still returns OK with a
+// zero-nonce bundle. The error is only for MULTI, not for "empty".
+//
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantSingleTopicEmptyOK() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+
+	resp, err := queryServer.GetLatestNetworkInferencesOutlierResistant(ctx,
+		&types.GetLatestNetworkInferencesOutlierResistantRequest{TopicId: topicId})
+	s.Require().NoError(err)
+	s.Require().NotNil(resp.NetworkInferences)
+	s.Require().Equal(types.BlockHeight(0), resp.NetworkInferences.Nonce)
+}
+
 //nolint:exhaustruct
 func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	queryServer := s.EmissionsQueryServer()

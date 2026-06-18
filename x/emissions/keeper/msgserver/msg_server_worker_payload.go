@@ -258,17 +258,20 @@ func (ms msgServer) processWorkerForecastPayload(
 		if err := ms.wk.AppendForecast(sdkCtx, topic, nonceBlockHeight, forecast, moduleParams.MaxTopForecastersToReward); err != nil {
 			return errorsmod.Wrapf(err, "Error appending forecast")
 		}
-	}
 
-	eventBundle := &types.WorkerDataBundle{
-		Worker:  inputBundle.Worker,
-		Nonce:   inputBundle.Nonce,
-		TopicId: inputBundle.TopicId,
-		InferenceForecastsBundle: &types.InferenceForecastBundle{
-			Inference: nil,
-			Forecast:  forecast,
-		},
+		// Emitted only when forecast elements were actually stored: a fully
+		// filtered-out forecast returns without an event, mirroring the
+		// admission-gated inference path in processWorkerInferencePayload.
+		eventBundle := &types.WorkerDataBundle{
+			Worker:  inputBundle.Worker,
+			Nonce:   inputBundle.Nonce,
+			TopicId: inputBundle.TopicId,
+			InferenceForecastsBundle: &types.InferenceForecastBundle{
+				Inference: nil,
+				Forecast:  forecast,
+			},
+		}
+		types.EmitNewInsertForecasterPayloadEvent(ctx, eventBundle)
 	}
-	types.EmitNewInsertForecasterPayloadEvent(ctx, eventBundle)
 	return nil
 }

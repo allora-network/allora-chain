@@ -1814,11 +1814,12 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 	}
 
 	cases := []struct {
-		name       string
-		active     []*types.Inference
-		wantLabels []string
-		wantValues map[string][]string
-		wantErrIs  error
+		name            string
+		active          []*types.Inference
+		wantLabels      []string
+		wantValues      map[string][]string
+		wantErrIs       error
+		wantErrContains string
 	}{
 		{
 			name: "compacts_and_remaps_filtered_middle_label",
@@ -1859,6 +1860,30 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 			},
 			wantErrIs: sdkerrors.ErrLogic,
 		},
+		{
+			name: "errors_when_active_inference_has_empty_inferer",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: "", Values: decs("1", "2")},
+			},
+			wantErrIs:       sdkerrors.ErrLogic,
+			wantErrContains: "active inference has empty inferer",
+		},
+		{
+			name: "errors_when_active_inference_topic_mismatch",
+			active: []*types.Inference{
+				{TopicId: 2, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("1", "2")},
+			},
+			wantErrIs:       sdkerrors.ErrLogic,
+			wantErrContains: "active inference topic mismatch",
+		},
+		{
+			name: "errors_when_active_inference_nonce_mismatch",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce + 1, Inferer: s.AddrsStr(0), Values: decs("1", "2")},
+			},
+			wantErrIs:       sdkerrors.ErrLogic,
+			wantErrContains: "active inference nonce mismatch",
+		},
 	}
 
 	for _, c := range cases {
@@ -1872,6 +1897,9 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 			)
 			if c.wantErrIs != nil {
 				s.Require().True(errorsmod.IsOf(err, c.wantErrIs), "expected error to be %v, got %v", c.wantErrIs, err)
+				if c.wantErrContains != "" {
+					s.Require().Contains(err.Error(), c.wantErrContains)
+				}
 				return
 			}
 			s.Require().NoError(err)

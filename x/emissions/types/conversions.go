@@ -193,8 +193,8 @@ func NewValueBundleFromInput(bvb *InputValueBundle) (*ValueBundle, error) {
 	return valueBundle, nil
 }
 
-// NewLossBundleFromInput converts InputReputerValueBundle to ReputerValueBundle
-func NewLossBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+// NewReputerValueBundleFromInput converts InputReputerValueBundle to ReputerValueBundle.
+func NewReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
 	if brvb == nil {
 		return nil, ErrInvalidValue
 	}
@@ -339,6 +339,7 @@ func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundl
 func ConvertInferenceValuesFromProto(
 	topicArity TopicOutputArity,
 	labels []*TopicLabel,
+	labelDefaultValue alloraMath.Dec,
 	inf *Inference,
 ) (InferenceValues, error) {
 	if inf == nil {
@@ -374,10 +375,13 @@ func ConvertInferenceValuesFromProto(
 			)
 		}
 
-		zero := alloraMath.ZeroDec()
+		// Pad unset trailing slots with topic.LabelDefaultValue (NOT zero): the
+		// rest of the chain (NormalizeInputInference, close-time compaction) treats
+		// an unset label slot as LabelDefaultValue, which may be non-zero when
+		// require_unity is false. Padding with zero here would silently diverge.
 		out := make(alloraMath.DecArray, regLen)
 		for i := range out {
-			out[i] = zero
+			out[i] = labelDefaultValue
 		}
 		copy(out, inf.Values)
 		if err := ValidateInferenceValues(out, labels); err != nil {
@@ -424,4 +428,10 @@ func ConvertLabeledValuesToDecArray(in []*LabeledValue) alloraMath.DecArray {
 		out[i] = in[i].Value
 	}
 	return out
+}
+
+// Deprecated: use NewReputerValueBundleFromInput. Retained under the v0.16
+// name so existing importers keep compiling.
+func NewInputReputerValueBundleFromInput(brvb *InputReputerValueBundle) (*ReputerValueBundle, error) {
+	return NewReputerValueBundleFromInput(brvb)
 }
