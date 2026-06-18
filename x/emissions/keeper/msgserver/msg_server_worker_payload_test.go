@@ -1146,6 +1146,59 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NormalizeInference() {
 	}
 }
 
+// TestMsgInsertWorkerPayload_Multi_EmptyWhitelistAdmitsNovelLabel pins the
+// "empty label_whitelist means unrestricted" contract end-to-end through the
+// msgserver. An empty (nil) whitelist must admit an arbitrary, never-before-seen
+// label on a MULTI topic, stage its value, and register it in the epoch label
+// registry. This unrestricted default is security-relevant behavior, so it is
+// asserted here rather than only at the validation-unit level.
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_EmptyWhitelistAdmitsNovelLabel() {
+	s.SetupTest()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	nonce := int64(1)
+
+	// A label that appears in no whitelist and is not the SINGLE canonical
+	// "y": its admission can only be explained by the unrestricted default.
+	const novelLabel = "novel_label_xyz"
+
+	msg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	msg.WorkerDataBundle.InferenceForecastsBundle.Inference.Values = []*types.InputLabeledValue{
+		{Label: novelLabel, Value: alloraMath.MustNewBoundedExp40DecFromString("0.5")},
+	}
+	msg = s.signMsgInsertWorkerPayload(msg, workerPrivateKey)
+
+	s.WithBlockHeight(nonce)
+	s.setTopicArityAndUnity(topicId, types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI, false, "0")
+
+	// Make the empty-whitelist precondition explicit and self-documenting: the
+	// topic accepts any label because its whitelist is empty, not because the
+	// novel label happens to be listed.
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	topic.LabelWhitelist = nil
+	err = s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic)
+	s.Require().NoError(err)
+
+	err = s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
+	s.Require().NoError(err)
+
+	// The novel label's value is staged for the admitted worker.
+	got, err := s.WorkerKeeper().GetWorkerLatestInferenceByTopicId(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	s.Require().Len(got.Values, 1)
+	s.Require().Equal("0.5", got.Values[0].String())
+
+	// The novel label is registered in the epoch label registry.
+	reg, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(reg.Labels, 1)
+	s.Require().Equal(novelLabel, reg.Labels[0].Name)
+}
+
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_Multi_TwoWorkersSameNonce_UnionAndAlignment() {
 	s.SetupTest()
 
@@ -1763,7 +1816,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 }
 
 // TestMsgInsertWorkerPayload_Multi_RegistrySaturationRejectsNewLabel exercises the
-// #947 epoch label registry cap (MaxEpochLabelRegistrySize) end-to-end through
+// epoch label registry cap (MaxEpochLabelRegistrySize) end-to-end through
 // InsertWorkerPayload. Keeper-level tests cover RegisterEpochLabels directly; this
 // asserts that the only worker-payload path that grows the registry (an admitted
 // worker reaching NormalizeInputInference) is bounded by the cap. With the cap at 2,

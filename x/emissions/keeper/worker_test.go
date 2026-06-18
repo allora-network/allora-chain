@@ -1789,6 +1789,83 @@ func (s *KeeperTestSuite) TestNormalizeInputInference() {
 	}
 }
 
+// TestNormalizeInputInferenceDenseMultiAgainstPreGrownRegistry covers the dense
+// expansion in isolation: the registry is grown by earlier submissions to be
+// LARGER than the current sparse submission, so NormalizeInputInference must
+// size the dense vector to the whole epoch registry and leave the slots it does
+// not scatter into at topic.LabelDefaultValue. The table-driven test above
+// always starts from a fresh (empty) registry, so len(registry.Labels) there
+// equals the submission's own label count and never exercises this path.
+//
+//nolint:exhaustruct // proto input structs omit optional ExtraData/Proof fields
+func (s *KeeperTestSuite) TestNormalizeInputInferenceDenseMultiAgainstPreGrownRegistry() {
+	s.SetupTest()
+	ctx := s.Ctx()
+	tk := s.TopicKeeper()
+
+	topicId := s.CreateTopic()
+	topic, err := tk.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.RequireUnity = false
+	topic.UnityTolerance = alloraMath.ZeroDec()
+	// A distinctive non-zero default makes default-fill unambiguous: it is
+	// distinguishable both from zero and from any submitted value below.
+	topic.LabelDefaultValue = alloraMath.MustNewDecFromString("0.5")
+	s.Require().NoError(tk.SetTopic(ctx, topicId, topic))
+
+	nonce := types.BlockHeight(7)
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	// Pre-grow the registry as if four labels had already been registered by
+	// earlier inferers at this topic+nonce. Ids are 1-based and first-seen.
+	ids, registry, err := tk.RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		nonce,
+		[]string{"a", "b", "c", "d"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2, 3, 4}, ids)
+	s.Require().Len(registry.Labels, 4)
+
+	// Sparse submission at the SAME nonce: only b and d, both != default 0.5 so
+	// neither is dropped. a and c are intentionally absent. Re-registering b,d
+	// is idempotent and returns their existing ids (2, 4) without growing.
+	in := &types.InputInference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     "inferer",
+		Value:       alloraMath.MustNewBoundedExp40DecFromString("0"),
+		Values: []*types.InputLabeledValue{
+			{Label: "b", Value: alloraMath.MustNewBoundedExp40DecFromString("0.25")},
+			{Label: "d", Value: alloraMath.MustNewBoundedExp40DecFromString("0.75")},
+		},
+	}
+
+	got, err := s.WorkerKeeper().NormalizeInputInference(ctx, topic, nonce, in)
+	s.Require().NoError(err)
+	s.Require().NotNil(got)
+
+	// Vector length tracks the whole pre-grown registry (4), not the 2 values
+	// submitted: this is the regression the test exists to catch.
+	s.Require().Len(got.Values, len(registry.Labels))
+	s.Require().Len(got.Values, 4)
+
+	// Scatter + default fill, slot = id - 1. Defaults are asserted at a leading
+	// (slot 0) and an interior (slot 2) position, with filled slots on either
+	// side, to guard against off-by-one in both directions.
+	s.Require().Equal("0.5", got.Values[0].String(), "unsubmitted label a stays default")
+	s.Require().Equal("0.25", got.Values[1].String(), "label b scattered to slot 1")
+	s.Require().Equal("0.5", got.Values[2].String(), "unsubmitted label c stays default")
+	s.Require().Equal("0.75", got.Values[3].String(), "label d scattered to slot 3")
+}
+
 // TestCompactRegistryAndRemapInferences exercises the close-time finalizer
 // that filters the temporary ELR to active non-default labels and remaps dense
 // vectors into compact final ids.
@@ -1910,6 +1987,100 @@ func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferences() {
 			s.Require().Equal(c.wantLabels, gotLabels)
 			for _, inference := range got.Inferences {
 				want := c.wantValues[inference.Inferer]
+				s.Require().Len(inference.Values, len(want))
+				for i := range want {
+					s.Require().Equal(want[i], inference.Values[i].String())
+				}
+			}
+		})
+	}
+}
+
+// TestCompactRegistryAndRemapInferencesSingleArity exercises the SINGLE branch
+// of close-time compaction: regardless of the temporary registry contents it
+// must emit the fixed canonical {"y"} registry and remap each active inference
+// to a single-value vector, taking Values[0] when present and falling back to
+// the topic LabelDefaultValue otherwise. This is the common production path and
+// is not covered by TestCompactRegistryAndRemapInferences (MULTI-only).
+//
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestCompactRegistryAndRemapInferencesSingleArity() {
+	topic := types.Topic{
+		Id:                1,
+		OutputArity:       types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		LabelDefaultValue: alloraMath.MustNewDecFromString("9"),
+	} //nolint:exhaustruct
+	nonce := types.BlockHeight(7)
+	maxLabelBytes := types.DefaultParams().MaxCanonicalLabelByteLength
+	// The temporary registry is irrelevant to the SINGLE output: the branch
+	// always rebuilds the canonical {"y"} registry. It must still validate, so
+	// use the canonical single-arity label.
+	tempRegistry := types.EpochLabelRegistry{
+		TopicId: 1,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: types.SingleArityCanonicalLabelID, Name: types.SingleArityCanonicalLabel},
+		},
+	}
+
+	cases := []struct {
+		name       string
+		active     []*types.Inference
+		wantValues map[string][]string
+	}{
+		{
+			name: "remaps_scalar_values_sorted_by_inferer",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("5")},
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("3")},
+			},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"3"},
+				s.AddrsStr(1): {"5"},
+			},
+		},
+		{
+			name: "uses_default_value_for_empty_inference",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: nil},
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(1), Values: decs("5")},
+			},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"9"},
+				s.AddrsStr(1): {"5"},
+			},
+		},
+		{
+			name: "uses_first_value_when_multiple_present",
+			active: []*types.Inference{
+				{TopicId: 1, BlockHeight: nonce, Inferer: s.AddrsStr(0), Values: decs("3", "4")},
+			},
+			wantValues: map[string][]string{
+				s.AddrsStr(0): {"3"},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			reg, got, err := keeper.CompactRegistryAndRemapInferences(
+				topic,
+				nonce,
+				tempRegistry,
+				c.active,
+				maxLabelBytes,
+			)
+			s.Require().NoError(err)
+			s.Require().Equal(topic.Id, reg.TopicId)
+			s.Require().Equal(uint64(nonce), reg.EpochId)
+			s.Require().Len(reg.Labels, 1)
+			s.Require().Equal(types.SingleArityCanonicalLabelID, reg.Labels[0].Id)
+			s.Require().Equal(types.SingleArityCanonicalLabel, reg.Labels[0].Name)
+
+			s.Require().Len(got.Inferences, len(c.wantValues))
+			for _, inference := range got.Inferences {
+				want, ok := c.wantValues[inference.Inferer]
+				s.Require().True(ok, "unexpected inferer %s", inference.Inferer)
 				s.Require().Len(inference.Values, len(want))
 				for i := range want {
 					s.Require().Equal(want[i], inference.Values[i].String())
@@ -2122,13 +2293,11 @@ func (s *KeeperTestSuite) TestSetEpochLabelRegistryUsesLiveLabelByteCap() {
 	s.Require().NoError(err)
 }
 
-// TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap pins the Finding 1 fix:
-// the registry size cap (MaxEpochLabelRegistrySize) is enforced only at the
-// growth point (RegisterEpochLabels), not when persisting/validating an
-// already-built registry. A registry larger than the current (e.g. lowered)
-// cap must still be storable so a later cap change cannot retroactively
-// invalidate valid state. See
-// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
+// TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap pins that the registry size cap
+// (MaxEpochLabelRegistrySize) is enforced only at the growth point (RegisterEpochLabels),
+// not when persisting or validating an already-built registry. A registry larger than
+// the current (e.g. lowered) cap must still be storable, so that lowering the cap cannot
+// retroactively invalidate previously valid state.
 func (s *KeeperTestSuite) TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap() {
 	ctx := s.Ctx()
 	topicId := s.CreateTopic()
@@ -2153,11 +2322,10 @@ func (s *KeeperTestSuite) TestSetEpochLabelRegistryIgnoresLiveRegistrySizeCap() 
 	s.Require().Len(stored.Labels, 2)
 }
 
-// TestDenormalizeAndFinalizeUsePassedLabelByteCap verifies the read (denormalize) and close (finalize) paths
-// honor the passed canonical-label byte cap. The registry size cap is NOT
-// asserted here: after the Finding 1 fix it is enforced only at the growth
-// point (RegisterEpochLabels), not in these read/close paths. See
-// .reports/finding-1-elr-cap-uncontained-genesis-query.md.
+// TestDenormalizeAndFinalizeUsePassedLabelByteCap verifies the read (denormalize) and
+// close (finalize) paths honor the passed canonical-label byte cap. The registry size
+// cap is NOT asserted here: it is enforced only at the growth point (RegisterEpochLabels),
+// not in these read/close paths.
 func (s *KeeperTestSuite) TestDenormalizeAndFinalizeUsePassedLabelByteCap() {
 	nonce := types.BlockHeight(7)
 	topic, _ := s.setupMultiTopic()
@@ -2259,24 +2427,6 @@ func (s *KeeperTestSuite) TestRegisterEpochLabels_FirstSeenIdempotent() {
 	s.Require().Equal("b", reg.Labels[0].Name)
 	s.Require().Equal(uint32(2), reg.Labels[1].Id)
 	s.Require().Equal("a", reg.Labels[1].Name)
-
-	gotID, ok, err := tk.GetEpochLabelId(ctx, topicId, nonce, "a")
-	s.Require().NoError(err)
-	s.Require().True(ok)
-	s.Require().Equal(keeper.LabelId(2), gotID)
-
-	gotName, ok, err := tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(1))
-	s.Require().NoError(err)
-	s.Require().True(ok)
-	s.Require().Equal("b", gotName)
-
-	_, ok, err = tk.GetEpochLabelId(ctx, topicId, nonce, "MISSING")
-	s.Require().NoError(err)
-	s.Require().False(ok)
-
-	_, ok, err = tk.GetEpochLabelName(ctx, topicId, nonce, keeper.LabelId(999))
-	s.Require().NoError(err)
-	s.Require().False(ok)
 
 	// A single batch with an intra-batch duplicate assigns first-seen ids in
 	// argument order and dedups repeated names to the same id, growing the

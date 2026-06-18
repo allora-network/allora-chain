@@ -996,6 +996,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "UpdateTopic",
 					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value]",
 					Short:     "Update an existing topic's modifiable configuration",
+					Long: `Update a topic's modifiable fields. Only the creator may do so;
+topic_type, output_arity, require_unity and label_case_sensitive are fixed at
+creation.
+
+Fields sent here REPLACE the stored values — there is no "leave as-is". In
+particular an empty label_whitelist sets the topic to UNRESTRICTED instead of
+preserving the current one, so re-send the full list to keep a restriction.
+
+The keeper rejects these label changes while a worker submission window is
+open.`,
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},

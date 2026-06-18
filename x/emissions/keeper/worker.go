@@ -1071,8 +1071,8 @@ func (k *WorkerKeeper) NormalizeInputInference(
 			// Accept a missing label (legacy scalar path), accept "y", reject
 			// anything else so that operators using SINGLE topics can't smuggle
 			// in extra labels.
-			if lv.Label != "" && lv.Label != "y" {
-				return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "single-arity label must be \"y\", got %q", lv.Label)
+			if err := types.ValidateSingleArityLabel(lv.Label); err != nil {
+				return nil, err
 			}
 			dec = lv.Value.ToDec()
 		} else {
@@ -1090,7 +1090,7 @@ func (k *WorkerKeeper) NormalizeInputInference(
 			topic.Id,
 			topic.LabelCaseSensitive,
 			nonce,
-			[]string{"y"},
+			[]string{types.SingleArityCanonicalLabel},
 			params.MaxCanonicalLabelByteLength,
 			params.MaxEpochLabelRegistrySize,
 		); err != nil {

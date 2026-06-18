@@ -216,10 +216,8 @@ func ValueBundleToNetworkInferenceBundle(vb *ValueBundle) *NetworkInferenceBundl
 		return nil
 	}
 
-	const (
-		label0Id   uint32 = 1
-		label0Name string = "y"
-	)
+	label0Id := SingleArityCanonicalLabelID
+	label0Name := SingleArityCanonicalLabel
 
 	var nonce int64
 	if vb.ReputerRequestNonce != nil && vb.ReputerRequestNonce.ReputerNonce != nil {
