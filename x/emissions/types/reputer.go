@@ -21,6 +21,9 @@ func (rvb *ReputerValueBundles) Validate() error {
 	}
 	lbs := make(LossBundles, len(rvb.ReputerValueBundles))
 	for i := range rvb.ReputerValueBundles {
+		if rvb.ReputerValueBundles[i] == nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer_value_bundle is nil at index %d", i)
+		}
 		if rvb.ReputerValueBundles[i].ValueBundle == nil {
 			continue
 		}
