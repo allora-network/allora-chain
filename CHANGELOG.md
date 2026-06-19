@@ -88,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 * [#957](https://github.com/allora-network/allora-chain/pull/957) Removed `types.NewInferenceFromInput`, `types.NewInferenceForecastBundleFromInput`, and `types.NewWorkerDataBundleFromInput`. Clients build the `Input*` types directly and sign the `InputInferenceForecastBundle`.
+* [#947](https://github.com/allora-network/allora-chain/pull/947), [#956](https://github.com/allora-network/allora-chain/pull/956) Removed the v10 event messages `emissions.v10.EventNetworkInferences` and `emissions.v10.EventOutlierResistantNetworkInferences`. Both are superseded by `emissions.v10.EventNetworkInferenceBundle` with an `outlier-resistant` flag (see API Breaking Changes → Changed).
 
 #### Added 
 
@@ -97,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#957](https://github.com/allora-network/allora-chain/pull/957) Renamed and retyped keeper methods for network inferences: `InsertNetworkInferences` → `InsertNetworkInferenceBundle`, `InsertOutlierResistantNetworkInferences` → `InsertOutlierResistantNetworkInferenceBundle`, and `GetNetworkInferences` / `GetOutlierResistantNetworkInferences` now take/return `types.NetworkInferenceBundle` instead of `types.ValueBundle`. `GetOutlierResistantNetworkInferences` also now takes a `types.Topic` (previously `topicId`) and errors on multi-label topics.
 * [#947](https://github.com/allora-network/allora-chain/pull/947) Extended v10 `CreateNewTopic` and `UpdateTopic` with label registry fields (`max_labels_per_submission`, `label_whitelist`, `label_default_value`), and updated the corresponding AutoCLI `create-topic`/`update-topic` positional arguments.
 * [#942](https://github.com/allora-network/allora-chain/pull/942) gRPC/REST query `GetLatestNetworkInferencesOutlierResistant` now returns `InvalidArgument` for multi-label (`TOPIC_OUTPUT_ARITY_MULTI`) topics and `NotFound` for unknown topics, matching `GetNetworkInferencesAtBlockOutlierResistant`. Previously it returned `OK` with an empty bundle (nonce 0) in both cases.
+* [#947](https://github.com/allora-network/allora-chain/pull/947) Consolidated the network-inference event stream. The chain now emits a single `emissions.v10.EventNetworkInferenceBundle` for both regular and outlier-resistant network inferences, distinguished by the `outlier_resistant` bool field, replacing the separate v9 events `emissions.v9.EventNetworkInferences` and `emissions.v9.EventOutlierResistantNetworkInferences`. Indexers/subscribers must subscribe to `emissions.v10.EventNetworkInferenceBundle` and branch on `outlier_resistant`; after the upgrade the v9 event types are no longer emitted.
 
 # [Released]
 

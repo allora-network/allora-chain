@@ -63,14 +63,6 @@ message EventNetworkLossSet {
   EventValueBundle bundle = 5;
 }
 
-message EventNetworkInferences {
-  uint64 topic_id = 1;
-  int64 block_height = 2 [deprecated = true];
-  emissions.v3.ValueBundle value_bundle = 3 [deprecated = true];
-  int64 nonce = 4;
-  EventValueBundle bundle = 5;
-}
-
 message EventValueBundle {
   option (gogoproto.equal) = true;
 
