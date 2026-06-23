@@ -430,7 +430,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 		// Strip the withheld inferer from forecast elements before recomputation,
 		// mirroring GetOneOutInfererForecastImpliedInferences.
 		remainingForecasterToForecast := make(map[Forecaster]*emissions.Forecast, len(args.ForecasterToForecast))
-		for forecaster, forecast := range args.ForecasterToForecast {
+		for forecaster, forecast := range args.ForecasterToForecast { //nolint:maprange // pure map-to-map transform: each forecaster's filtered forecast is computed independently and keyed by forecaster, so iteration order does not affect the result
 			filteredForecastElements := make([]*emissions.ForecastElement, 0, len(forecast.ForecastElements))
 			for _, element := range forecast.ForecastElements {
 				if element.Inferer != args.WithheldInferer {

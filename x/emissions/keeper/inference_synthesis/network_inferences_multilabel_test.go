@@ -38,7 +38,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockMultilabel(
 	// Collect and sort the epoch ids so the pairing is deterministic regardless
 	// of map iteration order.
 	epochIds := make([]int, 0, len(epochGet))
-	for id := range epochGet {
+	for id := range epochGet { //nolint:maprange // collecting keys into a slice that is sorted immediately below before use
 		epochIds = append(epochIds, id)
 	}
 	sort.Ints(epochIds)

@@ -90,7 +90,7 @@ func GetSimulatedValuesGetterForMultilabelEpochs(
 		// Eagerly parse every numeric cell so a bad value fails here, with
 		// context, rather than inside a getter closure during a later test.
 		values := make(map[string]alloraMath.Dec, len(header))
-		for name, colIdx := range headerIndex {
+		for name, colIdx := range headerIndex { //nolint:maprange // test fixture parsing: each cell is parsed and stored under its own key, order does not affect the result
 			if _, skip := multilabelNonNumericColumns[name]; skip {
 				continue
 			}

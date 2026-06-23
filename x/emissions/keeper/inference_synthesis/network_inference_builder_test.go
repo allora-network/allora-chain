@@ -1528,7 +1528,7 @@ func (s *InferenceSynthesisTestSuite) referenceOneOutInfererCombinedValue(
 	}
 
 	remainingForecasterToForecast := make(map[string]*emissionstypes.Forecast, len(calcArgs.ForecasterToForecast))
-	for forecaster, forecast := range calcArgs.ForecasterToForecast {
+	for forecaster, forecast := range calcArgs.ForecasterToForecast { //nolint:maprange // pure map-to-map transform: each forecaster's filtered forecast is keyed independently, so iteration order does not affect the result
 		filteredForecastElements := make([]*emissionstypes.ForecastElement, 0, len(forecast.ForecastElements))
 		for _, element := range forecast.ForecastElements {
 			if element.Inferer != withheldInferer {

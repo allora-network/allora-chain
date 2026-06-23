@@ -995,7 +995,7 @@ func assertActiveInferencesMatchExpected(
 		gotByWorker[inf.Inferer] = inf
 	}
 
-	for worker, expectedValues := range want {
+	for worker, expectedValues := range want { //nolint:maprange // assertion loop: each worker's expected values are looked up by key, order does not affect the result
 		inf, ok := gotByWorker[worker]
 		require.True(ok, "missing inference for worker %s", worker)
 		require.Len(inf.Values, len(expectedValues), "wrong aligned value count for worker %s", worker)
@@ -1026,7 +1026,7 @@ func assertWorkerInferenceBundleValuesMatchExpected(
 		gotByWorker[wi.Worker] = wi
 	}
 
-	for worker, expectedValues := range want {
+	for worker, expectedValues := range want { //nolint:maprange // assertion loop: each worker's expected values are looked up by key, order does not affect the result
 		wi, ok := gotByWorker[worker]
 		require.True(ok, "missing worker inference bundle entry for worker %s", worker)
 

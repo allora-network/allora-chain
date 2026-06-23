@@ -472,7 +472,7 @@ func (s *WeightsTestSuite) TestCalcWeightsPositive() {
 	weights, err := synth.CalcWeightsGivenWorkers(args)
 	require.NoError(err)
 
-	for _, w := range weights.Inferers {
+	for _, w := range weights.Inferers { //nolint:maprange // reason: order not relevant
 		require.True(w.Gt(alloraMath.ZeroDec()))
 	}
 }
