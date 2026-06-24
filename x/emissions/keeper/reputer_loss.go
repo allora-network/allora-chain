@@ -416,11 +416,7 @@ func (k *ReputerLossKeeper) GetReputerLossBundlesAtBlock(ctx context.Context, to
 	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
 	}
-	lossBundles := make(types.LossBundles, len(reputerLossBundles.ReputerValueBundles))
-	for i := range reputerLossBundles.ReputerValueBundles {
-		lossBundles[i] = reputerLossBundles.ReputerValueBundles[i].GetValueBundle()
-	}
-	return lossBundles, nil
+	return reputerLossBundles.ToLossBundles(topicId, block)
 }
 
 // Insert a network loss bundle for a topic and block.
