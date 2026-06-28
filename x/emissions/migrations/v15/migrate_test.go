@@ -170,6 +170,172 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	s.Require().True(gotTopic.LabelDefaultValue.Equal(classifTopic.LabelDefaultValue))
 }
 
+// TestMigrateTopicsPreservesExtremeButValidTopic guards against a future change
+// that would clamp or re-tighten the numeric topic bounds inside the migration.
+// A legacy topic sitting at the inclusive edges of the long-standing bounds
+// (p_norm in [1,10], c_norm in [-100,100], alpha_regret in (0,1]) must survive
+// the v15 backfill untouched: those bounds predate v15 and are enforced at topic
+// create/update, so every stored topic already satisfies them and the migration
+// must not reject the legitimate extremes.
+func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExtremeButValidTopic() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	keeper := s.TopicKeeper()
+
+	topics := []v14oldtypes.Topic{
+		s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
+			topic.Id = 101
+			topic.Creator = s.Addrs(0).String()
+			topic.Metadata = "extreme-high"
+			topic.LossMethod = "mse"
+			topic.EpochLength = 10800
+			topic.EpochLastEnded = 0
+			topic.GroundTruthLag = 10800
+			topic.WorkerSubmissionWindow = 10
+			topic.PNorm = alloraMath.MustNewDecFromString("10")
+			topic.InitialRegret = alloraMath.MustNewDecFromString("0.0001")
+			topic.AlphaRegret = alloraMath.MustNewDecFromString("1")
+			topic.AllowNegative = true
+			topic.Epsilon = alloraMath.MustNewDecFromString("0.00001")
+			topic.MeritSortitionAlpha = alloraMath.MustNewDecFromString("0.1")
+			topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.CNorm = alloraMath.MustNewDecFromString("100")
+		}),
+		s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
+			topic.Id = 102
+			topic.Creator = s.Addrs(1).String()
+			topic.Metadata = "extreme-low"
+			topic.LossMethod = "mae"
+			topic.EpochLength = 10800
+			topic.EpochLastEnded = 0
+			topic.GroundTruthLag = 10800
+			topic.WorkerSubmissionWindow = 10
+			topic.PNorm = alloraMath.MustNewDecFromString("1")
+			topic.InitialRegret = alloraMath.MustNewDecFromString("0.0001")
+			// Smallest practical positive value: alpha_regret must be > 0.
+			topic.AlphaRegret = alloraMath.MustNewDecFromString("0.000000000001")
+			topic.AllowNegative = true
+			topic.Epsilon = alloraMath.MustNewDecFromString("0.00001")
+			topic.MeritSortitionAlpha = alloraMath.MustNewDecFromString("0.1")
+			topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
+			topic.CNorm = alloraMath.MustNewDecFromString("-100")
+		}),
+	}
+
+	for _, topic := range topics {
+		topicStore.Set(sdk.Uint64ToBigEndian(topic.Id), cdc.MustMarshal(&topic))
+	}
+
+	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
+	s.Require().NoError(err)
+
+	for _, topic := range topics {
+		gotTopic, err := keeper.GetTopic(s.Ctx(), topic.Id)
+		s.Require().NoError(err)
+
+		// Extreme numeric values survive the migration untouched.
+		s.Require().True(topic.PNorm.Equal(gotTopic.PNorm))
+		s.Require().True(topic.AlphaRegret.Equal(gotTopic.AlphaRegret))
+		s.Require().True(topic.CNorm.Equal(gotTopic.CNorm))
+		s.Require().True(topic.Epsilon.Equal(gotTopic.Epsilon))
+
+		// Classification defaults are still backfilled.
+		s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_REGRESSION, gotTopic.TopicType)
+		s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotTopic.OutputArity)
+		s.Require().Equal(emissionstypes.DefaultMaxLabelsPerSubmission, gotTopic.MaxLabelsPerSubmission)
+	}
+}
+
+// TestMigrateTopicsAbortsOnInvalidTopic verifies the migration halts rather than
+// silently skipping when a stored topic fails Topic.Validate after backfill.
+// Topic.Validate gates against the current module params, and some of those
+// bounds (here, the minimum epoch length) are not backfilled by this migration,
+// so a long-lived topic created before a param was tightened can fail the gate.
+// A migration must leave state fully consistent, so such a topic is a
+// state-integrity failure: the migration returns an error (which deterministically
+// halts the upgrade for a coordinated fix) and commits no partial state, not even
+// the valid sibling topic.
+func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAbortsOnInvalidTopic() {
+	storageService := s.EmissionsKeeper().GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))
+	cdc := s.EmissionsKeeper().GetBinaryCodec()
+
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	keeper := s.TopicKeeper()
+
+	// Raise MinEpochLength so that a shorter-epoch topic, valid when it was
+	// created, no longer satisfies Topic.Validate at migration time.
+	const minEpochLength = int64(20000)
+	params := emissionstypes.DefaultParams()
+	params.MinEpochLength = minEpochLength
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	validTopic := s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
+		topic.Id = 201
+		topic.Creator = s.Addrs(0).String()
+		topic.Metadata = "valid"
+		topic.LossMethod = "mse"
+		topic.EpochLength = minEpochLength + 1
+		topic.GroundTruthLag = minEpochLength + 1
+		topic.WorkerSubmissionWindow = 10
+		topic.PNorm = alloraMath.MustNewDecFromString("3")
+		topic.InitialRegret = alloraMath.MustNewDecFromString("0.0001")
+		topic.AlphaRegret = alloraMath.MustNewDecFromString("0.1")
+		topic.Epsilon = alloraMath.MustNewDecFromString("0.01")
+		topic.MeritSortitionAlpha = alloraMath.MustNewDecFromString("0.1")
+		topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.CNorm = alloraMath.MustNewDecFromString("0.75")
+	})
+	invalidTopic := s.makeLegacyTopic(func(topic *v14oldtypes.Topic) {
+		topic.Id = 202
+		topic.Creator = s.Addrs(1).String()
+		topic.Metadata = "epoch-too-short"
+		topic.LossMethod = "mae"
+		topic.EpochLength = minEpochLength - 1 // below the tightened minimum
+		topic.GroundTruthLag = minEpochLength - 1
+		topic.WorkerSubmissionWindow = 10
+		topic.PNorm = alloraMath.MustNewDecFromString("3")
+		topic.InitialRegret = alloraMath.MustNewDecFromString("0.0001")
+		topic.AlphaRegret = alloraMath.MustNewDecFromString("0.1")
+		topic.Epsilon = alloraMath.MustNewDecFromString("0.01")
+		topic.MeritSortitionAlpha = alloraMath.MustNewDecFromString("0.1")
+		topic.ActiveInfererQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.ActiveReputerQuantile = alloraMath.MustNewDecFromString("0.05")
+		topic.CNorm = alloraMath.MustNewDecFromString("0.75")
+	})
+
+	topicStore.Set(sdk.Uint64ToBigEndian(validTopic.Id), cdc.MustMarshal(&validTopic))
+	topicStore.Set(sdk.Uint64ToBigEndian(invalidTopic.Id), cdc.MustMarshal(&invalidTopic))
+
+	// The migration must abort on the nonconforming topic, naming it and the
+	// failed invariant so recovery is actionable.
+	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "topic 202")
+	s.Require().Contains(err.Error(), "epoch length")
+
+	// No partial state is committed: writes are batched after the scan, so an
+	// abort mid-scan leaves every topic in its pre-v15 form, including the valid
+	// sibling that was processed before the failure.
+	gotValid, err := keeper.GetTopic(s.Ctx(), validTopic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_UNSPECIFIED, gotValid.TopicType)
+
+	gotInvalid, err := keeper.GetTopic(s.Ctx(), invalidTopic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_UNSPECIFIED, gotInvalid.TopicType)
+}
+
 func (s *EmissionsV15MigrationTestSuite) TestMigrateParamsBackfillsLabelParams() {
 	storageService := s.EmissionsKeeper().GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.Ctx()))

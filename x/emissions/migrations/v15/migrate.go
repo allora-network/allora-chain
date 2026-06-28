@@ -169,9 +169,12 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 			continue
 		}
 
-		// Safety check: validate the topic after backfill
+		// Abort the migration if the topic is still invalid after backfill.
+		// Do not skip it: a half-migrated topic would leave state inconsistent
+		// for post-v15 code. Halting is deterministic across validators and
+		// recoverable; such failures will be caught by a pre-upgrade audit.
 		if err := topic.Validate(params); err != nil {
-			return errorsmod.Wrapf(err, "v15 migration: topic %d failed validation after backfill", topic.Id)
+			return errorsmod.Wrapf(err, "MIGRATION V15: topic %d failed validation after backfill", topic.Id)
 		}
 
 		updates = append(updates, kv{
@@ -258,11 +261,31 @@ func migrateInferenceBundles(
 	destStore := prefix.NewStore(store, destPrefix)
 	for _, u := range updates {
 		destStore.Set(u.key, u.value)
-		sourceStore.Delete(u.key)
 	}
+
+	// Retire the legacy source prefix: its bundles are re-written above and it
+	// gains no writer after this cut-over, so drain it whole to leave no stragglers.
+	drainPrefixStore(sourceStore)
 
 	ctx.Logger().Info("MIGRATION V15: network inference bundle migration completed", "store", logName, "entriesUpdated", len(updates))
 	return nil
+}
+
+// drainPrefixStore deletes every key under store, leaving the prefix provably
+// empty so no later path can read, export, prune, or re-migrate a stale entry.
+// Keys are collected before deleting because mutating a store mid-iteration is unsafe.
+func drainPrefixStore(store prefix.Store) {
+	iterator := store.Iterator(nil, nil)
+	defer iterator.Close()
+
+	staleKeys := make([][]byte, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		staleKeys = append(staleKeys, append([]byte(nil), iterator.Key()...))
+	}
+
+	for _, key := range staleKeys {
+		store.Delete(key)
+	}
 }
 
 // kvPair is a raw key/value pending write used by the v15 store migrations.
