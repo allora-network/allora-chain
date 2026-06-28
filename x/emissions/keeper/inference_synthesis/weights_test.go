@@ -397,6 +397,42 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 
 			},
 		},
+		{
+			name: "worker missing a regret entry is weighted as zero-regret, symmetric across inferers and forecasters",
+			args: synth.CalcWeightsGivenWorkersArgs{
+				Logger:      s.Ctx().Logger(),
+				Inferers:    []string{s.AddrsStr(0), s.AddrsStr(1)},
+				Forecasters: []string{s.AddrsStr(2), s.AddrsStr(3)},
+				InfererToRegret: map[string]*alloraMath.Dec{
+					s.AddrsStr(0): decPtr("1.0"),
+					// s.AddrsStr(1) intentionally missing
+				},
+				ForecasterToRegret: map[string]*alloraMath.Dec{
+					s.AddrsStr(2): decPtr("1.0"),
+					// s.AddrsStr(3) intentionally missing
+				},
+				EpsilonTopic:           alloraMath.MustNewDecFromString("0.01"),
+				PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+				RegretScalePlusEpsilon: alloraMath.MustNewDecFromString("1.0"),
+			},
+			expectedError: false,
+			checkResult: func(result synth.RegretInformedWeights) {
+				// No worker is dropped: every requested inferer and forecaster gets a weight.
+				s.Require().Len(result.Inferers, 2)
+				s.Require().Len(result.Forecasters, 2)
+
+				missingInferer := result.Inferers[s.AddrsStr(1)]
+				missingForecaster := result.Forecasters[s.AddrsStr(3)]
+
+				// A missing regret is treated as zero, yielding a real positive weight.
+				s.Require().True(missingInferer.Gt(alloraMath.ZeroDec()))
+				s.Require().True(missingForecaster.Gt(alloraMath.ZeroDec()))
+
+				// Symmetry: a missing inferer and a missing forecaster get identical weights.
+				s.Require().True(missingInferer.Equal(missingForecaster))
+			},
+		},
 		{ //nolint:exhaustruct
 			name: "empty workers should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
