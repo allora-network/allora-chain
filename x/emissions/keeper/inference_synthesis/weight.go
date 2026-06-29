@@ -366,8 +366,13 @@ func calcWeightedInference(args calcWeightedInferenceArgs) (emissionstypes.Infer
 		}
 	}
 
+	// Defensive: callers build the inferer list from the keyset of
+	// workerToInference and derive the regret/weight maps from it, so any listed
+	// worker is used here (a zero weight still counts). Reaching this means those
+	// maps disagree with the list — an internal invariant break — so fail loud
+	// instead of emitting a fabricated zero inference into a consensus path.
 	if !usedAny {
-		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "calcWeightedInference: no usable inferences/weights")
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "calcWeightedInference: inferer list inconsistent with weight/regret maps")
 	}
 
 	// Normalize
