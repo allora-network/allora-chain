@@ -1400,6 +1400,58 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		"whitelist must be canonicalized on UpdateTopic once the WSW has closed")
 }
 
+// TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBlock pins the boundary that
+// keeps the guard aligned with worker-nonce closing. The submission window for a
+// nonce at block B with window W spans [B, B+W] inclusive, and the scheduled
+// close for that nonce fires in EndBlock at exactly B+W. At that close,
+// CompactRegistryAndRemapInferences reads the live topic.LabelDefaultValue and
+// whitelist. If UpdateTopic accepted a guarded label-field change at B+W, the
+// close in the same block would compact already-submitted inferences against the
+// changed config. So the guard must still reject at B+W (the last in-window
+// block), not only at heights well inside the window. The sibling
+// TestUpdateTopicWhitelistAllowedAfterWSWClosed asserts the complementary B+W+1
+// case, where the update is allowed and the close can no longer run. Here B=5,
+// W=10, so B+W=15.
+//
+//nolint:exhaustruct
+func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBlock() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	sender := s.AddrsStr(0)
+	s.WithBlockHeight(10)
+	topicId := s.createTopicForWSWTests(sender)
+	require.NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	require.NoError(s.NonceKeeper().AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: 5}))
+	// 5 + 10 = 15: the last block still inside the window and the exact block the
+	// scheduled worker-nonce close fires.
+	s.WithBlockHeight(15)
+	ctx = s.Ctx()
+
+	msg := &types.UpdateTopicRequest{
+		Sender:                 sender,
+		TopicId:                topicId,
+		Metadata:               "wsw test",
+		LossMethod:             "mse",
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                  alloraMath.MustNewDecFromString("3.0"),
+		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
+		MaxLabelsPerSubmission: 4,
+		LabelWhitelist:         []string{"a", "b", "c"},
+		LabelDefaultValue:      alloraMath.OneDec(), // changed -> must be rejected
+	}
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,
+		"UpdateTopic must reject guarded label fields at the exact window-close block, not only well inside the window")
+	require.ErrorContains(err, "label_default_value")
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	require.NoError(err)
+	require.True(got.LabelDefaultValue.Equal(alloraMath.ZeroDec()),
+		"LabelDefaultValue must not have changed at the final in-window block")
+}
+
 // TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmission documents that
 // UpdateTopic treats max_labels_per_submission as the submitted value, not as
 // "unchanged" or "use module default". Values outside the allowed cap range
