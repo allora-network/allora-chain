@@ -47,7 +47,7 @@ func (rvb *ReputerValueBundles) Validate() error {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer_value_bundle is nil at index %d", i)
 		}
 		if rvb.ReputerValueBundles[i].ValueBundle == nil {
-			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle is nil at index %d", i)
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value_bundle is nil at index %d", i)
 		}
 		lbs[i] = rvb.ReputerValueBundles[i].ValueBundle
 	}
