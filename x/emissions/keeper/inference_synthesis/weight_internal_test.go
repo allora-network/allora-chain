@@ -2,7 +2,6 @@
 package inferencesynthesis
 
 import (
-	"errors"
 	"testing"
 
 	"cosmossdk.io/log"
@@ -112,6 +111,6 @@ func TestCalcWeightedInference_InfererMissingFromMaps_ReturnsErrLogic(t *testing
 	})
 
 	require.Error(t, err)
-	require.True(t, errors.Is(err, sdkerrors.ErrLogic))
+	require.ErrorIs(t, err, sdkerrors.ErrLogic)
 	require.Nil(t, out)
 }
