@@ -194,14 +194,11 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 	infererWeights := make(map[Worker]Weight)
 	forecasterWeights := make(map[Worker]Weight)
 
-	// Calculate the weights from the normalized regrets
+	// Calculate the weights from the normalized regrets. A worker absent from the
+	// map is weighted as zero-regret (zero-value Dec) rather than dropped, keeping
+	// the inferer and forecaster loops symmetric and preserving sumWeights/rewards.
 	for _, worker := range args.Inferers {
-		regret, ok := normalizedInfererRegrets[worker]
-		if !ok {
-			continue
-		}
-
-		infererWeight, err := CalcWeightFromNormalizedRegret(regret, maxRegret, args.PNorm, args.CNorm)
+		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, args.PNorm, args.CNorm)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 		}
@@ -211,6 +208,8 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 
 	if len(forecasterRegrets) > 0 {
 		for _, worker := range args.Forecasters {
+			// Symmetric with the inferer loop above: a worker absent from
+			// normalizedForecasterRegrets is weighted as zero-regret rather than dropped.
 			forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, args.PNorm, args.CNorm)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
