@@ -74,7 +74,7 @@ Start the node with an in-place-testnet, swapping the state of the node for the 
 allorad in-place-testnet devnet allovaloper<comet address> --home $HOME/.allorad --minimum-gas-prices 0uallo --skip-confirmation
 ```
 
-For repeatable local upgrade rehearsals from remote snapshots, use `scripts/restore_snapshot_from_url.sh` and the runbook in `test/integration/v0_16_0_upgrade_rehearsal.md`.
+For repeatable local upgrade rehearsals from remote snapshots, use `scripts/restore_snapshot_from_url.sh` and the runbook in `test/integration/v0_17_0_upgrade_rehearsal.md`.
 
 ## Run a node with script
 `scripts/l1_node.sh`, you will see the log in the output of the script.
@@ -277,8 +277,8 @@ INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 To run upgrade tests, execute the following commands:
 
 ```bash
-DO_UPGRADE="true" UPGRADE_VERSION="v0.16.0" bash test/local_testnet_l1.sh
-UPGRADE=TRUE UPGRADE_TARGET="v0.16.0" go test -timeout 10m ./test/integration/ -v
+DO_UPGRADE="true" UPGRADE_VERSION="v0.17.0" bash test/local_testnet_l1.sh
+UPGRADE=TRUE UPGRADE_TARGET="v0.17.0" go test -timeout 10m ./test/integration/ -v
 ```
 
 ## Run Stress Tests

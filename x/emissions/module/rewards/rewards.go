@@ -354,7 +354,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer loss bundle at block %d", args.BlockHeight)
 	}
-	if len(bundles.ReputerValueBundles) == 0 {
+	if len(bundles) == 0 {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "empty reputer loss bundles")
 	}
 

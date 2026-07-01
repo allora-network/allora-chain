@@ -621,7 +621,11 @@ func testReputerValueBundleMapDeletion(
 	bundle := getBundle()
 	reputerValueBundles := emissionstypes.ReputerValueBundles{
 		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
-			{ValueBundle: &bundle},
+			{
+				ValueBundle: &bundle,
+				Pubkey:      "something",
+				Signature:   []byte("signature"),
+			},
 		},
 	}
 	bz, err := proto.Marshal(&reputerValueBundles)

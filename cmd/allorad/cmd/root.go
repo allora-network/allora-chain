@@ -56,7 +56,7 @@ func NewRootCmd() *cobra.Command {
 		panic(err)
 	}
 
-	rootCmd := &cobra.Command{ // nolint: exhaustruct // dependency code don't want to change the way it works
+	rootCmd := &cobra.Command{ //nolint:exhaustruct // dependency code don't want to change the way it works
 		Use:   "allorad",
 		Short: "allorad - the Allora chain",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
@@ -131,7 +131,7 @@ func ProvideClientContext(
 	txConfig client.TxConfig,
 	legacyAmino *codec.LegacyAmino,
 ) client.Context {
-	clientCtx := client.Context{}. // nolint: exhaustruct // dependency code don't want to change the way it works
+	clientCtx := client.Context{}. //nolint:exhaustruct // dependency code don't want to change the way it works
 					WithCodec(appCodec).
 					WithInterfaceRegistry(interfaceRegistry).
 					WithTxConfig(txConfig).

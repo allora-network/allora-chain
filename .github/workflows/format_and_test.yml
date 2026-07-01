@@ -32,7 +32,7 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
 
     steps:
     - uses: actions/checkout@v4
@@ -72,5 +72,5 @@ jobs:
       run: bash ./test/local_testnet_l1.sh
 
     - name: IntegrationTest
-      run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 15m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/test/integration -v
+      run: INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" /usr/bin/go test -timeout 30m -run '^(TestExternalTestSuite|TestExternalMultiTestSuite)$' github.com/allora-network/allora-chain/test/integration -v
 

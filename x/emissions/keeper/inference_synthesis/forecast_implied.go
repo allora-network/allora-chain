@@ -3,6 +3,8 @@ package inferencesynthesis
 import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -10,7 +12,8 @@ import (
 // CalcForecastImpliedInferencesArgs holds inputs for CalcForecastImpliedInferences.
 type CalcForecastImpliedInferencesArgs struct {
 	Logger                 log.Logger
-	TopicId                uint64
+	TopicId                emissionstypes.TopicId
+	TopicArity             emissionstypes.TopicOutputArity
 	AllInferersAreNew      bool
 	Inferers               []Inferer
 	InfererToInference     map[Inferer]*emissionstypes.Inference
@@ -23,6 +26,11 @@ type CalcForecastImpliedInferencesArgs struct {
 	PNorm                  alloraMath.Dec
 	CNorm                  alloraMath.Dec
 	RegretScalePlusEpsilon alloraMath.Dec
+	LabelRegistry          *emissionstypes.EpochLabelRegistry
+	NumLabels              int
+	// LabelDefaultValue is topic.LabelDefaultValue, used to pad unset trailing
+	// slots when converting stored inferences (mirrors keeper semantics).
+	LabelDefaultValue alloraMath.Dec
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
@@ -31,177 +39,214 @@ type CalcForecastImpliedInferencesArgs struct {
 // Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
 // Inference without forecast => only weight in calculation of I_ik set to 0
 // A value of 0 => no inference corresponded to any of the forecasts from a forecaster
-func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
-	forecasterToForecastImpliedInference map[Forecaster]*emissionstypes.Inference,
-	infererToRegretOut map[Inferer]*Regret,
-	forecasterToRegretOut map[Forecaster]*Regret,
-	err error,
-) {
+func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (map[Forecaster]*emissionstypes.Inference, error) {
 	args.Logger.Debug("Calculating forecast-implied inferences", "topicId", args.TopicId)
 
 	// If NetworkCombinedLoss is nil, return empty maps immediately
 	if args.NetworkCombinedLoss == nil {
 		args.Logger.Debug("NetworkCombinedLoss is nil, returning empty forecast-implied inferences", "topicId", args.TopicId)
-		return nil, args.InfererToRegret, args.ForecasterToRegret, nil
+		return map[Forecaster]*emissionstypes.Inference{}, nil
 	}
-	// "k" here is the forecaster's address
-	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
-	forecasterToForecastImpliedInference = make(map[Forecaster]*emissionstypes.Inference, len(args.Forecasters))
-	infererToRegretOut = args.InfererToRegret
-	forecasterToRegretOut = args.ForecasterToRegret
+
+	if args.LabelRegistry == nil {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "topic id %d: LabelRegistry is nil", args.TopicId)
+	}
+	labels := args.LabelRegistry.GetLabels()
+	regLen := args.NumLabels
+	if regLen == 0 {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "topic id %d has no labels", args.TopicId)
+	}
+
+	forecasterToForecastImpliedInference := make(map[Forecaster]*emissionstypes.Inference, len(args.Forecasters))
+
 	for _, forecaster := range args.Forecasters {
-		_, ok := args.ForecasterToForecast[forecaster]
-		if ok && len(args.ForecasterToForecast[forecaster].ForecastElements) > 0 {
-			// Filter away all forecast elements that do not have an associated inference (match by worker)
-			// Will effectively set weight in formulas for forecast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
-			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
-			forecastElementsByInferer := make(map[Worker]*emissionstypes.ForecastElement, 0)
-			sortedInferersInForecast := make([]Worker, 0)
-			for _, el := range args.ForecasterToForecast[forecaster].ForecastElements {
-				if _, ok := args.InfererToInference[el.Inferer]; ok {
-					// Check that there is an inference for the worker forecasted before including the forecast element
-					// otherwise the max value below will be incorrect.
-					forecastElementsByInferer[el.Inferer] = el
-					sortedInferersInForecast = append(sortedInferersInForecast, el.Inferer)
-				}
-			}
+		fc, ok := args.ForecasterToForecast[forecaster]
+		if !ok || len(fc.ForecastElements) == 0 {
+			continue
+		}
 
-			weightSum := alloraMath.ZeroDec()                 // denominator in calculation of forecast-implied inferences
-			weightInferenceDotProduct := alloraMath.ZeroDec() // numerator in calculation of forecast-implied inferences
+		forecastElementsByInferer := make(map[Worker]*emissionstypes.ForecastElement)
+		// Built in forecast-element iteration order, which is deterministic from the
+		// stored forecast proto. Median/weighted accumulation below is order-independent;
+		// no explicit sort is required for determinism.
+		inferersInForecast := make([]Worker, 0)
 
-			blockHeight := int64(0)
-
-			// Calculate the forecast-implied inferences I_ik
-			if args.AllInferersAreNew {
-				// If all inferers are new, calculate the median of the inferences
-				// This means that forecasters won't be able to influence the network inference when all inferers are new
-				// However, this seeds losses for forecasters for future rounds
-				inferenceValues := make([]alloraMath.Dec, 0, len(sortedInferersInForecast))
-				for _, inferer := range sortedInferersInForecast {
-					inference, ok := args.InfererToInference[inferer]
-					if ok {
-						inferenceValues = append(inferenceValues, inference.Value)
-						if blockHeight == 0 {
-							blockHeight = inference.BlockHeight
-						}
-					}
-				}
-
-				medianValue, err := alloraMath.Median(inferenceValues)
-				if err != nil {
-					return nil, nil, nil, errorsmod.Wrapf(err, "error calculating median of inference values")
-				}
-
-				forecastImpliedInference := emissionstypes.Inference{
-					TopicId:     args.TopicId,
-					BlockHeight: blockHeight,
-					Inferer:     forecaster,
-					Value:       medianValue,
-					ExtraData:   nil,
-					Proof:       "",
-				}
-				forecasterToForecastImpliedInference[forecaster] = &forecastImpliedInference
-			} else {
-				// If not all inferers are new, calculate forecast-implied inferences using the previous inferer regrets and previous network loss
-
-				// Approximate forecast regrets of the network inference
-				// Map inferer -> regret
-				// this is R_ik in the paper
-				infererRegretsForThisForecaster := make(map[Inferer]*Regret, len(forecastElementsByInferer))
-				// Forecast-regret-informed weights dot product with inferences to yield forecast-implied inferences
-				// Map inferer -> weight
-				// this is w_ik in the paper
-				infererWeightsForThisForecaster := make(map[Inferer]Weight, len(forecastElementsByInferer))
-
-				// Define variable to store maximum regret for forecast k
-				// infererInForecast corresponds to
-				// `j` the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the paper
-				for _, infererInForecast := range sortedInferersInForecast {
-					// Calculate the approximate forecast regret of the network inference
-					// this is R_ijk in the paper
-					forecastRegretOfNetworkInference, err :=
-						(*args.NetworkCombinedLoss).Sub(forecastElementsByInferer[infererInForecast].Value)
-					if err != nil {
-						return nil, nil, nil, errorsmod.Wrapf(err,
-							"error calculating forecast-implied inferences: error calculating network loss per value")
-					}
-					infererRegretsForThisForecaster[infererInForecast] = &forecastRegretOfNetworkInference
-				}
-
-				if len(sortedInferersInForecast) > 1 {
-					infererToRegretOut = infererRegretsForThisForecaster
-					forecasterToRegretOut = make(map[Forecaster]*alloraMath.Dec, 0)
-
-					weights, err := CalcWeightsGivenWorkers(
-						CalcWeightsGivenWorkersArgs{
-							Logger:                 args.Logger,
-							Inferers:               args.Inferers,
-							Forecasters:            args.Forecasters,
-							InfererToRegret:        infererToRegretOut,
-							ForecasterToRegret:     forecasterToRegretOut,
-							EpsilonTopic:           args.EpsilonTopic,
-							PNorm:                  args.PNorm,
-							CNorm:                  args.CNorm,
-							RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
-						},
-					)
-					if err != nil {
-						return nil, nil, nil, errorsmod.Wrapf(err,
-							"error calculating forecast-implied inferences:error calculating normalized forecasted regrets")
-					}
-					infererWeightsForThisForecaster = weights.Inferers
-				} else if len(sortedInferersInForecast) == 1 {
-					weights := make(map[Worker]Weight, 1)
-					weights[sortedInferersInForecast[0]] = alloraMath.OneDec()
-					infererWeightsForThisForecaster = weights
-				}
-
-				// Calculate the forecast-implied inferences I_ik
-				for _, infererInForecast := range sortedInferersInForecast {
-					// this is w_ijk in the paper
-					weightIJK := infererWeightsForThisForecaster[infererInForecast]
-
-					inference, ok := args.InfererToInference[infererInForecast]
-					if ok && blockHeight == 0 {
-						blockHeight = inference.BlockHeight
-					}
-					if ok && !(weightIJK.Equal(alloraMath.ZeroDec())) {
-						thisDotProduct, err := weightIJK.Mul(args.InfererToInference[infererInForecast].Value)
-						if err != nil {
-							return nil, nil, nil, errorsmod.Wrapf(err,
-								"error calculating forecast-implied inferences: error calculating dot product")
-						}
-						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(thisDotProduct)
-						if err != nil {
-							return nil, nil, nil, errorsmod.Wrapf(err,
-								"error calculating forecast-implied inferences: error adding dot product")
-						}
-						weightSum, err = weightSum.Add(weightIJK)
-						if err != nil {
-							return nil, nil, nil, errorsmod.Wrapf(err,
-								"error calculating forecast-implied inferences: error adding weight")
-						}
-					}
-				}
-
-				if !weightSum.Equal(alloraMath.ZeroDec()) {
-					forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
-					if err != nil {
-						return nil, nil, nil, errorsmod.Wrapf(err, "error calculating forecast value")
-					}
-					forecastImpliedInference := emissionstypes.Inference{
-						TopicId:     args.TopicId,
-						BlockHeight: blockHeight,
-						Inferer:     forecaster,
-						Value:       forecastValue,
-						ExtraData:   nil,
-						Proof:       "",
-					}
-					forecasterToForecastImpliedInference[forecaster] = &forecastImpliedInference
-				}
+		for _, el := range fc.ForecastElements {
+			if _, ok := args.InfererToInference[el.Inferer]; ok {
+				forecastElementsByInferer[el.Inferer] = el
+				inferersInForecast = append(inferersInForecast, el.Inferer)
 			}
 		}
+
+		blockHeight := int64(0)
+
+		if args.AllInferersAreNew {
+			// ---------- MEDIAN ----------
+			vecs := make([]emissionstypes.InferenceValues, 0, len(inferersInForecast))
+
+			for _, inferer := range inferersInForecast {
+				inf := args.InfererToInference[inferer]
+
+				if blockHeight == 0 {
+					blockHeight = inf.BlockHeight
+				}
+
+				iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, args.LabelDefaultValue, inf)
+				if err != nil {
+					return nil, err
+				}
+
+				vecs = append(vecs, iv)
+			}
+
+			var result emissionstypes.InferenceValues
+
+			if args.TopicArity == emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE {
+
+				values := make([]alloraMath.Dec, 0, len(vecs))
+				for _, v := range vecs {
+					values = append(values, v[0])
+				}
+
+				m, err := alloraMath.Median(values)
+				if err != nil {
+					return nil, err
+				}
+
+				result = emissionstypes.InferenceValues{m}
+
+			} else if args.TopicArity == emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+
+				out := make(alloraMath.DecArray, regLen)
+
+				for i := 0; i < regLen; i++ {
+					col := make([]alloraMath.Dec, 0, len(vecs))
+					for _, v := range vecs {
+						col = append(col, v[i])
+					}
+
+					m, err := alloraMath.Median(col)
+					if err != nil {
+						return nil, err
+					}
+
+					out[i] = m
+				}
+
+				result = out
+			} else {
+				return nil, errorsmod.Wrapf(sdkerrors.ErrLogic, "topic id %d has invalid arity", args.TopicId)
+			}
+
+			//nolint:exhaustruct
+			forecastImpliedInference := emissionstypes.Inference{
+				TopicId:     args.TopicId,
+				BlockHeight: blockHeight,
+				Inferer:     forecaster,
+				Values:      []alloraMath.Dec(result),
+			}
+
+			forecasterToForecastImpliedInference[forecaster] = &forecastImpliedInference
+			continue
+		}
+
+		// ---------- WEIGHTED ----------
+		if len(inferersInForecast) == 0 {
+			continue
+		}
+
+		infererRegretsForThisForecaster := make(map[Inferer]*Regret, len(forecastElementsByInferer))
+		for _, infererInForecast := range inferersInForecast {
+			r, err := (*args.NetworkCombinedLoss).Sub(forecastElementsByInferer[infererInForecast].Value)
+			if err != nil {
+				return nil, err
+			}
+
+			infererRegretsForThisForecaster[infererInForecast] = &r
+		}
+
+		// The general weighting path also covers the single-inferer case: a lone
+		// inferer is trivially the maximum-regret worker and receives weight 1, and a
+		// one-element forecast-implied inference normalizes to that inferer's value.
+		weights, err := CalcWeightsGivenWorkers(
+			CalcWeightsGivenWorkersArgs{
+				Logger:                 args.Logger,
+				Inferers:               args.Inferers,
+				Forecasters:            args.Forecasters,
+				InfererToRegret:        infererRegretsForThisForecaster,
+				ForecasterToRegret:     make(map[Forecaster]*Regret),
+				EpsilonTopic:           args.EpsilonTopic,
+				PNorm:                  args.PNorm,
+				CNorm:                  args.CNorm,
+				RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		infererWeightsForThisForecaster := weights.Inferers
+
+		sumWeights := alloraMath.ZeroDec()
+		running := make(alloraMath.DecArray, regLen)
+
+		for _, inferer := range inferersInForecast {
+			w := infererWeightsForThisForecaster[inferer]
+			if w.Equal(alloraMath.ZeroDec()) {
+				continue
+			}
+
+			inf := args.InfererToInference[inferer]
+
+			if blockHeight == 0 {
+				blockHeight = inf.BlockHeight
+			}
+
+			iv, err := emissionstypes.ConvertInferenceValuesFromProto(args.TopicArity, labels, args.LabelDefaultValue, inf)
+			if err != nil {
+				return nil, err
+			}
+
+			for i := range iv {
+				v, err := w.Mul(iv[i])
+				if err != nil {
+					return nil, err
+				}
+
+				running[i], err = running[i].Add(v)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			sumWeights, err = sumWeights.Add(w)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if sumWeights.Equal(alloraMath.ZeroDec()) {
+			continue
+		}
+
+		for i := range running {
+			var err error
+			running[i], err = running[i].Quo(sumWeights)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		//nolint:exhaustruct
+		forecastImpliedInference := emissionstypes.Inference{
+			TopicId:     args.TopicId,
+			BlockHeight: blockHeight,
+			Inferer:     forecaster,
+			Values:      []alloraMath.Dec(running),
+		}
+
+		forecasterToForecastImpliedInference[forecaster] = &forecastImpliedInference
 	}
 
-	return forecasterToForecastImpliedInference, infererToRegretOut, forecasterToRegretOut, nil
+	return forecasterToForecastImpliedInference, nil
 }

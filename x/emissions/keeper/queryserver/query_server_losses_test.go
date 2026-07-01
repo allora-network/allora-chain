@@ -116,7 +116,7 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
 	//nolint:exhaustruct
-	valueBundle := types.ValueBundle{
+	valueBundle := &types.ValueBundle{
 		TopicId:             topicId,
 		Reputer:             s.AddrsStr(0),
 		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
@@ -131,23 +131,14 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 			},
 		},
 	}
-	signature := s.SignValueBundle(&valueBundle, s.PrivKeys(0))
-	reputerLossBundles := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: &valueBundle,
-				Signature:   signature,
-				Pubkey:      s.PubKeyHexStr(0),
-			},
-		},
-	}
+	reputerLossBundles := types.LossBundles{valueBundle}
 	req := &types.GetReputerLossBundlesAtBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: block,
 	}
 	response, err := s.EmissionsQueryServer().GetReputerLossBundlesAtBlock(ctx, req)
 	require.NoError(err)
-	require.Empty(response.LossBundles.ReputerValueBundles)
+	require.Empty(response.LossBundles)
 
 	// Test inserting data
 	err = s.ReputerLossKeeper().InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
@@ -157,9 +148,9 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require.NotEmpty(response)
 	require.NoError(err)
 
-	result := response.LossBundles
+	result := response.GetLossBundles()
 	require.NotEmpty(result)
-	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+	require.Equal(reputerLossBundles, types.LossBundles(result), "Retrieved data should match inserted data")
 }
 
 func (s *QueryServerTestSuite) TestGetDeleteDelegateStake() {

@@ -54,7 +54,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -113,7 +113,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -172,7 +172,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -230,13 +230,21 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 
 	types.EmitNewTopicUpdatedEvent(ctx, topic)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
-	require.Equal(t, "emissions.v9.EventTopicUpdated", events[0].Type)
+	require.Equal(t, "emissions.v10.EventTopicUpdated", events[0].Type)
 
 	attributes := events[0].Attributes
 	val, exists := events[0].GetAttribute(AttributeKeyTopicId)
@@ -283,7 +291,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -342,7 +350,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -401,7 +409,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v10.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 6)
@@ -476,7 +484,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkLossSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -488,27 +496,95 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)
-	blockHeight := int64(10)
-	networkInferences := types.ValueBundle{
-		TopicId:                topicId,
-		ReputerRequestNonce:    &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
-		Reputer:                "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
-		ExtraData:              nil,
-		CombinedValue:          alloraMath.MustNewDecFromString("10"),
-		NaiveValue:             alloraMath.MustNewDecFromString("20"),
-		InfererValues:          []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+	nonce := int64(10)
+
+	dec := alloraMath.MustNewDecFromString
+
+	networkInferences := types.NetworkInferenceBundle{
+		TopicId: topicId,
+		Nonce:   nonce,
+		CombinedValue: []*types.LabeledValue{
+			{LabelId: 0, LabelName: "y", Value: dec("10")},
+		},
+		NaiveValue: []*types.LabeledValue{
+			{LabelId: 0, LabelName: "y", Value: dec("20")},
+		},
+		InfererValues: []*types.WorkerInference{
+			{
+				Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		ForecasterValues: []*types.WorkerInference{
+			{
+				Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				Worker: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				Values: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneOutInfererValues: []*types.OneOutInfererValue{
+			{
+				WithheldInferer: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				WithheldInferer: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneOutForecasterValues: []*types.OneOutForecasterValue{
+			{
+				WithheldForecaster: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				WithheldForecaster: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneInForecasterValues: []*types.OneInForecasterValue{
 			{
 				Forecaster: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
-				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-					{
-						Worker: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
-						Value:  alloraMath.MustNewDecFromString("0.0112"),
-					},
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+			{
+				Forecaster: "allo1xqxnuvvegql2n4xtx52n3fay4t5gkv3wr8etca",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
+				},
+			},
+		},
+		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValue{
+			{
+				Forecaster:      "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				WithheldInferer: "allo1e7l2cyn29c8jmama9hs0n3weq4tg6pqdzsl249",
+				CombinedInference: []*types.LabeledValue{
+					{LabelId: 0, LabelName: "y", Value: dec("0.0112")},
 				},
 			},
 		},
@@ -520,17 +596,186 @@ func TestEmitNewNetworkInferencesEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkInferences", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkInferenceBundle", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 14)
 
-	val, exists := event.GetAttribute(AttributeKeyValueBundle)
-	require.True(t, exists)
-	assertEventValueBundle(t, val.GetValue(), networkInferences)
+	assertEventNetworkInferenceBundle(t, event, networkInferences, false)
 }
 
-// nolint:exhaustruct
+func assertEventNetworkInferenceBundle(
+	t *testing.T,
+	event sdk.Event,
+	bundle types.NetworkInferenceBundle,
+	outlierResistant bool,
+) {
+	t.Helper()
+
+	attr := func(key string) string {
+		v, ok := event.GetAttribute(key)
+		require.True(t, ok, "missing attribute %s", key)
+		s := v.GetValue()
+		if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+			s = s[1 : len(s)-1]
+		}
+		return s
+	}
+
+	gotTopicID, err := strconv.ParseUint(attr("topic_id"), 10, 64)
+	require.NoError(t, err, "topic_id parse")
+	require.Equal(t, bundle.GetTopicId(), gotTopicID)
+
+	gotNonce, err := strconv.ParseInt(attr("nonce"), 10, 64)
+	require.NoError(t, err, "nonce parse")
+	require.Equal(t, bundle.GetNonce(), gotNonce)
+
+	gotOutlier, err := strconv.ParseBool(attr("outlier_resistant"))
+	require.NoError(t, err, "outlier_resistant parse")
+	require.Equal(t, outlierResistant, gotOutlier)
+
+	unmarshal := func(key string, dst any) {
+		t.Helper()
+		s := attr(key)
+		require.NoError(t, json.Unmarshal([]byte(s), dst), "unmarshal %s: %q", key, s)
+	}
+
+	decArrayFromLV := func(vals []*types.LabeledValue) alloraMath.DecArray {
+		out := make(alloraMath.DecArray, len(vals))
+		for i := range vals {
+			out[i] = vals[i].Value
+		}
+		return out
+	}
+
+	decMatrixFromWI := func(ws []*types.WorkerInference) alloraMath.DecMatrix {
+		out := make(alloraMath.DecMatrix, len(ws))
+		for i := range ws {
+			out[i] = decArrayFromLV(ws[i].GetValues())
+		}
+		return out
+	}
+
+	eqDec := func(a, b alloraMath.Dec) bool {
+		if a.IsNaN() && b.IsNaN() {
+			return true
+		}
+		return a.Equal(b)
+	}
+	requireDecArrayEq := func(msg string, got, want alloraMath.DecArray) {
+		t.Helper()
+		require.Equal(t, len(want), len(got), "%s: len", msg)
+		for i := range want {
+			require.Truef(t, eqDec(got[i], want[i]), "%s[%d] got=%v want=%v", msg, i, got[i], want[i])
+		}
+	}
+	requireDecMatrixEq := func(msg string, got, want alloraMath.DecMatrix) {
+		t.Helper()
+		require.Equal(t, len(want), len(got), "%s: rows", msg)
+		for r := range want {
+			requireDecArrayEq(fmt.Sprintf("%s[%d]", msg, r), got[r], want[r])
+		}
+	}
+
+	var gotLabelNames []string
+	unmarshal("label_names", &gotLabelNames)
+
+	wantLabelNames := make([]string, len(bundle.GetCombinedValue()))
+	for i, lv := range bundle.GetCombinedValue() {
+		wantLabelNames[i] = lv.GetLabelName()
+	}
+	require.Equal(t, wantLabelNames, gotLabelNames)
+
+	var gotCombined alloraMath.DecArray
+	unmarshal("combined_value", &gotCombined)
+	requireDecArrayEq("combined_value", gotCombined, decArrayFromLV(bundle.GetCombinedValue()))
+
+	var gotNaive alloraMath.DecArray
+	unmarshal("naive_value", &gotNaive)
+	requireDecArrayEq("naive_value", gotNaive, decArrayFromLV(bundle.GetNaiveValue()))
+
+	var gotInfererAddrs []string
+	unmarshal("inferer_addresses", &gotInfererAddrs)
+
+	var gotInfererVals alloraMath.DecMatrix
+	unmarshal("inferer_values", &gotInfererVals)
+
+	wantInfererAddrs := make([]string, len(bundle.GetInfererValues()))
+	for i, w := range bundle.GetInfererValues() {
+		wantInfererAddrs[i] = w.GetWorker()
+	}
+	require.Equal(t, wantInfererAddrs, gotInfererAddrs)
+	requireDecMatrixEq("inferer_values", gotInfererVals, decMatrixFromWI(bundle.GetInfererValues()))
+
+	var gotForecasterAddrs []string
+	unmarshal("forecaster_addresses", &gotForecasterAddrs)
+
+	var gotForecasterVals alloraMath.DecMatrix
+	unmarshal("forecaster_values", &gotForecasterVals)
+
+	wantForecasterAddrs := make([]string, len(bundle.GetForecasterValues()))
+	for i, w := range bundle.GetForecasterValues() {
+		wantForecasterAddrs[i] = w.GetWorker()
+	}
+	require.Equal(t, wantForecasterAddrs, gotForecasterAddrs)
+	requireDecMatrixEq("forecaster_values", gotForecasterVals, decMatrixFromWI(bundle.GetForecasterValues()))
+
+	var gotOOI alloraMath.DecMatrix
+	unmarshal("one_out_inferer_values", &gotOOI)
+	wantOOI := make(alloraMath.DecMatrix, len(bundle.GetOneOutInfererValues()))
+	for i, v := range bundle.GetOneOutInfererValues() {
+		wantOOI[i] = decArrayFromLV(v.GetCombinedInference())
+	}
+	requireDecMatrixEq("one_out_inferer_values", gotOOI, wantOOI)
+
+	var gotOOF alloraMath.DecMatrix
+	unmarshal("one_out_forecaster_values", &gotOOF)
+	wantOOF := make(alloraMath.DecMatrix, len(bundle.GetOneOutForecasterValues()))
+	for i, v := range bundle.GetOneOutForecasterValues() {
+		wantOOF[i] = decArrayFromLV(v.GetCombinedInference())
+	}
+	requireDecMatrixEq("one_out_forecaster_values", gotOOF, wantOOF)
+
+	var gotOIF alloraMath.DecMatrix
+	unmarshal("one_in_forecaster_values", &gotOIF)
+	wantOIF := make(alloraMath.DecMatrix, len(bundle.GetOneInForecasterValues()))
+	for i, v := range bundle.GetOneInForecasterValues() {
+		wantOIF[i] = decArrayFromLV(v.GetCombinedInference())
+	}
+	requireDecMatrixEq("one_in_forecaster_values", gotOIF, wantOIF)
+
+	var gotOOIF []alloraMath.DecMatrix
+	unmarshal("one_out_inferer_forecaster_values", &gotOOIF)
+
+	order := make([]string, 0)
+	rowsByForecaster := make(map[string][]alloraMath.DecArray)
+
+	for _, x := range bundle.GetOneOutInfererForecasterValues() {
+		if x == nil {
+			continue
+		}
+		fc := x.GetForecaster()
+		if _, ok := rowsByForecaster[fc]; !ok {
+			order = append(order, fc)
+		}
+		rowsByForecaster[fc] = append(rowsByForecaster[fc], decArrayFromLV(x.GetCombinedInference()))
+	}
+
+	wantOOIF := make([]alloraMath.DecMatrix, 0, len(order))
+	for _, fc := range order {
+		rows := rowsByForecaster[fc]
+		m := make(alloraMath.DecMatrix, len(rows))
+		copy(m, rows)
+		wantOOIF = append(wantOOIF, m)
+	}
+
+	require.Equal(t, len(wantOOIF), len(gotOOIF), "ooif group count")
+	for gi := range wantOOIF {
+		requireDecMatrixEq(fmt.Sprintf("ooif[%d]", gi), gotOOIF[gi], wantOOIF[gi])
+	}
+}
+
+//nolint:exhaustruct
 func TestValueBundleToEventValueBundleBase(t *testing.T) {
 	const maxInferers = 32
 
@@ -961,7 +1206,7 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventForecastTaskScoreSet", event.Type)
+	require.Equal(t, "emissions.v10.EventForecastTaskScoreSet", event.Type)
 
 	// Check that we have the expected number of attributes
 	require.Len(t, event.Attributes, 3)
@@ -997,9 +1242,9 @@ func TestNewLastCommitSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 3)
 
-	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[0].Type)
-	require.Equal(t, "emissions.v9.EventWorkerLastCommitSet", events[1].Type)
-	require.Equal(t, "emissions.v9.EventReputerLastCommitSet", events[2].Type)
+	require.Equal(t, "emissions.v10.EventWorkerLastCommitSet", events[0].Type)
+	require.Equal(t, "emissions.v10.EventWorkerLastCommitSet", events[1].Type)
+	require.Equal(t, "emissions.v10.EventReputerLastCommitSet", events[2].Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "block_height")
 	require.Contains(t, events[0].Attributes[1].Key, "nonce")
@@ -1036,7 +1281,7 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	require.Equal(t, "emissions.v9.EventTopicRewardsSet", events[0].Type)
+	require.Equal(t, "emissions.v10.EventTopicRewardsSet", events[0].Type)
 	require.Contains(t, events[0].Attributes[0].Key, "rewards")
 	require.Contains(t, events[0].Attributes[0].Value, `["0","10","20","30","40"]`)
 	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
@@ -1075,7 +1320,7 @@ func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 3)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventEMAScoresSet", event.Type)
+	require.Equal(t, "emissions.v10.EventEMAScoresSet", event.Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "actor_type")
 	require.Contains(t, events[0].Attributes[0].Value, "\"ACTOR_TYPE_INFERER_UNSPECIFIED\"")
@@ -1116,7 +1361,7 @@ func TestEmitNewListeningCoefficientsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventListeningCoefficientsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventListeningCoefficientsSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -1183,7 +1428,7 @@ func TestEmitNewInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1240,7 +1485,7 @@ func TestEmitNewForecasterNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventForecasterNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventForecasterNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1296,7 +1541,7 @@ func TestEmitNewNaiveInfererNetworkRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNaiveInfererNetworkRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNaiveInfererNetworkRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1351,7 +1596,7 @@ func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventTopicInitialRegretSet", event.Type)
+	require.Equal(t, "emissions.v10.EventTopicInitialRegretSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1377,7 +1622,7 @@ func TestEmitPreviousPercentageRewardToStakedReputersSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventPreviousPercentageRewardToStakedReputersSet", event.Type)
+	require.Equal(t, "emissions.v10.EventPreviousPercentageRewardToStakedReputersSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyBlockHeight)
 	require.True(t, exists)
@@ -1401,7 +1646,7 @@ func TestEmitNewInfererWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventInfererWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventInfererWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1457,7 +1702,7 @@ func TestEmitNewForecasterWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventForecasterWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventForecasterWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1513,7 +1758,7 @@ func TestEmitNewNetworkInferenceInfererWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkInferenceInfererWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkInferenceInfererWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1545,7 +1790,7 @@ func TestEmitNewNetworkInferenceForecasterWeightsSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventNetworkInferenceForecasterWeightsSet", event.Type)
+	require.Equal(t, "emissions.v10.EventNetworkInferenceForecasterWeightsSet", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)
@@ -1577,7 +1822,7 @@ func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v9.EventTopicFeeRevenueDripped", event.Type)
+	require.Equal(t, "emissions.v10.EventTopicFeeRevenueDripped", event.Type)
 
 	val, exists := event.GetAttribute(AttributeKeyTopicId)
 	require.True(t, exists)

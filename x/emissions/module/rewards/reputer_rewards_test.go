@@ -576,7 +576,7 @@ func (s *RewardsTestSuite) TestGetReputerTaskEntropyFromCsv() {
 }
 
 // mockReputersData generates reputer scores, stakes and losses
-func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerIndexes []int) types.ReputerValueBundles {
+func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerIndexes []int) types.LossBundles {
 	var scores = []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("17.53436"),
 		alloraMath.MustNewDecFromString("20.29489"),
@@ -592,7 +592,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerI
 		cosmosMath.NewInt(368582),
 	}
 
-	var reputerValueBundles types.ReputerValueBundles
+	var networkLosses types.LossBundles
 	for i, reputerIndex := range reputerIndexes {
 		err := s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(reputerIndex), stakes[i])
 		s.Require().NoError(err)
@@ -618,17 +618,10 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerI
 			}},
 			NaiveValue: alloraMath.MustNewDecFromString("1500.0"),
 		}
-		signature := s.SignValueBundle(valueBundle, s.PrivKeys(reputerIndex))
-		s.Require().NoError(err)
-		reputerValueBundle := &types.ReputerValueBundle{
-			ValueBundle: valueBundle,
-			Signature:   signature,
-			Pubkey:      s.PubKeyHexStr(reputerIndex),
-		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
+		networkLosses = append(networkLosses, valueBundle)
 	}
 
-	err := s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, reputerValueBundles)
+	err := s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, networkLosses)
 	s.Require().NoError(err)
-	return reputerValueBundles
+	return networkLosses
 }

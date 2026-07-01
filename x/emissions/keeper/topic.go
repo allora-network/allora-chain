@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -39,6 +41,7 @@ func NewTopicKeeper(
 		topicFeeRevenue:                  collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, sdk.IntValue),
 		topicLastWorkerCommit:            collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerCommit:           collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLabelRegistry:               collections.NewMap(sb, types.TopicLabelRegistryKey, "topic_label_registry", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.EpochLabelRegistry](cdc)),
 		paramsKeeper:                     paramsKeeper,
 		nonceKeeper:                      nonceKeeper,
 		stakingKeeper:                    stakingKeeper,
@@ -79,6 +82,8 @@ type TopicKeeper struct {
 	topicFeeRevenue        collections.Map[TopicId, cosmosMath.Int]
 	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
+	// topic epoch label registry - keyed by [topic_id, nonce]
+	topicLabelRegistry collections.Map[collections.Pair[TopicId, BlockHeight], types.EpochLabelRegistry]
 	// params keeper
 	paramsKeeper *ParamsKeeper
 	// nonce keeper
@@ -237,11 +242,27 @@ func (k *TopicKeeper) GetTopic(ctx context.Context, topicId TopicId) (types.Topi
 	return topic, nil
 }
 
-// Sets a topic config on a topicId
+// Sets a topic config on a topicId. Canonicalizes LabelWhitelist in place
+// (dedup + NFC + trim) so downstream whitelist lookups are exact byte-equality.
 func (k *TopicKeeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topic) error {
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting params")
+	}
+	if err := types.ValidateTopicLabelWhitelistSize(topic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
+		return errorsmod.Wrap(err, "topic label_whitelist size validation failed")
+	}
+	if len(topic.LabelWhitelist) > 0 {
+		canonical, err := types.CanonicalizeLabelList(
+			topic.LabelWhitelist,
+			true,
+			params.MaxCanonicalLabelByteLength,
+			topic.LabelCaseSensitive,
+		)
+		if err != nil {
+			return errorsmod.Wrap(err, "topic label_whitelist canonicalization failed")
+		}
+		topic.LabelWhitelist = canonical
 	}
 	if err := topic.Validate(params); err != nil {
 		return errorsmod.Wrap(err, "set topic validation failure")
@@ -254,40 +275,151 @@ func (k *TopicKeeper) TopicExists(ctx context.Context, topicId TopicId) (bool, e
 	return k.topics.Has(ctx, topicId)
 }
 
-// UpdateTopic applies allowed changes to a topic.
+// isAnyUnfulfilledWorkerNonceWithinWindow reports true iff the topic is
+// active and at least one of its unfulfilled worker nonces is currently
+// inside a worker submission window. It is the shared guard for topic
+// parameter mutations that must not race worker payload submission for an
+// open epoch (merit_sortition_alpha, max_labels_per_submission, label
+// whitelist, label default value). Unlike the original v14-era check this
+// iterates every unfulfilled nonce rather than just the newest, because workers
+// can submit against any currently-open nonce.
+func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
+	ctx context.Context,
+	topic types.Topic,
+) (bool, error) {
+	isActive, err := k.IsTopicActive(ctx, topic.Id)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "failed to check topic active status")
+	}
+	if !isActive {
+		return false, nil
+	}
+	nonces, err := k.nonceKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
+	}
+	if len(nonces.Nonces) == 0 {
+		return false, nil
+	}
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
+	for _, nonce := range nonces.Nonces {
+		if nonce == nil {
+			continue
+		}
+		withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+		if err != nil {
+			return false, errorsmod.Wrap(err, "failed to check worker submission window")
+		}
+		if withinWindow {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// labelWhitelistChanged compares two whitelists for semantic inequality in
+// their canonicalized forms. The caller is expected to have already run
+// CanonicalizeLabelList over the updatedTopic slice (via SetTopic) if it is
+// going to be persisted; at the keeper layer equal-length-and-contents means
+// "no change" because UpdateTopic receives a full replacement topic.
+func labelWhitelistChanged(a, b []string) bool {
+	if len(a) != len(b) {
+		return true
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return true
+		}
+	}
+	return false
+}
+
+// UpdateTopic applies allowed changes to a topic. Fields that are unsafe to
+// mutate while a worker submission window is open for ANY currently
+// unfulfilled nonce are guarded with isAnyUnfulfilledWorkerNonceWithinWindow
+// and rejected with ErrWorkerNonceWindowNotAvailable. Those fields are:
+//   - merit_sortition_alpha (reward-math continuity)
+//   - max_labels_per_submission (per-submission label cap)
+//   - label_whitelist (per-topic label allowlist)
+//   - label_default_value (implicit missing label semantics)
+//
+// This is stricter than the v14 behavior (which only checked the newest
+// unfulfilled nonce) to match multilabel registry semantics, where label-
+// related topic parameters must be stable across the entire lifetime of every
+// open WSW.
 func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "error getting params")
 	}
 
+	// LabelCaseSensitive is immutable after topic creation: flipping it would
+	// change the canonical form of every persisted label (whitelist entries and
+	// epoch registry names). Reject any divergence here so
+	// the msgserver does not have to know about this invariant on its own.
+	if topic.LabelCaseSensitive != updatedTopic.LabelCaseSensitive {
+		return types.Topic{}, errorsmod.Wrap(
+			types.ErrInvalidTopicUpdate,
+			"label_case_sensitive is immutable after topic creation",
+		)
+	}
+	if err := types.ValidateMaxLabelsPerSubmission(updatedTopic.MaxLabelsPerSubmission); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "updated topic max_labels_per_submission validation failed")
+	}
+
+	// Canonicalize the whitelist on the proposed update before any
+	// comparison or validation so the WSW guard and persisted state both
+	// agree on the canonical form.
+	if err := types.ValidateTopicLabelWhitelistSize(updatedTopic.LabelWhitelist, params.MaxTopicLabelWhitelistSize); err != nil {
+		return types.Topic{}, errorsmod.Wrap(err, "updated topic label_whitelist size validation failed")
+	}
+	if len(updatedTopic.LabelWhitelist) > 0 {
+		canonical, err := types.CanonicalizeLabelList(
+			updatedTopic.LabelWhitelist,
+			true,
+			params.MaxCanonicalLabelByteLength,
+			updatedTopic.LabelCaseSensitive,
+		)
+		if err != nil {
+			return types.Topic{}, errorsmod.Wrap(err, "updated topic label_whitelist canonicalization failed")
+		}
+		updatedTopic.LabelWhitelist = canonical
+	}
+
 	if err := updatedTopic.Validate(params); err != nil {
 		return types.Topic{}, errorsmod.Wrap(err, "updated topic validation failed")
 	}
 
-	// Check merit_sortition_alpha update restriction when topic is active and worker window is open
-	if !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha) {
-		isActive, err := k.IsTopicActive(ctx, topic.Id)
+	meritChanged := !topic.MeritSortitionAlpha.Equal(updatedTopic.MeritSortitionAlpha)
+	maxLabelsChanged := topic.MaxLabelsPerSubmission != updatedTopic.MaxLabelsPerSubmission
+	whitelistChanged := labelWhitelistChanged(topic.LabelWhitelist, updatedTopic.LabelWhitelist)
+	labelDefaultChanged := !topic.LabelDefaultValue.Equal(updatedTopic.LabelDefaultValue)
+
+	if meritChanged || maxLabelsChanged || whitelistChanged || labelDefaultChanged {
+		withinWindow, err := k.isAnyUnfulfilledWorkerNonceWithinWindow(ctx, topic)
 		if err != nil {
-			return types.Topic{}, errorsmod.Wrap(err, "failed to check topic active status")
+			return types.Topic{}, err
 		}
-		if isActive {
-			sdkCtx := sdk.UnwrapSDKContext(ctx)
-			blockHeight := sdkCtx.BlockHeight()
-			nonces, err := k.nonceKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
-			if err != nil {
-				return types.Topic{}, errorsmod.Wrap(err, "failed to get unfulfilled worker nonces")
+		if withinWindow {
+			var changedFields []string
+			if meritChanged {
+				changedFields = append(changedFields, "merit_sortition_alpha")
 			}
-			if len(nonces.Nonces) > 0 {
-				lastNonce := nonces.Nonces[0]
-				withinWindow, err := BlockWithinWorkerSubmissionWindowOfNonce(topic, *lastNonce, blockHeight)
-				if err != nil {
-					return types.Topic{}, errorsmod.Wrap(err, "failed to check worker submission window")
-				}
-				if withinWindow {
-					return types.Topic{}, errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable, "cannot update merit_sortition_alpha while worker window is open")
-				}
+			if maxLabelsChanged {
+				changedFields = append(changedFields, "max_labels_per_submission")
 			}
+			if whitelistChanged {
+				changedFields = append(changedFields, "label_whitelist")
+			}
+			if labelDefaultChanged {
+				changedFields = append(changedFields, "label_default_value")
+			}
+			return types.Topic{}, errorsmod.Wrapf(
+				types.ErrWorkerNonceWindowNotAvailable,
+				"cannot update %s while a worker submission window is open",
+				strings.Join(changedFields, ", "),
+			)
 		}
 	}
 
@@ -458,15 +590,19 @@ func (k *TopicKeeper) UpdateTopicWeightAfterStakeChange(
 }
 
 // Remove the inferences that are outliers
-func (k *TopicKeeper) FilterOutlierResistantInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Inferences, error) {
-	lastMedian, err := k.GetLastMedianInferences(ctx, topicId)
+func (k *TopicKeeper) FilterOutlierResistantInferences(ctx context.Context, topic types.Topic, inferences types.Inferences) (types.Inferences, error) {
+	if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI {
+		return types.Inferences{}, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "outlier resistant inferences are not supported for multi-label topics")
+	}
+
+	lastMedian, err := k.GetLastMedianInferences(ctx, topic.Id)
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting last median inferences")
 	}
 	if lastMedian.IsZero() {
 		return inferences, nil
 	}
-	mad, err := k.GetMadInferences(ctx, topicId)
+	mad, err := k.GetMadInferences(ctx, topic.Id)
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting mad inferences")
 	}
@@ -474,18 +610,29 @@ func (k *TopicKeeper) FilterOutlierResistantInferences(ctx context.Context, topi
 		return inferences, nil
 	}
 
-	filteredInferences := types.Inferences{
-		Inferences: []*types.Inference{},
-	}
-
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting params")
 	}
 	outlierThresholdMultiplier := params.InferenceOutlierDetectionThreshold
+
+	filteredInferences := types.Inferences{
+		Inferences: []*types.Inference{},
+	}
+
+	thresholdMad, err := outlierThresholdMultiplier.Mul(mad)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting threshold mad")
+	}
+
 	for _, inf := range inferences.Inferences {
 		// Calculate absolute difference from median
-		diff, err := inf.Value.Sub(lastMedian)
+		score, err := inferenceOutlierScore(inf.Values)
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error calculating inference outlier score")
+		}
+
+		diff, err := score.Sub(lastMedian)
 		if err != nil {
 			return types.Inferences{}, errorsmod.Wrap(err, "error getting difference from median")
 		}
@@ -494,10 +641,6 @@ func (k *TopicKeeper) FilterOutlierResistantInferences(ctx context.Context, topi
 			return types.Inferences{}, errorsmod.Wrap(err, "error getting absolute difference")
 		}
 
-		thresholdMad, err := outlierThresholdMultiplier.Mul(mad)
-		if err != nil {
-			return types.Inferences{}, errorsmod.Wrap(err, "error getting threshold mad")
-		}
 		// Check if within threshold
 		if absDiff.Lte(thresholdMad) {
 			filteredInferences.Inferences = append(filteredInferences.Inferences, inf)
@@ -723,4 +866,109 @@ func (k *TopicKeeper) GetWorkerTopicLastCommit(ctx context.Context, topic TopicI
 
 func (k *TopicKeeper) GetReputerTopicLastCommit(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
 	return k.topicLastReputerCommit.Get(ctx, topic)
+}
+
+// GetEpochLabelRegistry returns the registry for (topicId, nonce).
+// If none exists yet, it returns an empty registry (not an error).
+func (k *TopicKeeper) GetEpochLabelRegistry(
+	ctx context.Context,
+	topicId types.TopicId,
+	nonce types.BlockHeight,
+) (types.EpochLabelRegistry, error) {
+	registry, err := k.topicLabelRegistry.Get(ctx, collections.Join(topicId, nonce))
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.EpochLabelRegistry{
+				TopicId: topicId,
+				EpochId: uint64(nonce), //nolint:gosec // nonce is a non-negative block height; cast is safe
+				Labels:  nil,
+			}, nil
+		}
+		return types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error getting topic label registry")
+	}
+	registry.TopicId = topicId
+	registry.EpochId = uint64(nonce) //nolint:gosec // nonce is a non-negative block height; cast is safe
+	return registry, nil
+}
+
+// RegisterEpochLabels registers canonical labels for one inference with a
+// single registry read/write. It preserves first-seen 1-based ids and returns
+// ids in the same order as labelNames.
+func (k *TopicKeeper) RegisterEpochLabels(
+	ctx context.Context,
+	topicID types.TopicId,
+	labelCaseSensitive bool,
+	nonce types.BlockHeight,
+	labelNames []string,
+	maxLabelBytes uint64,
+	maxRegistrySize uint64,
+) ([]LabelId, types.EpochLabelRegistry, error) {
+	if err := types.ValidateTopicId(topicID); err != nil {
+		return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(nonce); err != nil {
+		return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "nonce block height validation failed")
+	}
+	if err := types.ValidateMaxEpochLabelRegistrySize(maxRegistrySize); err != nil {
+		return nil, types.EpochLabelRegistry{}, err
+	}
+	registry, err := k.GetEpochLabelRegistry(ctx, topicID, nonce)
+	if err != nil {
+		return nil, types.EpochLabelRegistry{}, err
+	}
+	// No upfront cap check on the stored registry size: resubmitting an
+	// already-registered label is idempotent (it hits the fast-path below and
+	// never grows the registry), so it must succeed even when the stored
+	// registry already exceeds maxRegistrySize — which can only happen if
+	// MaxEpochLabelRegistrySize was lowered by governance after labels were
+	// registered. Only growth (a genuinely new label) is bounded, by the
+	// in-loop check below. This honors the ErrEpochLabelRegistrySaturated
+	// contract that existing labels remain idempotent at (or above) the cap.
+	idsByName := make(map[string]LabelId, len(registry.Labels)+len(labelNames))
+	for _, lbl := range registry.Labels {
+		if lbl == nil {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(sdkerrors.ErrLogic, "registry label cannot be nil")
+		}
+		if lbl.Id == 0 {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(sdkerrors.ErrLogic, "label id cannot be zero")
+		}
+		idsByName[lbl.Name] = lbl.Id
+	}
+	ids := make([]LabelId, len(labelNames))
+	changed := false
+	for i, labelName := range labelNames {
+		if err := types.EnsureCanonicalLabelName(labelName, maxLabelBytes, labelCaseSensitive); err != nil {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "label name validation failed")
+		}
+		if id, ok := idsByName[labelName]; ok {
+			ids[i] = id
+			continue
+		}
+		if uint64(len(registry.Labels)) >= maxRegistrySize {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrapf(
+				types.ErrEpochLabelRegistrySaturated,
+				"topic %d nonce %d registry size %d reached max %d",
+				topicID,
+				nonce,
+				len(registry.Labels),
+				maxRegistrySize,
+			)
+		}
+		//nolint:gosec // maxRegistrySize is validated and bounds the registry length.
+		nextID := LabelId(len(registry.Labels) + 1)
+		registry.Labels = append(registry.Labels, &types.TopicLabel{Id: nextID, Name: labelName})
+		idsByName[labelName] = nextID
+		ids[i] = nextID
+		changed = true
+	}
+	if changed {
+		if err := k.topicLabelRegistry.Set(ctx, collections.Join(topicID, nonce), registry); err != nil {
+			return nil, types.EpochLabelRegistry{}, errorsmod.Wrap(err, "error setting topic label registry")
+		}
+	}
+	return ids, registry, nil
+}
+
+func (k *TopicKeeper) PruneTopicLabelRegistry(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	return k.topicLabelRegistry.Clear(ctx, blockRange)
 }

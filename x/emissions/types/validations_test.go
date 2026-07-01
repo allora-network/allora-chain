@@ -4,8 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/stretchr/testify/require"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
 func validCreateNewTopicRequest() *CreateNewTopicRequest {
@@ -27,6 +28,14 @@ func validCreateNewTopicRequest() *CreateNewTopicRequest {
 		EnableWorkerWhitelist:    false,
 		EnableReputerWhitelist:   false,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   DefaultMaxLabelsPerSubmission,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
+		LabelWhitelist:           nil,
 	}
 }
 
@@ -44,6 +53,14 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			mutate:      func(*CreateNewTopicRequest) {},
 			wantErr:     false,
 			errContains: "",
+		},
+		{
+			name: "label whitelist above max",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.LabelWhitelist = make([]string, DefaultMaxTopicLabelWhitelistSize+1)
+			},
+			wantErr:     true,
+			errContains: "topic label whitelist size",
 		},
 		{
 			name: "empty loss method",
@@ -309,6 +326,73 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			wantErr:     true,
 			errContains: "active reputer quantile must be between 0 and 1 inclusive",
 		},
+		{
+			name: "unspecified topic_type",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.TopicType = TopicType_TOPIC_TYPE_UNSPECIFIED
+			},
+			wantErr:     true,
+			errContains: "topic_type is invalid",
+		},
+		{
+			name: "unspecified output_arity",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED
+			},
+			wantErr:     true,
+			errContains: "output_arity is invalid",
+		},
+		{
+			name: "require_unity with SINGLE arity",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+				msg.RequireUnity = true
+			},
+			wantErr:     true,
+			errContains: "require_unity MUST be false when output_arity is SINGLE",
+		},
+		{
+			name: "require_unity with unity tolerance NaN",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.NewNaN()
+			},
+			wantErr:     true,
+			errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with unity tolerance above max",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("1")
+			},
+			wantErr:     true,
+			errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with nonzero label_default_value",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.005")
+				msg.LabelDefaultValue = alloraMath.OneDec()
+			},
+			wantErr:     true,
+			errContains: "label_default_value must be zero when require_unity is true",
+		},
+		{
+			name: "valid require_unity with MULTI arity",
+			mutate: func(msg *CreateNewTopicRequest) {
+				msg.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+				msg.RequireUnity = true
+				msg.UnityTolerance = alloraMath.MustNewDecFromString("0.005")
+				msg.LabelDefaultValue = alloraMath.ZeroDec()
+			},
+			wantErr:     false,
+			errContains: "",
+		},
 	}
 
 	for _, tt := range tests {
@@ -316,7 +400,7 @@ func TestCreateNewTopicRequest_Validate(t *testing.T) {
 			msg := validCreateNewTopicRequest()
 			tt.mutate(msg)
 
-			err := msg.Validate(maxStringLen)
+			err := msg.Validate(maxStringLen, DefaultMaxTopicLabelWhitelistSize)
 			if tt.wantErr {
 				require.Error(t, err)
 				require.ErrorContains(t, err, tt.errContains)
@@ -337,9 +421,10 @@ func TestInputInference_Validate(t *testing.T) {
 			name: "valid inference",
 			input: &InputInference{
 				TopicId:     1,
-				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy", // valid bech32 address
 				BlockHeight: 100,
+				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy", // valid bech32 address
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1")}},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -357,6 +442,7 @@ func TestInputInference_Validate(t *testing.T) {
 				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				BlockHeight: 100,
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1")}},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -369,6 +455,7 @@ func TestInputInference_Validate(t *testing.T) {
 				Inferer:     "invalid",
 				BlockHeight: 100,
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1")}},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -381,6 +468,7 @@ func TestInputInference_Validate(t *testing.T) {
 				Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 				BlockHeight: -1,
 				Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+				Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1")}},
 				ExtraData:   nil,
 				Proof:       "",
 			},
@@ -746,6 +834,7 @@ func TestInputInferenceForecastBundle_Validate(t *testing.T) {
 		Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		BlockHeight: 100,
 		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+		Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1")}},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -811,6 +900,7 @@ func TestInputInferenceForecastBundle_Validate(t *testing.T) {
 					Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 					BlockHeight: 100,
 					Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+					Values:      []*InputLabeledValue{{Label: "", Value: mustNewBoundedExp40Dec(t, "1")}},
 					ExtraData:   nil,
 					Proof:       "",
 				},
@@ -847,4 +937,393 @@ func TestInputInferenceForecastBundle_Validate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTopicValidate(t *testing.T) {
+	p := validParams()
+
+	longStr := func(n int) string {
+		b := make([]byte, n)
+		for i := range b {
+			b[i] = 'a'
+		}
+		return string(b)
+	}
+
+	maxTol := alloraMath.MustNewDecFromString(maxTopicUnityTolerance)
+
+	tests := []struct {
+		name        string
+		mutate      func(*Topic, *Params)
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:    "ok",
+			mutate:  func(_ *Topic, _ *Params) {},
+			wantErr: false, errContains: "",
+		},
+		{
+			name:    "id zero reserved",
+			mutate:  func(tp *Topic, _ *Params) { tp.Id = 0 },
+			wantErr: true, errContains: "topic id zero is reserved",
+		},
+		{
+			name:    "creator invalid",
+			mutate:  func(tp *Topic, _ *Params) { tp.Creator = "not-bech32" },
+			wantErr: true, errContains: "topic creator address invalid",
+		},
+		{
+			name: "metadata too long",
+			//nolint:gosec
+			mutate:  func(tp *Topic, p *Params) { tp.Metadata = longStr(int(p.MaxStringLength) + 1) },
+			wantErr: true, errContains: "topic metadata invalid",
+		},
+		{
+			name:    "loss method empty",
+			mutate:  func(tp *Topic, _ *Params) { tp.LossMethod = "" },
+			wantErr: true, errContains: "topic loss method invalid",
+		},
+		{
+			name:    "epoch last ended negative",
+			mutate:  func(tp *Topic, _ *Params) { tp.EpochLastEnded = -1 },
+			wantErr: true, errContains: "topic epoch last ended cannot be negative",
+		},
+		{
+			name:    "epoch length <= 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.EpochLength = 0 },
+			wantErr: true, errContains: "topic epoch length must be greater than zero",
+		},
+		{
+			name:    "epoch length < min",
+			mutate:  func(tp *Topic, p *Params) { tp.EpochLength = p.MinEpochLength - 1 },
+			wantErr: true, errContains: "topic epoch length must be greater than minimum epoch length",
+		},
+		{
+			name:    "worker submission window zero",
+			mutate:  func(tp *Topic, _ *Params) { tp.WorkerSubmissionWindow = 0 },
+			wantErr: true, errContains: "topic worker submission window must be greater than zero",
+		},
+		{
+			name:    "worker submission window > epoch length",
+			mutate:  func(tp *Topic, _ *Params) { tp.WorkerSubmissionWindow = tp.EpochLength + 1 },
+			wantErr: true, errContains: "topic worker submission window cannot be higher than epoch length",
+		},
+		{
+			name:    "ground truth lag <= 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.GroundTruthLag = 0 },
+			wantErr: true, errContains: "topic ground truth lag must be greater than zero",
+		},
+		{
+			name:    "ground truth lag < epoch length",
+			mutate:  func(tp *Topic, _ *Params) { tp.GroundTruthLag = tp.EpochLength - 1 },
+			wantErr: true, errContains: "topic ground truth lag cannot be lower than epoch length",
+		},
+		{
+			name: "ground truth lag too high",
+			mutate: func(tp *Topic, p *Params) {
+				//nolint:gosec
+				tp.GroundTruthLag = int64(p.MaxUnfulfilledReputerRequests)*tp.EpochLength + 1
+			},
+			wantErr: true, errContains: "topic ground truth lag cannot be higher than max unfulfilled reputer requests",
+		},
+		{
+			name:    "alpha regret NaN invalid",
+			mutate:  func(tp *Topic, _ *Params) { tp.AlphaRegret = alloraMath.NewNaN() },
+			wantErr: true, errContains: "topic alpha regret is invalid",
+		},
+		{
+			name:    "alpha regret out of range (<=0)",
+			mutate:  func(tp *Topic, _ *Params) { tp.AlphaRegret = alloraMath.MustNewDecFromString("0") },
+			wantErr: true, errContains: "topic alpha regret must be greater than 0 and less than or equal to 1",
+		},
+		{
+			name:    "alpha regret out of range (>1)",
+			mutate:  func(tp *Topic, _ *Params) { tp.AlphaRegret = alloraMath.MustNewDecFromString("1.0001") },
+			wantErr: true, errContains: "topic alpha regret must be greater than 0 and less than or equal to 1",
+		},
+		{
+			name:    "p-norm out of range low",
+			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("0.9") },
+			wantErr: true, errContains: "topic p-norm must be between 1 and 10",
+		},
+		{
+			name:    "p-norm out of range high",
+			mutate:  func(tp *Topic, _ *Params) { tp.PNorm = alloraMath.MustNewDecFromString("11") },
+			wantErr: true, errContains: "topic p-norm must be between 1 and 10",
+		},
+		{
+			name:    "epsilon <= 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.Epsilon = alloraMath.MustNewDecFromString("0") },
+			wantErr: true, errContains: "topic epsilon must be greater than 0",
+		},
+		{
+			name:    "merit sortition alpha > 1",
+			mutate:  func(tp *Topic, _ *Params) { tp.MeritSortitionAlpha = alloraMath.MustNewDecFromString("1.1") },
+			wantErr: true, errContains: "topic merit sortition alpha must be greater than or equal to 0 and less than 1",
+		},
+		{
+			name:    "active inferer quantile < 0",
+			mutate:  func(tp *Topic, _ *Params) { tp.ActiveInfererQuantile = alloraMath.MustNewDecFromString("-0.1") },
+			wantErr: true, errContains: "topic active inferer quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name:    "active forecaster quantile > 1",
+			mutate:  func(tp *Topic, _ *Params) { tp.ActiveForecasterQuantile = alloraMath.MustNewDecFromString("1.1") },
+			wantErr: true, errContains: "topic active forecaster quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name:    "active reputer quantile > 1",
+			mutate:  func(tp *Topic, _ *Params) { tp.ActiveReputerQuantile = alloraMath.MustNewDecFromString("1.1") },
+			wantErr: true, errContains: "topic active reputer quantile must be between 0 and 1 inclusive",
+		},
+		{
+			name:    "c_norm out of range",
+			mutate:  func(tp *Topic, _ *Params) { tp.CNorm = alloraMath.MustNewDecFromString("100.1") },
+			wantErr: true, errContains: "topic c_norm must be between -100 and 100",
+		},
+		{
+			name: "require_unity not allowed for SINGLE arity",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.OutputArity = TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE
+				tp.RequireUnity = true
+			},
+			wantErr: true, errContains: "topic require_unity MUST be false when output_arity is SINGLE",
+		},
+		{
+			name: "require_unity with unity tolerance NaN",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = true
+				tp.UnityTolerance = alloraMath.NewNaN()
+			},
+			wantErr: true, errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with unity tolerance < 0",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = true
+				tp.UnityTolerance = alloraMath.MustNewDecFromString("-0.1")
+			},
+			wantErr: true, errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity with unity tolerance > max",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = true
+				tp.UnityTolerance, _ = maxTol.Add(alloraMath.MustNewDecFromString("0.0000000001"))
+			},
+			wantErr: true, errContains: "unity_tolerance must be in",
+		},
+		{
+			name: "require_unity false ignores unity tolerance (even NaN)",
+			mutate: func(tp *Topic, _ *Params) {
+				tp.RequireUnity = false
+				tp.UnityTolerance = alloraMath.NewNaN()
+			},
+			wantErr: false, errContains: "",
+		},
+		{
+			name: "label whitelist above max",
+			mutate: func(tp *Topic, p *Params) {
+				p.MaxTopicLabelWhitelistSize = 1
+				tp.LabelWhitelist = []string{"bear", "bull"}
+			},
+			wantErr: true, errContains: "topic label_whitelist is invalid",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			pp := p
+			topic := validTopic(pp)
+
+			tc.mutate(&topic, &pp)
+
+			err := topic.Validate(pp)
+			if tc.wantErr {
+				require.Error(t, err)
+				if tc.errContains != "" {
+					require.ErrorContains(t, err, tc.errContains)
+				}
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func validTopic(p Params) Topic {
+	creator := "allo10ljt8c3nuky75nnca4gnt9sqaxrmmyaz4d520a"
+
+	return Topic{
+		Id:                       1,
+		Creator:                  creator,
+		Metadata:                 "meta",
+		LossMethod:               "mse",
+		EpochLastEnded:           0,
+		EpochLength:              p.MinEpochLength,
+		GroundTruthLag:           p.MinEpochLength * 2,
+		PNorm:                    alloraMath.MustNewDecFromString("3.0"),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.5"),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.0001"),
+		InitialRegret:            alloraMath.MustNewDecFromString("0.0"),
+		WorkerSubmissionWindow:   p.MinEpochLength / 2,
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.5"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.5"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.5"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.5"),
+		CNorm:                    alloraMath.MustNewDecFromString("0"),
+		TopicType:                TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.MustNewDecFromString("0.1"),
+		MaxLabelsPerSubmission:   8,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
+	}
+}
+
+//nolint:exhaustruct
+func validParams() Params {
+	return Params{
+		MaxStringLength:               256,
+		MinEpochLength:                10,
+		MaxUnfulfilledReputerRequests: 5,
+		MaxTopicLabelWhitelistSize:    DefaultMaxTopicLabelWhitelistSize,
+		MaxCanonicalLabelByteLength:   64,
+		MaxEpochLabelRegistrySize:     DefaultMaxEpochLabelRegistrySize,
+		MaxWhitelistInputArrayLength:  2000,
+	}
+}
+
+// baseValidInput returns a minimal InputInference whose basic fields pass
+// InputInference.Validate(); each sub-test overrides Values as needed.
+//
+//nolint:exhaustruct
+func baseValidInput(t *testing.T) *InputInference {
+	t.Helper()
+	return &InputInference{
+		TopicId:     1,
+		BlockHeight: 100,
+		Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+	}
+}
+
+// TestInputInference_ValidateWithLimits_EffectiveCap covers the cap
+// enforcement: exactly cap labels ok, one over cap rejected, zero cap
+// rejected defensively.
+func TestInputInference_ValidateWithLimits_EffectiveCap(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "a", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "b", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.NoError(t, in.ValidateWithLimits(2, nil, 64, false))
+	require.Error(t, in.ValidateWithLimits(1, nil, 64, false))
+	require.Error(t, in.ValidateWithLimits(0, nil, 64, false))
+}
+
+// TestInputInference_ValidateWithLimits_CanonicalizesAndDedupes covers the
+// canonicalization of label names and the post-canon dedupe check, plus
+// ensures the canonical form is written back to the input slice in place.
+func TestInputInference_ValidateWithLimits_CanonicalizesAndDedupes(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "  y  ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, in.ValidateWithLimits(4, nil, 64, false))
+	require.Equal(t, "y", in.Values[0].Label, "label should be canonicalized in place")
+
+	// Upper vs lower case collapse under the default caseSensitive=false.
+	dup := baseValidInput(t)
+	dup.Values = []*InputLabeledValue{
+		{Label: "Cat", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "cat", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.Error(t, dup.ValidateWithLimits(4, nil, 64, false))
+
+	// Under caseSensitive=true, the same two inputs are distinct.
+	distinct := baseValidInput(t)
+	distinct.Values = []*InputLabeledValue{
+		{Label: "Cat", Value: mustNewBoundedExp40Dec(t, "1")},
+		{Label: "cat", Value: mustNewBoundedExp40Dec(t, "2")},
+	}
+	require.NoError(t, distinct.ValidateWithLimits(4, nil, 64, true))
+	require.Equal(t, "Cat", distinct.Values[0].Label, "case preserved under caseSensitive")
+	require.Equal(t, "cat", distinct.Values[1].Label, "case preserved under caseSensitive")
+}
+
+// TestInputInference_ValidateWithLimits_Whitelist covers the whitelist
+// check: nil whitelist means unrestricted; a non-nil whitelist requires
+// membership post-canonicalization; and a canonical whitelist entry matches
+// a non-canonical input.
+func TestInputInference_ValidateWithLimits_Whitelist(t *testing.T) {
+	okWhitelist := map[string]struct{}{"y": {}, "n": {}}
+
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "y", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, in.ValidateWithLimits(4, nil, 64, false), "nil whitelist is unrestricted")
+	require.NoError(t, in.ValidateWithLimits(4, okWhitelist, 64, false))
+
+	bad := baseValidInput(t)
+	bad.Values = []*InputLabeledValue{
+		{Label: "other", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, bad.ValidateWithLimits(4, okWhitelist, 64, false))
+
+	// Whitelist canonical form matches a whitespace-wrapped submission.
+	wrap := baseValidInput(t)
+	wrap.Values = []*InputLabeledValue{
+		{Label: "  y  ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, wrap.ValidateWithLimits(4, okWhitelist, 64, false))
+
+	// Case-sensitive: "Y" must match "Y" and must NOT match a lowercase
+	// whitelist entry.
+	csWhitelist := map[string]struct{}{"Y": {}}
+	cs := baseValidInput(t)
+	cs.Values = []*InputLabeledValue{
+		{Label: "Y", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.NoError(t, cs.ValidateWithLimits(4, csWhitelist, 64, true))
+
+	csMismatch := baseValidInput(t)
+	csMismatch.Values = []*InputLabeledValue{
+		{Label: "y", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, csMismatch.ValidateWithLimits(4, csWhitelist, 64, true))
+}
+
+// TestInputInference_ValidateWithLimits_RejectsInvalidLabel covers each of
+// the canonicalizer's rejection paths when called through
+// ValidateWithLimits, including nil LabeledValue entries.
+func TestInputInference_ValidateWithLimits_RejectsInvalidLabel(t *testing.T) {
+	in := baseValidInput(t)
+	in.Values = []*InputLabeledValue{
+		{Label: "   ", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in.ValidateWithLimits(4, nil, 64, false))
+
+	// Disallowed charset: zero-width space is rejected as an illegal rune.
+	in2 := baseValidInput(t)
+	in2.Values = []*InputLabeledValue{
+		{Label: "fo\u200bo", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in2.ValidateWithLimits(4, nil, 64, false))
+
+	in3 := baseValidInput(t)
+	in3.Values = []*InputLabeledValue{nil}
+	require.Error(t, in3.ValidateWithLimits(4, nil, 64, false))
+
+	// Punctuation outside the allowed separator set is rejected.
+	in4 := baseValidInput(t)
+	in4.Values = []*InputLabeledValue{
+		{Label: "bad!", Value: mustNewBoundedExp40Dec(t, "1")},
+	}
+	require.Error(t, in4.ValidateWithLimits(4, nil, 64, false))
 }

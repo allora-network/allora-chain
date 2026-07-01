@@ -6,7 +6,6 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -15,13 +14,13 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhi
 	defer metrics.RecordMetrics("AddToWhitelistAdmin", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -47,13 +46,13 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Rem
 	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -79,13 +78,13 @@ func (ms msgServer) AddToGlobalWhitelist(ctx context.Context, msg *types.AddToGl
 	defer metrics.RecordMetrics("AddToGlobalWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -111,13 +110,13 @@ func (ms msgServer) RemoveFromGlobalWhitelist(ctx context.Context, msg *types.Re
 	defer metrics.RecordMetrics("RemoveFromGlobalWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -143,13 +142,13 @@ func (ms msgServer) AddToGlobalWorkerWhitelist(ctx context.Context, msg *types.A
 	defer metrics.RecordMetrics("AddToGlobalWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -175,13 +174,13 @@ func (ms msgServer) RemoveFromGlobalWorkerWhitelist(ctx context.Context, msg *ty
 	defer metrics.RecordMetrics("RemoveFromGlobalWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -207,13 +206,13 @@ func (ms msgServer) AddToGlobalReputerWhitelist(ctx context.Context, msg *types.
 	defer metrics.RecordMetrics("AddToGlobalReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -239,13 +238,13 @@ func (ms msgServer) RemoveFromGlobalReputerWhitelist(ctx context.Context, msg *t
 	defer metrics.RecordMetrics("RemoveFromGlobalReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -271,13 +270,13 @@ func (ms msgServer) AddToGlobalAdminWhitelist(ctx context.Context, msg *types.Ad
 	defer metrics.RecordMetrics("AddToGlobalAdminWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -303,13 +302,13 @@ func (ms msgServer) RemoveFromGlobalAdminWhitelist(ctx context.Context, msg *typ
 	defer metrics.RecordMetrics("RemoveFromGlobalAdminWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +334,7 @@ func (ms msgServer) BulkAddToGlobalWorkerWhitelist(ctx context.Context, msg *typ
 	defer metrics.RecordMetrics("BulkAddToGlobalWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +370,7 @@ func (ms msgServer) BulkRemoveFromGlobalWorkerWhitelist(ctx context.Context, msg
 	defer metrics.RecordMetrics("BulkRemoveFromGlobalWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +406,7 @@ func (ms msgServer) BulkAddToGlobalReputerWhitelist(ctx context.Context, msg *ty
 	defer metrics.RecordMetrics("BulkAddToGlobalReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -443,7 +442,7 @@ func (ms msgServer) BulkRemoveFromGlobalReputerWhitelist(ctx context.Context, ms
 	defer metrics.RecordMetrics("BulkRemoveFromGlobalReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -479,7 +478,7 @@ func (ms msgServer) BulkAddToTopicWorkerWhitelist(ctx context.Context, msg *type
 	defer metrics.RecordMetrics("BulkAddToTopicWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -526,7 +525,7 @@ func (ms msgServer) BulkRemoveFromTopicWorkerWhitelist(ctx context.Context, msg 
 	defer metrics.RecordMetrics("BulkRemoveFromTopicWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -573,7 +572,7 @@ func (ms msgServer) BulkAddToTopicReputerWhitelist(ctx context.Context, msg *typ
 	defer metrics.RecordMetrics("BulkAddToTopicReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -620,7 +619,7 @@ func (ms msgServer) BulkRemoveFromTopicReputerWhitelist(ctx context.Context, msg
 	defer metrics.RecordMetrics("BulkRemoveFromTopicReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -667,7 +666,7 @@ func (ms msgServer) EnableTopicWorkerWhitelist(ctx context.Context, msg *types.E
 	defer metrics.RecordMetrics("EnableTopicWorkerWhitelist", time.Now(), &err)
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -691,7 +690,7 @@ func (ms msgServer) DisableTopicWorkerWhitelist(ctx context.Context, msg *types.
 	defer metrics.RecordMetrics("DisableTopicWorkerWhitelist", time.Now(), &err)
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -715,7 +714,7 @@ func (ms msgServer) EnableTopicReputerWhitelist(ctx context.Context, msg *types.
 	defer metrics.RecordMetrics("EnableTopicReputerWhitelist", time.Now(), &err)
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -739,7 +738,7 @@ func (ms msgServer) DisableTopicReputerWhitelist(ctx context.Context, msg *types
 	defer metrics.RecordMetrics("DisableTopicReputerWhitelist", time.Now(), &err)
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -763,13 +762,13 @@ func (ms msgServer) AddToTopicCreatorWhitelist(ctx context.Context, msg *types.A
 	defer metrics.RecordMetrics("AddToTopicCreatorWhitelist", time.Now(), &err)
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -793,13 +792,13 @@ func (ms msgServer) RemoveFromTopicCreatorWhitelist(ctx context.Context, msg *ty
 	defer metrics.RecordMetrics("RemoveFromTopicCreatorWhitelist", time.Now(), &err)
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -823,13 +822,13 @@ func (ms msgServer) AddToTopicWorkerWhitelist(ctx context.Context, msg *types.Ad
 	defer metrics.RecordMetrics("AddToTopicWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -853,13 +852,13 @@ func (ms msgServer) RemoveFromTopicWorkerWhitelist(ctx context.Context, msg *typ
 	defer metrics.RecordMetrics("RemoveFromTopicWorkerWhitelist", time.Now(), &err)
 
 	// Validate the sender
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -883,13 +882,13 @@ func (ms msgServer) AddToTopicReputerWhitelist(ctx context.Context, msg *types.A
 	defer metrics.RecordMetrics("AddToTopicReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -913,13 +912,13 @@ func (ms msgServer) RemoveFromTopicReputerWhitelist(ctx context.Context, msg *ty
 	defer metrics.RecordMetrics("RemoveFromTopicReputerWhitelist", time.Now(), &err)
 
 	// Validate the sender
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
 	// Validate the address
-	err = keeper.ValidateStringIsBech32(msg.Address)
+	err = types.ValidateStringIsBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}

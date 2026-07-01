@@ -2,6 +2,7 @@ package types
 
 import (
 	cosmosMath "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
@@ -103,6 +104,9 @@ func NewGenesisState() *GenesisState {
 		OutlierResistantNetworkInferences:              []*TopicIdBlockHeightValueBundles{},
 		MonthlyReputerRewards:                          cosmosMath.ZeroInt(),
 		MonthlyTopicRewards:                            cosmosMath.ZeroInt(),
+		NetworkInferenceBundle:                         []*TopicIdBlockHeightNetworkInferenceBundles{},
+		OutlierResistantNetworkInferenceBundle:         []*TopicIdBlockHeightNetworkInferenceBundles{},
+		TopicLabelRegistries:                           []*TopicIdBlockHeightEpochLabelRegistry{},
 	}
 }
 

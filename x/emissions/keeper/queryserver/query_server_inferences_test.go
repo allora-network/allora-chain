@@ -5,6 +5,9 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/utils/ptr"
@@ -24,13 +27,13 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:       alloraMath.NewDecFromInt64(1),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 			},
 			{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 			},
 		},
 	}
@@ -51,61 +54,132 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, results.Inferences)
 }
 
-func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicId() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(42)
+	worker := s.AddrsStr(0)
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.LabelDefaultValue = alloraMath.ZeroDec()
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+	s.Require().NoError(s.TopicKeeper().SetEpochLabelRegistry(ctx, types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonce),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+			{Id: 3, Name: "c"},
+		},
+	}))
+	inference := types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Inferer:     worker,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.1"), alloraMath.MustNewDecFromString("0.2")},
+		ExtraData:   []byte("query"),
+		Proof:       "proof",
+	}
+	s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, inference))
+
+	latestInput, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       topicId,
+		WorkerAddress: worker,
+	})
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, latestInput.LatestInputInference.TopicId)
+	s.Require().Equal(nonce, latestInput.LatestInputInference.BlockHeight)
+	s.Require().Equal(worker, latestInput.LatestInputInference.Inferer)
+	s.Require().Equal([]byte("query"), latestInput.LatestInputInference.ExtraData)
+	s.Require().Equal("proof", latestInput.LatestInputInference.Proof)
+	s.Require().Len(latestInput.LatestInputInference.Values, 2)
+	s.Require().Equal("a", latestInput.LatestInputInference.Values[0].Label)
+	s.Require().Equal("0.1", latestInput.LatestInputInference.Values[0].Value.String())
+	s.Require().Equal("b", latestInput.LatestInputInference.Values[1].Label)
+	s.Require().Equal("0.2", latestInput.LatestInputInference.Values[1].Value.String())
+}
+
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdInvalidAddress() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+
+	_, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       topicId,
+		WorkerAddress: "not-a-bech32-address",
+	})
+	s.Require().Error(err)
+	s.Require().ErrorIs(err, sdkerrors.ErrInvalidAddress)
+}
+
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetWorkerLatestInputInferenceByTopicIdTopicNotFound() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	worker := s.AddrsStr(0)
+
+	_, err := queryServer.GetWorkerLatestInputInferenceByTopicId(ctx, &types.GetWorkerLatestInputInferenceByTopicIdRequest{
+		TopicId:       99999,
+		WorkerAddress: worker,
+	})
+	s.Require().Error(err)
+	s.Require().Equal(codes.NotFound, status.Code(err))
+}
+
+// The latest outlier-resistant query must honor the same MULTI gate as the block-scoped
+// GetNetworkInferencesAtBlockOutlierResistant — reject MULTI topics with InvalidArgument instead of
+// returning an empty bundle with OK.
+//
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantRejectsMultiTopic() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+
+	_, err = queryServer.GetLatestNetworkInferencesOutlierResistant(ctx,
+		&types.GetLatestNetworkInferencesOutlierResistantRequest{TopicId: topicId})
+	s.Require().Error(err)
+	s.Require().Equal(codes.InvalidArgument, status.Code(err))
+}
+
+// An unknown topic must map to NotFound, matching every other topic-scoped handler in this
+// file.
+//
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantTopicNotFound() {
 	ctx := s.Ctx()
 	queryServer := s.EmissionsQueryServer()
 
-	topicId := uint64(1)
-	workerAddress := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
-	wrongWorkerAddress := "invalidAddress"
+	_, err := queryServer.GetLatestNetworkInferencesOutlierResistant(ctx,
+		&types.GetLatestNetworkInferencesOutlierResistantRequest{TopicId: 99999})
+	s.Require().Error(err)
+	s.Require().Equal(codes.NotFound, status.Code(err))
+}
 
-	_, err := sdk.AccAddressFromBech32(workerAddress)
-	s.Require().NoError(err, "The worker address should be valid and convertible")
+// Boundary: a SINGLE-arity topic with no stored bundle is fine — it still returns OK with a
+// zero-nonce bundle. The error is only for MULTI, not for "empty".
+//
+//nolint:exhaustruct
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesOutlierResistantSingleTopicEmptyOK() {
+	ctx := s.Ctx()
+	queryServer := s.EmissionsQueryServer()
+	topicId := s.CreateTopic()
 
-	// Testing non-existent topic
-	_, err = queryServer.GetWorkerLatestInferenceByTopicId(
-		ctx,
-		&types.GetWorkerLatestInferenceByTopicIdRequest{
-			TopicId:       999, // non-existent topic
-			WorkerAddress: workerAddress,
-		},
-	)
-	s.Require().Error(err, "Should return an error for non-existent topic")
-
-	// Testing non-existent worker
-	_, err = queryServer.GetWorkerLatestInferenceByTopicId(
-		ctx,
-		&types.GetWorkerLatestInferenceByTopicIdRequest{
-			TopicId:       topicId,
-			WorkerAddress: wrongWorkerAddress,
-		},
-	)
-	s.Require().Error(err, "Should return an error for non-existent worker address")
-
-	// Assume a correct insertion happened
-	blockHeight := int64(100)
-	inference := types.Inference{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Inferer:     workerAddress,
-		Value:       alloraMath.MustNewDecFromString("123.456"),
-		ExtraData:   nil,
-		Proof:       "",
-	}
-	err = s.WorkerKeeper().InsertInference(ctx, topicId, inference)
-	s.Require().NoError(err, "Inserting inferences should succeed")
-
-	// Testing successful retrieval
-	response, err := queryServer.GetWorkerLatestInferenceByTopicId(
-		ctx,
-		&types.GetWorkerLatestInferenceByTopicIdRequest{
-			TopicId:       topicId,
-			WorkerAddress: workerAddress,
-		},
-	)
-	s.Require().NoError(err, "Retrieving latest inference should succeed")
-	s.Require().NotNil(response.LatestInference, "Response should contain a latest inference")
-	s.Require().Equal(&inference, response.LatestInference, "The latest inference should match the expected data")
+	resp, err := queryServer.GetLatestNetworkInferencesOutlierResistant(ctx,
+		&types.GetLatestNetworkInferencesOutlierResistantRequest{TopicId: topicId})
+	s.Require().NoError(err)
+	s.Require().NotNil(resp.NetworkInferences)
+	s.Require().Equal(types.BlockHeight(0), resp.NetworkInferences.Nonce)
 }
 
 //nolint:exhaustruct
@@ -140,9 +214,9 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		{reputers[4], ".0000115363240547692"},
 	}
 
-	var reputerValueBundles []*types.ReputerValueBundle
-	for i, data := range valueBundleData {
-		valueBundle := types.ValueBundle{
+	var reputerValueBundles types.LossBundles
+	for _, data := range valueBundleData {
+		valueBundle := &types.ValueBundle{
 			TopicId:             topicId,
 			Reputer:             data.reputer,
 			ReputerRequestNonce: reputerRequestNonce,
@@ -155,19 +229,10 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 			},
 			NaiveValue: alloraMath.MustNewDecFromString(data.combinedValue),
 		}
-		signature := s.SignValueBundle(&valueBundle, s.PrivKeys(i+5))
-		reputerValueBundles = append(reputerValueBundles, &types.ReputerValueBundle{
-			ValueBundle: &valueBundle,
-			Signature:   signature,
-			Pubkey:      s.PubKeyHexStr(i + 5),
-		})
+		reputerValueBundles = append(reputerValueBundles, valueBundle)
 	}
 
-	reputerLossBundles := types.ReputerValueBundles{
-		ReputerValueBundles: reputerValueBundles,
-	}
-
-	err := s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, blockHeight, reputerLossBundles)
+	err := s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, blockHeight, reputerValueBundles)
 	require.NoError(err)
 
 	// Set stakes
@@ -199,7 +264,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	for i, value := range inferenceValues {
 		infs = append(infs, &types.Inference{
 			Inferer:     reputers[i],
-			Value:       alloraMath.MustNewDecFromString(value),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(value)},
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 		})
@@ -306,6 +371,19 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	err = s.WorkerKeeper().InsertActiveInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, inferences)
 	require.NoError(err)
 
+	params, err := keeper.GetParamsKeeper().GetParams(s.Ctx())
+	require.NoError(err)
+	_, _, err = keeper.GetTopicKeeper().RegisterEpochLabels(
+		s.Ctx(),
+		topic.Id,
+		topic.LabelCaseSensitive,
+		inferenceNonce.BlockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	require.NoError(err)
+
 	forecasts := getForecastsForBlockHeight(workers, forecasters, inferenceBlockHeight, topicId)
 	err = s.WorkerKeeper().InsertActiveForecasts(s.Ctx(), topicId, inferenceNonce.BlockHeight, forecasts)
 	require.NoError(err)
@@ -322,11 +400,10 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		&inferenceNonce.BlockHeight,
 		ptr.To(inferences),
 		ptr.To(forecasts),
-		false,
 	)
 	require.NoError(err)
 
-	err = keeper.InsertNetworkInferences(s.Ctx(), topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
+	err = keeper.InsertNetworkInferenceBundle(s.Ctx(), topicId, inferenceNonce.BlockHeight, *networkInferences.NetworkInferences)
 	require.NoError(err)
 
 	// Test query
@@ -504,7 +581,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     s.AddrsStr(1),
-		Value:       alloraMath.MustNewDecFromString("10"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("10")},
 		ExtraData:   []byte("data1"),
 		Proof:       "proof1",
 	}
@@ -521,7 +598,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     s.AddrsStr(2),
-		Value:       alloraMath.MustNewDecFromString("20"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("20")},
 		ExtraData:   []byte("data2"),
 		Proof:       "proof2",
 	}
@@ -634,8 +711,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferencesWithMissingInferenc
 
 	require.NoError(err)
 	require.NotNil(response)
-	require.Equal(response.NetworkInferences.Reputer, "")
-	require.Equal(response.NetworkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight, int64(0))
+	require.Equal(response.NetworkInferences.Nonce, int64(0))
 }
 
 // Helper function to generate inferences
@@ -653,7 +729,7 @@ func getInferencesForBlockHeight(workers []string, blockHeight int64, topicId ui
 		//nolint:exhaustruct
 		inferences = append(inferences, &types.Inference{
 			Inferer:     worker,
-			Value:       alloraMath.MustNewDecFromString(inferenceValues[i]),
+			Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString(inferenceValues[i])},
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 		})

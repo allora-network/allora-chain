@@ -332,13 +332,16 @@ func (k *ReputerLossKeeper) GetReputerLatestLossByTopicId(
 	ctx context.Context,
 	topicId TopicId,
 	reputer ActorId,
-) (types.ReputerValueBundle, error) {
+) (types.LossBundle, error) {
 	key := collections.Join(topicId, reputer)
 	valueBundle, err := k.lossBundles.Get(ctx, key)
 	if err != nil {
-		return types.ReputerValueBundle{}, err
+		return types.LossBundle{}, err
 	}
-	return valueBundle, err
+	if valueBundle.ValueBundle == nil {
+		return types.LossBundle{}, errorsmod.Wrapf(types.ErrInvalidValue, "value_bundle is nil")
+	}
+	return *valueBundle.GetValueBundle(), err
 }
 
 // InsertReputerLoss inserts a reputer loss for a specific topic
@@ -374,7 +377,7 @@ func (k *ReputerLossKeeper) InsertActiveReputerLosses(
 	ctx context.Context,
 	topicId TopicId,
 	block BlockHeight,
-	reputerLossBundles types.ReputerValueBundles,
+	reputerLossBundles types.LossBundles,
 ) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -392,20 +395,28 @@ func (k *ReputerLossKeeper) InsertActiveReputerLosses(
 		}
 	}
 	key := collections.Join(topicId, block)
-	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
+	valueBundles := make([]*types.ReputerValueBundle, len(reputerLossBundles))
+	for i := range reputerLossBundles {
+		valueBundles[i] = &types.ReputerValueBundle{
+			ValueBundle: reputerLossBundles[i],
+			Signature:   nil, // not used internally
+			Pubkey:      "",  // not used internally
+		}
+	}
+	return k.allLossBundles.Set(ctx, key, types.ReputerValueBundles{ReputerValueBundles: valueBundles})
 }
 
 // Get loss bundles for a topic/timestamp
-func (k *ReputerLossKeeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.ReputerValueBundles, error) {
+func (k *ReputerLossKeeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.LossBundles, error) {
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 
 	if errors.Is(err, collections.ErrNotFound) {
-		return types.ReputerValueBundles{ReputerValueBundles: nil}, nil
+		return nil, nil
 	} else if err != nil {
-		return types.ReputerValueBundles{ReputerValueBundles: nil}, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
+		return nil, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
 	}
-	return reputerLossBundles, nil
+	return reputerLossBundles.ToLossBundles(topicId, block)
 }
 
 // Insert a network loss bundle for a topic and block.

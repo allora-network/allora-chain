@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -12,7 +11,7 @@ import (
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (_ *types.UpdateParamsResponse, err error) {
 	defer metrics.RecordMetrics("UpdateParams", time.Now(), &err)
 
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -186,6 +185,15 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	}
 	if len(newParams.MinWeightThresholdForStdnorm) == 1 {
 		existingParams.MinWeightThresholdForStdnorm = newParams.MinWeightThresholdForStdnorm[0]
+	}
+	if len(newParams.MaxCanonicalLabelByteLength) == 1 {
+		existingParams.MaxCanonicalLabelByteLength = newParams.MaxCanonicalLabelByteLength[0]
+	}
+	if len(newParams.MaxTopicLabelWhitelistSize) == 1 {
+		existingParams.MaxTopicLabelWhitelistSize = newParams.MaxTopicLabelWhitelistSize[0]
+	}
+	if len(newParams.MaxEpochLabelRegistrySize) == 1 {
+		existingParams.MaxEpochLabelRegistrySize = newParams.MaxEpochLabelRegistrySize[0]
 	}
 	err = existingParams.Validate()
 	if err != nil {

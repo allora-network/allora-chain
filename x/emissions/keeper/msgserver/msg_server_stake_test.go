@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	cosmosMath "cosmossdk.io/math"
@@ -1415,7 +1414,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	require.NoError(err)
 	require.NotNil(responseDelegator2, "Response should not be nil after successful delegation")
 
-	var reputerValueBundles types.ReputerValueBundles
+	var lossBundles types.LossBundles
 	scoreToAdd := types.Score{
 		TopicId:     topicId,
 		BlockHeight: block,
@@ -1426,22 +1425,19 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	s.Require().NoError(err)
 
 	//nolint:exhaustruct
-	reputerValueBundle := &types.ReputerValueBundle{
-		Pubkey: s.PubKeyHexStr(1),
-		ValueBundle: &types.ValueBundle{
-			TopicId:             topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-			Reputer:             reputerAddr.String(),
-			InfererValues:       []*types.WorkerAttributedValue{{Worker: s.AddrsStr(workerIndexes[0])}},
-		},
-		Signature: []byte{},
+	reputerValueBundle := &types.ValueBundle{
+		TopicId:             topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+		Reputer:             reputerAddr.String(),
+		InfererValues:       []*types.WorkerAttributedValue{{Worker: s.AddrsStr(workerIndexes[0])}},
 	}
-	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	err = s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, reputerValueBundles)
+
+	lossBundles = append(lossBundles, reputerValueBundle)
+	err = s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, lossBundles)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, reputerValueBundles)
+	scores, err := rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, lossBundles)
 	s.Require().NoError(err)
 
 	// Generate rewards
@@ -1475,7 +1471,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	require.NoError(err)
 	require.NotNil(responseDelegator3, "Response should not be nil after successful delegation")
 
-	var newReputerValueBundles types.ReputerValueBundles
+	var newReputerValueBundles types.LossBundles
 	newScoreToAdd := scoreToAdd
 	newScoreToAdd.BlockHeight = newBlock
 
@@ -1483,15 +1479,14 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	s.Require().NoError(err)
 
 	newReputerValueBundle := reputerValueBundle
-	newReputerValueBundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight = newBlock
-	newReputerValueBundle.Pubkey = s.PubKeyHexStr(1)
+	newReputerValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight = newBlock
 
-	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
+	newReputerValueBundles = append(newReputerValueBundles, newReputerValueBundle)
 	err = s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, newBlock, newReputerValueBundles)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err = rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, reputerValueBundles)
+	scores, err = rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, lossBundles)
 	s.Require().NoError(err)
 
 	// Generate new rewards
@@ -1579,7 +1574,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 	require.NoError(err)
 	require.NotNil(responseDelegator, "Response should not be nil after successful delegation")
 
-	var reputerValueBundles types.ReputerValueBundles
+	var lossBundles types.LossBundles
 	scoreToAdd := types.Score{
 		TopicId:     topicId,
 		BlockHeight: block,
@@ -1590,22 +1585,19 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 	s.Require().NoError(err)
 
 	//nolint:exhaustruct
-	reputerValueBundle := &types.ReputerValueBundle{
-		Pubkey: s.PubKeyHexStr(1),
-		ValueBundle: &types.ValueBundle{
-			TopicId:             topicId,
-			ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
-			Reputer:             reputerAddr.String(),
-			InfererValues:       []*types.WorkerAttributedValue{{Worker: s.AddrsStr(workerIndexes[0])}},
-		},
-		Signature: []byte{},
+	valueBundle := &types.ValueBundle{
+		TopicId:             topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+		Reputer:             reputerAddr.String(),
+		InfererValues:       []*types.WorkerAttributedValue{{Worker: s.AddrsStr(workerIndexes[0])}},
 	}
-	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	err = s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, reputerValueBundles)
+	lossBundles = append(lossBundles, valueBundle)
+	err = s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, lossBundles)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, reputerValueBundles)
+	lossBundles = types.LossBundles{valueBundle}
+	scores, err := rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, lossBundles)
 	s.Require().NoError(err)
 
 	// Generate rewards
@@ -1643,15 +1635,13 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 }
 
 func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
-	reputerPrivKey secp256k1.PrivKey,
 	reputer string,
-	reputerPubKeyHex string,
 	topicId uint64,
 	block int64,
 	score alloraMath.Dec,
 ) []types.TaskReward {
 	keeper := *s.EmissionsKeeper()
-	var reputerValueBundles types.ReputerValueBundles
+	var reputerValueBundles types.LossBundles
 	scoreToAdd := types.Score{
 		TopicId:     topicId,
 		BlockHeight: block,
@@ -1667,18 +1657,13 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 		Reputer:             reputer,
 		InfererValues:       []*types.WorkerAttributedValue{{Worker: s.AddrsStr(0)}},
 	}
-	signature := s.SignValueBundle(valueBundle, reputerPrivKey)
-	reputerValueBundle := &types.ReputerValueBundle{
-		ValueBundle: valueBundle,
-		Signature:   signature,
-		Pubkey:      reputerPubKeyHex,
-	}
-	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
+	reputerValueBundles = append(reputerValueBundles, valueBundle)
 	err = s.ReputerLossKeeper().InsertActiveReputerLosses(s.Ctx(), topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, reputerValueBundles)
+	networkLosses := types.LossBundles{valueBundle}
+	scores, err := rewards.GenerateReputerScores(s.Ctx(), *s.EmissionsKeeper(), topicId, block, networkLosses)
 	s.Require().NoError(err)
 
 	// Generate rewards
@@ -1761,8 +1746,6 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	reputerIndexes := testutil.ReturnIndexes(1, 1)
 	workerIndexes := testutil.ReturnIndexes(2, 1)
 	reputerAddr := s.Addrs(reputerIndexes[0])
-	reputerPubKeyHex := s.PubKeyHexStr(reputerIndexes[0])
-	reputerPrivKey := s.PrivKeys(reputerIndexes[0])
 
 	topicId := s.FullTopicSetup(workerIndexes, reputerIndexes, testutil.WithReputerStake(ptr.To(cosmosMath.ZeroInt()))).Id
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
@@ -1794,7 +1777,7 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	require.NoError(err)
 	require.NotNil(responseDelegator, "Response should not be nil after successful delegation")
 
-	reputerRewards := s.insertValueBundlesAndGetRewards(reputerPrivKey, reputerAddr.String(), reputerPubKeyHex, topicId, block, score)
+	reputerRewards := s.insertValueBundlesAndGetRewards(reputerAddr.String(), topicId, block, score)
 
 	delegatorBal0 := s.BankKeeper().GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 	rewardMsg := &types.RewardDelegateStakeRequest{
@@ -1848,8 +1831,6 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	reputerIndexes := testutil.ReturnIndexes(1, 1)
 	workerIndexes := testutil.ReturnIndexes(2, 1)
 	reputerAddr := s.Addrs(reputerIndexes[0])
-	reputerPubKeyHex := s.PubKeyHexStr(reputerIndexes[0])
-	reputerPrivKey := s.PrivKeys(reputerIndexes[0])
 
 	reputerStakeAmount := cosmosMath.NewInt(1e2)
 	delegatorRatio := cosmosMath.NewInt(1e3)
@@ -1884,7 +1865,7 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	require.NoError(err)
 	require.NotNil(delegateResponse, "Response should not be nil after successful delegation")
 
-	reputerRewards := s.insertValueBundlesAndGetRewards(reputerPrivKey, reputerAddr.String(), reputerPubKeyHex, topicId, block, score)
+	reputerRewards := s.insertValueBundlesAndGetRewards(reputerAddr.String(), topicId, block, score)
 
 	delegatorBal0 := s.BankKeeper().GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 	rewardMsg := &types.RewardDelegateStakeRequest{
@@ -1916,8 +1897,6 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 
 	reputerIndexes := testutil.ReturnIndexes(0, 1)
 	reputerAddr := s.Addrs(reputerIndexes[0])
-	reputerPubKeyHex := s.PubKeyHexStr(reputerIndexes[0])
-	reputerPrivKey := s.PrivKeys(reputerIndexes[0])
 	delegatorAddr := s.Addrs(1)
 	delegator := s.AddrsStr(1)
 	largeDelegatorAddr := s.Addrs(2)
@@ -1966,8 +1945,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	require.NotNil(delegateStakeResponse, "Response should not be nil after successful delegation")
 
 	// STEP 2 Calculate rewards for the first round
-	reputerReward0, err := s.insertValueBundlesAndGetRewards(
-		reputerPrivKey, reputerAddr.String(), reputerPubKeyHex, topicId, block, score)[0].Reward.SdkIntTrim()
+	reputerReward0, err := s.insertValueBundlesAndGetRewards(reputerAddr.String(), topicId, block, score)[0].Reward.SdkIntTrim()
 	require.NoError(err)
 
 	delegatorBal0 := s.BankKeeper().GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
@@ -1987,8 +1965,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	// STEP 2 Calculate rewards for the second round
 	block++
 
-	reputerReward1, err := s.insertValueBundlesAndGetRewards(
-		reputerPrivKey, reputerAddr.String(), reputerPubKeyHex, topicId, block, score)[0].Reward.SdkIntTrim()
+	reputerReward1, err := s.insertValueBundlesAndGetRewards(reputerAddr.String(), topicId, block, score)[0].Reward.SdkIntTrim()
 	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().RewardDelegateStake(ctx, delegateRewardsMsg)
@@ -2014,8 +1991,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 
 	// STEP 4 Calculate rewards for the third round
 	block++
-	reputerReward2, err := s.insertValueBundlesAndGetRewards(
-		reputerPrivKey, reputerAddr.String(), reputerPubKeyHex, topicId, block, score)[0].Reward.SdkIntTrim()
+	reputerReward2, err := s.insertValueBundlesAndGetRewards(reputerAddr.String(), topicId, block, score)[0].Reward.SdkIntTrim()
 	require.NoError(err)
 
 	_, err = s.EmissionsMsgServer().RewardDelegateStake(ctx, delegateRewardsMsg)

@@ -6,6 +6,14 @@ import (
 	"fmt"
 
 	"cosmossdk.io/core/appmodule"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
+
 	v2 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v2"
 	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
 	v4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
@@ -13,6 +21,7 @@ import (
 	v6 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v6"
 	v7 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v7"
 	v8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
+	v9 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v9"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
@@ -20,6 +29,7 @@ import (
 	migrationV11 "github.com/allora-network/allora-chain/x/emissions/migrations/v11"
 	migrationV13 "github.com/allora-network/allora-chain/x/emissions/migrations/v13"
 	migrationV14 "github.com/allora-network/allora-chain/x/emissions/migrations/v14"
+	migrationV15 "github.com/allora-network/allora-chain/x/emissions/migrations/v15"
 	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
 	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
@@ -29,24 +39,17 @@ import (
 	migrationV8 "github.com/allora-network/allora-chain/x/emissions/migrations/v8"
 	migrationV9 "github.com/allora-network/allora-chain/x/emissions/migrations/v9"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 )
 
 var (
-	_ module.AppModuleBasic   = AppModule{} // nolint: exhaustruct
-	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
-	_ appmodule.AppModule     = AppModule{} // nolint: exhaustruct
-	_ appmodule.HasEndBlocker = AppModule{} // nolint: exhaustruct
+	_ module.AppModuleBasic   = AppModule{} //nolint:exhaustruct
+	_ module.HasGenesis       = AppModule{} //nolint:exhaustruct
+	_ appmodule.AppModule     = AppModule{} //nolint:exhaustruct
+	_ appmodule.HasEndBlocker = AppModule{} //nolint:exhaustruct
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 14
+const ConsensusVersion = 15
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -73,6 +76,7 @@ func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	v6.RegisterTypes(cdc)
 	v7.RegisterTypes(cdc)
 	v8.RegisterTypes(cdc)
+	v9.RegisterTypes(cdc)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the state module.
@@ -92,6 +96,7 @@ func (AppModule) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	v6.RegisterInterfaces(registry)
 	v7.RegisterInterfaces(registry)
 	v8.RegisterInterfaces(registry)
+	v9.RegisterInterfaces(registry)
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
@@ -166,6 +171,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV14.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 13 to 14: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 14, func(ctx sdk.Context) error {
+		return migrationV15.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 14 to 15: %v", types.ModuleName, err))
 	}
 }
 

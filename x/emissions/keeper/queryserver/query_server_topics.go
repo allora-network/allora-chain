@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -202,7 +201,7 @@ func (qs queryServer) GetWorkerSubmissionWindowStatus(ctx context.Context, req *
 	// Check registration and whitelist status if address is provided
 	if req.Address != "" {
 		// Validate the address
-		if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+		if err := types.ValidateStringIsBech32(req.Address); err != nil {
 			return nil, errors.Wrapf(err, "invalid address format")
 		}
 
@@ -283,7 +282,7 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	// Check registration and whitelist status if address is provided
 	if req.Address != "" {
 		// Validate the address
-		if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+		if err := types.ValidateStringIsBech32(req.Address); err != nil {
 			return nil, errors.Wrapf(err, "invalid address format")
 		}
 

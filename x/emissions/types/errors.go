@@ -97,4 +97,26 @@ var (
 	ErrMaxWhitelistInputArrayLengthExceeded      = errors.Register(ModuleName, 92, "max whitelist input array length exceeded")
 	ErrTopicAlreadyActive                        = errors.Register(ModuleName, 93, "topic already active")
 	ErrTopicCannotBeActivated                    = errors.Register(ModuleName, 94, "topic cannot be activated")
+	ErrInvalidLabelName                          = errors.Register(ModuleName, 95, "invalid label name")
+	// ErrLabelNotInWhitelist is raised when a worker submits a label that is
+	// not in the topic's label_whitelist (post-canonicalization). Returned as
+	// part of InputInference.ValidateWithLimits.
+	ErrLabelNotInWhitelist = errors.Register(ModuleName, 96, "label is not in the topic's label whitelist")
+	// ErrTooManyLabelsPerSubmission is raised when a worker submits more
+	// labels than the configured per-topic cap.
+	ErrTooManyLabelsPerSubmission = errors.Register(ModuleName, 97, "too many labels in one submission (exceeds per-topic cap)")
+	// ErrEpochLabelRegistryEmpty is raised at CloseWorkerNonce when the
+	// active set produced zero surviving labels for a MULTI-output topic.
+	// This normally indicates no qualifying inferers and is accompanied by
+	// the usual empty-active-set handling upstream.
+	ErrEpochLabelRegistryEmpty = errors.Register(ModuleName, 98, "epoch label registry is empty: no active inferers contributed labels")
+	// ErrInvalidTopicUpdate is raised when UpdateTopic is called with a change
+	// to an immutable field (e.g. case_sensitive). The msgserver builds the
+	// updatedTopic from the existing topic, so this error surfaces only if a
+	// caller bypasses that by constructing an updatedTopic directly.
+	ErrInvalidTopicUpdate = errors.Register(ModuleName, 99, "invalid topic update")
+	// ErrEpochLabelRegistrySaturated is raised when registering a new label
+	// would exceed Params.MaxEpochLabelRegistrySize for a (topic, nonce)
+	// registry. Existing labels remain idempotent at the cap.
+	ErrEpochLabelRegistrySaturated = errors.Register(ModuleName, 100, "epoch label registry is saturated")
 )

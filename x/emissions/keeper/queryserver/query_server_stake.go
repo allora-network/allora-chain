@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -34,7 +33,7 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.GetTotalStak
 // Also includes stake that is queued for removal.
 func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.GetReputerStakeInTopicRequest) (_ *types.GetReputerStakeInTopicResponse, err error) {
 	defer metrics.RecordMetrics("GetReputerStakeInTopic", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -77,7 +76,7 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 	stakes := make([]*types.StakeInfo, len(req.Addresses))
 	for i, address := range req.Addresses {
 		stake := cosmosMath.ZeroInt()
-		if err := keeper.ValidateStringIsBech32(address); err == nil {
+		if err := types.ValidateStringIsBech32(address); err == nil {
 			stake, err = qs.sk.GetStakeReputerAuthority(ctx, req.TopicId, address)
 			if err != nil {
 				stake = cosmosMath.ZeroInt()
@@ -94,7 +93,7 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 // in the data structures for staking, this function will return an incorrect value.
 func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.GetStakeFromReputerInTopicInSelfRequest) (_ *types.GetStakeFromReputerInTopicInSelfResponse, err error) {
 	defer metrics.RecordMetrics("GetStakeFromReputerInTopicInSelf", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.ReputerAddress); err != nil {
+	if err := types.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -123,7 +122,7 @@ func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req 
 // Retrieves total delegate stake on a given reputer address in a given topic
 func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.GetDelegateStakeInTopicInReputerRequest) (_ *types.GetDelegateStakeInTopicInReputerResponse, err error) {
 	defer metrics.RecordMetrics("GetDelegateStakeInTopicInReputer", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.ReputerAddress); err != nil {
+	if err := types.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -144,10 +143,10 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 
 func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.GetStakeFromDelegatorInTopicInReputerRequest) (_ *types.GetStakeFromDelegatorInTopicInReputerResponse, err error) {
 	defer metrics.RecordMetrics("GetStakeFromDelegatorInTopicInReputer", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.ReputerAddress); err != nil {
+	if err := types.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid reputer address: %s", err)
 	}
-	if err := keeper.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
+	if err := types.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
 	}
 
@@ -173,7 +172,7 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 
 func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.GetStakeFromDelegatorInTopicRequest) (_ *types.GetStakeFromDelegatorInTopicResponse, err error) {
 	defer metrics.RecordMetrics("GetStakeFromDelegatorInTopic", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
+	if err := types.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -258,7 +257,7 @@ func (qs queryServer) GetStakeRemovalInfo(ctx context.Context, req *types.GetSta
 	defer metrics.RecordMetrics("GetStakeRemovalInfo", time.Now(), &err)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	if err := keeper.ValidateStringIsBech32(req.Reputer); err != nil {
+	if err := types.ValidateStringIsBech32(req.Reputer); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -283,10 +282,10 @@ func (qs queryServer) GetDelegateStakeRemovalInfo(ctx context.Context, req *type
 	defer metrics.RecordMetrics("GetDelegateStakeRemovalInfo", time.Now(), &err)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	if err := keeper.ValidateStringIsBech32(req.Reputer); err != nil {
+	if err := types.ValidateStringIsBech32(req.Reputer); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid reputer address: %s", err)
 	}
-	if err := keeper.ValidateStringIsBech32(req.Delegator); err != nil {
+	if err := types.ValidateStringIsBech32(req.Delegator); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
 	}
 

@@ -1,9 +1,11 @@
 package keeper_test
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -666,4 +668,182 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	finalTotalSum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
+}
+
+// TestUpdateTopic_RejectsLabelCaseSensitiveChange pins the keeper-level guard
+// that LabelCaseSensitive is immutable after topic creation. The msgserver
+// rebuilds updatedTopic from the stored topic, so this branch is only reachable
+// via direct keeper calls.
+func (s *KeeperTestSuite) TestUpdateTopic_RejectsLabelCaseSensitiveChange() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	testCases := []struct {
+		name             string
+		initialSensitive bool
+		updatedSensitive bool
+	}{
+		{
+			name:             "false to true",
+			initialSensitive: false,
+			updatedSensitive: true,
+		},
+		{
+			name:             "true to false",
+			initialSensitive: true,
+			updatedSensitive: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			topicId := s.CreateTopic(testutil.WithLabelCaseSensitive(tc.initialSensitive))
+
+			storedTopic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.initialSensitive, storedTopic.LabelCaseSensitive)
+
+			updatedTopic := storedTopic
+			updatedTopic.LabelCaseSensitive = tc.updatedSensitive
+
+			_, err = k.UpdateTopic(ctx, storedTopic, updatedTopic)
+			s.Require().Error(err)
+			s.Require().True(errorsmod.IsOf(err, types.ErrInvalidTopicUpdate))
+			s.Require().ErrorContains(err, "label_case_sensitive is immutable after topic creation")
+
+			unchangedTopic, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(storedTopic, unchangedTopic)
+		})
+	}
+}
+
+// TestRegisterEpochLabels_OverCapAllowsIdempotentRejectsNew pins the contract
+// that once a stored registry already exceeds maxRegistrySize — only reachable
+// if MaxEpochLabelRegistrySize is lowered by governance after labels were
+// registered — resubmitting an existing label stays idempotent (no growth, no
+// error) while a genuinely new label is rejected with
+// ErrEpochLabelRegistrySaturated.
+func (s *KeeperTestSuite) TestRegisterEpochLabels_OverCapAllowsIdempotentRejectsNew() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	topicId := uint64(1)
+	nonce := int64(10)
+	maxBytes := uint64(64)
+
+	// Fill the registry up to its cap of 3 labels.
+	ids, reg, err := k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"a", "b", "c"}, maxBytes, uint64(3))
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{1, 2, 3}, ids)
+	s.Require().Len(reg.Labels, 3)
+
+	// Simulate governance lowering MaxEpochLabelRegistrySize below the current
+	// registry size: the stored registry (3) now exceeds the cap (1).
+	loweredCap := uint64(1)
+
+	// Existing labels remain idempotent even over the cap: original ids, no growth.
+	existingIds, existingReg, err := k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"b", "a"}, maxBytes, loweredCap)
+	s.Require().NoError(err)
+	s.Require().Equal([]keeper.LabelId{2, 1}, existingIds)
+	s.Require().Len(existingReg.Labels, 3)
+
+	// A genuinely new label over the cap is rejected.
+	_, _, err = k.RegisterEpochLabels(ctx, topicId, false, nonce, []string{"d"}, maxBytes, loweredCap)
+	s.Require().Error(err)
+	s.Require().True(errorsmod.IsOf(err, types.ErrEpochLabelRegistrySaturated))
+
+	// The rejected call must not have grown the registry.
+	finalReg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(finalReg.Labels, 3)
+}
+
+// TestGetEpochLabelRegistryEmpty pins the invariant that GetEpochLabelRegistry
+// returns an empty-but-well-formed registry (no error) when nothing has been
+// written for (topicId, nonce).
+func (s *KeeperTestSuite) TestGetEpochLabelRegistryEmpty() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	nonce := types.BlockHeight(7)
+
+	reg, err := k.GetEpochLabelRegistry(ctx, topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, reg.TopicId)
+	s.Require().Equal(uint64(nonce), reg.EpochId) //nolint:gosec // nonce is a non-negative block height; cast is safe
+	s.Require().Empty(reg.Labels)
+}
+
+// TestSetTopic_CanonicalizesLabelWhitelist pins that SetTopic
+// canonicalizes label_whitelist using the topic's LabelCaseSensitive flag, so
+// that create/update-time canonicalization matches submission-time
+// canonicalization byte-for-byte. A mismatch here would silently reject or
+// accept the wrong labels at submission time.
+//
+// Case-insensitive mode lowercases ASCII letters (so "Foo" and "foo" collide),
+// while case-sensitive mode preserves case (so they remain distinct). Both
+// modes trim surrounding whitespace.
+func (s *KeeperTestSuite) TestSetTopic_CanonicalizesLabelWhitelist() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+
+	testCases := []struct {
+		name          string
+		caseSensitive bool
+		input         []string
+		expected      []string
+		expectErr     bool
+	}{
+		{
+			name:          "case-insensitive lowercases and trims mixed-case labels",
+			caseSensitive: false,
+			input:         []string{"Foo", "BAR", "  baz  "},
+			expected:      []string{"foo", "bar", "baz"},
+			expectErr:     false,
+		},
+		{
+			name:          "case-insensitive rejects entries that collide after lowercasing",
+			caseSensitive: false,
+			input:         []string{"Foo", "foo"},
+			expected:      nil,
+			expectErr:     true,
+		},
+		{
+			name:          "case-sensitive preserves case and trims mixed-case labels",
+			caseSensitive: true,
+			input:         []string{"Foo", "BAR", "  baz  "},
+			expected:      []string{"Foo", "BAR", "baz"},
+			expectErr:     false,
+		},
+		{
+			name:          "case-sensitive keeps case-differing labels distinct",
+			caseSensitive: true,
+			input:         []string{"Foo", "foo"},
+			expected:      []string{"Foo", "foo"},
+			expectErr:     false,
+		},
+	}
+
+	for i, tc := range testCases {
+		s.Run(tc.name, func() {
+			topicId := uint64(i + 1)
+			topic := s.MockTopic()
+			topic.Id = topicId
+			topic.LabelCaseSensitive = tc.caseSensitive
+			topic.LabelWhitelist = append([]string(nil), tc.input...)
+
+			err := k.SetTopic(ctx, topicId, topic)
+			if tc.expectErr {
+				s.Require().Error(err)
+				return
+			}
+			s.Require().NoError(err)
+
+			stored, err := k.GetTopic(ctx, topicId)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.expected, stored.LabelWhitelist)
+			s.Require().Equal(tc.caseSensitive, stored.LabelCaseSensitive)
+		})
+	}
 }

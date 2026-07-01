@@ -4,7 +4,9 @@ import (
 	"os"
 	"testing"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func TestExternalTestSuite(t *testing.T) {
@@ -23,6 +25,7 @@ func TestExternalTestSuite(t *testing.T) {
 		rpcEndpoints,
 		"../localnet/genesis",
 		seed,
+		[]*types.InputLabeledValue{{Label: "y", Value: alloraMath.MustNewBoundedExp40DecFromString("100")}}...,
 	)
 
 	t.Log(">>> Test Getting Chain Params <<<")
@@ -30,7 +33,7 @@ func TestExternalTestSuite(t *testing.T) {
 	t.Log(">>> Test Update Params <<<")
 	UpdateParamsChecks(testConfig)
 	t.Log(">>> Test Topic Creation <<<")
-	CreateTopic(testConfig)
+	testConfig.TopicID = CreateTopic(testConfig)
 	t.Log(">>> Test Distribution Checks <<<")
 	DistributionChecks(testConfig)
 	t.Log(">>> Test Actor Registration <<<")
@@ -43,8 +46,56 @@ func TestExternalTestSuite(t *testing.T) {
 	TopicWeightDistributionChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(testConfig)
+	t.Log(">>> Test Label Registry Classification Scenarios <<<")
+	LabelRegistryClassificationChecks(testConfig)
 	t.Log(">>> Test Reputer Un-Staking <<<")
 	UnstakingChecks(testConfig)
+}
+
+func TestExternalMultiTestSuite(t *testing.T) {
+	if _, isIntegration := os.LookupEnv("INTEGRATION"); isIntegration == false {
+		t.Skip("Skipping Integration Test Outside CI")
+	}
+	t.Log(">>> Setting up connection to local node <<<")
+
+	seed := testCommon.LookupEnvIntWithDefault(t, "SEED", 0)
+	rpcMode := testCommon.LookupRpcModeWithDefault(t, "RPC_MODE", testCommon.SingleRpc)
+	rpcEndpoints := testCommon.LookupEnvStringArrayWithDefault(t, "RPC_URLS", []string{"http://localhost:26657"})
+
+	testConfig := testCommon.NewTestConfig(
+		t,
+		rpcMode,
+		rpcEndpoints,
+		"../localnet/genesis",
+		seed,
+		[]*types.InputLabeledValue{
+			{
+				Label: "UP",
+				Value: alloraMath.MustNewBoundedExp40DecFromString("0.3"),
+			}, {
+				Label: "MID",
+				Value: alloraMath.MustNewBoundedExp40DecFromString("0.2"),
+			}, {
+				Label: "LOW",
+				Value: alloraMath.MustNewBoundedExp40DecFromString("0.5"),
+			},
+		}...,
+	)
+
+	t.Log(">>> Test Update Params <<<")
+	UpdateParamsChecks(testConfig)
+	t.Log(">>> Test Multi-Label Topic Creation <<<")
+	testConfig.TopicID = CreateTopicMultiLabel(testConfig)
+	t.Log(">>> Test Distribution Checks <<<")
+	DistributionChecks(testConfig)
+	t.Log(">>> Test Actor Registration <<<")
+	RegistrationChecks(testConfig)
+	t.Log(">>> Test Reputer Staking <<<")
+	StakingChecks(testConfig)
+	t.Log(">>> Test Topic Funding and Activation <<<")
+	TopicFundingChecks(testConfig)
+	t.Log(">>> Test Making Inference <<<")
+	WorkerInferenceAndForecastChecks(testConfig)
 }
 
 func TestUpgradeTestSuite(t *testing.T) {

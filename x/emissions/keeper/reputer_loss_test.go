@@ -12,37 +12,29 @@ func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 	block := types.BlockHeight(100)
 
 	//nolint:exhaustruct
-	valueBundle := &types.ValueBundle{
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{BlockHeight: block},
-		},
-		Reputer:       s.AddrsStr(0),
-		ExtraData:     []byte("data"),
-		CombinedValue: alloraMath.MustNewDecFromString("123"),
-		InfererValues: s.createDefaultInfererValues(),
-		NaiveValue:    alloraMath.MustNewDecFromString("123"),
-	}
-	signature := s.SignValueBundle(valueBundle, s.PrivKeys(0))
-	reputerLossBundles := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: valueBundle,
-				Signature:   signature,
-				Pubkey:      s.PubKeyHexStr(0),
+	lossBundles := types.LossBundles{
+		&types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: block},
 			},
+			Reputer:       s.AddrsStr(0),
+			ExtraData:     []byte("data"),
+			CombinedValue: alloraMath.MustNewDecFromString("123"),
+			InfererValues: s.createDefaultInfererValues(),
+			NaiveValue:    alloraMath.MustNewDecFromString("123"),
 		},
 	}
 
 	// Test inserting data
-	err := s.ReputerLossKeeper().InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
+	err := s.ReputerLossKeeper().InsertActiveReputerLosses(ctx, topicId, block, lossBundles)
 	require.NoError(err, "InsertActiveReputerLosses should not return an error")
 
 	// Retrieve data to verify insertion
 	result, err := s.ReputerLossKeeper().GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	require.NoError(err)
 	require.NotNil(result)
-	require.Equal(reputerLossBundles, result, "Retrieved data should match inserted data")
+	require.Equal(lossBundles, result, "Retrieved data should match inserted data")
 }
 
 func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
@@ -447,7 +439,7 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 
 	// Create a reputer loss bundle
 	//nolint:exhaustruct
-	valueBundle := &types.ValueBundle{
+	valueBundle := types.ValueBundle{
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{BlockHeight: 100},
@@ -458,9 +450,9 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 		InfererValues: s.createDefaultInfererValues(),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
 	}
-	signature := s.SignValueBundle(valueBundle, s.PrivKeys(0))
+	signature := s.SignValueBundle(&valueBundle, s.PrivKeys(0))
 	reputerLossBundle := types.ReputerValueBundle{
-		ValueBundle: valueBundle,
+		ValueBundle: &valueBundle,
 		Signature:   signature,
 		Pubkey:      s.PubKeyHexStr(0),
 	}
@@ -472,7 +464,7 @@ func (s *KeeperTestSuite) TestRemoveReputerLoss() {
 	// Verify the reputer loss was added
 	retrievedLoss, err := k.GetReputerLatestLossByTopicId(ctx, topicId, reputer)
 	s.Require().NoError(err)
-	s.Require().Equal(reputerLossBundle, retrievedLoss)
+	s.Require().Equal(valueBundle, retrievedLoss)
 
 	// Remove the reputer loss
 	err = k.RemoveReputerLoss(ctx, topicId, reputer)

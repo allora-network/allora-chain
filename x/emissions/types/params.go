@@ -67,8 +67,99 @@ func DefaultParams() Params {
 		GlobalAdminWhitelistAppended:        true,                                        // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
 		MaxWhitelistInputArrayLength:        uint64(2000),                                // maximum length of input arrays for whitelist operations
 		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"), // retained for compatibility; currently unused
+		MaxCanonicalLabelByteLength:         64,                                          // cap on canonical label name byte length after NFC + trim; bounded by [Min,Max]MaxCanonicalLabelByteLength
+		MaxTopicLabelWhitelistSize:          DefaultMaxTopicLabelWhitelistSize,           // maximum number of canonical labels allowed in a topic label whitelist
+		MaxEpochLabelRegistrySize:           DefaultMaxEpochLabelRegistrySize,            // maximum number of labels allowed in an epoch label registry
 	}
 }
+
+// DefaultMaxLabelsPerSubmission is the default topic-level cap on the number of
+// distinct canonical labels a worker may attach to a single InputInference.
+// Picked to be comfortably above typical classification schemas while still
+// keeping per-epoch label cardinality bounded in a deterministic way.
+const DefaultMaxLabelsPerSubmission = uint64(32)
+
+// MinMaxLabelsPerSubmission / MaxMaxLabelsPerSubmission bound the acceptable
+// per-topic cap on labels a single worker may attach to one payload.
+const (
+	MinMaxLabelsPerSubmission = uint64(1)
+	MaxMaxLabelsPerSubmission = uint64(1024)
+)
+
+// ValidateMaxLabelsPerSubmission validates the per-topic cap on the number of
+// labels a worker may attach to one submission. Exported so the keeper
+// topic-update path shares the same bound as create/update request validation.
+func ValidateMaxLabelsPerSubmission(i uint64) error {
+	if i < MinMaxLabelsPerSubmission {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max labels per submission must be >= %d, got %d",
+			MinMaxLabelsPerSubmission, i)
+	}
+	if i > MaxMaxLabelsPerSubmission {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max labels per submission must be <= %d, got %d",
+			MaxMaxLabelsPerSubmission, i)
+	}
+	return nil
+}
+
+// DefaultMaxTopicLabelWhitelistSize is the default topic-level cap on the
+// number of canonical labels allowed in LabelWhitelist.
+const DefaultMaxTopicLabelWhitelistSize = uint64(256)
+
+// MinMaxTopicLabelWhitelistSize / MaxMaxTopicLabelWhitelistSize bound the
+// acceptable module param for topic label whitelist cardinality.
+const (
+	MinMaxTopicLabelWhitelistSize = uint64(1)
+	MaxMaxTopicLabelWhitelistSize = uint64(2000)
+)
+
+func validateMaxTopicLabelWhitelistSize(i uint64) error {
+	if i < MinMaxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max topic label whitelist size must be >= %d, got %d",
+			MinMaxTopicLabelWhitelistSize, i)
+	}
+	if i > MaxMaxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max topic label whitelist size must be <= %d, got %d",
+			MaxMaxTopicLabelWhitelistSize, i)
+	}
+	return nil
+}
+
+// ValidateTopicLabelWhitelistSize enforces the configured topic label whitelist
+// cardinality cap before canonicalization or persistence.
+func ValidateTopicLabelWhitelistSize(labelWhitelist []string, maxTopicLabelWhitelistSize uint64) error {
+	if uint64(len(labelWhitelist)) > maxTopicLabelWhitelistSize {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"topic label whitelist size must be <= %d, got %d",
+			maxTopicLabelWhitelistSize, len(labelWhitelist))
+	}
+	return nil
+}
+
+// DefaultMaxEpochLabelRegistrySize is the default cap on labels in a single
+// (topic, nonce) epoch label registry.
+const DefaultMaxEpochLabelRegistrySize = uint64(32768)
+
+// ValidateMaxEpochLabelRegistrySize validates the module-level cap on labels
+// stored in a single epoch label registry. It is used by the registry growth
+// path (RegisterEpochLabels), which is the sole enforcement point for the cap.
+func ValidateMaxEpochLabelRegistrySize(i uint64) error {
+	if i == 0 {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max epoch label registry size must be greater than zero")
+	}
+	return nil
+}
+
+// MinMaxCanonicalLabelByteLength / MaxMaxCanonicalLabelByteLength bound the
+// acceptable values for Params.MaxCanonicalLabelByteLength.
+const (
+	MinMaxCanonicalLabelByteLength = uint64(1)
+	MaxMaxCanonicalLabelByteLength = uint64(1024)
+)
 
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
@@ -224,6 +315,35 @@ func (p Params) Validate() error {
 	}
 	if err := validateMinWeightThresholdForStdnorm(p.MinWeightThresholdForStdnorm); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: min weight threshold for stdnorm")
+	}
+	if err := validateMaxCanonicalLabelByteLength(p.MaxCanonicalLabelByteLength); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max canonical label byte length")
+	}
+	if err := validateMaxTopicLabelWhitelistSize(p.MaxTopicLabelWhitelistSize); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max topic label whitelist size")
+	}
+	if err := ValidateMaxEpochLabelRegistrySize(p.MaxEpochLabelRegistrySize); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: max epoch label registry size")
+	}
+	return nil
+}
+
+// validateMaxCanonicalLabelByteLength enforces
+// MinMaxCanonicalLabelByteLength <= i <= MaxMaxCanonicalLabelByteLength on
+// every param change (genesis, gov param-change, and migration-backfill).
+// Zero is rejected because a zero cap would reject every label; the v15
+// migration backfills zero to 64 on upgrade, so this validator only ever
+// runs against backfilled or user-supplied values.
+func validateMaxCanonicalLabelByteLength(i uint64) error {
+	if i < MinMaxCanonicalLabelByteLength {
+		return errorsmod.Wrapf(ErrValidationMustBeGreaterthanZero,
+			"max canonical label byte length must be >= %d, got %d",
+			MinMaxCanonicalLabelByteLength, i)
+	}
+	if i > MaxMaxCanonicalLabelByteLength {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"max canonical label byte length must be <= %d, got %d",
+			MaxMaxCanonicalLabelByteLength, i)
 	}
 	return nil
 }

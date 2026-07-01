@@ -1,0 +1,25 @@
+syntax = "proto3";
+package emissions.v10;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+message Inference {
+  reserved 4;
+  option (gogoproto.equal) = true;
+
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  string inferer = 3;
+  bytes extra_data = 5;
+  string proof = 6;
+  repeated string values = 7 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message Inferences {
+  repeated Inference inferences = 1;
+}

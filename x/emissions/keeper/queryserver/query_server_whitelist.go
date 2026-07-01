@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/errors"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -17,7 +16,7 @@ import (
 // Params defines the handler for the Query/Params RPC method.
 func (qs queryServer) IsWhitelistAdmin(ctx context.Context, req *types.IsWhitelistAdminRequest) (_ *types.IsWhitelistAdminResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistAdmin", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -31,7 +30,7 @@ func (qs queryServer) IsWhitelistAdmin(ctx context.Context, req *types.IsWhiteli
 
 func (qs queryServer) IsWhitelistedGlobalWorker(ctx context.Context, req *types.IsWhitelistedGlobalWorkerRequest) (_ *types.IsWhitelistedGlobalWorkerResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedGlobalWorker", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -45,7 +44,7 @@ func (qs queryServer) IsWhitelistedGlobalWorker(ctx context.Context, req *types.
 
 func (qs queryServer) IsWhitelistedGlobalReputer(ctx context.Context, req *types.IsWhitelistedGlobalReputerRequest) (_ *types.IsWhitelistedGlobalReputerResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedGlobalReputer", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -59,7 +58,7 @@ func (qs queryServer) IsWhitelistedGlobalReputer(ctx context.Context, req *types
 
 func (qs queryServer) IsWhitelistedGlobalAdmin(ctx context.Context, req *types.IsWhitelistedGlobalAdminRequest) (_ *types.IsWhitelistedGlobalAdminResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedGlobalAdmin", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -95,7 +94,7 @@ func (qs queryServer) IsTopicReputerWhitelistEnabled(ctx context.Context, req *t
 
 func (qs queryServer) IsWhitelistedTopicCreator(ctx context.Context, req *types.IsWhitelistedTopicCreatorRequest) (_ *types.IsWhitelistedTopicCreatorResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedTopicCreator", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -109,7 +108,7 @@ func (qs queryServer) IsWhitelistedTopicCreator(ctx context.Context, req *types.
 
 func (qs queryServer) IsWhitelistedGlobalActor(ctx context.Context, req *types.IsWhitelistedGlobalActorRequest) (_ *types.IsWhitelistedGlobalActorResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedGlobalActor", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -123,7 +122,7 @@ func (qs queryServer) IsWhitelistedGlobalActor(ctx context.Context, req *types.I
 
 func (qs queryServer) IsWhitelistedTopicWorker(ctx context.Context, req *types.IsWhitelistedTopicWorkerRequest) (_ *types.IsWhitelistedTopicWorkerResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedTopicWorker", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -137,7 +136,7 @@ func (qs queryServer) IsWhitelistedTopicWorker(ctx context.Context, req *types.I
 
 func (qs queryServer) IsWhitelistedTopicReputer(ctx context.Context, req *types.IsWhitelistedTopicReputerRequest) (_ *types.IsWhitelistedTopicReputerResponse, err error) {
 	defer metrics.RecordMetrics("IsWhitelistedTopicReputer", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -151,7 +150,7 @@ func (qs queryServer) IsWhitelistedTopicReputer(ctx context.Context, req *types.
 
 func (qs queryServer) CanUpdateAllGlobalWhitelists(ctx context.Context, req *types.CanUpdateAllGlobalWhitelistsRequest) (_ *types.CanUpdateAllGlobalWhitelistsResponse, err error) {
 	defer metrics.RecordMetrics("CanUpdateAllGlobalWhitelists", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -165,7 +164,7 @@ func (qs queryServer) CanUpdateAllGlobalWhitelists(ctx context.Context, req *typ
 
 func (qs queryServer) CanUpdateGlobalWorkerWhitelist(ctx context.Context, req *types.CanUpdateGlobalWorkerWhitelistRequest) (_ *types.CanUpdateGlobalWorkerWhitelistResponse, err error) {
 	defer metrics.RecordMetrics("CanUpdateGlobalWorkerWhitelist", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -179,7 +178,7 @@ func (qs queryServer) CanUpdateGlobalWorkerWhitelist(ctx context.Context, req *t
 
 func (qs queryServer) CanUpdateGlobalReputerWhitelist(ctx context.Context, req *types.CanUpdateGlobalReputerWhitelistRequest) (_ *types.CanUpdateGlobalReputerWhitelistResponse, err error) {
 	defer metrics.RecordMetrics("CanUpdateGlobalReputerWhitelist", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -193,7 +192,7 @@ func (qs queryServer) CanUpdateGlobalReputerWhitelist(ctx context.Context, req *
 
 func (qs queryServer) CanUpdateParams(ctx context.Context, req *types.CanUpdateParamsRequest) (_ *types.CanUpdateParamsResponse, err error) {
 	defer metrics.RecordMetrics("CanUpdateParams", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -207,7 +206,7 @@ func (qs queryServer) CanUpdateParams(ctx context.Context, req *types.CanUpdateP
 
 func (qs queryServer) CanUpdateTopicWhitelist(ctx context.Context, req *types.CanUpdateTopicWhitelistRequest) (_ *types.CanUpdateTopicWhitelistResponse, err error) {
 	defer metrics.RecordMetrics("CanUpdateTopicWhitelist", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -221,7 +220,7 @@ func (qs queryServer) CanUpdateTopicWhitelist(ctx context.Context, req *types.Ca
 
 func (qs queryServer) CanCreateTopic(ctx context.Context, req *types.CanCreateTopicRequest) (_ *types.CanCreateTopicResponse, err error) {
 	defer metrics.RecordMetrics("CanCreateTopic", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -235,7 +234,7 @@ func (qs queryServer) CanCreateTopic(ctx context.Context, req *types.CanCreateTo
 
 func (qs queryServer) CanSubmitWorkerPayload(ctx context.Context, req *types.CanSubmitWorkerPayloadRequest) (_ *types.CanSubmitWorkerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("CanSubmitWorkerPayload", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -249,7 +248,7 @@ func (qs queryServer) CanSubmitWorkerPayload(ctx context.Context, req *types.Can
 
 func (qs queryServer) CanSubmitReputerPayload(ctx context.Context, req *types.CanSubmitReputerPayloadRequest) (_ *types.CanSubmitReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("CanSubmitReputerPayload", time.Now(), &err)
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 

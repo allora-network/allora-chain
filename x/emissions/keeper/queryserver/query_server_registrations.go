@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,7 +40,7 @@ func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.GetRepu
 func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *types.IsWorkerRegisteredInTopicIdRequest) (_ *types.IsWorkerRegisteredInTopicIdResponse, err error) {
 	defer metrics.RecordMetrics("IsWorkerRegisteredInTopicId", time.Now(), &err)
 
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
 
@@ -63,7 +62,7 @@ func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *type
 func (qs queryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *types.IsReputerRegisteredInTopicIdRequest) (_ *types.IsReputerRegisteredInTopicIdResponse, err error) {
 	defer metrics.RecordMetrics("IsReputerRegisteredInTopicId", time.Now(), &err)
 
-	if err := keeper.ValidateStringIsBech32(req.Address); err != nil {
+	if err := types.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
 	isRegistered, err := qs.rlk.IsReputerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, req.Address)

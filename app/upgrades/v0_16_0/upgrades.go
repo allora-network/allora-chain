@@ -5,10 +5,11 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/allora-network/allora-chain/app/keepers"
-	"github.com/allora-network/allora-chain/app/upgrades"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
+	"github.com/allora-network/allora-chain/app/keepers"
+	"github.com/allora-network/allora-chain/app/upgrades"
 )
 
 const (

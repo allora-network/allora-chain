@@ -4,9 +4,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/allora-network/allora-chain/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
+
+	"github.com/allora-network/allora-chain/math"
 )
 
 func TestMain(m *testing.M) {
@@ -16,56 +18,6 @@ func TestMain(m *testing.M) {
 	config.Seal()
 
 	os.Exit(m.Run())
-}
-
-func TestInputInferenceConvert(t *testing.T) {
-	tests := []struct {
-		name    string
-		input   *InputInference
-		wantErr bool
-	}{
-		{
-			name:    "nil input",
-			input:   nil,
-			wantErr: true,
-		},
-		{
-			name: "valid input",
-			input: &InputInference{
-				TopicId:     1,
-				BlockHeight: 100,
-				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:       mustNewBoundedExp40Dec(t, "1.23"),
-				ExtraData:   []byte("extra"),
-				Proof:       "proof",
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewInferenceFromInput(tt.input)
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			if tt.input == nil {
-				require.Nil(t, got)
-				return
-			}
-			require.Equal(t, tt.input.TopicId, got.TopicId)
-			require.Equal(t, tt.input.BlockHeight, got.BlockHeight)
-			require.Equal(t, tt.input.Inferer, got.Inferer)
-			require.Equal(t, tt.input.ExtraData, got.ExtraData)
-			require.Equal(t, tt.input.Proof, got.Proof)
-			// Check value conversion
-			boundedDec, err := tt.input.Value.ToDec()
-			require.NoError(t, err)
-			require.True(t, boundedDec.Equal(got.Value))
-		})
-	}
 }
 
 func TestInputForecastElementConvert(t *testing.T) {
@@ -102,7 +54,7 @@ func TestInputForecastElementConvert(t *testing.T) {
 				return
 			}
 			require.Equal(t, tt.input.Inferer, got.Inferer)
-			boundedDec, err := tt.input.Value.ToDec()
+			boundedDec := tt.input.Value.ToDec()
 			require.NoError(t, err)
 			require.True(t, boundedDec.Equal(got.Value))
 		})
@@ -159,67 +111,6 @@ func TestInputForecastConvert(t *testing.T) {
 			require.Equal(t, tt.input.Forecaster, got.Forecaster)
 			require.Equal(t, tt.input.ExtraData, got.ExtraData)
 			require.Equal(t, len(tt.input.ForecastElements), len(got.ForecastElements))
-		})
-	}
-}
-
-func TestInputInferenceForecastBundleConvert(t *testing.T) {
-	validInference := &InputInference{
-		TopicId:     1,
-		BlockHeight: 100,
-		Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-		Value:       mustNewBoundedExp40Dec(t, "1.23"),
-		ExtraData:   []byte("extra"),
-		Proof:       "proof",
-	}
-
-	validForecast := &InputForecast{
-		TopicId:     1,
-		BlockHeight: 100,
-		Forecaster:  "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5",
-		ForecastElements: []*InputForecastElement{
-			{
-				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
-				Value:   mustNewBoundedExp40Dec(t, "1.23"),
-			},
-		},
-		ExtraData: []byte("extra"),
-	}
-
-	tests := []struct {
-		name    string
-		input   *InputInferenceForecastBundle
-		wantErr bool
-	}{
-		{
-			name:    "nil input",
-			input:   nil,
-			wantErr: true,
-		},
-		{
-			name: "valid input",
-			input: &InputInferenceForecastBundle{
-				Inference: validInference,
-				Forecast:  validForecast,
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewInferenceForecastBundleFromInput(tt.input)
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			if tt.input == nil {
-				require.Nil(t, got)
-				return
-			}
-			require.NotNil(t, got.Inference)
-			require.NotNil(t, got.Forecast)
 		})
 	}
 }
@@ -330,11 +221,11 @@ func TestInputValueBundleConvert(t *testing.T) {
 			require.Equal(t, tt.input.ExtraData, got.ExtraData)
 
 			// Check decimal conversions
-			combinedValue, err := tt.input.CombinedValue.ToDec()
+			combinedValue := tt.input.CombinedValue.ToDec()
 			require.NoError(t, err)
 			require.True(t, combinedValue.Equal(got.CombinedValue))
 
-			naiveValue, err := tt.input.NaiveValue.ToDec()
+			naiveValue := tt.input.NaiveValue.ToDec()
 			require.NoError(t, err)
 			require.True(t, naiveValue.Equal(got.NaiveValue))
 
@@ -343,6 +234,207 @@ func TestInputValueBundleConvert(t *testing.T) {
 			require.Equal(t, len(tt.input.ForecasterValues), len(got.ForecasterValues))
 			require.Equal(t, len(tt.input.OneOutInfererValues), len(got.OneOutInfererValues))
 			// Add more slice checks as needed
+		})
+	}
+}
+
+//nolint:exhaustruct
+func TestConvertInferenceValuesFromProto(t *testing.T) {
+	topicId := uint64(1)
+	nonce := int64(1)
+
+	w1 := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
+	w2 := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
+
+	mustDec := func(x string) math.Dec { return math.MustNewDecFromString(x) }
+
+	// labelsN builds a contiguous, 1-based registry of n labels named a, b, c, ...
+	labelNames := []string{"a", "b", "c", "d", "e", "f", "g", "h"}
+	labelsN := func(n int) []*TopicLabel {
+		out := make([]*TopicLabel, n)
+		var id uint32
+		for i := 0; i < n; i++ {
+			id++
+			out[i] = &TopicLabel{Id: id, Name: labelNames[i]}
+		}
+		return out
+	}
+
+	type tc struct {
+		name  string
+		arity TopicOutputArity
+		// labelDefault is topic.LabelDefaultValue used to pad unset trailing slots. When unset, it behaves as 0.
+		labelDefault math.Dec
+		labels       []*TopicLabel
+		inf          *Inference
+		wantErrIs    error
+		wantVals     []string
+	}
+
+	cases := []tc{
+		{
+			name:      "nil_inference_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			labels:    nil,
+			inf:       nil,
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			// Exercises the switch default branch ("output_arity is invalid").
+			name:      "unspecified_arity_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED,
+			labels:    labelsN(2),
+			inf:       &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("1")}},
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		// ---------- SINGLE (default value must be ignored) ----------
+		{
+			name:         "SINGLE_scalar_only_ok",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			labelDefault: mustDec("-7"), // non-zero: must NOT leak into a single-arity result
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("42")}},
+			wantVals:     []string{"42"},
+		},
+		{
+			name:     "SINGLE_values_len1_ok",
+			arity:    TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			inf:      &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("7")}},
+			wantVals: []string{"7"},
+		},
+		{
+			name:      "SINGLE_values_len0_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			inf:       &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: nil},
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:      "SINGLE_values_len_gt_1_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			inf:       &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("1"), mustDec("2")}},
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:      "SINGLE_nan_scalar_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+			inf:       &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{math.NewNaN()}},
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		// ---------- MULTI guards ----------
+		{
+			name:      "MULTI_empty_registry_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labels:    []*TopicLabel{},
+			inf:       &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("1")}},
+			wantErrIs: sdkerrors.ErrLogic,
+		},
+		{
+			name:      "MULTI_empty_values_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labels:    labelsN(1),
+			inf:       &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: nil},
+			wantErrIs: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:      "MULTI_values_len_gt_registry_rejected",
+			arity:     TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labels:    labelsN(2),
+			inf:       &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("1"), mustDec("2"), mustDec("3")}},
+			wantErrIs: sdkerrors.ErrLogic,
+		},
+		// ---------- MULTI exact length: default value must NOT leak ----------
+		{
+			name:         "MULTI_exact_len_no_padding_default_ignored",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("-1"), // exact length => default never used
+			labels:       labelsN(3),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w2, Values: []math.Dec{mustDec("10"), mustDec("20"), mustDec("30")}},
+			wantVals:     []string{"10", "20", "30"},
+		},
+		// ---------- MULTI padding: the core fix, across several default values ----------
+		{
+			name:         "MULTI_short_pads_with_zero_default_backcompat",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("0"),
+			labels:       labelsN(5),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("9"), mustDec("8")}},
+			wantVals:     []string{"9", "8", "0", "0", "0"},
+		},
+		{
+			name:         "MULTI_short_pads_with_negative_default",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("-1"),
+			labels:       labelsN(5),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("9"), mustDec("8")}},
+			wantVals:     []string{"9", "8", "-1", "-1", "-1"},
+		},
+		{
+			name:         "MULTI_short_pads_with_fractional_default",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("0.5"),
+			labels:       labelsN(5),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("9"), mustDec("8")}},
+			wantVals:     []string{"9", "8", "0.5", "0.5", "0.5"},
+		},
+		{
+			name:         "MULTI_short_pads_with_large_positive_default",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("1000"),
+			labels:       labelsN(4),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("9"), mustDec("8")}},
+			wantVals:     []string{"9", "8", "1000", "1000"},
+		},
+		{
+			name:         "MULTI_extreme_short_single_value_into_five",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("-1"),
+			labels:       labelsN(5),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("9")}},
+			wantVals:     []string{"9", "-1", "-1", "-1", "-1"},
+		},
+		{
+			name:         "MULTI_pad_by_one",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("3"),
+			labels:       labelsN(3),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("1"), mustDec("2")}},
+			wantVals:     []string{"1", "2", "3"},
+		},
+		// ---------- MULTI validation still fires after padding ----------
+		{
+			name:         "MULTI_rejects_invalid_provided_value_even_with_valid_default",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: mustDec("-1"),
+			labels:       labelsN(3),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("1"), math.NewNaN(), mustDec("3")}},
+			wantErrIs:    sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name:         "MULTI_rejects_nan_default_landing_in_padded_slot",
+			arity:        TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI,
+			labelDefault: math.NewNaN(), // pads trailing slots with NaN => must be rejected
+			labels:       labelsN(4),
+			inf:          &Inference{TopicId: topicId, BlockHeight: nonce, Inferer: w1, Values: []math.Dec{mustDec("9"), mustDec("8")}},
+			wantErrIs:    sdkerrors.ErrInvalidRequest,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			// Unset labelDefault is the zero-value Dec (a well-formed 0); it is
+			// never written into a padded slot in the unset cases, so it is safe
+			// to pass through verbatim. Padding cases set labelDefault explicitly.
+			got, err := ConvertInferenceValuesFromProto(c.arity, c.labels, c.labelDefault, c.inf)
+
+			if c.wantErrIs != nil {
+				require.ErrorIs(t, err, c.wantErrIs)
+				return
+			}
+			require.NoError(t, err)
+
+			require.Equal(t, len(c.wantVals), len(got))
+			for i := range c.wantVals {
+				require.Equal(t, c.wantVals[i], got[i].String())
+			}
 		})
 	}
 }

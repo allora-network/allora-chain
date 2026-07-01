@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -21,7 +20,7 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) 
 		return nil, errors.Wrap(err, "amount is not valid")
 	}
 
-	err = keeper.ValidateStringIsBech32(msg.Sender)
+	err = types.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}

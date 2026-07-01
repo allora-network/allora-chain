@@ -12,13 +12,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/utils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
-
-var valueBundleBufferPool = utils.NewBytesPool(1024, 0)
 
 func GenerateTestAccounts(count int) (
 	privKeys []secp256k1.PrivKey,
@@ -230,31 +227,31 @@ func GetInferencesFromCsv(
 		Inferences: []*emissionstypes.Inference{
 			{
 				Inferer:     inferers[0],
-				Value:       epochGet("inference_0"),
+				Values:      []alloraMath.Dec{epochGet("inference_0")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[1],
-				Value:       epochGet("inference_1"),
+				Values:      []alloraMath.Dec{epochGet("inference_1")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[2],
-				Value:       epochGet("inference_2"),
+				Values:      []alloraMath.Dec{epochGet("inference_2")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[3],
-				Value:       epochGet("inference_3"),
+				Values:      []alloraMath.Dec{epochGet("inference_3")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
 			{
 				Inferer:     inferers[4],
-				Value:       epochGet("inference_4"),
+				Values:      []alloraMath.Dec{epochGet("inference_4")},
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 			},
@@ -553,22 +550,6 @@ func GetNetworkLossFromCsv(
 	}, nil
 }
 
-func signValueBundle(valueBundle *emissionstypes.ValueBundle, privateKey secp256k1.PrivKey) []byte {
-	buf := valueBundleBufferPool.Get()
-	defer valueBundleBufferPool.Put(buf)
-	marshaled, err := valueBundle.XXX_Marshal(buf, true)
-	if err != nil {
-		panic(err)
-	}
-
-	valueBundleSignature, err := privateKey.Sign(marshaled)
-	if err != nil {
-		panic(err)
-	}
-
-	return valueBundleSignature
-}
-
 // helper struct for GetReputersDataFromCsv
 type ReputerKey struct {
 	Address    string
@@ -583,15 +564,15 @@ func GetReputersDataFromCsv(
 	forecasters []string,
 	reputers []ReputerKey,
 	epochGet func(header string) alloraMath.Dec,
-) (emissionstypes.ReputerValueBundles, error) {
+) (emissionstypes.LossBundles, error) {
 	if len(inferers) != 5 {
-		return emissionstypes.ReputerValueBundles{}, fmt.Errorf("expected 5 inferers, got %d", len(inferers))
+		return nil, fmt.Errorf("expected 5 inferers, got %d", len(inferers))
 	}
 	if len(forecasters) != 3 {
-		return emissionstypes.ReputerValueBundles{}, fmt.Errorf("expected 3 forecasters, got %d", len(forecasters))
+		return nil, fmt.Errorf("expected 3 forecasters, got %d", len(forecasters))
 	}
 	if len(reputers) != 5 {
-		return emissionstypes.ReputerValueBundles{}, fmt.Errorf("expected 5 reputers, got %d", len(reputers))
+		return nil, fmt.Errorf("expected 5 reputers, got %d", len(reputers))
 	}
 	valueBundle1 := &emissionstypes.ValueBundle{
 		TopicId: topicId,
@@ -765,12 +746,6 @@ func GetReputersDataFromCsv(
 				},
 			},
 		},
-	}
-	signature1 := signValueBundle(valueBundle1, reputers[0].PrivateKey)
-	reputerValueBundle1 := &emissionstypes.ReputerValueBundle{
-		ValueBundle: valueBundle1,
-		Signature:   signature1,
-		Pubkey:      reputers[0].PubKeyHex,
 	}
 
 	valueBundle2 := &emissionstypes.ValueBundle{
@@ -946,12 +921,6 @@ func GetReputersDataFromCsv(
 			},
 		},
 	}
-	signature2 := signValueBundle(valueBundle2, reputers[1].PrivateKey)
-	reputerValueBundle2 := &emissionstypes.ReputerValueBundle{
-		ValueBundle: valueBundle2,
-		Signature:   signature2,
-		Pubkey:      reputers[1].PubKeyHex,
-	}
 
 	valueBundle3 := &emissionstypes.ValueBundle{
 		TopicId: topicId,
@@ -1125,12 +1094,6 @@ func GetReputersDataFromCsv(
 				},
 			},
 		},
-	}
-	signature3 := signValueBundle(valueBundle3, reputers[2].PrivateKey)
-	reputerValueBundle3 := &emissionstypes.ReputerValueBundle{
-		ValueBundle: valueBundle3,
-		Signature:   signature3,
-		Pubkey:      reputers[2].PubKeyHex,
 	}
 
 	valueBundle4 := &emissionstypes.ValueBundle{
@@ -1306,12 +1269,6 @@ func GetReputersDataFromCsv(
 			},
 		},
 	}
-	signature4 := signValueBundle(valueBundle4, reputers[3].PrivateKey)
-	reputerValueBundle4 := &emissionstypes.ReputerValueBundle{
-		ValueBundle: valueBundle4,
-		Signature:   signature4,
-		Pubkey:      reputers[3].PubKeyHex,
-	}
 
 	valueBundle5 := &emissionstypes.ValueBundle{
 		TopicId: topicId,
@@ -1486,20 +1443,13 @@ func GetReputersDataFromCsv(
 			},
 		},
 	}
-	signature5 := signValueBundle(valueBundle5, reputers[4].PrivateKey)
-	reputerValueBundle5 := &emissionstypes.ReputerValueBundle{
-		ValueBundle: valueBundle5,
-		Signature:   signature5,
-		Pubkey:      reputers[4].PubKeyHex,
-	}
-	return emissionstypes.ReputerValueBundles{
-		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
-			reputerValueBundle1,
-			reputerValueBundle2,
-			reputerValueBundle3,
-			reputerValueBundle4,
-			reputerValueBundle5,
-		},
+
+	return emissionstypes.LossBundles{
+		valueBundle1,
+		valueBundle2,
+		valueBundle3,
+		valueBundle4,
+		valueBundle5,
 	}, nil
 }
 

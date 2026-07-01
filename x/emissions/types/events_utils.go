@@ -38,30 +38,100 @@ func NewNetworkLossSetEventBase(lossBundle ValueBundle) proto.Message {
 	}
 }
 
-func NewNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
-	return &EventNetworkInferences{
-		TopicId:     networkInferences.TopicId,
-		BlockHeight: networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		ValueBundle: nil,
-		Nonce:       networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Bundle:      ValueBundleToEventValueBundleBase(&networkInferences),
+func NewNetworkInferencesEventBase(networkInferences NetworkInferenceBundle) proto.Message {
+	return convertNetworkInferenceBundleToEvent(networkInferences, false)
+}
+
+func NewOutlierResistantNetworkInferencesEventBase(networkInferences NetworkInferenceBundle) proto.Message {
+	return convertNetworkInferenceBundleToEvent(networkInferences, true)
+}
+
+func convertNetworkInferenceBundleToEvent(b NetworkInferenceBundle, outlierResistant bool) *EventNetworkInferenceBundle {
+	labeledValuesToArray := func(vals []*LabeledValue) alloraMath.DecArray {
+		return convertArray(vals, func(v *LabeledValue) alloraMath.Dec { return v.Value })
+	}
+
+	labelNames := convertArray(b.GetCombinedValue(), func(v *LabeledValue) string { return v.GetLabelName() })
+
+	infererAddrs := convertArray(b.GetInfererValues(), func(w *WorkerInference) string { return w.GetWorker() })
+	infererMatrix := convertArray(b.GetInfererValues(), func(w *WorkerInference) alloraMath.DecArray {
+		return labeledValuesToArray(w.GetValues())
+	})
+
+	forecasterAddrs := convertArray(b.GetForecasterValues(), func(w *WorkerInference) string { return w.GetWorker() })
+	forecasterMatrix := convertArray(b.GetForecasterValues(), func(w *WorkerInference) alloraMath.DecArray {
+		return labeledValuesToArray(w.GetValues())
+	})
+
+	oneOutInferer := convertArray(b.GetOneOutInfererValues(), func(v *OneOutInfererValue) alloraMath.DecArray {
+		return labeledValuesToArray(v.GetCombinedInference())
+	})
+	oneOutForecaster := convertArray(b.GetOneOutForecasterValues(), func(v *OneOutForecasterValue) alloraMath.DecArray {
+		return labeledValuesToArray(v.GetCombinedInference())
+	})
+	oneInForecaster := convertArray(b.GetOneInForecasterValues(), func(v *OneInForecasterValue) alloraMath.DecArray {
+		return labeledValuesToArray(v.GetCombinedInference())
+	})
+
+	ooif := groupOneOutInfererForecaster(b.GetOneOutInfererForecasterValues(), labeledValuesToArray)
+
+	return &EventNetworkInferenceBundle{
+		TopicId:                       b.GetTopicId(),
+		Nonce:                         b.GetNonce(),
+		LabelNames:                    labelNames,
+		InfererAddresses:              infererAddrs,
+		ForecasterAddresses:           forecasterAddrs,
+		CombinedValue:                 labeledValuesToArray(b.GetCombinedValue()),
+		NaiveValue:                    labeledValuesToArray(b.GetNaiveValue()),
+		InfererValues:                 infererMatrix,
+		ForecasterValues:              forecasterMatrix,
+		OneOutInfererValues:           oneOutInferer,
+		OneOutForecasterValues:        oneOutForecaster,
+		OneInForecasterValues:         oneInForecaster,
+		OneOutInfererForecasterValues: ooif,
+		OutlierResistant:              outlierResistant,
 	}
 }
 
-func NewOutlierResistantNetworkInferencesEventBase(networkInferences ValueBundle) proto.Message {
-	return &EventOutlierResistantNetworkInferences{
-		TopicId: networkInferences.TopicId,
-		Nonce:   networkInferences.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Bundle:  ValueBundleToEventValueBundleBase(&networkInferences),
+func groupOneOutInfererForecaster(
+	in []*OneOutInfererForecasterValue,
+	labeledValuesToArray func([]*LabeledValue) alloraMath.DecArray,
+) []alloraMath.DecMatrix {
+	if len(in) == 0 {
+		return nil
 	}
+
+	order := make([]string, 0)
+	rowsByForecaster := make(map[string][]alloraMath.DecArray)
+
+	for _, x := range in {
+		if x == nil {
+			continue
+		}
+		fc := x.GetForecaster()
+		if _, ok := rowsByForecaster[fc]; !ok {
+			order = append(order, fc)
+		}
+		rowsByForecaster[fc] = append(rowsByForecaster[fc], labeledValuesToArray(x.GetCombinedInference()))
+	}
+
+	out := make([]alloraMath.DecMatrix, 0, len(order))
+	for _, fc := range order {
+		rows := rowsByForecaster[fc]
+		m := make(alloraMath.DecMatrix, len(rows))
+		copy(m, rows)
+		out = append(out, m)
+	}
+	return out
 }
 
-func NewInsertInfererPayloadEventBase(bundle *WorkerDataBundle) proto.Message {
+func NewInsertInfererPayloadEventBase(bundle *InputWorkerDataBundle) proto.Message {
 	return &EventInsertInfererPayload{
 		Inferer:   bundle.Worker,
 		Nonce:     bundle.Nonce.BlockHeight,
 		TopicId:   bundle.TopicId,
 		Value:     bundle.InferenceForecastsBundle.Inference.Value,
+		Values:    bundle.InferenceForecastsBundle.Inference.Values,
 		ExtraData: bundle.InferenceForecastsBundle.Inference.ExtraData,
 	}
 }
@@ -149,17 +219,17 @@ func NewRewardDelegateStakeEventBase(topicId TopicId, reputer, delegator string,
 	}
 }
 
-func NewInsertReputerPayloadEventBase(bundle *ReputerValueBundle) proto.Message {
+func NewInsertReputerPayloadEventBase(bundle *LossBundle) proto.Message {
 	return &EventInsertReputerPayload{
-		TopicId: bundle.ValueBundle.TopicId,
-		Nonce:   bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		Reputer: bundle.ValueBundle.Reputer,
-		Bundle:  ValueBundleToEventValueBundleBase(bundle.ValueBundle),
+		TopicId: bundle.TopicId,
+		Nonce:   bundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		Reputer: bundle.Reputer,
+		Bundle:  ValueBundleToEventValueBundleBase(bundle),
 	}
 }
 
 func ValueBundleToEventValueBundleBase(bundle *ValueBundle) *EventValueBundle {
-	// nolint:exhaustruct
+	//nolint:exhaustruct
 	evb := &EventValueBundle{
 		ExtraData:     bundle.ExtraData,
 		CombinedValue: bundle.CombinedValue,
@@ -702,5 +772,18 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 	return &EventReputerSubmissionWindowClosed{
 		TopicId:          topicId,
 		NonceBlockHeight: nonceBlockHeight,
+	}
+}
+
+// NewEpochLabelRegistryFrozenEventBase is emitted once per (topicId, nonce)
+// after the final active inputs have been finalized into a registry at
+// CloseWorkerNonce time. Offchain indexers can reconstruct the full
+// registry by looking up topicLabelRegistry at the same key, but we
+// advertise the size here so explorers don't have to read state.
+func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int64, registrySize uint64) proto.Message {
+	return &EventEpochLabelRegistryFrozen{
+		TopicId:          topicId,
+		NonceBlockHeight: nonceBlockHeight,
+		RegistrySize:     registrySize,
 	}
 }

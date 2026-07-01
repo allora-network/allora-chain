@@ -203,6 +203,7 @@ func createWorkerDataBundle(
 	}
 	infererAddress := inferer.addr
 	infererValue := alloraMath.MustNewBoundedExp40Dec(alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(300) + 3000)))
+	infererValues := []*emissionstypes.InputLabeledValue{{Value: infererValue}}
 
 	workerDataBundle := &emissionstypes.InputWorkerDataBundle{
 		Worker: infererAddress,
@@ -216,6 +217,7 @@ func createWorkerDataBundle(
 				BlockHeight: blockHeight,
 				Inferer:     infererAddress,
 				Value:       infererValue,
+				Values:      infererValues,
 				ExtraData:   nil,
 				Proof:       "",
 			},

@@ -7,13 +7,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/allora-network/allora-chain/app/params"
-	testCommon "github.com/allora-network/allora-chain/test/common"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/allora-network/allora-chain/app/params"
+	testCommon "github.com/allora-network/allora-chain/test/common"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // Get the validator address that is stored in the genesis file

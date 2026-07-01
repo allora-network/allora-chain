@@ -11,6 +11,11 @@ import (
 
 // InitGenesis initializes the WorkerKeeper state from a genesis state.
 func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return errors.Wrap(err, "error getting params")
+	}
+
 	// TopicWorkers []*TopicAndActorId
 	for _, topicAndActorId := range data.TopicWorkers {
 		if topicAndActorId != nil {
@@ -34,6 +39,43 @@ func (k *WorkerKeeper) InitGenesis(ctx context.Context, data *types.GenesisState
 			}
 			if err := topicIdActorIdInference.Inference.Validate(); err != nil {
 				return errors.Wrap(err, "inference in list is invalid")
+			}
+			if topicIdActorIdInference.TopicId != topicIdActorIdInference.Inference.TopicId {
+				return errors.Wrapf(types.ErrInvalidValue,
+					"inference topic mismatch: key %d payload %d",
+					topicIdActorIdInference.TopicId,
+					topicIdActorIdInference.Inference.TopicId,
+				)
+			}
+			if topicIdActorIdInference.ActorId != topicIdActorIdInference.Inference.Inferer {
+				return errors.Wrapf(types.ErrInvalidValue,
+					"inference actor mismatch: key %s payload %s",
+					topicIdActorIdInference.ActorId,
+					topicIdActorIdInference.Inference.Inferer,
+				)
+			}
+			topic, err := k.topicKeeper.GetTopic(ctx, topicIdActorIdInference.TopicId)
+			if err != nil {
+				return errors.Wrap(err, "error getting inference topic")
+			}
+			if topic.OutputArity == types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI && len(topicIdActorIdInference.Inference.Values) > 0 {
+				registry, err := k.topicKeeper.GetEpochLabelRegistry(
+					ctx,
+					topicIdActorIdInference.TopicId,
+					topicIdActorIdInference.Inference.BlockHeight,
+				)
+				if err != nil {
+					return errors.Wrap(err, "error getting inference topic label registry")
+				}
+				// Decode once to verify the stored live inference matches the registry before importing it.
+				if _, err := DenormalizeInferenceToInput(
+					topic,
+					registry,
+					*topicIdActorIdInference.Inference,
+					params.MaxCanonicalLabelByteLength,
+				); err != nil {
+					return errors.Wrap(err, "live MULTI inference is incompatible with topic label registry")
+				}
 			}
 			if err := k.inferences.Set(ctx,
 				collections.Join(
@@ -166,7 +208,8 @@ func (k *WorkerKeeper) ExportGenesis(ctx context.Context, data *types.GenesisSta
 	}
 	data.TopicWorkers = topicWorkers
 
-	// inferences
+	// inferences: live WSW temporary vectors, or genesis round-trip state if
+	// a worker submission window is open at export time.
 	inferences := make([]*types.TopicIdActorIdInference, 0)
 	inferencesIter, err := k.inferences.Iterate(ctx, nil)
 	if err != nil {

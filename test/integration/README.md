@@ -12,11 +12,11 @@ To run integration tests, set the INTEGRATION variable to true
 INTEGRATION=true go test -v -run TestExternalTestSuite ./test/integration
 ```
 
-To run upgrade tests against the v0.16.0 scenario:
+To run upgrade tests against the v0.17.0 scenario:
 
 ```
-DO_UPGRADE=true UPGRADE_VERSION=v0.16.0 bash test/local_testnet_l1.sh
-UPGRADE=true UPGRADE_TARGET=v0.16.0 go test -v -run TestUpgradeTestSuite ./test/integration
+DO_UPGRADE=true UPGRADE_VERSION=v0.17.0 bash test/local_testnet_l1.sh
+UPGRADE=true UPGRADE_TARGET=v0.17.0 go test -v -run TestUpgradeTestSuite ./test/integration
 ```
 
 Stop the chain

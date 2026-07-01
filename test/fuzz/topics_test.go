@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	cosmossdk_io_math "cosmossdk.io/math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -27,18 +28,26 @@ func createTopic(
 		LossMethod:               "mse",
 		EpochLength:              data.epochLength,
 		GroundTruthLag:           data.epochLength,
-		WorkerSubmissionWindow:   10,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            true,
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		WorkerSubmissionWindow:   10,
 		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.05"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.05"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.05"),
 		EnableWorkerWhitelist:    true,
 		EnableReputerWhitelist:   true,
 		CNorm:                    alloraMath.MustNewDecFromString("0.75"),
+		TopicType:                emissionstypes.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   emissionstypes.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       true,
 	}
 
 	ctx := context.Background()
@@ -56,7 +65,7 @@ func createTopic(
 		return false
 	}
 
-	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} // nolint:exhaustruct // the fields are populated by decode
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {

@@ -3,18 +3,19 @@ package integration_test
 import (
 	"context"
 
+	"github.com/stretchr/testify/require"
+
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/stretchr/testify/require"
 )
 
-// register alice as a reputer in topic 1
-func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
+// register alice as a reputer in topic
+func RegisterAliceAsReputer(m testCommon.TestConfig) {
 	ctx := context.Background()
 	registerAliceRequest := &emissionstypes.RegisterRequest{
 		Sender:    m.AliceAddr,
 		Owner:     m.AliceAddr,
-		TopicId:   1,
+		TopicId:   m.TopicID,
 		IsReputer: true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, registerAliceRequest)
@@ -29,7 +30,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	aliceRegistered, err := m.Client.QueryEmissions().IsReputerRegisteredInTopicId(
 		ctx,
 		&emissionstypes.IsReputerRegisteredInTopicIdRequest{
-			TopicId: 1,
+			TopicId: m.TopicID,
 			Address: m.AliceAddr,
 		},
 	)
@@ -40,7 +41,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	aliceNotRegisteredAsWorker, err := m.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
 		ctx,
 		&emissionstypes.IsWorkerRegisteredInTopicIdRequest{
-			TopicId: 1,
+			TopicId: m.TopicID,
 			Address: m.AliceAddr,
 		},
 	)
@@ -48,13 +49,13 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.False(m.T, aliceNotRegisteredAsWorker.IsRegistered)
 }
 
-// register bob as worker in topic 1
-func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
+// register bob as worker in topic
+func RegisterBobAsWorker(m testCommon.TestConfig) {
 	ctx := context.Background()
 	registerBobRequest := &emissionstypes.RegisterRequest{
 		Sender:    m.BobAddr,
 		Owner:     m.BobAddr,
-		TopicId:   1,
+		TopicId:   m.TopicID,
 		IsReputer: false,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, registerBobRequest)
@@ -68,7 +69,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	bobRegistered, err := m.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
 		ctx,
 		&emissionstypes.IsWorkerRegisteredInTopicIdRequest{
-			TopicId: 1,
+			TopicId: m.TopicID,
 			Address: m.BobAddr,
 		},
 	)
@@ -79,7 +80,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	bobNotRegisteredAsWorker, err := m.Client.QueryEmissions().IsReputerRegisteredInTopicId(
 		ctx,
 		&emissionstypes.IsReputerRegisteredInTopicIdRequest{
-			TopicId: 1,
+			TopicId: m.TopicID,
 			Address: m.BobAddr,
 		},
 	)
@@ -90,7 +91,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 // Register two actors and check their registrations went through
 func RegistrationChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Registering Alice as Reputer ---")
-	RegisterAliceAsReputerTopic1(m)
+	RegisterAliceAsReputer(m)
 	m.T.Log("--- Registering Bob as Worker ---")
-	RegisterBobAsWorkerTopic1(m)
+	RegisterBobAsWorker(m)
 }

@@ -60,5 +60,5 @@ func (qs queryServer) GetReputerLossBundlesAtBlock(ctx context.Context, req *typ
 		return nil, err
 	}
 
-	return &types.GetReputerLossBundlesAtBlockResponse{LossBundles: &reputerLossBundles}, nil
+	return &types.GetReputerLossBundlesAtBlockResponse{LossBundles: reputerLossBundles}, nil
 }

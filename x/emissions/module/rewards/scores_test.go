@@ -462,89 +462,81 @@ func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
 
 func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 	// Create sample input where reputer1 has fewer workers
-	reportedLosses := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				Pubkey: "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2",
-				ValueBundle: &types.ValueBundle{
-					TopicId:   1,
-					ExtraData: nil,
-					ReputerRequestNonce: &types.ReputerRequestNonce{
-						ReputerNonce: &types.Nonce{BlockHeight: 100},
-					},
-					Reputer:       "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2",
-					CombinedValue: alloraMath.NewDecFromInt64(100),
-					NaiveValue:    alloraMath.NewDecFromInt64(100),
-					InfererValues: []*types.WorkerAttributedValue{
-						{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(100)},
-						{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(200)},
-					},
-					ForecasterValues: []*types.WorkerAttributedValue{
-						{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(300)},
-					},
+	reportedLosses := types.LossBundles{
+		{
+			TopicId:   1,
+			ExtraData: nil,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 100},
+			},
+			Reputer:       "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2",
+			CombinedValue: alloraMath.NewDecFromInt64(100),
+			NaiveValue:    alloraMath.NewDecFromInt64(100),
+			InfererValues: []*types.WorkerAttributedValue{
+				{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(100)},
+				{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(200)},
+			},
+			ForecasterValues: []*types.WorkerAttributedValue{
+				{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(300)},
+			},
+			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+				{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(100)},
+				{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(200)},
+			},
+			OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+				{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(300)},
+			},
+			OneInForecasterValues: []*types.WorkerAttributedValue{
+				{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(400)},
+			},
+			OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+				{
+					Forecaster: "allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h",
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(100)},
-						{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(200)},
-					},
-					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(300)},
-					},
-					OneInForecasterValues: []*types.WorkerAttributedValue{
-						{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(400)},
-					},
-					OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
-						{
-							Forecaster: "allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h",
-							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-								{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(500)},
-							},
-						},
+						{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(500)},
 					},
 				},
 			},
-			{
-				Pubkey: "reputer2",
-				ValueBundle: &types.ValueBundle{
-					TopicId:   1,
-					ExtraData: nil,
-					ReputerRequestNonce: &types.ReputerRequestNonce{
-						ReputerNonce: &types.Nonce{BlockHeight: 100},
-					},
-					Reputer:       "reputer2",
-					CombinedValue: alloraMath.NewDecFromInt64(100),
-					NaiveValue:    alloraMath.NewDecFromInt64(100),
-					InfererValues: []*types.WorkerAttributedValue{
-						{Worker: "worker5", Value: alloraMath.NewDecFromInt64(100)},
-					},
-					ForecasterValues: nil,
+		},
+		{
+			TopicId:   1,
+			ExtraData: nil,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: 100},
+			},
+			Reputer:       "reputer2",
+			CombinedValue: alloraMath.NewDecFromInt64(100),
+			NaiveValue:    alloraMath.NewDecFromInt64(100),
+			InfererValues: []*types.WorkerAttributedValue{
+				{Worker: "worker5", Value: alloraMath.NewDecFromInt64(100)},
+			},
+			ForecasterValues: nil,
+			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+				{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(100)},
+				{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(200)},
+				{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
+				{Worker: "worker4", Value: alloraMath.NewDecFromInt64(400)},
+			},
+			OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+				{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(500)},
+				{Worker: "worker3", Value: alloraMath.NewDecFromInt64(600)},
+			},
+			OneInForecasterValues: []*types.WorkerAttributedValue{
+				{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(700)},
+				{Worker: "worker4", Value: alloraMath.NewDecFromInt64(800)},
+			},
+			OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+				{
+					Forecaster: "allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h",
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(100)},
-						{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(200)},
-						{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
-						{Worker: "worker4", Value: alloraMath.NewDecFromInt64(400)},
+						{Worker: "worker6", Value: alloraMath.NewDecFromInt64(1000)},
 					},
-					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-						{Worker: s.AddrsStr(1), Value: alloraMath.NewDecFromInt64(500)},
-						{Worker: "worker3", Value: alloraMath.NewDecFromInt64(600)},
-					},
-					OneInForecasterValues: []*types.WorkerAttributedValue{
-						{Worker: s.AddrsStr(2), Value: alloraMath.NewDecFromInt64(700)},
-						{Worker: "worker4", Value: alloraMath.NewDecFromInt64(800)},
-					},
-					OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
-						{
-							Forecaster: "allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h",
-							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-								{Worker: "worker6", Value: alloraMath.NewDecFromInt64(1000)},
-							},
-						},
-						{
-							Forecaster: "forecaster2",
-							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-								{Worker: "worker3", Value: alloraMath.NewDecFromInt64(900)},
-								{Worker: "worker4", Value: alloraMath.NewDecFromInt64(1000)},
-							},
-						},
+				},
+				{
+					Forecaster: "forecaster2",
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+						{Worker: "worker3", Value: alloraMath.NewDecFromInt64(900)},
+						{Worker: "worker4", Value: alloraMath.NewDecFromInt64(1000)},
 					},
 				},
 			},
@@ -552,16 +544,16 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 	}
 
 	// Flatten losses and compare lengths before processing
-	reputer1Losses := rewards.ExtractValues(reportedLosses.ReputerValueBundles[0].ValueBundle)
-	reputer2Losses := rewards.ExtractValues(reportedLosses.ReputerValueBundles[1].ValueBundle)
+	reputer1Losses := rewards.ExtractValues(reportedLosses[0])
+	reputer2Losses := rewards.ExtractValues(reportedLosses[1])
 	s.Require().NotEqual(len(reputer1Losses), len(reputer2Losses), "Initial lengths should not be equal")
 
 	// Run the function under test
 	updatedLosses := rewards.EnsureWorkerPresence(reportedLosses)
 
 	// Flatten losses and compare lengths after processing
-	reputer1Losses = rewards.ExtractValues(updatedLosses.ReputerValueBundles[0].ValueBundle)
-	reputer2Losses = rewards.ExtractValues(updatedLosses.ReputerValueBundles[1].ValueBundle)
+	reputer1Losses = rewards.ExtractValues(updatedLosses[0])
+	reputer2Losses = rewards.ExtractValues(updatedLosses[1])
 
 	// Ensure the lengths are equal
 	s.Require().Equal(len(reputer1Losses), len(reputer2Losses), "Lengths should be equal after processing")
@@ -593,37 +585,27 @@ func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficient
 
 	// Create reported losses
 	//nolint:exhaustruct
-	reportedLosses := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				Pubkey: s.PubKeyHexStr(13),
-				ValueBundle: &types.ValueBundle{
-					TopicId: topicId,
-					ReputerRequestNonce: &types.ReputerRequestNonce{
-						ReputerNonce: &types.Nonce{BlockHeight: block},
-					},
-					Reputer:       reputer,
-					CombinedValue: alloraMath.MustNewDecFromString("3.8"),
-					NaiveValue:    alloraMath.MustNewDecFromString("3.8"),
-					InfererValues: []*types.WorkerAttributedValue{
-						{
-							Worker: s.AddrsStr(5),
-							Value:  alloraMath.MustNewDecFromString("3.81"),
-						},
-						{
-							Worker: s.AddrsStr(6),
-							Value:  alloraMath.MustNewDecFromString("3.82"),
-						},
-					},
+	reportedLosses := types.LossBundles{
+		{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{BlockHeight: block},
+			},
+			Reputer:       reputer,
+			CombinedValue: alloraMath.MustNewDecFromString("3.8"),
+			NaiveValue:    alloraMath.MustNewDecFromString("3.8"),
+			InfererValues: []*types.WorkerAttributedValue{
+				{
+					Worker: s.AddrsStr(5),
+					Value:  alloraMath.MustNewDecFromString("3.81"),
+				},
+				{
+					Worker: s.AddrsStr(6),
+					Value:  alloraMath.MustNewDecFromString("3.82"),
 				},
 			},
 		},
 	}
-
-	// Sign the value bundle
-	sig := s.SignValueBundle(reportedLosses.ReputerValueBundles[0].ValueBundle, s.PrivKeys(13))
-	s.Require().NoError(err)
-	reportedLosses.ReputerValueBundles[0].Signature = sig
 
 	// Get params and set epsilon reputer
 	params := types.DefaultParams()
@@ -727,7 +709,7 @@ func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScoreEdgeCases() {
 		{
 			name: "single score",
 			scores: []types.Score{
-				{Score: alloraMath.MustNewDecFromString("0.5")}, // nolint:exhaustruct
+				{Score: alloraMath.MustNewDecFromString("0.5")}, //nolint:exhaustruct
 			},
 			expectedError: false,
 			expectedScore: "0.5", // With single score, no std dev calculation possible, returns the score

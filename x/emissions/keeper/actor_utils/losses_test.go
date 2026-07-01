@@ -3,7 +3,6 @@ package actorutils_test
 import (
 	"testing"
 
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/stretchr/testify/suite"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -20,18 +19,6 @@ func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, &ActorUtilsTestSuite{
 		testutil.NewTestSuite("actor_utils_losses"),
 	})
-}
-
-func (a *ActorUtilsTestSuite) signValueBundle(valueBundle *emissionstypes.ValueBundle, privateKey secp256k1.PrivKey) []byte {
-	require := a.Require()
-	src := make([]byte, 0)
-	src, err := valueBundle.XXX_Marshal(src, true)
-	require.NoError(err, "Marshall reputer value bundle should not return an error")
-
-	valueBundleSignature, err := privateKey.Sign(src)
-	require.NoError(err, "Sign should not return an error")
-
-	return valueBundleSignature
 }
 
 func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle() {
@@ -56,19 +43,19 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer1,
-				Value:       alloraMath.NewDecFromInt64(1),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1)},
 			},
 			{
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer2,
-				Value:       alloraMath.NewDecFromInt64(2),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(2)},
 			},
 			{
 				TopicId:     1,
 				BlockHeight: 1,
 				Inferer:     inferer4,
-				Value:       alloraMath.NewDecFromInt64(3),
+				Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(3)},
 			},
 		},
 	}
@@ -155,22 +142,19 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			{Worker: forecaster5, Value: alloraMath.NewDecFromInt64(1300)}, // Should be filtered out
 		},
 	}
-	signature := a.signValueBundle(valueBundle, a.PrivKeys(40))
-	reputerValueBundle := &emissionstypes.ReputerValueBundle{
-		Signature:   signature,
-		Pubkey:      a.PubKeyHexStr(40),
-		ValueBundle: valueBundle,
-	}
 
-	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(a.EmissionsKeeper(), a.Ctx(), 1, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, reputerValueBundle)
+	topic, err := a.TopicKeeper().GetTopic(a.Ctx(), 1)
+	a.Require().NoError(err)
+
+	acceptedBundle, err := actorutils.FilterUnacceptedWorkersFromReputerValueBundle(a.EmissionsKeeper(), a.Ctx(), topic, emissionstypes.ReputerRequestNonce{ReputerNonce: &workerNonce}, valueBundle)
 	a.Require().NoError(err)
 
 	// Validate the bundle
-	a.Require().Len(acceptedBundle.ValueBundle.InfererValues, 2)
-	a.Require().Len(acceptedBundle.ValueBundle.ForecasterValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutInfererValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutForecasterValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutInfererForecasterValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneOutInfererForecasterValues[0].OneOutInfererValues, 1)
-	a.Require().Len(acceptedBundle.ValueBundle.OneInForecasterValues, 1)
+	a.Require().Len(acceptedBundle.InfererValues, 2)
+	a.Require().Len(acceptedBundle.ForecasterValues, 1)
+	a.Require().Len(acceptedBundle.OneOutInfererValues, 1)
+	a.Require().Len(acceptedBundle.OneOutForecasterValues, 1)
+	a.Require().Len(acceptedBundle.OneOutInfererForecasterValues, 1)
+	a.Require().Len(acceptedBundle.OneOutInfererForecasterValues[0].OneOutInfererValues, 1)
+	a.Require().Len(acceptedBundle.OneInForecasterValues, 1)
 }

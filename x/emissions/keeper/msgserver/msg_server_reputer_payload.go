@@ -16,6 +16,10 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
+	if err = msg.ReputerValueBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrap(err, "failed to validate reputer value bundle")
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 
@@ -23,13 +27,15 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for reputer: %v", &msg.ReputerValueBundle.ValueBundle.Reputer)
 	}
-	rvb, err := types.NewInputReputerValueBundleFromInput(msg.ReputerValueBundle)
+	rvb, err := types.NewReputerValueBundleFromInput(msg.ReputerValueBundle)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Reputer bad data format for block: %d", blockHeight)
 	}
 
-	canSubmit, err := ms.wlk.CanSubmitReputerPayload(ctx, rvb.ValueBundle.TopicId, rvb.ValueBundle.Reputer)
+	vb := rvb.GetValueBundle()
+
+	canSubmit, err := ms.wlk.CanSubmitReputerPayload(ctx, vb.TopicId, vb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !canSubmit {
@@ -41,8 +47,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	nonce := rvb.ValueBundle.ReputerRequestNonce
-	topicId := rvb.ValueBundle.TopicId
+	nonce := vb.ReputerRequestNonce
+	topicId := vb.TopicId
 
 	topic, err := ms.tk.GetTopic(ctx, topicId)
 	if err != nil {
@@ -74,7 +80,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		)
 	}
 
-	isRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, topicId, rvb.ValueBundle.Reputer)
+	isRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, topicId, vb.Reputer)
 	if err != nil {
 		return nil, err
 	} else if !isRegistered {
@@ -82,7 +88,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 
 	// Check that the reputer enough stake in the topic
-	stake, err := ms.sk.GetStakeReputerAuthority(ctx, topicId, rvb.ValueBundle.Reputer)
+	stake, err := ms.sk.GetStakeReputerAuthority(ctx, topicId, vb.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +107,6 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	types.EmitNewInsertReputerPayloadEvent(ctx, rvb)
+	types.EmitNewInsertReputerPayloadEvent(ctx, vb)
 	return &types.InsertReputerPayloadResponse{}, nil
 }

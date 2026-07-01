@@ -106,29 +106,19 @@ func (k *Keeper) initGenesisKeeperFields(ctx context.Context, data *types.Genesi
 		}
 	}
 
-	// NetworkInferences
-	for _, networkInference := range data.NetworkInferences {
+	// NetworkInferenceBundle
+	for _, networkInference := range data.NetworkInferenceBundle {
 		if networkInference != nil {
-			if err := k.InsertNetworkInferences(
-				ctx,
-				networkInference.TopicId,
-				networkInference.BlockHeight,
-				*networkInference.ValueBundle,
-			); err != nil {
-				return errors.Wrap(err, "error setting network inference")
+			if err := k.InsertNetworkInferenceBundle(ctx, networkInference.TopicId, networkInference.BlockHeight, *networkInference.NetworkInferenceBundle); err != nil {
+				return errors.Wrap(err, "error setting network inference bundle")
 			}
 		}
 	}
 
-	// OutlierResistantNetworkInferences
-	for _, outlierResistantNetworkInference := range data.OutlierResistantNetworkInferences {
+	// OutlierResistantNetworkInferenceBundle
+	for _, outlierResistantNetworkInference := range data.OutlierResistantNetworkInferenceBundle {
 		if outlierResistantNetworkInference != nil {
-			if err := k.InsertOutlierResistantNetworkInferences(
-				ctx,
-				outlierResistantNetworkInference.TopicId,
-				outlierResistantNetworkInference.BlockHeight,
-				*outlierResistantNetworkInference.ValueBundle,
-			); err != nil {
+			if err := k.InsertOutlierResistantNetworkInferenceBundle(ctx, outlierResistantNetworkInference.TopicId, outlierResistantNetworkInference.BlockHeight, *outlierResistantNetworkInference.NetworkInferenceBundle); err != nil {
 				return errors.Wrap(err, "error setting outlier resistant network inference")
 			}
 		}
@@ -235,45 +225,47 @@ func (k *Keeper) exportGenesisKeeperFields(ctx context.Context, data *types.Gene
 	}
 	data.RewardCurrentBlockEmission = rewardCurrentBlockEmission
 
-	// NetworkInferences
-	networkInferences := make([]*types.TopicIdBlockHeightValueBundles, 0)
-	networkInferencesIter, err := k.networkInferences.Iterate(ctx, nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to iterate network inferences")
-	}
-	for ; networkInferencesIter.Valid(); networkInferencesIter.Next() {
-		keyValue, err := networkInferencesIter.KeyValue()
-		if err != nil {
-			return errors.Wrap(err, "failed to get key value: networkInferencesIter")
-		}
-		value := keyValue.Value
-		networkInferences = append(networkInferences, &types.TopicIdBlockHeightValueBundles{
-			TopicId:     keyValue.Key.K1(),
-			BlockHeight: keyValue.Key.K2(),
-			ValueBundle: &value,
-		})
-	}
-	data.NetworkInferences = networkInferences
+	// Export network inferences
+	networkInferenceBundle := make([]*types.TopicIdBlockHeightNetworkInferenceBundles, 0)
 
-	// OutlierResistantNetworkInferences
-	outlierResistantNetworkInferences := make([]*types.TopicIdBlockHeightValueBundles, 0)
-	outlierResistantNetworkInferencesIter, err := k.outlierResistantNetworkInferences.Iterate(ctx, nil)
+	networkInferencesBundleIter, err := k.networkInferenceBundle.Iterate(ctx, nil)
 	if err != nil {
-		return errors.Wrap(err, "failed to iterate outlier resistant network inferences")
+		return errors.Wrap(err, "failed to iterate network inference bundle")
 	}
-	for ; outlierResistantNetworkInferencesIter.Valid(); outlierResistantNetworkInferencesIter.Next() {
-		keyValue, err := outlierResistantNetworkInferencesIter.KeyValue()
+	for ; networkInferencesBundleIter.Valid(); networkInferencesBundleIter.Next() {
+		keyValue, err := networkInferencesBundleIter.KeyValue()
 		if err != nil {
-			return errors.Wrap(err, "failed to get key value: outlierResistantNetworkInferencesIter")
+			return errors.Wrap(err, "failed to get key value: networkInferencesBundleIter")
 		}
-		value := keyValue.Value
-		outlierResistantNetworkInferences = append(outlierResistantNetworkInferences, &types.TopicIdBlockHeightValueBundles{
-			TopicId:     keyValue.Key.K1(),
-			BlockHeight: keyValue.Key.K2(),
-			ValueBundle: &value,
+		networkInferenceBundle = append(networkInferenceBundle, &types.TopicIdBlockHeightNetworkInferenceBundles{
+			TopicId:                keyValue.Key.K1(),
+			BlockHeight:            keyValue.Key.K2(),
+			NetworkInferenceBundle: &keyValue.Value,
 		})
 	}
-	data.OutlierResistantNetworkInferences = outlierResistantNetworkInferences
+
+	data.NetworkInferenceBundle = networkInferenceBundle
+
+	// Outlier resistant network inferences
+	outlierResistantNetworkInferenceBundle := make([]*types.TopicIdBlockHeightNetworkInferenceBundles, 0)
+
+	outlierResistantNetworkInferenceBundleIter, err := k.outlierResistantNetworkInferenceBundle.Iterate(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to iterate outlier resistant network inference bundle")
+	}
+	for ; outlierResistantNetworkInferenceBundleIter.Valid(); outlierResistantNetworkInferenceBundleIter.Next() {
+		keyValue, err := outlierResistantNetworkInferenceBundleIter.KeyValue()
+		if err != nil {
+			return errors.Wrap(err, "failed to get key value: outlierResistantNetworkInferenceBundleIter")
+		}
+		outlierResistantNetworkInferenceBundle = append(outlierResistantNetworkInferenceBundle, &types.TopicIdBlockHeightNetworkInferenceBundles{
+			TopicId:                keyValue.Key.K1(),
+			BlockHeight:            keyValue.Key.K2(),
+			NetworkInferenceBundle: &keyValue.Value,
+		})
+	}
+
+	data.OutlierResistantNetworkInferenceBundle = outlierResistantNetworkInferenceBundle
 
 	return nil
 }

@@ -12,8 +12,8 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// nolint: exhaustruct
-func (s *KeeperTestSuite) TestApplyLivenessPenaltyToInferer() {
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestCalculateLivenessPenaltyToInferer() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
 
@@ -31,7 +31,7 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToInferer() {
 	}
 	s.Require().NoError(k.GetScoresKeeper().SetTopicInitialInfererEmaScore(ctx, givenTopic.Id, alloraMath.MustNewDecFromString("200")))
 
-	newScore, err := k.GetActorPenaltiesKeeper().ApplyLivenessPenaltyToInferer(ctx, givenTopic, 105, givenPreviousScore)
+	newScore, err := k.GetActorPenaltiesKeeper().CalculateLivenessPenaltyToInferer(ctx, givenTopic, 105, givenPreviousScore)
 	s.Require().NoError(err)
 	s.Require().Equal(givenPreviousScore.TopicId, newScore.TopicId)
 	s.Require().Equal(givenPreviousScore.Address, newScore.Address)
@@ -41,7 +41,7 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToInferer() {
 	s.Require().True(inDelta, "expected %s, got %s", alloraMath.MustNewDecFromString("265.61"), newScore.Score)
 }
 
-// nolint: exhaustruct
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestApplyLivenessPenaltyToForecaster() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -70,7 +70,7 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToForecaster() {
 	s.Require().True(inDelta, "expected %s, got %s", alloraMath.MustNewDecFromString("265.61"), newScore.Score)
 }
 
-// nolint: exhaustruct
+//nolint:exhaustruct
 func (s *KeeperTestSuite) TestApplyLivenessPenaltyToReputer() {
 	ctx := s.Ctx()
 	k := s.EmissionsKeeper()
@@ -100,7 +100,7 @@ func (s *KeeperTestSuite) TestApplyLivenessPenaltyToReputer() {
 	s.Require().True(inDelta, "expected %s, got %s", alloraMath.MustNewDecFromString("265.61"), newScore.Score)
 }
 
-// nolint: exhaustruct
+//nolint:exhaustruct
 func TestApplyLivenessPenaltyToActor(t *testing.T) {
 	ctx := testutil.DefaultContextWithDB(t, storetypes.NewKVStoreKey("emissions"), storetypes.NewTransientStoreKey("transient_test")).Ctx
 	givenTopic := types.Topic{
@@ -175,7 +175,7 @@ func TestApplyLivenessPenaltyToActor(t *testing.T) {
 	}
 }
 
-// nolint: exhaustruct
+//nolint:exhaustruct
 func TestCountWorkerContiguousMissedEpochs(t *testing.T) {
 	topic := types.Topic{
 		EpochLastEnded: 100,
@@ -229,7 +229,7 @@ func TestCountWorkerContiguousMissedEpochs(t *testing.T) {
 	}
 }
 
-// nolint: exhaustruct
+//nolint:exhaustruct
 func TestCountReputerContiguousMissedEpochs(t *testing.T) {
 	topic := types.Topic{
 		EpochLastEnded: 110,

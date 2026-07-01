@@ -350,6 +350,9 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateAllLossBundles() {
 
 	defaultOneOutInfererForecasterValues := []*types.OneOutInfererForecasterValues{}
 	s.Require().Equal(len(defaultOneOutInfererForecasterValues), len(newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues))
+
+	s.Require().Equal(reputerValueBundle.Signature, newMsg.ReputerValueBundles[0].Signature)
+	s.Require().Equal(reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
 
 func (s *EmissionsV2MigrationTestSuite) TestMigrateAllRecordCommits() {
@@ -415,7 +418,7 @@ func (s *EmissionsV2MigrationTestSuite) TestMigrateParams() {
 	cdc := s.EmissionsKeeper().GetBinaryCodec()
 	// Create a Params with garbage in it
 	defaultParams := types.DefaultParams()
-	prevParams := oldtypes.Params{ // nolint: exhaustruct
+	prevParams := oldtypes.Params{ //nolint:exhaustruct
 		Version:                         "v1",
 		MinTopicWeight:                  alloraMath.OneDec(),
 		RequiredMinimumStake:            cosmosMath.OneUint(),

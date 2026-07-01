@@ -73,6 +73,14 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		CNorm:                    alloraMath.ZeroDec(),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -99,6 +107,19 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 	err = s.TopicKeeper().SetMadInferences(ctx, topicId, alloraMath.MustNewDecFromString("0.3"))
 	s.Require().NoError(err)
 	err = s.TopicKeeper().SetTotalSumPreviousTopicWeights(ctx, alloraMath.MustNewDecFromString("100.0"))
+	s.Require().NoError(err)
+	label := "testlabel"
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx,
+		topicId,
+		false,
+		blockHeight,
+		[]string{label},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
 	s.Require().NoError(err)
 
 	// WORKER
@@ -267,6 +288,19 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 	s.Require().Equal(genesisState.NextTopicId, genesisState2.NextTopicId)
 	s.Require().Len(genesisState2.Topics, len(genesisState.Topics))
 	s.Require().NotEmpty(genesisState2.ActiveTopics)
+
+	// Labels
+	s.Require().Equal(len(genesisState2.TopicLabelRegistries), 1)
+	s.Require().Equal(len(genesisState2.TopicLabelRegistries), len(genesisState.TopicLabelRegistries))
+	s.Require().Len(genesisState2.TopicLabelRegistries[0].EpochLabelRegistry.Labels, 1)
+	s.Require().Equal(
+		len(genesisState2.TopicLabelRegistries[0].EpochLabelRegistry.Labels),
+		len(genesisState.TopicLabelRegistries[0].EpochLabelRegistry.Labels),
+	)
+	s.Require().Equal(
+		genesisState2.TopicLabelRegistries[0].EpochLabelRegistry.Labels[0].Name,
+		genesisState.TopicLabelRegistries[0].EpochLabelRegistry.Labels[0].Name,
+	)
 
 	// Staking
 	s.Require().True(genesisState2.TotalStake.Equal(genesisState.TotalStake))
@@ -617,6 +651,14 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		CNorm:                    alloraMath.ZeroDec(),
+		TopicType:                types.TopicType_TOPIC_TYPE_REGRESSION,
+		OutputArity:              types.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE,
+		RequireUnity:             false,
+		UnityTolerance:           alloraMath.Dec{},
+		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
+		LabelWhitelist:           nil,
+		LabelDefaultValue:        alloraMath.ZeroDec(),
+		LabelCaseSensitive:       false,
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -825,4 +867,127 @@ func (s *KeeperTestSuite) TestInitGenesisRejectsMalformedNestedNilFields() {
 			s.Require().Contains(err.Error(), tc.wantError)
 		})
 	}
+}
+
+// TestGenesisInferenceRoundTrip covers the round-trip of the live temporary
+// inferences store through ExportGenesis -> InitGenesis on a fresh suite.
+//
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestGenesisInferenceRoundTrip() {
+	ctx := s.Ctx()
+	topicId := uint64(1)
+	nonceHeight := int64(42)
+	inferer := s.AddrsStr(0)
+
+	inference := types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonceHeight,
+		Inferer:     inferer,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.5"), alloraMath.MustNewDecFromString("0.3")},
+		ExtraData:   []byte("gdata"),
+	}
+	s.Require().NoError(
+		s.WorkerKeeper().InsertInference(ctx, topicId, inference),
+	)
+
+	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(exported.Inferences, 1,
+		"exported genesis should include the temporary inference")
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported))
+
+	got, err := fresh.WorkerKeeper().GetWorkerLatestInferenceByTopicId(fresh.Ctx(), topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, got.TopicId)
+	s.Require().Equal(inferer, got.Inferer)
+	s.Require().Equal(nonceHeight, got.BlockHeight)
+	s.Require().Len(got.Values, 2)
+	s.Require().Equal("0.5", got.Values[0].String())
+	s.Require().Equal("0.3", got.Values[1].String())
+	s.Require().Equal([]byte("gdata"), got.ExtraData)
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestGenesisMultiInferenceRoundTripWithTopicLabelRegistry() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	nonceHeight := types.BlockHeight(42)
+	inferer := s.AddrsStr(0)
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.LabelDefaultValue = alloraMath.ZeroDec()
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+	registry := types.EpochLabelRegistry{
+		TopicId: topicId,
+		EpochId: uint64(nonceHeight),
+		Labels: []*types.TopicLabel{
+			{Id: 1, Name: "a"},
+			{Id: 2, Name: "b"},
+			{Id: 3, Name: "c"},
+		},
+	}
+	s.Require().NoError(s.TopicKeeper().SetEpochLabelRegistry(ctx, registry))
+	inference := types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonceHeight,
+		Inferer:     inferer,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.5"), alloraMath.MustNewDecFromString("0.3")},
+		ExtraData:   []byte("multi"),
+	}
+	s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, inference))
+
+	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(exported.Inferences, 1)
+	s.Require().Len(exported.TopicLabelRegistries, 1)
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported))
+
+	gotRegistry, err := fresh.TopicKeeper().GetEpochLabelRegistry(fresh.Ctx(), topicId, nonceHeight)
+	s.Require().NoError(err)
+	s.Require().Equal(registry, gotRegistry)
+	freshTopic, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), topicId)
+	s.Require().NoError(err)
+	gotInput, err := fresh.WorkerKeeper().GetWorkerLatestInputInferenceByTopicId(fresh.Ctx(), freshTopic, inferer)
+	s.Require().NoError(err)
+	s.Require().Len(gotInput.Values, 2)
+	s.Require().Equal("a", gotInput.Values[0].Label)
+	s.Require().Equal("0.5", gotInput.Values[0].Value.String())
+	s.Require().Equal("b", gotInput.Values[1].Label)
+	s.Require().Equal("0.3", gotInput.Values[1].Value.String())
+}
+
+//nolint:exhaustruct
+func (s *KeeperTestSuite) TestGenesisMultiInferenceRequiresSufficientTopicLabelRegistry() {
+	ctx := s.Ctx()
+	topicId := s.CreateTopic()
+	nonceHeight := types.BlockHeight(42)
+	inferer := s.AddrsStr(0)
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	topic.OutputArity = types.TopicOutputArity_TOPIC_OUTPUT_ARITY_MULTI
+	topic.LabelDefaultValue = alloraMath.ZeroDec()
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+	inference := types.Inference{
+		TopicId:     topicId,
+		BlockHeight: nonceHeight,
+		Inferer:     inferer,
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.5")},
+	}
+	s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, inference))
+
+	exported, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	exported.TopicLabelRegistries = nil
+
+	fresh := s.newFreshGenesisSuite()
+	err = fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), exported)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "live MULTI inference is incompatible with topic label registry")
 }

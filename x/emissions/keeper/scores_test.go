@@ -612,7 +612,7 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		Inferer:     worker,
 	}
 
@@ -620,8 +620,9 @@ func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
 	s.Require().NoError(err)
 
 	// Append the inference
-	err = s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, inference, 4)
+	admitted, err := s.appendInference(ctx, topic, blockHeight, inference, 4)
 	s.Require().NoError(err)
+	s.Require().True(admitted)
 
 	// Verify the worker received the initial EMA score
 	score, err := k.GetInfererScoreEma(ctx, topicId, worker)
@@ -763,7 +764,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 		TopicId:     topicId,
 		BlockHeight: 2,
 		Inferer:     s.AddrsStr(9), // Using a different address
-		Value:       alloraMath.NewDecFromInt64(100),
+		Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(100)},
 		ExtraData:   nil,
 		Proof:       "",
 	}
@@ -773,8 +774,9 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 
 	// Submit inference - should not trigger EMA update using quantile since it's first submission
 	// and score is lower than active set
-	err = s.WorkerKeeper().AppendInference(ctx, topic, 2, inference, params.MaxTopInferersToReward)
+	admitted, err := s.appendInference(ctx, topic, 2, inference, params.MaxTopInferersToReward)
 	s.Require().NoError(err)
+	s.Require().False(admitted)
 
 	// Verify score remains at initial value
 	score, err := k.GetInfererScoreEma(ctx, topicId, s.AddrsStr(9))
@@ -814,7 +816,7 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	inference := &types.Inference{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Values:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.52")},
 		Inferer:     worker,
 	}
 
@@ -822,8 +824,9 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendInference() {
 	s.Require().NoError(err)
 
 	// Append the inference
-	err = s.WorkerKeeper().AppendInference(ctx, topic, blockHeight, inference, 4)
+	admitted, err := s.appendInference(ctx, topic, blockHeight, inference, 4)
 	s.Require().NoError(err)
+	s.Require().True(admitted)
 
 	// Verify the worker's EMA score trended toward the topic initial score especially when there is a lapse in their
 	// liveness
