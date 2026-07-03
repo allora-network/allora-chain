@@ -41,6 +41,10 @@ query/tx: `allora_emissions_request_total` for occurrences, `allora_emissions_re
 Different labels are applied where appropriate (eg "topic_id", "address", "nonce", etc.)
 See `x/emissions/metrics/` for details.
 
+## Event value representation
+
+`Dec` values placed in emissions events are magnitude-clamped to `[1e-40, 1e40]` so extremely small or large values stay compact when serialized. This shapes event and query output only; consensus state is stored separately and is not clamped, so an event value may differ from the stored value at the extremes. See `ClampMagnitude` and the `clamp*` helpers in `x/emissions/types/events_utils.go`.
+
 ## Topic configuration updates (UpdateTopic)
 
 The `UpdateTopic` tx is intentionally limited to a small set of mutable fields. Today, topic creators can update:
