@@ -171,6 +171,38 @@ func MustNewCappedBoundedExp40DecFromString(s string) BoundedExp40Dec {
 	return dec
 }
 
+// ClampMagnitude clamps |d| into [minMagnitude, maxMagnitude], keeping the sign.
+// Zero, NaN and non-finite pass through. Total: never errors, so it is safe on
+// the event-emission path. Bounds must be positive with min <= max.
+// Purpose: cap the serialized textual size of a Dec (a tiny value like 1e-38000
+// otherwise expands to a ~38 KB fixed-notation string). Does not touch state.
+func ClampMagnitude(d, minMagnitude, maxMagnitude Dec) Dec {
+	if !d.IsFinite() || d.IsZero() {
+		return d
+	}
+	abs, err := d.Abs()
+	if err != nil {
+		return d
+	}
+	var bound Dec
+	switch {
+	case abs.Lt(minMagnitude):
+		bound = minMagnitude
+	case abs.Gt(maxMagnitude):
+		bound = maxMagnitude
+	default:
+		return d // in range
+	}
+	if !d.IsNegative() {
+		return bound
+	}
+	neg, err := bound.Neg() // restore sign
+	if err != nil {
+		return d
+	}
+	return neg
+}
+
 // Returns the maximum value that can be represented by a BoundedExp40Dec
 func GetMaxPositiveBoundaryExp40Dec() BoundedExp40Dec {
 	return BoundedExp40Dec{dec: maxBoundValue}
