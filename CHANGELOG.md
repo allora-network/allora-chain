@@ -81,6 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* [#964](https://github.com/allora-network/allora-chain/pull/964) Clamp `Dec` magnitudes in emissions events to keep event payloads compact.
+
 ### Security
 
 ### API Breaking Changes
