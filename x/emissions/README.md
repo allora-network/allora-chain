@@ -43,7 +43,7 @@ See `x/emissions/metrics/` for details.
 
 ## Event value representation
 
-`Dec` values placed in emissions events are magnitude-clamped to `[1e-40, 1e40]` so extremely small or large values stay compact when serialized. This shapes event and query output only; consensus state is stored separately and is not clamped, so an event value may differ from the stored value at the extremes. See `ClampMagnitude` and the `clamp*` helpers in `x/emissions/types/events_utils.go`.
+`Dec` values placed in emissions events are magnitude-clamped to `[1e-40, 1e40]` so extremely small or large values stay compact when serialized. This shapes event output only; consensus state is stored separately and is not clamped, so an event value may differ from the stored value at the extremes. See `ClampMagnitude` and the `clamp*` helpers in `x/emissions/types/events_utils.go`.
 
 ## Topic configuration updates (UpdateTopic)
 
