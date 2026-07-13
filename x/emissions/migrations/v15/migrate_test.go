@@ -87,7 +87,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAddsClassificationDefa
 		topicStore.Set(sdk.Uint64ToBigEndian(topic.Id), cdc.MustMarshal(&topic))
 	}
 
-	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
+	_, err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
 	s.Require().NoError(err)
 
 	for _, topic := range topics {
@@ -155,7 +155,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
 
-	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
+	_, err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
 	s.Require().NoError(err)
 
 	gotTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), classifTopic.Id)
@@ -233,7 +233,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExtremeButVal
 		topicStore.Set(sdk.Uint64ToBigEndian(topic.Id), cdc.MustMarshal(&topic))
 	}
 
-	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
+	_, err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
 	s.Require().NoError(err)
 
 	for _, topic := range topics {
@@ -319,7 +319,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsAbortsOnInvalidTopic()
 
 	// The migration must abort on the nonconforming topic, naming it and the
 	// failed invariant so recovery is actionable.
-	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
+	_, err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "topic 202")
 	s.Require().Contains(err.Error(), "epoch length")
@@ -519,7 +519,8 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateInferences_RegistrySeedingIs
 	}
 
 	// First run seeds the {"y"} registry.
-	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
+	_, err = v15.MigrateInferences(s.Ctx(), store, cdc)
+	s.Require().NoError(err)
 	s.Require().True(labelStore.Has(lblKeyBytes))
 	var gotRegistry emissionstypes.EpochLabelRegistry
 	cdc.MustUnmarshal(labelStore.Get(lblKeyBytes), &gotRegistry)
@@ -529,7 +530,8 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateInferences_RegistrySeedingIs
 	// NOTE: the inference *values* are not guarded the same way on a re-run; that
 	// behavior is covered by TestMigrateStore_IdempotentSecondRun. This test isolates
 	// the registry-seeding idempotency the Has guard provides.
-	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
+	_, err = v15.MigrateInferences(s.Ctx(), store, cdc)
+	s.Require().NoError(err)
 	var gotRegistryAfter emissionstypes.EpochLabelRegistry
 	cdc.MustUnmarshal(labelStore.Get(lblKeyBytes), &gotRegistryAfter)
 	s.Require().Equal(expRegistry, gotRegistryAfter)
@@ -581,8 +583,10 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStore_IdempotentSecondRun() 
 	}
 
 	// First pass converts old -> new; the value must land in Values[0].
-	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
-	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+	_, err = v15.MigrateInferences(s.Ctx(), store, cdc)
+	s.Require().NoError(err)
+	_, err = v15.MigrateAllInferences(store, cdc)
+	s.Require().NoError(err)
 
 	firstInf, firstAll := readMigrated()
 	s.assertInference(legacyInference, firstInf)
@@ -591,8 +595,10 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateStore_IdempotentSecondRun() 
 
 	// Second pass over already-migrated bytes must be a no-op. Without the guards
 	// the value would be silently rewritten to 0.
-	s.Require().NoError(v15.MigrateInferences(s.Ctx(), store, cdc))
-	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+	_, err = v15.MigrateInferences(s.Ctx(), store, cdc)
+	s.Require().NoError(err)
+	_, err = v15.MigrateAllInferences(store, cdc)
+	s.Require().NoError(err)
 
 	secondInf, secondAll := readMigrated()
 	s.assertInference(legacyInference, secondInf)
@@ -647,7 +653,8 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateAllInferences_SeedsHistorica
 		s.seedLegacyAllInferences(store, cdc, e.topicId, e.block)
 	}
 
-	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+	_, err := v15.MigrateAllInferences(store, cdc)
+	s.Require().NoError(err)
 
 	for _, e := range epochs {
 		gotRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), e.topicId, e.block)
@@ -704,7 +711,8 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateAllInferences_RegistrySeedin
 	}
 	labelStore.Set(preSeeded, cdc.MustMarshal(&sentinel))
 
-	s.Require().NoError(v15.MigrateAllInferences(s.Ctx(), store, cdc))
+	_, err := v15.MigrateAllInferences(store, cdc)
+	s.Require().NoError(err)
 
 	// Pre-seeded registry untouched (guard fired).
 	gotPreSeeded, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), 1, 100)
@@ -738,7 +746,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateNetworkInferences_AbortsOnNi
 	invalidBundle.ReputerRequestNonce = nil
 	oldNetworkStore.Set(key, cdc.MustMarshal(&invalidBundle))
 
-	err := v15.MigrateNetworkInferences(s.Ctx(), store, cdc)
+	_, err := v15.MigrateNetworkInferences(store, cdc)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "value bundle reputer request nonce block height must be greater than 0")
 	s.Require().True(oldNetworkStore.Has(key), "source bundle must remain when migration aborts")
@@ -757,7 +765,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateNetworkInferences_AbortsOnEm
 	invalidBundle.InfererValues = nil
 	oldNetworkStore.Set(key, cdc.MustMarshal(&invalidBundle))
 
-	err := v15.MigrateNetworkInferences(s.Ctx(), store, cdc)
+	_, err := v15.MigrateNetworkInferences(store, cdc)
 	s.Require().Error(err)
 	s.Require().Contains(err.Error(), "value bundle inferer values cannot be nil")
 	s.Require().True(oldNetworkStore.Has(key), "source bundle must remain when migration aborts")

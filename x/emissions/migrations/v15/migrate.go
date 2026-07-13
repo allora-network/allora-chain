@@ -1,6 +1,8 @@
 package v15
 
 import (
+	"time"
+
 	"cosmossdk.io/collections"
 	collcodec "cosmossdk.io/collections/codec"
 	"cosmossdk.io/store/prefix"
@@ -18,15 +20,30 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// migrationCounts summarizes one v15 store migration pass for logging.
+type migrationCounts struct {
+	store              string
+	scanned            int
+	migrated           int
+	skipped            int
+	legacyKeysDeleted  int
+	registriesSeeded   int
+	registriesExisting int
+	innerRecords       int // nested inference rows inside all-inferences batches
+	duration           time.Duration
+}
+
 // MigrateStore migrates the emissions module from version 14 to version 15.
 // It backfills params and topic defaults required by the classification
 // feature, then migrates stored network inference bundles to the new labeled
 // bundle format.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	migrationStarted := time.Now()
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 14 TO VERSION 15")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
+	counts := make([]migrationCounts, 0, 5)
 
 	// Params must be backfilled before post-v15 code reads label-related caps;
 	// pre-v15 stored Params decode zero for newly added label params.
@@ -35,33 +52,93 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
-	if err := MigrateTopics(ctx, emissionsKeeper, store, cdc); err != nil {
+	topicCounts, err := MigrateTopics(ctx, emissionsKeeper, store, cdc)
+	if err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
+	counts = append(counts, topicCounts)
 
-	if err := MigrateNetworkInferences(ctx, store, cdc); err != nil {
+	networkCounts, err := MigrateNetworkInferences(store, cdc)
+	if err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateNetworkInferences() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
+	counts = append(counts, networkCounts)
 
-	if err := MigrateOutlierResistantNetworkInferences(ctx, store, cdc); err != nil {
+	outlierCounts, err := MigrateOutlierResistantNetworkInferences(store, cdc)
+	if err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateOutlierResistantNetworkInferences() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
+	counts = append(counts, outlierCounts)
 
-	if err := MigrateInferences(ctx, store, cdc); err != nil {
+	inferenceCounts, err := MigrateInferences(ctx, store, cdc)
+	if err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateInferences() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
+	counts = append(counts, inferenceCounts)
 
-	if err := MigrateAllInferences(ctx, store, cdc); err != nil {
+	allInferenceCounts, err := MigrateAllInferences(store, cdc)
+	if err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateAllInferences() FROM VERSION 14 TO VERSION 15")
 		return err
 	}
+	counts = append(counts, allInferenceCounts)
 
+	logMigrationSummary(ctx, counts, time.Since(migrationStarted))
 	ctx.Logger().Info("MIGRATION EMISSIONS MODULE FROM VERSION 14 TO VERSION 15 COMPLETE")
 	return nil
+}
+
+func logMigrationCounts(ctx sdk.Context, c migrationCounts) {
+	ctx.Logger().Info(
+		"MIGRATION V15: store pass completed",
+		"store", c.store,
+		"scanned", c.scanned,
+		"migrated", c.migrated,
+		"skipped", c.skipped,
+		"legacyKeysDeleted", c.legacyKeysDeleted,
+		"registriesSeeded", c.registriesSeeded,
+		"registriesExisting", c.registriesExisting,
+		"innerRecords", c.innerRecords,
+		"duration", c.duration,
+	)
+}
+
+func logMigrationSummary(ctx sdk.Context, counts []migrationCounts, totalDuration time.Duration) {
+	var (
+		totalScanned  int
+		totalMigrated int
+		totalSkipped  int
+		totalDeleted  int
+		totalSeeded   int
+		totalExisting int
+		totalInner    int
+	)
+	for _, c := range counts {
+		totalScanned += c.scanned
+		totalMigrated += c.migrated
+		totalSkipped += c.skipped
+		totalDeleted += c.legacyKeysDeleted
+		totalSeeded += c.registriesSeeded
+		totalExisting += c.registriesExisting
+		totalInner += c.innerRecords
+		logMigrationCounts(ctx, c)
+	}
+	ctx.Logger().Info(
+		"MIGRATION V15: summary",
+		"stores", len(counts),
+		"totalScanned", totalScanned,
+		"totalMigrated", totalMigrated,
+		"totalSkipped", totalSkipped,
+		"totalLegacyKeysDeleted", totalDeleted,
+		"totalRegistriesSeeded", totalSeeded,
+		"totalRegistriesExisting", totalExisting,
+		"totalInnerInferenceRecords", totalInner,
+		"totalDuration", totalDuration,
+	)
 }
 
 // MigrateParams backfills module params fields introduced for v15 label
@@ -119,7 +196,10 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 // MigrateTopics backfills default topic settings introduced for the
 // classification/multilabel feature without disturbing existing values.
-func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storetypes.KVStore, cdc codec.BinaryCodec) (migrationCounts, error) {
+	started := time.Now()
+	counts := migrationCounts{store: "topics"} //nolint:exhaustruct // remaining fields filled during iteration
+
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 	defer iterator.Close()
@@ -133,12 +213,13 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V15: failed to get existing params")
+		return counts, errorsmod.Wrap(err, "MIGRATION V15: failed to get existing params")
 	}
 	for ; iterator.Valid(); iterator.Next() {
+		counts.scanned++
 		var topic emissionstypes.Topic
 		if err := cdc.Unmarshal(iterator.Value(), &topic); err != nil {
-			return errorsmod.Wrapf(err, "failed to unmarshal topic")
+			return counts, errorsmod.Wrapf(err, "failed to unmarshal topic")
 		}
 
 		changed := false
@@ -166,6 +247,7 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 		}
 
 		if !changed {
+			counts.skipped++
 			continue
 		}
 
@@ -174,7 +256,7 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 		// for post-v15 code. Halting is deterministic across validators and
 		// recoverable; such failures will be caught by a pre-upgrade audit.
 		if err := topic.Validate(params); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V15: topic %d failed validation after backfill", topic.Id)
+			return counts, errorsmod.Wrapf(err, "MIGRATION V15: topic %d failed validation after backfill", topic.Id)
 		}
 
 		updates = append(updates, kv{
@@ -187,13 +269,13 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 		topicStore.Set(u.key, u.value)
 	}
 
-	ctx.Logger().Info("MIGRATION V15: topic defaults migration completed", "topicsUpdated", len(updates))
-	return nil
+	counts.migrated = len(updates)
+	counts.duration = time.Since(started)
+	return counts, nil
 }
 
-func MigrateNetworkInferences(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateNetworkInferences(store storetypes.KVStore, cdc codec.BinaryCodec) (migrationCounts, error) {
 	return migrateInferenceBundles(
-		ctx,
 		store,
 		cdc,
 		emissionstypes.NetworkInferencesKey,
@@ -202,9 +284,8 @@ func MigrateNetworkInferences(ctx sdk.Context, store storetypes.KVStore, cdc cod
 	)
 }
 
-func MigrateOutlierResistantNetworkInferences(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateOutlierResistantNetworkInferences(store storetypes.KVStore, cdc codec.BinaryCodec) (migrationCounts, error) {
 	return migrateInferenceBundles(
-		ctx,
 		store,
 		cdc,
 		emissionstypes.OutlierResistantNetworkInferencesKey,
@@ -214,13 +295,15 @@ func MigrateOutlierResistantNetworkInferences(ctx sdk.Context, store storetypes.
 }
 
 func migrateInferenceBundles(
-	ctx sdk.Context,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
 	sourcePrefix collections.Prefix,
 	destPrefix collections.Prefix,
 	logName string,
-) error {
+) (migrationCounts, error) {
+	started := time.Now()
+	counts := migrationCounts{store: logName} //nolint:exhaustruct // remaining fields filled during iteration
+
 	sourceStore := prefix.NewStore(store, sourcePrefix)
 	iterator := sourceStore.Iterator(nil, nil)
 	defer iterator.Close()
@@ -233,14 +316,15 @@ func migrateInferenceBundles(
 	updates := make([]kv, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
+		counts.scanned++
 		var oldNetworkInference emissionstypes.ValueBundle
 		if err := cdc.Unmarshal(iterator.Value(), &oldNetworkInference); err != nil {
-			return errorsmod.Wrapf(err, "failed to unmarshal %s", logName)
+			return counts, errorsmod.Wrapf(err, "failed to unmarshal %s", logName)
 		}
 
 		networkInferenceBundle := emissionstypes.ValueBundleToNetworkInferenceBundle(&oldNetworkInference)
 		if networkInferenceBundle == nil {
-			return errorsmod.Wrapf(
+			return counts, errorsmod.Wrapf(
 				emissionstypes.ErrInvalidValue,
 				"converted %s bundle is nil; topicId: %d",
 				logName,
@@ -249,7 +333,7 @@ func migrateInferenceBundles(
 		}
 
 		if err := networkInferenceBundle.Validate(); err != nil {
-			return errorsmod.Wrapf(err, "failed to validate %s", logName)
+			return counts, errorsmod.Wrapf(err, "failed to validate %s", logName)
 		}
 
 		updates = append(updates, kv{
@@ -265,16 +349,16 @@ func migrateInferenceBundles(
 
 	// Retire the legacy source prefix: its bundles are re-written above and it
 	// gains no writer after this cut-over, so drain it whole to leave no stragglers.
-	drainPrefixStore(sourceStore)
-
-	ctx.Logger().Info("MIGRATION V15: network inference bundle migration completed", "store", logName, "entriesUpdated", len(updates))
-	return nil
+	counts.legacyKeysDeleted = drainPrefixStore(sourceStore)
+	counts.migrated = len(updates)
+	counts.duration = time.Since(started)
+	return counts, nil
 }
 
 // drainPrefixStore deletes every key under store, leaving the prefix provably
 // empty so no later path can read, export, prune, or re-migrate a stale entry.
 // Keys are collected before deleting because mutating a store mid-iteration is unsafe.
-func drainPrefixStore(store prefix.Store) {
+func drainPrefixStore(store prefix.Store) int {
 	iterator := store.Iterator(nil, nil)
 	defer iterator.Close()
 
@@ -286,6 +370,7 @@ func drainPrefixStore(store prefix.Store) {
 	for _, key := range staleKeys {
 		store.Delete(key)
 	}
+	return len(staleKeys)
 }
 
 // kvPair is a raw key/value pending write used by the v15 store migrations.
@@ -335,7 +420,10 @@ func MigrateInferences(
 	ctx sdk.Context,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
-) error {
+) (migrationCounts, error) {
+	started := time.Now()
+	counts := migrationCounts{store: "inferences"} //nolint:exhaustruct // remaining fields filled during iteration
+
 	infStore := prefix.NewStore(store, emissionstypes.InferencesKey)
 	labelStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
 	lblKeyCodec := labelRegistryPairKeyCodec()
@@ -347,6 +435,7 @@ func MigrateInferences(
 	lblUpdates := make([]kvPair, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
+		counts.scanned++
 		// Skip already-migrated records. In the new Inference type the value lives
 		// in the repeated Values field (field 7) while the old Inference type
 		// carries it in the scalar Value field (field 4, now reserved). Decoding
@@ -355,12 +444,13 @@ func MigrateInferences(
 		// any second pass (re-invocation, tooling) from zeroing migrated values.
 		var maybeMigrated emissionstypes.Inference
 		if err := cdc.Unmarshal(iterator.Value(), &maybeMigrated); err == nil && len(maybeMigrated.Values) > 0 {
+			counts.skipped++
 			continue
 		}
 
 		var oldInference oldtypes.Inference
 		if err := cdc.Unmarshal(iterator.Value(), &oldInference); err != nil {
-			return errorsmod.Wrap(err, "failed to unmarshal inferences")
+			return counts, errorsmod.Wrap(err, "failed to unmarshal inferences")
 		}
 
 		inference := &emissionstypes.Inference{
@@ -373,7 +463,7 @@ func MigrateInferences(
 		}
 
 		if err := inference.Validate(); err != nil {
-			return errorsmod.Wrap(err, "failed to validate inferences")
+			return counts, errorsmod.Wrap(err, "failed to validate inferences")
 		}
 
 		updates = append(updates, kvPair{
@@ -383,10 +473,13 @@ func MigrateInferences(
 
 		lbl, ok, err := seedSingleArityRegistry(labelStore, lblKeyCodec, cdc, oldInference.TopicId, oldInference.BlockHeight)
 		if err != nil {
-			return err
+			return counts, err
 		}
 		if ok {
 			lblUpdates = append(lblUpdates, lbl)
+			counts.registriesSeeded++
+		} else {
+			counts.registriesExisting++
 		}
 	}
 
@@ -397,15 +490,18 @@ func MigrateInferences(
 		labelStore.Set(u.key, u.value)
 	}
 
-	ctx.Logger().Info("MIGRATION V15: inferences migration completed", "store", "entriesUpdated", len(updates))
-	return nil
+	counts.migrated = len(updates)
+	counts.duration = time.Since(started)
+	return counts, nil
 }
 
 func MigrateAllInferences(
-	ctx sdk.Context,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
-) error {
+) (migrationCounts, error) {
+	started := time.Now()
+	counts := migrationCounts{store: "all inferences"} //nolint:exhaustruct // remaining fields filled during iteration
+
 	infStore := prefix.NewStore(store, emissionstypes.AllInferencesKey)
 	labelStore := prefix.NewStore(store, emissionstypes.TopicLabelRegistryKey)
 	lblKeyCodec := labelRegistryPairKeyCodec()
@@ -417,6 +513,7 @@ func MigrateAllInferences(
 	lblUpdates := make([]kvPair, 0)
 
 	for ; iterator.Valid(); iterator.Next() {
+		counts.scanned++
 		// Skip already-migrated records. As in MigrateInferences, the per-inference
 		// value moved from the old scalar Value field (field 4, now reserved) to the
 		// new repeated Values field (field 7). If any inner inference already carries
@@ -425,13 +522,16 @@ func MigrateAllInferences(
 		var maybeMigrated emissionstypes.Inferences
 		if err := cdc.Unmarshal(iterator.Value(), &maybeMigrated); err == nil &&
 			len(maybeMigrated.Inferences) > 0 && len(maybeMigrated.Inferences[0].Values) > 0 {
+			counts.skipped++
 			continue
 		}
 
 		var oldInferences oldtypes.Inferences
 		if err := cdc.Unmarshal(iterator.Value(), &oldInferences); err != nil {
-			return errorsmod.Wrapf(err, "failed to unmarshal all inferences")
+			return counts, errorsmod.Wrapf(err, "failed to unmarshal all inferences")
 		}
+
+		counts.innerRecords += len(oldInferences.Inferences)
 
 		allInferences := &emissionstypes.Inferences{
 			Inferences: make([]*emissionstypes.Inference, len(oldInferences.Inferences)),
@@ -448,7 +548,7 @@ func MigrateAllInferences(
 			}
 
 			if err := allInferences.Inferences[i].Validate(); err != nil {
-				return errorsmod.Wrapf(err, "failed to validate all inferences")
+				return counts, errorsmod.Wrapf(err, "failed to validate all inferences")
 			}
 		}
 
@@ -468,10 +568,13 @@ func MigrateAllInferences(
 			first := oldInferences.Inferences[0]
 			lbl, ok, err := seedSingleArityRegistry(labelStore, lblKeyCodec, cdc, first.TopicId, first.BlockHeight)
 			if err != nil {
-				return err
+				return counts, err
 			}
 			if ok {
 				lblUpdates = append(lblUpdates, lbl)
+				counts.registriesSeeded++
+			} else {
+				counts.registriesExisting++
 			}
 		}
 	}
@@ -483,9 +586,7 @@ func MigrateAllInferences(
 		labelStore.Set(u.key, u.value)
 	}
 
-	ctx.Logger().Info(
-		"MIGRATION V15: all inferences migration completed",
-		"store", "entriesUpdated", len(updates), "registriesSeeded", len(lblUpdates),
-	)
-	return nil
+	counts.migrated = len(updates)
+	counts.duration = time.Since(started)
+	return counts, nil
 }
