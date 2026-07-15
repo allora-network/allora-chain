@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/collections/indexes"
 	errorsmod "cosmossdk.io/errors"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
@@ -15,6 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/allora-network/allora-chain/fsm"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -26,11 +28,51 @@ type Reputer = string
 type Delegator = string
 type LabelId = uint32
 
+func NewEpochsIndexes(sb *collections.SchemaBuilder) EpochsIndexes {
+	return EpochsIndexes{
+		ByState: indexes.NewMulti(
+			sb,
+			types.EpochsByStateKeyPrefix,
+			"epochs_by_state",
+			types.EpochStateKey,
+			collections.PairKeyCodec(collections.Uint64Key, types.NonceKey),
+			func(pk collections.Pair[TopicId, types.NonceV2], value types.Epoch) (types.EpochState, error) {
+				return value.State, nil
+			},
+		),
+		ByStateAndTopic: indexes.NewMulti(
+			sb,
+			types.EpochsByStateAndTopicKeyPrefix,
+			"epochs_by_state_and_topic",
+			collections.PairKeyCodec(types.EpochStateKey, collections.Uint64Key),
+			collections.PairKeyCodec(collections.Uint64Key, types.NonceKey),
+			func(pk collections.Pair[TopicId, types.NonceV2], value types.Epoch) (collections.Pair[types.EpochState, TopicId], error) {
+				return collections.Join(value.State, pk.K1()), nil
+			},
+		),
+	}
+}
+
+type EpochsIndexes struct {
+	ByState         *indexes.Multi[types.EpochState, collections.Pair[TopicId, types.NonceV2], types.Epoch]
+	ByStateAndTopic *indexes.Multi[collections.Pair[types.EpochState, TopicId], collections.Pair[TopicId, types.NonceV2], types.Epoch]
+}
+
+func (i EpochsIndexes) IndexesList() []collections.Index[collections.Pair[TopicId, types.NonceV2], types.Epoch] {
+	return []collections.Index[collections.Pair[TopicId, types.NonceV2], types.Epoch]{
+		i.ByState,
+		i.ByStateAndTopic,
+	}
+}
+
 type Keeper struct {
 	cdc              codec.BinaryCodec
 	storeService     coreStore.KVStoreService
 	addressCodec     address.Codec
 	feeCollectorName string
+
+	epochFSMEngine  *fsm.Engine[*types.Epoch]
+	schedulerKeeper SchedulerKeeper
 
 	// TYPES
 	schema        collections.Schema
@@ -48,6 +90,9 @@ type Keeper struct {
 
 	// PARAMETERS
 	paramsKeeper *ParamsKeeper
+
+	// EPOCHS
+	epochs *collections.IndexedMap[collections.Pair[TopicId, types.NonceV2], types.Epoch, EpochsIndexes]
 
 	// REPUTERS AND LOSSES
 	reputerLossKeeper *ReputerLossKeeper
@@ -94,6 +139,7 @@ func NewKeeper(
 	storeService coreStore.KVStoreService,
 	ak AccountKeeper,
 	bankKeeper BankKeeper,
+	schedulerKeeper SchedulerKeeper,
 	feeCollectorName string,
 ) Keeper {
 	sb := collections.NewSchemaBuilder(storeService)
@@ -138,6 +184,15 @@ func NewKeeper(
 		networkInferenceBundle:                    collections.NewMap(sb, types.NetworkInferenceBundleKey, "network_inference_bundle", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.NetworkInferenceBundle](cdc)),
 		outlierResistantNetworkInferences:         collections.NewMap(sb, types.OutlierResistantNetworkInferencesKey, "outlier_resistant_network_inferences", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		outlierResistantNetworkInferenceBundle:    collections.NewMap(sb, types.OutlierResistantNetworkInferenceBundleKey, "outlier_resistant_network_inference_bundle", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.NetworkInferenceBundle](cdc)),
+		schedulerKeeper:                           schedulerKeeper,
+		epochs: collections.NewIndexedMap(
+			sb,
+			types.EpochsKey,
+			"epochs",
+			collections.PairKeyCodec[TopicId, types.NonceV2](collections.Uint64Key, types.NonceKey),
+			codec.CollValue[types.Epoch](cdc),
+			NewEpochsIndexes(sb),
+		),
 	}
 
 	schema, err := sb.Build()
@@ -146,6 +201,8 @@ func NewKeeper(
 	}
 
 	k.schema = schema
+
+	k.setupEpochFSMEngine()
 
 	return k
 }
