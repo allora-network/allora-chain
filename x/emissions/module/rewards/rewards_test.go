@@ -1159,195 +1159,194 @@ func (s *RewardsTestSuite) TestRewardIncreaseContinuouslyAfterTopicReactivated()
 }
 
 func (s *RewardsTestSuite) TestCalcTopicRewards() {
+	k := s.EmissionsKeeper()
+
+	// stores the weights that are in effect during the epochs being paid
+	setPreviousWeights := func(weights map[uint64]string) {
+		for _, topicId := range alloraMath.GetSortedKeys(weights) {
+			err := k.GetTopicKeeper().SetPreviousTopicWeight(s.Ctx(), topicId, alloraMath.MustNewDecFromString(weights[topicId]))
+			s.Require().NoError(err)
+		}
+	}
+	// records per-unit-weight reward credits; block heights must increase
+	// across the whole test, as the Fenwick tree state is shared by all cases
+	appendBlockRewards := func(blockRewards map[int64]string) {
+		for _, blockHeight := range alloraMath.GetSortedKeys(blockRewards) {
+			err := k.AppendBlockRewardByTotalWeight(s.Ctx(), blockHeight, alloraMath.MustNewDecFromString(blockRewards[blockHeight]))
+			s.Require().NoError(err)
+		}
+	}
+
 	testCases := []struct {
 		name                string
-		setupFunc           func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec)
+		setupFunc           func() rewards.CalcTopicRewardsArgs
 		expectedRewardsFunc func(map[uint64]*alloraMath.Dec) bool
 		expectedError       error
 	}{
 		{
 			name: "Happy path - multiple topics",
-			setupFunc: func() (map[uint64]*alloraMath.Dec,
-				[]uint64,
-				alloraMath.Dec,
-				alloraMath.Dec,
-				map[uint64]int64,
-				alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("0.5"),
-					2: testutil.DecPtr("0.3"),
-					3: testutil.DecPtr("0.2"),
+			setupFunc: func() rewards.CalcTopicRewardsArgs {
+				setPreviousWeights(map[uint64]string{1: "0.5", 2: "0.3", 3: "0.2"})
+				// 1000 per unit of weight recorded within the epoch (900, 1000]
+				appendBlockRewards(map[int64]string{950: "600.0", 1000: "400.0"})
+				return rewards.CalcTopicRewardsArgs{
+					Ctx:                             s.Ctx(),
+					K:                               *k,
+					BlockHeight:                     1000,
+					SortedTopics:                    []uint64{1, 2, 3},
+					TotalAvailableInRewardsTreasury: alloraMath.MustNewDecFromString("1000.0"),
+					EpochLengths:                    map[uint64]int64{1: 100, 2: 100, 3: 100},
 				}
-				sortedTopics := []uint64{1, 2, 3}
-				sumWeight := alloraMath.MustNewDecFromString("1.0")
-				totalReward := alloraMath.MustNewDecFromString("1000.0")
-				epochLengths := map[uint64]int64{
-					1: 100,
-					2: 100,
-					3: 100,
-				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
 			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+			expectedRewardsFunc: func(topicRewards map[uint64]*alloraMath.Dec) bool {
 				expected := map[uint64]*alloraMath.Dec{
 					1: testutil.DecPtr("500.0"),
 					2: testutil.DecPtr("300.0"),
 					3: testutil.DecPtr("200.0"),
 				}
-				return s.compareRewards(rewards, expected)
+				return s.compareRewards(topicRewards, expected)
 			},
 			expectedError: nil,
 		},
 		{
 			name: "Single topic",
-			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("1.0"),
+			setupFunc: func() rewards.CalcTopicRewardsArgs {
+				setPreviousWeights(map[uint64]string{1: "1.0"})
+				appendBlockRewards(map[int64]string{1950: "1000.0"})
+				return rewards.CalcTopicRewardsArgs{
+					Ctx:                             s.Ctx(),
+					K:                               *k,
+					BlockHeight:                     2000,
+					SortedTopics:                    []uint64{1},
+					TotalAvailableInRewardsTreasury: alloraMath.MustNewDecFromString("1000.0"),
+					EpochLengths:                    map[uint64]int64{1: 100},
 				}
-				sortedTopics := []uint64{1}
-				sumWeight := alloraMath.MustNewDecFromString("1.0")
-				totalReward := alloraMath.MustNewDecFromString("1000.0")
-				epochLengths := map[uint64]int64{
-					1: 100,
-				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
 			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+			expectedRewardsFunc: func(topicRewards map[uint64]*alloraMath.Dec) bool {
 				expected := map[uint64]*alloraMath.Dec{
 					1: testutil.DecPtr("1000.0"),
 				}
-				return s.compareRewards(rewards, expected)
+				return s.compareRewards(topicRewards, expected)
 			},
 			expectedError: nil,
 		},
 		{
-			name: "Zero total reward",
-			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("0.5"),
-					2: testutil.DecPtr("0.5"),
+			name: "No recorded block rewards",
+			setupFunc: func() rewards.CalcTopicRewardsArgs {
+				setPreviousWeights(map[uint64]string{1: "0.5", 2: "0.5"})
+				// nothing recorded within the epoch (2900, 3000]
+				return rewards.CalcTopicRewardsArgs{
+					Ctx:                             s.Ctx(),
+					K:                               *k,
+					BlockHeight:                     3000,
+					SortedTopics:                    []uint64{1, 2},
+					TotalAvailableInRewardsTreasury: alloraMath.ZeroDec(),
+					EpochLengths:                    map[uint64]int64{1: 100, 2: 100},
 				}
-				sortedTopics := []uint64{1, 2}
-				sumWeight := alloraMath.MustNewDecFromString("1.0")
-				totalReward := alloraMath.ZeroDec()
-				epochLengths := map[uint64]int64{
-					1: 100,
-					2: 100,
-				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
 			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+			expectedRewardsFunc: func(topicRewards map[uint64]*alloraMath.Dec) bool {
 				expected := map[uint64]*alloraMath.Dec{
 					1: testutil.DecPtr("0"),
 					2: testutil.DecPtr("0"),
 				}
-				return s.compareRewards(rewards, expected)
+				return s.compareRewards(topicRewards, expected)
 			},
 			expectedError: nil,
 		},
 		{
 			name: "Different epoch lengths",
-			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("0.75"),
-					2: testutil.DecPtr("0.25"),
+			setupFunc: func() rewards.CalcTopicRewardsArgs {
+				setPreviousWeights(map[uint64]string{1: "0.75", 2: "0.25"})
+				// one unit of reward per unit of weight on every block of the
+				// longer epoch: the shorter epoch only sums half of them
+				blockRewards := make(map[int64]string)
+				for blockHeight := int64(3801); blockHeight <= 4000; blockHeight++ {
+					blockRewards[blockHeight] = "1.0"
 				}
-				sortedTopics := []uint64{1, 2}
-				sumWeight := alloraMath.MustNewDecFromString("1")
-				totalReward := alloraMath.MustNewDecFromString("1000.0")
-				epochLengths := map[uint64]int64{
-					1: 100,
-					2: 200,
+				appendBlockRewards(blockRewards)
+				return rewards.CalcTopicRewardsArgs{
+					Ctx:                             s.Ctx(),
+					K:                               *k,
+					BlockHeight:                     4000,
+					SortedTopics:                    []uint64{1, 2},
+					TotalAvailableInRewardsTreasury: alloraMath.MustNewDecFromString("1000.0"),
+					EpochLengths:                    map[uint64]int64{1: 100, 2: 200},
 				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("1.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
 			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+			expectedRewardsFunc: func(topicRewards map[uint64]*alloraMath.Dec) bool {
 				expected := map[uint64]*alloraMath.Dec{
 					1: testutil.DecPtr("75"),
 					2: testutil.DecPtr("50"),
 				}
-				return s.compareRewards(rewards, expected)
+				return s.compareRewards(topicRewards, expected)
 			},
 			expectedError: nil,
 		},
 		{
 			name: "Very small weights",
-			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("0.000000000000000001"),
-					2: testutil.DecPtr("0.000000000000000002"),
+			setupFunc: func() rewards.CalcTopicRewardsArgs {
+				setPreviousWeights(map[uint64]string{
+					1: "0.000000000000000001",
+					2: "0.000000000000000002",
+				})
+				appendBlockRewards(map[int64]string{4950: "1000000000000000000000.0"})
+				return rewards.CalcTopicRewardsArgs{
+					Ctx:                             s.Ctx(),
+					K:                               *k,
+					BlockHeight:                     5000,
+					SortedTopics:                    []uint64{1, 2},
+					TotalAvailableInRewardsTreasury: alloraMath.MustNewDecFromString("3000.0"),
+					EpochLengths:                    map[uint64]int64{1: 100, 2: 100},
 				}
-				sortedTopics := []uint64{1, 2}
-				sumWeight := alloraMath.MustNewDecFromString("0.000000000000000003")
-				totalReward := alloraMath.MustNewDecFromString("1000.0")
-				epochLengths := map[uint64]int64{
-					1: 100,
-					2: 100,
-				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
 			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+			expectedRewardsFunc: func(topicRewards map[uint64]*alloraMath.Dec) bool {
 				expected := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("333.333333333333333333"),
-					2: testutil.DecPtr("666.666666666666666667"),
+					1: testutil.DecPtr("1000.0"),
+					2: testutil.DecPtr("2000.0"),
 				}
-				return s.compareRewards(rewards, expected)
+				return s.compareRewards(topicRewards, expected)
 			},
 			expectedError: nil,
 		},
 		{
-			name: "Mismatched weights and sorted topics",
-			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("0.5"),
-					2: testutil.DecPtr("0.5"),
+			name: "Missing epoch length",
+			setupFunc: func() rewards.CalcTopicRewardsArgs {
+				setPreviousWeights(map[uint64]string{1: "0.5", 2: "0.5"})
+				return rewards.CalcTopicRewardsArgs{
+					Ctx:                             s.Ctx(),
+					K:                               *k,
+					BlockHeight:                     6000,
+					SortedTopics:                    []uint64{1, 2, 3},
+					TotalAvailableInRewardsTreasury: alloraMath.MustNewDecFromString("1000.0"),
+					EpochLengths:                    map[uint64]int64{1: 100, 2: 100},
 				}
-				sortedTopics := []uint64{1, 2, 3}
-				sumWeight := alloraMath.MustNewDecFromString("1.0")
-				totalReward := alloraMath.MustNewDecFromString("1000.0")
-				epochLengths := map[uint64]int64{
-					1: 100,
-					2: 100,
-				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
 			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
-				return len(rewards) == 2
+			expectedRewardsFunc: func(topicRewards map[uint64]*alloraMath.Dec) bool {
+				return true
 			},
-			expectedError: types.ErrInvalidValue,
+			expectedError: types.ErrInvalidLengthTopic,
 		},
 		{
 			name: "Treasury lower than rewards",
-			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: testutil.DecPtr("0.5"),
-					2: testutil.DecPtr("0.3"),
-					3: testutil.DecPtr("0.2"),
+			setupFunc: func() rewards.CalcTopicRewardsArgs {
+				setPreviousWeights(map[uint64]string{1: "0.5", 2: "0.3", 3: "0.2"})
+				appendBlockRewards(map[int64]string{6950: "1000.0"})
+				return rewards.CalcTopicRewardsArgs{
+					Ctx:                             s.Ctx(),
+					K:                               *k,
+					BlockHeight:                     7000,
+					SortedTopics:                    []uint64{1, 2, 3},
+					TotalAvailableInRewardsTreasury: alloraMath.MustNewDecFromString("50.0"), // Lower than expected rewards
+					EpochLengths:                    map[uint64]int64{1: 100, 2: 100, 3: 100},
 				}
-				sortedTopics := []uint64{1, 2, 3}
-				sumWeight := alloraMath.MustNewDecFromString("1.0")
-				totalReward := alloraMath.MustNewDecFromString("50.0") // Lower than expected rewards
-				epochLengths := map[uint64]int64{
-					1: 100,
-					2: 100,
-					3: 100,
-				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("1.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
 			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+			expectedRewardsFunc: func(topicRewards map[uint64]*alloraMath.Dec) bool {
 				expected := map[uint64]*alloraMath.Dec{
 					1: testutil.DecPtr("25.0"),
 					2: testutil.DecPtr("15.0"),
 					3: testutil.DecPtr("10.0"),
 				}
-				return s.compareRewards(rewards, expected)
+				return s.compareRewards(topicRewards, expected)
 			},
 			expectedError: nil,
 		},
@@ -1355,23 +1354,14 @@ func (s *RewardsTestSuite) TestCalcTopicRewards() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission := tc.setupFunc()
-			args := rewards.CalcTopicRewardsArgs{
-				Ctx:                             s.Ctx(),
-				Weights:                         weights,
-				SortedTopics:                    sortedTopics,
-				SumTopicWeights:                 sumWeight,
-				TotalAvailableInRewardsTreasury: totalReward,
-				EpochLengths:                    epochLengths,
-				CurrentRewardsEmissionPerBlock:  currentBlockEmission,
-			}
-			rewards, err := rewards.CalcTopicRewards(args)
+			args := tc.setupFunc()
+			topicRewards, err := rewards.CalcTopicRewards(args)
 
 			if tc.expectedError != nil {
 				s.Require().ErrorIs(err, tc.expectedError)
 			} else {
 				s.Require().NoError(err)
-				s.Require().True(tc.expectedRewardsFunc(rewards))
+				s.Require().True(tc.expectedRewardsFunc(topicRewards))
 			}
 		})
 	}
