@@ -22,12 +22,36 @@ func (k *TopicKeeper) InitGenesis(ctx context.Context, data *types.GenesisState)
 		}
 	}
 	// Topics []*TopicIdAndTopic
+	// Normalize the per-topic inferer cap against the global before persisting,
+	// so genesis import never fails Topic.Validate's ceiling check:
+	//   - a zero cap (a topic that predates/omits the field) resolves to the
+	//     global default, mirroring the v16 migration and CreateNewTopic, rather
+	//     than persisting a dead cap-0 topic that can never admit an inferer;
+	//   - a cap above the global (a state exported after governance lowered the
+	//     global below a topic's frozen cap) is clamped down to the global,
+	//     matching the live-ceiling clamp applied at admission.
+	// Topics exported from an in-range post-migration chain are left unchanged.
+	// Params are imported before topics, so the global here is the imported
+	// (validated, non-zero) value; the DefaultParams fallback is
+	// belt-and-suspenders for a degenerate zero global.
+	params, err := k.paramsKeeper.GetParams(ctx)
+	if err != nil {
+		return errors.Wrap(err, "error getting params")
+	}
+	globalMaxTopInferersToReward := params.MaxTopInferersToReward
+	if globalMaxTopInferersToReward == 0 {
+		globalMaxTopInferersToReward = types.DefaultParams().MaxTopInferersToReward
+	}
 	for _, topic := range data.Topics {
 		if topic != nil {
 			if topic.Topic == nil {
 				return errors.Wrap(types.ErrInvalidValue, "topic cannot be nil")
 			}
-			if err := k.SetTopic(ctx, topic.TopicId, *topic.Topic); err != nil {
+			resolvedTopic := *topic.Topic
+			if resolvedTopic.MaxTopInferersToReward == 0 || resolvedTopic.MaxTopInferersToReward > globalMaxTopInferersToReward {
+				resolvedTopic.MaxTopInferersToReward = globalMaxTopInferersToReward
+			}
+			if err := k.SetTopic(ctx, topic.TopicId, resolvedTopic); err != nil {
 				return errors.Wrap(err, "error setting topic")
 			}
 		}

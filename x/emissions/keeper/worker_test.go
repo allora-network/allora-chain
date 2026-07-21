@@ -582,6 +582,45 @@ func (s *KeeperTestSuite) TestPlanInferenceAdmission() {
 			wantKind:  keeper.InferenceAdmissionNotAdmitted,
 			wantFirst: true,
 		},
+		{
+			// Cap lowered below the current active-set size (reachable when
+			// UpdateTopic shrinks max_top_inferers_to_reward outside a window):
+			// there are no open slots, so a lower-scoring candidate is rejected.
+			name: "cap_below_active_set_and_lower_score_plans_not_admitted",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				a1, a2 := s.AddrsStr(1), s.AddrsStr(2)
+				s1 := types.Score{TopicId: topicId, BlockHeight: 1, Address: a1, Score: alloraMath.NewDecFromInt64(100)}
+				s2 := types.Score{TopicId: topicId, BlockHeight: 1, Address: a2, Score: alloraMath.NewDecFromInt64(90)}
+				cand := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, a1, s1))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, a2, s2))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, cand))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, s2))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, a1))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, a2))
+				return 1 // cap below the active-set size of 2
+			},
+			wantKind: keeper.InferenceAdmissionNotAdmitted,
+		},
+		{
+			// Same over-full active set, but a higher-scoring candidate evicts
+			// the lowest member (the set shrinks toward the cap one at a time).
+			name: "cap_below_active_set_and_higher_score_plans_eviction",
+			setup: func(ctx sdk.Context, topicId uint64, inferer string) uint64 {
+				a1, a2 := s.AddrsStr(1), s.AddrsStr(2)
+				s1 := types.Score{TopicId: topicId, BlockHeight: 1, Address: a1, Score: alloraMath.NewDecFromInt64(100)}
+				s2 := types.Score{TopicId: topicId, BlockHeight: 1, Address: a2, Score: alloraMath.NewDecFromInt64(90)}
+				cand := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(200)}
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, a1, s1))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, a2, s2))
+				s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(ctx, topicId, inferer, cand))
+				s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(ctx, topicId, s2))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, a1))
+				s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, a2))
+				return 1 // cap below the active-set size of 2
+			},
+			wantKind: keeper.InferenceAdmissionEvictLowest,
+		},
 	}
 
 	for _, c := range cases {
@@ -1250,7 +1289,7 @@ func mockUninitializedParams() types.Params {
 		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1"),
 		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0"),
 		MaxSamplesToScaleScores:             uint64(10),
-		MaxTopInferersToReward:              uint64(0),
+		MaxTopInferersToReward:              uint64(1),
 		MaxTopForecastersToReward:           uint64(0),
 		MaxTopReputersToReward:              uint64(0),
 		CreateTopicFee:                      cosmosMath.NewInt(0),

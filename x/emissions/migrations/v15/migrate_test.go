@@ -126,6 +126,7 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 
 	classifTopic := emissionstypes.Topic{
+		MaxTopInferersToReward:   8,
 		Id:                       42,
 		Creator:                  s.Addrs(0).String(),
 		Metadata:                 "classification-topic",

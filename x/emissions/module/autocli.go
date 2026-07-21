@@ -962,7 +962,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [topic_type] [output_arity] [require_unity] [unity_tolerance] [max_labels_per_submission] [label_whitelist] [label_default_value] [label_case_sensitive]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile] [enable_worker_whitelist] [enable_reputer_whitelist] [c_norm] [topic_type] [output_arity] [require_unity] [unity_tolerance] [max_labels_per_submission] [label_whitelist] [label_default_value] [label_case_sensitive] [max_top_inferers_to_reward]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -990,11 +990,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "label_whitelist"},
 						{ProtoField: "label_default_value"},
 						{ProtoField: "label_case_sensitive"},
+						{ProtoField: "max_top_inferers_to_reward"},
 					},
 				},
 				{
 					RpcMethod: "UpdateTopic",
-					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value]",
+					Use:       "update-topic [sender] [topic_id] [metadata] [loss_method] [alpha_regret] [merit_sortition_alpha] [p_norm] [c_norm] [max_labels_per_submission] [label_whitelist] [label_default_value] [max_top_inferers_to_reward]",
 					Short:     "Update an existing topic's modifiable configuration",
 					Long: `Update a topic's modifiable fields. Only the creator may do so;
 topic_type, output_arity, require_unity and label_case_sensitive are fixed at
@@ -1003,9 +1004,10 @@ creation.
 Fields sent here REPLACE the stored values — there is no "leave as-is". In
 particular an empty label_whitelist sets the topic to UNRESTRICTED instead of
 preserving the current one, so re-send the full list to keep a restriction.
+A max_top_inferers_to_reward of 0 resets the cap to the global default.
 
-The keeper rejects these label changes while a worker submission window is
-open.`,
+The keeper rejects these label changes and max_top_inferers_to_reward changes
+while a worker submission window is open.`,
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
@@ -1018,6 +1020,7 @@ open.`,
 						{ProtoField: "max_labels_per_submission"},
 						{ProtoField: "label_whitelist"},
 						{ProtoField: "label_default_value"},
+						{ProtoField: "max_top_inferers_to_reward"},
 					},
 				},
 				{

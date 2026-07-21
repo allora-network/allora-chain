@@ -12,6 +12,26 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// resolveMaxTopInferersToReward applies the per-topic inferer-cap rules shared
+// by CreateNewTopic and UpdateTopic: a requested value of 0 means "use the
+// global default", and any concrete value must not exceed the global ceiling.
+// The returned value is always in [1, globalMax] (globalMax >= 1 is guaranteed
+// by params validation). Topic.Validate re-checks these bounds before
+// persistence; this early check exists only to return a friendly typed error.
+func resolveMaxTopInferersToReward(requested, globalMax uint64) (uint64, error) {
+	resolved := requested
+	if resolved == 0 {
+		resolved = globalMax
+	}
+	if resolved > globalMax {
+		return 0, errorsmod.Wrapf(
+			types.ErrTopicMaxTopInferersToRewardTooBig,
+			"requested %d exceeds global maximum %d", resolved, globalMax,
+		)
+	}
+	return resolved, nil
+}
+
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
 	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err)
 
@@ -44,6 +64,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	}
 	if uint64(msg.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(msg.EpochLength) {
 		return nil, types.ErrGroundTruthLagTooBig
+	}
+	maxTopInferersToReward, err := resolveMaxTopInferersToReward(msg.MaxTopInferersToReward, params.MaxTopInferersToReward)
+	if err != nil {
+		return nil, err
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
@@ -83,6 +107,9 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		// LabelCaseSensitive is immutable after creation (UpdateTopic never
 		// changes it because updatedTopic is derived from the existing topic).
 		LabelCaseSensitive: msg.LabelCaseSensitive,
+		// Per-topic inferer cap, resolved above (0 -> global default, bounded by
+		// the global ceiling). Always stored as a concrete value >= 1.
+		MaxTopInferersToReward: maxTopInferersToReward,
 	}
 	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {
@@ -135,6 +162,11 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "not permitted to modify topic")
 	}
 
+	maxTopInferersToReward, err := resolveMaxTopInferersToReward(msg.MaxTopInferersToReward, params.MaxTopInferersToReward)
+	if err != nil {
+		return nil, err
+	}
+
 	updatedTopic := topic
 	updatedTopic.Metadata = msg.Metadata
 	updatedTopic.LossMethod = msg.LossMethod
@@ -142,6 +174,10 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
+	// Per-topic inferer cap: full-replacement semantics with 0 -> global
+	// default. The keeper's UpdateTopic rejects this change while a worker
+	// submission window is open (see the guarded-fields set there).
+	updatedTopic.MaxTopInferersToReward = maxTopInferersToReward
 	// Label registry settings: always apply the requested value. The keeper
 	// rejects unsafe mutations while a worker submission window is open and
 	// canonicalizes the whitelist before persistence.

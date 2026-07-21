@@ -355,6 +355,10 @@ message CreateNewTopicRequest {
   // preserved and labels that differ only in case are treated as distinct.
   // The field is immutable after topic creation.
   bool label_case_sensitive = 29;
+  // Per-topic cap on the number of inferers admitted to the active set. A value
+  // of 0 means "use the global max_top_inferers_to_reward param" (the default).
+  // A non-zero value must not exceed that global param.
+  uint64 max_top_inferers_to_reward = 30;
 }
 
 message CreateNewTopicResponse {
@@ -402,6 +406,13 @@ message UpdateTopicRequest {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // Per-topic cap on the number of inferers admitted to the active set.
+  // UpdateTopic is a full payload update: the supplied value replaces the
+  // existing value. A value of 0 resets it to the global
+  // max_top_inferers_to_reward default; a non-zero value must not exceed that
+  // global param. The topic keeper rejects this mutation while any worker
+  // submission window is open for the topic.
+  uint64 max_top_inferers_to_reward = 12;
 }
 
 message UpdateTopicResponse {}

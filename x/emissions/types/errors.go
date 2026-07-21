@@ -119,4 +119,9 @@ var (
 	// would exceed Params.MaxEpochLabelRegistrySize for a (topic, nonce)
 	// registry. Existing labels remain idempotent at the cap.
 	ErrEpochLabelRegistrySaturated = errors.Register(ModuleName, 100, "epoch label registry is saturated")
+	// ErrTopicMaxTopInferersToRewardTooBig is raised when a topic is created or
+	// updated with a per-topic max_top_inferers_to_reward greater than the
+	// global Params.MaxTopInferersToReward, which is the ceiling for the
+	// per-topic value.
+	ErrTopicMaxTopInferersToRewardTooBig = errors.Register(ModuleName, 101, "topic max_top_inferers_to_reward exceeds the global maximum")
 )

@@ -199,3 +199,39 @@ func TestParamsValidate_RejectsZeroMaxCanonicalLabelByteLength(t *testing.T) {
 	p.MaxCanonicalLabelByteLength = 0
 	require.Error(t, p.Validate())
 }
+
+// TestValidateMaxTopInferersToReward exercises the hardened global bound: zero
+// is rejected because the global value is the ceiling and default for the
+// per-topic Topic.MaxTopInferersToReward, and any positive value is accepted.
+func TestValidateMaxTopInferersToReward(t *testing.T) {
+	cases := []struct {
+		name string
+		in   uint64
+		ok   bool
+	}{
+		{name: "zero rejected", in: 0, ok: false},
+		{name: "one ok", in: 1, ok: true},
+		{name: "default ok", in: DefaultParams().MaxTopInferersToReward, ok: true},
+		{name: "large ok", in: 1000, ok: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMaxTopInferersToReward(tc.in)
+			if tc.ok {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
+// TestParamsValidate_RejectsZeroMaxTopInferersToReward documents that
+// Params.Validate rejects a zero global cap. The emissions v16 migration is the
+// only code path that may observe zero and it repairs it to the module default
+// before persisting.
+func TestParamsValidate_RejectsZeroMaxTopInferersToReward(t *testing.T) {
+	p := DefaultParams()
+	p.MaxTopInferersToReward = 0
+	require.Error(t, p.Validate())
+}

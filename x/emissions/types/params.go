@@ -604,9 +604,14 @@ func validateMaxSamplesToScaleScores(i uint64) error {
 	return nil
 }
 
-// max this many top workers by score are rewarded for a topic
-// Should be zero or positive. Enforced by uint type
-func validateMaxTopInferersToReward(_ uint64) error {
+// max this many top inferers by score are admitted and rewarded for a topic.
+// Must be greater than zero: this global value is also the ceiling and default
+// for the per-topic Topic.MaxTopInferersToReward, so a zero global would make
+// the per-topic ceiling zero and reject every topic.
+func validateMaxTopInferersToReward(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
 	return nil
 }
 

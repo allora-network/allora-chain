@@ -128,12 +128,19 @@ func (ms msgServer) processWorkerInferencePayload(
 		return err
 	}
 
+	// Clamp the per-topic cap by the live global param. The global is the
+	// ceiling for the per-topic value at write time, but governance can lower
+	// the global afterwards without re-validating existing topics; clamping here
+	// keeps the global a live ceiling so admission never exceeds it. This also
+	// preserves the invariant that scores.go relies on (active set <= global),
+	// since score-history retention is sized by the global value.
+	maxTopInferersToReward := min(topic.MaxTopInferersToReward, moduleParams.MaxTopInferersToReward)
 	plan, err := ms.wk.PlanInferenceAdmission(
 		sdkCtx,
 		topic,
 		nonceBlockHeight,
 		rawInference.Inferer,
-		moduleParams.MaxTopInferersToReward,
+		maxTopInferersToReward,
 	)
 	if err != nil {
 		return errorsmod.Wrap(err, "Error planning inference admission")

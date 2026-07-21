@@ -11,6 +11,7 @@ import (
 
 func validCreateNewTopicRequest() *CreateNewTopicRequest {
 	return &CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		Metadata:                 "metadata",
 		LossMethod:               "mse",
@@ -1130,6 +1131,45 @@ func TestTopicValidate(t *testing.T) {
 			},
 			wantErr: true, errContains: "topic label_whitelist is invalid",
 		},
+		{
+			name:    "max top inferers one ok",
+			mutate:  func(tp *Topic, _ *Params) { tp.MaxTopInferersToReward = 1 },
+			wantErr: false, errContains: "",
+		},
+		{
+			name:    "max top inferers equals global ceiling ok",
+			mutate:  func(tp *Topic, p *Params) { tp.MaxTopInferersToReward = p.MaxTopInferersToReward },
+			wantErr: false, errContains: "",
+		},
+		{
+			// Zero is accepted for migration safety: pre-field topics decode as
+			// zero and the shipped v15 migration validates them before v16
+			// backfills the cap. The >=1 invariant is enforced at write time.
+			name:    "max top inferers zero accepted (migration safety)",
+			mutate:  func(tp *Topic, _ *Params) { tp.MaxTopInferersToReward = 0 },
+			wantErr: false, errContains: "",
+		},
+		{
+			name:    "max top inferers above global rejected",
+			mutate:  func(tp *Topic, p *Params) { tp.MaxTopInferersToReward = p.MaxTopInferersToReward + 1 },
+			wantErr: true, errContains: "topic max_top_inferers_to_reward cannot exceed the global max_top_inferers_to_reward",
+		},
+		{
+			name: "max top inferers ceiling tracks params (above shrunk global rejected)",
+			mutate: func(tp *Topic, p *Params) {
+				p.MaxTopInferersToReward = 5
+				tp.MaxTopInferersToReward = 6
+			},
+			wantErr: true, errContains: "topic max_top_inferers_to_reward cannot exceed the global max_top_inferers_to_reward",
+		},
+		{
+			name: "max top inferers ceiling tracks params (at shrunk global ok)",
+			mutate: func(tp *Topic, p *Params) {
+				p.MaxTopInferersToReward = 5
+				tp.MaxTopInferersToReward = 5
+			},
+			wantErr: false, errContains: "",
+		},
 	}
 
 	for _, tc := range tests {
@@ -1182,6 +1222,7 @@ func validTopic(p Params) Topic {
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
+		MaxTopInferersToReward:   10,
 	}
 }
 
@@ -1195,6 +1236,7 @@ func validParams() Params {
 		MaxCanonicalLabelByteLength:   64,
 		MaxEpochLabelRegistrySize:     DefaultMaxEpochLabelRegistrySize,
 		MaxWhitelistInputArrayLength:  2000,
+		MaxTopInferersToReward:        32,
 	}
 }
 

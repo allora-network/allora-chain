@@ -343,6 +343,7 @@ func labelWhitelistChanged(a, b []string) bool {
 //   - max_labels_per_submission (per-submission label cap)
 //   - label_whitelist (per-topic label allowlist)
 //   - label_default_value (implicit missing label semantics)
+//   - max_top_inferers_to_reward (active-set admission cap)
 //
 // This is stricter than the v14 behavior (which only checked the newest
 // unfulfilled nonce) to match multilabel registry semantics, where label-
@@ -395,8 +396,12 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 	maxLabelsChanged := topic.MaxLabelsPerSubmission != updatedTopic.MaxLabelsPerSubmission
 	whitelistChanged := labelWhitelistChanged(topic.LabelWhitelist, updatedTopic.LabelWhitelist)
 	labelDefaultChanged := !topic.LabelDefaultValue.Equal(updatedTopic.LabelDefaultValue)
+	// Changing the per-topic inferer cap mid-window would race active-set
+	// admission for the open nonce (PlanInferenceAdmission reads this value on
+	// every payload), so it is guarded like the other admission-affecting fields.
+	maxTopInferersChanged := topic.MaxTopInferersToReward != updatedTopic.MaxTopInferersToReward
 
-	if meritChanged || maxLabelsChanged || whitelistChanged || labelDefaultChanged {
+	if meritChanged || maxLabelsChanged || whitelistChanged || labelDefaultChanged || maxTopInferersChanged {
 		withinWindow, err := k.isAnyUnfulfilledWorkerNonceWithinWindow(ctx, topic)
 		if err != nil {
 			return types.Topic{}, err
@@ -414,6 +419,9 @@ func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, update
 			}
 			if labelDefaultChanged {
 				changedFields = append(changedFields, "label_default_value")
+			}
+			if maxTopInferersChanged {
+				changedFields = append(changedFields, "max_top_inferers_to_reward")
 			}
 			return types.Topic{}, errorsmod.Wrapf(
 				types.ErrWorkerNonceWindowNotAvailable,
