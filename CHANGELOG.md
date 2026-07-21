@@ -67,11 +67,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Per-topic `max_top_inferers_to_reward` (additive field on `emissions.v10.Topic`): the cap on inferers admitted per topic is now topic-level, set at create/`UpdateTopic` (`0` uses the global default; guarded while a worker submission window is open). Admission clamps to `min(per-topic, global)`, so the global stays a live ceiling. The emissions v16 migration backfills existing topics and genesis normalizes out-of-range caps, so behavior is unchanged across the `v0.18.0` upgrade.
+* [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward` (additive field on `emissions.v10.Topic`): the cap on inferers admitted per topic is now topic-level, set at create/`UpdateTopic` (`0` uses the global default; guarded while a worker submission window is open). Admission clamps to `min(per-topic, global)`, so the global stays a live ceiling. The emissions v16 migration backfills existing topics and genesis normalizes out-of-range caps, so behavior is unchanged across the `v0.18.0` upgrade.
 
 ### Changed
 
-* The global `max_top_inferers_to_reward` now rejects zero and serves as the default and live ceiling for the per-topic cap; score-history retention still uses the global value.
+* [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the default and live ceiling for the per-topic cap; score-history retention still uses the global value.
 
 ### Deprecated
 
