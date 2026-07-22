@@ -1,5 +1,5 @@
 syntax = "proto3";
-package emissions.v9;
+package emissions.v10;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
