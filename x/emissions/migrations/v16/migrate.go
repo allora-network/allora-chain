@@ -90,12 +90,16 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 		}
 		topic.MaxTopInferersToReward = backfillValue
 
-		// Abort (do not skip) if the topic is invalid after backfill: a
-		// half-migrated topic would leave state inconsistent for post-v16 code.
-		// Halting is deterministic across validators.
-		if err := topic.Validate(params); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: topic %d failed validation after backfill", topic.Id)
-		}
+		// No per-topic re-validation here: the backfilled cap equals the
+		// current global Params.MaxTopInferersToReward, which is exactly the
+		// value Topic.Validate treats as the ceiling, so the new field is
+		// valid by construction (>= 1 and <= the global) regardless of any
+		// other field on the topic. Running full Topic.Validate would also
+		// re-check unrelated, param-dependent fields (e.g. ground-truth-lag
+		// vs epoch-length bounds) that a pre-existing dormant topic could
+		// violate after some other param was tightened over time; halting the
+		// whole chain upgrade for a reason unrelated to this backfill is
+		// avoided by deliberately skipping that broader check.
 
 		updates = append(updates, kv{
 			key:   append([]byte(nil), iterator.Key()...),

@@ -11,7 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
-	alloraMath "github.com/allora-network/allora-chain/math"
 	v16 "github.com/allora-network/allora-chain/x/emissions/migrations/v16"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -193,23 +192,27 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTopicsRepairsZeroGlobal() {
 	s.Require().Equal(defaultCap, got.MaxTopInferersToReward)
 }
 
-// a topic invalid for an unrelated reason after backfill halts the migration.
-func (s *EmissionsV16MigrationTestSuite) TestMigrateTopicsHaltsOnInvalidTopic() {
+// a pre-existing topic that is invalid for an unrelated reason (ground truth
+// lag lower than epoch length, nothing to do with max_top_inferers_to_reward)
+// is still backfilled: the migration does not run full topic validation, so
+// unrelated field invalidity cannot halt the upgrade.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTopicsBackfillsDespiteUnrelatedInvalidTopic() {
 	store, cdc := s.storeAndCodec()
 	topic := s.legacyTopic(1)
-	// p_norm out of the valid [1, 10] range makes the topic invalid after the
-	// cap is backfilled.
-	topic.PNorm = alloraMath.NewDecFromInt64(20)
+	// Ground truth lag lower than epoch length violates Topic.Validate
+	// independently of the max_top_inferers_to_reward backfill.
+	topic.GroundTruthLag = topic.EpochLength - 1
 	s.writeRawTopic(topic)
 
-	err := v16.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
-	s.Require().Error(err)
-	// Halt specifically on the post-backfill validation failure (not some
-	// unrelated error), and the topic must remain unwritten (still cap 0).
-	s.Require().ErrorContains(err, "failed validation after backfill")
-	got, getErr := s.TopicKeeper().GetTopic(s.Ctx(), 1)
-	s.Require().NoError(getErr)
-	s.Require().Equal(uint64(0), got.MaxTopInferersToReward)
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+
+	err = v16.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
+	s.Require().NoError(err)
+
+	got, err := s.TopicKeeper().GetTopic(s.Ctx(), 1)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopInferersToReward, got.MaxTopInferersToReward)
 }
 
 // the top-level MigrateStore entry point backfills a legacy topic end-to-end.
