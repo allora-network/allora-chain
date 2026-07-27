@@ -981,6 +981,15 @@ const (
 	maxTopicUnityTolerance = "0.01"
 )
 
+// EffectiveMaxTopInferersToReward resolves a per-topic cap against the global:
+// 0 means "use the global", and any value is clamped to the global ceiling.
+func EffectiveMaxTopInferersToReward(topicCap, globalMax uint64) uint64 {
+	if topicCap == 0 {
+		return globalMax
+	}
+	return min(topicCap, globalMax)
+}
+
 // Validate checks if the given Topic is valid
 func (topic Topic) Validate(params Params) error {
 	if topic.Id == 0 {
@@ -1073,22 +1082,9 @@ func (topic Topic) Validate(params Params) error {
 	if topic.CNorm.Lt(validationCNormMinDec) || topic.CNorm.Gt(validationCNormMaxDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
 	}
-	// The per-topic inferer cap may not exceed the global param, which is both
-	// the default (applied at creation when a topic leaves it unset) and the
-	// ceiling: a larger value would let the active set exceed the global-sized
-	// score-retention window in scores.go.
-	//
-	// A zero value is intentionally NOT rejected here. Topics persisted before
-	// this field existed decode as zero, and the already-shipped v15 topic
-	// migration calls this method on the topics it backfills while they still
-	// have cap 0 (v16 has not run yet); rejecting zero here would make that
-	// shipped migration fail. The ">= 1 for live topics" invariant is instead
-	// enforced at every write path: the msgserver resolves a zero request to the
-	// global default, genesis import resolves zero to the global default, and the
-	// v16 migration backfills every existing topic to a positive value.
-	if topic.MaxTopInferersToReward > params.MaxTopInferersToReward {
-		return errors.Wrap(sdkerrors.ErrInvalidType, "topic max_top_inferers_to_reward cannot exceed the global max_top_inferers_to_reward")
-	}
+	// The per-topic inferer cap is not bounded by the global here: the global
+	// bounds admission via min(cap, global), not storage. Zero and above-global
+	// stored values are valid at rest.
 	if err := ValidateClassificationConsistency(
 		topic.TopicType,
 		topic.OutputArity,

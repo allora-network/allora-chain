@@ -706,11 +706,9 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 	s.Require().True(genesisState2.LastMedianInferences[0].Dec.Equal(alloraMath.MustNewDecFromString("2.5")))
 }
 
-// TestInitGenesisResolvesZeroMaxTopInferersToReward asserts that importing a
-// genesis whose topic omits the per-topic inferer cap (decodes as 0, e.g. a
-// pre-field export or a hand-authored genesis) resolves it to the global
-// default rather than persisting a dead cap-0 topic.
-func (s *KeeperTestSuite) TestInitGenesisResolvesZeroMaxTopInferersToReward() {
+// TestInitGenesisPreservesZeroMaxTopInferersToReward asserts that an unset (0)
+// per-topic cap is stored verbatim; admission resolves it to the global.
+func (s *KeeperTestSuite) TestInitGenesisPreservesZeroMaxTopInferersToReward() {
 	ctx := s.Ctx()
 	topic := s.MockTopic()
 	topic.Id = 1
@@ -719,7 +717,6 @@ func (s *KeeperTestSuite) TestInitGenesisResolvesZeroMaxTopInferersToReward() {
 	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(genesisState.Topics)
-	// Simulate a topic that predates / omits the field.
 	genesisState.Topics[0].Topic.MaxTopInferersToReward = 0
 
 	fresh := s.newFreshGenesisSuite()
@@ -727,14 +724,12 @@ func (s *KeeperTestSuite) TestInitGenesisResolvesZeroMaxTopInferersToReward() {
 
 	got, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), 1)
 	s.Require().NoError(err)
-	s.Require().Equal(types.DefaultParams().MaxTopInferersToReward, got.MaxTopInferersToReward)
+	s.Require().Equal(uint64(0), got.MaxTopInferersToReward)
 }
 
-// TestInitGenesisClampsMaxTopInferersAboveGlobal asserts that importing a
-// genesis whose topic cap exceeds the imported global (a state exported after
-// governance lowered the global below a topic's frozen cap) clamps the cap to
-// the global on import, so import does not fail the ceiling validation.
-func (s *KeeperTestSuite) TestInitGenesisClampsMaxTopInferersAboveGlobal() {
+// TestInitGenesisPreservesMaxTopInferersAboveGlobal asserts that a topic cap
+// above the imported global is stored verbatim, so export/import round-trips.
+func (s *KeeperTestSuite) TestInitGenesisPreservesMaxTopInferersAboveGlobal() {
 	ctx := s.Ctx()
 	topic := s.MockTopic()
 	topic.Id = 1
@@ -743,7 +738,7 @@ func (s *KeeperTestSuite) TestInitGenesisClampsMaxTopInferersAboveGlobal() {
 	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(genesisState.Topics)
-	// Global lowered to 25 while the topic's frozen cap stays at 30 (> global).
+	// Global lowered to 25 while the topic's cap stays at 30 (> global).
 	genesisState.Params.MaxTopInferersToReward = 25
 	genesisState.Topics[0].Topic.MaxTopInferersToReward = 30
 
@@ -752,7 +747,7 @@ func (s *KeeperTestSuite) TestInitGenesisClampsMaxTopInferersAboveGlobal() {
 
 	got, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), 1)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(25), got.MaxTopInferersToReward)
+	s.Require().Equal(uint64(30), got.MaxTopInferersToReward)
 }
 
 func (s *KeeperTestSuite) TestGenesisSubKeeperWorkerRoundTrip() {

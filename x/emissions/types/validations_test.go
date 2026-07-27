@@ -1150,17 +1150,17 @@ func TestTopicValidate(t *testing.T) {
 			wantErr: false, errContains: "",
 		},
 		{
-			name:    "max top inferers above global rejected",
+			name:    "max top inferers above global accepted at rest",
 			mutate:  func(tp *Topic, p *Params) { tp.MaxTopInferersToReward = p.MaxTopInferersToReward + 1 },
-			wantErr: true, errContains: "topic max_top_inferers_to_reward cannot exceed the global max_top_inferers_to_reward",
+			wantErr: false, errContains: "",
 		},
 		{
-			name: "max top inferers ceiling tracks params (above shrunk global rejected)",
+			name: "max top inferers above shrunk global accepted at rest",
 			mutate: func(tp *Topic, p *Params) {
 				p.MaxTopInferersToReward = 5
 				tp.MaxTopInferersToReward = 6
 			},
-			wantErr: true, errContains: "topic max_top_inferers_to_reward cannot exceed the global max_top_inferers_to_reward",
+			wantErr: false, errContains: "",
 		},
 		{
 			name: "max top inferers ceiling tracks params (at shrunk global ok)",
@@ -1257,6 +1257,23 @@ func baseValidInput(t *testing.T) *InputInference {
 // TestInputInference_ValidateWithLimits_EffectiveCap covers the cap
 // enforcement: exactly cap labels ok, one over cap rejected, zero cap
 // rejected defensively.
+func TestEffectiveMaxTopInferersToReward(t *testing.T) {
+	cases := []struct {
+		name                   string
+		topicCap, global, want uint64
+	}{
+		{"zero uses global", 0, 32, 32},
+		{"below global preserved", 10, 32, 10},
+		{"equal to global", 32, 32, 32},
+		{"above global clamped", 40, 32, 32},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, EffectiveMaxTopInferersToReward(c.topicCap, c.global))
+		})
+	}
+}
+
 func TestInputInference_ValidateWithLimits_EffectiveCap(t *testing.T) {
 	in := baseValidInput(t)
 	in.Values = []*InputLabeledValue{

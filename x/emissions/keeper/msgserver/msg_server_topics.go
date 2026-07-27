@@ -12,24 +12,16 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// resolveMaxTopInferersToReward applies the per-topic inferer-cap rules shared
-// by CreateNewTopic and UpdateTopic: a requested value of 0 means "use the
-// global default", and any concrete value must not exceed the global ceiling.
-// The returned value is always in [1, globalMax] (globalMax >= 1 is guaranteed
-// by params validation). Topic.Validate re-checks these bounds before
-// persistence; this early check exists only to return a friendly typed error.
+// resolveMaxTopInferersToReward rejects a create/update request above the global;
+// otherwise resolves it (0 -> global) via types.EffectiveMaxTopInferersToReward.
 func resolveMaxTopInferersToReward(requested, globalMax uint64) (uint64, error) {
-	resolved := requested
-	if resolved == 0 {
-		resolved = globalMax
-	}
-	if resolved > globalMax {
+	if requested > globalMax {
 		return 0, errorsmod.Wrapf(
 			types.ErrTopicMaxTopInferersToRewardTooBig,
-			"requested %d exceeds global maximum %d", resolved, globalMax,
+			"requested %d exceeds global maximum %d", requested, globalMax,
 		)
 	}
-	return resolved, nil
+	return types.EffectiveMaxTopInferersToReward(requested, globalMax), nil
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
