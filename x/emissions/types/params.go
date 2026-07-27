@@ -605,9 +605,8 @@ func validateMaxSamplesToScaleScores(i uint64) error {
 }
 
 // max this many top inferers by score are admitted and rewarded for a topic.
-// Must be greater than zero: this global value is also the ceiling and default
-// for the per-topic Topic.MaxTopInferersToReward, so a zero global would make
-// the per-topic ceiling zero and reject every topic.
+// Must be greater than zero: it is the admission ceiling and the default for an
+// unset per-topic Topic.MaxTopInferersToReward, so zero would admit nobody.
 func validateMaxTopInferersToReward(i uint64) error {
 	if i == 0 {
 		return ErrValidationMustBeGreaterthanZero

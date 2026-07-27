@@ -275,14 +275,10 @@ func (k *TopicKeeper) TopicExists(ctx context.Context, topicId TopicId) (bool, e
 	return k.topics.Has(ctx, topicId)
 }
 
-// isAnyUnfulfilledWorkerNonceWithinWindow reports true iff the topic is
-// active and at least one of its unfulfilled worker nonces is currently
-// inside a worker submission window. It is the shared guard for topic
-// parameter mutations that must not race worker payload submission for an
-// open epoch (merit_sortition_alpha, max_labels_per_submission, label
-// whitelist, label default value). Unlike the original v14-era check this
-// iterates every unfulfilled nonce rather than just the newest, because workers
-// can submit against any currently-open nonce.
+// isAnyUnfulfilledWorkerNonceWithinWindow reports true iff the topic is active
+// and any of its unfulfilled worker nonces is inside its submission window.
+// Every nonce is checked, not just the newest, because workers can submit
+// against any currently-open nonce. Shared guard for the fields UpdateTopic lists.
 func (k *TopicKeeper) isAnyUnfulfilledWorkerNonceWithinWindow(
 	ctx context.Context,
 	topic types.Topic,
@@ -344,11 +340,6 @@ func labelWhitelistChanged(a, b []string) bool {
 //   - label_whitelist (per-topic label allowlist)
 //   - label_default_value (implicit missing label semantics)
 //   - max_top_inferers_to_reward (active-set admission cap)
-//
-// This is stricter than the v14 behavior (which only checked the newest
-// unfulfilled nonce) to match multilabel registry semantics, where label-
-// related topic parameters must be stable across the entire lifetime of every
-// open WSW.
 func (k *TopicKeeper) UpdateTopic(ctx context.Context, topic types.Topic, updatedTopic types.Topic) (types.Topic, error) {
 	params, err := k.paramsKeeper.GetParams(ctx)
 	if err != nil {
