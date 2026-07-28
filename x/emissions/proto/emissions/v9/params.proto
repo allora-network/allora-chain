@@ -189,4 +189,8 @@ message Params {
   // Max absolute number of labels allowed in an epoch label registry
   // for a single (topic, nonce).
   uint64 max_epoch_label_registry_size = 63;
+  // Floor for the per-topic inferer admission cap. Together with
+  // max_top_inferers_to_reward it is the range a topic may request, and the
+  // range the effective cap is clamped into. Zero means no floor.
+  uint64 min_top_inferers_to_reward = 64;
 }

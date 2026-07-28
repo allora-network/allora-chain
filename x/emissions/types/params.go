@@ -32,6 +32,7 @@ func DefaultParams() Params {
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),       // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),      // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                   // maximum number of previous scores to store and use for standard deviation calculation
+		MinTopInferersToReward:          DefaultMinTopInferersToReward,                // floor for the per-topic inferer admission cap
 		MaxTopInferersToReward:          uint64(32),                                   // max this many top inferers by score are rewarded for a topic
 		MaxTopForecastersToReward:       uint64(6),                                    // max this many top forecasters by score are rewarded for a topic
 		MaxTopReputersToReward:          uint64(6),                                    // max this many top reputers by score are rewarded for a topic
@@ -72,6 +73,10 @@ func DefaultParams() Params {
 		MaxEpochLabelRegistrySize:           DefaultMaxEpochLabelRegistrySize,            // maximum number of labels allowed in an epoch label registry
 	}
 }
+
+// DefaultMinTopInferersToReward is the default floor for the per-topic inferer
+// admission cap. A topic with less than this will use this value as admission cap.
+const DefaultMinTopInferersToReward = uint64(5)
 
 // DefaultMaxLabelsPerSubmission is the default topic-level cap on the number of
 // distinct canonical labels a worker may attach to a single InputInference.
@@ -223,8 +228,14 @@ func (p Params) Validate() error {
 	if err := validateMaxSamplesToScaleScores(p.MaxSamplesToScaleScores); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max samples to scale scores")
 	}
+	if err := validateMinTopInferersToReward(p.MinTopInferersToReward); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: min top inferers to reward")
+	}
 	if err := validateMaxTopInferersToReward(p.MaxTopInferersToReward); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max top inferers to reward")
+	}
+	if err := validateTopInferersToRewardRange(p.MinTopInferersToReward, p.MaxTopInferersToReward); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: top inferers to reward range")
 	}
 	if err := validateMaxTopForecastersToReward(p.MaxTopForecastersToReward); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max top forecasters to reward")
@@ -610,6 +621,24 @@ func validateMaxSamplesToScaleScores(i uint64) error {
 func validateMaxTopInferersToReward(i uint64) error {
 	if i == 0 {
 		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// floor for the per-topic inferer admission cap. Zero is accepted and means no
+// floor, unlike the ceiling, where zero would admit nobody. The upper bound is
+// the ceiling itself, enforced by validateTopInferersToRewardRange.
+func validateMinTopInferersToReward(_ uint64) error {
+	return nil
+}
+
+// the floor for the per-topic inferer cap cannot exceed the ceiling, so the
+// global range is always well formed.
+func validateTopInferersToRewardRange(minTopInferers, maxTopInferers uint64) error {
+	if minTopInferers > maxTopInferers {
+		return errorsmod.Wrapf(ErrInvalidValue,
+			"min top inferers to reward must be <= max top inferers to reward, got %d > %d",
+			minTopInferers, maxTopInferers)
 	}
 	return nil
 }

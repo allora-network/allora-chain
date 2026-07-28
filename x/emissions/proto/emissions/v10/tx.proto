@@ -271,6 +271,8 @@ message OptionalParams {
   repeated uint64 max_canonical_label_byte_length = 61;
   repeated uint64 max_topic_label_whitelist_size = 62;
   repeated uint64 max_epoch_label_registry_size = 63;
+  // Floor for the per-topic inferer admission cap; zero means no floor.
+  repeated uint64 min_top_inferers_to_reward = 64;
 }
 
 message UpdateParamsRequest {

@@ -91,6 +91,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopInferersToReward = 1
+	params.MinTopInferersToReward = 0
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -117,6 +118,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopInferersToReward = 1
+	params.MinTopInferersToReward = 0
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -166,6 +168,7 @@ func (s *KeeperTestSuite) TestScoreRetentionUsesGlobalNotTopicCap() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = 2
 	params.MaxTopInferersToReward = 4
+	params.MinTopInferersToReward = 0
 	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
 
 	// Retention window = MaxSamplesToScaleScores * global cap = 2 * 4 = 8,
@@ -610,6 +613,7 @@ func (s *KeeperTestSuite) TestScoreLimiting() {
 
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 2
+	params.MinTopInferersToReward = 0
 	params.MaxSamplesToScaleScores = 3
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
@@ -770,6 +774,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 4
+	params.MinTopInferersToReward = 0
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 

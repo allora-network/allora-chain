@@ -727,6 +727,30 @@ func (s *KeeperTestSuite) TestInitGenesisPreservesZeroMaxTopInferersToReward() {
 	s.Require().Equal(uint64(0), got.MaxTopInferersToReward)
 }
 
+// TestInitGenesisPreservesMaxTopInferersBelowGlobalMin asserts that a topic cap
+// below the imported global floor is stored verbatim too; admission raises it.
+func (s *KeeperTestSuite) TestInitGenesisPreservesMaxTopInferersBelowGlobalMin() {
+	ctx := s.Ctx()
+	topic := s.MockTopic()
+	topic.Id = 1
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, 1, topic))
+
+	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(genesisState.Topics)
+	genesisState.Params.MinTopInferersToReward = 5
+	genesisState.Topics[0].Topic.MaxTopInferersToReward = 3
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState))
+
+	got, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), 1)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(3), got.MaxTopInferersToReward)
+	s.Require().Equal(uint64(5), types.EffectiveMaxTopInferersToReward(
+		got.MaxTopInferersToReward, 5, genesisState.Params.MaxTopInferersToReward))
+}
+
 // TestInitGenesisPreservesMaxTopInferersAboveGlobal asserts that a topic cap
 // above the imported global is stored verbatim, so export/import round-trips.
 func (s *KeeperTestSuite) TestInitGenesisPreservesMaxTopInferersAboveGlobal() {

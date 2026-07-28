@@ -12,16 +12,24 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// resolveMaxTopInferersToReward rejects a create/update request above the global;
-// otherwise resolves it (0 -> global) via types.EffectiveMaxTopInferersToReward.
-func resolveMaxTopInferersToReward(requested, globalMax uint64) (uint64, error) {
+// resolveMaxTopInferersToReward rejects a create/update request outside the
+// global [min, max] range; otherwise resolves it via
+// types.EffectiveMaxTopInferersToReward.
+func resolveMaxTopInferersToReward(requested, globalMin, globalMax uint64) (uint64, error) {
 	if requested > globalMax {
 		return 0, errorsmod.Wrapf(
 			types.ErrTopicMaxTopInferersToRewardTooBig,
 			"requested %d exceeds global maximum %d", requested, globalMax,
 		)
 	}
-	return types.EffectiveMaxTopInferersToReward(requested, globalMax), nil
+	// A requested 0 means "use the global default" and is resolved, not rejected.
+	if requested != 0 && requested < globalMin {
+		return 0, errorsmod.Wrapf(
+			types.ErrTopicMaxTopInferersToRewardTooSmall,
+			"requested %d is below global minimum %d", requested, globalMin,
+		)
+	}
+	return types.EffectiveMaxTopInferersToReward(requested, globalMin, globalMax), nil
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
@@ -57,7 +65,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	if uint64(msg.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(msg.EpochLength) {
 		return nil, types.ErrGroundTruthLagTooBig
 	}
-	maxTopInferersToReward, err := resolveMaxTopInferersToReward(msg.MaxTopInferersToReward, params.MaxTopInferersToReward)
+	maxTopInferersToReward, err := resolveMaxTopInferersToReward(
+		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +163,8 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "not permitted to modify topic")
 	}
 
-	maxTopInferersToReward, err := resolveMaxTopInferersToReward(msg.MaxTopInferersToReward, params.MaxTopInferersToReward)
+	maxTopInferersToReward, err := resolveMaxTopInferersToReward(
+		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward)
 	if err != nil {
 		return nil, err
 	}
