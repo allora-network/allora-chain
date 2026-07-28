@@ -147,6 +147,40 @@ func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersAboveGlobalRejected() 
 	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooBig)
 }
 
+// an explicit value below the global floor is rejected; 0 still resolves to the
+// global ceiling because it means "use the default".
+func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersBelowGlobalMinRejected() {
+	sender := s.AddrsStr(0)
+	params := types.DefaultParams()
+	params.MinTopInferersToReward = 10
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	_, err := s.createTopicWithCap(sender, 9)
+	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooSmall)
+
+	id, err := s.createTopicWithCap(sender, 0)
+	s.Require().NoError(err)
+	got, err := s.TopicKeeper().GetTopic(s.Ctx(), id)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopInferersToReward, got.MaxTopInferersToReward)
+}
+
+// UpdateTopic applies the same floor as creation.
+func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersBelowGlobalMinRejected() {
+	sender := s.AddrsStr(0)
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	topicId := s.createTopicForWSWTests(sender)
+
+	params := types.DefaultParams()
+	params.MinTopInferersToReward = 10
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	msg := s.baseWSWUpdateMsg(sender, topicId)
+	msg.MaxTopInferersToReward = 9
+	_, err := msgServer.UpdateTopic(ctx, msg)
+	s.Require().ErrorIs(err, types.ErrTopicMaxTopInferersToRewardTooSmall)
+}
+
 // with no open worker submission window, the cap can be changed.
 func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersAllowedWhenNoWindow() {
 	sender := s.AddrsStr(0)
@@ -289,4 +323,48 @@ func (s *MsgServerTestSuite) TestAdmissionClampsToLiveGlobalCeiling() {
 	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
 	s.Require().NoError(err)
 	s.Require().False(isActive)
+}
+
+// Admission raises a stored cap below the global floor, so a slot stays open and
+// the worker is admitted. Without the floor the stored cap of 1 would be full.
+func (s *MsgServerTestSuite) TestAdmissionRaisesCapToGlobalFloor() {
+	s.SetupTest()
+	nonce := int64(1)
+	pk := secp256k1.GenPrivKey()
+	msg, topicId := s.setUpMsgInsertWorkerPayload(pk)
+	s.WithBlockHeight(nonce)
+	msg.WorkerDataBundle.Nonce.BlockHeight = nonce
+	msg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight = nonce
+	msg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
+	msg = s.signMsgInsertWorkerPayload(msg, pk)
+
+	// Store a cap of 1 on the topic, then set a global floor above it.
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	topic.MaxTopInferersToReward = 1
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topicId, topic))
+
+	params := types.DefaultParams()
+	params.MinTopInferersToReward = 5
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	// One active inferer already fills the topic's own cap of 1.
+	activeInferer := s.AddrsStr(9)
+	activeScore := types.Score{
+		TopicId:     topicId,
+		BlockHeight: nonce,
+		Address:     activeInferer,
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.Require().NoError(s.ScoresKeeper().SetInfererScoreEma(s.Ctx(), topicId, activeInferer, activeScore))
+	s.Require().NoError(s.ScoresKeeper().SetLowestInfererScoreEma(s.Ctx(), topicId, activeScore))
+	s.Require().NoError(s.WorkerKeeper().AddActiveInferer(s.Ctx(), topicId, activeInferer))
+	s.Require().NoError(s.WhitelistsKeeper().AddToTopicWorkerWhitelist(s.Ctx(), topicId, msg.WorkerDataBundle.Worker))
+
+	_, err = s.EmissionsMsgServer().InsertWorkerPayload(s.Ctx(), &msg)
+	s.Require().NoError(err)
+
+	isActive, err := s.WorkerKeeper().IsActiveInferer(s.Ctx(), topicId, msg.WorkerDataBundle.Worker)
+	s.Require().NoError(err)
+	s.Require().True(isActive)
 }

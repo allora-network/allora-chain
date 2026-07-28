@@ -981,11 +981,17 @@ const (
 	maxTopicUnityTolerance = "0.01"
 )
 
-// EffectiveMaxTopInferersToReward resolves a per-topic cap against the global:
-// 0 means "use the global", and any value is clamped to the global ceiling.
-func EffectiveMaxTopInferersToReward(topicCap, globalMax uint64) uint64 {
+// EffectiveMaxTopInferersToReward resolves a per-topic cap into the global
+// range: 0 means "use the global maximum", the global minimum raises it, and the
+// global maximum is applied last so it always wins. Params validation keeps the
+// range well formed; applying the ceiling last means even an inverted range
+// cannot push the active set past the global-sized score-retention window.
+func EffectiveMaxTopInferersToReward(topicCap, globalMin, globalMax uint64) uint64 {
 	if topicCap == 0 {
-		return globalMax
+		topicCap = globalMax
+	}
+	if topicCap < globalMin {
+		topicCap = globalMin
 	}
 	return min(topicCap, globalMax)
 }

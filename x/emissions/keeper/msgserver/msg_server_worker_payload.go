@@ -128,9 +128,13 @@ func (ms msgServer) processWorkerInferencePayload(
 		return err
 	}
 
-	// Resolve the per-topic cap against the global (0 -> global, clamped) so the
-	// active set never exceeds the global-sized score-retention window.
-	maxTopInferersToReward := types.EffectiveMaxTopInferersToReward(topic.MaxTopInferersToReward, moduleParams.MaxTopInferersToReward)
+	// Resolve the per-topic cap into the global [min, max] range so the active set
+	// never exceeds the global-sized score-retention window.
+	maxTopInferersToReward := types.EffectiveMaxTopInferersToReward(
+		topic.MaxTopInferersToReward,
+		moduleParams.MinTopInferersToReward,
+		moduleParams.MaxTopInferersToReward,
+	)
 	plan, err := ms.wk.PlanInferenceAdmission(
 		sdkCtx,
 		topic,

@@ -1289,6 +1289,7 @@ func mockUninitializedParams() types.Params {
 		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1"),
 		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0"),
 		MaxSamplesToScaleScores:             uint64(10),
+		MinTopInferersToReward:              uint64(0),
 		MaxTopInferersToReward:              uint64(1),
 		MaxTopForecastersToReward:           uint64(0),
 		MaxTopReputersToReward:              uint64(0),

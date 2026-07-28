@@ -1254,25 +1254,33 @@ func baseValidInput(t *testing.T) *InputInference {
 	}
 }
 
-// TestInputInference_ValidateWithLimits_EffectiveCap covers the cap
-// enforcement: exactly cap labels ok, one over cap rejected, zero cap
-// rejected defensively.
 func TestEffectiveMaxTopInferersToReward(t *testing.T) {
 	cases := []struct {
-		name                   string
-		topicCap, global, want uint64
+		name                                 string
+		topicCap, globalMin, globalMax, want uint64
 	}{
-		{"zero uses global", 0, 32, 32},
-		{"below global preserved", 10, 32, 10},
-		{"equal to global", 32, 32, 32},
-		{"above global clamped", 40, 32, 32},
+		{"zero uses global max", 0, 1, 32, 32},
+		{"within range preserved", 10, 1, 32, 10},
+		{"equal to global max", 32, 1, 32, 32},
+		{"above global max clamped", 40, 1, 32, 32},
+		{"below global min raised", 3, 10, 32, 10},
+		{"equal to global min", 10, 10, 32, 10},
+		{"zero with a floor still uses global max", 0, 10, 32, 32},
+		{"no floor", 10, 0, 32, 10},
+		// The ceiling is applied last, so an inverted global range can never
+		// yield a cap above the global max.
+		{"inverted global range yields global max", 3, 40, 32, 32},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			require.Equal(t, c.want, EffectiveMaxTopInferersToReward(c.topicCap, c.global))
+			require.Equal(t, c.want, EffectiveMaxTopInferersToReward(c.topicCap, c.globalMin, c.globalMax))
 		})
 	}
 }
+
+// TestInputInference_ValidateWithLimits_EffectiveCap covers the cap
+// enforcement: exactly cap labels ok, one over cap rejected, zero cap
+// rejected defensively.
 
 func TestInputInference_ValidateWithLimits_EffectiveCap(t *testing.T) {
 	in := baseValidInput(t)

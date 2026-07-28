@@ -30,6 +30,7 @@ func TestDefaultParams(t *testing.T) {
 		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1"),
 		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0.25"),
 		MaxSamplesToScaleScores:             uint64(10),
+		MinTopInferersToReward:              uint64(1),
 		MaxTopInferersToReward:              uint64(32),
 		MaxTopForecastersToReward:           uint64(6),
 		MaxTopReputersToReward:              uint64(6),
@@ -234,4 +235,30 @@ func TestParamsValidate_RejectsZeroMaxTopInferersToReward(t *testing.T) {
 	p := DefaultParams()
 	p.MaxTopInferersToReward = 0
 	require.Error(t, p.Validate())
+}
+
+// TestValidateMinTopInferersToReward documents that the floor accepts any value:
+// zero means no floor, and a value above the ceiling is harmless because
+// EffectiveMaxTopInferersToReward applies the ceiling last.
+func TestValidateMinTopInferersToReward(t *testing.T) {
+	for _, in := range []uint64{0, 1, DefaultParams().MinTopInferersToReward, 1000} {
+		require.NoError(t, validateMinTopInferersToReward(in))
+	}
+}
+
+// TestParamsValidate_RejectsInvertedTopInferersRange asserts the global range is
+// always well formed: a floor above the ceiling is rejected, and equal is fine.
+func TestParamsValidate_RejectsInvertedTopInferersRange(t *testing.T) {
+	p := DefaultParams()
+	p.MinTopInferersToReward = p.MaxTopInferersToReward + 1
+	require.Error(t, p.Validate())
+
+	p.MinTopInferersToReward = p.MaxTopInferersToReward
+	require.NoError(t, p.Validate())
+}
+
+func TestValidateTopInferersToRewardRange(t *testing.T) {
+	require.NoError(t, validateTopInferersToRewardRange(0, 32))
+	require.NoError(t, validateTopInferersToRewardRange(32, 32))
+	require.Error(t, validateTopInferersToRewardRange(33, 32))
 }

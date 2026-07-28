@@ -168,6 +168,33 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTopicsMixedSet() {
 
 // a degenerate zero global is repaired to the module default and topics are
 // still backfilled to a valid value (the migration does not halt).
+func (s *EmissionsV16MigrationTestSuite) TestMigrateParamsBackfillsMinTopInferersToReward() {
+	store, cdc := s.storeAndCodec()
+
+	// Write a zero floor directly, as an existing chain decodes the new field.
+	params := emissionstypes.DefaultParams()
+	params.MinTopInferersToReward = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	s.Require().NoError(v16.MigrateParams(s.Ctx(), *s.EmissionsKeeper()))
+
+	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.DefaultMinTopInferersToReward, got.MinTopInferersToReward)
+}
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateParamsPreservesExistingMinTopInferersToReward() {
+	params := emissionstypes.DefaultParams()
+	params.MinTopInferersToReward = 7
+	s.Require().NoError(s.EmissionsKeeper().SetParams(s.Ctx(), params))
+
+	s.Require().NoError(v16.MigrateParams(s.Ctx(), *s.EmissionsKeeper()))
+
+	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(7), got.MinTopInferersToReward)
+}
+
 func (s *EmissionsV16MigrationTestSuite) TestMigrateTopicsRepairsZeroGlobal() {
 	store, cdc := s.storeAndCodec()
 
@@ -227,4 +254,25 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateStoreBackfillsTopic() {
 	got, err := s.TopicKeeper().GetTopic(s.Ctx(), 1)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopInferersToReward, got.MaxTopInferersToReward)
+}
+
+// a degenerate zero ceiling alongside the unset floor must not fail the upgrade:
+// the ceiling is repaired before the floor is persisted, so params validation
+// never sees floor > ceiling.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateStoreWithZeroCeilingAndFloor() {
+	store, cdc := s.storeAndCodec()
+
+	badParams := emissionstypes.DefaultParams()
+	badParams.MaxTopInferersToReward = 0
+	badParams.MinTopInferersToReward = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&badParams))
+
+	s.writeRawTopic(s.legacyTopic(1))
+
+	s.Require().NoError(v16.MigrateStore(s.Ctx(), *s.EmissionsKeeper()))
+
+	repaired, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.DefaultParams().MaxTopInferersToReward, repaired.MaxTopInferersToReward)
+	s.Require().Equal(emissionstypes.DefaultMinTopInferersToReward, repaired.MinTopInferersToReward)
 }
