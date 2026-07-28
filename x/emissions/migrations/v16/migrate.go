@@ -42,9 +42,12 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-// MigrateParams backfills Params.MinTopInferersToReward.
-// Zero already behaves as "no floor", so this only makes the
-// value explicit; an already-set value is left alone, keeping the run idempotent.
+// MigrateParams backfills Params.MinTopInferersToReward, which an existing chain
+// decodes as zero. Zero means "no floor", so this installs one where there was
+// none; it changes no admission outcome at upgrade time only because
+// MigrateTopics has already raised every topic cap to the ceiling. A non-zero
+// value is left alone: an unset field is indistinguishable from a deliberate
+// zero, so only the zero case is backfilled.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {

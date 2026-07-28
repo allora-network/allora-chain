@@ -166,8 +166,8 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTopicsMixedSet() {
 	s.Require().Equal(params.MaxTopInferersToReward, got3.MaxTopInferersToReward)
 }
 
-// a degenerate zero global is repaired to the module default and topics are
-// still backfilled to a valid value (the migration does not halt).
+// an unset floor is backfilled to the module default when the ceiling leaves
+// room for it.
 func (s *EmissionsV16MigrationTestSuite) TestMigrateParamsBackfillsMinTopInferersToReward() {
 	store, cdc := s.storeAndCodec()
 
@@ -181,6 +181,35 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateParamsBackfillsMinTopInferer
 	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	s.Require().Equal(emissionstypes.DefaultMinTopInferersToReward, got.MinTopInferersToReward)
+}
+
+// a ceiling below the default floor clamps the backfill to the ceiling instead
+// of failing params validation, which would halt the upgrade. MigrateTopics
+// only repairs a zero ceiling, so a small non-zero one reaches MigrateParams
+// intact and this is the only thing keeping the range well formed.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateParamsClampsMinToCeilingBelowDefault() {
+	store, cdc := s.storeAndCodec()
+
+	// Any ceiling under the default floor will do; the clamp has to pick it
+	// rather than the default.
+	const ceiling = uint64(3)
+	s.Require().Less(ceiling, emissionstypes.DefaultMinTopInferersToReward)
+
+	// Write directly: SetParams would reject the default floor against this
+	// ceiling, which is the very situation the clamp exists to survive.
+	params := emissionstypes.DefaultParams()
+	params.MaxTopInferersToReward = ceiling
+	params.MinTopInferersToReward = 0
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&params))
+
+	s.Require().NoError(v16.MigrateParams(s.Ctx(), *s.EmissionsKeeper()))
+
+	// The ceiling wins, not the default: min(default, ceiling). Expecting the
+	// default here would be expecting the halt this clamp exists to prevent.
+	got, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(ceiling, got.MinTopInferersToReward)
+	s.Require().NoError(got.Validate())
 }
 
 func (s *EmissionsV16MigrationTestSuite) TestMigrateParamsPreservesExistingMinTopInferersToReward() {

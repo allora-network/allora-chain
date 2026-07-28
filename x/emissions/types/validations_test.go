@@ -1286,7 +1286,6 @@ func TestEffectiveMaxTopInferersToReward(t *testing.T) {
 // TestInputInference_ValidateWithLimits_EffectiveCap covers the cap
 // enforcement: exactly cap labels ok, one over cap rejected, zero cap
 // rejected defensively.
-
 func TestInputInference_ValidateWithLimits_EffectiveCap(t *testing.T) {
 	in := baseValidInput(t)
 	in.Values = []*InputLabeledValue{
