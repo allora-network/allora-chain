@@ -19,7 +19,7 @@ import (
 // parameter. Existing topics decode this new field as zero and are backfilled
 // with the current on-chain global value so their admission behavior is
 // unchanged after the upgrade. It also backfills the new
-// Params.MinTopInferersToReward floor, which existing chains decode as zero.
+// Params.MinTopInferersToReward floor.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 15 TO VERSION 16")
 	storageService := emissionsKeeper.GetStorageService()
@@ -42,8 +42,8 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-// MigrateParams backfills Params.MinTopInferersToReward, which existing chains
-// decode as zero. Zero already behaves as "no floor", so this only makes the
+// MigrateParams backfills Params.MinTopInferersToReward.
+// Zero already behaves as "no floor", so this only makes the
 // value explicit; an already-set value is left alone, keeping the run idempotent.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
@@ -58,7 +58,9 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return nil
 	}
 
-	params.MinTopInferersToReward = emissionstypes.DefaultMinTopInferersToReward
+	// Defensive: clamp to the ceiling, so a chain whose ceiling is below the
+	// default floor cannot fail params validation and halt the upgrade.
+	params.MinTopInferersToReward = min(emissionstypes.DefaultMinTopInferersToReward, params.MaxTopInferersToReward)
 	if err := params.Validate(); err != nil {
 		return errorsmod.Wrap(err, "MIGRATION V16: backfilled params failed validation")
 	}

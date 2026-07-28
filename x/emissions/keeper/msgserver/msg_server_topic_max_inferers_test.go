@@ -121,16 +121,17 @@ func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersDefaultReadsLiveGlobal
 	s.Require().Equal(uint64(20), got.MaxTopInferersToReward)
 }
 
-// explicit values within [1, global] are stored verbatim.
+// explicit values at either end of the global range are stored verbatim.
 func (s *MsgServerTestSuite) TestCreateTopicMaxTopInferersExplicitValues() {
 	sender := s.AddrsStr(0)
+	floor := types.DefaultParams().MinTopInferersToReward
 	global := types.DefaultParams().MaxTopInferersToReward
 
-	idOne, err := s.createTopicWithCap(sender, 1)
+	idFloor, err := s.createTopicWithCap(sender, floor)
 	s.Require().NoError(err)
-	gotOne, err := s.TopicKeeper().GetTopic(s.Ctx(), idOne)
+	gotFloor, err := s.TopicKeeper().GetTopic(s.Ctx(), idFloor)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(1), gotOne.MaxTopInferersToReward)
+	s.Require().Equal(floor, gotFloor.MaxTopInferersToReward)
 
 	idMax, err := s.createTopicWithCap(sender, global)
 	s.Require().NoError(err)
@@ -299,6 +300,7 @@ func (s *MsgServerTestSuite) TestAdmissionClampsToLiveGlobalCeiling() {
 	// Governance lowers the global below the topic's frozen cap.
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 1
+	params.MinTopInferersToReward = 0
 	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 	activeInferer := s.AddrsStr(9)

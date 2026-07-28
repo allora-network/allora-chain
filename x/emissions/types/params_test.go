@@ -30,7 +30,7 @@ func TestDefaultParams(t *testing.T) {
 		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1"),
 		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0.25"),
 		MaxSamplesToScaleScores:             uint64(10),
-		MinTopInferersToReward:              uint64(1),
+		MinTopInferersToReward:              uint64(5),
 		MaxTopInferersToReward:              uint64(32),
 		MaxTopForecastersToReward:           uint64(6),
 		MaxTopReputersToReward:              uint64(6),

@@ -409,6 +409,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	// New high-score entrant should replace earlier low-score entrant
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 4
+	params.MinTopInferersToReward = 0
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
@@ -1189,6 +1190,7 @@ func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
 
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 4
+	params.MinTopInferersToReward = 0
 	err = s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 

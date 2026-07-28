@@ -75,8 +75,8 @@ func DefaultParams() Params {
 }
 
 // DefaultMinTopInferersToReward is the default floor for the per-topic inferer
-// admission cap. It is 1, which is inert: every stored cap is already >= 1.
-const DefaultMinTopInferersToReward = uint64(1)
+// admission cap. A topic with less than this will use this value as admission cap.
+const DefaultMinTopInferersToReward = uint64(5)
 
 // DefaultMaxLabelsPerSubmission is the default topic-level cap on the number of
 // distinct canonical labels a worker may attach to a single InputInference.

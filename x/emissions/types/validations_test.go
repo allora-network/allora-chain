@@ -1267,6 +1267,11 @@ func TestEffectiveMaxTopInferersToReward(t *testing.T) {
 		{"equal to global min", 10, 10, 32, 10},
 		{"zero with a floor still uses global max", 0, 10, 32, 32},
 		{"no floor", 10, 0, 32, 10},
+		// With the default floor: below it is raised, within the range is kept,
+		// above the ceiling is clamped.
+		{"default floor raises a low cap", 3, 5, 32, 5},
+		{"default floor keeps a cap above it", 6, 5, 32, 6},
+		{"default floor with cap above the ceiling", 33, 5, 32, 32},
 		// The ceiling is applied last, so an inverted global range can never
 		// yield a cap above the global max.
 		{"inverted global range yields global max", 3, 40, 32, 32},
