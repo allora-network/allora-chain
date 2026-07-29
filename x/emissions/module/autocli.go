@@ -969,7 +969,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 max_top_inferers_to_reward caps how many inferers are admitted to the topic's
 active set. Pass 0 to use the global max_top_inferers_to_reward: the current
 global value is resolved and stored. The topic keeps that number even if the
-global changes later - but is effectively clamped to the global range. 
+global changes later - but is effectively clamped to the global range.
 Any other value must lie within the global [min_top_inferers_to_reward, max_top_inferers_to_reward] range.`,
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
