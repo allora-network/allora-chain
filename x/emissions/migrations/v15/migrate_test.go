@@ -156,6 +156,22 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	}
 	topicStore.Set(sdk.Uint64ToBigEndian(classifTopic.Id), cdc.MustMarshal(&classifTopic))
 
+	// A second topic that the migration actually rewrites: its unspecified type
+	// and arity get defaulted, so it takes the changed-and-revalidated path.
+	// classifTopic above is complete, so it is skipped entirely -- only this one
+	// can show that a rewrite carries the cap through rather than dropping it.
+	rewrittenTopic := classifTopic
+	rewrittenTopic.Id = 43
+	rewrittenTopic.Metadata = "rewritten-topic"
+	rewrittenTopic.TopicType = emissionstypes.TopicType_TOPIC_TYPE_UNSPECIFIED
+	rewrittenTopic.OutputArity = emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_UNSPECIFIED
+	rewrittenTopic.MaxTopInferersToReward = 7
+	// Revalidation on the rewrite path needs a coherent schedule.
+	rewrittenTopic.EpochLength = 10800
+	rewrittenTopic.GroundTruthLag = 10800
+	rewrittenTopic.WorkerSubmissionWindow = 10
+	topicStore.Set(sdk.Uint64ToBigEndian(rewrittenTopic.Id), cdc.MustMarshal(&rewrittenTopic))
+
 	err := v15.MigrateTopics(s.Ctx(), *s.EmissionsKeeper(), store, cdc)
 	s.Require().NoError(err)
 
@@ -169,6 +185,17 @@ func (s *EmissionsV15MigrationTestSuite) TestMigrateTopicsPreservesExistingClass
 	s.Require().Equal(uint64(8), gotTopic.MaxLabelsPerSubmission)
 	s.Require().Equal([]string{"bear", "bull"}, gotTopic.LabelWhitelist)
 	s.Require().True(gotTopic.LabelDefaultValue.Equal(classifTopic.LabelDefaultValue))
+	// Untouched topic: v15 skips it entirely, so the cap is still what was stored.
+	s.Require().Equal(uint64(8), gotTopic.MaxTopInferersToReward)
+
+	// Rewritten topic: defaults were applied, proving it took the rewrite path,
+	// and the cap came through it intact. v15 must not disturb the cap -- only
+	// v16 touches it, and only to backfill zeros.
+	gotRewritten, err := s.TopicKeeper().GetTopic(s.Ctx(), rewrittenTopic.Id)
+	s.Require().NoError(err)
+	s.Require().Equal(emissionstypes.TopicType_TOPIC_TYPE_REGRESSION, gotRewritten.TopicType)
+	s.Require().Equal(emissionstypes.TopicOutputArity_TOPIC_OUTPUT_ARITY_SINGLE, gotRewritten.OutputArity)
+	s.Require().Equal(uint64(7), gotRewritten.MaxTopInferersToReward)
 }
 
 // TestMigrateTopicsPreservesExtremeButValidTopic guards against a future change
