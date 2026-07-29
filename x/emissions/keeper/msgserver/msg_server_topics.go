@@ -13,7 +13,7 @@ import (
 )
 
 // resolveMaxTopInferersToReward rejects a create/update request outside the
-// global [min, max] range; otherwise resolves it via
+// global [min, max] range, then resolves it to the concrete value to store via
 // types.EffectiveMaxTopInferersToReward.
 func resolveMaxTopInferersToReward(requested, globalMin, globalMax uint64) (uint64, error) {
 	if requested > globalMax {
@@ -22,7 +22,8 @@ func resolveMaxTopInferersToReward(requested, globalMin, globalMax uint64) (uint
 			"requested %d exceeds global maximum %d", requested, globalMax,
 		)
 	}
-	// A requested 0 means "use the global default" and is resolved, not rejected.
+	// 0 means "use the global maximum", so it is resolved rather than rejected;
+	// the value it resolves to is >= the floor by construction.
 	if requested != 0 && requested < globalMin {
 		return 0, errorsmod.Wrapf(
 			types.ErrTopicMaxTopInferersToRewardTooSmall,
@@ -176,8 +177,8 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
-	// Per-topic inferer cap: full-replacement semantics with 0 -> global
-	// default. The keeper's UpdateTopic rejects this change while a worker
+	// Per-topic inferer cap: full replacement, with 0 resolving to the global
+	// maximum. The keeper's UpdateTopic rejects this change while a worker
 	// submission window is open (see the guarded-fields set there).
 	updatedTopic.MaxTopInferersToReward = maxTopInferersToReward
 	// Label registry settings: always apply the requested value. The keeper

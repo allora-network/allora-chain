@@ -75,7 +75,7 @@ func DefaultParams() Params {
 }
 
 // DefaultMinTopInferersToReward is the default floor for the per-topic inferer
-// admission cap. A topic with less than this will use this value as admission cap.
+// admission cap: a topic storing less than this is raised to it at admission.
 const DefaultMinTopInferersToReward = uint64(5)
 
 // DefaultMaxLabelsPerSubmission is the default topic-level cap on the number of
@@ -615,9 +615,9 @@ func validateMaxSamplesToScaleScores(i uint64) error {
 	return nil
 }
 
-// max this many top inferers by score are admitted and rewarded for a topic.
-// Must be greater than zero: it is the admission ceiling and the default for an
-// unset per-topic Topic.MaxTopInferersToReward, so zero would admit nobody.
+// Ceiling for the per-topic inferer admission cap, and the value a requested 0
+// resolves to. Must be greater than zero: a zero ceiling would admit nobody and
+// would zero the score-retention window that is sized against it.
 func validateMaxTopInferersToReward(i uint64) error {
 	if i == 0 {
 		return ErrValidationMustBeGreaterthanZero
@@ -625,15 +625,16 @@ func validateMaxTopInferersToReward(i uint64) error {
 	return nil
 }
 
-// floor for the per-topic inferer admission cap. Zero is accepted and means no
-// floor, unlike the ceiling, where zero would admit nobody. The upper bound is
-// the ceiling itself, enforced by validateTopInferersToRewardRange.
+// Floor for the per-topic inferer admission cap. Every value is accepted here:
+// zero means no floor, and the upper bound against the ceiling is enforced by
+// validateTopInferersToRewardRange.
 func validateMinTopInferersToReward(_ uint64) error {
 	return nil
 }
 
-// the floor for the per-topic inferer cap cannot exceed the ceiling, so the
-// global range is always well formed.
+// The floor may not exceed the ceiling. UpdateParams applies every supplied
+// field before validating once, so lowering the ceiling below the current floor
+// requires lowering both in the same transaction.
 func validateTopInferersToRewardRange(minTopInferers, maxTopInferers uint64) error {
 	if minTopInferers > maxTopInferers {
 		return errorsmod.Wrapf(ErrInvalidValue,

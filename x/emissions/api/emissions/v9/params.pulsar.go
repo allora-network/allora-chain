@@ -3844,9 +3844,9 @@ type Params struct {
 	// Max absolute number of labels allowed in an epoch label registry
 	// for a single (topic, nonce).
 	MaxEpochLabelRegistrySize uint64 `protobuf:"varint,63,opt,name=max_epoch_label_registry_size,json=maxEpochLabelRegistrySize,proto3" json:"max_epoch_label_registry_size,omitempty"`
-	// Floor for the per-topic inferer admission cap. Together with
-	// max_top_inferers_to_reward it is the range a topic may request, and the
-	// range the effective cap is clamped into. Zero means no floor.
+	// Floor for the per-topic inferer admission cap. With
+	// max_top_inferers_to_reward it bounds what a topic may request, and the range
+	// the stored cap is clamped into at admission. Zero means no floor.
 	MinTopInferersToReward uint64 `protobuf:"varint,64,opt,name=min_top_inferers_to_reward,json=minTopInferersToReward,proto3" json:"min_top_inferers_to_reward,omitempty"`
 }
 

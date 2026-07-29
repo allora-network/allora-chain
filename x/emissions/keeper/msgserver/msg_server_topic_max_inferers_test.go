@@ -251,6 +251,65 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroResetsToGlobalDefa
 	s.Require().Equal(types.DefaultParams().MaxTopInferersToReward, got.MaxTopInferersToReward)
 }
 
+// Sending 0 usually changes nothing, because it means "use the global" and the
+// topic is already holding that exact number. But if governance raised the
+// global in the meantime, the very same 0 now asks for a bigger number, so it
+// counts as a real change and the open-window guard turns it away.
+func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroBlockedWhenGlobalMovedDuringWindow() {
+	sender := s.AddrsStr(0)
+	// A live topic with a worker submission window currently open.
+	ctx, topicId := s.setupActiveTopicWithOpenWSW(sender)
+	msgServer := s.EmissionsMsgServer()
+
+	// The topic starts out holding exactly the global value.
+	stored, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(types.DefaultParams().MaxTopInferersToReward, stored.MaxTopInferersToReward)
+
+	// Governance raises the global; the topic still holds the old number.
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = stored.MaxTopInferersToReward + 8
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	msg := s.baseWSWUpdateMsg(sender, topicId) // cap left 0 -> now the raised global
+	_, err = msgServer.UpdateTopic(ctx, msg)
+	// A different value than the stored one, so this reads as a change mid-window.
+	s.Require().ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
+	s.Require().ErrorContains(err, "max_top_inferers_to_reward")
+
+	// The rejection wrote nothing.
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(stored.MaxTopInferersToReward, got.MaxTopInferersToReward)
+}
+
+// Sending 0 does not replay whatever the global was back when the topic was
+// created; it looks the global up again at update time. So a topic can be
+// re-synced to a global that has moved since, simply by sending 0 again -- with
+// no worker window open, the new value is written.
+func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersZeroReresolvesToLiveGlobal() {
+	sender := s.AddrsStr(0)
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	// Created with 0, so the topic stores today's global. Inactive: no window.
+	topicId, err := s.createTopicWithCap(sender, 0)
+	s.Require().NoError(err)
+
+	// Governance moves the global out from under the topic.
+	raised := types.DefaultParams().MaxTopInferersToReward + 8
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = raised
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	msg := s.baseCapUpdateMsg(sender, topicId) // cap left 0 a second time
+	_, err = msgServer.UpdateTopic(ctx, msg)
+	s.Require().NoError(err)
+
+	// The topic followed the global rather than keeping its creation-time value.
+	got, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(raised, got.MaxTopInferersToReward)
+}
+
 // changing the cap and another guarded field during a window lists both.
 func (s *MsgServerTestSuite) TestUpdateTopicMaxTopInferersAndMeritBlockedListsBoth() {
 	sender := s.AddrsStr(0)

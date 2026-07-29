@@ -128,8 +128,10 @@ func (ms msgServer) processWorkerInferencePayload(
 		return err
 	}
 
-	// Resolve the per-topic cap into the global [min, max] range so the active set
-	// never exceeds the global-sized score-retention window.
+	// Re-resolve the stored cap into the global [min, max] on every payload: a
+	// value outside the range (genesis-supplied, or left behind by a governance
+	// change) is clamped rather than trusted, keeping the active set within the
+	// global-sized score-retention window.
 	maxTopInferersToReward := types.EffectiveMaxTopInferersToReward(
 		topic.MaxTopInferersToReward,
 		moduleParams.MinTopInferersToReward,

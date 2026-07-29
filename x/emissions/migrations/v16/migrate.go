@@ -77,18 +77,14 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-// MigrateTopics backfills Topic.MaxTopInferersToReward for existing topics.
-// Only topics whose field is zero (i.e. persisted before the field existed) are
-// touched; topics that already carry a value are left unchanged, so the
-// migration is idempotent.
+// MigrateTopics backfills Topic.MaxTopInferersToReward, which topics persisted
+// before the field existed decode as zero, with the current global
+// Params.MaxTopInferersToReward. Topics already carrying a value are skipped, so
+// the run is idempotent.
 //
-// The backfill value is the current on-chain global Params.MaxTopInferersToReward,
-// which is also the per-topic ceiling enforced by Topic.Validate. As a defensive
-// measure the migration first repairs a degenerate zero global (which should be
-// impossible now that the params validator rejects zero, and which would already
-// have zeroed the scores.go retention window) to the module default, so that
-// every topic ends up with a concrete value >= 1 and topic validation cannot
-// halt the upgrade on a bad ceiling.
+// A degenerate zero global is repaired to the module default first. That should
+// be unreachable now that the params validator rejects zero, but it would leave
+// every topic at zero and has already zeroed the scores.go retention window.
 func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {

@@ -473,9 +473,10 @@ type CreateNewTopicRequest struct {
 	// preserved and labels that differ only in case are treated as distinct.
 	// The field is immutable after topic creation.
 	LabelCaseSensitive bool `protobuf:"varint,29,opt,name=label_case_sensitive,json=labelCaseSensitive,proto3" json:"label_case_sensitive,omitempty"`
-	// Per-topic cap on the number of inferers admitted to the active set. A value
-	// of 0 means "use the global max_top_inferers_to_reward param" (the default).
-	// A non-zero value must not exceed that global param.
+	// Per-topic cap on inferers admitted to the active set. 0 means "use the
+	// global max_top_inferers_to_reward": that value is resolved and stored, so
+	// the topic keeps it even if the global changes later. Any other value must
+	// be within the global [min_top_inferers_to_reward, max_top_inferers_to_reward].
 	MaxTopInferersToReward uint64 `protobuf:"varint,30,opt,name=max_top_inferers_to_reward,json=maxTopInferersToReward,proto3" json:"max_top_inferers_to_reward,omitempty"`
 }
 
@@ -690,12 +691,11 @@ type UpdateTopicRequest struct {
 	// Default value for missing MULTI label slots. Topic keeper rejects
 	// mutations while any worker submission window is open.
 	LabelDefaultValue github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,opt,name=label_default_value,json=labelDefaultValue,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"label_default_value"`
-	// Per-topic cap on the number of inferers admitted to the active set.
-	// UpdateTopic is a full payload update: the supplied value replaces the
-	// existing value. A value of 0 resets it to the global
-	// max_top_inferers_to_reward default; a non-zero value must not exceed that
-	// global param. The topic keeper rejects this mutation while any worker
-	// submission window is open for the topic.
+	// Per-topic cap on inferers admitted to the active set. Full replacement: the
+	// supplied value overwrites the stored one. 0 means "use the global
+	// max_top_inferers_to_reward", resolved and stored; any other value must be
+	// within the global [min_top_inferers_to_reward, max_top_inferers_to_reward].
+	// The keeper rejects this mutation while any worker submission window is open.
 	MaxTopInferersToReward uint64 `protobuf:"varint,12,opt,name=max_top_inferers_to_reward,json=maxTopInferersToReward,proto3" json:"max_top_inferers_to_reward,omitempty"`
 }
 
