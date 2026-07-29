@@ -34,8 +34,9 @@ func (s *EmissionsV16MigrationTestSuite) storeAndCodec() (storetypes.KVStore, co
 }
 
 // writeRawTopic persists a topic directly to the topic prefix store, bypassing
-// SetTopic validation. This lets tests seed a pre-migration topic whose new
-// MaxTopInferersToReward field is zero (which SetTopic would now reject).
+// SetTopic. That keeps the bytes verbatim -- no whitelist canonicalization, no
+// re-encoding -- so tests can seed exactly the pre-migration shape they mean to,
+// including a zero MaxTopInferersToReward for the backfill to act on.
 func (s *EmissionsV16MigrationTestSuite) writeRawTopic(topic emissionstypes.Topic) {
 	store, cdc := s.storeAndCodec()
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
