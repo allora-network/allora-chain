@@ -93,6 +93,8 @@ type Keeper struct {
 
 	// EPOCHS
 	epochs *collections.IndexedMap[collections.Pair[TopicId, types.NonceV2], types.Epoch, EpochsIndexes]
+	// topicLastEpochNonce tracks the last allocated epoch NonceV2 for each topic.
+	topicLastEpochNonce collections.Map[TopicId, types.NonceV2]
 
 	// REPUTERS AND LOSSES
 	reputerLossKeeper *ReputerLossKeeper
@@ -192,6 +194,13 @@ func NewKeeper(
 			collections.PairKeyCodec[TopicId, types.NonceV2](collections.Uint64Key, types.NonceKey),
 			codec.CollValue[types.Epoch](cdc),
 			NewEpochsIndexes(sb),
+		),
+		topicLastEpochNonce: collections.NewMap(
+			sb,
+			types.TopicLastEpochNonceKey,
+			"topic_last_epoch_nonce",
+			collections.Uint64Key,
+			types.NonceValue,
 		),
 	}
 
