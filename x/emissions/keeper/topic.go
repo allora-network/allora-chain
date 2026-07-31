@@ -50,6 +50,13 @@ func NewTopicKeeper(
 
 const RESERVED_BLOCK = 0
 
+// TopicLifecycleHooks are optional callbacks invoked when a topic becomes active or inactive.
+// Used to start/stop scheduler-driven epoch creation without coupling TopicKeeper to the scheduler.
+type TopicLifecycleHooks interface {
+	OnTopicActivated(ctx context.Context, topicId TopicId) error
+	OnTopicInactivated(ctx context.Context, topicId TopicId) error
+}
+
 type TopicKeeper struct {
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
@@ -90,6 +97,13 @@ type TopicKeeper struct {
 	nonceKeeper *NonceKeeper
 	// staking keeper
 	stakingKeeper *StakingKeeper
+	// optional hooks for epoch scheduling on activate/inactivate
+	lifecycleHooks TopicLifecycleHooks
+}
+
+// SetLifecycleHooks sets callbacks invoked on topic activation and inactivation.
+func (k *TopicKeeper) SetLifecycleHooks(hooks TopicLifecycleHooks) {
+	k.lifecycleHooks = hooks
 }
 
 // Get the previous weight during rewards calculation for a topic

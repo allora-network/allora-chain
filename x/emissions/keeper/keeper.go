@@ -212,6 +212,9 @@ func NewKeeper(
 	k.schema = schema
 
 	k.setupEpochFSMEngine()
+	// Wire activation/inactivation to epoch scheduling. Captures &k (escapes to heap) so hooks
+	// remain valid after NewKeeper returns the Keeper by value.
+	k.topicKeeper.SetLifecycleHooks(&k)
 
 	return k
 }

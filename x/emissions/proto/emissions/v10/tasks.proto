@@ -12,3 +12,8 @@ message EpochTransitionTaskArgs {
   // The epoch identifier, aka nonce.
   uint64 nonce = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "NonceV2"];
 }
+
+message StartNewEpochTaskArgs {
+  // The topic for which to start a new epoch.
+  uint64 topic_id = 1;
+}
