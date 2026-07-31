@@ -28,6 +28,11 @@ message Epoch {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+
+  // Block height at StartNewEpoch. Transitional key into the legacy
+  // BlockHeight-keyed submission/inference/reward data plane (LegacyNonce).
+  // Canonical epoch id remains nonce (NonceV2).
+  int64 start_block_height = 7;
 }
 
 enum EpochState {
