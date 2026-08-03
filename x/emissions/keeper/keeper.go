@@ -74,6 +74,10 @@ type Keeper struct {
 	epochFSMEngine  *fsm.Engine[*types.Epoch]
 	schedulerKeeper SchedulerKeeper
 
+	// Shared pointer so SetEpochCloseHandlers on the returned Keeper updates the same
+	// handlers the FSM engine (bound inside NewKeeper) observes.
+	epochCloseHandlers *epochCloseHandlers
+
 	// TYPES
 	schema        collections.Schema
 	authKeeper    AccountKeeper
@@ -202,6 +206,7 @@ func NewKeeper(
 			collections.Uint64Key,
 			types.NonceValue,
 		),
+		epochCloseHandlers: &epochCloseHandlers{},
 	}
 
 	schema, err := sb.Build()

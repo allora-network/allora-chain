@@ -183,6 +183,10 @@ func (k *TopicKeeper) SetRewardableTopic(ctx context.Context, topicId TopicId) e
 	return k.rewardableTopics.Set(ctx, topicId)
 }
 
+func (k *TopicKeeper) IsRewardableTopic(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.rewardableTopics.Has(ctx, topicId)
+}
+
 // UpdateTotalSumPreviousTopicWeights updates the total sum of previous topic weights
 // by subtracting the old weight if any, and adding the new weight for the given topicId.
 func (k *TopicKeeper) UpdateTotalSumPreviousTopicWeights(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec) error {

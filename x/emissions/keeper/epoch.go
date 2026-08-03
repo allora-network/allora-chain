@@ -192,41 +192,10 @@ func (k *Keeper) applyEpochTransition(ctx context.Context, topicID TopicId, nonc
 	return k.epochs.Set(ctx, epoch.Key(), epoch)
 }
 
-func (k *Keeper) openWorkerWindow(ctx context.Context, epoch types.Epoch) error {
-	// TODO: emit evt
-	return nil
-}
-
-func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error {
-	// TODO: emit evt & compute network inference
-	return nil
-}
-
-func (k *Keeper) openReputerWindow(ctx context.Context, epoch types.Epoch) error {
-	// TODO: emit evt
-	return nil
-}
-
-func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) error {
-	// TODO: emit evt
-	return nil
-}
-
-func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
-	// TODO: compute loss, distribute reward, prune epoch data
-	return nil
-}
-
-func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
-	if epoch.State == types.EpochState_WORKER_SUBMISSION {
-		// TODO: emit closing worker window evt
-	} else if epoch.State == types.EpochState_REPUTER_SUBMISSION {
-		// TODO: emit closing reputer window evt
-	}
-
-	// TODO: prune epoch data
-
-	return k.unscheduleEpochLifecycle(ctx, epoch)
+// CancelEpoch cancels an in-flight epoch, emits close events for open windows,
+// fulfills leftover unfulfilled nonces, and unschedules remaining lifecycle tasks.
+func (k *Keeper) CancelEpoch(ctx context.Context, topicID TopicId, nonce types.NonceV2) error {
+	return k.applyEpochTransition(ctx, topicID, nonce, epochSymbolCancel)
 }
 
 // wrapEpochTransitionFn is used to map epoch transition functions that take epoch by value to the signature required by
