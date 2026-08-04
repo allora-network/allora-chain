@@ -79,11 +79,22 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Rewards error")
 	}
 
-	// Close any open windows due this blockHeight
+	// Close any open windows due this blockHeight (legacy path only).
 	workerWindowsToClose := am.keeper.GetNonceKeeper().GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {
 		for _, topicId := range workerWindowsToClose.TopicIds {
 			sdkCtx.Logger().Info("ABCI EndBlocker: Worker close cadence met for topic", "topicId", topicId)
+
+			schedulerManaged, err := am.keeper.IsTopicSchedulerManaged(sdkCtx, topicId)
+			if err != nil {
+				sdkCtx.Logger().Warn("Error checking scheduler enrollment", "error", err)
+				continue
+			}
+			if schedulerManaged {
+				sdkCtx.Logger().Debug("Skipping EndBlocker worker close for scheduler-managed topic", "topicId", topicId)
+				continue
+			}
+
 			// Check if there is an unfulfilled nonce
 			nonces, err := am.keeper.GetNonceKeeper().GetUnfulfilledWorkerNonces(sdkCtx, topicId)
 			if err != nil {
@@ -108,6 +119,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 			}
 		}
+		// Always clear the height index to avoid stale keys, including for skipped topics.
 		err = am.keeper.GetNonceKeeper().DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
 		if err != nil {
 			sdkCtx.Logger().Warn("Error deleting worker window blockheight", "error", err)
