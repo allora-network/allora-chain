@@ -65,15 +65,22 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	withinWindow, err := keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	// Prefer Epoch wall-clock windows when a live scheduler epoch matches this legacy nonce.
+	epochFound, err := ms.k.CheckWorkerSubmissionWindow(ctx, topicId, *nonce)
 	if err != nil {
 		return nil, err
-	} else if !withinWindow {
-		return nil, errorsmod.Wrapf(
-			types.ErrWorkerNonceWindowNotAvailable,
-			"Worker window not open for topic: %d, current block %d, start window: %d, end window: %d",
-			topicId, blockHeight, nonce.BlockHeight, nonce.BlockHeight+topic.WorkerSubmissionWindow,
-		)
+	}
+	if !epochFound {
+		withinWindow, err := keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+		if err != nil {
+			return nil, err
+		} else if !withinWindow {
+			return nil, errorsmod.Wrapf(
+				types.ErrWorkerNonceWindowNotAvailable,
+				"Worker window not open for topic: %d, current block %d, start window: %d, end window: %d",
+				topicId, blockHeight, nonce.BlockHeight, nonce.BlockHeight+topic.WorkerSubmissionWindow,
+			)
+		}
 	}
 
 	isWorkerRegistered, err := ms.wk.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
