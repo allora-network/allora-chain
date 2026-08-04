@@ -322,6 +322,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	// Create a topic first
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -359,6 +360,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Updated metadata",
@@ -421,6 +423,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRa
 			require.NoError(err)
 
 			updateTopicMsg := &types.UpdateTopicRequest{
+				MaxTopInferersToReward: 0,
 				Sender:                 sender,
 				TopicId:                createResult.TopicId,
 				Metadata:               originalTopic.Metadata,
@@ -467,6 +470,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsLabelWhitelistAboveMax() {
 	}
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                createResult.TopicId,
 		Metadata:               originalTopic.Metadata,
@@ -509,6 +513,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsNonzeroLabelDefaultValueWhenR
 	require.NotNil(createResult)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                createResult.TopicId,
 		Metadata:               "Updated metadata",
@@ -539,6 +544,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -572,6 +578,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 otherUser,
 		TopicId:                topicId,
 		Metadata:               "Updated metadata",
@@ -598,6 +605,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                nonexistentTopicId,
 		Metadata:               "Updated metadata",
@@ -626,6 +634,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "valid metadata",
@@ -645,6 +654,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long loss method
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "valid metadata",
@@ -664,6 +674,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               strings.Repeat("a", 257),
@@ -695,6 +706,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Create a topic first
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  sender,
 		Metadata:                 "original metadata",
 		LossMethod:               "mse",
@@ -734,6 +746,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Test successful update
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "updated metadata",
@@ -771,6 +784,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -802,6 +816,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	topicId := createResult.TopicId
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -826,6 +841,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm with valid values
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -847,6 +863,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value -100
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -868,6 +885,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value 100
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -893,6 +911,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	s.WithBlockHeight(50)
 	ctx = s.Ctx()
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -918,6 +937,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid alpha_regret (<=0)
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -935,6 +955,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid merit_sortition_alpha (>1)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -952,6 +973,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid p_norm (below range)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -969,6 +991,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid c_norm (below -100)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -986,6 +1009,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid c_norm (above 100)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -1012,6 +1036,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	s.WithBlockHeight(10)
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -1052,6 +1077,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -1083,6 +1109,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	// Topic inactive by default
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -1120,6 +1147,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: 0,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",

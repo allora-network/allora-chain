@@ -67,6 +67,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward` (additive field on `emissions.v10.Topic`): the cap on inferers admitted per topic is now topic-level, set at create/`UpdateTopic` (`0` uses the global default; guarded while a worker submission window is open). Stored caps are kept verbatim, and admission resolves them against the global bounds, so the globals stay live. The emissions v16 migration backfills existing topics, so behavior is unchanged across the `v0.18.0` upgrade.
+* [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` (additive field on `emissions.v9.Params`): a floor for the per-topic inferer cap, so a topic cannot be configured to admit an unreasonably small active set. Create/`UpdateTopic` reject a cap outside `[min, max]`, and admission clamps the effective cap into that range with the ceiling applied last, so it can never exceed the global maximum. Params validation keeps the range well formed by rejecting a floor above the ceiling. It defaults to `5` and is therefore active from the start: a topic whose stored cap is below the floor has it raised at admission, and the v16 migration backfills the param. The floor never gates an epoch, which stays valid even when fewer inferers than the floor take part.
+
+### Changed
+
+* [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the default and live ceiling for the per-topic cap; score-history retention still uses the global value.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+### API Breaking Changes
+
+#### Removed
+
+#### Added
+
+#### Changed
+
+# [Released]
+
+# v0.17.0
+
+### Added
+
 ### Changed
 
 * [#945](https://github.com/allora-network/allora-chain/pull/945) Fix parameter advertising in autocli
@@ -92,7 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#957](https://github.com/allora-network/allora-chain/pull/957) Removed `types.NewInferenceFromInput`, `types.NewInferenceForecastBundleFromInput`, and `types.NewWorkerDataBundleFromInput`. Clients build the `Input*` types directly and sign the `InputInferenceForecastBundle`.
 * [#947](https://github.com/allora-network/allora-chain/pull/947), [#956](https://github.com/allora-network/allora-chain/pull/956) Removed the v10 event messages `emissions.v10.EventNetworkInferences` and `emissions.v10.EventOutlierResistantNetworkInferences`. Both are superseded by `emissions.v10.EventNetworkInferenceBundle` with an `outlier-resistant` flag (see API Breaking Changes → Changed).
 
-#### Added 
+#### Added
 
 #### Changed
 
@@ -101,8 +130,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#947](https://github.com/allora-network/allora-chain/pull/947) Extended v10 `CreateNewTopic` and `UpdateTopic` with label registry fields (`max_labels_per_submission`, `label_whitelist`, `label_default_value`), and updated the corresponding AutoCLI `create-topic`/`update-topic` positional arguments.
 * [#942](https://github.com/allora-network/allora-chain/pull/942) gRPC/REST query `GetLatestNetworkInferencesOutlierResistant` now returns `InvalidArgument` for multi-label (`TOPIC_OUTPUT_ARITY_MULTI`) topics and `NotFound` for unknown topics, matching `GetNetworkInferencesAtBlockOutlierResistant`. Previously it returned `OK` with an empty bundle (nonce 0) in both cases.
 * [#947](https://github.com/allora-network/allora-chain/pull/947) Consolidated the network-inference event stream. The chain now emits a single `emissions.v10.EventNetworkInferenceBundle` for both regular and outlier-resistant network inferences, distinguished by the `outlier_resistant` bool field, replacing the separate v9 events `emissions.v9.EventNetworkInferences` and `emissions.v9.EventOutlierResistantNetworkInferences`. Indexers/subscribers must subscribe to `emissions.v10.EventNetworkInferenceBundle` and branch on `outlier_resistant`; after the upgrade the v9 event types are no longer emitted.
-
-# [Released]
 
 # v0.16.0
 

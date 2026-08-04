@@ -166,6 +166,7 @@ func addDelegateStake(m testCommon.TestConfig, delegatorAccount cosmosaccount.Ac
 func createTestTopic(m testCommon.TestConfig, creator string, metadata string, epochLength int64) uint64 {
 	ctx := context.Background()
 	createTopicRequest := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  creator,
 		Metadata:                 metadata,
 		LossMethod:               "mse",
