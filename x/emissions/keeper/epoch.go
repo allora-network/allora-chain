@@ -174,13 +174,46 @@ func (k *Keeper) OnTopicActivated(ctx context.Context, topicID TopicId) error {
 	return k.schedulePeriodicNewEpoch(ctx, topicID)
 }
 
-// OnTopicInactivated cancels the periodic new-epoch task for the topic.
-// In-flight epoch lifecycle tasks are left alone; cancellation of open epochs is handled separately.
+// OnTopicInactivated cancels all in-flight epochs for the topic (fulfill leftover nonces,
+// unschedule lifecycle tasks, remove epoch records) and cancels the periodic new-epoch task.
 func (k *Keeper) OnTopicInactivated(ctx context.Context, topicID TopicId) error {
 	if k.schedulerKeeper == nil {
 		return nil
 	}
+	if err := k.cancelTopicEpochs(ctx, topicID); err != nil {
+		return err
+	}
 	return k.unschedulePeriodicNewEpoch(ctx, topicID)
+}
+
+// cancelTopicEpochs cancels every live epoch for the topic. Keys are collected first so
+// CancelEpoch can remove entries without mutating the store during iteration.
+func (k *Keeper) cancelTopicEpochs(ctx context.Context, topicID TopicId) error {
+	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
+	iter, err := k.epochs.Iterate(ctx, rng)
+	if err != nil {
+		return err
+	}
+
+	var nonces []types.NonceV2
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.Key()
+		if err != nil {
+			_ = iter.Close()
+			return err
+		}
+		nonces = append(nonces, key.K2())
+	}
+	if err := iter.Close(); err != nil {
+		return err
+	}
+
+	for _, nonce := range nonces {
+		if err := k.CancelEpoch(ctx, topicID, nonce); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (k *Keeper) applyEpochTransition(ctx context.Context, topicID TopicId, nonce types.NonceV2, symbol EpochFSMSymbol) error {
