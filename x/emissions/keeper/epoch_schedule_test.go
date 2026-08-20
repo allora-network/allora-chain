@@ -31,12 +31,12 @@ func (s *KeeperTestSuite) TestStartNewEpochOpensWorkerWindowAndSchedulesLaterTra
 	s.Require().Equal(start, epoch.WorkerSubmissionWindow.OpenAt)
 	s.Require().Equal(start.Add(10*time.Second), epoch.WorkerSubmissionWindow.CloseAt)
 
-	// ExtraLag for GroundTruthLag=150, EpochLength=100 is 50 → reputer opens at start+200s.
+	// ExtraLag for GroundTruthLag=150, EpochLength=100 is 50 → open at GTL (150s), close at GTL+ExtraLag+EpochLength (300s).
 	s.Require().Equal(int64(50), types.TopicExtraLag(types.Topic{
 		EpochLength:    100,
 		GroundTruthLag: 150,
 	}))
-	s.Require().Equal(start.Add(200*time.Second), epoch.ReputerSubmissionWindow.OpenAt)
+	s.Require().Equal(start.Add(150*time.Second), epoch.ReputerSubmissionWindow.OpenAt)
 	s.Require().Equal(start.Add(300*time.Second), epoch.ReputerSubmissionWindow.CloseAt)
 
 	taskIDSuffix := fmt.Sprintf(":%d-%d", topicId, lastNonce)

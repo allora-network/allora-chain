@@ -46,7 +46,9 @@ func TopicExtraLag(topic Topic) int64 {
 
 func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 	extraLag := TopicExtraLag(topic)
-	reputerOpenAt := startAt.Add(time.Duration(topic.GroundTruthLag+extraLag) * time.Second)
+	// Reputer opens at GroundTruthLag (legacy EndBlocker / spec), not GTL+ExtraLag.
+	// ExtraLag extends the close so the window still lands on an epoch boundary.
+	reputerOpenAt := startAt.Add(time.Duration(topic.GroundTruthLag) * time.Second)
 	return Epoch{
 		Nonce:   nonce,
 		TopicId: topic.Id,
@@ -57,7 +59,7 @@ func NewEpoch(nonce NonceV2, topic Topic, startAt time.Time) Epoch {
 		},
 		ReputerSubmissionWindow: &Window{
 			OpenAt:  reputerOpenAt,
-			CloseAt: reputerOpenAt.Add(time.Duration(topic.EpochLength) * time.Second),
+			CloseAt: reputerOpenAt.Add(time.Duration(extraLag+topic.EpochLength) * time.Second),
 		},
 		Epsilon: topic.Epsilon,
 	}
