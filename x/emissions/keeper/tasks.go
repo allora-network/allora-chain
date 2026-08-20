@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/collections"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // TaskHandlers returns all the task handlers related to the x/emissions module.
@@ -27,7 +28,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			nil,
 			nil,
 			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
-				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolOpenWorkerWindow)
+				return k.handleEpochTransitionTask(ctx, args.TopicId, args.Nonce, epochSymbolOpenWorkerWindow)
 			},
 		),
 		schedulertypes.NewTaskHandler(
@@ -35,7 +36,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			[]string{types.OpenEpochWorkerWindowTask},
 			nil,
 			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
-				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolCloseWorkerWindow)
+				return k.handleEpochTransitionTask(ctx, args.TopicId, args.Nonce, epochSymbolCloseWorkerWindow)
 			},
 		),
 		schedulertypes.NewTaskHandler(
@@ -43,7 +44,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			[]string{types.CloseEpochWorkerWindowTask},
 			nil,
 			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
-				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolOpenReputerWindow)
+				return k.handleEpochTransitionTask(ctx, args.TopicId, args.Nonce, epochSymbolOpenReputerWindow)
 			},
 		),
 		schedulertypes.NewTaskHandler(
@@ -51,7 +52,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			[]string{types.OpenEpochReputerWindowTask},
 			nil,
 			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
-				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolCloseReputerWindow)
+				return k.handleEpochTransitionTask(ctx, args.TopicId, args.Nonce, epochSymbolCloseReputerWindow)
 			},
 		),
 		schedulertypes.NewTaskHandler(
@@ -59,7 +60,7 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			[]string{types.CloseEpochReputerWindowTask},
 			nil,
 			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
-				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolComplete)
+				return k.handleEpochTransitionTask(ctx, args.TopicId, args.Nonce, epochSymbolComplete)
 			},
 		),
 	}
@@ -73,7 +74,31 @@ func (k *Keeper) handleStartNewEpochTask(ctx context.Context, topicID TopicId) e
 	if !active {
 		return nil
 	}
-	return k.StartNewEpoch(ctx, topicID)
+	if err := k.StartNewEpoch(ctx, topicID); err != nil {
+		// Do not fail BeginBlock: overlapping wall-clock epochs and the still-active
+		// EndBlocker nonce path can race while this handler only advances FSM stubs.
+		sdk.UnwrapSDKContext(ctx).Logger().Error(
+			"periodic StartNewEpoch failed",
+			"topicId", topicID,
+			"error", err,
+		)
+		return nil
+	}
+	return nil
+}
+
+func (k *Keeper) handleEpochTransitionTask(ctx context.Context, topicID TopicId, nonce types.NonceV2, symbol EpochFSMSymbol) error {
+	if err := k.applyEpochTransition(ctx, topicID, nonce, symbol); err != nil {
+		sdk.UnwrapSDKContext(ctx).Logger().Error(
+			"epoch transition task failed",
+			"topicId", topicID,
+			"nonce", nonce,
+			"transition", symbol.Name(),
+			"error", err,
+		)
+		return nil
+	}
+	return nil
 }
 
 func startNewEpochTaskID(topicID TopicId) schedulertypes.TaskID {

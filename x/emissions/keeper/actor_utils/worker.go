@@ -28,9 +28,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
-	if blockHeight <= nonce.BlockHeight ||
-		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
+	// Too early: the window has not opened yet. Overdue closes (after WorkerSubmissionWindow)
+	// are allowed so a missed close-cadence block can still add the reputer nonce.
+	if blockHeight <= nonce.BlockHeight {
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
 
