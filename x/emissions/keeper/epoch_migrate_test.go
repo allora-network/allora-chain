@@ -113,20 +113,23 @@ func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsLegacyAlignedReputerOpenWi
 
 	blocksElapsed := currentHeight - legacyHeight
 	startAt := ctx.BlockTime().Add(-time.Duration(blocksElapsed*blockTimeSecs) * time.Second)
-	// Legacy-aligned: open at GTL, not GTL+ExtraLag.
-	legacyOpen := startAt.Add(time.Duration(150*blockTimeSecs) * time.Second)
-	newEpochOpen := startAt.Add(time.Duration((150+50)*blockTimeSecs) * time.Second)
-	s.Require().Equal(legacyOpen, epoch.ReputerSubmissionWindow.OpenAt)
-	s.Require().NotEqual(newEpochOpen, epoch.ReputerSubmissionWindow.OpenAt)
-	// Close spans ExtraLag + EpochLength after GTL open (legacy formula).
-	s.Require().Equal(
-		legacyOpen.Add(time.Duration((50+100)*blockTimeSecs)*time.Second),
-		epoch.ReputerSubmissionWindow.CloseAt,
-	)
+	// Reconstruct matches NewEpoch: reputer opens at GTL, close is ExtraLag+EpochLength later.
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicID)
+	s.Require().NoError(err)
+	newEpoch := types.NewEpoch(lastNonce, topic, startAt)
+	s.Require().Equal(newEpoch.ReputerSubmissionWindow.OpenAt, epoch.ReputerSubmissionWindow.OpenAt)
+	s.Require().Equal(newEpoch.ReputerSubmissionWindow.CloseAt, epoch.ReputerSubmissionWindow.CloseAt)
 
 	ok, err := s.EmissionsKeeper().CheckReputerSubmissionWindow(ctx, topicID, epoch.LegacyNonce())
 	s.Require().NoError(err)
 	s.Require().True(ok)
+
+	// Wall-clock close must succeed at the real chain height. After ×6 conversion,
+	// GroundTruthLag is seconds; treating it as blocks would reject this close.
+	ctx = ctx.WithBlockTime(epoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicID, lastNonce)
+	s.Require().Error(err, "reputer close and complete should finish without height-window checks")
 }
 
 func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsSkipsAlreadyManagedTopics() {
@@ -157,6 +160,30 @@ func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsSkipsAlreadyManagedTopics(
 	s.Require().NoError(err)
 	s.Require().True(found)
 	s.Require().Equal(lastBefore, lastAfter)
+}
+
+func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsDoesNotRescaleMinEpochLengthWhenAllManaged() {
+	const blockTimeSecs int64 = 6
+	ctx := s.Ctx()
+	nextID, err := s.TopicKeeper().GetNextTopicId(ctx)
+	s.Require().NoError(err)
+	for id := uint64(1); id < nextID; id++ {
+		exists, err := s.TopicKeeper().TopicExists(ctx, id)
+		s.Require().NoError(err)
+		if !exists {
+			continue
+		}
+		s.Require().NoError(s.TopicKeeper().ActivateTopic(ctx, id))
+	}
+
+	paramsBefore, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(ctx, blockTimeSecs))
+
+	paramsAfter, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(paramsBefore.MinEpochLength, paramsAfter.MinEpochLength)
 }
 
 func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsEnrollsActiveTopicWithoutNonces() {
