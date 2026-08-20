@@ -25,6 +25,6 @@ func TestNewEpochAppliesExtraLagToReputerWindow(t *testing.T) {
 	epoch := NewEpoch(ZeroNonce().NextNonce(), topic, start)
 	require.Equal(t, start, epoch.WorkerSubmissionWindow.OpenAt)
 	require.Equal(t, start.Add(10*time.Second), epoch.WorkerSubmissionWindow.CloseAt)
-	require.Equal(t, start.Add(200*time.Second), epoch.ReputerSubmissionWindow.OpenAt)
+	require.Equal(t, start.Add(150*time.Second), epoch.ReputerSubmissionWindow.OpenAt)
 	require.Equal(t, start.Add(300*time.Second), epoch.ReputerSubmissionWindow.CloseAt)
 }
