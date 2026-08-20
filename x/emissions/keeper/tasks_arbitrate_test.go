@@ -139,3 +139,90 @@ func (s *KeeperTestSuite) TestArbitrateCompleteEpochPostponesLowerWeightTopics()
 	_, err = s.EmissionsKeeper().GetEpoch(ctx, lightTopic, lightNonce)
 	s.Require().Error(err, "postponed complete should succeed on retry")
 }
+
+func (s *KeeperTestSuite) TestArbitrateStartNewEpochWaitsForSameTopicDeferredComplete() {
+	ctx := s.Ctx().WithBlockHeight(2_000)
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	// Widen so both topics can activate; arbitration uses MaxActive=1 later.
+	params.MaxActiveTopicsPerBlock = 2
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	heavyTopic := s.CreateTopic(testutil.WithEpochLength(100), testutil.WithGroundTruthLag(100), testutil.WithWorkerSubmissionWindow(10))
+	lightTopic := s.CreateTopic(testutil.WithEpochLength(100), testutil.WithGroundTruthLag(100), testutil.WithWorkerSubmissionWindow(10))
+
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, heavyTopic, cosmosMath.NewInt(1_000_000)))
+	s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(ctx, heavyTopic, cosmosMath.NewInt(1_000_000)))
+	s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, lightTopic, cosmosMath.NewInt(1)))
+	s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(ctx, lightTopic, cosmosMath.NewInt(1)))
+
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(ctx, heavyTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(ctx, lightTopic))
+
+	// Drop periodic StartNewEpoch so only an explicit light start is due with Complete.
+	heavyPeriodicID := schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, heavyTopic))
+	lightPeriodicID := schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, lightTopic))
+	s.Require().NoError(s.SchedulerKeeper().CancelTask(ctx, heavyPeriodicID))
+	s.Require().NoError(s.SchedulerKeeper().CancelTask(ctx, lightPeriodicID))
+
+	params, err = s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	params.MaxActiveTopicsPerBlock = 1
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	heavyNonce, _, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, heavyTopic)
+	s.Require().NoError(err)
+	lightNonce, _, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, lightTopic)
+	s.Require().NoError(err)
+
+	heavyEpoch, err := s.EmissionsKeeper().GetEpoch(ctx, heavyTopic, heavyNonce)
+	s.Require().NoError(err)
+	lightEpoch, err := s.EmissionsKeeper().GetEpoch(ctx, lightTopic, lightNonce)
+	s.Require().NoError(err)
+
+	ctx = ctx.WithBlockTime(heavyEpoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+	heavyEpoch, err = s.EmissionsKeeper().GetEpoch(ctx, heavyTopic, heavyNonce)
+	s.Require().NoError(err)
+	lightEpoch, err = s.EmissionsKeeper().GetEpoch(ctx, lightTopic, lightNonce)
+	s.Require().NoError(err)
+
+	ctx = ctx.WithBlockTime(heavyEpoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+	heavyEpoch, err = s.EmissionsKeeper().GetEpoch(ctx, heavyTopic, heavyNonce)
+	s.Require().NoError(err)
+	lightEpoch, err = s.EmissionsKeeper().GetEpoch(ctx, lightTopic, lightNonce)
+	s.Require().NoError(err)
+
+	ctx = ctx.WithBlockTime(heavyEpoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().ScheduleTask(
+		ctx,
+		types.StartNewEpochTask,
+		lightPeriodicID,
+		&types.StartNewEpochTaskArgs{TopicId: lightTopic},
+		schedulertypes.ScheduleAt(ctx.BlockTime()),
+	))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, heavyTopic, heavyNonce)
+	s.Require().Error(err, "higher-weight complete should remove the epoch")
+	lightEpoch, err = s.EmissionsKeeper().GetEpoch(ctx, lightTopic, lightNonce)
+	s.Require().NoError(err, "lower-weight complete should be postponed")
+	s.Require().Equal(types.EpochState_PENDING_COMPLETION, lightEpoch.State)
+
+	lightNonceAfter, _, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, lightTopic)
+	s.Require().NoError(err)
+	s.Require().Equal(lightNonce, lightNonceAfter, "must not start a new epoch while complete is deferred")
+
+	lightStart, err := s.SchedulerKeeper().GetTask(ctx, lightPeriodicID)
+	s.Require().NoError(err)
+	s.Require().NotNil(lightStart.ScheduledFor)
+
+	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, lightTopic, lightNonce)
+	s.Require().Error(err, "postponed complete should succeed on retry")
+	lightNonceRetried, _, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, lightTopic)
+	s.Require().NoError(err)
+	s.Require().Equal(lightNonce.NextNonce(), lightNonceRetried, "start should run after complete succeeds")
+}
