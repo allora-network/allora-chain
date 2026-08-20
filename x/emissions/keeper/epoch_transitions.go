@@ -106,7 +106,8 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	closeHeight := legacyNonce.BlockHeight + topic.GroundTruthLag
+	extraLag := types.TopicExtraLag(topic)
+	closeHeight := legacyNonce.BlockHeight + topic.GroundTruthLag + extraLag
 	if topic.EpochLength > 0 {
 		closeHeight += topic.EpochLength
 	}
