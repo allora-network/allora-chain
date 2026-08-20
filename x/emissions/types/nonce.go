@@ -44,7 +44,8 @@ func (n NonceV2) NextNonce() NonceV2 {
 
 // Version returns the version of the nonce.
 func (n NonceV2) Version() uint8 {
-	return uint8(n >> 56)
+	// Version occupies the high 8 bits; the shift result always fits in uint8.
+	return uint8((uint64(n) >> 56) & 0xFF) //nolint:gosec // G115: high 8 bits of a uint64
 }
 
 // Payload returns the payload of the nonce.

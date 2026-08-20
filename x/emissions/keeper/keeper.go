@@ -179,6 +179,7 @@ func NewKeeper(
 		regretsKeeper:                          rk,
 		weightsKeeper:                          wgk,
 		whitelistsKeeper:                       wlk,
+		epochFSMEngine:                         nil, // wired by setupEpochFSMEngine after schema build
 		rewardCurrentBlockEmission:             collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
 		countInfererInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountInfererInclusionsInTopicKey, "count_inferer_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 		countForecasterInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountForecasterInclusionsInTopicKey, "count_forecaster_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
