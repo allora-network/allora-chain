@@ -100,7 +100,37 @@ func (k *Keeper) arbitrateStartNewEpochTasks(
 	for _, task := range tasks {
 		taskTopicIDs[task.TaskID] = task.Args.TopicId
 	}
-	return k.arbitrateByTopicWeight(ctx, taskTopicIDs)
+	decisions, err := k.arbitrateByTopicWeight(ctx, taskTopicIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Complete runs first (type-level DependsOn), but a postponed Complete
+	// leaves PENDING_COMPLETION in place. Do not start a new epoch for that
+	// topic in the same BeginBlock; overlapping live epochs are otherwise allowed.
+	now := sdk.UnwrapSDKContext(ctx).BlockTime()
+	for _, task := range tasks {
+		if _, postponed := decisions[task.TaskID]; postponed {
+			continue
+		}
+		pending, err := k.topicHasPendingCompletionEpoch(ctx, task.Args.TopicId)
+		if err != nil {
+			return nil, err
+		}
+		if !pending {
+			continue
+		}
+		if decisions == nil {
+			decisions = make(map[schedulertypes.TaskID]schedulertypes.ArbitrageDecision)
+		}
+		decisions[task.TaskID] = schedulertypes.ArbitrageDecision{
+			Action: schedulertypes.ArbitrageActionReschedule,
+			RescheduleOpts: []schedulertypes.SchedulingOption{
+				schedulertypes.ScheduleAt(now),
+			},
+		}
+	}
+	return decisions, nil
 }
 
 func (k *Keeper) arbitrateCompleteEpochTasks(

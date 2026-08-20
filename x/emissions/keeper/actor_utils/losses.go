@@ -56,9 +56,16 @@ func CloseReputerNonce(
 			&nonce.BlockHeight,
 		)
 	}
-	// Check if the window time has passed
-	if blockHeight < nonce.BlockHeight+topic.GroundTruthLag {
-		return types.ErrReputerNonceWindowNotAvailable
+	// Height windows apply to the EndBlocker path. Scheduler-managed topics close
+	// on wall-clock; GroundTruthLag is seconds, not blocks.
+	managed, err := k.IsTopicSchedulerManaged(ctx, topic.Id)
+	if err != nil {
+		return err
+	}
+	if !managed {
+		if blockHeight < nonce.BlockHeight+topic.GroundTruthLag {
+			return types.ErrReputerNonceWindowNotAvailable
+		}
 	}
 
 	defer func() {

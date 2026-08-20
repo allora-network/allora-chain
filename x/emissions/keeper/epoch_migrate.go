@@ -81,7 +81,10 @@ func (k *Keeper) MigrateToSchedulerEpochsWithBlockTime(ctx context.Context, assu
 			return errorsmod.Wrapf(err, "convert topic %d timing to seconds", topicID)
 		}
 	}
-	if len(legacyTopicIDs) > 0 {
+	// Convert MinEpochLength when any legacy topic remains, or when the chain has
+	// no topics yet (nextTopicID == 1). Skip when every existing topic is already
+	// scheduler-managed so a rerun does not scale the param twice.
+	if len(legacyTopicIDs) > 0 || nextTopicID == 1 {
 		if err := k.convertMinEpochLengthToSeconds(ctx, assumedBlockSecs); err != nil {
 			return err
 		}
