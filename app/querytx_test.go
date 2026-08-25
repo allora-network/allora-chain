@@ -283,6 +283,51 @@ func TestQueryRegistryIsSupersetOfConsensus(t *testing.T) {
 	}
 }
 
+// Every message a historical emissions Msg service accepts must resolve on the
+// query registry: a version whose codec.go lists fewer types than its service
+// declares leaves those txs undecodable on the read path.
+func TestQueryRegistryResolvesAllHistoricalEmissionsMsgs(t *testing.T) {
+	a := sharedApp(t)
+	for _, version := range []string{"v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"} {
+		fd, err := gogoproto.HybridResolver.FindFileByPath("emissions/" + version + "/tx.proto")
+		require.NoErrorf(t, err, "no tx.proto descriptor for %s", version)
+		services := fd.Services()
+		require.NotZerof(t, services.Len(), "%s declares no service", version)
+		for i := 0; i < services.Len(); i++ {
+			methods := services.Get(i).Methods()
+			for j := 0; j < methods.Len(); j++ {
+				typeURL := "/" + string(methods.Get(j).Input().FullName())
+				_, err := a.queryInterfaceRegistry.Resolve(typeURL)
+				require.NoErrorf(t, err, "query registry must resolve %s", typeURL)
+			}
+		}
+	}
+}
+
+// The v7/v8 whitelist messages their codec.go omits resolve on the query registry
+// only, so the query path can decode them while consensus still rejects them.
+func TestHistoricalWhitelistMsgsAreQueryOnly(t *testing.T) {
+	a := sharedApp(t)
+	for _, typeURL := range []string{
+		"/emissions.v7.AddToGlobalWorkerWhitelistRequest",
+		"/emissions.v8.BulkRemoveFromTopicReputerWhitelistRequest",
+	} {
+		_, errQuery := a.queryInterfaceRegistry.Resolve(typeURL)
+		require.NoErrorf(t, errQuery, "query registry should resolve %s", typeURL)
+		_, errConsensus := a.interfaceRegistry.Resolve(typeURL)
+		require.Errorf(t, errConsensus, "consensus registry must not resolve %s", typeURL)
+	}
+
+	//nolint:exhaustruct // only the signer fields matter for the decode walk
+	bz := buildTxBytes(t, &emissionsv7.AddToGlobalWorkerWhitelistRequest{
+		Sender: "allo1sender", Address: "allo1addr",
+	})
+	_, errQ := a.queryTxConfig.TxDecoder()(bz)
+	require.NoError(t, errQ, "query path must decode a historical whitelist tx")
+	_, errC := a.txConfig.TxDecoder()(bz)
+	require.Error(t, errC, "consensus decoder must still reject it")
+}
+
 // The tolerant decoder is not "accept anything": garbage and a truncated envelope
 // still error.
 func TestQueryDecoderRejectsGarbage(t *testing.T) {

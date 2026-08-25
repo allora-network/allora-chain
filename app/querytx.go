@@ -18,6 +18,8 @@ import (
 	gogoproto "github.com/cosmos/gogoproto/proto"
 	protov2 "google.golang.org/protobuf/proto"
 
+	emissionsv7 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v7"
+	emissionsv8 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v8"
 	mintv2 "github.com/allora-network/allora-chain/x/mint/api/mint/v2"
 )
 
@@ -169,11 +171,53 @@ func (app *AlloraApp) buildQueryInterfaceRegistry() (codectypes.InterfaceRegistr
 	// This is a query-registry-only addition and does not touch consensus; verified
 	// by TestMintV2QueryRegistryDoesNotAffectConsensus.
 	mintv2.RegisterInterfaces(reg)
+	registerHistoricalWhitelistMsgs(reg)
 
 	if err := reg.SigningContext().Validate(); err != nil {
 		return nil, err
 	}
 	return reg, nil
+}
+
+// registerHistoricalWhitelistMsgs registers the v7/v8 whitelist txs their own
+// codec.go omits, so the query path can decode them. It must stay on the query
+// registry only: the emissions module registers those codecs into the app
+// registry, so adding them there would widen what consensus accepts.
+//
+//nolint:exhaustruct // type registration; the field values are never read
+func registerHistoricalWhitelistMsgs(reg codectypes.InterfaceRegistry) {
+	reg.RegisterImplementations((*sdk.Msg)(nil),
+		&emissionsv7.AddToGlobalWorkerWhitelistRequest{},
+		&emissionsv7.AddToGlobalReputerWhitelistRequest{},
+		&emissionsv7.AddToGlobalAdminWhitelistRequest{},
+		&emissionsv7.RemoveFromGlobalWorkerWhitelistRequest{},
+		&emissionsv7.RemoveFromGlobalReputerWhitelistRequest{},
+		&emissionsv7.RemoveFromGlobalAdminWhitelistRequest{},
+		&emissionsv7.BulkAddToGlobalWorkerWhitelistRequest{},
+		&emissionsv7.BulkAddToGlobalReputerWhitelistRequest{},
+		&emissionsv7.BulkRemoveFromGlobalWorkerWhitelistRequest{},
+		&emissionsv7.BulkRemoveFromGlobalReputerWhitelistRequest{},
+		&emissionsv7.BulkAddToTopicWorkerWhitelistRequest{},
+		&emissionsv7.BulkAddToTopicReputerWhitelistRequest{},
+		&emissionsv7.BulkRemoveFromTopicWorkerWhitelistRequest{},
+		&emissionsv7.BulkRemoveFromTopicReputerWhitelistRequest{},
+	)
+	reg.RegisterImplementations((*sdk.Msg)(nil),
+		&emissionsv8.AddToGlobalWorkerWhitelistRequest{},
+		&emissionsv8.AddToGlobalReputerWhitelistRequest{},
+		&emissionsv8.AddToGlobalAdminWhitelistRequest{},
+		&emissionsv8.RemoveFromGlobalWorkerWhitelistRequest{},
+		&emissionsv8.RemoveFromGlobalReputerWhitelistRequest{},
+		&emissionsv8.RemoveFromGlobalAdminWhitelistRequest{},
+		&emissionsv8.BulkAddToGlobalWorkerWhitelistRequest{},
+		&emissionsv8.BulkAddToGlobalReputerWhitelistRequest{},
+		&emissionsv8.BulkRemoveFromGlobalWorkerWhitelistRequest{},
+		&emissionsv8.BulkRemoveFromGlobalReputerWhitelistRequest{},
+		&emissionsv8.BulkAddToTopicWorkerWhitelistRequest{},
+		&emissionsv8.BulkAddToTopicReputerWhitelistRequest{},
+		&emissionsv8.BulkRemoveFromTopicWorkerWhitelistRequest{},
+		&emissionsv8.BulkRemoveFromTopicReputerWhitelistRequest{},
+	)
 }
 
 // compositeTxServer serves the tx service with two backends: the strict, embedded
