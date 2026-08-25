@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 
@@ -30,23 +31,29 @@ import (
 )
 
 const (
-	mintV2TypeURL = "/mint.v2.UpdateParamsRequest"
-	v10WorkerURL  = "/emissions.v10.InsertWorkerPayloadRequest"
+	mintV2TypeURL            = "/mint.v2.UpdateParamsRequest"
+	mintV2RecalculateTypeURL = "/mint.v2.RecalculateTargetEmissionRequest"
+	v10WorkerURL             = "/emissions.v10.InsertWorkerPayloadRequest"
 )
 
 // One AlloraApp is enough for every read-only assertion here; build it once.
+// The construction error is stored rather than asserted inside the Once: a failed
+// require there exits the goroutine with the Once already marked done, leaving
+// every later caller with a nil app.
 var (
 	sharedAppOnce sync.Once
 	sharedAppInst *AlloraApp
+	errSharedApp  error
 )
 
 func sharedApp(t *testing.T) *AlloraApp {
 	t.Helper()
 	sharedAppOnce.Do(func() {
-		a, err := NewAlloraApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.EmptyAppOptions{})
-		require.NoError(t, err)
-		sharedAppInst = a
+		sharedAppInst, errSharedApp = NewAlloraApp(
+			log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.EmptyAppOptions{},
+		)
 	})
+	require.NoError(t, errSharedApp)
 	return sharedAppInst
 }
 
@@ -145,10 +152,10 @@ func historicalWorkerPayloads() []workerPayloadCase {
 	}
 }
 
-// Scenario 1: every historical emissions worker payload (v2-v9) decodes on the
-// query path, bare and wrapped in a routable authz.MsgExec, and yields the correct
-// type URL. v9 additionally must take the tolerant fallback (its nested names were
-// reclaimed by v10); the rest need only decode.
+// Every historical emissions worker payload (v2-v9) decodes on the query path,
+// bare and wrapped in a routable authz.MsgExec, and yields the correct type URL.
+// v9 additionally must take the tolerant fallback, since v10 reclaimed its nested
+// message names; the rest need only decode.
 func TestQueryDecoderDecodesHistoricalWorkerPayloads(t *testing.T) {
 	a := sharedApp(t)
 	dec := a.queryTxConfig.TxDecoder()
@@ -170,21 +177,29 @@ func TestQueryDecoderDecodesHistoricalWorkerPayloads(t *testing.T) {
 			tx, err := dec(buildTxBytes(t, exec))
 			require.NoError(t, err)
 			require.Equal(t, "/cosmos.authz.v1beta1.MsgExec", sdk.MsgTypeURL(tx.GetMsgs()[0]))
+
+			// The nested payload must be decoded, not left packed: resolving it is
+			// what the wrapped case exists to cover.
+			outer, ok := tx.GetMsgs()[0].(*authz.MsgExec)
+			require.True(t, ok)
+			require.Len(t, outer.Msgs, 1)
+			require.Equal(t, sdk.MsgTypeURL(tc.msg), outer.Msgs[0].TypeUrl)
+			require.NotNil(t, outer.Msgs[0].GetCachedValue())
 		})
 	}
 }
 
-// Scenario 2: the SAME bare v9 bytes are rejected by the consensus decoder. This
-// is the guard that the fix does not widen what consensus accepts.
+// The same bare v9 bytes are rejected by the consensus decoder: the guard that
+// the query path does not widen what consensus accepts.
 func TestConsensusDecoderRejectsBareHistoricalV9(t *testing.T) {
 	a := sharedApp(t)
 	_, err := a.txConfig.TxDecoder()(buildTxBytes(t, historicalV9Worker()))
 	require.Error(t, err, "consensus decoder must still reject historical payloads")
 }
 
-// Scenario 4: a v9 payload wrapped in a routable authz.MsgExec is rejected by the
-// consensus decoder. This
-// is the exact vector that made the global-registry approach consensus-breaking.
+// A v9 payload wrapped in a routable authz.MsgExec is rejected by the consensus
+// decoder. Wrapping clears baseapp's top-level routing check, so this is the shape
+// where a registry shared with consensus would change what consensus accepts.
 func TestConsensusDecoderRejectsWrappedHistoricalV9(t *testing.T) {
 	a := sharedApp(t)
 	inner, err := codectypes.NewAnyWithValue(historicalV9Worker())
@@ -195,8 +210,8 @@ func TestConsensusDecoderRejectsWrappedHistoricalV9(t *testing.T) {
 	require.Error(t, err, "consensus decoder must reject a wrapped historical payload")
 }
 
-// Scenario 5: a current-format (v10) emissions tx decodes on the query path via the
-// strict branch, so it yields the SDK's own tx type, not the tolerant fallback.
+// A current-format (v10) emissions tx decodes on the query path via the strict
+// branch, so it yields the SDK's own tx type, not the tolerant fallback.
 func TestQueryDecoderKeepsStrictPathForCurrentTx(t *testing.T) {
 	a := sharedApp(t)
 	//nolint:exhaustruct // a valid current (v10) msg is all that is needed
@@ -208,17 +223,19 @@ func TestQueryDecoderKeepsStrictPathForCurrentTx(t *testing.T) {
 	require.Equal(t, v10WorkerURL, sdk.MsgTypeURL(tx.GetMsgs()[0]))
 }
 
-// Scenario 6: the query registry resolves mint.v2 while the consensus registry and
-// the process-global gogo registry do not. This proves the mint.v2 addition is
-// isolated to the read path and cannot affect consensus.
+// The query registry resolves the mint.v2 messages while the consensus registry
+// and the process-global gogo registry do not, keeping the addition off the
+// consensus path.
 func TestMintV2QueryRegistryDoesNotAffectConsensus(t *testing.T) {
 	a := sharedApp(t)
-	_, errQuery := a.queryInterfaceRegistry.Resolve(mintV2TypeURL)
-	require.NoError(t, errQuery, "query registry should resolve mint.v2")
-	_, errConsensus := a.interfaceRegistry.Resolve(mintV2TypeURL)
-	require.Error(t, errConsensus, "consensus registry must not resolve mint.v2")
-	require.Nil(t, gogoproto.MessageType("mint.v2.UpdateParamsRequest"),
-		"mint.v2 must not leak into the gogo registry unknownproto reads")
+	for _, typeURL := range []string{mintV2TypeURL, mintV2RecalculateTypeURL} {
+		_, errQuery := a.queryInterfaceRegistry.Resolve(typeURL)
+		require.NoErrorf(t, errQuery, "query registry should resolve %s", typeURL)
+		_, errConsensus := a.interfaceRegistry.Resolve(typeURL)
+		require.Errorf(t, errConsensus, "consensus registry must not resolve %s", typeURL)
+		require.Nilf(t, gogoproto.MessageType(strings.TrimPrefix(typeURL, "/")),
+			"%s must not leak into the gogo registry unknownproto reads", typeURL)
+	}
 
 	// And a mint.v2 tx decodes on the query path but not on the consensus path.
 	//nolint:exhaustruct // only Sender is needed
@@ -229,8 +246,45 @@ func TestMintV2QueryRegistryDoesNotAffectConsensus(t *testing.T) {
 	require.Error(t, errC)
 }
 
-// Scenario 7: the tolerant decoder is not "accept anything" - garbage and a
-// truncated envelope still error.
+// A message Any with an empty type URL is rejected outright. It unmarshals
+// cleanly but caches no value, so returning it would yield a tx whose GetMsgs
+// panics.
+func TestQueryDecoderRejectsUnresolvableMessageAny(t *testing.T) {
+	a := sharedApp(t)
+	cdc := marshalCodec()
+	//nolint:exhaustruct // the empty type URL is the point of the case
+	empty := &codectypes.Any{Value: []byte{0x0a, 0x02, 0x68, 0x69}}
+	//nolint:exhaustruct // minimal tx envelope
+	bodyBz, err := cdc.Marshal(&txtypes.TxBody{Messages: []*codectypes.Any{empty}})
+	require.NoError(t, err)
+	//nolint:exhaustruct // minimal tx envelope
+	aiBz, err := cdc.Marshal(&txtypes.AuthInfo{Fee: &txtypes.Fee{GasLimit: 200000}})
+	require.NoError(t, err)
+	//nolint:exhaustruct // minimal tx envelope
+	rawBz, err := cdc.Marshal(&txtypes.TxRaw{BodyBytes: bodyBz, AuthInfoBytes: aiBz, Signatures: [][]byte{{0x01}}})
+	require.NoError(t, err)
+
+	_, err = a.queryTxConfig.TxDecoder()(rawBz)
+	require.Error(t, err, "an unresolvable message Any must be rejected, not returned as a panicking tx")
+}
+
+// The query registry is the app's registry plus historical extras. Freezing the
+// superset relation catches a module registered for consensus but missed on the
+// read path, whose txs would then fail to decode on the query endpoints.
+func TestQueryRegistryIsSupersetOfConsensus(t *testing.T) {
+	a := sharedApp(t)
+	ifaces := a.interfaceRegistry.ListAllInterfaces()
+	require.NotEmpty(t, ifaces, "consensus registry must expose interfaces to compare against")
+	for _, iface := range ifaces {
+		for _, impl := range a.interfaceRegistry.ListImplementations(iface) {
+			_, err := a.queryInterfaceRegistry.Resolve(impl)
+			require.NoErrorf(t, err, "query registry must resolve %s", impl)
+		}
+	}
+}
+
+// The tolerant decoder is not "accept anything": garbage and a truncated envelope
+// still error.
 func TestQueryDecoderRejectsGarbage(t *testing.T) {
 	a := sharedApp(t)
 	dec := a.queryTxConfig.TxDecoder()
@@ -241,8 +295,8 @@ func TestQueryDecoderRejectsGarbage(t *testing.T) {
 	require.Error(t, err)
 }
 
-// Scenario 8: the tolerant fallback type satisfies the three interfaces the tx
-// service asserts on decoded txs: sdk.Tx, intoAny, and protoTxProvider.
+// The tolerant fallback type satisfies the three interfaces the tx service asserts
+// on decoded txs: sdk.Tx, intoAny, and protoTxProvider.
 func TestHistoricalTxImplementsReadInterfaces(t *testing.T) {
 	//nolint:exhaustruct // empty envelope is enough for interface checks
 	var h any = historicalTx{tx: &txtypes.Tx{Body: &txtypes.TxBody{}, AuthInfo: &txtypes.AuthInfo{}}}
@@ -254,8 +308,8 @@ func TestHistoricalTxImplementsReadInterfaces(t *testing.T) {
 	require.True(t, isProtoTx)
 }
 
-// Scenario 9: AsAny caches the concrete *txtypes.Tx that mkTxResult (GetTx /
-// GetTxsEvent) then type-asserts; a plain pack would leave the cache empty.
+// AsAny caches the concrete *txtypes.Tx that mkTxResult (GetTx / GetTxsEvent) then
+// type-asserts; a plain pack would leave the cache empty.
 func TestHistoricalTxAsAnyCachesConcreteTx(t *testing.T) {
 	//nolint:exhaustruct // empty envelope is enough
 	h := historicalTx{tx: &txtypes.Tx{Body: &txtypes.TxBody{}, AuthInfo: &txtypes.AuthInfo{}}}
@@ -265,8 +319,8 @@ func TestHistoricalTxAsAnyCachesConcreteTx(t *testing.T) {
 	require.Same(t, h.tx, cached)
 }
 
-// Scenario 10: GetMsgsV2 is unsupported on the read path and returns an explicit
-// error rather than a nil slice that a caller might treat as "no messages".
+// GetMsgsV2 is unsupported on the read path and returns an explicit error rather
+// than a nil slice that a caller might treat as "no messages".
 func TestHistoricalTxGetMsgsV2Errors(t *testing.T) {
 	//nolint:exhaustruct // empty envelope is enough
 	h := historicalTx{tx: &txtypes.Tx{Body: &txtypes.TxBody{}}}
@@ -275,8 +329,8 @@ func TestHistoricalTxGetMsgsV2Errors(t *testing.T) {
 	require.Nil(t, msgs)
 }
 
-// Scenario 11: the composite routes only the three historical-read methods to the
-// tolerant backend and every other method to the strict backend.
+// The composite routes only the three historical-read methods to the tolerant
+// backend and every other method to the strict backend.
 func TestCompositeTxServerRouting(t *testing.T) {
 	var hits []string
 	strict := &recordingTxServer{id: "strict", hits: &hits}

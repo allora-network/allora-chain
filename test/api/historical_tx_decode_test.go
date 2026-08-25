@@ -5,6 +5,7 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/stretchr/testify/require"
 
@@ -33,13 +34,12 @@ func historicalV9WorkerPayload(sender string) sdk.Msg {
 	}
 }
 
-// TestHistoricalTxDoesNotMoveConsensus is the end-to-end regression PR #985 lacked.
-// It delivers, through a real AlloraApp FinalizeBlock, a historical v9 payload
-// wrapped in a routable authz.MsgExec (the exact vector that made the global-registry
-// fix consensus-breaking) and asserts consensus state is untouched: the tx is
-// rejected at decode with no gas, no fee deduction, and no sequence increment. If a
-// future change ever widened the consensus decoder, the ante handler would run and
-// this test's balance/sequence assertions would fail.
+// TestHistoricalTxDoesNotMoveConsensus delivers a historical v9 payload wrapped in
+// a routable authz.MsgExec through a real AlloraApp FinalizeBlock and asserts
+// consensus state is untouched: rejected at decode, with no gas, no fee deduction
+// and no sequence increment. A decoder that accepted the nested payload would run
+// the ante handler and move all four. TestHarnessObservesExecutedTx is the positive
+// control showing those reads can observe a tx that does execute.
 func TestHistoricalTxDoesNotMoveConsensus(t *testing.T) {
 	chain, alloraApp := SetupChain(t)
 	sender := chain.SenderAccount.GetAddress()
@@ -58,11 +58,14 @@ func TestHistoricalTxDoesNotMoveConsensus(t *testing.T) {
 	resp := SignAndDeliver(t, chain, wrapped)
 	require.Len(t, resp.TxResults, 1)
 
-	// Consensus decoder rejected it: non-zero code and, crucially, nothing executed.
-	require.NotZero(t, resp.TxResults[0].Code, "wrapped historical tx must be rejected")
+	// Pinning the decode error is what distinguishes this from an ante-handler
+	// rejection, which is the outcome a widened decoder would produce.
+	require.Equal(t, sdkerrors.ErrTxDecode.ABCICode(), resp.TxResults[0].Code,
+		"wrapped historical tx must be rejected at decode")
+	require.Equal(t, sdkerrors.ErrTxDecode.Codespace(), resp.TxResults[0].Codespace)
 	require.Zero(t, resp.TxResults[0].GasUsed, "a rejected-at-decode tx must not consume gas")
 
-	// The state the PR #985 hazard mutated must be unchanged.
+	// State a widened decoder would have moved must be unchanged.
 	ctxAfter := chain.GetContext()
 	balAfter := alloraApp.BankKeeper.GetBalance(ctxAfter, sender, sdk.DefaultBondDenom)
 	seqAfter := alloraApp.AccountKeeper.GetAccount(ctxAfter, sender).GetSequence()

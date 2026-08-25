@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	txsigning "cosmossdk.io/x/tx/signing"
@@ -55,9 +56,9 @@ func (h historicalTx) GetMsgsV2() ([]protov2.Message, error) {
 // GetProtoTx satisfies protoTxProvider, used by GetBlockWithTxs.
 func (h historicalTx) GetProtoTx() *txtypes.Tx { return h.tx }
 
-// AsAny satisfies intoAny, used by GetTx/GetTxsEvent. UnsafePackAny (not
-// NewAnyWithValue) is required so the cached value is the concrete *txtypes.Tx
-// that mkTxResult then type-asserts.
+// AsAny satisfies intoAny, used by GetTx/GetTxsEvent. UnsafePackAny caches the
+// concrete *txtypes.Tx that mkTxResult type-asserts, without an error return
+// AsAny cannot surface.
 func (h historicalTx) AsAny() *codectypes.Any { return codectypes.UnsafePackAny(h.tx) }
 
 // newHistoricalTxDecoder decodes committed txs for the query path. It tries the
@@ -68,8 +69,15 @@ func newHistoricalTxDecoder(cdc codec.Codec) sdk.TxDecoder {
 	strict := authtx.DefaultTxDecoder(cdc)
 	return func(txBytes []byte) (sdk.Tx, error) {
 		// Current-format txs: unchanged behavior and unchanged return type.
-		if tx, err := strict(txBytes); err == nil {
+		tx, strictErr := strict(txBytes)
+		if strictErr == nil {
 			return tx, nil
+		}
+
+		// Both decoders failing means the payload is malformed rather than
+		// historical, and the strict error is the one that carries the reason.
+		fail := func(err error) (sdk.Tx, error) {
+			return nil, sdkerrors.ErrTxDecode.Wrap(errors.Join(err, strictErr).Error())
 		}
 
 		// Historical payloads: unmarshal the envelope directly. Any resolution
@@ -77,15 +85,22 @@ func newHistoricalTxDecoder(cdc codec.Codec) sdk.TxDecoder {
 		// here; only the strict unknown-field rejection is skipped.
 		var raw txtypes.TxRaw
 		if err := cdc.Unmarshal(txBytes, &raw); err != nil {
-			return nil, sdkerrors.ErrTxDecode.Wrap(err.Error())
+			return fail(err)
 		}
 		var body txtypes.TxBody
 		if err := cdc.Unmarshal(raw.BodyBytes, &body); err != nil {
-			return nil, sdkerrors.ErrTxDecode.Wrap(err.Error())
+			return fail(err)
+		}
+		// An Any with an empty type URL unmarshals without error but caches no
+		// value, which makes GetMsgs panic; unknown non-empty URLs already fail above.
+		for _, msg := range body.Messages {
+			if msg == nil || msg.GetCachedValue() == nil {
+				return fail(errors.New("message Any has no resolvable type URL"))
+			}
 		}
 		var authInfo txtypes.AuthInfo
 		if err := cdc.Unmarshal(raw.AuthInfoBytes, &authInfo); err != nil {
-			return nil, sdkerrors.ErrTxDecode.Wrap(err.Error())
+			return fail(err)
 		}
 		return historicalTx{tx: &txtypes.Tx{
 			Body:       &body,

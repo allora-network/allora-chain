@@ -7,6 +7,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"testing"
 
@@ -38,7 +39,9 @@ func AppInitializer() (ibctesting.TestingApp, map[string]json.RawMessage) {
 		simtestutil.EmptyAppOptions{},
 	)
 	if err != nil {
-		return nil, nil
+		// The hook signature cannot return an error, and a nil app surfaces as an
+		// unrelated nil dereference inside the coordinator.
+		panic(fmt.Errorf("initialize AlloraApp test fixture: %w", err))
 	}
 	return testApp, testApp.DefaultGenesis()
 }
