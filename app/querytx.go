@@ -182,7 +182,9 @@ func (app *AlloraApp) buildQueryInterfaceRegistry() (codectypes.InterfaceRegistr
 // registerHistoricalWhitelistMsgs registers the v7/v8 whitelist txs their own
 // codec.go omits, so the query path can decode them.
 // The emissions module did not register these messages in the app registry,
-// so they need to be registered on the query registry.
+// so they need to be registered on the query registry. They must not be added
+// to codec.go, which the emissions module registers into the app registry:
+// that would widen what the consensus decoder accepts.
 //
 //nolint:exhaustruct // type registration; the field values are never read
 func registerHistoricalWhitelistMsgs(reg codectypes.InterfaceRegistry) {
