@@ -142,11 +142,14 @@ func (app *AlloraApp) buildQueryDecodingPath() error {
 // not registered for consensus. Kept separate so these additions can never widen
 // what the consensus decoder accepts.
 func (app *AlloraApp) buildQueryInterfaceRegistry() (codectypes.InterfaceRegistry, error) {
-	// Reuse the app's exact address codecs so signer resolution matches.
+	// Reuse the app's exact address codecs so signer resolution matches consensus.
+	// Only the address codecs are copied, not any CustomGetSigners: none exist today
+	// (every Msg carries the (cosmos.msg.v1.signer) annotation). If one is ever added
+	// it must be mirrored here too, or Validate() below fails and the node won't start.
 	sc := app.interfaceRegistry.SigningContext()
 	reg, err := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
 		ProtoFiles: gogoproto.HybridResolver,
-		//nolint:exhaustruct // the remaining signing options default exactly as the app's registry
+		//nolint:exhaustruct // only address codecs are set; see comment above
 		SigningOptions: txsigning.Options{
 			AddressCodec:          sc.AddressCodec(),
 			ValidatorAddressCodec: sc.ValidatorAddressCodec(),
