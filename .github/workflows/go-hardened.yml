@@ -23,7 +23,7 @@ jobs:
     # surface as a confusing not-found failure for external
     # contributors. Internal PRs and push events always run.
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-    uses: allora-network/ci-workflows-private/.github/workflows/go-install-hardened.yml@0d80a856ef798b01a39f65cb88a5cf7e74e4ebf9
+    uses: allora-network/ci-workflows-private/.github/workflows/go-install-hardened.yml@6ae4689a863926d10fa5ed8ad4012275514cb6e0
     with:
       # Pinned to match the `toolchain` directive in go.mod. Keeps
       # the hardened install check deterministic across runs instead
