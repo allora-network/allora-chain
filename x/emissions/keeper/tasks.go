@@ -129,6 +129,7 @@ func (k *Keeper) schedulePeriodicNewEpoch(ctx context.Context, topicID TopicId) 
 		&types.StartNewEpochTaskArgs{TopicId: topicID},
 		schedulertypes.ScheduleIn(interval),
 		schedulertypes.ScheduleEvery(&interval),
+		schedulertypes.WithAbsoluteScheduling(),
 	)
 }
 

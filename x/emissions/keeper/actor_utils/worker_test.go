@@ -190,6 +190,62 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 	s.Require().ErrorIs(err, types.ErrNoQualifiedInferers)
 }
 
+func (s *WorkerTestSuite) TestCloseWorkerNonce_WindowEligibility() {
+	openHeight := int64(101)
+	s.WithBlockHeight(openHeight)
+	topicId := s.CreateTopic(testutil.WithWorkerSubmissionWindow(10), testutil.WithEpochLength(100), testutil.WithGroundTruthLag(100))
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	nonce := types.Nonce{BlockHeight: openHeight}
+
+	type tc struct {
+		name            string
+		height          int64
+		wantErr         error
+		wantUnfulfilled bool
+	}
+	cases := []tc{
+		{
+			name:            "still open: reject before defer so the nonce stays unfulfilled",
+			height:          openHeight + topic.WorkerSubmissionWindow - 1,
+			wantErr:         types.ErrWorkerNonceWindowNotAvailable,
+			wantUnfulfilled: true,
+		},
+		{
+			name:            "on time: window end proceeds into close (no inferers)",
+			height:          openHeight + topic.WorkerSubmissionWindow,
+			wantErr:         types.ErrNoQualifiedInferers,
+			wantUnfulfilled: false,
+		},
+		{
+			name:            "overdue: a missed close-cadence block still closes",
+			height:          openHeight + topic.WorkerSubmissionWindow + 5,
+			wantErr:         types.ErrNoQualifiedInferers,
+			wantUnfulfilled: false,
+		},
+	}
+
+	for _, tc := range cases {
+		s.Run(tc.name, func() {
+			s.WithBlockHeight(openHeight)
+			s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicId, &nonce))
+			s.WithBlockHeight(tc.height)
+
+			err := actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce)
+			s.Require().ErrorIs(err, tc.wantErr)
+
+			unfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), topicId, &nonce)
+			s.Require().NoError(err)
+			s.Require().Equal(tc.wantUnfulfilled, unfulfilled)
+
+			if unfulfilled {
+				_, err = s.NonceKeeper().FulfillWorkerNonce(s.Ctx(), topicId, &nonce)
+				s.Require().NoError(err)
+			}
+		})
+	}
+}
+
 func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() {
 	ctx := s.Ctx()
 	keeper := s.EmissionsKeeper()

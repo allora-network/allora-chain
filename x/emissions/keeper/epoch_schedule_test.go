@@ -67,11 +67,18 @@ func (s *KeeperTestSuite) TestActivateTopicStartsEpochAndPeriodicTask() {
 	s.Require().NoError(err)
 	s.Require().NotNil(periodic.Interval)
 	s.Require().Equal(60*time.Second, *periodic.Interval)
-	s.Require().Equal(ctx.BlockTime().Add(60*time.Second), *periodic.ScheduledFor)
+	s.Require().Equal(schedulertypes.SchedulingStrategy_ABSOLUTE, periodic.SchedulingStrategy)
+	firstDue := ctx.BlockTime().Add(60 * time.Second)
+	s.Require().Equal(firstDue, *periodic.ScheduledFor)
 
 	// Advance past ScheduledFor (due check uses BlockTime.After, so equality is not enough).
-	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
+	ctx = ctx.WithBlockTime(firstDue.Add(time.Nanosecond))
 	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+	periodic, err = s.SchedulerKeeper().GetTask(ctx, periodicID)
+	s.Require().NoError(err)
+	s.Require().Equal(firstDue.Add(60*time.Second), *periodic.ScheduledFor,
+		"absolute scheduling must keep the next tick on the original EpochLength boundary")
 
 	nextNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
 	s.Require().NoError(err)
@@ -107,7 +114,7 @@ func (s *KeeperTestSuite) TestInactivateTopicCancelsPeriodicNewEpochTask() {
 
 // Mirrors the integration worker→reputer path (EpochLength=5, GroundTruthLag=10,
 // WorkerSubmissionWindow=4) while the scheduler creates overlapping wall-clock epochs.
-// EndBlocker still owns the nonce data plane on this PR; both must coexist.
+// EndBlocker still owns the nonce data plane while scheduler epochs run in parallel.
 func (s *KeeperTestSuite) TestWorkerThenReputerNonceWithSchedulerEpochs() {
 	s.SetParamsForTest()
 	params, err := s.ParamsKeeper().GetParams(s.Ctx())
