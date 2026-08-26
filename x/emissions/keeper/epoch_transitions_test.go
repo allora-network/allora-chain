@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/collections"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	schedulertypes "github.com/allora-network/allora-chain/x/scheduler/types"
@@ -187,4 +188,71 @@ func (s *KeeperTestSuite) TestStartNewEpochOpensWorkerNonceViaSideEffect() {
 	s.Require().NoError(err)
 	s.Require().True(unfulfilled)
 	s.Require().Equal(ctx.BlockHeight(), legacy.BlockHeight)
+}
+
+func (s *KeeperTestSuite) TestEpochFSMCloseWorkerComputesNetworkInference() {
+	ctx := s.Ctx().WithBlockHeight(5_000)
+	topicId := s.CreateTopic(
+		testutil.WithEpochLength(100),
+		testutil.WithGroundTruthLag(100),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	s.SetupParticipants(topicId, []int{0, 1}, false)
+
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicId))
+
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+	legacyNonce := epoch.LegacyNonce()
+	blockHeight := legacyNonce.BlockHeight
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	// Stored Topic.Id can be stale vs the map key; close must still use epoch.TopicId.
+	stale := topic
+	stale.Id = topicId + 99
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, stale))
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	_, _, err = s.TopicKeeper().RegisterEpochLabels(
+		ctx,
+		topicId,
+		topic.LabelCaseSensitive,
+		blockHeight,
+		[]string{"y"},
+		params.MaxCanonicalLabelByteLength,
+		params.MaxEpochLabelRegistrySize,
+	)
+	s.Require().NoError(err)
+
+	for i, worker := range []string{s.AddrsStr(0), s.AddrsStr(1)} {
+		inf := types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker,
+			Values:      []alloraMath.Dec{alloraMath.NewDecFromInt64(int64(i + 1))},
+		}
+		s.Require().NoError(s.WorkerKeeper().InsertInference(ctx, topicId, inf))
+		s.Require().NoError(s.WorkerKeeper().AddActiveInferer(ctx, topicId, worker))
+	}
+
+	ctx = ctx.WithBlockTime(epoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
+
+	epoch, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, epoch.State)
+
+	workerUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(ctx, topicId, &legacyNonce)
+	s.Require().NoError(err)
+	s.Require().False(workerUnfulfilled)
+
+	networkInferences, err := s.EmissionsKeeper().GetNetworkInferences(ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(networkInferences.InfererValues, "close worker window must compute network inference")
 }
