@@ -51,11 +51,11 @@ func (s *KeeperTestSuite) TestTopicLastEpochNonceGenesisRoundTrip() {
 	topicA := uint64(7)
 	topicB := uint64(9)
 
-	nonceA, err := k.AllocateNextEpochNonce(ctx, topicA)
+	_, err := k.AllocateNextEpochNonce(ctx, topicA)
 	s.Require().NoError(err)
 	_, err = k.AllocateNextEpochNonce(ctx, topicA)
 	s.Require().NoError(err)
-	nonceA, err = k.AllocateNextEpochNonce(ctx, topicA)
+	nonceA, err := k.AllocateNextEpochNonce(ctx, topicA)
 	s.Require().NoError(err)
 
 	nonceB, err := k.AllocateNextEpochNonce(ctx, topicB)

@@ -318,7 +318,10 @@ message TopicIdAndBlockHeight {
 message TopicIdAndEpochNonce {
   uint64 topic_id = 1;
   // Last allocated epoch nonce for the topic (NonceV2 encoded as uint64).
-  uint64 nonce = 2 [(gogoproto.nullable) = false, (gogoproto.customtype) = "NonceV2"];
+  uint64 nonce = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "NonceV2"
+  ];
 }
 
 message BlockHeightAndTopicIds {
