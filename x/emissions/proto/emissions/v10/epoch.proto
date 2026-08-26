@@ -8,7 +8,10 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 message Epoch {
   // The epoch identifier, aka nonce. Uniqueness is only guaranteed per topic.
-  uint64 nonce = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "NonceV2"];
+  uint64 nonce = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "NonceV2"
+  ];
 
   // The topic this epoch belongs to
   uint64 topic_id = 2;
@@ -36,19 +39,25 @@ message Epoch {
 }
 
 enum EpochState {
-    INIT = 0;
-    WORKER_SUBMISSION = 1;
-    WAITING_GROUND_TRUTH = 2;
-    REPUTER_SUBMISSION = 3;
-    PENDING_COMPLETION = 4;
-    COMPLETED = 5;
-    CANCELLED = 6;
+  INIT = 0;
+  WORKER_SUBMISSION = 1;
+  WAITING_GROUND_TRUTH = 2;
+  REPUTER_SUBMISSION = 3;
+  PENDING_COMPLETION = 4;
+  COMPLETED = 5;
+  CANCELLED = 6;
 }
 
 message Window {
   // The window opening time, in unix timestamp
-  google.protobuf.Timestamp open_at = 1  [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+  google.protobuf.Timestamp open_at = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
 
   // The window closing time, in unix timestamp
-  google.protobuf.Timestamp close_at = 2  [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+  google.protobuf.Timestamp close_at = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
 }
