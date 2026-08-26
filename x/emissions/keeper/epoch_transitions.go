@@ -37,20 +37,8 @@ func sdkCtxAtHeight(ctx context.Context, height int64) sdk.Context {
 	return sdk.UnwrapSDKContext(ctx).WithBlockHeight(height)
 }
 
-// topicForEpoch loads the topic keyed by epoch.TopicId and normalizes Topic.Id
-// to that key. CloseWorkerNonce / CloseReputerNonce look up nonces by topic.Id;
-// stored Topic.Id can be stale relative to the map key.
-func (k *Keeper) topicForEpoch(ctx context.Context, epoch types.Epoch) (types.Topic, error) {
-	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
-	if err != nil {
-		return types.Topic{}, err
-	}
-	topic.Id = epoch.TopicId
-	return topic, nil
-}
-
 func (k *Keeper) openWorkerWindow(ctx context.Context, epoch types.Epoch) error {
-	topic, err := k.topicForEpoch(ctx, epoch)
+	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
 	if err != nil {
 		return err
 	}
@@ -70,7 +58,7 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 		return fmt.Errorf("close worker window: close handler not configured")
 	}
 
-	topic, err := k.topicForEpoch(ctx, epoch)
+	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
 	if err != nil {
 		return err
 	}
@@ -82,8 +70,6 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 	}
 
 	err = k.epochCloseHandlers.closeWorker(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
-	// No qualified inferers still fulfills the worker nonce (CloseWorkerNonce defer).
-	// The epoch continues so later transitions can open/close the reputer window.
 	if err != nil && !errors.Is(err, types.ErrNoQualifiedInferers) {
 		return errorsmod.Wrap(err, "close worker window")
 	}
@@ -91,14 +77,14 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 }
 
 func (k *Keeper) openReputerWindow(ctx context.Context, epoch types.Epoch) error {
-	topic, err := k.topicForEpoch(ctx, epoch)
+	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
 	if err != nil {
 		return err
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	// CloseWorkerNonce adds the reputer nonce on a successful worker close.
-	// Add it here as well when worker close had no qualified inferers.
+	// CloseWorkerNonce normally adds the reputer nonce; ensure it exists if worker
+	// close soft-failed (e.g. no qualified inferers).
 	if err := k.nonceKeeper.AddReputerNonce(ctx, epoch.TopicId, &legacyNonce); err != nil {
 		return errorsmod.Wrap(err, "open reputer window: add reputer nonce")
 	}
@@ -114,7 +100,7 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 		return fmt.Errorf("close reputer window: close handler not configured")
 	}
 
-	topic, err := k.topicForEpoch(ctx, epoch)
+	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
 	if err != nil {
 		return err
 	}
@@ -131,14 +117,13 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 
 	err = k.epochCloseHandlers.closeReputer(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
 	if err != nil {
-		// Empty loss sets and already-fulfilled nonces still complete the epoch:
-		// CloseReputerNonce fulfills the nonce on the way out, and there is nothing
-		// to score. Other errors abort the transition.
+		// Soft-fail empty / already-closed sets so the FSM can still complete during
+		// the parallel-run period when submissions may be absent.
 		if errors.Is(err, sdkerrors.ErrNotFound) ||
 			errors.Is(err, types.ErrNotFound) ||
 			errors.Is(err, types.ErrUnfulfilledNonceNotFound) {
 			sdk.UnwrapSDKContext(ctx).Logger().Info(
-				"close reputer window had no losses to score; continuing epoch lifecycle",
+				"close reputer window soft-failed; continuing epoch lifecycle",
 				"topicId", epoch.TopicId,
 				"legacyNonce", legacyNonce.BlockHeight,
 				"error", err,
@@ -151,10 +136,10 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 }
 
 func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
-	// Losses, weights, and TopicRewardNonce are produced in closeReputerWindow
-	// via CloseReputerNonce when submissions exist. Coin payout and record prune
-	// stay in EndBlocker EmitRewards so this transition does not delete
-	// TopicRewardNonce out from under the current reward path.
+	// Losses/weights/TopicRewardNonce are produced in closeReputerWindow via CloseReputerNonce
+	// when submissions exist. During the parallel EndBlocker period, coin payout + prune remain
+	// in rewards.EmitRewards so we do not delete TopicRewardNonce here (that would race EndBlocker).
+	// Mark the topic rewardable as a signal for reward selection.
 	if err := k.topicKeeper.SetRewardableTopic(ctx, epoch.TopicId); err != nil {
 		return errorsmod.Wrap(err, "complete epoch: set rewardable topic")
 	}
