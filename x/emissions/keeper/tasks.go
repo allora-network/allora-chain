@@ -96,6 +96,11 @@ func (k *Keeper) schedulePeriodicNewEpoch(ctx context.Context, topicID TopicId) 
 	}
 
 	interval := time.Duration(topic.EpochLength) * time.Second
+	// Drop a leftover periodic task so reactivation after churn (without a full
+	// InactivateTopic) does not fail with "task already exists".
+	if err := k.unschedulePeriodicNewEpoch(ctx, topicID); err != nil {
+		return err
+	}
 	return k.schedulerKeeper.ScheduleTask(
 		ctx,
 		types.StartNewEpochTask,
