@@ -218,14 +218,6 @@ func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
 }
 
 func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
-	if epoch.State == types.EpochState_WORKER_SUBMISSION {
-		// TODO: emit closing worker window evt
-	} else if epoch.State == types.EpochState_REPUTER_SUBMISSION {
-		// TODO: emit closing reputer window evt
-	}
-
-	// TODO: prune epoch data
-
 	return k.unscheduleEpochLifecycle(ctx, epoch)
 }
 
