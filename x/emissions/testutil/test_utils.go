@@ -199,10 +199,6 @@ func (s *TestSuite) WithBlockHeight(height int64) {
 	s.ctx = s.ctx.WithBlockHeight(height)
 }
 
-func (s *TestSuite) WithBlockTime(t time.Time) {
-	s.ctx = s.ctx.WithBlockTime(t)
-}
-
 const (
 	multiPerm  = "multiple permissions account"
 	randomPerm = "random permission"

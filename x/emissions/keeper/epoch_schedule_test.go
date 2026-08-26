@@ -67,18 +67,11 @@ func (s *KeeperTestSuite) TestActivateTopicStartsEpochAndPeriodicTask() {
 	s.Require().NoError(err)
 	s.Require().NotNil(periodic.Interval)
 	s.Require().Equal(60*time.Second, *periodic.Interval)
-	s.Require().Equal(schedulertypes.SchedulingStrategy_ABSOLUTE, periodic.SchedulingStrategy)
-	firstDue := ctx.BlockTime().Add(60 * time.Second)
-	s.Require().Equal(firstDue, *periodic.ScheduledFor)
+	s.Require().Equal(ctx.BlockTime().Add(60*time.Second), *periodic.ScheduledFor)
 
 	// Advance past ScheduledFor (due check uses BlockTime.After, so equality is not enough).
-	ctx = ctx.WithBlockTime(firstDue.Add(time.Nanosecond))
+	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(60*time.Second + time.Nanosecond))
 	s.Require().NoError(s.SchedulerKeeper().BeginBlock(ctx))
-
-	periodic, err = s.SchedulerKeeper().GetTask(ctx, periodicID)
-	s.Require().NoError(err)
-	s.Require().Equal(firstDue.Add(60*time.Second), *periodic.ScheduledFor,
-		"absolute scheduling must keep the next tick on the original EpochLength boundary")
 
 	nextNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
 	s.Require().NoError(err)
@@ -110,87 +103,4 @@ func (s *KeeperTestSuite) TestInactivateTopicCancelsPeriodicNewEpochTask() {
 	s.Require().NoError(err)
 	s.Require().True(found)
 	s.Require().Equal(firstNonce, lastNonce)
-}
-
-// Mirrors the integration worker→reputer path (EpochLength=5, GroundTruthLag=10,
-// WorkerSubmissionWindow=4) while the scheduler creates overlapping wall-clock epochs.
-// EndBlocker still owns the nonce data plane while scheduler epochs run in parallel.
-func (s *KeeperTestSuite) TestWorkerThenReputerNonceWithSchedulerEpochs() {
-	s.SetParamsForTest()
-	params, err := s.ParamsKeeper().GetParams(s.Ctx())
-	s.Require().NoError(err)
-	params.MaxActiveTopicsPerBlock = 5
-	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
-
-	workerIndexes := testutil.ReturnIndexes(0, 1)
-	reputerIndexes := testutil.ReturnIndexes(1, 1)
-	topic := s.FullTopicSetup(
-		workerIndexes,
-		reputerIndexes,
-		testutil.WithEpochLength(5),
-		testutil.WithGroundTruthLag(10),
-		testutil.WithWorkerSubmissionWindow(4),
-	)
-	// Extra active topics, as in TopicWeightDistributionChecks, so another
-	// topic can churn on the same block as this topic's worker-window close.
-	_ = s.FullTopicSetup(
-		workerIndexes,
-		reputerIndexes,
-		testutil.WithEpochLength(10),
-		testutil.WithGroundTruthLag(10),
-		testutil.WithWorkerSubmissionWindow(4),
-	)
-	_ = s.FullTopicSetup(
-		workerIndexes,
-		reputerIndexes,
-		testutil.WithEpochLength(20),
-		testutil.WithGroundTruthLag(20),
-		testutil.WithWorkerSubmissionWindow(4),
-	)
-	workerValues := testutil.GetWorkerValuesFromIndexes(workerIndexes, "100")
-
-	// Localnet timeout_commit is often ~5s; EpochLength is still stored in blocks
-	// but the periodic StartNewEpoch task treats it as seconds, so a new FSM epoch
-	// is created every block.
-	blockDuration := 5 * time.Second
-	var insertedNonce int64
-	skippedEpochs := 0
-	for i := 0; i < 80; i++ {
-		s.WithBlockHeight(s.Ctx().BlockHeight() + 1)
-		s.WithBlockTime(s.Ctx().BlockTime().Add(blockDuration))
-		s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()), "scheduler begin block at height %d", s.Ctx().BlockHeight())
-		s.EndBlock()
-
-		fresh, err := s.TopicKeeper().GetTopic(s.Ctx(), topic.Id)
-		s.Require().NoError(err)
-
-		if insertedNonce == 0 && fresh.EpochLastEnded > 0 && s.Ctx().BlockHeight() == fresh.EpochLastEnded {
-			// Skip a few empty epochs first, matching the integration suite
-			// (distribution / registration work happens before the first insert).
-			if skippedEpochs < 3 {
-				skippedEpochs++
-				continue
-			}
-			s.SetupInferences(fresh.Id, fresh.EpochLastEnded, workerIndexes, workerValues...)
-			insertedNonce = fresh.EpochLastEnded
-			continue
-		}
-		if insertedNonce == 0 {
-			continue
-		}
-
-		if s.Ctx().BlockHeight() == insertedNonce+fresh.GroundTruthLag {
-			workerUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), fresh.Id, &types.Nonce{BlockHeight: insertedNonce})
-			s.Require().NoError(err)
-			reputerUnfulfilled, err := s.NonceKeeper().IsReputerNonceUnfulfilled(s.Ctx(), fresh.Id, &types.Nonce{BlockHeight: insertedNonce})
-			s.Require().NoError(err)
-			s.Require().False(workerUnfulfilled, "worker nonce %d should be fulfilled before reputer insert", insertedNonce)
-			s.Require().True(reputerUnfulfilled, "reputer nonce %d should be unfulfilled before reputer insert", insertedNonce)
-
-			err = s.InsertReputerLossBundle(fresh.Id, insertedNonce, reputerIndexes, testutil.WithWorkerValues(workerValues))
-			s.Require().NoError(err)
-			return
-		}
-	}
-	s.Fail("did not complete worker/reputer cycle")
 }

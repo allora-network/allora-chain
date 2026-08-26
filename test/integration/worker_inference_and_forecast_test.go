@@ -17,20 +17,17 @@ import (
 
 func waitForNextChurningBlock(m testCommon.TestConfig, topicId uint64) (*types.Topic, error) {
 	ctx := context.Background()
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topicId})
+	if err != nil {
+		return nil, err
+	}
 	nextBlockResponse, err := m.Client.QueryEmissions().GetNextChurningBlockByTopicId(ctx, &types.GetNextChurningBlockByTopicIdRequest{TopicId: topicId})
 	if err != nil {
 		return nil, err
 	}
 	m.T.Log(time.Now(), "Wait for next churning block ", nextBlockResponse.BlockHeight, " for topic ", topicId)
 	err = m.Client.WaitForBlockHeight(ctx, nextBlockResponse.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topicId})
-	if err != nil {
-		return nil, err
-	}
-	return topicResponse.Topic, nil
+	return topicResponse.Topic, err
 }
 
 func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) error {
@@ -286,11 +283,6 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 		m.T.Log(time.Now(), "--- Failed inserting worker payload ---")
 		require.NoError(m.T, err)
 	}
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topic.Id})
-	if err != nil {
-		require.NoError(m.T, err)
-	}
-	topic = topicResponse.Topic
 	m.T.Log(time.Now(), fmt.Sprintf("--- Waiting for block %d ---", blockHeightNonce+topic.GroundTruthLag))
 	err = m.Client.WaitForBlockHeight(ctx, blockHeightNonce+topic.GroundTruthLag)
 	if err != nil {

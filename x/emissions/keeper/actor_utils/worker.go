@@ -1,7 +1,6 @@
 package actorutils
 
 import (
-	"math"
 	"sort"
 
 	errorsmod "cosmossdk.io/errors"
@@ -29,19 +28,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Close only at or after the window end. Returning here happens before the
-	// defer, so an in-progress nonce is not fulfilled. Overdue closes are
-	// allowed so a missed close-cadence block can still add the reputer nonce.
-	if topic.WorkerSubmissionWindow <= 0 {
-		return errorsmod.Wrap(types.ErrInvalidValue, "worker submission window cannot be 0")
-	}
-	if nonce.BlockHeight > math.MaxInt64-topic.WorkerSubmissionWindow {
-		return errorsmod.Wrapf(types.ErrInvalidValue,
-			"nonce block height %d is too high, adding window %d would overflow",
-			nonce.BlockHeight, topic.WorkerSubmissionWindow)
-	}
-	windowEnd := nonce.BlockHeight + topic.WorkerSubmissionWindow
-	if blockHeight < windowEnd {
+	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
+	if blockHeight <= nonce.BlockHeight ||
+		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
 

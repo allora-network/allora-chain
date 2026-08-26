@@ -1,19 +1,19 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -3,9 +3,11 @@ package module
+@@ -3,8 +3,11 @@ package module
  import (
  	"context"
-+	"fmt"
- 	"sort"
  
++	"fmt"
++
  	"cosmossdk.io/errors"
  	sdk "github.com/cosmos/cosmos-sdk/types"
  
 +	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
  	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
  	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-@@ -14,6 +16,11 @@ import (
+@@ -13,6 +16,11 @@ import (
  
  func EndBlocker(ctx context.Context, am AppModule) error {
  	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -36,7 +36,7 @@ diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
  )
  
  // ConsensusVersion defines the current module consensus version.
-@@ -226,3 +227,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
+@@ -210,3 +211,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
  	}
  	return err
  }
