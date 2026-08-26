@@ -45,6 +45,7 @@ func NewTopicKeeper(
 		paramsKeeper:                     paramsKeeper,
 		nonceKeeper:                      nonceKeeper,
 		stakingKeeper:                    stakingKeeper,
+		lifecycleHooks:                   nil,
 	}
 }
 
