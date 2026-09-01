@@ -23,6 +23,7 @@ func createTopic(
 ) (success bool) {
 	iterLog(m.T, iteration, actor, "creating new topic")
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  actor.addr,
 		Metadata:                 fmt.Sprintf("Created topic iteration %d", iteration),
 		LossMethod:               "mse",

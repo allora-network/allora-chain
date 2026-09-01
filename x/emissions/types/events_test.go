@@ -212,6 +212,7 @@ func TestEmitNewTopicUpdatedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 
 	topic := types.Topic{
+		MaxTopInferersToReward:   8,
 		Id:                       1,
 		Creator:                  "creator",
 		EpochLastEnded:           100,

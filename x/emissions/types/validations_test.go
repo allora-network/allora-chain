@@ -11,6 +11,7 @@ import (
 
 func validCreateNewTopicRequest() *CreateNewTopicRequest {
 	return &CreateNewTopicRequest{
+		MaxTopInferersToReward:   0,
 		Creator:                  "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		Metadata:                 "metadata",
 		LossMethod:               "mse",
@@ -1130,6 +1131,45 @@ func TestTopicValidate(t *testing.T) {
 			},
 			wantErr: true, errContains: "topic label_whitelist is invalid",
 		},
+		{
+			name:    "max top inferers one ok",
+			mutate:  func(tp *Topic, _ *Params) { tp.MaxTopInferersToReward = 1 },
+			wantErr: false, errContains: "",
+		},
+		{
+			name:    "max top inferers equals global ceiling ok",
+			mutate:  func(tp *Topic, p *Params) { tp.MaxTopInferersToReward = p.MaxTopInferersToReward },
+			wantErr: false, errContains: "",
+		},
+		{
+			// Zero is accepted for migration safety: pre-field topics decode as
+			// zero and the shipped v15 migration validates them before v16
+			// backfills the cap. The >=1 invariant is enforced at write time.
+			name:    "max top inferers zero accepted (migration safety)",
+			mutate:  func(tp *Topic, _ *Params) { tp.MaxTopInferersToReward = 0 },
+			wantErr: false, errContains: "",
+		},
+		{
+			name:    "max top inferers above global accepted at rest",
+			mutate:  func(tp *Topic, p *Params) { tp.MaxTopInferersToReward = p.MaxTopInferersToReward + 1 },
+			wantErr: false, errContains: "",
+		},
+		{
+			name: "max top inferers above shrunk global accepted at rest",
+			mutate: func(tp *Topic, p *Params) {
+				p.MaxTopInferersToReward = 5
+				tp.MaxTopInferersToReward = 6
+			},
+			wantErr: false, errContains: "",
+		},
+		{
+			name: "max top inferers ceiling tracks params (at shrunk global ok)",
+			mutate: func(tp *Topic, p *Params) {
+				p.MaxTopInferersToReward = 5
+				tp.MaxTopInferersToReward = 5
+			},
+			wantErr: false, errContains: "",
+		},
 	}
 
 	for _, tc := range tests {
@@ -1182,6 +1222,7 @@ func validTopic(p Params) Topic {
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
+		MaxTopInferersToReward:   10,
 	}
 }
 
@@ -1195,6 +1236,7 @@ func validParams() Params {
 		MaxCanonicalLabelByteLength:   64,
 		MaxEpochLabelRegistrySize:     DefaultMaxEpochLabelRegistrySize,
 		MaxWhitelistInputArrayLength:  2000,
+		MaxTopInferersToReward:        32,
 	}
 }
 
@@ -1209,6 +1251,35 @@ func baseValidInput(t *testing.T) *InputInference {
 		BlockHeight: 100,
 		Inferer:     "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		Value:       alloraMath.MustNewBoundedExp40Dec(alloraMath.MustNewDecFromString("1")),
+	}
+}
+
+func TestEffectiveMaxTopInferersToReward(t *testing.T) {
+	cases := []struct {
+		name                                 string
+		topicCap, globalMin, globalMax, want uint64
+	}{
+		{"zero uses global max", 0, 1, 32, 32},
+		{"within range preserved", 10, 1, 32, 10},
+		{"equal to global max", 32, 1, 32, 32},
+		{"above global max clamped", 40, 1, 32, 32},
+		{"below global min raised", 3, 10, 32, 10},
+		{"equal to global min", 10, 10, 32, 10},
+		{"zero with a floor still uses global max", 0, 10, 32, 32},
+		{"no floor", 10, 0, 32, 10},
+		// With the default floor: below it is raised, within the range is kept,
+		// above the ceiling is clamped.
+		{"default floor raises a low cap", 3, 5, 32, 5},
+		{"default floor keeps a cap above it", 6, 5, 32, 6},
+		{"default floor with cap above the ceiling", 33, 5, 32, 32},
+		// The ceiling is applied last, so an inverted global range can never
+		// yield a cap above the global max.
+		{"inverted global range yields global max", 3, 40, 32, 32},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, EffectiveMaxTopInferersToReward(c.topicCap, c.globalMin, c.globalMax))
+		})
 	}
 }
 

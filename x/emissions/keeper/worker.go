@@ -522,7 +522,16 @@ func (k *WorkerKeeper) PlanInferenceAdmission(
 	plan.WorkerAddresses = workerAddresses
 	plan.FirstSubmission = firstSubmission
 
-	// If there are less than maxTopInferersToReward, add the current inferer, update the lowest inferer score ema if needed, and return
+	// Admit into an open slot while the active set is below the cap. The caller
+	// passes the effective cap, which is the per-topic MaxTopInferersToReward
+	// clamped by the global param. If the effective cap is below the current
+	// active-set size (e.g. governance lowered the global, or UpdateTopic lowered
+	// the per-topic cap, since a prior window), there are no open slots: a new
+	// inferer is admitted only by evicting the lowest member it out-scores (a
+	// net-zero swap, handled below), never by trimming the set here. The active
+	// set is fully reset at nonce close and rebuilt up to the cap in the next
+	// window, so an over-full set does not arise in normal operation; this branch
+	// is exercised by unit tests of PlanInferenceAdmission in isolation.
 	if uint64(len(workerAddresses)) < maxTopInferersToReward {
 		plan.Kind = InferenceAdmissionOpenSlot
 		return plan, nil
