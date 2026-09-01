@@ -208,6 +208,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	params, err := s.ParamsKeeper().GetParams(s.Ctx())
 	s.Require().NoError(err)
 	params.MaxTopInferersToReward = 1
+	params.MinTopInferersToReward = 0
 	params.MaxTopForecastersToReward = 1
 	err = s.ParamsKeeper().SetParams(s.Ctx(), params)
 	s.Require().NoError(err)
