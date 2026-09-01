@@ -32,6 +32,17 @@ jobs:
       # diverge today; centralizing on go.mod's toolchain is tracked
       # as a follow-up.
       go_version: '1.23.5'
-      # cosmwasm/wasmvm (a transitive Cosmos SDK dep) requires CGO to
-      # link against libwasmvm; matches the goreleaser build path.
-      cgo_enabled: '1'
+      # CGO disabled to match the rest of the CI matrix (golangci-lint.yml,
+      # format_and_test.yml, goreleaser.yml) and the release-build
+      # toolchain (.goreleaser.yaml sets CGO_ENABLED=0 per-build).
+      # Investigation while resolving PR #952 confirmed CGO is not
+      # actually required by this module:
+      #   - `rg -i 'wasmvm|libwasmvm|cosmwasm' go.mod go.sum` → 0 matches
+      #   - `rg -l 'import\s+"C"' --type go` → 0 matches
+      # The earlier "cosmwasm/wasmvm requires CGO" justification was
+      # incorrect (cubic-dev-ai P3 + xmariachi feedback on PR #952).
+      # If a future dep legitimately requires CGO, flip to '1' here AND
+      # in the env blocks of the workflows above so the matrix stays
+      # aligned. Removal of cgo state for the wasmvm-free runtime is
+      # also tracked in ENGN-8441.
+      cgo_enabled: '0'
