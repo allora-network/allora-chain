@@ -17,6 +17,14 @@ The AI/ML agents within the Allora Network use their data and algorithms to broa
 ## Documentation
 For the latest documentation, please go to https://docs.allora.network/
 
+### Chain parameters
+
+Two in-repo references cover the `emissions` module's configuration surface, kept next to the code they describe:
+
+- **[Global parameters](x/emissions/docs/global-parameters.md)** — chain-wide settings governing fees, reward math, scheduling, whitelists and label limits, changeable only by an admin `UpdateParams` tx. Includes defaults and detail on the parameters whose effects are indirect.
+- **[Topic parameters](x/emissions/docs/topic-parameters.md)** — per-topic settings chosen at `CreateNewTopic`. Many are immutable once set; a few can be changed with `UpdateTopic`, and a further subset only while no worker submission window is open. `UpdateTopic` replaces rather than patches, so the page also covers the sentinel values that make omission meaningful.
+
+
 ## Allorad Install
 
 Binary can be Installed for Linux or Mac (check releases for Windows)

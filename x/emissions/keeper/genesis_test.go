@@ -81,6 +81,7 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
+		MaxTopInferersToReward:   5,
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -659,6 +660,7 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
+		MaxTopInferersToReward:   5,
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
@@ -699,8 +701,77 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 	s.Require().Equal(genesisState.NextTopicId, genesisState2.NextTopicId)
 	s.Require().Len(genesisState2.Topics, len(genesisState.Topics))
 	s.Require().Equal(genesisState.Topics[0].Topic.Metadata, genesisState2.Topics[0].Topic.Metadata)
+	s.Require().Equal(uint64(5), genesisState2.Topics[0].Topic.MaxTopInferersToReward)
 	s.Require().True(genesisState2.TotalSumPreviousTopicWeights.Equal(alloraMath.MustNewDecFromString("50.0")))
 	s.Require().True(genesisState2.LastMedianInferences[0].Dec.Equal(alloraMath.MustNewDecFromString("2.5")))
+}
+
+// TestInitGenesisPreservesZeroMaxTopInferersToReward asserts that an unset (0)
+// per-topic cap is stored verbatim; admission resolves it to the global.
+func (s *KeeperTestSuite) TestInitGenesisPreservesZeroMaxTopInferersToReward() {
+	ctx := s.Ctx()
+	topic := s.MockTopic()
+	topic.Id = 1
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, 1, topic))
+
+	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(genesisState.Topics)
+	genesisState.Topics[0].Topic.MaxTopInferersToReward = 0
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState))
+
+	got, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), 1)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(0), got.MaxTopInferersToReward)
+}
+
+// TestInitGenesisPreservesMaxTopInferersBelowGlobalMin asserts that a topic cap
+// below the imported global floor is stored verbatim too; admission raises it.
+func (s *KeeperTestSuite) TestInitGenesisPreservesMaxTopInferersBelowGlobalMin() {
+	ctx := s.Ctx()
+	topic := s.MockTopic()
+	topic.Id = 1
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, 1, topic))
+
+	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(genesisState.Topics)
+	genesisState.Params.MinTopInferersToReward = 5
+	genesisState.Topics[0].Topic.MaxTopInferersToReward = 3
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState))
+
+	got, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), 1)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(3), got.MaxTopInferersToReward)
+	s.Require().Equal(uint64(5), types.EffectiveMaxTopInferersToReward(
+		got.MaxTopInferersToReward, 5, genesisState.Params.MaxTopInferersToReward))
+}
+
+// TestInitGenesisPreservesMaxTopInferersAboveGlobal asserts that a topic cap
+// above the imported global is stored verbatim, so export/import round-trips.
+func (s *KeeperTestSuite) TestInitGenesisPreservesMaxTopInferersAboveGlobal() {
+	ctx := s.Ctx()
+	topic := s.MockTopic()
+	topic.Id = 1
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, 1, topic))
+
+	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
+	s.Require().NoError(err)
+	s.Require().NotEmpty(genesisState.Topics)
+	// Global lowered to 25 while the topic's cap stays at 30 (> global).
+	genesisState.Params.MaxTopInferersToReward = 25
+	genesisState.Topics[0].Topic.MaxTopInferersToReward = 30
+
+	fresh := s.newFreshGenesisSuite()
+	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState))
+
+	got, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), 1)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(30), got.MaxTopInferersToReward)
 }
 
 func (s *KeeperTestSuite) TestGenesisSubKeeperWorkerRoundTrip() {
