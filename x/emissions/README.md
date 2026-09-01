@@ -45,18 +45,25 @@ See `x/emissions/metrics/` for details.
 
 `Dec` values placed in emissions events are magnitude-clamped to `[1e-40, 1e40]` so extremely small or large values stay compact when serialized. This shapes event output only; consensus state is stored separately and is not clamped, so an event value may differ from the stored value at the extremes. See `ClampMagnitude` and the `clamp*` helpers in `x/emissions/types/events_utils.go`.
 
+## Parameters
+
+- **[Global parameters](docs/global-parameters.md)** — chain-wide parameters on `Params`: their defaults, and the ones whose behavior is not obvious from the name.
+- **[Topic parameters](docs/topic-parameters.md)** — per-topic configuration on `Topic`: which fields are immutable, which are editable, and which are editable only outside an open worker submission window.
+
 ## Topic configuration updates (UpdateTopic)
 
-The `UpdateTopic` tx is intentionally limited to a small set of mutable fields. Today, topic creators can update:
+The `UpdateTopic` tx is intentionally limited to a subset of mutable fields. Topic creators can update:
 
-- **`metadata`**
-- **`loss_method`**
-- **`alpha_regret`**
-- **`merit_sortition_alpha`**
-- **`p_norm`**
+- **`metadata`**, **`loss_method`**, **`alpha_regret`**, **`p_norm`**, **`c_norm`** — at any time.
+- **`merit_sortition_alpha`**, **`max_labels_per_submission`**, **`label_whitelist`**, **`label_default_value`**, **`max_top_inferers_to_reward`** — only while no worker submission window is open.
 
-All other topic fields are treated as immutable because they impact state transitions, scheduling/cadence, or other invariants that should remain stable once a topic is created.
+All other topic fields are immutable because they impact state transitions, scheduling/cadence, or other invariants that should remain stable once a topic is created.
+
+`UpdateTopic` is a **full replacement**: every editable field is overwritten by what the message carries, so send the current value back to keep it. An empty `label_whitelist` means *unrestricted*, not *unchanged*, and `max_top_inferers_to_reward` of `0` means *use the global maximum*, not *unchanged*.
 
 ### Constraints
 
-- **`merit_sortition_alpha`** cannot be updated while the topic is active *and* the worker submission window is currently open (to avoid changing selection dynamics mid-window).
+- The five WSW-guarded fields above are rejected with `ErrWorkerNonceWindowNotAvailable` while the topic is active *and* any unfulfilled worker nonce is inside its submission window — every open nonce is checked, not just the newest.
+- **`label_case_sensitive`** is stored on the topic but explicitly rejected on change: flipping it would change the canonical form of every already-persisted label.
+
+See [Topic parameters](docs/topic-parameters.md) for the full field-by-field reference.
