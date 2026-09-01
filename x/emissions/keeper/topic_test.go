@@ -39,6 +39,32 @@ func (s *KeeperTestSuite) TestGetPreviousTopicWeightNotFound() {
 	s.Require().True(noPrior, "Should indicate no prior weight for an unset topic")
 }
 
+// TestSetTopicSucceedsWhenStoredCapExceedsLoweredGlobal: a stored per-topic cap
+// above the current global persists and is preserved; the global bounds
+// admission, not storage.
+func (s *KeeperTestSuite) TestSetTopicSucceedsWhenStoredCapExceedsLoweredGlobal() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := uint64(1)
+
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = 32
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	topic := s.MockTopic()
+	topic.MaxTopInferersToReward = 32
+	s.Require().NoError(k.SetTopic(ctx, topicId, topic))
+
+	// Lower the global below the stored cap, then re-persist via the epoch path.
+	params.MaxTopInferersToReward = 5
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+	s.Require().NoError(k.UpdateTopicEpochLastEnded(ctx, topicId, 100))
+
+	got, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(32), got.MaxTopInferersToReward)
+}
+
 func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	ctx := s.Ctx()
 	k := s.TopicKeeper()
