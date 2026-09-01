@@ -137,13 +137,24 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 
 func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
 	// Losses/weights/TopicRewardNonce are produced in closeReputerWindow via CloseReputerNonce
-	// when submissions exist. During the parallel EndBlocker period, coin payout + prune remain
-	// in rewards.EmitRewards so we do not delete TopicRewardNonce here (that would race EndBlocker).
-	// Mark the topic rewardable as a signal for reward selection.
+	// when submissions exist. Coin payout stays in EndBlocker EmitRewards, which still
+	// needs this epoch's records if TopicRewardNonce matches this start height.
 	if err := k.topicKeeper.SetRewardableTopic(ctx, epoch.TopicId); err != nil {
 		return errorsmod.Wrap(err, "complete epoch: set rewardable topic")
 	}
-	return nil
+	return k.pruneEpochIfNotQueuedForRewards(ctx, epoch)
+}
+
+func (k *Keeper) pruneEpochIfNotQueuedForRewards(ctx context.Context, epoch types.Epoch) error {
+	height := epoch.LegacyNonce().BlockHeight
+	rewardNonce, err := k.topicKeeper.GetTopicRewardNonce(ctx, epoch.TopicId)
+	if err != nil {
+		return err
+	}
+	if rewardNonce == height {
+		return nil
+	}
+	return k.pruneEpochRecords(ctx, epoch.TopicId, height)
 }
 
 func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
@@ -169,6 +180,20 @@ func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
 			return errorsmod.Wrap(err, "cancel epoch: fulfill reputer nonce")
 		}
 		types.EmitNewReputerSubmissionWindowClosedEvent(ctx, epoch.TopicId, legacyNonce.BlockHeight)
+	}
+
+	rewardNonce, err := k.topicKeeper.GetTopicRewardNonce(ctx, epoch.TopicId)
+	if err != nil {
+		return err
+	}
+	if rewardNonce == legacyNonce.BlockHeight {
+		if err := k.topicKeeper.DeleteTopicRewardNonce(ctx, epoch.TopicId); err != nil {
+			return errorsmod.Wrap(err, "cancel epoch: clear reward nonce")
+		}
+	}
+
+	if err := k.pruneEpochRecords(ctx, epoch.TopicId, legacyNonce.BlockHeight); err != nil {
+		return errorsmod.Wrap(err, "cancel epoch: prune records")
 	}
 
 	return k.unscheduleEpochLifecycle(ctx, epoch)

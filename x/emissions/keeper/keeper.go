@@ -410,7 +410,22 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx sdk.Context, topicId TopicId, bloc
 	blockRange := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
 		EndInclusive(blockHeight)
+	return k.clearRecordsInRange(ctx, blockRange)
+}
 
+// pruneEpochRecords deletes inference/loss/network-inference data for one
+// epoch (topicId, start block height). Overlapping epochs keep their own heights.
+func (k *Keeper) pruneEpochRecords(ctx context.Context, topicId TopicId, blockHeight int64) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	defer types.EmitNewPruneRecordsEvent(sdkCtx, blockHeight, topicId)
+	blockRange := collections.
+		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
+		StartInclusive(blockHeight).
+		EndInclusive(blockHeight)
+	return k.clearRecordsInRange(ctx, blockRange)
+}
+
+func (k *Keeper) clearRecordsInRange(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
 	err := k.workerKeeper.PruneInferences(ctx, blockRange)
 	if err != nil {
 		return errorsmod.Wrap(err, "error pruning inferences")
