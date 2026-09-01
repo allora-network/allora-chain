@@ -1,0 +1,47 @@
+package v17_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
+	v17 "github.com/allora-network/allora-chain/x/emissions/migrations/v17"
+	"github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/types"
+)
+
+type EmissionsV17MigrationTestSuite struct {
+	testutil.TestSuite
+}
+
+func TestEmissionsV17MigrationTestSuite(t *testing.T) {
+	suite.Run(t, &EmissionsV17MigrationTestSuite{
+		testutil.NewTestSuite("emissions_V17Migrations"),
+	})
+}
+
+func (s *EmissionsV17MigrationTestSuite) TestMigrateStoreConvertsTimingAndEnrolls() {
+	ctx := s.Ctx()
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(30),
+		testutil.WithGroundTruthLag(30),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+	block := ctx.BlockHeight() + 10_000
+	s.Require().NoError(s.TopicKeeper().SetTopicToNextPossibleChurningBlock(ctx, topicID, block))
+	s.Require().NoError(s.TopicKeeper().SetActiveTopics(ctx, topicID))
+
+	s.Require().NoError(v17.MigrateStore(ctx, *s.EmissionsKeeper()))
+
+	topic, err := s.TopicKeeper().GetTopic(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(30)*6, topic.EpochLength)
+
+	_, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	params, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(types.DefaultParams().MinEpochLength*6, params.MinEpochLength)
+}
