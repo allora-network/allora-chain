@@ -90,6 +90,12 @@ type AlloraApp struct {
 	txConfig          client.TxConfig
 	interfaceRegistry codectypes.InterfaceRegistry
 
+	// Read-only decoding path for historical tx queries. Separate from the
+	// consensus registry/txConfig above so that decoding pre-upgrade payloads
+	// never widens what the consensus decoder accepts. See querytx.go.
+	queryInterfaceRegistry codectypes.InterfaceRegistry
+	queryTxConfig          client.TxConfig
+
 	// simulation manager
 	sm *module.SimulationManager
 
@@ -107,20 +113,27 @@ func init() {
 	DefaultNodeHome = filepath.Join(userHomeDir, ".allorad")
 }
 
+// CustomModuleBasics returns the module basics the runtime cannot derive on its
+// own. Hoisted out of AppConfig so the read-only query registry (querytx.go) can
+// resolve genutil/gov exactly as SetupAppBuilder does.
+func CustomModuleBasics() map[string]module.AppModuleBasic {
+	return map[string]module.AppModuleBasic{
+		genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+		govtypes.ModuleName: gov.NewAppModuleBasic(
+			[]govclient.ProposalHandler{
+				paramsclient.ProposalHandler,
+			},
+		),
+	}
+}
+
 // AppConfig returns the default app config.
 func AppConfig() depinject.Config {
 	return depinject.Configs(
 		appconfig.LoadYAML(AppConfigYAML),
 		depinject.Supply(
 			// supply custom module basics
-			map[string]module.AppModuleBasic{
-				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-				govtypes.ModuleName: gov.NewAppModuleBasic(
-					[]govclient.ProposalHandler{
-						paramsclient.ProposalHandler,
-					},
-				),
-			},
+			CustomModuleBasics(),
 		),
 	)
 }
@@ -194,6 +207,13 @@ func NewAlloraApp(
 
 	// Register feemarket module
 	app.registerFeeMarketModule()
+
+	// Build the read-only decoding path now that ModuleManager holds every module
+	// (including the legacy/IBC/feemarket ones registered just above). This never
+	// touches app.interfaceRegistry, so the consensus decoder is unchanged.
+	if err := app.buildQueryDecodingPath(); err != nil {
+		return nil, err
+	}
 
 	// register streaming services
 	if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
