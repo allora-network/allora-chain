@@ -126,6 +126,8 @@ const (
 	QueryService_GetLatestForecasterWeight_FullMethodName                   = "/emissions.v10.QueryService/GetLatestForecasterWeight"
 	QueryService_GetWorkerSubmissionWindowStatus_FullMethodName             = "/emissions.v10.QueryService/GetWorkerSubmissionWindowStatus"
 	QueryService_GetReputerSubmissionWindowStatus_FullMethodName            = "/emissions.v10.QueryService/GetReputerSubmissionWindowStatus"
+	QueryService_GetEpoch_FullMethodName                                    = "/emissions.v10.QueryService/GetEpoch"
+	QueryService_GetTopicEpochs_FullMethodName                              = "/emissions.v10.QueryService/GetTopicEpochs"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -250,6 +252,10 @@ type QueryServiceClient interface {
 	GetWorkerSubmissionWindowStatus(ctx context.Context, in *GetWorkerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetWorkerSubmissionWindowStatusResponse, error)
 	// Get reputer submission window status and timing
 	GetReputerSubmissionWindowStatus(ctx context.Context, in *GetReputerSubmissionWindowStatusRequest, opts ...grpc.CallOption) (*GetReputerSubmissionWindowStatusResponse, error)
+	// GetEpoch returns a single in-flight epoch by topic id and NonceV2.
+	GetEpoch(ctx context.Context, in *GetEpochRequest, opts ...grpc.CallOption) (*GetEpochResponse, error)
+	// GetTopicEpochs returns all in-flight epochs for a topic (completed/cancelled are pruned).
+	GetTopicEpochs(ctx context.Context, in *GetTopicEpochsRequest, opts ...grpc.CallOption) (*GetTopicEpochsResponse, error)
 }
 
 type queryServiceClient struct {
@@ -1330,6 +1336,26 @@ func (c *queryServiceClient) GetReputerSubmissionWindowStatus(ctx context.Contex
 	return out, nil
 }
 
+func (c *queryServiceClient) GetEpoch(ctx context.Context, in *GetEpochRequest, opts ...grpc.CallOption) (*GetEpochResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEpochResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetEpoch_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetTopicEpochs(ctx context.Context, in *GetTopicEpochsRequest, opts ...grpc.CallOption) (*GetTopicEpochsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTopicEpochsResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetTopicEpochs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility.
@@ -1452,6 +1478,10 @@ type QueryServiceServer interface {
 	GetWorkerSubmissionWindowStatus(context.Context, *GetWorkerSubmissionWindowStatusRequest) (*GetWorkerSubmissionWindowStatusResponse, error)
 	// Get reputer submission window status and timing
 	GetReputerSubmissionWindowStatus(context.Context, *GetReputerSubmissionWindowStatusRequest) (*GetReputerSubmissionWindowStatusResponse, error)
+	// GetEpoch returns a single in-flight epoch by topic id and NonceV2.
+	GetEpoch(context.Context, *GetEpochRequest) (*GetEpochResponse, error)
+	// GetTopicEpochs returns all in-flight epochs for a topic (completed/cancelled are pruned).
+	GetTopicEpochs(context.Context, *GetTopicEpochsRequest) (*GetTopicEpochsResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1782,6 +1812,12 @@ func (UnimplementedQueryServiceServer) GetWorkerSubmissionWindowStatus(context.C
 }
 func (UnimplementedQueryServiceServer) GetReputerSubmissionWindowStatus(context.Context, *GetReputerSubmissionWindowStatusRequest) (*GetReputerSubmissionWindowStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputerSubmissionWindowStatus not implemented")
+}
+func (UnimplementedQueryServiceServer) GetEpoch(context.Context, *GetEpochRequest) (*GetEpochResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEpoch not implemented")
+}
+func (UnimplementedQueryServiceServer) GetTopicEpochs(context.Context, *GetTopicEpochsRequest) (*GetTopicEpochsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicEpochs not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 func (UnimplementedQueryServiceServer) testEmbeddedByValue()                      {}
@@ -3730,6 +3766,42 @@ func _QueryService_GetReputerSubmissionWindowStatus_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_GetEpoch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEpochRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetEpoch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetEpoch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetEpoch(ctx, req.(*GetEpochRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetTopicEpochs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopicEpochsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetTopicEpochs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetTopicEpochs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetTopicEpochs(ctx, req.(*GetTopicEpochsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4164,6 +4236,14 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReputerSubmissionWindowStatus",
 			Handler:    _QueryService_GetReputerSubmissionWindowStatus_Handler,
+		},
+		{
+			MethodName: "GetEpoch",
+			Handler:    _QueryService_GetEpoch_Handler,
+		},
+		{
+			MethodName: "GetTopicEpochs",
+			Handler:    _QueryService_GetTopicEpochs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
