@@ -107,8 +107,9 @@ func (k *Keeper) AllocateNextEpochNonce(ctx context.Context, topicID TopicId) (t
 	return nextNonce, nil
 }
 
-// StartEpoch initializes a new epoch for the given topic, and schedules its lifecycle tasks starting at the current block time.
-func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
+// StartNewEpoch initializes a new epoch for the given topic, opens the worker window immediately,
+// and schedules the remaining lifecycle transition tasks.
+func (k *Keeper) StartNewEpoch(ctx context.Context, topicID TopicId) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	topic, err := k.topicKeeper.GetTopic(ctx, topicID)
 	if err != nil {
@@ -121,13 +122,55 @@ func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
 	}
 
 	epoch := types.NewEpoch(nonce, topic, sdkCtx.BlockTime())
+	// Prefer the topicID argument: stored Topic.Id can be stale when topics are inserted via SetTopic in tests.
+	epoch.TopicId = topicID
 	k.epochFSMEngine.Init(&epoch) // Unnecessary but more formal
 
 	if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
 		return err
 	}
 
+	// Open the worker window immediately; later transitions are scheduled as tasks.
+	if err := k.applyEpochTransition(ctx, topicID, nonce, epochSymbolOpenWorkerWindow); err != nil {
+		return err
+	}
+
+	epoch, err = k.epochs.Get(ctx, collections.Join(topicID, nonce))
+	if err != nil {
+		return err
+	}
+
 	return k.scheduleEpochLifecycle(ctx, epoch)
+}
+
+// StartEpoch is an alias for StartNewEpoch kept for callers that still use the older name.
+func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
+	return k.StartNewEpoch(ctx, topicID)
+}
+
+// GetEpoch returns the epoch for the given topic and nonce.
+func (k *Keeper) GetEpoch(ctx context.Context, topicID TopicId, nonce types.NonceV2) (types.Epoch, error) {
+	return k.epochs.Get(ctx, collections.Join(topicID, nonce))
+}
+
+// OnTopicActivated starts the first epoch and registers the periodic new-epoch task for the topic.
+func (k *Keeper) OnTopicActivated(ctx context.Context, topicID TopicId) error {
+	if k.schedulerKeeper == nil {
+		return nil
+	}
+	if err := k.StartNewEpoch(ctx, topicID); err != nil {
+		return err
+	}
+	return k.schedulePeriodicNewEpoch(ctx, topicID)
+}
+
+// OnTopicInactivated cancels the periodic new-epoch task for the topic.
+// In-flight epoch lifecycle tasks are left alone; cancellation of open epochs is handled separately.
+func (k *Keeper) OnTopicInactivated(ctx context.Context, topicID TopicId) error {
+	if k.schedulerKeeper == nil {
+		return nil
+	}
+	return k.unschedulePeriodicNewEpoch(ctx, topicID)
 }
 
 func (k *Keeper) applyEpochTransition(ctx context.Context, topicID TopicId, nonce types.NonceV2, symbol EpochFSMSymbol) error {
