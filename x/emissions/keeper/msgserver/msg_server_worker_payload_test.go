@@ -1403,6 +1403,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_NotAdmittedDoesNotStageI
 
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 1
+	params.MinTopInferersToReward = 0
 	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 	activeInferer := s.AddrsStr(9)
@@ -1478,6 +1479,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_SingleArityValidationBef
 	makeWorkerNonAdmitted := func(topicId uint64, worker string, nonce types.BlockHeight) {
 		params := types.DefaultParams()
 		params.MaxTopInferersToReward = 1
+		params.MinTopInferersToReward = 0
 		s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 
 		activeInferer := s.AddrsStr(9)
@@ -1581,6 +1583,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			setup: func(topicId uint64, msg *types.InsertWorkerPayloadRequest) {
 				params := types.DefaultParams()
 				params.MaxTopInferersToReward = 1
+				params.MinTopInferersToReward = 0
 				s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 				activeInferer := s.AddrsStr(9)
 				activeScore := types.Score{
@@ -1616,6 +1619,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			setup: func(topicId uint64, msg *types.InsertWorkerPayloadRequest) {
 				params := types.DefaultParams()
 				params.MaxTopInferersToReward = 1
+				params.MinTopInferersToReward = 0
 				s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 				activeInferer := s.AddrsStr(9)
 				activeScore := types.Score{
@@ -1665,6 +1669,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			setup: func(topicId uint64, msg *types.InsertWorkerPayloadRequest) {
 				params := types.DefaultParams()
 				params.MaxTopInferersToReward = 1
+				params.MinTopInferersToReward = 0
 				s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 				activeInferer := s.AddrsStr(9)
 				activeScore := types.Score{
@@ -1704,6 +1709,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload_LabelRegistryAdmissionPl
 			setup: func(topicId uint64, _ *types.InsertWorkerPayloadRequest) {
 				params := types.DefaultParams()
 				params.MaxTopInferersToReward = 1
+				params.MinTopInferersToReward = 0
 				s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
 				activeInferer := s.AddrsStr(9)
 				activeScore := types.Score{
