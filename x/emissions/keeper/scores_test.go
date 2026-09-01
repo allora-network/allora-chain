@@ -91,6 +91,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopInferersToReward = 1
+	params.MinTopInferersToReward = 0
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -117,6 +118,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	params.MaxTopInferersToReward = 1
+	params.MinTopInferersToReward = 0
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -143,6 +145,47 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 		expectedScoreValue := alloraMath.NewDecFromInt64(int64(92 + idx)) // Expecting the last 5 scores: 94, 95, 96, 97
 		s.Require().Equal(expectedScoreValue, score.Score, "Score should match the expected last scores")
 	}
+}
+
+// TestScoreRetentionUsesGlobalNotTopicCap locks in the decision that
+// score-history retention is sized by the GLOBAL MaxTopInferersToReward, not the
+// per-topic cap. A topic with a small per-topic cap still retains the
+// global-sized window, so a regression that switched scores.go to the per-topic
+// value would fail here.
+func (s *KeeperTestSuite) TestScoreRetentionUsesGlobalNotTopicCap() {
+	ctx := s.Ctx()
+	k := s.ScoresKeeper()
+	topicId := uint64(1)
+	blockHeight := int64(100)
+
+	// A topic with a small per-topic cap of 1.
+	topic := s.MockTopic()
+	topic.Id = topicId
+	topic.MaxTopInferersToReward = 1
+	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, topicId, topic))
+
+	// The global cap (which sizes score retention) is larger.
+	params := types.DefaultParams()
+	params.MaxSamplesToScaleScores = 2
+	params.MaxTopInferersToReward = 4
+	params.MinTopInferersToReward = 0
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	// Retention window = MaxSamplesToScaleScores * global cap = 2 * 4 = 8,
+	// independent of the topic's per-topic cap of 1 (which would give 2).
+	for i := 0; i < 12; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Address:     s.AddrsStr(0),
+			Score:       alloraMath.NewDecFromInt64(int64(90 + i)),
+		}
+		s.Require().NoError(k.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score))
+	}
+
+	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+	s.Require().Len(scores.Scores, 8, "score retention must use the global cap (2*4), not the per-topic cap (2*1)")
 }
 
 func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
@@ -570,6 +613,7 @@ func (s *KeeperTestSuite) TestScoreLimiting() {
 
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 2
+	params.MinTopInferersToReward = 0
 	params.MaxSamplesToScaleScores = 3
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
@@ -730,6 +774,7 @@ func (s *KeeperTestSuite) TestFirstSubmissionDoesNotUpdateEMAUsingQuantile() {
 
 	params := types.DefaultParams()
 	params.MaxTopInferersToReward = 4
+	params.MinTopInferersToReward = 0
 	err := s.ParamsKeeper().SetParams(ctx, params)
 	s.Require().NoError(err)
 
