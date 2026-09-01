@@ -1213,6 +1213,7 @@ func (s *TestSuite) MockTopic() types.Topic {
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 	}
 }
 
@@ -1243,6 +1244,10 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		MaxLabelsPerSubmission:   topic.MaxLabelsPerSubmission,
 		LabelWhitelist:           topic.LabelWhitelist,
 		LabelDefaultValue:        topic.LabelDefaultValue,
+		// Leave the per-topic inferer cap unset (0) so CreateNewTopic resolves it
+		// to the live global default. This keeps the mock valid in tests that
+		// lower the global max_top_inferers_to_reward below the module default.
+		MaxTopInferersToReward: 0,
 	}
 }
 
