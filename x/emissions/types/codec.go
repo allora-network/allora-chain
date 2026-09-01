@@ -9,6 +9,7 @@ import (
 var (
 	EpochStateKey = codec.NewInt32Key[EpochState]()
 	NonceKey      = codec.NewUint64Key[NonceV2]()
+	NonceValue    = codec.KeyToValueCodec(NonceKey)
 )
 
 // RegisterInterfaces registers the interfaces types with the interface registry.

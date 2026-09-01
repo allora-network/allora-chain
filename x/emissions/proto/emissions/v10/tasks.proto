@@ -10,5 +10,8 @@ message EpochTransitionTaskArgs {
   uint64 topic_id = 2;
 
   // The epoch identifier, aka nonce.
-  uint64 nonce = 1 [(gogoproto.nullable) = false, (gogoproto.customtype) = "NonceV2"];
+  uint64 nonce = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "NonceV2"
+  ];
 }
