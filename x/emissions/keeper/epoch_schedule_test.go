@@ -124,3 +124,80 @@ func (s *KeeperTestSuite) TestInactivateTopicCancelsPeriodicNewEpochTask() {
 	s.Require().True(found)
 	s.Require().Equal(firstNonce, lastNonce)
 }
+
+func (s *KeeperTestSuite) TestInactivateTopicCancelsInFlightEpochs() {
+	ctx := s.Ctx().WithBlockHeight(900)
+	topicId := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithGroundTruthLag(60), testutil.WithWorkerSubmissionWindow(10))
+
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WORKER_SUBMISSION, epoch.State)
+	legacy := epoch.LegacyNonce()
+
+	workerUnfulfilled, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(ctx, topicId, &legacy)
+	s.Require().NoError(err)
+	s.Require().True(workerUnfulfilled)
+
+	taskIDSuffix := fmt.Sprintf(":%d-%d", topicId, lastNonce)
+	_, err = s.SchedulerKeeper().GetTask(ctx, schedulertypes.TaskID(types.CloseEpochWorkerWindowTask+taskIDSuffix))
+	s.Require().NoError(err, "lifecycle close-worker task should be scheduled")
+
+	s.Require().NoError(s.TopicKeeper().InactivateTopic(ctx, topicId))
+
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().ErrorIs(err, collections.ErrNotFound, "in-flight epoch must be cancelled and removed")
+
+	workerUnfulfilled, err = s.NonceKeeper().IsWorkerNonceUnfulfilled(ctx, topicId, &legacy)
+	s.Require().NoError(err)
+	s.Require().False(workerUnfulfilled, "cancel must fulfill leftover worker nonce")
+
+	for _, taskType := range []string{
+		types.CloseEpochWorkerWindowTask,
+		types.OpenEpochReputerWindowTask,
+		types.CloseEpochReputerWindowTask,
+		types.CompleteEpochTask,
+	} {
+		_, err = s.SchedulerKeeper().GetTask(ctx, schedulertypes.TaskID(taskType+taskIDSuffix))
+		s.Require().ErrorIs(err, collections.ErrNotFound, "lifecycle task %s must be unscheduled", taskType)
+	}
+
+	periodicID := schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, topicId))
+	_, err = s.SchedulerKeeper().GetTask(ctx, periodicID)
+	s.Require().ErrorIs(err, collections.ErrNotFound)
+}
+
+func (s *KeeperTestSuite) TestInactivateTopicCancelsMultipleInFlightEpochs() {
+	ctx := s.Ctx().WithBlockHeight(1_000)
+	topicId := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithGroundTruthLag(60), testutil.WithWorkerSubmissionWindow(10))
+
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(ctx, topicId))
+	firstNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	// A second StartNewEpoch while the first is still open (overlapping windows).
+	ctx = ctx.WithBlockHeight(1_010)
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicId))
+	secondNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().NotEqual(firstNonce, secondNonce)
+
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, firstNonce)
+	s.Require().NoError(err)
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, secondNonce)
+	s.Require().NoError(err)
+
+	s.Require().NoError(s.TopicKeeper().InactivateTopic(ctx, topicId))
+
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, firstNonce)
+	s.Require().ErrorIs(err, collections.ErrNotFound)
+	_, err = s.EmissionsKeeper().GetEpoch(ctx, topicId, secondNonce)
+	s.Require().ErrorIs(err, collections.ErrNotFound)
+}
