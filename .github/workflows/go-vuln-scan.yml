@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   govulncheck:
-    uses: allora-network/ci-workflows-private/.github/workflows/go-vuln-scan.yml@185ec34dc707e6779bcc06fe2a592e07f29de8ed
+    uses: allora-network/ci-workflows-private/.github/workflows/go-vuln-scan.yml@v1
     with:
       # Matches go.mod's toolchain directive and the pin used by
       # go-hardened.yml / go-install-hardened.yml.
