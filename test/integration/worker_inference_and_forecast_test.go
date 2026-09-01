@@ -105,27 +105,16 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 	return nil
 }
 
-// Worker Bob inserts inference and forecast
-func InsertWorkerBundle(m testCommon.TestConfig, topic *types.Topic) (int64, error) {
+// Worker Bob inserts inference and forecast against a scheduler epoch's LegacyNonce
+// (StartBlockHeight), not Topic.EpochLastEnded + EpochLength.
+func InsertWorkerBundle(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) error {
 	ctx := context.Background()
 	currentBlock, err := m.Client.BlockHeight(ctx)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topic.Id})
-	if err != nil {
-		return 0, err
-	}
-	freshTopic := topicResponse.Topic
-
-	// Insert and fulfill nonces for the last two epochs
-	blockHeightEval := freshTopic.EpochLastEnded
-	m.T.Log(time.Now(), "Inserting worker bundle for blockHeightEval: ", blockHeightEval, "; Current block: ", currentBlock)
-	err = InsertSingleWorkerPayload(m, freshTopic, blockHeightEval)
-	if err != nil {
-		return 0, err
-	}
-	return blockHeightEval, nil
+	m.T.Log(time.Now(), "Inserting worker bundle for start_block_height: ", blockHeight, "; Current block: ", currentBlock)
+	return InsertSingleWorkerPayload(m, topic, blockHeight)
 }
 
 // register alice as a reputer in topic 1, then check success
@@ -252,59 +241,142 @@ func addGlobalActor(m testCommon.TestConfig, address string) {
 	require.NoError(m.T, err)
 }
 
+// Wall-clock epoch lifecycle on scheduler-managed topics:
+//   - Live worker/reputer nonces are Epoch.StartBlockHeight (LegacyNonce), not
+//     Topic.EpochLastEnded + EpochLength. EpochLength / WorkerSubmissionWindow /
+//     GroundTruthLag are seconds on this path.
+//   - Scheduler due-checks use BlockTime.After, so a task scheduled at T is not
+//     due at T; the next block after T must run BeginBlock.
+//   - CloseEpochReputerWindow and CompleteEpoch are both due at reputer CloseAt;
+//     type dependencies run close before complete. Cross-topic Complete vs
+//     StartNewEpoch is weight-arbitrated. Height-based fuzz waits mixed with
+//     second-valued windows will desync from the live epoch.
+const epochLifecycleTimeout = 2 * time.Minute
+
+func queryTopicEpochs(m testCommon.TestConfig, topicId uint64) ([]*types.Epoch, error) {
+	resp, err := m.Client.QueryEmissions().GetTopicEpochs(
+		context.Background(),
+		&types.GetTopicEpochsRequest{TopicId: topicId},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Epochs, nil
+}
+
+func findOpenWorkerEpoch(epochs []*types.Epoch) *types.Epoch {
+	now := time.Now()
+	var best *types.Epoch
+	for _, epoch := range epochs {
+		if epoch == nil || epoch.State != types.EpochState_WORKER_SUBMISSION || epoch.WorkerSubmissionWindow == nil {
+			continue
+		}
+		window := epoch.WorkerSubmissionWindow
+		if now.Before(window.OpenAt) || !now.Before(window.CloseAt.Add(-500*time.Millisecond)) {
+			continue
+		}
+		if best == nil || epoch.StartBlockHeight > best.StartBlockHeight {
+			best = epoch
+		}
+	}
+	return best
+}
+
+func waitForOpenWorkerEpoch(m testCommon.TestConfig, topicId uint64) (*types.Epoch, error) {
+	deadline := time.Now().Add(epochLifecycleTimeout)
+	for time.Now().Before(deadline) {
+		epochs, err := queryTopicEpochs(m, topicId)
+		if err != nil {
+			return nil, err
+		}
+		if epoch := findOpenWorkerEpoch(epochs); epoch != nil {
+			return epoch, nil
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return nil, fmt.Errorf("no open worker epoch for topic %d within %s", topicId, epochLifecycleTimeout)
+}
+
+func waitForEpochState(m testCommon.TestConfig, topicId uint64, startBlockHeight int64, want types.EpochState) (*types.Epoch, error) {
+	deadline := time.Now().Add(epochLifecycleTimeout)
+	for time.Now().Before(deadline) {
+		epochs, err := queryTopicEpochs(m, topicId)
+		if err != nil {
+			return nil, err
+		}
+		for _, epoch := range epochs {
+			if epoch != nil && epoch.StartBlockHeight == startBlockHeight && epoch.State == want {
+				return epoch, nil
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return nil, fmt.Errorf("epoch at start_block_height %d for topic %d never reached %s", startBlockHeight, topicId, want)
+}
+
+func waitForEpochAbsent(m testCommon.TestConfig, topicId uint64, startBlockHeight int64) error {
+	deadline := time.Now().Add(epochLifecycleTimeout)
+	for time.Now().Before(deadline) {
+		epochs, err := queryTopicEpochs(m, topicId)
+		if err != nil {
+			return err
+		}
+		found := false
+		for _, epoch := range epochs {
+			if epoch != nil && epoch.StartBlockHeight == startBlockHeight {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return fmt.Errorf("epoch at start_block_height %d for topic %d still in-flight after %s", startBlockHeight, topicId, epochLifecycleTimeout)
+}
+
 // Register two actors and check their registrations went through
 func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
-	ctx := context.Background()
 	m.T.Log(time.Now(), "--- START  Worker Inference, Forecast and Reputation test ---")
-	// Nonce: calculate from EpochLastRan + EpochLength
 	addGlobalActor(m, m.BobAddr)
 	addGlobalActor(m, m.AliceAddr)
 
-	topic, err := waitForNextChurningBlock(m, m.TopicID)
-	if err != nil {
-		require.NoError(m.T, err)
-	}
-	m.T.Log(time.Now(), "--- Insert Worker Bundle ---")
-	// Waiting for ground truth lag to pass
-	m.T.Log(time.Now(), "--- Waiting to Insert Worker Bundle ---")
-	blockHeightNonce, err := RunWithRetry(m, 3, 2*time.Second, func() (int64, error) {
-		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topic.Id})
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(
+		context.Background(),
+		&types.GetTopicRequest{TopicId: m.TopicID},
+	)
+	require.NoError(m.T, err)
+	topic := topicResponse.Topic
+
+	m.T.Log(time.Now(), "--- Waiting for open worker epoch ---")
+	var submittedHeight int64
+	submittedHeight, err = RunWithRetry(m, 5, time.Second, func() (int64, error) {
+		epoch, err := waitForOpenWorkerEpoch(m, topic.Id)
 		if err != nil {
 			return 0, err
 		}
-		topic := topicResponse.Topic
-		_, err = InsertWorkerBundle(m, topic) // Assuming InsertReputerBundle returns (int, error)
-		if err != nil {
+		m.T.Log(time.Now(), "--- Insert Worker Bundle ---")
+		if err := InsertWorkerBundle(m, topic, epoch.StartBlockHeight); err != nil {
 			return 0, err
 		}
-		return topic.EpochLastEnded, err
+		return epoch.StartBlockHeight, nil
 	})
-	if err != nil {
-		m.T.Log(time.Now(), "--- Failed inserting worker payload ---")
-		require.NoError(m.T, err)
-	}
-	m.T.Log(time.Now(), fmt.Sprintf("--- Waiting for block %d ---", blockHeightNonce+topic.GroundTruthLag))
-	err = m.Client.WaitForBlockHeight(ctx, blockHeightNonce+topic.GroundTruthLag)
-	if err != nil {
-		m.T.Log(time.Now(), "--- Failed waiting for ground truth lag ---")
-		require.NoError(m.T, err)
-	}
+	require.NoError(m.T, err, "inserting worker payload")
+
+	m.T.Log(time.Now(), "--- Waiting for reputer submission window ---")
+	_, err = waitForEpochState(m, topic.Id, submittedHeight, types.EpochState_REPUTER_SUBMISSION)
+	require.NoError(m.T, err, "waiting for reputer window")
 
 	m.T.Log(time.Now(), "--- Insert Reputer Bundle ---")
-	err = InsertReputerBundle(m, topic, blockHeightNonce)
-	if err != nil {
-		m.T.Log(time.Now(), "--- Failed inserting reputer payload ---")
-		require.NoError(m.T, err)
-	}
+	err = InsertReputerBundle(m, topic, submittedHeight)
+	require.NoError(m.T, err, "inserting reputer payload")
 
-	m.T.Log(time.Now(), fmt.Sprintf("--- Waiting for block %d ---", blockHeightNonce+topic.GroundTruthLag+topic.EpochLength))
-	err = m.Client.WaitForBlockHeight(ctx, blockHeightNonce+topic.GroundTruthLag+topic.EpochLength)
-	if err != nil {
-		m.T.Log(time.Now(), "--- Failed waiting for epoch length ---")
-		require.NoError(m.T, err)
-	}
+	m.T.Log(time.Now(), "--- Waiting for epoch completion ---")
+	err = waitForEpochAbsent(m, topic.Id, submittedHeight)
+	require.NoError(m.T, err, "waiting for completed epoch to leave store")
 
-	ValidateGetNetworkLossBundle(m, topic.Id, blockHeightNonce)
+	ValidateGetNetworkLossBundle(m, topic.Id, submittedHeight)
 	m.T.Log(time.Now(), "--- END  Worker Inference, Forecast and Reputation test ---")
 }
 

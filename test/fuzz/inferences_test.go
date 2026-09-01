@@ -46,6 +46,9 @@ func doInferenceAndReputation(
 	}
 	topic := resp.Topic
 	iterLog(m.T, iteration, "Inference topic epoch last ended ", topic.EpochLastEnded, " epoch length ", topic.EpochLength)
+	// Height-based nonce (EpochLastEnded+EpochLength) is the unmanaged EndBlocker
+	// path. Scheduler-managed topics use GetTopicEpochs + StartBlockHeight, with
+	// EpochLength as seconds; mixing the two is a time/task-order flake source.
 	workerNonce := topic.EpochLastEnded + topic.EpochLength
 	blockHeightNow, err := m.Client.BlockHeight(ctx)
 	failIfOnErr(m.T, data.failOnErr, err)
