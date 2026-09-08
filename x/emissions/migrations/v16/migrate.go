@@ -44,10 +44,10 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 // MigrateParams backfills Params.MinTopInferersToReward, which an existing chain
 // decodes as zero. Zero means "no floor", so this installs one where there was
-// none; it changes no admission outcome at upgrade time only because
-// MigrateTopics has already raised every topic cap to the ceiling. A non-zero
-// value is left alone: an unset field is indistinguishable from a deliberate
-// zero, so only the zero case is backfilled.
+// none. It changes no admission outcome at upgrade time because MigrateTopics
+// runs first and has already set every topic cap to the ceiling, which is at or
+// above this floor. A non-zero value is left alone: an unset field is
+// indistinguishable from a deliberate zero, so only the zero case is backfilled.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
@@ -129,16 +129,13 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 		}
 		topic.MaxTopInferersToReward = backfillValue
 
-		// No per-topic re-validation here: the backfilled cap equals the
-		// current global Params.MaxTopInferersToReward, which is exactly the
-		// value Topic.Validate treats as the ceiling, so the new field is
-		// valid by construction (>= 1 and <= the global) regardless of any
-		// other field on the topic. Running full Topic.Validate would also
-		// re-check unrelated, param-dependent fields (e.g. ground-truth-lag
-		// vs epoch-length bounds) that a pre-existing dormant topic could
-		// violate after some other param was tightened over time; halting the
-		// whole chain upgrade for a reason unrelated to this backfill is
-		// avoided by deliberately skipping that broader check.
+		// No per-topic re-validation here: Topic.Validate does not bound this
+		// field, so the backfill cannot fail on it. Running full Topic.Validate
+		// would also re-check unrelated, param-dependent fields (e.g.
+		// ground-truth-lag vs epoch-length bounds) that a pre-existing dormant
+		// topic could violate after some other param was tightened over time;
+		// halting the whole chain upgrade for a reason unrelated to this
+		// backfill is avoided by skipping that broader check.
 
 		updates = append(updates, kv{
 			key:   append([]byte(nil), iterator.Key()...),

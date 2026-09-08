@@ -706,25 +706,25 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 	s.Require().True(genesisState2.LastMedianInferences[0].Dec.Equal(alloraMath.MustNewDecFromString("2.5")))
 }
 
-// TestInitGenesisPreservesZeroMaxTopInferersToReward asserts that an unset (0)
-// per-topic cap is stored verbatim; admission resolves it to the global.
-func (s *KeeperTestSuite) TestInitGenesisPreservesZeroMaxTopInferersToReward() {
+// TestInitGenesisRoundTripsMaxTopInferersToReward asserts that an exported cap
+// is imported unchanged.
+func (s *KeeperTestSuite) TestInitGenesisRoundTripsMaxTopInferersToReward() {
 	ctx := s.Ctx()
 	topic := s.MockTopic()
 	topic.Id = 1
+	topic.MaxTopInferersToReward = 7
 	s.Require().NoError(s.TopicKeeper().SetTopic(ctx, 1, topic))
 
 	genesisState, err := s.EmissionsKeeper().ExportGenesis(ctx)
 	s.Require().NoError(err)
 	s.Require().NotEmpty(genesisState.Topics)
-	genesisState.Topics[0].Topic.MaxTopInferersToReward = 0
 
 	fresh := s.newFreshGenesisSuite()
 	s.Require().NoError(fresh.EmissionsKeeper().InitGenesis(fresh.Ctx(), genesisState))
 
 	got, err := fresh.TopicKeeper().GetTopic(fresh.Ctx(), 1)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(0), got.MaxTopInferersToReward)
+	s.Require().Equal(uint64(7), got.MaxTopInferersToReward)
 }
 
 // TestInitGenesisPreservesMaxTopInferersBelowGlobalMin asserts that a topic cap
