@@ -21,7 +21,7 @@ Short, high-signal guidance for working in the `allora-chain` repo. Keep context
 ## Changes That Require Extra Steps
 - Proto/state layout changes: add module migration + tests; bump `ConsensusVersion` and wire upgrades if needed.
 - New module/store keys: update app wiring for store upgrades.
-- Generated files (`*.pb.go`, `*.pulsar.go`): never edit by hand; run codegen.
+- Generated files (`*.pb.go`, `*.pulsar.go`): never edit by hand; run codegen. Never invoke `buf generate`/`protoc-gen-*` directly — local plugin versions drift from what's pinned and produce spurious diffs across unrelated files. Regenerate with `make proto-gen` (or `proto-all` for format+lint+gen) from the module directory (`x/emissions`, `x/mint`, `x/scheduler` each have their own `Makefile` with identical targets). This runs inside Docker (`ghcr.io/cosmos/proto-builder`, pinned version) via `scripts/protocgen.sh`, which also preserves hand-written `codec.go` files under `api/<module>/v*/` and cleans up its own scratch directories — a manual `buf` invocation does none of that. If Docker isn't running, stop and tell the user rather than falling back to local binaries.
 - See `CONTRIBUTING.md` for more details on migrations, protos, upgrades, and complex changes.
 
 ## Minimal Context Strategy
@@ -67,3 +67,5 @@ This applies to comments you **copy, move, or inherit** as well — e.g. while r
 - Good: `// guards against silent value loss on a second run: the old scalar field was reserved`
 
 Refer to other code by its symbol (function/type name) — that lives in the repo and stays meaningful — rather than by ticket or PR.
+
+Comments describe the code that **stays**, never the code that was removed. When a concept is dropped (a sentinel value, a fallback, a resolution step), delete every mention of it — do not write "X is not a sentinel" or "no value means default"; naming a dead concept keeps it alive for the reader. Do not contrast with other fields, files, or versions ("this matches Y", "unlike genesis") unless the contrast is required to understand the code. Keep comments short; when in doubt, delete — a missing comment is cheaper than a confusing one.

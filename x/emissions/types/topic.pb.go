@@ -124,10 +124,9 @@ type Topic struct {
 	LabelCaseSensitive bool `protobuf:"varint,30,opt,name=label_case_sensitive,json=labelCaseSensitive,proto3" json:"label_case_sensitive,omitempty"`
 	// Per-topic cap on inferers admitted to the active set, enforced at
 	// worker-payload insert: an inferer is admitted while the set is below the
-	// cap, otherwise it must out-score the lowest member. Writes through
-	// CreateNewTopic/UpdateTopic store a concrete value (a requested 0 resolves to
-	// the global max_top_inferers_to_reward), and migration backfills legacy
-	// topics; a genesis-supplied 0 is stored as-is and resolves at admission.
+	// cap, otherwise it must out-score the lowest member. CreateNewTopic and
+	// UpdateTopic require it to be within the global range; admission clamps the
+	// stored value into the live global range on every payload.
 	MaxTopInferersToReward uint64 `protobuf:"varint,31,opt,name=max_top_inferers_to_reward,json=maxTopInferersToReward,proto3" json:"max_top_inferers_to_reward,omitempty"`
 }
 
