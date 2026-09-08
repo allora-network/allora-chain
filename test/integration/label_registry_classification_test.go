@@ -36,8 +36,10 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 
 	addTopicCreator(m, m.AliceAddr)
 
+	maxTopInferersToReward := GetEmissionsParams(m).MaxTopInferersToReward
 	baseReq := func() *emissionstypes.CreateNewTopicRequest {
 		return &emissionstypes.CreateNewTopicRequest{
+			MaxTopInferersToReward:   maxTopInferersToReward,
 			Creator:                  m.AliceAddr,
 			Metadata:                 "label registry integration",
 			LossMethod:               "mse",
@@ -128,6 +130,7 @@ func LabelRegistryClassificationChecks(m testCommon.TestConfig) {
 		MeritSortitionAlpha:    stored.Topic.MeritSortitionAlpha,
 		PNorm:                  stored.Topic.PNorm,
 		CNorm:                  stored.Topic.CNorm,
+		MaxTopInferersToReward: stored.Topic.MaxTopInferersToReward,
 		MaxLabelsPerSubmission: 5,
 		LabelWhitelist:         stored.Topic.LabelWhitelist,
 		LabelDefaultValue:      alloraMath.ZeroDec(),

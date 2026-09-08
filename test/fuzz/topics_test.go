@@ -22,8 +22,16 @@ func createTopic(
 	iteration int,
 ) (success bool) {
 	iterLog(m.T, iteration, actor, "creating new topic")
+	ctx := context.Background()
+	paramsResp, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
+	failIfOnErr(m.T, data.failOnErr, err)
+	if err != nil {
+		iterFailLog(m.T, iteration, actor, "failed to create topic", "get params error", err)
+		return false
+	}
+
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   paramsResp.Params.MaxTopInferersToReward,
 		Creator:                  actor.addr,
 		Metadata:                 fmt.Sprintf("Created topic iteration %d", iteration),
 		LossMethod:               "mse",
@@ -51,7 +59,6 @@ func createTopic(
 		LabelCaseSensitive:       true,
 	}
 
-	ctx := context.Background()
 	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, createTopicRequest)
 	failIfOnErr(m.T, data.failOnErr, err)
 	if err != nil {
