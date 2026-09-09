@@ -31,12 +31,6 @@ func (k *Keeper) SetEpochCloseHandlers(closeWorker, closeReputer CloseNonceFn) {
 	k.epochCloseHandlers.closeReputer = closeReputer
 }
 
-// sdkCtxAtHeight returns a context with BlockHeight overridden so height-gated
-// legacy close APIs can run when the scheduler fires on wall-clock time.
-func sdkCtxAtHeight(ctx context.Context, height int64) sdk.Context {
-	return sdk.UnwrapSDKContext(ctx).WithBlockHeight(height)
-}
-
 func (k *Keeper) openWorkerWindow(ctx context.Context, epoch types.Epoch) error {
 	topic, err := k.topicKeeper.GetTopic(ctx, epoch.TopicId)
 	if err != nil {
@@ -64,12 +58,7 @@ func (k *Keeper) closeWorkerWindow(ctx context.Context, epoch types.Epoch) error
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	closeHeight := legacyNonce.BlockHeight + topic.WorkerSubmissionWindow
-	if closeHeight <= legacyNonce.BlockHeight {
-		closeHeight = legacyNonce.BlockHeight + 1
-	}
-
-	err = k.epochCloseHandlers.closeWorker(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
+	err = k.epochCloseHandlers.closeWorker(sdk.UnwrapSDKContext(ctx), topic, legacyNonce)
 	if err != nil && !errors.Is(err, types.ErrNoQualifiedInferers) {
 		return errorsmod.Wrap(err, "close worker window")
 	}
@@ -106,16 +95,7 @@ func (k *Keeper) closeReputerWindow(ctx context.Context, epoch types.Epoch) erro
 	}
 
 	legacyNonce := epoch.LegacyNonce()
-	extraLag := types.TopicExtraLag(topic)
-	closeHeight := legacyNonce.BlockHeight + topic.GroundTruthLag + extraLag
-	if topic.EpochLength > 0 {
-		closeHeight += topic.EpochLength
-	}
-	if closeHeight < legacyNonce.BlockHeight+topic.GroundTruthLag {
-		closeHeight = legacyNonce.BlockHeight + topic.GroundTruthLag
-	}
-
-	err = k.epochCloseHandlers.closeReputer(sdkCtxAtHeight(ctx, closeHeight), topic, legacyNonce)
+	err = k.epochCloseHandlers.closeReputer(sdk.UnwrapSDKContext(ctx), topic, legacyNonce)
 	if err != nil {
 		// Soft-fail empty / already-closed sets so the FSM can still complete during
 		// the parallel-run period when submissions may be absent.

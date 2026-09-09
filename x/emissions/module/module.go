@@ -31,6 +31,7 @@ import (
 	migrationV14 "github.com/allora-network/allora-chain/x/emissions/migrations/v14"
 	migrationV15 "github.com/allora-network/allora-chain/x/emissions/migrations/v15"
 	migrationV16 "github.com/allora-network/allora-chain/x/emissions/migrations/v16"
+	migrationV17 "github.com/allora-network/allora-chain/x/emissions/migrations/v17"
 	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
 	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
@@ -50,7 +51,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 16
+const ConsensusVersion = 17
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -182,6 +183,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV16.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 15 to 16: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 16, func(ctx sdk.Context) error {
+		return migrationV17.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 16 to 17: %v", types.ModuleName, err))
 	}
 }
 
