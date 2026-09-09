@@ -15,14 +15,24 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 		ctx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 		return err
 	}
-	extraLag := topic.GroundTruthLag % topic.EpochLength
-	if extraLag != 0 {
-		extraLag = topic.EpochLength - extraLag
-	}
 	for _, nonce := range nonces.Nonces {
-		if block >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag && block <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+extraLag {
-			windowEndBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
-			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEndBlock)
+		// Must match keeper.ReputerSubmissionWindowBounds, the single source of
+		// truth for when a submission is actually accepted. This used to be its
+		// own formula ending at +extraLag instead of the window's real start
+		// (+extraLag was folded into the acceptance lower bound to close a
+		// permanent-trap bug -- see CHANGELOG). On an uninterrupted epoch grid the
+		// two formulas coincide, but a topic that was inactivated and reactivated
+		// gets a new churn schedule with no relation to an existing nonce's grid
+		// (topic_activation.go), so a reactivated topic could hit a block inside
+		// the old range and announce the window open while it was still rejecting
+		// submissions until the true start.
+		windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
+		if err != nil {
+			ctx.Logger().Warn("Error computing reputer submission window bounds", "error", err)
+			continue
+		}
+		if block == windowStart {
+			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEnd)
 		}
 		// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
 		// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.

@@ -69,14 +69,18 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
-	withinWindow, err := keeper.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	// Take the bounds once and compare, rather than asking the predicate and then
+	// recomputing the bounds for the message: the previous message named neither
+	// the true start (it omitted extraLag) nor the true end (it used EpochLength*2).
+	windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
 	if err != nil {
 		return nil, err
-	} else if !withinWindow {
+	}
+	if blockHeight < windowStart || blockHeight > windowEnd {
 		return nil, errorsmod.Wrapf(
 			types.ErrReputerNonceWindowNotAvailable,
 			"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",
-			topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength*2,
+			topicId, blockHeight, windowStart, windowEnd,
 		)
 	}
 

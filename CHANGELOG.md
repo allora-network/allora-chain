@@ -65,6 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+### Security
+
+* The reputer submission window now opens at the end of the epoch in which ground truth is revealed (`nonce + ground_truth_lag + extraLag`) rather than at the revelation itself. Previously, on a topic whose `ground_truth_lag` was not a whole multiple of `epoch_length`, a nonce's window opened `extraLag` blocks before the *previous* nonce closed on the epoch grid. A reputer submitting in that gap stored a bundle for the newer nonce, and because reputer loss bundles are keyed by `(topic, reputer)` with no nonce, closing the older nonce read that bundle, discarded every report on the block-height check and failed with `Sum weight for loss is 0`. The topic then produced no further network losses and, since `SetTopicRewardNonce` is only reached on success, paid no rewards — permanently, with every transaction still reporting success. Topics whose lag divides evenly were unaffected (`extraLag` is zero for them). **This changes transaction acceptance and therefore requires a coordinated upgrade height.** No store migration; `ConsensusVersion` is unchanged.
+
 ### Added
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward` (additive field on `emissions.v10.Topic`): the cap on inferers admitted per topic is now topic-level, set at create/`UpdateTopic` (`0` uses the global default; guarded while a worker submission window is open). Stored caps are kept verbatim, and admission resolves them against the global bounds, so the globals stay live. The emissions v16 migration backfills existing topics, so behavior is unchanged across the `v0.18.0` upgrade.

@@ -27,22 +27,29 @@ func BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, nonce types.Non
 // Return true if the nonce is within the reputer submission window for the topic
 // Inclusive of the start block height and of the end block height
 func BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.ReputerRequestNonce, blockHeight int64) (bool, error) {
-	// extraLag is the difference between the point at which the gt_lag is revealed and the end of epoch.
+	lowerBound, upperBound, err := ReputerSubmissionWindowBounds(topic, nonce)
+	if err != nil {
+		return false, err
+	}
+	return lowerBound <= blockHeight && blockHeight <= upperBound, nil
+}
+
+// ReputerSubmissionWindowBounds returns the inclusive block range in which a
+// reputer payload for this nonce is accepted. Callers that need to report the
+// window (error messages, queries) must use this rather than recomputing it:
+// the bounds were previously spelled out in four places, and the one that drifted
+// is what allowed consecutive windows to overlap.
+func ReputerSubmissionWindowBounds(topic types.Topic, nonce types.ReputerRequestNonce) (int64, int64, error) {
 	extraLag := topic.GroundTruthLag % topic.EpochLength
 	if extraLag != 0 {
 		extraLag = topic.EpochLength - extraLag
 	}
-	// The block at which ground truth is revealed
 	revealedGroundTruthBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
-
-	// Allow 1 EpochLength + any extra lag as defined above.
 	if revealedGroundTruthBlock > math.MaxInt64-(extraLag+topic.EpochLength) {
-		return false, errorsmod.Wrapf(types.ErrInvalidValue,
-			"nonce block height %d is too high, adding window %d would overflow",
-			nonce.ReputerNonce.BlockHeight,
-			topic.WorkerSubmissionWindow)
+		return 0, 0, errorsmod.Wrapf(types.ErrInvalidValue,
+			"nonce block height %d is too high, adding the submission window would overflow",
+			nonce.ReputerNonce.BlockHeight)
 	}
-	lowerBound := revealedGroundTruthBlock
-	upperBound := revealedGroundTruthBlock + extraLag + topic.EpochLength
-	return lowerBound <= blockHeight && blockHeight <= upperBound, nil
+	lowerBound := revealedGroundTruthBlock + extraLag
+	return lowerBound, lowerBound + topic.EpochLength, nil
 }
