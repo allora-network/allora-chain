@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -185,9 +186,38 @@ func (k *Keeper) reconstructTopicInFlightEpochs(
 		if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
 			return err
 		}
+		// Past the worker window the height path would already have closed this
+		// nonce. Close it now so later reputer close is not blocked by an
+		// unfulfilled leftover worker nonce.
+		if state != types.EpochState_WORKER_SUBMISSION {
+			if err := k.closeMigratedWorkerNonceIfUnfulfilled(ctx, topic, legacyHeight); err != nil {
+				return err
+			}
+		}
 		if err := k.scheduleRemainingEpochLifecycle(ctx, epoch); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (k *Keeper) closeMigratedWorkerNonceIfUnfulfilled(
+	ctx context.Context,
+	topic types.Topic,
+	legacyHeight int64,
+) error {
+	legacyNonce := types.Nonce{BlockHeight: legacyHeight}
+	unfulfilled, err := k.nonceKeeper.IsWorkerNonceUnfulfilled(ctx, topic.Id, &legacyNonce)
+	if err != nil || !unfulfilled {
+		return err
+	}
+	if k.epochCloseHandlers == nil || k.epochCloseHandlers.closeWorker == nil {
+		_, err := k.nonceKeeper.FulfillWorkerNonce(ctx, topic.Id, &legacyNonce)
+		return err
+	}
+	err = k.epochCloseHandlers.closeWorker(sdk.UnwrapSDKContext(ctx), topic, legacyNonce)
+	if err != nil && !errors.Is(err, types.ErrNoQualifiedInferers) && !errors.Is(err, types.ErrUnfulfilledNonceNotFound) {
+		return errorsmod.Wrapf(err, "close leftover worker nonce %d for topic %d", legacyHeight, topic.Id)
 	}
 	return nil
 }
