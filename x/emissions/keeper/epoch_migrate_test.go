@@ -243,3 +243,100 @@ func (s *KeeperTestSuite) TestMigrateToSchedulerEpochsInactiveTopicConvertsButDo
 	_, err = s.SchedulerKeeper().GetTask(ctx, periodicID)
 	s.Require().ErrorIs(err, collections.ErrNotFound)
 }
+
+// After cutover, leftover nonces keep 6s-scaled remaining windows while the
+// periodic StartNewEpoch uses converted EpochLength seconds. A long-GTL leftover
+// is therefore still in flight when the first post-migration epoch opens.
+func (s *KeeperTestSuite) TestMigrateThenPeriodicStartOverlapsReconstructedEpoch() {
+	const blockTimeSecs int64 = 6
+	const epochLengthBlocks int64 = 20
+	const gtlBlocks int64 = 200
+	const wswBlocks int64 = 10
+	legacyHeight := int64(1_000)
+	currentHeight := int64(1_050)
+	migrateAt := time.Date(2026, 9, 9, 12, 0, 0, 0, time.UTC)
+
+	s.WithBlockHeight(currentHeight)
+	s.WithBlockTime(migrateAt)
+	topicID := s.CreateTopic(
+		testutil.WithEpochLength(epochLengthBlocks),
+		testutil.WithGroundTruthLag(gtlBlocks),
+		testutil.WithWorkerSubmissionWindow(wswBlocks),
+	)
+	s.markTopicActiveWithoutScheduler(s.Ctx(), topicID)
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topicID, &types.Nonce{BlockHeight: legacyHeight}))
+
+	s.Require().NoError(s.EmissionsKeeper().MigrateToSchedulerEpochsWithBlockTime(s.Ctx(), blockTimeSecs))
+
+	oldNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	oldEpoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, oldNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, oldEpoch.State)
+	s.Require().Equal(legacyHeight, oldEpoch.StartBlockHeight)
+	s.Require().True(oldEpoch.ReputerSubmissionWindow.OpenAt.After(migrateAt))
+	workerStillOpen, err := s.NonceKeeper().IsWorkerNonceUnfulfilled(s.Ctx(), topicID, &types.Nonce{BlockHeight: legacyHeight})
+	s.Require().NoError(err)
+	s.Require().False(workerStillOpen, "leftover past WSW must have its worker nonce closed at reconstruct")
+
+	topic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicID)
+	s.Require().NoError(err)
+	s.WithBlockHeight(currentHeight + 1)
+	s.WithBlockTime(migrateAt.Add(time.Duration(topic.EpochLength)*time.Second + time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+
+	newNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(s.Ctx(), topicID)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Greater(newNonce, oldNonce)
+
+	// Isolate the leftover vs this first post-migration epoch. Further periodics
+	// would also be valid overlap; they are not required to prove the gear change.
+	periodicID := schedulertypes.TaskID(fmt.Sprintf("%s:%d", types.StartNewEpochTask, topicID))
+	s.Require().NoError(s.SchedulerKeeper().CancelTask(s.Ctx(), periodicID))
+
+	oldEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, oldNonce)
+	s.Require().NoError(err, "reconstructed epoch must stay live after the first post-migration start")
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, oldEpoch.State)
+	s.Require().Equal(legacyHeight, oldEpoch.StartBlockHeight)
+
+	newEpoch, err := s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, newNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WORKER_SUBMISSION, newEpoch.State)
+	s.Require().Equal(currentHeight+1, newEpoch.StartBlockHeight)
+	s.Require().True(newEpoch.WorkerSubmissionWindow.CloseAt.Before(oldEpoch.ReputerSubmissionWindow.OpenAt),
+		"new worker window must close while the translated leftover is still waiting on GTL")
+
+	found, err = s.EmissionsKeeper().CheckWorkerSubmissionWindow(s.Ctx(), topicID, newEpoch.LegacyNonce())
+	s.Require().NoError(err)
+	s.Require().True(found)
+	found, err = s.EmissionsKeeper().CheckWorkerSubmissionWindow(s.Ctx(), topicID, oldEpoch.LegacyNonce())
+	s.Require().Error(err, "leftover must not accept worker payloads after its translated window")
+	s.Require().True(found)
+
+	s.WithBlockTime(newEpoch.WorkerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+	newEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, newNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, newEpoch.State)
+	_, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, oldNonce)
+	s.Require().NoError(err, "closing the new worker window must not drop the leftover epoch")
+
+	s.WithBlockTime(oldEpoch.ReputerSubmissionWindow.OpenAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+	oldEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, oldNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_REPUTER_SUBMISSION, oldEpoch.State)
+	newEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, newNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, newEpoch.State)
+
+	s.WithBlockTime(oldEpoch.ReputerSubmissionWindow.CloseAt.Add(time.Nanosecond))
+	s.Require().NoError(s.SchedulerKeeper().BeginBlock(s.Ctx()))
+	_, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, oldNonce)
+	s.Require().ErrorIs(err, collections.ErrNotFound, "translated leftover should complete on its own remaining window")
+	newEpoch, err = s.EmissionsKeeper().GetEpoch(s.Ctx(), topicID, newNonce)
+	s.Require().NoError(err, "newer epoch must still be in-flight after the leftover completes")
+	s.Require().Equal(types.EpochState_WAITING_GROUND_TRUTH, newEpoch.State)
+}
