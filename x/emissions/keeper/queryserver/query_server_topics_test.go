@@ -488,11 +488,7 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	s.Require().NoError(err)
 	s.Require().True(isActive)
 
-	// Create multiple reputer nonces to test "latest active nonce" selection.
-	// The window opens at the end of the epoch in which ground truth is revealed,
-	// so it is [nonce+GroundTruthLag+extraLag, +EpochLength] -- see
-	// keeper.ReputerSubmissionWindowBounds. Opening at the reveal itself would let
-	// a nonce's window start before the previous nonce closes.
+	// Create overlapping windows to verify latest-active-nonce selection.
 	// extraLag = EpochLength - (GroundTruthLag % EpochLength) = 20 - (30 % 20) = 10
 
 	reputerNonce1 := &types.Nonce{BlockHeight: 0}  // Window [40, 60] (0+30+10, +20)
@@ -506,9 +502,7 @@ func (s *QueryServerTestSuite) TestGetReputerSubmissionWindowStatus() {
 	err = s.NonceKeeper().AddReputerNonce(ctx, topicId, reputerNonce3)
 	s.Require().NoError(err)
 
-	// Set current block to be within multiple reputer windows. 50 keeps two
-	// nonces active (nonce1 and nonce2) with a third still in the future, so this
-	// still exercises "latest of several active" rather than a single match.
+	// Block 50 is inside the first two windows and before the third.
 	currentBlock = int64(50) // Within windows [40,60] and [45,65]
 	s.WithBlockHeight(currentBlock)
 	ctx = s.Ctx()

@@ -164,3 +164,34 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_EmptyBlockLis
 	s.Require().NoError(err)
 	s.Require().Empty(retrievedTopics.TopicIds, "Block should still have no active topics")
 }
+
+func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEvent() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topic := s.MockTopic()
+	topic.Id = 9_000_004
+	topic.EpochLength = 100
+	topic.GroundTruthLag = 130
+	nonce := types.Nonce{BlockHeight: 1000}
+
+	err := k.SetTopic(ctx, topic.Id, topic)
+	s.Require().NoError(err)
+	err = s.NonceKeeper().AddReputerNonce(ctx, topic.Id, &nonce)
+	s.Require().NoError(err)
+
+	s.WithBlockHeight(1250)
+	eventStart := len(s.Ctx().EventManager().Events())
+	err = k.ActivateTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+
+	openedEvents := 0
+	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
+		if event.Type == "emissions.v10.EventReputerSubmissionWindowOpened" {
+			openedEvents++
+		}
+	}
+	s.Require().Equal(1, openedEvents)
+
+	err = k.InactivateTopic(s.Ctx(), topic.Id)
+	s.Require().NoError(err)
+}

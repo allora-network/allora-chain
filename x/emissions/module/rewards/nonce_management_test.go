@@ -2,11 +2,77 @@ package rewards_test
 
 import (
 	"cosmossdk.io/collections"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+func countReputerSubmissionWindowOpenedEvents(s *RewardsTestSuite, eventStart int) int {
+	count := 0
+	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
+		if event.Type == "emissions.v10.EventReputerSubmissionWindowOpened" {
+			count++
+		}
+	}
+	return count
+}
+
+func (s *RewardsTestSuite) TestUpdateReputerNonceWaitsUntilWindowEnd() {
+	topic := s.MockTopic()
+	topic.Id = 9_000_001
+	topic.EpochLength = 100
+	topic.GroundTruthLag = 130
+	nonce := types.Nonce{BlockHeight: 1000}
+
+	err := s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &nonce)
+	s.Require().NoError(err)
+
+	oldCloseBlock := nonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
+	s.WithBlockHeight(oldCloseBlock)
+	err = rewards.UpdateReputerNonce(s.Ctx(), *s.EmissionsKeeper(), topic, oldCloseBlock)
+	s.Require().NoError(err)
+
+	unfulfilled, err := s.NonceKeeper().IsReputerNonceUnfulfilled(s.Ctx(), topic.Id, &nonce)
+	s.Require().NoError(err)
+	s.Require().True(unfulfilled)
+}
+
+func (s *RewardsTestSuite) TestUpdateReputerNonceReturnsCloseError() {
+	topic := s.MockTopic()
+	topic.Id = 9_000_002
+	topic.EpochLength = 100
+	topic.GroundTruthLag = 100
+	nonce := types.Nonce{BlockHeight: 1000}
+
+	err := s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &nonce)
+	s.Require().NoError(err)
+
+	windowEnd := nonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
+	s.WithBlockHeight(windowEnd)
+	err = rewards.UpdateReputerNonce(s.Ctx(), *s.EmissionsKeeper(), topic, windowEnd)
+	s.Require().ErrorIs(err, sdkerrors.ErrNotFound)
+}
+
+func (s *RewardsTestSuite) TestUpdateReputerNonceEmitsMissedOpenEventWithinWindow() {
+	topic := s.MockTopic()
+	topic.Id = 9_000_003
+	topic.EpochLength = 100
+	topic.GroundTruthLag = 130
+	nonce := types.Nonce{BlockHeight: 1000}
+
+	err := s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &nonce)
+	s.Require().NoError(err)
+
+	eventStart := len(s.Ctx().EventManager().Events())
+	block := int64(1250)
+	s.WithBlockHeight(block)
+	err = rewards.UpdateReputerNonce(s.Ctx(), *s.EmissionsKeeper(), topic, block)
+	s.Require().NoError(err)
+	s.Require().Equal(1, countReputerSubmissionWindowOpenedEvents(s, eventStart))
+}
 
 // Test defer execution of CloseReputerNonce
 func (s *RewardsTestSuite) TestCloseReputerNonceTest_DeferExecWhenError() {
