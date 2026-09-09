@@ -69,9 +69,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
-	// Take the bounds once and compare, rather than asking the predicate and then
-	// recomputing the bounds for the message: the previous message named neither
-	// the true start (it omitted extraLag) nor the true end (it used EpochLength*2).
+	// Use the same bounds for admission and the rejection message.
 	windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
 	if err != nil {
 		return nil, err

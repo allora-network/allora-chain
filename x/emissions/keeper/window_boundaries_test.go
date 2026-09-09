@@ -130,13 +130,6 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 			description:      "Block is exactly when the window opens: revealedGroundTruthBlock + extraLag",
 		},
 		{
-			// Regression: this block sits inside the old window
-			// (revealedGroundTruthBlock = 1130) but before the next epoch boundary
-			// at 1200. Accepting a submission here let a reputer file for this nonce
-			// while the PREVIOUS nonce was still open, and because lossBundles is
-			// keyed by (topic, reputer) only, the previous nonce's close then read
-			// this bundle, discarded every report on the height check and failed
-			// permanently with "Sum weight for loss is 0".
 			name: "GTLag not divisible by EpochLength - reveal block is not yet the window",
 			topic: types.Topic{ //nolint:exhaustruct
 				EpochLength:    100,
@@ -151,18 +144,6 @@ func (s *KeeperTestSuite) TestBlockWithinReputerSubmissionWindowOfNonce() {
 			description:      "Ground truth is revealed at 1130 but the window only opens at the epoch boundary 1200",
 		},
 		{
-			// The window must not open before the previous nonce closes. The previous
-			// nonce (1000-100=900) closes at 900+130+70+100 = 1200, exactly where
-			// this nonce's window opens -- the same boundary convention topics with
-			// an evenly-dividing GroundTruthLag already follow.
-			//
-			// Not literally zero overlap: DeliverTx runs before EndBlock, so at the
-			// shared block 1200 the next nonce is already accepted while the previous
-			// one closes. That single-block exposure is pre-existing and identical on
-			// evenly-dividing topics, so this restores the existing convention rather
-			// than eliminating the residual. Closing it needs either a nonce-aware
-			// reset in CloseReputerNonce or a +1 that shifts every topic's boundary,
-			// both of which deserve their own change.
 			name: "GTLag not divisible by EpochLength - window opens exactly when the previous nonce closes",
 			topic: types.Topic{ //nolint:exhaustruct
 				EpochLength:    100,
@@ -481,10 +462,7 @@ func (s *KeeperTestSuite) TestBlockWithinWorkerSubmissionWindowOfNonce() {
 	}
 }
 
-// ReputerSubmissionWindowBounds is the single source of truth for the reputer
-// window -- the predicate, the msg server's error message and the topic query
-// server all derive from it -- so its arithmetic and its overflow guard need
-// pinning directly, not only through the predicate.
+// TestReputerSubmissionWindowBounds verifies shared window arithmetic and overflow handling.
 func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 	tests := []struct {
 		name          string
@@ -501,6 +479,7 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 			nonceHeight:   1000,
 			expectedStart: 1100,
 			expectedEnd:   1200,
+			expectedErr:   nil,
 			description:   "extraLag is 0, so the reveal block is already an epoch boundary",
 		},
 		{
@@ -509,30 +488,26 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 			nonceHeight:   1000,
 			expectedStart: 1200,
 			expectedEnd:   1300,
+			expectedErr:   nil,
 			description:   "reveal is 1130, extraLag 70, so the window opens at 1200",
 		},
 		{
-			// The production shape that surfaced the overlap: 3388 % 35 = 28,
-			// so extraLag is 7 and the window used to open 7 blocks before the
-			// previous nonce closed.
 			name:          "production-shaped fractional lag",
 			topic:         types.Topic{EpochLength: 35, GroundTruthLag: 3388}, //nolint:exhaustruct
 			nonceHeight:   1_000_000,
 			expectedStart: 1_003_395,
 			expectedEnd:   1_003_430,
+			expectedErr:   nil,
 			description:   "window is exactly one epoch long and starts on the grid",
 		},
 		{
-			// Note the guard adds GroundTruthLag before testing, so a nonce close
-			// enough to MaxInt64 that the addition itself wraps slips past it. That
-			// is pre-existing and unreachable -- it needs a block height around
-			// 9e18, versus ~1e7 in practice -- so this pins the guard as written
-			// rather than widening the change.
-			name:        "overflow is rejected",
-			topic:       types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct
-			nonceHeight: math.MaxInt64 - 150,
-			expectedErr: types.ErrInvalidValue,
-			description: "adding the window must not wrap",
+			name:          "overflow is rejected",
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct
+			nonceHeight:   math.MaxInt64 - 150,
+			expectedStart: 0,
+			expectedEnd:   0,
+			expectedErr:   types.ErrInvalidValue,
+			description:   "adding the window must not wrap",
 		},
 	}
 

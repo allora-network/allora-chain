@@ -306,9 +306,7 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 	var earliestFutureNonce *types.ReputerRequestNonce
 
 	for _, nonce := range nonces.Nonces {
-		// Must come from the shared helper: this response tells clients when to
-		// submit, so computing the bounds separately here is how the query ends
-		// up advertising a window the msg server rejects.
+		// Use the same bounds advertised and enforced by transaction admission.
 		windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
 		if err != nil {
 			return nil, err

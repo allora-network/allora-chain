@@ -35,10 +35,8 @@ func BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.Re
 }
 
 // ReputerSubmissionWindowBounds returns the inclusive block range in which a
-// reputer payload for this nonce is accepted. Callers that need to report the
-// window (error messages, queries) must use this rather than recomputing it:
-// the bounds were previously spelled out in four places, and the one that drifted
-// is what allowed consecutive windows to overlap.
+// reputer payload for this nonce is accepted. Admission, query, and lifecycle
+// code must use these bounds to remain consistent.
 func ReputerSubmissionWindowBounds(topic types.Topic, nonce types.ReputerRequestNonce) (int64, int64, error) {
 	extraLag := topic.GroundTruthLag % topic.EpochLength
 	if extraLag != 0 {
