@@ -317,7 +317,29 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 			return errorsmod.Wrap(err, "failed to set total sum of previous topic weights")
 		}
 	}
+	k.emitOpenReputerSubmissionWindowEvents(ctx, topic)
 	return nil
+}
+
+func (k *TopicKeeper) emitOpenReputerSubmissionWindowEvents(ctx context.Context, topic types.Topic) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	nonces, err := k.nonceKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
+	if err != nil {
+		sdkCtx.Logger().Warn("Failed to get unfulfilled reputer nonces after topic activation", "topicId", topic.Id, "error", err)
+		return
+	}
+
+	block := sdkCtx.BlockHeight()
+	for _, nonce := range nonces.Nonces {
+		windowStart, windowEnd, err := ReputerSubmissionWindowBounds(topic, *nonce)
+		if err != nil {
+			sdkCtx.Logger().Warn("Failed to compute reputer submission window after topic activation", "topicId", topic.Id, "error", err)
+			continue
+		}
+		if block >= windowStart && block < windowEnd {
+			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEnd)
+		}
+	}
 }
 
 // Inactivate the topic

@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -303,14 +304,13 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 
 	var latestActiveNonce *types.ReputerRequestNonce
 	var earliestFutureNonce *types.ReputerRequestNonce
-	extraLag := topic.GroundTruthLag % topic.EpochLength
-	if extraLag != 0 {
-		extraLag = topic.EpochLength - extraLag
-	}
 
 	for _, nonce := range nonces.Nonces {
-		windowStart := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
-		windowEnd := windowStart + extraLag + topic.EpochLength
+		// Use the same bounds advertised and enforced by transaction admission.
+		windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
+		if err != nil {
+			return nil, err
+		}
 
 		if currentBlockHeight >= windowStart && currentBlockHeight <= windowEnd {
 			// Current active window: find the most recent active nonce
@@ -336,8 +336,10 @@ func (qs queryServer) GetReputerSubmissionWindowStatus(ctx context.Context, req 
 
 	// Calculate next window from the earliest future reputer nonce found
 	if earliestFutureNonce != nil {
-		nextReputerStart := earliestFutureNonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
-		nextReputerEnd := nextReputerStart + extraLag + topic.EpochLength
+		nextReputerStart, nextReputerEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *earliestFutureNonce)
+		if err != nil {
+			return nil, err
+		}
 		response.NextWindowStartBlock = nextReputerStart
 		response.NextWindowEndBlock = nextReputerEnd
 	}
