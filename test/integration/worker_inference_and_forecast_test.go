@@ -12,6 +12,7 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -251,7 +252,9 @@ func addGlobalActor(m testCommon.TestConfig, address string) {
 //     type dependencies run close before complete. Cross-topic Complete vs
 //     StartNewEpoch is weight-arbitrated. Height-based fuzz waits mixed with
 //     second-valued windows will desync from the live epoch.
-const epochLifecycleTimeout = 2 * time.Minute
+//   - Open-window waits must use chain LatestBlockTime, not host time.Now():
+//     localnet BlockTime can lag the host by more than a short WorkerSubmissionWindow.
+const epochLifecycleTimeout = 3 * time.Minute
 
 func queryTopicEpochs(m testCommon.TestConfig, topicId uint64) ([]*types.Epoch, error) {
 	resp, err := m.Client.QueryEmissions().GetTopicEpochs(
@@ -264,15 +267,14 @@ func queryTopicEpochs(m testCommon.TestConfig, topicId uint64) ([]*types.Epoch, 
 	return resp.Epochs, nil
 }
 
-func findOpenWorkerEpoch(epochs []*types.Epoch) *types.Epoch {
-	now := time.Now()
+func findOpenWorkerEpoch(now time.Time, epochs []*types.Epoch) *types.Epoch {
 	var best *types.Epoch
 	for _, epoch := range epochs {
-		if epoch == nil || epoch.State != types.EpochState_WORKER_SUBMISSION || epoch.WorkerSubmissionWindow == nil {
+		if epoch == nil || epoch.State != types.EpochState_WORKER_SUBMISSION {
 			continue
 		}
-		window := epoch.WorkerSubmissionWindow
-		if now.Before(window.OpenAt) || !now.Before(window.CloseAt.Add(-500*time.Millisecond)) {
+		// Same inclusive bounds as CheckWorkerSubmissionWindow / TimeWithinWindow.
+		if !keeper.TimeWithinWindow(now, epoch.WorkerSubmissionWindow) {
 			continue
 		}
 		if best == nil || epoch.StartBlockHeight > best.StartBlockHeight {
@@ -284,17 +286,23 @@ func findOpenWorkerEpoch(epochs []*types.Epoch) *types.Epoch {
 
 func waitForOpenWorkerEpoch(m testCommon.TestConfig, topicId uint64) (*types.Epoch, error) {
 	deadline := time.Now().Add(epochLifecycleTimeout)
+	var lastNote string
 	for time.Now().Before(deadline) {
+		now, err := m.Client.LatestBlockTime(context.Background())
+		if err != nil {
+			return nil, err
+		}
 		epochs, err := queryTopicEpochs(m, topicId)
 		if err != nil {
 			return nil, err
 		}
-		if epoch := findOpenWorkerEpoch(epochs); epoch != nil {
+		if epoch := findOpenWorkerEpoch(now, epochs); epoch != nil {
 			return epoch, nil
 		}
+		lastNote = fmt.Sprintf("chain_time=%s epochs=%d", now.UTC().Format(time.RFC3339Nano), len(epochs))
 		time.Sleep(500 * time.Millisecond)
 	}
-	return nil, fmt.Errorf("no open worker epoch for topic %d within %s", topicId, epochLifecycleTimeout)
+	return nil, fmt.Errorf("no open worker epoch for topic %d within %s (%s)", topicId, epochLifecycleTimeout, lastNote)
 }
 
 func waitForEpochState(m testCommon.TestConfig, topicId uint64, startBlockHeight int64, want types.EpochState) (*types.Epoch, error) {
