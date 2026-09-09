@@ -9,6 +9,12 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// Localnet checklist for the wall-clock epoch path (CI runs the same go test after
+// test/local_testnet_l1.sh):
+//  1. If test/localnet already exists, wipe it (the script prompts).
+//  2. bash ./test/local_testnet_l1.sh
+//  3. INTEGRATION=TRUE RPC_MODE="RoundRobin" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" go test -timeout 30m -run '^(TestExternalTestSuite|TestExternalMultiTestSuite)$' github.com/allora-network/allora-chain/test/integration -v
+
 func TestExternalTestSuite(t *testing.T) {
 	if _, isIntegration := os.LookupEnv("INTEGRATION"); isIntegration == false {
 		t.Skip("Skipping Integration Test Outside CI")
