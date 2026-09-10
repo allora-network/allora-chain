@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -19,6 +20,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k *Keeper) {
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-removals-length-same", StakingInvariantLenStakeRemovalsSame(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-sum-delegated-stakes", StakingInvariantDelegatedStakes(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "pending-reward-for-delegators-equal-reward-per-share-minus-reward-debt", StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(*k))
+	ir.RegisterRoute(emissionstypes.ModuleName, "active-topics-scheduled-at-churning-block", TopicInvariantActiveTopicsScheduledAtChurningBlock(*k))
 }
 
 // AllInvariants is a convience function to run all invariants in the emissions module.
@@ -39,7 +41,64 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		if res, stop := StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(k)(ctx); stop {
 			return res, stop
 		}
+		if res, stop := TopicInvariantActiveTopicsScheduledAtChurningBlock(k)(ctx); stop {
+			return res, stop
+		}
 		return "", false
+	}
+}
+
+// TopicInvariantActiveTopicsScheduledAtChurningBlock checks that every member of the
+// active topic set has a next churning block and is listed in that block's active topics.
+// A topic that is in the set but has no schedule would keep its weight in the total while
+// never being processed again, and a later activation would count that weight a second time.
+// The churning block is not compared with the current height on purpose: tests and replays
+// legitimately evaluate EndBlock at heights far beyond the last processed epoch.
+func TopicInvariantActiveTopicsScheduledAtChurningBlock(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		iter, err := k.topicKeeper.activeTopics.Iterate(ctx, nil)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topics iterator: %v", err))
+		}
+		defer iter.Close()
+
+		activeTopics := 0
+		unscheduled := make([]string, 0)
+		for ; iter.Valid(); iter.Next() {
+			topicId, err := iter.Key()
+			if err != nil {
+				panic(fmt.Sprintf("failed to get active topic id: %v", err))
+			}
+			activeTopics++
+			churningBlock, err := k.topicKeeper.topicToNextPossibleChurningBlock.Get(ctx, topicId)
+			if errors.Is(err, collections.ErrNotFound) {
+				unscheduled = append(unscheduled, fmt.Sprintf("topic %d: no churning block", topicId))
+				continue
+			}
+			if err != nil {
+				panic(fmt.Sprintf("failed to get next possible churning block for topic %d: %v", topicId, err))
+			}
+			topicIdsAtBlock, err := k.topicKeeper.GetActiveTopicIdsAtBlock(ctx, churningBlock)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get active topic ids at block %d: %v", churningBlock, err))
+			}
+			listed := false
+			for _, id := range topicIdsAtBlock.TopicIds {
+				if id == topicId {
+					listed = true
+					break
+				}
+			}
+			if !listed {
+				unscheduled = append(unscheduled, fmt.Sprintf("topic %d: not listed at its churning block %d", topicId, churningBlock))
+			}
+		}
+		broken := len(unscheduled) > 0
+		return sdk.FormatInvariant(
+			emissionstypes.ModuleName,
+			"active topics scheduled at their churning block",
+			fmt.Sprintf("ActiveTopics: %d | Unscheduled: %v", activeTopics, unscheduled),
+		), broken
 	}
 }
 

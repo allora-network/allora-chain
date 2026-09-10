@@ -291,6 +291,13 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
 	}
 
+	// A topic already in the active set still has its weight counted in the total;
+	// only a topic entering the set contributes its stored weight.
+	wasInActiveSet, err := k.IsTopicInActiveSet(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to check active set membership")
+	}
+
 	// Set active for this topic
 	err = k.SetActiveTopics(ctx, topicId)
 	if err != nil {
@@ -303,7 +310,7 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get topic weight from topic id")
 	}
-	if !noPrior && !topicWeight.IsZero() {
+	if !wasInActiveSet && !noPrior && !topicWeight.IsZero() {
 		totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 		if err != nil {
 			return errorsmod.Wrap(err, "failed to get total sum of previous topic weights")
@@ -339,26 +346,41 @@ func (k *TopicKeeper) AttemptTopicReactivation(ctx context.Context, topicId Topi
 	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
-	// Remove current active topic from block
-	err = k.removeCurrentTopicFromBlock(ctx, topicId, currentBlock)
+	// Schedule the next epoch before leaving the current block: a topic that does not make
+	// the cut is inactivated while it is still listed at its churning block, which is where
+	// inactivation expects to find it. Leaving it in the active set with no schedule would
+	// keep its weight in the total and let a later activation count that weight again.
+	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
+	if errorsmod.IsOf(err, types.ErrTopicCannotBeActivated) {
+		sdkCtx.Logger().Info("Topic did not make the cut for its next epoch, inactivating", "topicId", topicId, "epochEndBlock", epochEndBlock)
+		err = k.inactivateTopicWithoutMinWeightReset(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to inactivate topic that could not be rescheduled")
+		}
+		return nil
+	} else if errorsmod.IsOf(err, types.ErrTopicAlreadyActive) {
+		// Already listed at the next block; only the churning block has to move forward.
+		err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId, epochEndBlock)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to set topic to next possible churning block")
+		}
+	} else if err != nil {
+		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
+	}
+
+	err = k.removeTopicFromBlock(ctx, topicId, currentBlock)
 	if err != nil {
 		sdkCtx.Logger().Warn("Failed to remove current active topic", "topicId", topicId, "block", currentBlock, "error", err)
 		return errorsmod.Wrap(err, "failed to remove current active topic from block")
-	}
-
-	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
-		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
-		return nil
-	} else if err != nil {
-		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
 	}
 
 	sdkCtx.Logger().Debug("Topic reactivated at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock)
 	return nil
 }
 
-func (k *TopicKeeper) removeCurrentTopicFromBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
+// removeTopicFromBlock drops the topic from the list of topics whose epoch ends at block.
+// The topic's churning block is left untouched: callers have already moved it forward.
+func (k *TopicKeeper) removeTopicFromBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
 	activeTopicIds, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get active topic ids at block")
@@ -375,10 +397,6 @@ func (k *TopicKeeper) removeCurrentTopicFromBlock(ctx context.Context, topicId T
 	err = k.SetBlockToActiveTopics(ctx, block, newActiveTopicIds)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to set block to active topics")
-	}
-	err = k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to remove topic to next possible churning block")
 	}
 	return nil
 }

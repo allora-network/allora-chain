@@ -473,6 +473,13 @@ func (k *TopicKeeper) SetActiveTopics(ctx context.Context, topicId TopicId) erro
 	return k.activeTopics.Set(ctx, topicId)
 }
 
+// IsTopicInActiveSet reports whether the topic is a member of the active topic set.
+// Membership in this set is what decides whether the topic's previous weight is
+// counted in totalSumPreviousTopicWeights.
+func (k *TopicKeeper) IsTopicInActiveSet(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.activeTopics.Has(ctx, topicId)
+}
+
 // wrapper for set operation around blockToActiveTopics
 func (k *TopicKeeper) SetBlockToActiveTopics(ctx context.Context, block BlockHeight, topicIds types.TopicIds) error {
 	if err := types.ValidateBlockHeight(block); err != nil {

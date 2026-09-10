@@ -230,6 +230,79 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	s.Require().False(isActive, "Topic4 should not be activated")
 }
 
+// TestFailedEpochEndReactivationLeavesTopicCoherent covers the epoch-end path where a topic
+// cannot be re-added to its next block because that block is already held by a heavier topic.
+// The topic must end up fully inactive (out of the active set, weight removed from the total),
+// so that a later activation counts its stored weight exactly once instead of twice.
+func (s *KeeperTestSuite) TestFailedEpochEndReactivationLeavesTopicCoherent() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+
+	params := types.DefaultParams()
+	params.MaxActiveTopicsPerBlock = 1
+	params.MinEpochLength = 1
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	heavyTopicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
+	lightTopicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake)))
+	}
+	setTopicWeight(heavyTopicId, 1_000_000, 1_000_000)
+	setTopicWeight(lightTopicId, 10, 10)
+
+	// Block 0: the topics land in different epoch-end blocks (20 and 10), so both activate.
+	s.Require().NoError(k.ActivateTopic(ctx, heavyTopicId))
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId))
+	storeWeight := func(topicId uint64) alloraMath.Dec {
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+		return weight
+	}
+	heavyWeight := storeWeight(heavyTopicId)
+	lightWeight := storeWeight(lightTopicId)
+	s.Require().True(lightWeight.Lt(heavyWeight))
+	_, broken := invariant(ctx)
+	s.Require().False(broken)
+
+	// Block 10: the light topic's epoch ends and its next block (20) is held by the heavier topic.
+	s.WithBlockHeight(10)
+	ctx = s.Ctx()
+	s.Require().NoError(k.AttemptTopicReactivation(ctx, lightTopicId))
+
+	inSet, err := k.IsTopicInActiveSet(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(inSet, "a topic that could not be re-added must leave the active set")
+	isActive, err := k.IsTopicActive(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+	sumAfterFailedReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), sumAfterFailedReactivation.String(),
+		"the total must only count the topic that stayed active")
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+
+	// Block 11: funding or staking activates the topic again into a free block; its weight counts once.
+	s.WithBlockHeight(11)
+	ctx = s.Ctx()
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId))
+	expected, err := heavyWeight.Add(lightWeight)
+	s.Require().NoError(err)
+	sumAfterReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expected.String(), sumAfterReactivation.String(),
+		"reactivation must add the stored weight exactly once")
+	msg, broken = invariant(ctx)
+	s.Require().False(broken, msg)
+}
+
 func (s *KeeperTestSuite) TestIncrementTopicId() {
 	ctx := s.Ctx()
 	k := s.TopicKeeper()
