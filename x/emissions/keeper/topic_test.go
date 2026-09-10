@@ -276,9 +276,9 @@ func (s *KeeperTestSuite) TestFailedEpochEndReactivationLeavesTopicCoherent() {
 	ctx = s.Ctx()
 	s.Require().NoError(k.AttemptTopicReactivation(ctx, lightTopicId))
 
-	inSet, err := k.IsTopicInActiveSet(ctx, lightTopicId)
+	scheduled, err := k.IsTopicScheduled(ctx, lightTopicId)
 	s.Require().NoError(err)
-	s.Require().False(inSet, "a topic that could not be re-added must leave the active set")
+	s.Require().False(scheduled, "a topic that could not be re-added must lose its schedule")
 	isActive, err := k.IsTopicActive(ctx, lightTopicId)
 	s.Require().NoError(err)
 	s.Require().False(isActive)

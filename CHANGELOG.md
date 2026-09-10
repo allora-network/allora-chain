@@ -81,7 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* [#995](https://github.com/allora-network/allora-chain/pull/995) Inactivate a topic whose epoch-end reschedule is refused instead of leaving it in the active set without a schedule, and only add a topic's stored weight to the total when it enters the active set; adds an invariant that every active topic is listed at its churning block.
+* [#995](https://github.com/allora-network/allora-chain/pull/995) Inactivate a topic whose epoch-end reschedule is refused instead of leaving it in the active set without a schedule, and only add a topic's stored weight to the total when it becomes scheduled (gets a next churning block); adds an invariant that every scheduled topic is listed at its churning block and mirrored by the active-topic set.
 
 ### Security
 

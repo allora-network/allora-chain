@@ -282,6 +282,13 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	currentBlock := sdkCtx.BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
+	// A topic that already has a schedule has its weight counted in the total; only a topic
+	// that gets scheduled here contributes its stored weight. Read before scheduling it.
+	wasScheduled, err := k.IsTopicScheduled(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to check whether the topic is scheduled")
+	}
+
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
 	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
 		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
@@ -289,13 +296,6 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	}
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to activate topic and reset lowest weight at block")
-	}
-
-	// A topic already in the active set still has its weight counted in the total;
-	// only a topic entering the set contributes its stored weight.
-	wasInActiveSet, err := k.IsTopicInActiveSet(ctx, topicId)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to check active set membership")
 	}
 
 	// Set active for this topic
@@ -310,7 +310,7 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to get topic weight from topic id")
 	}
-	if !wasInActiveSet && !noPrior && !topicWeight.IsZero() {
+	if !wasScheduled && !noPrior && !topicWeight.IsZero() {
 		totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 		if err != nil {
 			return errorsmod.Wrap(err, "failed to get total sum of previous topic weights")

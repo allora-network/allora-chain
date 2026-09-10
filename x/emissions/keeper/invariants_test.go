@@ -8,7 +8,7 @@ import (
 
 // TestTopicInvariantActiveTopicsScheduledAtChurningBlock checks that a normally activated
 // topic satisfies the invariant and that a topic placed in the active set without a
-// schedule is reported.
+// schedule is reported as a disagreement between the set and the schedule.
 func (s *KeeperTestSuite) TestTopicInvariantActiveTopicsScheduledAtChurningBlock() {
 	ctx := s.Ctx()
 	k := s.TopicKeeper()
