@@ -2,6 +2,7 @@ package fuzzcommon
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"reflect"
 	"strings"
@@ -70,6 +71,62 @@ type InitialSetup struct {
 	NumAdminWhitelist        int `json:"numAdminWhitelist"`
 	NumGlobalWhitelist       int `json:"numGlobalWhitelist"`
 	NumTopicCreatorWhitelist int `json:"numTopicCreatorWhitelist"`
+	// NumTopics is how many topics the setup creates. Zero means the default.
+	NumTopics int `json:"numTopics"`
+	// TopicsInSameBlock creates all setup topics in one transaction and funds them in
+	// another, so they activate in the same block. Sharing an epoch length, their epoch
+	// ends then always fall in the same block and compete for MaxActiveTopicsPerBlock.
+	TopicsInSameBlock bool `json:"topicsInSameBlock"`
+	// UnevenTopicWeights funds and stakes the lowest-id setup topic far more than the
+	// others, so that topic always wins a block that is over the per-block limit.
+	UnevenTopicWeights bool `json:"unevenTopicWeights"`
+	// ExpectEpochEndRefusal fails the setup unless, after the first epoch end, the
+	// heaviest setup topic is still active and at least one other has been inactivated
+	// because its next block was full. Requires TopicsInSameBlock and NumTopics >= 2.
+	ExpectEpochEndRefusal bool `json:"expectEpochEndRefusal"`
+}
+
+// Validate rejects initial setup combinations that cannot work.
+func (s InitialSetup) Validate() error {
+	if s.NumTopics < 1 {
+		return fmt.Errorf("numTopics must be at least 1, got %d", s.NumTopics)
+	}
+	if s.ExpectEpochEndRefusal {
+		if s.NumTopics < 2 {
+			return fmt.Errorf("expectEpochEndRefusal needs at least 2 setup topics, got %d", s.NumTopics)
+		}
+		if !s.TopicsInSameBlock {
+			return fmt.Errorf("expectEpochEndRefusal needs topicsInSameBlock, otherwise the setup topics do not share an epoch-end block")
+		}
+	}
+	return nil
+}
+
+// NormalizeInitialSetup fills the fields a config file may omit with their defaults.
+func NormalizeInitialSetup(setup InitialSetup) InitialSetup {
+	if setup.NumTopics == 0 {
+		setup.NumTopics = GetHardCodedInitialSetup().NumTopics
+	}
+	return setup
+}
+
+// ApplyInitialSetupEnvOverrides applies the environment variables that override the
+// initial setup, with the same precedence as every other setting: env over config file.
+func ApplyInitialSetupEnvOverrides(t *testing.T, setup InitialSetup) InitialSetup {
+	t.Helper()
+	if v, found := testcommon.LookupEnvInt(t, "NUM_SETUP_TOPICS"); found {
+		setup.NumTopics = v
+	}
+	if v, found := testcommon.LookupEnvBool(t, "TOPICS_IN_SAME_BLOCK"); found {
+		setup.TopicsInSameBlock = v
+	}
+	if v, found := testcommon.LookupEnvBool(t, "UNEVEN_TOPIC_WEIGHTS"); found {
+		setup.UnevenTopicWeights = v
+	}
+	if v, found := testcommon.LookupEnvBool(t, "EXPECT_EPOCH_END_REFUSAL"); found {
+		setup.ExpectEpochEndRefusal = v
+	}
+	return setup
 }
 
 // struct that holds config from test/fuzz/.config.json
@@ -178,6 +235,10 @@ func GetHardCodedInitialSetup() InitialSetup {
 		NumAdminWhitelist:        2,
 		NumGlobalWhitelist:       4,
 		NumTopicCreatorWhitelist: 2,
+		NumTopics:                2,
+		TopicsInSameBlock:        false,
+		UnevenTopicWeights:       false,
+		ExpectEpochEndRefusal:    false,
 	}
 }
 
@@ -243,7 +304,7 @@ func GetFuzzConfig(t *testing.T) FuzzConfig {
 		mode = jsonConfig.Mode
 		alternateWeight = jsonConfig.AlternateWeight
 		transitionWeights = jsonConfig.TransitionWeights
-		initialSetup = jsonConfig.InitialSetup
+		initialSetup = NormalizeInitialSetup(jsonConfig.InitialSetup)
 	} else {
 		t.Log("No config.json found, proceeding without config.json values")
 	}
@@ -280,6 +341,10 @@ func GetFuzzConfig(t *testing.T) FuzzConfig {
 	envAlternateWeight, found := testcommon.LookupEnvInt(t, "ALTERNATE_WEIGHT")
 	if found {
 		alternateWeight = envAlternateWeight
+	}
+	initialSetup = ApplyInitialSetupEnvOverrides(t, initialSetup)
+	if err := initialSetup.Validate(); err != nil {
+		t.Fatalf("FuzzConfig: invalid initial setup: %v", err)
 	}
 
 	testCommonConfig := testcommon.NewTestConfig(
