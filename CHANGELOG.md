@@ -80,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* [#994](https://github.com/allora-network/allora-chain/pull/TBD) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
+* [#994](https://github.com/allora-network/allora-chain/pull/994) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
 
 ### Security
 
