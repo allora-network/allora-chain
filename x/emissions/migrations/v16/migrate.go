@@ -21,7 +21,7 @@ import (
 // with the current on-chain global value so their admission behavior is
 // unchanged after the upgrade. It also backfills the new
 // Params.MinTopInferersToReward floor and recomputes totalSumPreviousTopicWeights
-// from the active topic set so any drift accumulated by the incremental
+// from the scheduled topics so any drift accumulated by the incremental
 // bookkeeping is cleared.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 15 TO VERSION 16")
@@ -51,21 +51,22 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 }
 
 // MigrateTotalSumPreviousTopicWeights recomputes totalSumPreviousTopicWeights as the
-// sum of the stored previous weights of the topics in the active set. The accumulator
-// is otherwise only ever adjusted incrementally, so an earlier bookkeeping error (such as
-// subtracting an inactive topic's weight twice on stake removal) persists in state after
-// the code is fixed. Recomputing from the active set is idempotent and a no-op when the
+// sum of the stored previous weights of the scheduled topics, those with a next churning
+// block. The accumulator is otherwise only ever adjusted incrementally, so an earlier
+// bookkeeping error (such as subtracting an inactivated topic's weight twice on stake
+// removal, or keeping the weight of a topic that lost its schedule) persists in state after
+// the code is fixed. Recomputing from the schedule is idempotent and a no-op when the
 // accumulator is already consistent.
 func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	topicKeeper := emissionsKeeper.GetTopicKeeper()
 
-	activeTopicIds, err := topicKeeper.GetActiveTopicIds(ctx)
+	scheduledTopicIds, err := topicKeeper.GetScheduledTopicIds(ctx)
 	if err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: failed to get active topic ids")
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get scheduled topic ids")
 	}
 
 	recomputed := alloraMath.ZeroDec()
-	for _, topicId := range activeTopicIds {
+	for _, topicId := range scheduledTopicIds {
 		weight, noPrior, err := topicKeeper.GetPreviousTopicWeight(ctx, topicId)
 		if err != nil {
 			return errorsmod.Wrapf(err, "MIGRATION V16: failed to get previous weight of topic %d", topicId)
@@ -92,10 +93,10 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 		return errorsmod.Wrap(err, "MIGRATION V16: failed to set recomputed total sum of previous topic weights")
 	}
 	ctx.Logger().Info(
-		"MIGRATION V16: total sum of previous topic weights recomputed from active topics",
+		"MIGRATION V16: total sum of previous topic weights recomputed from scheduled topics",
 		"previous", current.String(),
 		"recomputed", recomputed.String(),
-		"activeTopics", len(activeTopicIds),
+		"scheduledTopics", len(scheduledTopicIds),
 	)
 	return nil
 }

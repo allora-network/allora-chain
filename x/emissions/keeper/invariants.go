@@ -49,22 +49,17 @@ func AllInvariants(k Keeper) sdk.Invariant {
 
 // TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum checks that
 // totalSumPreviousTopicWeights equals the sum of the stored previous weights
-// of the topics in the active set. Inactive topics keep their stored weight
-// but must not be counted.
+// of the scheduled topics (those with a next churning block). Topics without a
+// schedule keep their stored weight but must not be counted.
 func TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		iter, err := k.topicKeeper.activeTopics.Iterate(ctx, nil)
+		scheduledTopicIds, err := k.topicKeeper.GetScheduledTopicIds(ctx)
 		if err != nil {
-			panic(fmt.Sprintf("failed to get active topics iterator: %v", err))
+			panic(fmt.Sprintf("failed to get scheduled topic ids: %v", err))
 		}
-		defer iter.Close()
 
 		activeSum := alloraMath.ZeroDec()
-		for ; iter.Valid(); iter.Next() {
-			topicId, err := iter.Key()
-			if err != nil {
-				panic(fmt.Sprintf("failed to get active topic id: %v", err))
-			}
+		for _, topicId := range scheduledTopicIds {
 			weight, noPrior, err := k.topicKeeper.GetPreviousTopicWeight(ctx, topicId)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get previous topic weight for topic %d: %v", topicId, err))
@@ -85,8 +80,8 @@ func TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k Keeper) sd
 		broken := !totalSum.Equal(activeSum)
 		return sdk.FormatInvariant(
 			emissionstypes.ModuleName,
-			"total sum of previous topic weights equal sum over active topics",
-			fmt.Sprintf("TotalSumPreviousTopicWeights: %s | Sum of previous weights of active topics: %s",
+			"total sum of previous topic weights equal sum over scheduled topics",
+			fmt.Sprintf("TotalSumPreviousTopicWeights: %s | Sum of previous weights of scheduled topics: %s",
 				totalSum.String(),
 				activeSum.String(),
 			),
