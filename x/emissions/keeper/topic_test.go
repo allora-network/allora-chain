@@ -696,6 +696,207 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
 }
 
+// TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic verifies that removing stake from an
+// inactive topic refreshes its stored weight but does not touch totalSumPreviousTopicWeights.
+// Inactivation already removed the topic's weight from the sum while keeping the stored value
+// for reactivation, so a stake removal must not subtract it a second time.
+func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic() {
+	stakeAmount := cosmosMath.NewInt(1000)
+	feeRevenue := cosmosMath.NewInt(100)
+	epochLength := int64(100)
+
+	testCases := []struct {
+		name        string
+		addStake    func(topicId uint64)
+		removeStake func(topicId uint64)
+	}{
+		{
+			name: "reputer stake removal",
+			addStake: func(topicId uint64) {
+				err := s.StakingKeeper().AddReputerStake(s.Ctx(), topicId, s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+			removeStake: func(topicId uint64) {
+				ctx := s.Ctx()
+				moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+				s.Require().NoError(err)
+				endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+				err = s.StakingKeeper().SetStakeRemoval(ctx, types.StakeRemovalInfo{
+					TopicId:               topicId,
+					Reputer:               s.AddrsStr(0),
+					Amount:                stakeAmount,
+					BlockRemovalStarted:   ctx.BlockHeight(),
+					BlockRemovalCompleted: endBlock,
+				})
+				s.Require().NoError(err)
+				err = s.StakingKeeper().RemoveReputerStake(ctx, endBlock, topicId, s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+		},
+		{
+			name: "delegate stake removal",
+			addStake: func(topicId uint64) {
+				err := s.StakingKeeper().AddDelegateStake(s.Ctx(), topicId, s.AddrsStr(1), s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+			removeStake: func(topicId uint64) {
+				ctx := s.Ctx()
+				moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+				s.Require().NoError(err)
+				endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+				err = s.StakingKeeper().SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+					BlockRemovalStarted:   ctx.BlockHeight(),
+					BlockRemovalCompleted: endBlock,
+					TopicId:               topicId,
+					Delegator:             s.AddrsStr(1),
+					Reputer:               s.AddrsStr(0),
+					Amount:                stakeAmount,
+				})
+				s.Require().NoError(err)
+				err = s.StakingKeeper().RemoveDelegateStake(ctx, endBlock, topicId, s.AddrsStr(1), s.AddrsStr(0), stakeAmount)
+				s.Require().NoError(err)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			s.SetupTest()
+			ctx := s.Ctx()
+			k := s.TopicKeeper()
+
+			params := types.DefaultParams()
+			params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+			params.TopicRewardStakeImportance = alloraMath.OneDec()
+			params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+			// Both topics must fit in the active set, otherwise activating the second churns the first.
+			params.MaxActiveTopicsPerBlock = 2
+			err := s.ParamsKeeper().SetParams(ctx, params)
+			s.Require().NoError(err)
+
+			// Two active topics so the sum is non-trivial: one stays active, one gets inactivated.
+			stayingTopicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+			churnedTopicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+			for _, topicId := range []uint64{stayingTopicId, churnedTopicId} {
+				err = k.ActivateTopic(ctx, topicId)
+				s.Require().NoError(err)
+				tc.addStake(topicId)
+				err = k.AddTopicFeeRevenue(ctx, topicId, feeRevenue)
+				s.Require().NoError(err)
+				weight, _, _, err := k.GetCurrentTopicWeight(
+					ctx, topicId, epochLength,
+					params.TopicRewardAlpha, params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, params.BlocksPerMonth,
+				)
+				s.Require().NoError(err)
+				err = k.SetPreviousTopicWeight(ctx, topicId, weight)
+				s.Require().NoError(err)
+			}
+
+			churnedWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, churnedTopicId)
+			s.Require().NoError(err)
+			s.Require().False(noPrior)
+			s.Require().False(churnedWeight.IsZero())
+
+			sumWhileBothActive, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+
+			err = k.InactivateTopic(ctx, churnedTopicId)
+			s.Require().NoError(err)
+			sumAfterInactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+			expectedAfterInactivation, err := sumWhileBothActive.Sub(churnedWeight)
+			s.Require().NoError(err)
+			s.Require().Equal(expectedAfterInactivation.String(), sumAfterInactivation.String(),
+				"inactivation must remove the topic weight from the sum exactly once")
+
+			tc.removeStake(churnedTopicId)
+
+			sumAfterRemoval, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+			s.Require().Equal(sumAfterInactivation.String(), sumAfterRemoval.String(),
+				"stake removal on an inactive topic must not change the sum")
+
+			refreshedWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, churnedTopicId)
+			s.Require().NoError(err)
+			s.Require().False(noPrior, "stored weight must be kept for reactivation")
+			s.Require().NotEqual(churnedWeight.String(), refreshedWeight.String(),
+				"stored weight must reflect the reduced stake")
+
+			// Reactivation re-adds exactly the refreshed stored weight.
+			err = k.ActivateTopic(ctx, churnedTopicId)
+			s.Require().NoError(err)
+			sumAfterReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+			s.Require().NoError(err)
+			expectedAfterReactivation, err := sumAfterInactivation.Add(refreshedWeight)
+			s.Require().NoError(err)
+			s.Require().Equal(expectedAfterReactivation.String(), sumAfterReactivation.String())
+		})
+	}
+}
+
+// TestRemoveStakeFromInactiveTopicWhenSumIsSmaller covers the case where the stale stored
+// weight exceeds the current sum. A second subtraction would drive the sum negative and make
+// the stake removal fail permanently, so the removal must succeed and leave the sum untouched.
+func (s *KeeperTestSuite) TestRemoveStakeFromInactiveTopicWhenSumIsSmaller() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	reputerAddr := s.AddrsStr(0)
+	stakeAmount := cosmosMath.NewInt(1000)
+	epochLength := int64(100)
+
+	params := types.DefaultParams()
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	params.MaxActiveTopicsPerBlock = 2
+	err := s.ParamsKeeper().SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Single topic: after inactivation the sum is zero while the stored weight is not.
+	topicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+	err = k.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err)
+	err = s.StakingKeeper().AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+	err = k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
+	weight, _, _, err := k.GetCurrentTopicWeight(
+		ctx, topicId, epochLength,
+		params.TopicRewardAlpha, params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, params.BlocksPerMonth,
+	)
+	s.Require().NoError(err)
+	err = k.SetPreviousTopicWeight(ctx, topicId, weight)
+	s.Require().NoError(err)
+
+	err = k.InactivateTopic(ctx, topicId)
+	s.Require().NoError(err)
+	sum, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(sum.IsZero())
+
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	endBlock := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
+	err = s.StakingKeeper().SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   ctx.BlockHeight(),
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+
+	err = s.StakingKeeper().RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err, "stake removal must not fail because of the topic weight bookkeeping")
+
+	remaining, err := s.StakingKeeper().GetStakeReputerAuthority(ctx, topicId, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().True(remaining.IsZero())
+	sum, err = k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().True(sum.IsZero(), "an inactive topic must not contribute to the sum")
+}
+
 // TestUpdateTopic_RejectsLabelCaseSensitiveChange pins the keeper-level guard
 // that LabelCaseSensitive is immutable after topic creation. The msgserver
 // rebuilds updatedTopic from the stored topic, so this branch is only reachable
