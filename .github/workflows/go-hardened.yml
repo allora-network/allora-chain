@@ -11,6 +11,10 @@ on:
     branches: [main, dev, release-*]
 permissions:
   contents: read
+  checks: write
+  security-events: write  # govulncheck SARIF annotations
+  actions: read            # required for upload-sarif in private repos
+  pull-requests: write    # govulncheck PR comment fallback
 # Cancel in-flight hardened-install runs for the same PR when new
 # commits arrive; keep push-event runs (main/dev/release-*) intact.
 concurrency:
