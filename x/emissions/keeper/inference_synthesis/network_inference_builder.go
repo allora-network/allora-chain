@@ -211,14 +211,16 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 		// base computation fails, each pair that would reuse it logs a warning and is
 		// skipped, mirroring the behavior of computing that pair directly.
 		var baseInference *emissions.Inference
+		var baseFound bool
 		var baseErr error
 		baseComputed := false
 
 		for _, withheldInferer := range args.Inferers {
 			var pairInference *emissions.Inference
+			var pairFound bool
 			if _, participates := forecastedInferers[withheldInferer]; participates {
 				var calcErr error
-				pairInference, calcErr = calcForecastImpliedInferenceWithoutInferer(
+				pairInference, pairFound, calcErr = calcForecastImpliedInferenceWithoutInferer(
 					args, forecaster, forecast, withheldInferer, true)
 				if calcErr != nil {
 					args.Logger.Warn("Error calculating forecast implied inference for:", "forecaster", forecaster, "withheldInferer", withheldInferer, "error", calcErr)
@@ -226,7 +228,7 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 				}
 			} else {
 				if !baseComputed {
-					baseInference, baseErr = calcForecastImpliedInferenceWithoutInferer(
+					baseInference, baseFound, baseErr = calcForecastImpliedInferenceWithoutInferer(
 						args, forecaster, forecast, "", false)
 					baseComputed = true
 				}
@@ -234,10 +236,10 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 					args.Logger.Warn("Error calculating forecast implied inference for:", "forecaster", forecaster, "withheldInferer", withheldInferer, "error", baseErr)
 					continue
 				}
-				pairInference = baseInference
+				pairInference, pairFound = baseInference, baseFound
 			}
 
-			if pairInference == nil {
+			if !pairFound {
 				continue
 			}
 
@@ -264,17 +266,17 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 // calcForecastImpliedInferenceWithoutInferer computes a single forecaster's forecast-implied
 // inference with one inferer withheld from the inferer list, the inferer maps, and the
 // forecast's elements; with withhold set to false it computes the value over the full
-// inferer set and the unfiltered forecast. It returns (nil, nil) when the forecaster has no
-// implied inference under this withholding — no forecast elements remain after filtering,
-// or the pipeline produced no value for the forecaster — in which case the caller emits no
-// entry for the pair.
+// inferer set and the unfiltered forecast. It returns found=false when the forecaster has
+// no implied inference under this withholding — no forecast elements remain after
+// filtering, or the pipeline produced no value for the forecaster — in which case the
+// caller emits no entry for the pair.
 func calcForecastImpliedInferenceWithoutInferer(
 	args GetOneOutInfererForecastImpliedInferencesArgs,
 	forecaster Forecaster,
 	forecast *emissions.Forecast,
 	withheldInferer Inferer,
 	withhold bool,
-) (*emissions.Inference, error) {
+) (inference *emissions.Inference, found bool, err error) {
 	// Filter out the inferer we want to withhold
 	filteredInferers := make([]Inferer, 0, len(args.Inferers)-1)
 	filteredInfererToInference := make(map[Inferer]*emissions.Inference, len(args.InfererToInference)-1)
@@ -302,7 +304,7 @@ func calcForecastImpliedInferenceWithoutInferer(
 	}
 
 	if len(filteredForecastElements) == 0 {
-		return nil, nil
+		return nil, false, nil
 	}
 
 	filteredForecast := &emissions.Forecast{
@@ -347,16 +349,16 @@ func calcForecastImpliedInferenceWithoutInferer(
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	// Extract the implied inference for this forecaster
 	forecastImpliedInference, ok := forecastImpliedInferences[forecaster]
 	if !ok {
-		return nil, nil
+		return nil, false, nil
 	}
 
-	return forecastImpliedInference, nil
+	return forecastImpliedInference, true, nil
 }
 
 // Arguments for GetNaiveInference

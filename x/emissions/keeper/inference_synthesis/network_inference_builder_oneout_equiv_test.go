@@ -8,10 +8,12 @@ import (
 	"cosmossdk.io/log"
 
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -181,7 +183,8 @@ func requireEqualOneOutForecasterValues(
 }
 
 // oneOutArgsSpec describes a fully keeper-independent input set for
-// GetOneOutInfererForecastImpliedInferences.
+// GetOneOutInfererForecastImpliedInferences. Cases start from defaultOneOutArgsSpec
+// and override only the fields they exercise.
 type oneOutArgsSpec struct {
 	inferers               []string
 	infererValues          map[string][]string // inferer -> label values; missing key = no inference
@@ -196,6 +199,22 @@ type oneOutArgsSpec struct {
 	numLabels              int
 }
 
+func defaultOneOutArgsSpec() oneOutArgsSpec {
+	return oneOutArgsSpec{
+		inferers:               nil,
+		infererValues:          nil,
+		infererRegrets:         nil,
+		allInferersAreNew:      false,
+		forecasters:            nil,
+		forecasts:              nil,
+		forecasterRegrets:      nil,
+		networkCombinedLoss:    nil,
+		regretScalePlusEpsilon: nil,
+		nilLabelRegistry:       false,
+		numLabels:              1,
+	}
+}
+
 func buildOneOutArgsFromSpec(spec oneOutArgsSpec) inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs {
 	infererToInference := make(map[string]*emissionstypes.Inference, len(spec.infererValues))
 	for inferer, values := range spec.infererValues {
@@ -207,6 +226,8 @@ func buildOneOutArgsFromSpec(spec oneOutArgsSpec) inferencesynthesis.GetOneOutIn
 			TopicId:     1,
 			BlockHeight: 100,
 			Inferer:     inferer,
+			ExtraData:   nil,
+			Proof:       "",
 			Values:      decValues,
 		}
 	}
@@ -231,6 +252,7 @@ func buildOneOutArgsFromSpec(spec oneOutArgsSpec) inferencesynthesis.GetOneOutIn
 			BlockHeight:      100,
 			Forecaster:       forecaster,
 			ForecastElements: forecastElements,
+			ExtraData:        nil,
 		}
 	}
 
@@ -249,6 +271,7 @@ func buildOneOutArgsFromSpec(spec oneOutArgsSpec) inferencesynthesis.GetOneOutIn
 	if !spec.nilLabelRegistry {
 		labels := make([]*emissionstypes.TopicLabel, spec.numLabels)
 		for l := 0; l < spec.numLabels; l++ {
+			//nolint:gosec // label ids are tiny sequential indexes, far below the uint32 range
 			labels[l] = &emissionstypes.TopicLabel{Id: uint32(l + 1), Name: fmt.Sprintf("label%d", l)}
 		}
 		labelRegistry = &emissionstypes.EpochLabelRegistry{TopicId: 1, EpochId: 1, Labels: labels}
@@ -260,6 +283,9 @@ func buildOneOutArgsFromSpec(spec oneOutArgsSpec) inferencesynthesis.GetOneOutIn
 	}
 
 	return inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
+		// Ctx and K are never read by the function under test.
+		Ctx:                    sdk.Context{},
+		K:                      emissionskeeper.Keeper{},
 		Logger:                 log.NewNopLogger(),
 		TopicId:                1,
 		TopicArity:             arity,
@@ -324,353 +350,325 @@ func TestGetOneOutInfererForecastImpliedInferencesEquivalence(t *testing.T) {
 	forecasters3 := []string{"forecaster0", "forecaster1", "forecaster2"}
 
 	cases := []struct {
-		name string
-		spec oneOutArgsSpec
+		name   string
+		mutate func(s *oneOutArgsSpec)
 	}{
 		{
 			name: "single label sparse forecasts",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 2),
-				forecasterRegrets:   map[string]string{"forecaster0": "0.2", "forecaster1": "0.3"},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
+				s.forecasterRegrets = map[string]string{"forecaster0": "0.2", "forecaster1": "0.3"}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "multi label sparse forecasts",
-			spec: oneOutArgsSpec{
-				inferers:            inferers6,
-				infererValues:       uniformInfererValues(inferers6, 3, 200),
-				infererRegrets:      uniformInfererRegrets(inferers6, "0.5"),
-				forecasters:         forecasters3,
-				forecasts:           spreadForecast(forecasters3, inferers6, 2),
-				forecasterRegrets:   map[string]string{"forecaster0": "0.2"},
-				networkCombinedLoss: decPtr("500"),
-				numLabels:           3,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers6
+				s.infererValues = uniformInfererValues(inferers6, 3, 200)
+				s.infererRegrets = uniformInfererRegrets(inferers6, "0.5")
+				s.forecasters = forecasters3
+				s.forecasts = spreadForecast(forecasters3, inferers6, 2)
+				s.forecasterRegrets = map[string]string{"forecaster0": "0.2"}
+				s.networkCombinedLoss = decPtr("500")
+				s.numLabels = 3
 			},
 		},
 		{
 			name: "dense forecasts cover every inferer",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, len(inferers4)),
-				forecasterRegrets:   map[string]string{"forecaster0": "0.2"},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, len(inferers4))
+				s.forecasterRegrets = map[string]string{"forecaster0": "0.2"}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "forecaster forecasting a single inferer",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4[:3],
-				infererValues:       uniformInfererValues(inferers4[:3], 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4[:3], "0.1"),
-				forecasters:         forecasters2[:1],
-				forecasts:           spreadForecast(forecasters2[:1], inferers4[:3], 1),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4[:3]
+				s.infererValues = uniformInfererValues(inferers4[:3], 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4[:3], "0.1")
+				s.forecasters = forecasters2[:1]
+				s.forecasts = spreadForecast(forecasters2[:1], inferers4[:3], 1)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "forecaster with empty forecast elements",
-			spec: oneOutArgsSpec{
-				inferers:       inferers4,
-				infererValues:  uniformInfererValues(inferers4, 1, 100),
-				infererRegrets: uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:    forecasters2,
-				forecasts: map[string][][2]string{
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = map[string][][2]string{
 					"forecaster0": {},
 					"forecaster1": {{"inferer0", "10"}, {"inferer1", "20"}},
-				},
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+				}
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "forecaster without a forecast entry",
-			spec: oneOutArgsSpec{
-				inferers:       inferers4,
-				infererValues:  uniformInfererValues(inferers4, 1, 100),
-				infererRegrets: uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:    forecasters2,
-				forecasts: map[string][][2]string{
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = map[string][][2]string{
 					"forecaster1": {{"inferer0", "10"}},
-				},
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+				}
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "forecaster forecasting only inferers without inferences",
-			spec: oneOutArgsSpec{
-				inferers:       inferers4,
-				infererValues:  uniformInfererValues(inferers4, 1, 100),
-				infererRegrets: uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:    forecasters2[:1],
-				forecasts: map[string][][2]string{
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2[:1]
+				s.forecasts = map[string][][2]string{
 					"forecaster0": {{"ghost0", "10"}, {"ghost1", "20"}},
-				},
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+				}
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "missing inferer regrets",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      map[string]string{"inferer0": "0.1"},
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 3),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = map[string]string{"inferer0": "0.1"}
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 3)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "no inferer regrets at all",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      nil,
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 3),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = nil
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 3)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "zero regrets everywhere",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 2),
-				forecasterRegrets:   map[string]string{"forecaster0": "0", "forecaster1": "0"},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
+				s.forecasterRegrets = map[string]string{"forecaster0": "0", "forecaster1": "0"}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "pinned regret scale",
-			spec: oneOutArgsSpec{
-				inferers:               inferers4,
-				infererValues:          uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:         uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:            forecasters2,
-				forecasts:              spreadForecast(forecasters2, inferers4, 2),
-				forecasterRegrets:      map[string]string{},
-				networkCombinedLoss:    decPtr("100"),
-				regretScalePlusEpsilon: decPtr("0.5"),
-				numLabels:              1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
+				s.regretScalePlusEpsilon = decPtr("0.5")
 			},
 		},
 		{
 			name: "all inferers are new uses the median path",
-			spec: oneOutArgsSpec{
-				inferers:            inferers6,
-				infererValues:       uniformInfererValues(inferers6, 1, 100),
-				infererRegrets:      nil,
-				allInferersAreNew:   true,
-				forecasters:         forecasters3,
-				forecasts:           spreadForecast(forecasters3, inferers6, 3),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers6
+				s.infererValues = uniformInfererValues(inferers6, 1, 100)
+				s.infererRegrets = nil
+				s.allInferersAreNew = true
+				s.forecasters = forecasters3
+				s.forecasts = spreadForecast(forecasters3, inferers6, 3)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "all inferers are new multi label",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 2, 100),
-				infererRegrets:      nil,
-				allInferersAreNew:   true,
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 3),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           2,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 2, 100)
+				s.infererRegrets = nil
+				s.allInferersAreNew = true
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 3)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
+				s.numLabels = 2
 			},
 		},
 		{
 			name: "single inferer early return",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4[:1],
-				infererValues:       uniformInfererValues(inferers4[:1], 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4[:1], "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 2),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4[:1]
+				s.infererValues = uniformInfererValues(inferers4[:1], 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4[:1], "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "zero forecasters",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:         []string{},
-				forecasts:           map[string][][2]string{},
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = []string{}
+				s.forecasts = map[string][][2]string{}
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "nil network combined loss",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 2),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: nil,
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = nil
 			},
 		},
 		{
 			name: "duplicate forecast elements for one inferer",
-			spec: oneOutArgsSpec{
-				inferers:       inferers4,
-				infererValues:  uniformInfererValues(inferers4, 1, 100),
-				infererRegrets: uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:    forecasters2[:1],
-				forecasts: map[string][][2]string{
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2[:1]
+				s.forecasts = map[string][][2]string{
 					"forecaster0": {{"inferer0", "10"}, {"inferer0", "15"}, {"inferer2", "20"}},
-				},
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+				}
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "inference registered for an unlisted inferer",
-			spec: oneOutArgsSpec{
-				inferers: inferers4[:3],
-				infererValues: func() map[string][]string {
-					values := uniformInfererValues(inferers4[:3], 1, 100)
-					values["stranger"] = []string{"999"}
-					return values
-				}(),
-				infererRegrets:      uniformInfererRegrets(inferers4[:3], "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4[:3], 2),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4[:3]
+				values := uniformInfererValues(inferers4[:3], 1, 100)
+				values["stranger"] = []string{"999"}
+				s.infererValues = values
+				s.infererRegrets = uniformInfererRegrets(inferers4[:3], "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4[:3], 2)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "inference missing for a listed inferer",
-			spec: oneOutArgsSpec{
-				inferers: inferers4,
-				infererValues: func() map[string][]string {
-					values := uniformInfererValues(inferers4, 1, 100)
-					delete(values, "inferer1")
-					return values
-				}(),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 3),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				values := uniformInfererValues(inferers4, 1, 100)
+				delete(values, "inferer1")
+				s.infererValues = values
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 3)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
 			},
 		},
 		{
 			name: "extreme regret spread with zero weights",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 3),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100000000"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 3)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100000000")
 			},
 		},
 		{
 			name: "zero labels makes every pair warn and skip",
-			spec: oneOutArgsSpec{
-				inferers:            inferers4,
-				infererValues:       uniformInfererValues(inferers4, 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-				forecasters:         forecasters2,
-				forecasts:           spreadForecast(forecasters2, inferers4, 2),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           0,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
+				s.numLabels = 0
 			},
 		},
 		{
 			name: "duplicate inferer entries in the inferer list",
-			spec: oneOutArgsSpec{
-				inferers:            []string{"inferer0", "inferer1", "inferer1", "inferer2"},
-				infererValues:       uniformInfererValues(inferers4[:3], 1, 100),
-				infererRegrets:      uniformInfererRegrets(inferers4[:3], "0.1"),
-				forecasters:         forecasters2[:1],
-				forecasts:           spreadForecast(forecasters2[:1], inferers4[:3], 2),
-				forecasterRegrets:   map[string]string{},
-				networkCombinedLoss: decPtr("100"),
-				numLabels:           1,
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = []string{"inferer0", "inferer1", "inferer1", "inferer2"}
+				s.infererValues = uniformInfererValues(inferers4[:3], 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4[:3], "0.1")
+				s.forecasters = forecasters2[:1]
+				s.forecasts = spreadForecast(forecasters2[:1], inferers4[:3], 2)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
+			},
+		},
+		{
+			name: "nil label registry",
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0.1")
+				s.forecasters = forecasters2
+				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
+				s.forecasterRegrets = map[string]string{}
+				s.networkCombinedLoss = decPtr("100")
+				s.nilLabelRegistry = true
 			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			args := buildOneOutArgsFromSpec(tc.spec)
+			spec := defaultOneOutArgsSpec()
+			tc.mutate(&spec)
+			args := buildOneOutArgsFromSpec(spec)
 			expected, expectedErr := getOneOutInfererForecastImpliedInferencesReference(args)
 			actual, actualErr := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(args)
 			require.Equal(t, expectedErr == nil, actualErr == nil,
 				"error presence mismatch: reference=%v optimized=%v", expectedErr, actualErr)
 			if expectedErr != nil {
 				require.Equal(t, expectedErr.Error(), actualErr.Error(), "error message mismatch")
+				require.Nil(t, expected)
+				require.Nil(t, actual)
 				return
 			}
 			requireEqualOneOutForecasterValues(t, expected, actual)
 		})
 	}
-
-	t.Run("nil label registry", func(t *testing.T) {
-		spec := oneOutArgsSpec{
-			inferers:            inferers4,
-			infererValues:       uniformInfererValues(inferers4, 1, 100),
-			infererRegrets:      uniformInfererRegrets(inferers4, "0.1"),
-			forecasters:         forecasters2,
-			forecasts:           spreadForecast(forecasters2, inferers4, 2),
-			forecasterRegrets:   map[string]string{},
-			networkCombinedLoss: decPtr("100"),
-			nilLabelRegistry:    true,
-			numLabels:           1,
-		}
-		args := buildOneOutArgsFromSpec(spec)
-		expected, expectedErr := getOneOutInfererForecastImpliedInferencesReference(args)
-		actual, actualErr := inferencesynthesis.GetOneOutInfererForecastImpliedInferences(args)
-		require.Error(t, expectedErr)
-		require.Error(t, actualErr)
-		require.Equal(t, expectedErr.Error(), actualErr.Error(), "error message mismatch")
-		require.Nil(t, expected)
-		require.Nil(t, actual)
-	})
 }
 
 func TestGetOneOutInfererForecastImpliedInferencesEquivalenceRandomized(t *testing.T) {
@@ -690,7 +688,10 @@ func TestGetOneOutInfererForecastImpliedInferencesEquivalenceRandomized(t *testi
 			forecasters[f] = fmt.Sprintf("forecaster%02d", f)
 		}
 
-		infererValues := make(map[string][]string, numInferers)
+		spec := defaultOneOutArgsSpec()
+		spec.numLabels = numLabels
+
+		spec.infererValues = make(map[string][]string, numInferers)
 		for i, inferer := range inferers {
 			if rng.Intn(10) == 0 {
 				// Some listed inferers have no inference.
@@ -700,25 +701,24 @@ func TestGetOneOutInfererForecastImpliedInferencesEquivalenceRandomized(t *testi
 			for l := 0; l < numLabels; l++ {
 				values[l] = fmt.Sprintf("%d.%06d", 1+rng.Intn(1000)+100*i, rng.Intn(1000000))
 			}
-			infererValues[inferer] = values
+			spec.infererValues[inferer] = values
 		}
 
-		var infererRegrets map[string]string
 		if rng.Intn(4) != 0 {
-			infererRegrets = make(map[string]string, numInferers)
+			spec.infererRegrets = make(map[string]string, numInferers)
 			for _, inferer := range inferers {
 				switch rng.Intn(5) {
 				case 0:
-					infererRegrets[inferer] = "0"
+					spec.infererRegrets[inferer] = "0"
 				case 1:
 					// Missing regret entry.
 				default:
-					infererRegrets[inferer] = fmt.Sprintf("%d.%06d", rng.Intn(5), rng.Intn(1000000))
+					spec.infererRegrets[inferer] = fmt.Sprintf("%d.%06d", rng.Intn(5), rng.Intn(1000000))
 				}
 			}
 		}
 
-		forecasts := make(map[string][][2]string, numForecasters)
+		spec.forecasts = make(map[string][][2]string, numForecasters)
 		for _, forecaster := range forecasters {
 			forecastSize := rng.Intn(numInferers + 1)
 			if rng.Intn(6) == 0 {
@@ -732,31 +732,24 @@ func TestGetOneOutInfererForecastImpliedInferencesEquivalenceRandomized(t *testi
 					fmt.Sprintf("%d.%06d", rng.Intn(100), rng.Intn(1000000)),
 				})
 			}
-			forecasts[forecaster] = elements
+			spec.forecasts[forecaster] = elements
 		}
-		if rng.Intn(6) == 0 && numForecasters > 0 {
+		if rng.Intn(6) == 0 {
 			// A forecaster without any forecast entry.
-			delete(forecasts, forecasters[0])
+			delete(spec.forecasts, forecasters[0])
 		}
 
-		forecasterRegrets := make(map[string]string, numForecasters)
+		spec.forecasterRegrets = make(map[string]string, numForecasters)
 		for _, forecaster := range forecasters {
 			if rng.Intn(2) == 0 {
-				forecasterRegrets[forecaster] = fmt.Sprintf("%d.%06d", rng.Intn(3), rng.Intn(1000000))
+				spec.forecasterRegrets[forecaster] = fmt.Sprintf("%d.%06d", rng.Intn(3), rng.Intn(1000000))
 			}
 		}
 
-		spec := oneOutArgsSpec{
-			inferers:            inferers,
-			infererValues:       infererValues,
-			infererRegrets:      infererRegrets,
-			allInferersAreNew:   rng.Intn(4) == 0,
-			forecasters:         forecasters,
-			forecasts:           forecasts,
-			forecasterRegrets:   forecasterRegrets,
-			networkCombinedLoss: decPtr(fmt.Sprintf("%d.%06d", 100+rng.Intn(900), rng.Intn(1000000))),
-			numLabels:           numLabels,
-		}
+		spec.inferers = inferers
+		spec.forecasters = forecasters
+		spec.allInferersAreNew = rng.Intn(4) == 0
+		spec.networkCombinedLoss = decPtr(fmt.Sprintf("%d.%06d", 100+rng.Intn(900), rng.Intn(1000000)))
 		if rng.Intn(3) == 0 {
 			spec.regretScalePlusEpsilon = decPtr(fmt.Sprintf("0.%06d", 1+rng.Intn(999999)))
 		}

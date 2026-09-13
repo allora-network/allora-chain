@@ -7,7 +7,10 @@ import (
 
 	"cosmossdk.io/log"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -40,6 +43,8 @@ func buildOneOutForecastImpliedArgs(
 			TopicId:     1,
 			BlockHeight: 100,
 			Inferer:     inferer,
+			ExtraData:   nil,
+			Proof:       "",
 			Values:      values,
 		}
 		regret := alloraMath.MustNewDecFromString(
@@ -73,6 +78,7 @@ func buildOneOutForecastImpliedArgs(
 			BlockHeight:      100,
 			Forecaster:       forecaster,
 			ForecastElements: elements,
+			ExtraData:        nil,
 		}
 		regret := alloraMath.MustNewDecFromString(
 			fmt.Sprintf("%d.%06d", rng.Intn(10), rng.Intn(1000000)))
@@ -81,6 +87,7 @@ func buildOneOutForecastImpliedArgs(
 
 	labels := make([]*emissionstypes.TopicLabel, numLabels)
 	for l := 0; l < numLabels; l++ {
+		//nolint:gosec // label ids are tiny sequential indexes, far below the uint32 range
 		labels[l] = &emissionstypes.TopicLabel{Id: uint32(l + 1), Name: fmt.Sprintf("label%d", l)}
 	}
 
@@ -97,6 +104,9 @@ func buildOneOutForecastImpliedArgs(
 	networkCombinedLoss := alloraMath.MustNewDecFromString("100")
 
 	return inferencesynthesis.GetOneOutInfererForecastImpliedInferencesArgs{
+		// Ctx and K are never read by the function under test.
+		Ctx:                    sdk.Context{},
+		K:                      emissionskeeper.Keeper{},
 		Logger:                 log.NewNopLogger(),
 		TopicId:                1,
 		TopicArity:             arity,
