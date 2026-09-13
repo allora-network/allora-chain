@@ -150,6 +150,18 @@ type GetOneOutInfererForecastImpliedInferencesArgs struct {
 
 // GetOneOutInfererForecastImpliedInferences calculates what each forecaster's implied inference
 // would be when each inferer is removed from the calculation
+//
+// Withholding an inferer that does not appear in a forecaster's forecast cannot change that
+// forecaster's forecast-implied inference. The forecast-implied pipeline only reads the
+// forecaster's own forecast elements plus the inferences of the inferers those elements name,
+// and every per-forecaster quantity derived from the inferer list (regret scale, max
+// normalized regret, weights) is computed over those same inferers only: inside
+// CalcWeightsGivenWorkers a worker without an entry in the provided regret map contributes
+// nothing to the regret scale or the max normalized regret, and its weight is never read by
+// the weighted accumulation, which iterates the inferers named by the forecast. The one-out
+// value for such a withheld inferer therefore equals the forecaster's base value (nothing
+// withheld) exactly, so the base value is computed at most once per forecaster and reused,
+// while withheld inferers that do appear in the forecast are recomputed individually.
 func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpliedInferencesArgs) (
 	oneOutInfererForecastImpliedValues []*emissions.OneOutInfererForecasterValue,
 	err error,
@@ -179,89 +191,58 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 			continue
 		}
 
+		// A forecaster with no forecast elements emits no entries: withholding any
+		// inferer leaves an empty filtered forecast, which yields no implied inference.
+		if len(forecast.ForecastElements) == 0 {
+			continue
+		}
+
+		// Inferers this forecaster submitted forecast elements for. Withholding any
+		// other inferer leaves every input the forecast-implied pipeline reads for
+		// this forecaster unchanged, so the pair's value equals the base value.
+		forecastedInferers := make(map[Inferer]struct{}, len(forecast.ForecastElements))
+		for _, element := range forecast.ForecastElements {
+			forecastedInferers[element.Inferer] = struct{}{}
+		}
+
+		// The base value (full forecast, nothing withheld) is materialized on the
+		// first withheld inferer absent from the forecast and reused for every later
+		// one; if every inferer appears in the forecast it is never needed. If the
+		// base computation fails, each pair that would reuse it logs a warning and is
+		// skipped, mirroring the behavior of computing that pair directly.
+		var baseInference *emissions.Inference
+		var baseErr error
+		baseComputed := false
+
 		for _, withheldInferer := range args.Inferers {
-			// Filter out the inferer we want to withhold
-			filteredInferers := make([]Inferer, 0, len(args.Inferers)-1)
-			filteredInfererToInference := make(map[Inferer]*emissions.Inference, len(args.InfererToInference)-1)
-			filteredInfererToRegret := make(map[Inferer]*Regret, len(args.InfererToRegret)-1)
-
-			for _, inferer := range args.Inferers {
-				if inferer != withheldInferer {
-					filteredInferers = append(filteredInferers, inferer)
-					if inference, ok := args.InfererToInference[inferer]; ok {
-						filteredInfererToInference[inferer] = inference
-					}
-					if regret, ok := args.InfererToRegret[inferer]; ok {
-						filteredInfererToRegret[inferer] = regret
-					}
+			var pairInference *emissions.Inference
+			if _, participates := forecastedInferers[withheldInferer]; participates {
+				var calcErr error
+				pairInference, calcErr = calcForecastImpliedInferenceWithoutInferer(
+					args, forecaster, forecast, withheldInferer, true)
+				if calcErr != nil {
+					args.Logger.Warn("Error calculating forecast implied inference for:", "forecaster", forecaster, "withheldInferer", withheldInferer, "error", calcErr)
+					continue
 				}
-			}
-
-			filteredForecastElements := make([]*emissions.ForecastElement, 0)
-			for _, element := range forecast.ForecastElements {
-				if element.Inferer != withheldInferer {
-					filteredForecastElements = append(filteredForecastElements, element)
+			} else {
+				if !baseComputed {
+					baseInference, baseErr = calcForecastImpliedInferenceWithoutInferer(
+						args, forecaster, forecast, "", false)
+					baseComputed = true
 				}
+				if baseErr != nil {
+					args.Logger.Warn("Error calculating forecast implied inference for:", "forecaster", forecaster, "withheldInferer", withheldInferer, "error", baseErr)
+					continue
+				}
+				pairInference = baseInference
 			}
 
-			if len(filteredForecastElements) == 0 {
-				continue
-			}
-
-			filteredForecast := &emissions.Forecast{
-				TopicId:          forecast.TopicId,
-				BlockHeight:      forecast.BlockHeight,
-				Forecaster:       forecaster,
-				ForecastElements: filteredForecastElements,
-				ExtraData:        forecast.ExtraData,
-			}
-
-			// Create filtered maps with just this forecaster
-			filteredForecasters := []Forecaster{forecaster}
-			filteredForecasterToForecast := map[Forecaster]*emissions.Forecast{
-				forecaster: filteredForecast,
-			}
-			filteredForecasterToRegret := map[Forecaster]*Regret{}
-			if regret, ok := args.ForecasterToRegret[forecaster]; ok {
-				filteredForecasterToRegret[forecaster] = regret
-			}
-
-			// Calculate forecast-implied inference with the filtered data
-			forecastImpliedInferences, calcErr := CalcForecastImpliedInferences(
-				CalcForecastImpliedInferencesArgs{
-					Logger:                 args.Logger,
-					TopicId:                args.TopicId,
-					TopicArity:             args.TopicArity,
-					AllInferersAreNew:      args.AllInferersAreNew,
-					Inferers:               filteredInferers,
-					InfererToInference:     filteredInfererToInference,
-					InfererToRegret:        filteredInfererToRegret,
-					Forecasters:            filteredForecasters,
-					ForecasterToForecast:   filteredForecasterToForecast,
-					ForecasterToRegret:     filteredForecasterToRegret,
-					NetworkCombinedLoss:    args.NetworkCombinedLoss,
-					EpsilonTopic:           args.EpsilonTopic,
-					PNorm:                  args.PNorm,
-					CNorm:                  args.CNorm,
-					RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
-					LabelRegistry:          args.LabelRegistry,
-					NumLabels:              args.NumLabels,
-					LabelDefaultValue:      args.LabelDefaultValue,
-				},
-			)
-			if calcErr != nil {
-				args.Logger.Warn("Error calculating forecast implied inference for:", "forecaster", forecaster, "withheldInferer", withheldInferer, "error", calcErr)
-				continue
-			}
-
-			// Extract the implied inference for this forecaster
-			forecastImpliedInference, ok := forecastImpliedInferences[forecaster]
-			if !ok {
+			if pairInference == nil {
 				continue
 			}
 
 			// Add to our results
-			oneOutInfererValues, err := emissions.ConvertInferenceValuesToLabeledValues(forecastImpliedInference.Values, args.LabelRegistry)
+			oneOutInfererValues, err := emissions.ConvertInferenceValuesToLabeledValues(pairInference.Values, args.LabelRegistry)
 			if err != nil {
 				return nil, errorsmod.Wrap(err, "failed to convert forecast implied inference values")
 			}
@@ -278,6 +259,104 @@ func GetOneOutInfererForecastImpliedInferences(args GetOneOutInfererForecastImpl
 	}
 
 	return oneOutInfererForecastImpliedValues, nil
+}
+
+// calcForecastImpliedInferenceWithoutInferer computes a single forecaster's forecast-implied
+// inference with one inferer withheld from the inferer list, the inferer maps, and the
+// forecast's elements; with withhold set to false it computes the value over the full
+// inferer set and the unfiltered forecast. It returns (nil, nil) when the forecaster has no
+// implied inference under this withholding — no forecast elements remain after filtering,
+// or the pipeline produced no value for the forecaster — in which case the caller emits no
+// entry for the pair.
+func calcForecastImpliedInferenceWithoutInferer(
+	args GetOneOutInfererForecastImpliedInferencesArgs,
+	forecaster Forecaster,
+	forecast *emissions.Forecast,
+	withheldInferer Inferer,
+	withhold bool,
+) (*emissions.Inference, error) {
+	// Filter out the inferer we want to withhold
+	filteredInferers := make([]Inferer, 0, len(args.Inferers)-1)
+	filteredInfererToInference := make(map[Inferer]*emissions.Inference, len(args.InfererToInference)-1)
+	filteredInfererToRegret := make(map[Inferer]*Regret, len(args.InfererToRegret)-1)
+
+	for _, inferer := range args.Inferers {
+		if withhold && inferer == withheldInferer {
+			continue
+		}
+		filteredInferers = append(filteredInferers, inferer)
+		if inference, ok := args.InfererToInference[inferer]; ok {
+			filteredInfererToInference[inferer] = inference
+		}
+		if regret, ok := args.InfererToRegret[inferer]; ok {
+			filteredInfererToRegret[inferer] = regret
+		}
+	}
+
+	filteredForecastElements := make([]*emissions.ForecastElement, 0)
+	for _, element := range forecast.ForecastElements {
+		if withhold && element.Inferer == withheldInferer {
+			continue
+		}
+		filteredForecastElements = append(filteredForecastElements, element)
+	}
+
+	if len(filteredForecastElements) == 0 {
+		return nil, nil
+	}
+
+	filteredForecast := &emissions.Forecast{
+		TopicId:          forecast.TopicId,
+		BlockHeight:      forecast.BlockHeight,
+		Forecaster:       forecaster,
+		ForecastElements: filteredForecastElements,
+		ExtraData:        forecast.ExtraData,
+	}
+
+	// Create filtered maps with just this forecaster
+	filteredForecasters := []Forecaster{forecaster}
+	filteredForecasterToForecast := map[Forecaster]*emissions.Forecast{
+		forecaster: filteredForecast,
+	}
+	filteredForecasterToRegret := map[Forecaster]*Regret{}
+	if regret, ok := args.ForecasterToRegret[forecaster]; ok {
+		filteredForecasterToRegret[forecaster] = regret
+	}
+
+	// Calculate forecast-implied inference with the filtered data
+	forecastImpliedInferences, err := CalcForecastImpliedInferences(
+		CalcForecastImpliedInferencesArgs{
+			Logger:                 args.Logger,
+			TopicId:                args.TopicId,
+			TopicArity:             args.TopicArity,
+			AllInferersAreNew:      args.AllInferersAreNew,
+			Inferers:               filteredInferers,
+			InfererToInference:     filteredInfererToInference,
+			InfererToRegret:        filteredInfererToRegret,
+			Forecasters:            filteredForecasters,
+			ForecasterToForecast:   filteredForecasterToForecast,
+			ForecasterToRegret:     filteredForecasterToRegret,
+			NetworkCombinedLoss:    args.NetworkCombinedLoss,
+			EpsilonTopic:           args.EpsilonTopic,
+			PNorm:                  args.PNorm,
+			CNorm:                  args.CNorm,
+			RegretScalePlusEpsilon: args.RegretScalePlusEpsilon,
+			LabelRegistry:          args.LabelRegistry,
+			NumLabels:              args.NumLabels,
+			LabelDefaultValue:      args.LabelDefaultValue,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract the implied inference for this forecaster
+	forecastImpliedInference, ok := forecastImpliedInferences[forecaster]
+	if !ok {
+		return nil, nil
+	}
+
+	return forecastImpliedInference, nil
 }
 
 // Arguments for GetNaiveInference
