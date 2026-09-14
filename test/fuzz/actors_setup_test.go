@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"sort"
 
 	cosmossdk_io_math "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	fuzzcommon "github.com/allora-network/allora-chain/test/fuzz/common"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
@@ -473,18 +475,20 @@ func startRegisterReputers(
 	data *SimulationData,
 	startReputers []Actor,
 	listTopics []uint64,
+	weights setupWeights,
 	iterationCountStart int,
 ) (iterationCountAfter int) {
 	iterationCount := iterationCountStart
 	for _, reputer := range startReputers {
+		base, err := pickRandomBalanceLessThanHalf(m, reputer)
+		failIfOnErr(m.T, true, err)
 		for _, topicId := range listTopics {
 			// register reputer on the topic
 			success := registerReputer(m, reputer, UnusedActor, nil, topicId, data, iterationCount)
 			require.True(m.T, success)
 			iterationCount++
 			// stake reputer on the topic
-			bal, err := pickRandomBalanceLessThanHalf(m, reputer)
-			failIfOnErr(m.T, true, err)
+			bal := weights.amountFor(topicId, base)
 			success = stakeAsReputer(m, reputer, UnusedActor, &bal, topicId, data, iterationCount)
 			require.True(m.T, success)
 			iterationCount++
@@ -519,13 +523,15 @@ func startDelegateDelegators(
 	startDelegators []Actor,
 	startReputers []Actor,
 	listTopics []uint64,
+	weights setupWeights,
 	iterationCountStart int,
 ) (iterationCountAfter int) {
 	iterationCount := iterationCountStart
 	for i, delegator := range startDelegators {
+		base, err := pickRandomBalanceLessThanHalf(m, delegator)
+		failIfOnErr(m.T, true, err)
 		for _, topicId := range listTopics {
-			bal, err := pickRandomBalanceLessThanHalf(m, delegator)
-			failIfOnErr(m.T, true, err)
+			bal := weights.amountFor(topicId, base)
 			success := delegateStake(m, delegator, startReputers[i], &bal, topicId, data, iterationCount)
 			require.True(m.T, success)
 			iterationCount++
@@ -534,26 +540,213 @@ func startDelegateDelegators(
 	return iterationCount
 }
 
-// startFundTopics funds the topics with random amounts of money
+// setupWeights decides how much stake, delegation and funding each setup topic receives.
+// With uneven weights the heavy topic gets the base amount and every other topic a
+// millionth of it, floored at the chain's minimum stake, so the heavy topic wins any block
+// that is over the per-block limit.
+type setupWeights struct {
+	heavyTopicId uint64
+	uneven       bool
+	minAmount    cosmossdk_io_math.Int
+}
+
+const lightTopicDivisor = int64(1_000_000)
+
+func newSetupWeights(m *testcommon.TestConfig, heavyTopicId uint64, uneven bool) setupWeights {
+	minAmount := cosmossdk_io_math.OneInt()
+	if uneven {
+		ctx := context.Background()
+		paramsResp, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
+		require.NoError(m.T, err)
+		minAmount = paramsResp.Params.RequiredMinimumStake
+	}
+	return setupWeights{heavyTopicId: heavyTopicId, uneven: uneven, minAmount: minAmount}
+}
+
+func (w setupWeights) amountFor(topicId uint64, base cosmossdk_io_math.Int) cosmossdk_io_math.Int {
+	if !w.uneven || topicId == w.heavyTopicId {
+		return base
+	}
+	light := base.QuoRaw(lightTopicDivisor)
+	if light.LT(w.minAmount) {
+		return w.minAmount
+	}
+	return light
+}
+
+// startActivateTopicsInOneBlock activates every setup topic in the same block: the reputer
+// registers on, stakes on and funds each topic in one transaction. A block admits at most
+// MaxActiveTopicsPerBlock topics, so the limit is raised to the number of setup topics for
+// that transaction and restored right after; the topics then compete for the restored limit
+// at their shared epoch end. Returns the epoch-end block the topics now share.
+func startActivateTopicsInOneBlock(
+	m *testcommon.TestConfig,
+	data *SimulationData,
+	admin Actor,
+	reputer Actor,
+	listTopics []uint64,
+	weights setupWeights,
+	iterationCountStart int,
+) (iterationCountAfter int, sharedChurningBlock int64) {
+	iterationCount := iterationCountStart
+	previousLimit, ok := setMaxActiveTopicsPerBlock(m, admin, uint64(len(listTopics)), data, iterationCount)
+	require.True(m.T, ok)
+	iterationCount++
+	stakeBase, err := pickRandomBalanceLessThanHalf(m, reputer)
+	failIfOnErr(m.T, true, err)
+	// stakes and funding are paid from the same balance, so the two bases must fit together
+	fundBase := stakeBase.QuoRaw(2)
+	stakes := make([]cosmossdk_io_math.Int, 0, len(listTopics))
+	funds := make([]cosmossdk_io_math.Int, 0, len(listTopics))
+	for _, topicId := range listTopics {
+		stakes = append(stakes, weights.amountFor(topicId, stakeBase))
+		funds = append(funds, weights.amountFor(topicId, fundBase))
+	}
+	success := activateTopicsInOneTx(m, reputer, listTopics, stakes, funds, data, iterationCount)
+	require.True(m.T, success)
+	iterationCount++
+	sharedChurningBlock = requireSameChurningBlock(m, listTopics)
+	_, ok = setMaxActiveTopicsPerBlock(m, admin, previousLimit, data, iterationCount)
+	require.True(m.T, ok)
+	iterationCount++
+	return iterationCount, sharedChurningBlock
+}
+
+// startCreateTopics creates the setup topics, in one transaction when the setup asks for
+// topics in the same block, and returns their ids in ascending order.
+func startCreateTopics(
+	m *testcommon.TestConfig,
+	data *SimulationData,
+	creator Actor,
+	setup fuzzcommon.InitialSetup,
+	iterationCountStart int,
+) (listTopics []uint64, iterationCountAfter int) {
+	iterationCount := iterationCountStart
+	if setup.TopicsInSameBlock {
+		topicIds, success := createTopicsInOneTx(m, creator, setup.NumTopics, data, iterationCount)
+		require.True(m.T, success)
+		iterationCount++
+		listTopics = topicIds
+	} else {
+		for i := 0; i < setup.NumTopics; i++ {
+			success := createTopic(m, creator, UnusedActor, nil, 0, data, iterationCount)
+			require.True(m.T, success)
+			iterationCount++
+		}
+		listTopics = data.getTopics()
+	}
+	sort.Slice(listTopics, func(i, j int) bool { return listTopics[i] < listTopics[j] })
+	return listTopics, iterationCount
+}
+
+// startFundTopics funds the topics with random amounts of money, in one transaction when the
+// setup asks for topics in the same block, else one per topic. A topic that is inactive at
+// this point (refused at its epoch end) is activated again by this funding.
 func startFundTopics(
 	m *testcommon.TestConfig,
 	faucet Actor,
 	data *SimulationData,
 	listTopics []uint64,
+	setup fuzzcommon.InitialSetup,
+	weights setupWeights,
 	iterationCountStart int,
 ) (iterationCountAfter int) {
 	iterationCount := iterationCountStart
-	for _, topicId := range listTopics {
-		fundAmount, err := pickRandomBalanceLessThanHalf(m, faucet)
-		failIfOnErr(m.T, true, err)
-		success := fundTopic(m, faucet, UnusedActor, &fundAmount, topicId, data, iterationCount)
+	base, err := pickRandomBalanceLessThanHalf(m, faucet)
+	failIfOnErr(m.T, true, err)
+	if setup.TopicsInSameBlock {
+		amounts := make([]cosmossdk_io_math.Int, 0, len(listTopics))
+		for _, topicId := range listTopics {
+			amounts = append(amounts, weights.amountFor(topicId, base))
+		}
+		success := fundTopicsInOneTx(m, faucet, listTopics, amounts, data, iterationCount)
 		require.True(m.T, success)
 		iterationCount++
+	} else {
+		for _, topicId := range listTopics {
+			fundAmount := base
+			if !weights.uneven {
+				fundAmount, err = pickRandomBalanceLessThanHalf(m, faucet)
+				failIfOnErr(m.T, true, err)
+			} else {
+				fundAmount = weights.amountFor(topicId, base)
+			}
+			success := fundTopic(m, faucet, UnusedActor, &fundAmount, topicId, data, iterationCount)
+			require.True(m.T, success)
+			iterationCount++
+		}
 	}
 	return iterationCount
 }
 
-// startDoInferenceAndReputation does inference and reputation for both topics
+// requireSameChurningBlock asserts that every topic is active and scheduled for the same
+// epoch-end block, which is what makes them compete for MaxActiveTopicsPerBlock later, and
+// returns that block.
+func requireSameChurningBlock(m *testcommon.TestConfig, listTopics []uint64) int64 {
+	ctx := context.Background()
+	churningBlocks := make(map[int64][]uint64)
+	var sharedBlock int64
+	for _, topicId := range listTopics {
+		active := isTopicActive(m, topicId)
+		require.True(m.T, active, "setup topic %d must be active right after activation", topicId)
+		resp, err := m.Client.QueryEmissions().GetNextChurningBlockByTopicId(ctx, &emissionstypes.GetNextChurningBlockByTopicIdRequest{
+			TopicId: topicId,
+		})
+		require.NoError(m.T, err)
+		churningBlocks[resp.BlockHeight] = append(churningBlocks[resp.BlockHeight], topicId)
+		sharedBlock = resp.BlockHeight
+	}
+	require.Len(m.T, churningBlocks, 1, "setup topics must share one epoch-end block, got %v", churningBlocks)
+	m.T.Log("setup topics", listTopics, "share the epoch-end block", sharedBlock)
+	return sharedBlock
+}
+
+// verifyEpochEndRefusal waits for the shared epoch end of the setup topics and asserts the
+// block limit was enforced: the heavy topic stays active, no more topics than the limit are
+// active, and at least one setup topic was inactivated.
+func verifyEpochEndRefusal(
+	m *testcommon.TestConfig,
+	listTopics []uint64,
+	heavyTopicId uint64,
+	sharedChurningBlock int64,
+) {
+	ctx := context.Background()
+	// The epoch end is processed in the EndBlock of the churning block; one more block makes
+	// sure its state is queryable.
+	epochEndBlock := sharedChurningBlock + 1
+	m.T.Log("waiting for the first epoch end of the setup topics at block", epochEndBlock)
+	require.NoError(m.T, m.Client.WaitForBlockHeight(ctx, epochEndBlock))
+
+	paramsResp, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
+	require.NoError(m.T, err)
+	limit := paramsResp.Params.MaxActiveTopicsPerBlock
+	require.Less(m.T, limit, uint64(len(listTopics)), "the refusal check needs more setup topics than max_active_topics_per_block")
+
+	active := make([]uint64, 0, len(listTopics))
+	inactive := make([]uint64, 0, len(listTopics))
+	for _, topicId := range listTopics {
+		if isTopicActive(m, topicId) {
+			active = append(active, topicId)
+		} else {
+			inactive = append(inactive, topicId)
+		}
+	}
+	m.T.Log("after the first epoch end: active setup topics", active, "inactive setup topics", inactive, "limit per block", limit)
+	require.Contains(m.T, active, heavyTopicId, "the heaviest setup topic must survive the epoch end")
+	require.LessOrEqual(m.T, uint64(len(active)), limit, "no more setup topics than the per-block limit may stay active")
+	require.NotEmpty(m.T, inactive, "at least one setup topic must have been refused its next block and inactivated")
+}
+
+// isTopicActive queries the chain's own notion of an active topic.
+func isTopicActive(m *testcommon.TestConfig, topicId uint64) bool {
+	ctx := context.Background()
+	resp, err := m.Client.QueryEmissions().IsTopicActive(ctx, &emissionstypes.IsTopicActiveRequest{TopicId: topicId})
+	require.NoError(m.T, err)
+	return resp.IsActive
+}
+
+// startDoInferenceAndReputation does inference and reputation for the setup topics that
+// are active; a topic inactivated at its epoch end has no open worker nonce to submit to.
 func startDoInferenceAndReputation(
 	m *testcommon.TestConfig,
 	data *SimulationData,
@@ -561,11 +754,18 @@ func startDoInferenceAndReputation(
 	iterationCountStart int,
 ) (iterationCountAfter int) {
 	iterationCount := iterationCountStart
+	ranOnAnyTopic := false
 	for _, topicId := range listTopics {
+		if !isTopicActive(m, topicId) {
+			m.T.Log("skipping inference and reputation for inactive setup topic", topicId)
+			continue
+		}
 		success := doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, topicId, data, iterationCount)
 		require.True(m.T, success)
 		iterationCount++
+		ranOnAnyTopic = true
 	}
+	require.True(m.T, ranOnAnyTopic, "at least one setup topic must be active for inference and reputation")
 	return iterationCount
 }
 
@@ -751,16 +951,11 @@ func simulateAutomaticInitialState(
 	require.True(m.T, bulkRemoveFromGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
 	iterationCount++
 
-	// create two topics with both reputers and workers whitelist enabled
-	success := createTopic(m, startDelegators[0], UnusedActor, nil, 0, data, iterationCount)
-	require.True(m.T, success)
-	iterationCount++
-	success = createTopic(m, startDelegators[0], UnusedActor, nil, 0, data, iterationCount)
-	require.True(m.T, success)
-	iterationCount++
-
-	listTopics := data.getTopics()
-	require.Len(m.T, listTopics, 2)
+	// create the setup topics with both reputers and workers whitelist enabled
+	var listTopics []uint64
+	listTopics, iterationCount = startCreateTopics(m, data, startDelegators[0], f.InitialSetup, iterationCount)
+	require.Len(m.T, listTopics, f.InitialSetup.NumTopics)
+	weights := newSetupWeights(m, listTopics[0], f.InitialSetup.UnevenTopicWeights)
 
 	// disable whitelists for topic 1
 	require.True(m.T,
@@ -786,15 +981,28 @@ func simulateAutomaticInitialState(
 	require.True(m.T, bulkRemoveFromTopicReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
 	iterationCount++
 
-	// register all 4 reputers on both topics
-	iterationCount = startRegisterReputers(m, data, startReputers, listTopics, iterationCount)
-	// register all 5 workers on both topics
+	// register all 4 reputers on every setup topic. With topics in the same block, the first
+	// reputer registers, stakes and funds every topic in one transaction, so all of them
+	// activate in that block and share their epoch-end block from then on. The refusal check
+	// runs right after that shared epoch end, before any later stake can re-activate a
+	// refused topic.
+	remainingReputers := startReputers
+	if f.InitialSetup.TopicsInSameBlock {
+		var sharedChurningBlock int64
+		iterationCount, sharedChurningBlock = startActivateTopicsInOneBlock(m, data, faucet, startReputers[0], listTopics, weights, iterationCount)
+		remainingReputers = startReputers[1:]
+		if f.InitialSetup.ExpectEpochEndRefusal {
+			verifyEpochEndRefusal(m, listTopics, weights.heavyTopicId, sharedChurningBlock)
+		}
+	}
+	iterationCount = startRegisterReputers(m, data, remainingReputers, listTopics, weights, iterationCount)
+	// register all 5 workers on every setup topic
 	iterationCount = startRegisterWorkers(m, data, startWorkers, listTopics, iterationCount)
-	// delegate stake to both topics from the delegators
-	iterationCount = startDelegateDelegators(m, data, startDelegators, startReputers, listTopics, iterationCount)
-	// fund the topics
-	iterationCount = startFundTopics(m, faucet, data, listTopics, iterationCount)
-	// do inference and reputation for both topics
+	// delegate stake to every setup topic from the delegators
+	iterationCount = startDelegateDelegators(m, data, startDelegators, startReputers, listTopics, weights, iterationCount)
+	// fund the topics; this also re-activates any setup topic inactivated at its epoch end
+	iterationCount = startFundTopics(m, faucet, data, listTopics, f.InitialSetup, weights, iterationCount)
+	// do inference and reputation for the setup topics that are active
 	iterationCount = startDoInferenceAndReputation(m, data, listTopics, iterationCount)
 	// collect delegator rewards for both topics
 	iterationCount = startCollectDelegatorRewards(m, data, startDelegators, startReputers, listTopics, iterationCount)

@@ -60,6 +60,26 @@ To solve this issue and consider all the actors as whitelisted, you can update t
 }
 ```
 
+## Forcing an epoch-end block collision
+
+Every active topic is scheduled in the block where its epoch ends, and a block holds at most `MaxActiveTopicsPerBlock` topics. When more topics than that end their epoch in the same block, the lightest ones are refused and inactivated. The default setup never triggers this: each setup topic is activated by its own first stake or funding transaction, in its own block, so their epoch ends rarely coincide. The `initialSetup` options below force the collision and verify it:
+
+```json
+"initialSetup": {
+    "numTopics": 3,
+    "topicsInSameBlock": true,
+    "unevenTopicWeights": true,
+    "expectEpochEndRefusal": true
+}
+```
+
+* `numTopics` (`NUM_SETUP_TOPICS`): how many topics the setup creates. Default 2.
+* `topicsInSameBlock` (`TOPICS_IN_SAME_BLOCK`): create all setup topics in one transaction, then activate them with one transaction in which the first reputer registers on, stakes on and funds every topic. Whatever makes a topic's weight cross the activation threshold, it happens in that one block for all of them, and sharing an epoch length they end their epochs in the same block from then on. Because a block admits at most `MaxActiveTopicsPerBlock` topics, the setup raises that parameter to `numTopics` for the activation transaction and restores it right after (through `UpdateParams` from the faucet, which is a param admin on the local testnet). The setup asserts the topics share the same next churning block. The later funding step also becomes one transaction. Default false: one transaction per topic.
+* `unevenTopicWeights` (`UNEVEN_TOPIC_WEIGHTS`): the lowest-id setup topic gets the full stake, delegation and funding amounts, the others a millionth of them, so the heavy topic always wins the block. Default false.
+* `expectEpochEndRefusal` (`EXPECT_EPOCH_END_REFUSAL`): right after the shared epoch end (the setup waits for it, about one epoch after activation, before registering the remaining actors) it asserts that the heavy topic is still active, that no more setup topics than `MaxActiveTopicsPerBlock` are active, and that at least one was inactivated. Needs `topicsInSameBlock`, `numTopics >= 2` and `numTopics > MaxActiveTopicsPerBlock`. Default false.
+
+With the invariants patch applied (`git apply test/fuzz/invariants.patch`) this is the configuration that exercises the epoch-end refusal path of `AttemptTopicReactivation` on-chain and lets the invariants check the bookkeeping afterwards.
+
 # Output
 
 The output of the simulator contains a count of every attempted state transition will look something like this:
