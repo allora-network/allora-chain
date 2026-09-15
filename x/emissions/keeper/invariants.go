@@ -112,26 +112,46 @@ func TopicInvariantActiveTopicsScheduledAtChurningBlock(k Keeper) sdk.Invariant 
 		if err != nil {
 			panic(fmt.Sprintf("failed to get scheduled topic ids: %v", err))
 		}
-		scheduled := make(map[TopicId]struct{}, len(scheduledTopicIds))
+		scheduled := make(map[TopicId]BlockHeight, len(scheduledTopicIds))
 		problems := make([]string, 0)
 		for _, topicId := range scheduledTopicIds {
-			scheduled[topicId] = struct{}{}
 			churningBlock, err := k.topicKeeper.topicToNextPossibleChurningBlock.Get(ctx, topicId)
 			if err != nil {
 				panic(fmt.Sprintf("failed to get next possible churning block for topic %d: %v", topicId, err))
 			}
-			topicIdsAtBlock, err := k.topicKeeper.GetActiveTopicIdsAtBlock(ctx, churningBlock)
-			if err != nil {
-				panic(fmt.Sprintf("failed to get active topic ids at block %d: %v", churningBlock, err))
+			scheduled[topicId] = churningBlock
+		}
+
+		buckets, err := k.topicKeeper.GetActiveTopicIdsByBlock(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topic block buckets: %v", err))
+		}
+		listedAtSchedule := make(map[TopicId]struct{}, len(scheduledTopicIds))
+		for _, bucket := range buckets {
+			if bucket.TopicIds == nil {
+				continue
 			}
-			listed := false
-			for _, id := range topicIdsAtBlock.TopicIds {
-				if id == topicId {
-					listed = true
-					break
+			for _, topicId := range bucket.TopicIds.TopicIds {
+				churningBlock, isScheduled := scheduled[topicId]
+				if !isScheduled {
+					problems = append(problems, fmt.Sprintf("topic %d: listed at block %d without a churning block", topicId, bucket.BlockHeight))
+					continue
 				}
+				if churningBlock != bucket.BlockHeight {
+					problems = append(problems, fmt.Sprintf("topic %d: listed at block %d instead of its churning block %d", topicId, bucket.BlockHeight, churningBlock))
+					continue
+				}
+				if _, duplicate := listedAtSchedule[topicId]; duplicate {
+					problems = append(problems, fmt.Sprintf("topic %d: listed more than once at its churning block %d", topicId, churningBlock))
+					continue
+				}
+				listedAtSchedule[topicId] = struct{}{}
 			}
-			if !listed {
+		}
+
+		for _, topicId := range scheduledTopicIds {
+			churningBlock := scheduled[topicId]
+			if _, listed := listedAtSchedule[topicId]; !listed {
 				problems = append(problems, fmt.Sprintf("topic %d: not listed at its churning block %d", topicId, churningBlock))
 			}
 			inSet, err := k.topicKeeper.activeTopics.Has(ctx, topicId)

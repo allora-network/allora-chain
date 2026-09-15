@@ -112,4 +112,12 @@ func (s *KeeperTestSuite) TestTopicInvariantActiveTopicsScheduledAtChurningBlock
 	msg, broken = invariant(ctx)
 	s.Require().True(broken, "an active topic without a schedule must break the invariant")
 	s.Require().Contains(msg, fmt.Sprintf("topic %d:", unscheduledTopicId))
+
+	// A block-bucket entry without a matching schedule must also be reported.
+	orphanedBucketTopicId := s.CreateTopic()
+	const orphanedBlock = int64(12345)
+	s.Require().NoError(k.SetBlockToActiveTopics(ctx, orphanedBlock, types.TopicIds{TopicIds: []uint64{orphanedBucketTopicId}}))
+	msg, broken = invariant(ctx)
+	s.Require().True(broken, "a block-bucket entry without a schedule must break the invariant")
+	s.Require().Contains(msg, fmt.Sprintf("topic %d: listed at block %d without a churning block", orphanedBucketTopicId, orphanedBlock))
 }
