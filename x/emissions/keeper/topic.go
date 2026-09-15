@@ -480,6 +480,11 @@ func (k *TopicKeeper) IsTopicInActiveSet(ctx context.Context, topicId TopicId) (
 	return k.activeTopics.Has(ctx, topicId)
 }
 
+// RemoveTopicFromActiveSet removes a topic from the active-topic compatibility set.
+func (k *TopicKeeper) RemoveTopicFromActiveSet(ctx context.Context, topicId TopicId) error {
+	return k.activeTopics.Remove(ctx, topicId)
+}
+
 // GetActiveTopicIds returns the members of the active topic set in ascending id order.
 func (k *TopicKeeper) GetActiveTopicIds(ctx context.Context) ([]TopicId, error) {
 	iter, err := k.activeTopics.Iterate(ctx, nil)
@@ -507,6 +512,17 @@ func (k *TopicKeeper) IsTopicScheduled(ctx context.Context, topicId TopicId) (bo
 	return k.topicToNextPossibleChurningBlock.Has(ctx, topicId)
 }
 
+// GetTopicSchedule returns the topic's next churning block without comparing it to the
+// current height.
+func (k *TopicKeeper) GetTopicSchedule(ctx context.Context, topicId TopicId) (BlockHeight, error) {
+	return k.topicToNextPossibleChurningBlock.Get(ctx, topicId)
+}
+
+// RemoveTopicSchedule removes the topic's next churning block.
+func (k *TopicKeeper) RemoveTopicSchedule(ctx context.Context, topicId TopicId) error {
+	return k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
+}
+
 // GetScheduledTopicIds returns the ids of the topics that have a next churning block, in
 // ascending id order.
 func (k *TopicKeeper) GetScheduledTopicIds(ctx context.Context) ([]TopicId, error) {
@@ -524,6 +540,28 @@ func (k *TopicKeeper) GetScheduledTopicIds(ctx context.Context) ([]TopicId, erro
 		topicIds = append(topicIds, topicId)
 	}
 	return topicIds, nil
+}
+
+// GetActiveTopicIdsByBlock returns every churning-block bucket in ascending block order.
+func (k *TopicKeeper) GetActiveTopicIdsByBlock(ctx context.Context) ([]types.BlockHeightTopicIds, error) {
+	iter, err := k.blockToActiveTopics.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to iterate active topic blocks")
+	}
+	defer iter.Close()
+	blocks := make([]types.BlockHeightTopicIds, 0)
+	for ; iter.Valid(); iter.Next() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get active topic block")
+		}
+		topicIds := keyValue.Value
+		blocks = append(blocks, types.BlockHeightTopicIds{
+			BlockHeight: keyValue.Key,
+			TopicIds:    &topicIds,
+		})
+	}
+	return blocks, nil
 }
 
 // wrapper for set operation around blockToActiveTopics

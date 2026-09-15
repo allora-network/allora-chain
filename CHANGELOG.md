@@ -82,7 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * [#994](https://github.com/allora-network/allora-chain/pull/994) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
-* [#TBD](https://github.com/allora-network/allora-chain/pull/TBD) Inactivate a topic whose epoch-end reschedule is refused instead of leaving it in the active set without a schedule, and only add a topic's stored weight to the total when it becomes scheduled (gets a next churning block); adds an invariant that every scheduled topic is listed at its churning block and mirrored by the active-topic set.
+* [#998](https://github.com/allora-network/allora-chain/pull/998) Inactivate a topic whose epoch-end reschedule is refused instead of leaving it in the active set without a schedule, and only add a topic's stored weight to the total when it becomes scheduled (gets a next churning block); repairs inconsistent activity state during migration and adds invariants for topic scheduling and weight totals.
 
 ### Security
 

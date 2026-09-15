@@ -355,6 +355,41 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().Equal(expected.String(), s.totalSum().String())
 }
 
+// A topic left in the active set and accumulator without a schedule or block-bucket entry
+// is made fully inactive. A later activation must count its stored weight exactly once.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsRepairsHalfActiveTopic() {
+	ctx := s.Ctx()
+	topicKeeper := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Reproduce the persisted state left by the old failed-reactivation path.
+	s.Require().NoError(topicKeeper.SetBlockToActiveTopics(ctx, churningBlock, emissionstypes.TopicIds{TopicIds: nil}))
+	s.Require().NoError(topicKeeper.RemoveTopicSchedule(ctx, topicId))
+	inActiveSet, err := topicKeeper.IsTopicInActiveSet(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(inActiveSet)
+	s.Require().Equal(weight.String(), s.totalSum().String())
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(ctx, *s.EmissionsKeeper()))
+
+	scheduled, err := topicKeeper.IsTopicScheduled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled)
+	inActiveSet, err = topicKeeper.IsTopicInActiveSet(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(inActiveSet)
+	s.Require().True(s.totalSum().IsZero())
+
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().Equal(weight.String(), s.totalSum().String())
+}
+
 // a consistent accumulator is left as is and a second run changes nothing.
 func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsIdempotent() {
 	expected := s.seedTopicWeights([]bool{true, true})
