@@ -92,16 +92,18 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 			filtered = append(filtered, topicId)
 			validScheduled[topicId] = struct{}{}
 		}
-		if slices.Equal(existing, filtered) {
-			continue
+		changed := !slices.Equal(existing, filtered)
+		if changed {
+			if err := topicKeeper.SetBlockToActiveTopics(ctx, bucket.BlockHeight, emissionstypes.TopicIds{TopicIds: filtered}); err != nil {
+				return errorsmod.Wrapf(err, "MIGRATION V16: failed to repair active topics at block %d", bucket.BlockHeight)
+			}
 		}
-		if err := topicKeeper.SetBlockToActiveTopics(ctx, bucket.BlockHeight, emissionstypes.TopicIds{TopicIds: filtered}); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to repair active topics at block %d", bucket.BlockHeight)
+		if changed || len(filtered) == 0 {
+			if err := topicKeeper.ResetLowestActiveTopicWeightAtBlock(ctx, bucket.BlockHeight); err != nil {
+				return errorsmod.Wrapf(err, "MIGRATION V16: failed to reset lowest topic weight at block %d", bucket.BlockHeight)
+			}
+			repairedBuckets++
 		}
-		if err := topicKeeper.ResetLowestActiveTopicWeightAtBlock(ctx, bucket.BlockHeight); err != nil {
-			return errorsmod.Wrapf(err, "MIGRATION V16: failed to reset lowest topic weight at block %d", bucket.BlockHeight)
-		}
-		repairedBuckets++
 	}
 
 	removedSchedules := 0

@@ -370,6 +370,10 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 
 	// Reproduce the persisted state left by the old failed-reactivation path.
 	s.Require().NoError(topicKeeper.SetBlockToActiveTopics(ctx, churningBlock, emissionstypes.TopicIds{TopicIds: nil}))
+	s.Require().NoError(topicKeeper.SetBlockToLowestActiveTopicWeight(ctx, churningBlock, emissionstypes.TopicIdWeightPair{
+		TopicId: topicId,
+		Weight:  weight,
+	}))
 	s.Require().NoError(topicKeeper.RemoveTopicSchedule(ctx, topicId))
 	inActiveSet, err := topicKeeper.IsTopicInActiveSet(ctx, topicId)
 	s.Require().NoError(err)
@@ -385,6 +389,9 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().NoError(err)
 	s.Require().False(inActiveSet)
 	s.Require().True(s.totalSum().IsZero())
+	_, noPriorLowestWeight, err := topicKeeper.GetLowestActiveTopicWeightAtBlock(ctx, churningBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight)
 
 	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
 	s.Require().Equal(weight.String(), s.totalSum().String())
