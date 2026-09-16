@@ -1,0 +1,107 @@
+syntax = "proto3";
+package scheduler.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/query/v1/query.proto";
+import "scheduler/v1/task.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/scheduler/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Tasks queries all tasks.
+  //
+  // When called from another module, this query might consume a high amount of
+  // gas if the pagination field is incorrectly set.
+  rpc Tasks(QueryTasksRequest) returns (QueryTasksResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/scheduler/v1/tasks";
+  }
+
+  // Task queries a task by its ID.
+  rpc Task(QueryTaskRequest) returns (QueryTaskResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/scheduler/v1/tasks/{task_id}";
+  }
+
+  // ScheduledTasks queries the scheduled tasks of a specific type.
+  //
+  // When called from another module, this query might consume a high amount of
+  // gas if the pagination field is incorrectly set.
+  rpc ScheduledTasks(QueryScheduledTasksRequest) returns (QueryScheduledTasksResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/scheduler/v1/schedules/{typename}/tasks";
+  }
+
+  // Handlers queries all the registered task handlers.
+  rpc Handlers(QueryHandlersRequest) returns (QueryHandlersResponse) {
+    option (cosmos.query.v1.module_query_safe) = false;
+    option (google.api.http).get = "/scheduler/v1/handlers";
+  }
+}
+
+// QueryTasksRequest is the request type for the Query/Tasks RPC method.
+message QueryTasksRequest {
+  // Typename if specified, filters tasks by their handler typename.
+  string typename = 1;
+
+  // Pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryTasksResponse is the response type for the Query/Tasks RPC method.
+message QueryTasksResponse {
+  // Tasks contains all the queried tasks.
+  repeated Task tasks = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+
+  // Pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryTaskRequest is the request type for the Query/Task RPC method.
+message QueryTaskRequest {
+  // TaskId is the id of the queried task.
+  string task_id = 1;
+}
+
+// QueryTaskResponse is the response type for the Query/Task RPC method.
+message QueryTaskResponse {
+  // Task is the queried task.
+  Task task = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryScheduledTasksRequest is the request type for the Query/ScheduledTasks RPC method.
+message QueryScheduledTasksRequest {
+  // Typename is the type of tasks to query.
+  string typename = 1;
+
+  // From is an optional filter to only return tasks scheduled from a given time (i.e. after or before depending on the order, inclusive)
+  // With this filter pagination by offset is not supported, pagination by key must be used instead.
+  google.protobuf.Timestamp from = 2 [(gogoproto.stdtime) = true];
+
+  // Pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+
+// QueryScheduledTasksResponse is the response type for the Query/ScheduledTasks RPC method.
+message QueryScheduledTasksResponse {
+  // Tasks contains all the queried tasks.
+  repeated Task tasks = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+
+  // Pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryHandlersRequest is the response type for the Query/Handlers RPC method.
+message QueryHandlersRequest {}
+
+// QueryHandlersResponse is the response type for the Query/Handlers RPC method.
+message QueryHandlersResponse {
+  // Handlers contains the typenames of all registered task handlers in their execution order.
+  repeated string handlers = 1;
+}

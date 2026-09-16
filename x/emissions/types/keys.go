@@ -8,6 +8,12 @@ const (
 	AlloraStakingAccountName                   = "allorastaking"
 	AlloraRewardsAccountName                   = "allorarewards"
 	AlloraPendingRewardForDelegatorAccountName = "allorapendingrewards"
+
+	OpenEpochWorkerWindowTask   = ModuleName + ":open_epoch_worker_window"
+	CloseEpochWorkerWindowTask  = ModuleName + ":close_epoch_worker_window"
+	OpenEpochReputerWindowTask  = ModuleName + ":open_epoch_reputer_window"
+	CloseEpochReputerWindowTask = ModuleName + ":close_epoch_reputer_window"
+	CompleteEpochTask           = ModuleName + ":complete_epoch"
 )
 
 var (
@@ -126,4 +132,7 @@ var (
 	TopicLabelRegistryKey                     = collections.NewPrefix(106)
 	NetworkInferenceBundleKey                 = collections.NewPrefix(107)
 	OutlierResistantNetworkInferenceBundleKey = collections.NewPrefix(108)
+	EpochsKey                                 = collections.NewPrefix(109)
+	EpochsByStateKeyPrefix                    = collections.NewPrefix(110)
+	EpochsByStateAndTopicKeyPrefix            = collections.NewPrefix(111)
 )
