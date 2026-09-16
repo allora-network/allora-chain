@@ -163,6 +163,27 @@ func (k *Keeper) GetEpoch(ctx context.Context, topicID TopicId, nonce types.Nonc
 	return k.epochs.Get(ctx, collections.Join(topicID, nonce))
 }
 
+// GetTopicEpochs returns all in-flight epochs for a topic, ordered by NonceV2 ascending.
+// Completed and cancelled epochs are removed from the store, so this is the live set only.
+func (k *Keeper) GetTopicEpochs(ctx context.Context, topicID TopicId) ([]types.Epoch, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
+	iter, err := k.epochs.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	var epochs []types.Epoch
+	for ; iter.Valid(); iter.Next() {
+		epoch, err := iter.Value()
+		if err != nil {
+			return nil, err
+		}
+		epochs = append(epochs, epoch)
+	}
+	return epochs, nil
+}
+
 // OnTopicActivated starts the first epoch and registers the periodic new-epoch task for the topic.
 func (k *Keeper) OnTopicActivated(ctx context.Context, topicID TopicId) error {
 	if k.schedulerKeeper == nil {
