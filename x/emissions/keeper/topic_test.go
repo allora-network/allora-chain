@@ -210,6 +210,12 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
 	err = k.AttemptTopicReactivation(s.Ctx(), topic2Id)
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
+	activeTopics, err = k.GetActiveTopicIdsAtBlock(s.Ctx(), 15)
+	s.Require().NoError(err)
+	s.Require().Empty(activeTopics.TopicIds)
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(s.Ctx(), 15)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "processed epoch-end bucket metadata must be pruned")
 
 	s.WithBlockHeight(25)
 	setTopicWeight(topic3Id, 50, 10)
@@ -282,6 +288,12 @@ func (s *KeeperTestSuite) TestFailedEpochEndReactivationLeavesTopicCoherent() {
 	isActive, err := k.IsTopicActive(ctx, lightTopicId)
 	s.Require().NoError(err)
 	s.Require().False(isActive)
+	previousBlockTopics, err := k.GetActiveTopicIdsAtBlock(ctx, 10)
+	s.Require().NoError(err)
+	s.Require().Empty(previousBlockTopics.TopicIds)
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(ctx, 10)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "refused topic's old bucket metadata must be pruned")
 	sumAfterFailedReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(heavyWeight.String(), sumAfterFailedReactivation.String(),
@@ -301,6 +313,28 @@ func (s *KeeperTestSuite) TestFailedEpochEndReactivationLeavesTopicCoherent() {
 		"reactivation must add the stored weight exactly once")
 	msg, broken = invariant(ctx)
 	s.Require().False(broken, msg)
+}
+
+func (s *KeeperTestSuite) TestActivateTopicDoesNotDoubleCountActiveSetMember() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithWorkerSubmissionWindow(60))
+	s.Require().NoError(k.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Reproduce the inconsistent state that existed before failed reactivation was fixed:
+	// the topic remains in the active set and total but has no schedule or bucket entry.
+	s.Require().NoError(k.SetBlockToActiveTopics(ctx, churningBlock, types.TopicIds{TopicIds: nil}))
+	s.Require().NoError(k.RemoveTopicSchedule(ctx, topicId))
+
+	s.Require().NoError(k.ActivateTopic(ctx, topicId))
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), total.String())
 }
 
 func (s *KeeperTestSuite) TestIncrementTopicId() {

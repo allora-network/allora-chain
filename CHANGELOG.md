@@ -82,10 +82,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * [#994](https://github.com/allora-network/allora-chain/pull/994) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
-* [#998](https://github.com/allora-network/allora-chain/pull/998) Inactivate a topic whose epoch-end reschedule is refused instead of leaving it in the active set without a schedule, and only add a topic's stored weight to the total when it becomes scheduled (gets a next churning block); repairs inconsistent activity state during migration and adds invariants for topic scheduling and weight totals.
 
 ### Security
 
+* [#998](https://github.com/allora-network/allora-chain/pull/998) Inactivate a topic whose epoch-end reschedule is refused instead of leaving it in the active set without a schedule, and only add a topic's stored weight to the total when it enters the active set; repairs inconsistent activity state during migration and adds invariants for topic scheduling and weight totals.
 * [#980](https://github.com/allora-network/allora-chain/pull/980) Patch a fast-node cache/commit race in `iavl` that caused `AppHash` divergence: the ecosystem treasury account is deleted every block at zero balance, and a concurrent balance query during commit could read its value one block stale, minting the wrong amount and forking the node. Points `iavl` at `github.com/allora-network/iavl` (`v1.2.6` + backport of [cosmos/iavl#1142](https://github.com/cosmos/iavl/pull/1142)). Not consensus-breaking; no migration required.
 
 ### API Breaking Changes

@@ -76,7 +76,7 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 		return errorsmod.Wrap(err, "MIGRATION V16: failed to get active topic block buckets")
 	}
 	validScheduled := make(map[uint64]struct{}, len(scheduledTopicIds))
-	repairedBuckets := 0
+	resetBuckets := 0
 	for _, bucket := range blockBuckets {
 		existing := []uint64(nil)
 		if bucket.TopicIds != nil {
@@ -98,12 +98,10 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 				return errorsmod.Wrapf(err, "MIGRATION V16: failed to repair active topics at block %d", bucket.BlockHeight)
 			}
 		}
-		if changed || len(filtered) == 0 {
-			if err := topicKeeper.ResetLowestActiveTopicWeightAtBlock(ctx, bucket.BlockHeight); err != nil {
-				return errorsmod.Wrapf(err, "MIGRATION V16: failed to reset lowest topic weight at block %d", bucket.BlockHeight)
-			}
-			repairedBuckets++
+		if err := topicKeeper.ResetLowestActiveTopicWeightAtBlock(ctx, bucket.BlockHeight); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to reset lowest topic weight at block %d", bucket.BlockHeight)
 		}
+		resetBuckets++
 	}
 
 	removedSchedules := 0
@@ -178,7 +176,7 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 		"previous", current.String(),
 		"recomputed", recomputed.String(),
 		"scheduledTopics", len(validTopicIds),
-		"repairedBuckets", repairedBuckets,
+		"resetBuckets", resetBuckets,
 		"removedSchedules", removedSchedules,
 		"removedActiveTopics", removedActiveTopics,
 		"addedActiveTopics", addedActiveTopics,

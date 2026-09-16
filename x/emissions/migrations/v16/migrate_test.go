@@ -397,6 +397,27 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeights
 	s.Require().Equal(weight.String(), s.totalSum().String())
 }
 
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsResetsLowestWeightForValidBucket() {
+	ctx := s.Ctx()
+	topicKeeper := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	s.Require().NoError(topicKeeper.SetBlockToLowestActiveTopicWeight(ctx, churningBlock, emissionstypes.TopicIdWeightPair{
+		TopicId: topicId + 1000,
+		Weight:  alloraMath.NewDecFromInt64(999),
+	}))
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(ctx, *s.EmissionsKeeper()))
+
+	lowest, noPrior, err := topicKeeper.GetLowestActiveTopicWeightAtBlock(ctx, churningBlock)
+	s.Require().NoError(err)
+	s.Require().False(noPrior)
+	s.Require().Equal(topicId, lowest.TopicId)
+}
+
 // a consistent accumulator is left as is and a second run changes nothing.
 func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsIdempotent() {
 	expected := s.seedTopicWeights([]bool{true, true})

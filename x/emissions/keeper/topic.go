@@ -465,9 +465,8 @@ func (k *TopicKeeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId Top
 }
 
 // wrapper for set operation around activeTopics
-// The set mirrors the topics that have a next churning block and is kept for genesis
-// export compatibility. Weight bookkeeping decides activity with IsTopicScheduled, so this
-// store carries no information of its own; removing it needs a genesis and migration change.
+// Membership in this set determines whether a topic's previous weight is included in
+// totalSumPreviousTopicWeights. It must mirror the topics that have a next churning block.
 func (k *TopicKeeper) SetActiveTopics(ctx context.Context, topicId TopicId) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -480,7 +479,7 @@ func (k *TopicKeeper) IsTopicInActiveSet(ctx context.Context, topicId TopicId) (
 	return k.activeTopics.Has(ctx, topicId)
 }
 
-// RemoveTopicFromActiveSet removes a topic from the active-topic compatibility set.
+// RemoveTopicFromActiveSet removes a topic from the active-topic set.
 func (k *TopicKeeper) RemoveTopicFromActiveSet(ctx context.Context, topicId TopicId) error {
 	return k.activeTopics.Remove(ctx, topicId)
 }
@@ -503,11 +502,8 @@ func (k *TopicKeeper) GetActiveTopicIds(ctx context.Context) ([]TopicId, error) 
 	return topicIds, nil
 }
 
-// IsTopicScheduled reports whether the topic has a next churning block. A topic's previous
-// weight is counted in totalSumPreviousTopicWeights exactly while it is scheduled:
-// ActivateTopic adds the weight when it creates the schedule and inactivation removes the
-// weight when it deletes the schedule. Unlike IsTopicActive, the block height is not
-// compared, so the answer depends on state only.
+// IsTopicScheduled reports whether the topic has a next churning block. Unlike
+// IsTopicActive, the block height is not compared, so the answer depends on state only.
 func (k *TopicKeeper) IsTopicScheduled(ctx context.Context, topicId TopicId) (bool, error) {
 	return k.topicToNextPossibleChurningBlock.Has(ctx, topicId)
 }

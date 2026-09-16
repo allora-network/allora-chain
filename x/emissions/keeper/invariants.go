@@ -102,10 +102,11 @@ func TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k Keeper) sd
 // encode topic activity agree: every scheduled topic (one with a next churning block) is
 // listed in that block's active topics, and the active-topic set holds exactly the
 // scheduled topics. A topic that keeps its weight in the total while it can never be
-// processed again, or that is counted twice on a later activation, always shows up here as
-// a disagreement between these stores. The churning block is not compared with the current
-// height on purpose: tests and replays legitimately evaluate EndBlock at heights far beyond
-// the last processed epoch.
+// processed again shows up here as a disagreement between these stores. A weight overcount
+// after a later activation is detected by
+// TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum. The churning block is not
+// compared with the current height on purpose: tests and replays legitimately evaluate
+// EndBlock at heights far beyond the last processed epoch.
 func TopicInvariantActiveTopicsScheduledAtChurningBlock(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		scheduledTopicIds, err := k.topicKeeper.GetScheduledTopicIds(ctx)
