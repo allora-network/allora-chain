@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
 	"github.com/allora-network/allora-chain/fsm"
@@ -75,6 +76,37 @@ func (k *Keeper) setupEpochFSMEngine() {
 	k.epochFSMEngine = epochFSMEngine
 }
 
+// GetTopicLastEpochNonce returns the last allocated epoch nonce for a topic.
+// found is false when no epoch nonce has been allocated for the topic yet.
+func (k *Keeper) GetTopicLastEpochNonce(ctx context.Context, topicID TopicId) (nonce types.NonceV2, found bool, err error) {
+	nonce, err = k.topicLastEpochNonce.Get(ctx, topicID)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.ZeroNonce(), false, nil
+		}
+		return types.NonceV2(0), false, err
+	}
+	return nonce, true, nil
+}
+
+// AllocateNextEpochNonce returns the next NonceV2 for the topic and persists it as the topic's last epoch nonce.
+// The first allocation for a topic is ZeroNonce().NextNonce() (version V1, payload 1).
+func (k *Keeper) AllocateNextEpochNonce(ctx context.Context, topicID TopicId) (types.NonceV2, error) {
+	lastNonce, found, err := k.GetTopicLastEpochNonce(ctx, topicID)
+	if err != nil {
+		return types.NonceV2(0), err
+	}
+	if !found {
+		lastNonce = types.ZeroNonce()
+	}
+
+	nextNonce := lastNonce.NextNonce()
+	if err := k.topicLastEpochNonce.Set(ctx, topicID, nextNonce); err != nil {
+		return types.NonceV2(0), err
+	}
+	return nextNonce, nil
+}
+
 // StartEpoch initializes a new epoch for the given topic, and schedules its lifecycle tasks starting at the current block time.
 func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -83,14 +115,13 @@ func (k *Keeper) StartEpoch(ctx context.Context, topicID TopicId) error {
 		return err
 	}
 
-	// TODO: get last nonce from topic once topic nonce persistence exists.
-	lastNonce := types.ZeroNonce()
-	nonce := lastNonce.NextNonce()
+	nonce, err := k.AllocateNextEpochNonce(ctx, topicID)
+	if err != nil {
+		return err
+	}
 
 	epoch := types.NewEpoch(nonce, topic, sdkCtx.BlockTime())
 	k.epochFSMEngine.Init(&epoch) // Unnecessary but more formal
-
-	// TODO: persist topic last nonce once that field/store exists, then write the topic back.
 
 	if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
 		return err
@@ -142,14 +173,6 @@ func (k *Keeper) completeEpoch(ctx context.Context, epoch types.Epoch) error {
 }
 
 func (k *Keeper) cancelEpoch(ctx context.Context, epoch types.Epoch) error {
-	if epoch.State == types.EpochState_WORKER_SUBMISSION {
-		// TODO: emit closing worker window evt
-	} else if epoch.State == types.EpochState_REPUTER_SUBMISSION {
-		// TODO: emit closing reputer window evt
-	}
-
-	// TODO: prune epoch data
-
 	return k.unscheduleEpochLifecycle(ctx, epoch)
 }
 

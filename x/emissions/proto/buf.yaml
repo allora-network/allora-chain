@@ -25,8 +25,10 @@ lint:
       - emissions/v3/query.proto
     ENUM_VALUE_PREFIX:
       - emissions/v3/events.proto
+      - emissions/v10/epoch.proto
     ENUM_ZERO_VALUE_SUFFIX:
       - emissions/v3/events.proto
+      - emissions/v10/epoch.proto
     RPC_REQUEST_STANDARD_NAME:
       - emissions/v3/tx.proto
       - emissions/v3/query.proto

@@ -124,6 +124,15 @@ func (k *Keeper) initGenesisKeeperFields(ctx context.Context, data *types.Genesi
 		}
 	}
 
+	// TopicLastEpochNonces
+	for _, topicLastEpochNonce := range data.TopicLastEpochNonces {
+		if topicLastEpochNonce != nil {
+			if err := k.topicLastEpochNonce.Set(ctx, topicLastEpochNonce.TopicId, topicLastEpochNonce.Nonce); err != nil {
+				return errors.Wrap(err, "error setting topicLastEpochNonce")
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -266,6 +275,24 @@ func (k *Keeper) exportGenesisKeeperFields(ctx context.Context, data *types.Gene
 	}
 
 	data.OutlierResistantNetworkInferenceBundle = outlierResistantNetworkInferenceBundle
+
+	// TopicLastEpochNonces
+	topicLastEpochNonces := make([]*types.TopicIdAndEpochNonce, 0)
+	topicLastEpochNonceIter, err := k.topicLastEpochNonce.Iterate(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to iterate topic last epoch nonces")
+	}
+	for ; topicLastEpochNonceIter.Valid(); topicLastEpochNonceIter.Next() {
+		keyValue, err := topicLastEpochNonceIter.KeyValue()
+		if err != nil {
+			return errors.Wrap(err, "failed to get key value: topicLastEpochNonceIter")
+		}
+		topicLastEpochNonces = append(topicLastEpochNonces, &types.TopicIdAndEpochNonce{
+			TopicId: keyValue.Key,
+			Nonce:   keyValue.Value,
+		})
+	}
+	data.TopicLastEpochNonces = topicLastEpochNonces
 
 	return nil
 }

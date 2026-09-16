@@ -16,7 +16,11 @@ func (e *Epoch) CurrentState() fsm.State {
 }
 
 func (e *Epoch) Advance(to fsm.State) {
-	e.State = to.(EpochState)
+	state, ok := to.(EpochState)
+	if !ok {
+		panic("epoch FSM advanced to a non-EpochState")
+	}
+	e.State = state
 }
 
 func (e *Epoch) Key() collections.Pair[TopicId, NonceV2] {

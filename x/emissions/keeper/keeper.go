@@ -93,6 +93,8 @@ type Keeper struct {
 
 	// EPOCHS
 	epochs *collections.IndexedMap[collections.Pair[TopicId, types.NonceV2], types.Epoch, EpochsIndexes]
+	// topicLastEpochNonce tracks the last allocated epoch NonceV2 for each topic.
+	topicLastEpochNonce collections.Map[TopicId, types.NonceV2]
 
 	// REPUTERS AND LOSSES
 	reputerLossKeeper *ReputerLossKeeper
@@ -177,6 +179,7 @@ func NewKeeper(
 		regretsKeeper:                          rk,
 		weightsKeeper:                          wgk,
 		whitelistsKeeper:                       wlk,
+		epochFSMEngine:                         nil, // wired by setupEpochFSMEngine after schema build
 		rewardCurrentBlockEmission:             collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
 		countInfererInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountInfererInclusionsInTopicKey, "count_inferer_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 		countForecasterInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountForecasterInclusionsInTopicKey, "count_forecaster_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
@@ -192,6 +195,13 @@ func NewKeeper(
 			collections.PairKeyCodec[TopicId, types.NonceV2](collections.Uint64Key, types.NonceKey),
 			codec.CollValue[types.Epoch](cdc),
 			NewEpochsIndexes(sb),
+		),
+		topicLastEpochNonce: collections.NewMap(
+			sb,
+			types.TopicLastEpochNonceKey,
+			"topic_last_epoch_nonce",
+			collections.Uint64Key,
+			types.NonceValue,
 		),
 	}
 
