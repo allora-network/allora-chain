@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -19,7 +20,9 @@ import (
 // parameter. Existing topics decode this new field as zero and are backfilled
 // with the current on-chain global value so their admission behavior is
 // unchanged after the upgrade. It also backfills the new
-// Params.MinTopInferersToReward floor.
+// Params.MinTopInferersToReward floor and recomputes totalSumPreviousTopicWeights
+// from the active topic set so any drift accumulated by the incremental
+// bookkeeping is cleared.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 15 TO VERSION 16")
 	storageService := emissionsKeeper.GetStorageService()
@@ -38,7 +41,62 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
+	if err := MigrateTotalSumPreviousTopicWeights(ctx, emissionsKeeper); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTotalSumPreviousTopicWeights() FROM VERSION 15 TO VERSION 16")
+		return err
+	}
+
 	ctx.Logger().Info("MIGRATION EMISSIONS MODULE FROM VERSION 15 TO VERSION 16 COMPLETE")
+	return nil
+}
+
+// MigrateTotalSumPreviousTopicWeights recomputes totalSumPreviousTopicWeights as the
+// sum of the stored previous weights of the topics in the active set. The accumulator
+// is otherwise only ever adjusted incrementally, so an earlier bookkeeping error (such as
+// subtracting an inactive topic's weight twice on stake removal) persists in state after
+// the code is fixed. Recomputing from the active set is idempotent and a no-op when the
+// accumulator is already consistent.
+func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	topicKeeper := emissionsKeeper.GetTopicKeeper()
+
+	activeTopicIds, err := topicKeeper.GetActiveTopicIds(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get active topic ids")
+	}
+
+	recomputed := alloraMath.ZeroDec()
+	for _, topicId := range activeTopicIds {
+		weight, noPrior, err := topicKeeper.GetPreviousTopicWeight(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to get previous weight of topic %d", topicId)
+		}
+		if noPrior {
+			continue
+		}
+		recomputed, err = recomputed.Add(weight)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add previous weight of topic %d", topicId)
+		}
+	}
+
+	current, err := topicKeeper.GetTotalSumPreviousTopicWeights(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get total sum of previous topic weights")
+	}
+	if current.Equal(recomputed) {
+		ctx.Logger().Info("MIGRATION V16: total sum of previous topic weights already consistent", "value", current.String())
+		return nil
+	}
+
+	if err := topicKeeper.SetTotalSumPreviousTopicWeights(ctx, recomputed); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to set recomputed total sum of previous topic weights")
+	}
+	ctx.Logger().Info(
+		"MIGRATION V16: total sum of previous topic weights recomputed from active topics",
+		"previous", current.String(),
+		"recomputed", recomputed.String(),
+		"activeTopics", len(activeTopicIds),
+	)
 	return nil
 }
 

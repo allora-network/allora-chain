@@ -473,6 +473,31 @@ func (k *TopicKeeper) SetActiveTopics(ctx context.Context, topicId TopicId) erro
 	return k.activeTopics.Set(ctx, topicId)
 }
 
+// IsTopicInActiveSet reports whether the topic is a member of the active topic set.
+// Membership in this set is what decides whether the topic's previous weight is
+// counted in totalSumPreviousTopicWeights.
+func (k *TopicKeeper) IsTopicInActiveSet(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.activeTopics.Has(ctx, topicId)
+}
+
+// GetActiveTopicIds returns the members of the active topic set in ascending id order.
+func (k *TopicKeeper) GetActiveTopicIds(ctx context.Context) ([]TopicId, error) {
+	iter, err := k.activeTopics.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to iterate active topics")
+	}
+	defer iter.Close()
+	topicIds := make([]TopicId, 0)
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get active topic id")
+		}
+		topicIds = append(topicIds, topicId)
+	}
+	return topicIds, nil
+}
+
 // wrapper for set operation around blockToActiveTopics
 func (k *TopicKeeper) SetBlockToActiveTopics(ctx context.Context, block BlockHeight, topicIds types.TopicIds) error {
 	if err := types.ValidateBlockHeight(block); err != nil {
@@ -531,8 +556,11 @@ func (k *TopicKeeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context,
 	return block, block >= currentBlock, nil
 }
 
-// UpdateTopicWeightAfterStakeChange updates the topic weight and total sum of previous topic weights
-// after a stake change occurs, if there is no prior topic weight. This is used by both RemoveReputerStake and RemoveDelegateStake.
+// UpdateTopicWeightAfterStakeChange recomputes the topic weight after a stake change and stores it
+// as the previous topic weight. The total sum of previous topic weights is only adjusted for topics
+// in the active set: an inactive topic already had its weight removed from the sum on inactivation
+// and only keeps the stored value for reactivation, so touching the sum again would subtract it twice.
+// Topics that never had a weight are left untouched.
 func (k *TopicKeeper) UpdateTopicWeightAfterStakeChange(
 	ctx context.Context,
 	topicId TopicId,
@@ -575,9 +603,21 @@ func (k *TopicKeeper) UpdateTopicWeightAfterStakeChange(
 		return errorsmod.Wrap(err, "error calculating new topic weight")
 	}
 
-	// Update previous topic weight and total sum
-	if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
-		return errorsmod.Wrapf(err, "Setting previous topic weight failed")
+	isActive, err := k.IsTopicInActiveSet(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking topic active set membership")
+	}
+	if isActive {
+		if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
+			return errorsmod.Wrapf(err, "Setting previous topic weight failed")
+		}
+	} else {
+		if err := types.ValidateDec(newWeight); err != nil {
+			return errorsmod.Wrap(err, "weight validation failed")
+		}
+		if err := k.previousTopicWeight.Set(ctx, topicId, newWeight); err != nil {
+			return errorsmod.Wrap(err, "Setting previous topic weight of inactive topic failed")
+		}
 	}
 
 	// Emit topic weight updated event
