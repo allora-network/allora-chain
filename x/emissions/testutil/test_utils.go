@@ -47,6 +47,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	schedulerkeeper "github.com/allora-network/allora-chain/x/scheduler/keeper"
 )
 
 type TestSuite struct {
@@ -60,6 +61,7 @@ type TestSuite struct {
 	accountKeeper         authkeeper.AccountKeeper
 	bankKeeper            bankkeeper.BaseKeeper
 	emissionsKeeper       *keeper.Keeper
+	schedulerKeeper       *schedulerkeeper.Keeper
 	mintKeeper            minttypes.MintKeeper
 	stakingKeeper         minttypes.StakingKeeper
 	emissionsAppModule    module.AppModule
@@ -115,6 +117,10 @@ func (s *TestSuite) LenAccounts() int {
 
 func (s *TestSuite) EmissionsKeeper() *keeper.Keeper {
 	return s.emissionsKeeper
+}
+
+func (s *TestSuite) SchedulerKeeper() *schedulerkeeper.Keeper {
+	return s.schedulerKeeper
 }
 
 func (s *TestSuite) AccountKeeper() authkeeper.AccountKeeper {
@@ -339,19 +345,22 @@ func WithLabelDefaultValue(labelDefaultValue alloraMath.Dec) Option {
 
 func (s *TestSuite) SetupTest() {
 	var (
-		keyEmissions        = storetypes.NewKVStoreKey("emissions")
-		keyAccount          = storetypes.NewKVStoreKey("account")
-		keyBank             = storetypes.NewKVStoreKey("bank")
-		keyStaking          = storetypes.NewKVStoreKey("staking")
-		keyMint             = storetypes.NewKVStoreKey("mint")
-		storeServiceAccount = runtime.NewKVStoreService(keyAccount)
-		storeServiceStaking = runtime.NewKVStoreService(keyStaking)
-		storeServiceMint    = runtime.NewKVStoreService(keyMint)
+		keyEmissions          = storetypes.NewKVStoreKey("emissions")
+		keyScheduler          = storetypes.NewKVStoreKey("scheduler")
+		keyAccount            = storetypes.NewKVStoreKey("account")
+		keyBank               = storetypes.NewKVStoreKey("bank")
+		keyStaking            = storetypes.NewKVStoreKey("staking")
+		keyMint               = storetypes.NewKVStoreKey("mint")
+		storeServiceAccount   = runtime.NewKVStoreService(keyAccount)
+		storeServiceStaking   = runtime.NewKVStoreService(keyStaking)
+		storeServiceMint      = runtime.NewKVStoreService(keyMint)
+		storeServiceScheduler = runtime.NewKVStoreService(keyScheduler)
 	)
 	s.storeServiceEmissions = runtime.NewKVStoreService(keyEmissions)
 	s.storeServiceBank = runtime.NewKVStoreService(keyBank)
 	testCtx := testutil.DefaultContextWithKeys(map[string]*storetypes.KVStoreKey{
 		"emissions": keyEmissions,
+		"scheduler": keyScheduler,
 		"account":   keyAccount,
 		"bank":      keyBank,
 		"staking":   keyStaking,
@@ -402,14 +411,16 @@ func (s *TestSuite) SetupTest() {
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		log.NewNopLogger(),
 	)
+	schedulerKeeper := schedulerkeeper.NewKeeper(storeServiceScheduler, encCfg.Codec)
 	emissionsKeeper := keeper.NewKeeper(
 		encCfg.Codec,
 		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
 		s.storeServiceEmissions,
 		accountKeeper,
 		bankKeeper,
-		nil, // scheduler keeper; wire a concrete x/scheduler keeper when epoch scheduling tests need it
+		schedulerKeeper,
 		authtypes.FeeCollectorName)
+	s.Require().NoError(schedulerKeeper.RegisterTaskHandlers(emissionsKeeper.TaskHandlers()))
 	stakingKeeper := stakingkeeper.NewKeeper(
 		encCfg.Codec,
 		storeServiceStaking,
@@ -433,6 +444,9 @@ func (s *TestSuite) SetupTest() {
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
 	s.emissionsKeeper = &emissionsKeeper
+	// Ensure activation hooks target the suite's keeper pointer (not NewKeeper's stack copy).
+	s.emissionsKeeper.GetTopicKeeper().SetLifecycleHooks(s.emissionsKeeper)
+	s.schedulerKeeper = schedulerKeeper
 	s.mintKeeper = mintKeeper
 	s.stakingKeeper = stakingKeeper
 	emissionsAppModule := module.NewAppModule(encCfg.Codec, emissionsKeeper)

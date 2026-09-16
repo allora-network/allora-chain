@@ -156,6 +156,12 @@ func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, 
 	// Emit topic deactivation event
 	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false)
 
+	if k.lifecycleHooks != nil {
+		if err := k.lifecycleHooks.OnTopicInactivated(ctx, topicId); err != nil {
+			return errorsmod.Wrap(err, "topic inactivation lifecycle hooks")
+		}
+	}
+
 	return nil
 }
 
@@ -317,6 +323,13 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 			return errorsmod.Wrap(err, "failed to set total sum of previous topic weights")
 		}
 	}
+
+	if k.lifecycleHooks != nil {
+		if err := k.lifecycleHooks.OnTopicActivated(ctx, topicId); err != nil {
+			return errorsmod.Wrap(err, "topic activation lifecycle hooks")
+		}
+	}
+
 	return nil
 }
 

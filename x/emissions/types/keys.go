@@ -14,6 +14,8 @@ const (
 	OpenEpochReputerWindowTask  = ModuleName + ":open_epoch_reputer_window"
 	CloseEpochReputerWindowTask = ModuleName + ":close_epoch_reputer_window"
 	CompleteEpochTask           = ModuleName + ":complete_epoch"
+	// StartNewEpochTask is the periodic (or on-demand) task that creates a new epoch for a topic.
+	StartNewEpochTask = ModuleName + ":start_new_epoch"
 )
 
 var (
