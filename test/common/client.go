@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"sync"
 	"testing"
+	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/allora-network/allora-chain/app/params"
@@ -203,6 +204,14 @@ func (c *Client) WaitForTx(ctx context.Context, hash string) (*coretypes.ResultT
 
 func (c *Client) BlockHeight(ctx context.Context) (int64, error) {
 	return c.Clients[c.getNextClientNumber()].LatestBlockHeight(ctx)
+}
+
+func (c *Client) LatestBlockTime(ctx context.Context) (time.Time, error) {
+	status, err := c.Clients[c.getNextClientNumber()].Status(ctx)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return status.SyncInfo.LatestBlockTime, nil
 }
 
 // account code has to be concurrency aware

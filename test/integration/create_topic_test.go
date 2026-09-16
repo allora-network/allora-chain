@@ -39,14 +39,16 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.NoError(m.T, err)
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
+	// Wall-clock windows must span more than one localnet block (~5s). Inserts
+	// land on a later block, and CheckWorkerSubmissionWindow uses BlockTime.
 	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
 		MaxTopInferersToReward:   0,
 		Creator:                  m.AliceAddr,
 		Metadata:                 "ETH 24h Prediction",
 		LossMethod:               "mse",
-		EpochLength:              5,
-		GroundTruthLag:           10,
-		WorkerSubmissionWindow:   4,
+		EpochLength:              30,
+		GroundTruthLag:           30,
+		WorkerSubmissionWindow:   20,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            true,
@@ -125,9 +127,9 @@ func CreateTopicMultiLabel(m testCommon.TestConfig) (topicId uint64) {
 		Creator:                  m.AliceAddr,
 		Metadata:                 "ETH 24h Prediction",
 		LossMethod:               "mse",
-		EpochLength:              5,
-		GroundTruthLag:           10,
-		WorkerSubmissionWindow:   4,
+		EpochLength:              30,
+		GroundTruthLag:           30,
+		WorkerSubmissionWindow:   20,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:            true,
