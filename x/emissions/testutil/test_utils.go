@@ -420,6 +420,14 @@ func (s *TestSuite) SetupTest() {
 		bankKeeper,
 		schedulerKeeper,
 		authtypes.FeeCollectorName)
+	emissionsKeeper.SetEpochCloseHandlers(
+		func(ctx sdk.Context, topic types.Topic, nonce types.Nonce) error {
+			return actorutils.CloseWorkerNonce(&emissionsKeeper, ctx, topic, nonce)
+		},
+		func(ctx sdk.Context, topic types.Topic, nonce types.Nonce) error {
+			return actorutils.CloseReputerNonce(&emissionsKeeper, ctx, topic, nonce)
+		},
+	)
 	s.Require().NoError(schedulerKeeper.RegisterTaskHandlers(emissionsKeeper.TaskHandlers()))
 	stakingKeeper := stakingkeeper.NewKeeper(
 		encCfg.Codec,
