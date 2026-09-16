@@ -69,15 +69,22 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
-	withinWindow, err := keeper.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+	// Prefer Epoch wall-clock windows when a live scheduler epoch matches this legacy nonce.
+	epochFound, err := ms.k.CheckReputerSubmissionWindow(ctx, topicId, *nonce.ReputerNonce)
 	if err != nil {
 		return nil, err
-	} else if !withinWindow {
-		return nil, errorsmod.Wrapf(
-			types.ErrReputerNonceWindowNotAvailable,
-			"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",
-			topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength*2,
-		)
+	}
+	if !epochFound {
+		withinWindow, err := keeper.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight)
+		if err != nil {
+			return nil, err
+		} else if !withinWindow {
+			return nil, errorsmod.Wrapf(
+				types.ErrReputerNonceWindowNotAvailable,
+				"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",
+				topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength*2,
+			)
+		}
 	}
 
 	isRegistered, err := ms.rlk.IsReputerRegisteredInTopic(ctx, topicId, vb.Reputer)
