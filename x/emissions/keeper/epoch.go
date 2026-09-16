@@ -216,6 +216,30 @@ func (k *Keeper) cancelTopicEpochs(ctx context.Context, topicID TopicId) error {
 	return nil
 }
 
+// topicHasPendingCompletionEpoch reports whether the topic still has an epoch
+// in PENDING_COMPLETION. Used by StartNewEpoch arbitration: overlapping epochs
+// are allowed, but a new epoch must not start in the same BeginBlock as a
+// deferred Complete for that topic.
+func (k *Keeper) topicHasPendingCompletionEpoch(ctx context.Context, topicID TopicId) (bool, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, types.NonceV2](topicID)
+	iter, err := k.epochs.Iterate(ctx, rng)
+	if err != nil {
+		return false, err
+	}
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		epoch, err := iter.Value()
+		if err != nil {
+			return false, err
+		}
+		if epoch.State == types.EpochState_PENDING_COMPLETION {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func (k *Keeper) applyEpochTransition(ctx context.Context, topicID TopicId, nonce types.NonceV2, symbol EpochFSMSymbol) error {
 	epoch, err := k.epochs.Get(ctx, collections.Join(topicID, nonce))
 	if err != nil {
