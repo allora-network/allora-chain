@@ -465,7 +465,8 @@ func (k *TopicKeeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId Top
 }
 
 // wrapper for set operation around activeTopics
-// TODO: Evaluate removing this KV store (activeTopics) - not being used
+// Membership in this set determines whether a topic's previous weight is included in
+// totalSumPreviousTopicWeights. It must mirror the topics that have a next churning block.
 func (k *TopicKeeper) SetActiveTopics(ctx context.Context, topicId TopicId) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
@@ -474,10 +475,13 @@ func (k *TopicKeeper) SetActiveTopics(ctx context.Context, topicId TopicId) erro
 }
 
 // IsTopicInActiveSet reports whether the topic is a member of the active topic set.
-// Membership in this set is what decides whether the topic's previous weight is
-// counted in totalSumPreviousTopicWeights.
 func (k *TopicKeeper) IsTopicInActiveSet(ctx context.Context, topicId TopicId) (bool, error) {
 	return k.activeTopics.Has(ctx, topicId)
+}
+
+// RemoveTopicFromActiveSet removes a topic from the active-topic set.
+func (k *TopicKeeper) RemoveTopicFromActiveSet(ctx context.Context, topicId TopicId) error {
+	return k.activeTopics.Remove(ctx, topicId)
 }
 
 // GetActiveTopicIds returns the members of the active topic set in ascending id order.
@@ -496,6 +500,64 @@ func (k *TopicKeeper) GetActiveTopicIds(ctx context.Context) ([]TopicId, error) 
 		topicIds = append(topicIds, topicId)
 	}
 	return topicIds, nil
+}
+
+// IsTopicScheduled reports whether the topic has a next churning block. Unlike
+// IsTopicActive, the block height is not compared, so the answer depends on state only.
+func (k *TopicKeeper) IsTopicScheduled(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.topicToNextPossibleChurningBlock.Has(ctx, topicId)
+}
+
+// GetTopicSchedule returns the topic's next churning block without comparing it to the
+// current height.
+func (k *TopicKeeper) GetTopicSchedule(ctx context.Context, topicId TopicId) (BlockHeight, error) {
+	return k.topicToNextPossibleChurningBlock.Get(ctx, topicId)
+}
+
+// RemoveTopicSchedule removes the topic's next churning block.
+func (k *TopicKeeper) RemoveTopicSchedule(ctx context.Context, topicId TopicId) error {
+	return k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
+}
+
+// GetScheduledTopicIds returns the ids of the topics that have a next churning block, in
+// ascending id order.
+func (k *TopicKeeper) GetScheduledTopicIds(ctx context.Context) ([]TopicId, error) {
+	iter, err := k.topicToNextPossibleChurningBlock.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to iterate scheduled topics")
+	}
+	defer iter.Close()
+	topicIds := make([]TopicId, 0)
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get scheduled topic id")
+		}
+		topicIds = append(topicIds, topicId)
+	}
+	return topicIds, nil
+}
+
+// GetActiveTopicIdsByBlock returns every churning-block bucket in ascending block order.
+func (k *TopicKeeper) GetActiveTopicIdsByBlock(ctx context.Context) ([]types.BlockHeightTopicIds, error) {
+	iter, err := k.blockToActiveTopics.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to iterate active topic blocks")
+	}
+	defer iter.Close()
+	blocks := make([]types.BlockHeightTopicIds, 0)
+	for ; iter.Valid(); iter.Next() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get active topic block")
+		}
+		topicIds := keyValue.Value
+		blocks = append(blocks, types.BlockHeightTopicIds{
+			BlockHeight: keyValue.Key,
+			TopicIds:    &topicIds,
+		})
+	}
+	return blocks, nil
 }
 
 // wrapper for set operation around blockToActiveTopics

@@ -1,6 +1,8 @@
 package v16
 
 import (
+	"slices"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -50,22 +52,103 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-// MigrateTotalSumPreviousTopicWeights recomputes totalSumPreviousTopicWeights as the
-// sum of the stored previous weights of the topics in the active set. The accumulator
-// is otherwise only ever adjusted incrementally, so an earlier bookkeeping error (such as
-// subtracting an inactive topic's weight twice on stake removal) persists in state after
-// the code is fixed. Recomputing from the active set is idempotent and a no-op when the
-// accumulator is already consistent.
+// MigrateTotalSumPreviousTopicWeights reconciles the stores that represent active topics,
+// then recomputes totalSumPreviousTopicWeights from topics with a valid schedule and matching
+// block-bucket entry. Topics with incomplete activity state are made fully inactive.
 func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	topicKeeper := emissionsKeeper.GetTopicKeeper()
+
+	scheduledTopicIds, err := topicKeeper.GetScheduledTopicIds(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get scheduled topic ids")
+	}
+	scheduledBlocks := make(map[uint64]int64, len(scheduledTopicIds))
+	for _, topicId := range scheduledTopicIds {
+		block, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to get schedule for topic %d", topicId)
+		}
+		scheduledBlocks[topicId] = block
+	}
+
+	blockBuckets, err := topicKeeper.GetActiveTopicIdsByBlock(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get active topic block buckets")
+	}
+	validScheduled := make(map[uint64]struct{}, len(scheduledTopicIds))
+	resetBuckets := 0
+	for _, bucket := range blockBuckets {
+		existing := []uint64(nil)
+		if bucket.TopicIds != nil {
+			existing = bucket.TopicIds.TopicIds
+		}
+		filtered := make([]uint64, 0, len(existing))
+		for _, topicId := range existing {
+			scheduledBlock, isScheduled := scheduledBlocks[topicId]
+			_, alreadyListed := validScheduled[topicId]
+			if !isScheduled || scheduledBlock != bucket.BlockHeight || alreadyListed {
+				continue
+			}
+			filtered = append(filtered, topicId)
+			validScheduled[topicId] = struct{}{}
+		}
+		changed := !slices.Equal(existing, filtered)
+		if changed {
+			if err := topicKeeper.SetBlockToActiveTopics(ctx, bucket.BlockHeight, emissionstypes.TopicIds{TopicIds: filtered}); err != nil {
+				return errorsmod.Wrapf(err, "MIGRATION V16: failed to repair active topics at block %d", bucket.BlockHeight)
+			}
+		}
+		if err := topicKeeper.ResetLowestActiveTopicWeightAtBlock(ctx, bucket.BlockHeight); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to reset lowest topic weight at block %d", bucket.BlockHeight)
+		}
+		resetBuckets++
+	}
+
+	removedSchedules := 0
+	for _, topicId := range scheduledTopicIds {
+		if _, valid := validScheduled[topicId]; valid {
+			continue
+		}
+		if err := topicKeeper.RemoveTopicSchedule(ctx, topicId); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to remove invalid schedule for topic %d", topicId)
+		}
+		removedSchedules++
+	}
 
 	activeTopicIds, err := topicKeeper.GetActiveTopicIds(ctx)
 	if err != nil {
 		return errorsmod.Wrap(err, "MIGRATION V16: failed to get active topic ids")
 	}
+	activeSet := make(map[uint64]struct{}, len(activeTopicIds))
+	removedActiveTopics := 0
+	for _, topicId := range activeTopicIds {
+		if _, valid := validScheduled[topicId]; !valid {
+			if err := topicKeeper.RemoveTopicFromActiveSet(ctx, topicId); err != nil {
+				return errorsmod.Wrapf(err, "MIGRATION V16: failed to remove topic %d from active set", topicId)
+			}
+			removedActiveTopics++
+			continue
+		}
+		activeSet[topicId] = struct{}{}
+	}
+	validTopicIds := make([]uint64, 0, len(validScheduled))
+	for topicId := range validScheduled {
+		validTopicIds = append(validTopicIds, topicId)
+	}
+	slices.Sort(validTopicIds)
+	addedActiveTopics := 0
+	for _, topicId := range validTopicIds {
+		if _, active := activeSet[topicId]; active {
+			continue
+		}
+		if err := topicKeeper.SetActiveTopics(ctx, topicId); err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add topic %d to active set", topicId)
+		}
+		addedActiveTopics++
+	}
 
 	recomputed := alloraMath.ZeroDec()
-	for _, topicId := range activeTopicIds {
+	for _, topicId := range validTopicIds {
 		weight, noPrior, err := topicKeeper.GetPreviousTopicWeight(ctx, topicId)
 		if err != nil {
 			return errorsmod.Wrapf(err, "MIGRATION V16: failed to get previous weight of topic %d", topicId)
@@ -83,19 +166,20 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 	if err != nil {
 		return errorsmod.Wrap(err, "MIGRATION V16: failed to get total sum of previous topic weights")
 	}
-	if current.Equal(recomputed) {
-		ctx.Logger().Info("MIGRATION V16: total sum of previous topic weights already consistent", "value", current.String())
-		return nil
-	}
-
-	if err := topicKeeper.SetTotalSumPreviousTopicWeights(ctx, recomputed); err != nil {
-		return errorsmod.Wrap(err, "MIGRATION V16: failed to set recomputed total sum of previous topic weights")
+	if !current.Equal(recomputed) {
+		if err := topicKeeper.SetTotalSumPreviousTopicWeights(ctx, recomputed); err != nil {
+			return errorsmod.Wrap(err, "MIGRATION V16: failed to set recomputed total sum of previous topic weights")
+		}
 	}
 	ctx.Logger().Info(
-		"MIGRATION V16: total sum of previous topic weights recomputed from active topics",
+		"MIGRATION V16: topic activity state reconciled and total sum recomputed",
 		"previous", current.String(),
 		"recomputed", recomputed.String(),
-		"activeTopics", len(activeTopicIds),
+		"scheduledTopics", len(validTopicIds),
+		"resetBuckets", resetBuckets,
+		"removedSchedules", removedSchedules,
+		"removedActiveTopics", removedActiveTopics,
+		"addedActiveTopics", addedActiveTopics,
 	)
 	return nil
 }

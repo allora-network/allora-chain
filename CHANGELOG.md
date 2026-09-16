@@ -68,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward` (additive field on `emissions.v10.Topic`): the cap on inferers admitted per topic is now topic-level, set at create/`UpdateTopic` (`0` uses the global default; guarded while a worker submission window is open). Stored caps are kept verbatim, and admission resolves them against the global bounds, so the globals stay live. The emissions v16 migration backfills existing topics, so behavior is unchanged across the `v0.18.0` upgrade.
+* [#995](https://github.com/allora-network/allora-chain/pull/995) Fuzz harness: configurable number of setup topics, same-block creation and funding, uneven topic weights and an epoch-end refusal check, to force and verify topic block collisions under `max_active_topics_per_block`.
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` (additive field on `emissions.v9.Params`): a floor for the per-topic inferer cap, so a topic cannot be configured to admit an unreasonably small active set. Create/`UpdateTopic` reject a cap outside `[min, max]`, and admission clamps the effective cap into that range with the ceiling applied last, so it can never exceed the global maximum. Params validation keeps the range well formed by rejecting a floor above the ceiling. It defaults to `5` and is therefore active from the start: a topic whose stored cap is below the floor has it raised at admission, and the v16 migration backfills the param. The floor never gates an epoch, which stays valid even when fewer inferers than the floor take part.
 
 ### Changed
@@ -84,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+* [#998](https://github.com/allora-network/allora-chain/pull/998) Inactivate a topic whose epoch-end reschedule is refused instead of leaving it in the active set without a schedule, and only add a topic's stored weight to the total when it enters the active set; repairs inconsistent activity state during migration and adds invariants for topic scheduling and weight totals.
 * [#980](https://github.com/allora-network/allora-chain/pull/980) Patch a fast-node cache/commit race in `iavl` that caused `AppHash` divergence: the ecosystem treasury account is deleted every block at zero balance, and a concurrent balance query during commit could read its value one block stale, minting the wrong amount and forking the node. Points `iavl` at `github.com/allora-network/iavl` (`v1.2.6` + backport of [cosmos/iavl#1142](https://github.com/cosmos/iavl/pull/1142)). Not consensus-breaking; no migration required.
 
 ### API Breaking Changes
