@@ -93,8 +93,8 @@ Despite the naming symmetry with `max_top_forecasters_to_reward` and `max_top_re
 
 | Path | Behavior |
 |---|---|
-| `CreateNewTopic` / `UpdateTopic` | **Rejects** a non-zero request outside `[min, max]`. `0` means "use `max`" and is resolved to a concrete stored value. |
-| Genesis import | Stores whatever is supplied, **unvalidated** against the range. |
+| `CreateNewTopic` / `UpdateTopic` | **Rejects** a request outside `[min, max]`, `0` included. An accepted value is stored verbatim. |
+| Genesis import | Stores whatever is supplied; `Topic.Validate` does not bound this field against the range for any caller. |
 | Worker payload admission | **Clamps** the stored value into `[min, max]`, with `max` applied last. |
 
 So a request below the floor is an error, but a *stored* value below the floor is silently raised at admission. That asymmetry is intentional: rejecting bad input is useful, but a governance floor raise must not brick topics that were valid when they were written.
@@ -105,7 +105,7 @@ So a request below the floor is an error, but a *stored* value below the floor i
 
 **`max` may not be zero**; `min` may. A zero ceiling would admit nobody and would zero the score-retention window. A zero floor simply means "no floor".
 
-**Raising the floor has a delayed cost.** Topics whose stored cap falls below the new floor keep working — admission raises them — but their owners can no longer resubmit that cap, so any `UpdateTopic` forces the cap to change, which in turn trips the worker-submission-window guard. See [Topic Parameters](topic-parameters.md#max_top_inferers_to_reward).
+**Raising the floor or lowering the ceiling has a delayed cost.** Topics whose stored cap falls outside the new range keep working — admission clamps them — but their owners can no longer resubmit that cap, so any `UpdateTopic` forces the cap to change, which in turn trips the worker-submission-window guard. See [Topic Parameters](topic-parameters.md#max_top_inferers_to_reward).
 
 ### `max_samples_to_scale_scores`
 

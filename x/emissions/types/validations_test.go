@@ -1259,13 +1259,15 @@ func TestEffectiveMaxTopInferersToReward(t *testing.T) {
 		name                                 string
 		topicCap, globalMin, globalMax, want uint64
 	}{
-		{"zero uses global max", 0, 1, 32, 32},
+		// A cap below the floor is raised to it; with no floor it stays as stored.
+		{"zero raised to global min", 0, 1, 32, 1},
+		{"zero with a floor raised to that floor", 0, 10, 32, 10},
+		{"zero with no floor stays zero", 0, 0, 32, 0},
 		{"within range preserved", 10, 1, 32, 10},
 		{"equal to global max", 32, 1, 32, 32},
 		{"above global max clamped", 40, 1, 32, 32},
 		{"below global min raised", 3, 10, 32, 10},
 		{"equal to global min", 10, 10, 32, 10},
-		{"zero with a floor still uses global max", 0, 10, 32, 32},
 		{"no floor", 10, 0, 32, 10},
 		// With the default floor: below it is raised, within the range is kept,
 		// above the ceiling is clamped.
