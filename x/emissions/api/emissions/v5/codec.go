@@ -4,7 +4,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	gogoproto "github.com/cosmos/gogoproto/proto"
 )
+
+func init() {
+	// Nested worker/reputer fields on v5 txs are emissions.v3.* (registered in the
+	// v3 package). OptionalParams lives in this package and is no longer in gogo.
+	gogoproto.RegisterType((*OptionalParams)(nil), "emissions.v5.OptionalParams")
+}
 
 //nolint:exhaustruct
 func RegisterInterfaces(registry types.InterfaceRegistry) {
