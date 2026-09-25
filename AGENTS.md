@@ -3,6 +3,7 @@
 Short, high-signal guidance for working in the `allora-chain` repo. Keep context small and only load extra docs when needed.
 
 ## Quick Rules (Apply To Most Changes)
+- Worktree/branch names: descriptive, problem-named; never random word-pairs.
 - Determinism: no `time.Now()`/`rand`, no map-order dependence, no floats in consensus; use `alloraMath.Dec`/`sdk.Int`/`sdk.Dec` and stable iteration.
 - State access: keepers are the only state access point; no IO, goroutines, or non-determinism inside keepers.
 - Validation: `ValidateBasic` + keeper stateful checks; use `sdkerrors/errorsmod` for typed errors.

@@ -19,6 +19,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k *Keeper) {
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-removals-length-same", StakingInvariantLenStakeRemovalsSame(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-sum-delegated-stakes", StakingInvariantDelegatedStakes(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "pending-reward-for-delegators-equal-reward-per-share-minus-reward-debt", StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(*k))
+	ir.RegisterRoute(emissionstypes.ModuleName, "total-sum-previous-topic-weights-equal-active-topics-sum", TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(*k))
 }
 
 // AllInvariants is a convience function to run all invariants in the emissions module.
@@ -39,7 +40,57 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		if res, stop := StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(k)(ctx); stop {
 			return res, stop
 		}
+		if res, stop := TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k)(ctx); stop {
+			return res, stop
+		}
 		return "", false
+	}
+}
+
+// TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum checks that
+// totalSumPreviousTopicWeights equals the sum of the stored previous weights
+// of the topics in the active set. Inactive topics keep their stored weight
+// but must not be counted.
+func TopicInvariantTotalSumPreviousTopicWeightsEqualActiveTopicsSum(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		iter, err := k.topicKeeper.activeTopics.Iterate(ctx, nil)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topics iterator: %v", err))
+		}
+		defer iter.Close()
+
+		activeSum := alloraMath.ZeroDec()
+		for ; iter.Valid(); iter.Next() {
+			topicId, err := iter.Key()
+			if err != nil {
+				panic(fmt.Sprintf("failed to get active topic id: %v", err))
+			}
+			weight, noPrior, err := k.topicKeeper.GetPreviousTopicWeight(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get previous topic weight for topic %d: %v", topicId, err))
+			}
+			if noPrior {
+				continue
+			}
+			activeSum, err = activeSum.Add(weight)
+			if err != nil {
+				panic(fmt.Sprintf("failed to add previous topic weight for topic %d: %v", topicId, err))
+			}
+		}
+
+		totalSum, err := k.topicKeeper.GetTotalSumPreviousTopicWeights(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get total sum of previous topic weights: %v", err))
+		}
+		broken := !totalSum.Equal(activeSum)
+		return sdk.FormatInvariant(
+			emissionstypes.ModuleName,
+			"total sum of previous topic weights equal sum over active topics",
+			fmt.Sprintf("TotalSumPreviousTopicWeights: %s | Sum of previous weights of active topics: %s",
+				totalSum.String(),
+				activeSum.String(),
+			),
+		), broken
 	}
 }
 
