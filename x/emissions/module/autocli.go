@@ -943,6 +943,23 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "address"},
 					},
 				},
+				{
+					RpcMethod: "GetEpoch",
+					Use:       "epoch [topic_id] [nonce]",
+					Short:     "Get an in-flight epoch by topic id and NonceV2",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "nonce"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicEpochs",
+					Use:       "topic-epochs [topic_id]",
+					Short:     "List all in-flight epochs for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
 			},
 			SubCommands:          nil,
 			EnhanceCustomCommand: false,
