@@ -89,6 +89,14 @@ func (k *Keeper) GetTopicLastEpochNonce(ctx context.Context, topicID TopicId) (n
 	return nonce, true, nil
 }
 
+// IsTopicSchedulerManaged reports whether the topic's epoch/nonce lifecycle is owned by the
+// scheduler FSM. True once any epoch nonce has been allocated (StartNewEpoch / activation);
+// remains true after epochs complete. EndBlocker must not open or close nonces for these topics.
+func (k *Keeper) IsTopicSchedulerManaged(ctx context.Context, topicID TopicId) (bool, error) {
+	_, found, err := k.GetTopicLastEpochNonce(ctx, topicID)
+	return found, err
+}
+
 // AllocateNextEpochNonce returns the next NonceV2 for the topic and persists it as the topic's last epoch nonce.
 // The first allocation for a topic is ZeroNonce().NextNonce() (version V1, payload 1).
 func (k *Keeper) AllocateNextEpochNonce(ctx context.Context, topicID TopicId) (types.NonceV2, error) {

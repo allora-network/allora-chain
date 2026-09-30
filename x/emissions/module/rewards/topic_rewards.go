@@ -87,6 +87,18 @@ func UpdateNoncesOfActiveTopics(
 			continue
 		}
 
+		// Scheduler-managed topics own nonce open/close via the epoch FSM; EndBlocker must not
+		// create a parallel height-keyed lifecycle for them.
+		schedulerManaged, err := k.IsTopicSchedulerManaged(ctx, topic.Id)
+		if err != nil {
+			ctx.Logger().Warn("Error checking scheduler enrollment", "error", err)
+			continue
+		}
+		if schedulerManaged {
+			ctx.Logger().Debug("Skipping EndBlocker nonce open for scheduler-managed topic", "topicId", topic.Id)
+			continue
+		}
+
 		// Add Worker Nonces
 		nextNonce := types.Nonce{BlockHeight: block}
 		err = k.GetNonceKeeper().AddWorkerNonce(ctx, topic.Id, &nextNonce)
