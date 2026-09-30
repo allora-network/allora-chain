@@ -95,6 +95,9 @@ issues:
       text: "G404: Use of weak random number generator"
       linters:
         - gosec
+    - path: _test\.go
+      linters:
+        - exhaustruct
       
   max-issues-per-linter: 10000
   max-same-issues: 10000
