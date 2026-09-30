@@ -107,6 +107,7 @@ func NewGenesisState() *GenesisState {
 		NetworkInferenceBundle:                         []*TopicIdBlockHeightNetworkInferenceBundles{},
 		OutlierResistantNetworkInferenceBundle:         []*TopicIdBlockHeightNetworkInferenceBundles{},
 		TopicLabelRegistries:                           []*TopicIdBlockHeightEpochLabelRegistry{},
+		TopicLastEpochNonces:                           []*TopicIdAndEpochNonce{},
 	}
 }
 
