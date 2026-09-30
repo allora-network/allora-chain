@@ -14,10 +14,22 @@ import (
 // TaskHandlers returns all the task handlers related to the x/emissions module.
 func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 	return schedulertypes.TaskHandlers{
+		// Complete before StartNewEpoch within BeginBlock so due completions are
+		// considered before new epoch creation. Note: EndBlocker weight update /
+		// inactivation still runs after BeginBlock in the same block; arbitration
+		// uses read-only current weights (see arbitrateByTopicWeight).
+		schedulertypes.NewTaskHandler(
+			types.CompleteEpochTask,
+			[]string{types.CloseEpochReputerWindowTask},
+			k.arbitrateCompleteEpochTasks,
+			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
+				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolComplete)
+			},
+		),
 		schedulertypes.NewTaskHandler(
 			types.StartNewEpochTask,
-			nil,
-			nil,
+			[]string{types.CompleteEpochTask},
+			k.arbitrateStartNewEpochTasks,
 			func(ctx context.Context, task schedulertypes.Task, args *types.StartNewEpochTaskArgs) error {
 				return k.handleStartNewEpochTask(ctx, args.TopicId)
 			},
@@ -52,14 +64,6 @@ func (k *Keeper) TaskHandlers() schedulertypes.TaskHandlers {
 			nil,
 			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
 				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolCloseReputerWindow)
-			},
-		),
-		schedulertypes.NewTaskHandler(
-			types.CompleteEpochTask,
-			[]string{types.CloseEpochReputerWindowTask},
-			nil,
-			func(ctx context.Context, task schedulertypes.Task, args *types.EpochTransitionTaskArgs) error {
-				return k.applyEpochTransition(ctx, args.TopicId, args.Nonce, epochSymbolComplete)
 			},
 		),
 	}
