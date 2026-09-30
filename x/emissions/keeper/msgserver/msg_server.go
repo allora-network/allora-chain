@@ -8,6 +8,7 @@ import (
 )
 
 type msgServer struct {
+	k   keeper.Keeper
 	pk  *keeper.ParamsKeeper
 	tk  *keeper.TopicKeeper
 	wlk *keeper.WhitelistsKeeper
@@ -26,6 +27,7 @@ func NewMsgServerImpl(
 	k keeper.Keeper,
 ) types.MsgServiceServer {
 	return &msgServer{
+		k:   k,
 		pk:  k.GetParamsKeeper(),
 		tk:  k.GetTopicKeeper(),
 		wlk: k.GetWhitelistsKeeper(),
