@@ -14,6 +14,11 @@ func TestTopicExtraLag(t *testing.T) {
 	require.Equal(t, int64(0), TopicExtraLag(Topic{EpochLength: 0, GroundTruthLag: 150}))
 }
 
+func TestEpochLegacyNonce(t *testing.T) {
+	epoch := Epoch{StartBlockHeight: 42}
+	require.Equal(t, Nonce{BlockHeight: 42}, epoch.LegacyNonce())
+}
+
 func TestNewEpochAppliesExtraLagToReputerWindow(t *testing.T) {
 	start := time.Unix(1_700_000_000, 0).UTC()
 	topic := Topic{

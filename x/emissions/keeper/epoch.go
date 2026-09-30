@@ -124,6 +124,8 @@ func (k *Keeper) StartNewEpoch(ctx context.Context, topicID TopicId) error {
 	epoch := types.NewEpoch(nonce, topic, sdkCtx.BlockTime())
 	// Prefer the topicID argument: stored Topic.Id can be stale when topics are inserted via SetTopic in tests.
 	epoch.TopicId = topicID
+	// Transitional bridge into height-keyed APIs (see Epoch.LegacyNonce).
+	epoch.StartBlockHeight = sdkCtx.BlockHeight()
 	k.epochFSMEngine.Init(&epoch) // Unnecessary but more formal
 
 	if err := k.epochs.Set(ctx, epoch.Key(), epoch); err != nil {
