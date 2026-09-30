@@ -19,6 +19,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k *Keeper) {
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-removals-length-same", StakingInvariantLenStakeRemovalsSame(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "stake-sum-delegated-stakes", StakingInvariantDelegatedStakes(*k))
 	ir.RegisterRoute(emissionstypes.ModuleName, "pending-reward-for-delegators-equal-reward-per-share-minus-reward-debt", StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(*k))
+	ir.RegisterRoute(emissionstypes.ModuleName, "active-topics-scheduled-at-churning-block", TopicInvariantActiveTopicsScheduledAtChurningBlock(*k))
 }
 
 // AllInvariants is a convience function to run all invariants in the emissions module.
@@ -39,7 +40,81 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		if res, stop := StakingInvariantPendingRewardForDelegatorsGreaterThanRewardPerShareMinusRewardDebt(k)(ctx); stop {
 			return res, stop
 		}
+		if res, stop := TopicInvariantActiveTopicsScheduledAtChurningBlock(k)(ctx); stop {
+			return res, stop
+		}
 		return "", false
+	}
+}
+
+// TopicInvariantActiveTopicsScheduledAtChurningBlock checks that the three stores that
+// encode topic activity agree: every scheduled topic (one with a next churning block) is
+// listed in that block's active topics, and the active-topic set holds exactly the
+// scheduled topics. A topic that keeps its weight in the total while it can never be
+// processed again, or that is counted twice on a later activation, always shows up here as
+// a disagreement between these stores. The churning block is not compared with the current
+// height on purpose: tests and replays legitimately evaluate EndBlock at heights far beyond
+// the last processed epoch.
+func TopicInvariantActiveTopicsScheduledAtChurningBlock(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		scheduledTopicIds, err := k.topicKeeper.GetScheduledTopicIds(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get scheduled topic ids: %v", err))
+		}
+		scheduled := make(map[TopicId]struct{}, len(scheduledTopicIds))
+		problems := make([]string, 0)
+		for _, topicId := range scheduledTopicIds {
+			scheduled[topicId] = struct{}{}
+			churningBlock, err := k.topicKeeper.topicToNextPossibleChurningBlock.Get(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get next possible churning block for topic %d: %v", topicId, err))
+			}
+			topicIdsAtBlock, err := k.topicKeeper.GetActiveTopicIdsAtBlock(ctx, churningBlock)
+			if err != nil {
+				panic(fmt.Sprintf("failed to get active topic ids at block %d: %v", churningBlock, err))
+			}
+			listed := false
+			for _, id := range topicIdsAtBlock.TopicIds {
+				if id == topicId {
+					listed = true
+					break
+				}
+			}
+			if !listed {
+				problems = append(problems, fmt.Sprintf("topic %d: not listed at its churning block %d", topicId, churningBlock))
+			}
+			inSet, err := k.topicKeeper.activeTopics.Has(ctx, topicId)
+			if err != nil {
+				panic(fmt.Sprintf("failed to check active set membership of topic %d: %v", topicId, err))
+			}
+			if !inSet {
+				problems = append(problems, fmt.Sprintf("topic %d: scheduled but missing from the active set", topicId))
+			}
+		}
+
+		iter, err := k.topicKeeper.activeTopics.Iterate(ctx, nil)
+		if err != nil {
+			panic(fmt.Sprintf("failed to get active topics iterator: %v", err))
+		}
+		defer iter.Close()
+		activeSetSize := 0
+		for ; iter.Valid(); iter.Next() {
+			topicId, err := iter.Key()
+			if err != nil {
+				panic(fmt.Sprintf("failed to get active topic id: %v", err))
+			}
+			activeSetSize++
+			if _, ok := scheduled[topicId]; !ok {
+				problems = append(problems, fmt.Sprintf("topic %d: in the active set without a churning block", topicId))
+			}
+		}
+
+		broken := len(problems) > 0
+		return sdk.FormatInvariant(
+			emissionstypes.ModuleName,
+			"active topics scheduled at their churning block",
+			fmt.Sprintf("Scheduled: %d | ActiveSet: %d | Problems: %v", len(scheduledTopicIds), activeSetSize, problems),
+		), broken
 	}
 }
 

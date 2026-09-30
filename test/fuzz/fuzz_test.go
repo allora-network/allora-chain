@@ -33,6 +33,7 @@ func TestFuzzTestSuite(t *testing.T) {
 		t.Log("Alternate Weight Percentage: ", fuzzConfig.AlternateWeight)
 	}
 	t.Log("Seed: ", fuzzConfig.Seed)
+	t.Logf("Initial setup: %+v", fuzzConfig.InitialSetup)
 
 	t.Log(">>> Starting Test <<<")
 	timestr := fmt.Sprintf(">>> Starting %s <<<", time.Now().Format(time.RFC850))

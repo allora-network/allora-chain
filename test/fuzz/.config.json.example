@@ -56,6 +56,10 @@
 	"initialSetup": {
         "numAdminWhitelist": 2,
         "numGlobalWhitelist": 4,
-        "numTopicCreatorWhitelist": 2
+        "numTopicCreatorWhitelist": 2,
+        "numTopics": 2,
+        "topicsInSameBlock": false,
+        "unevenTopicWeights": false,
+        "expectEpochEndRefusal": false
     }
 }
