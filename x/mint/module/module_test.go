@@ -146,6 +146,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
+		nil, // scheduler keeper; wire a concrete x/scheduler keeper when epoch scheduling tests need it
 		"fee_collector",
 	)
 

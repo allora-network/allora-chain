@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#870](https://github.com/allora-network/allora-chain/pull/870): Add events related to the `x/scheduler` module
+* [#874](https://github.com/allora-network/allora-chain/pull/874): Add RPC/CLI queries related to the `x/scheduler` module
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward` (additive field on `emissions.v10.Topic`): the cap on inferers admitted per topic is now topic-level, set at create/`UpdateTopic` (`0` uses the global default; guarded while a worker submission window is open). Stored caps are kept verbatim, and admission resolves them against the global bounds, so the globals stay live. The emissions v16 migration backfills existing topics, so behavior is unchanged across the `v0.18.0` upgrade.
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` (additive field on `emissions.v9.Params`): a floor for the per-topic inferer cap, so a topic cannot be configured to admit an unreasonably small active set. Create/`UpdateTopic` reject a cap outside `[min, max]`, and admission clamps the effective cap into that range with the ceiling applied last, so it can never exceed the global maximum. Params validation keeps the range well formed by rejecting a floor above the ceiling. It defaults to `5` and is therefore active from the start: a topic whose stored cap is below the floor has it raised at admission, and the v16 migration backfills the param. The floor never gates an epoch, which stays valid even when fewer inferers than the floor take part.
 

@@ -86,7 +86,7 @@ type ModuleOutputs struct {
 
 	Module    appmodule.AppModule
 	Keeper    keeper.Keeper
-    TaskHandlers schedulertypes.TaskHandlers
+	TaskHandlers schedulertypes.TaskHandlers
 }
 ```
 

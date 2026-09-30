@@ -408,6 +408,7 @@ func (s *TestSuite) SetupTest() {
 		s.storeServiceEmissions,
 		accountKeeper,
 		bankKeeper,
+		nil, // scheduler keeper; wire a concrete x/scheduler keeper when epoch scheduling tests need it
 		authtypes.FeeCollectorName)
 	stakingKeeper := stakingkeeper.NewKeeper(
 		encCfg.Codec,
