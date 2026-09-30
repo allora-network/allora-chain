@@ -141,7 +141,7 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 				ModuleName: "emissions",
 				CheckType:  ModuleCheckExpectIncrease,
 				ExpectedVersion: func() *uint64 {
-					version := uint64(16)
+					version := uint64(17)
 					return &version
 				}(),
 			},
