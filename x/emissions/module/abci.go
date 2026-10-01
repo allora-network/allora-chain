@@ -79,6 +79,15 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Rewards error")
 	}
 
+	// Commit the topic weights computed above only now that rewards are
+	// distributed: reward calculations must see the weights that were in
+	// effect during the epochs being paid
+	err = rewards.CommitTopicWeights(sdkCtx, am.keeper, weights)
+	if err != nil {
+		sdkCtx.Logger().Error("Error committing topic weights: ", err)
+		return errors.Wrapf(err, "Commit topic weights error")
+	}
+
 	// Close any open windows due this blockHeight
 	workerWindowsToClose := am.keeper.GetNonceKeeper().GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {
