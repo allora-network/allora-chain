@@ -138,7 +138,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonceFailures() {
 
 	// Create topic using MsgServer
 	newTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  s.AddrsStr(0),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -198,7 +198,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesCatchesOutliers() 
 
 	// Create topic using MsgServer
 	newTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  s.AddrsStr(0),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -361,7 +361,7 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 
 	// Create topic using MsgServer
 	newTopicMsg := &types.CreateNewTopicRequest{
-		MaxTopInferersToReward:   0,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  s.AddrsStr(0),
 		Metadata:                 "test",
 		LossMethod:               "mse",
