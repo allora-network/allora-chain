@@ -2,6 +2,16 @@
 
 The fuzz tests in this repo send random transactions to the chain in order to try to stimulate strange state transitions and make sure that all invariants hold in the face of those state transitions.
 
+# Invariant checks
+
+Module invariants are not enforced by default. Apply the patch before starting the chain:
+
+```bash
+git apply ./test/fuzz/invariants.patch
+```
+
+The patch runs `AllInvariants` in the emissions `EndBlocker` and panics on violation. CI applies it in the integration-test job (`.github/workflows/format_and_test.yml`).
+
 Example invocation:
 
 ```bash
