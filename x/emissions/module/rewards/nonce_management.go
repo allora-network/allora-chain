@@ -15,27 +15,29 @@ func UpdateReputerNonce(ctx sdk.Context, k keeper.Keeper, topic types.Topic, blo
 		ctx.Logger().Warn("Error getting unfulfilled worker nonces", "error", err)
 		return err
 	}
-	extraLag := topic.GroundTruthLag % topic.EpochLength
-	if extraLag != 0 {
-		extraLag = topic.EpochLength - extraLag
-	}
+	var updateErr error
 	for _, nonce := range nonces.Nonces {
-		if block >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag && block <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+extraLag {
-			windowEndBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + extraLag + topic.EpochLength
-			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEndBlock)
+		windowStart, windowEnd, boundsErr := keeper.ReputerSubmissionWindowBounds(topic, *nonce)
+		if boundsErr != nil {
+			ctx.Logger().Warn("Error computing reputer submission window bounds", "error", boundsErr)
+			updateErr = boundsErr
+			continue
 		}
-		// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
-		// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
-		closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
-		if block >= closingReputerNonceMinBlockHeight {
-			ctx.Logger().Debug("ABCI EndBlocker: Closing reputer nonce", "topic", topic.Id, "nonce", nonce, "min", closingReputerNonceMinBlockHeight)
-			err = allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
-			if err != nil {
-				ctx.Logger().Error("Error closing reputer nonce", "error", err)
+		// Active topics are processed once per epoch, so this half-open interval
+		// emits at most once and attributes a shared boundary to the newer nonce.
+		if block >= windowStart && block < windowEnd {
+			types.EmitNewReputerSubmissionWindowOpenedEvent(ctx, topic.Id, nonce.ReputerNonce.BlockHeight, windowEnd)
+		}
+		if block >= windowEnd {
+			ctx.Logger().Debug("ABCI EndBlocker: Closing reputer nonce", "topic", topic.Id, "nonce", nonce, "min", windowEnd)
+			closeErr := allorautils.CloseReputerNonce(&k, ctx, topic, *nonce.ReputerNonce)
+			if closeErr != nil {
+				ctx.Logger().Error("Error closing reputer nonce", "error", closeErr)
+				updateErr = closeErr
 			}
 		}
 	}
-	return err
+	return updateErr
 }
 
 // Prune reputer and worker nonces
