@@ -1273,7 +1273,7 @@ func (s *KeeperTestSuite) TestAttemptTopicReactivationAlreadyListedAtNextBlock()
 	ctx = s.Ctx()
 	s.Require().NoError(k.AttemptTopicReactivation(ctx, topicId))
 
-	// Only the schedule moved: from 10 to 20. The weight stays counted.
+	// Only the schedule moved: from 20 to 40. The weight stays counted.
 	schedule, err := k.GetTopicSchedule(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(nextBlock, schedule, "the churning block must advance to the next epoch end")
