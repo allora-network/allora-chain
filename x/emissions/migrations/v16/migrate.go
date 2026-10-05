@@ -70,6 +70,7 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 		}
 		scheduledBlocks[topicId] = block
 	}
+	currentBlock := ctx.BlockHeight()
 
 	blockBuckets, err := topicKeeper.GetActiveTopicIdsByBlock(ctx)
 	if err != nil {
@@ -86,7 +87,9 @@ func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper
 		for _, topicId := range existing {
 			scheduledBlock, isScheduled := scheduledBlocks[topicId]
 			_, alreadyListed := validScheduled[topicId]
-			if !isScheduled || scheduledBlock != bucket.BlockHeight || alreadyListed {
+			// A schedule at a block the chain already passed can never be processed again; it
+			// is dropped with its bucket listing, set membership and weight.
+			if !isScheduled || scheduledBlock < currentBlock || scheduledBlock != bucket.BlockHeight || alreadyListed {
 				continue
 			}
 			filtered = append(filtered, topicId)
