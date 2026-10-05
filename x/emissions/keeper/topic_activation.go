@@ -256,6 +256,8 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 }
 
 // Set a topic to active if the topic exists, else does nothing
+// Schedules its next epoch end, contributes the stored weight to the total sum only if the
+// topic had no schedule, and aligns the active-topic set and churning-block buckets with it.
 func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 	topicExists, err := k.topics.Has(ctx, topicId)
 	if err != nil {
@@ -288,6 +290,13 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to check whether the topic is scheduled")
 	}
+	var previousChurningBlock BlockHeight
+	if wasScheduled {
+		previousChurningBlock, err = k.GetTopicSchedule(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to get previous churning block")
+		}
+	}
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
 	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
@@ -302,6 +311,16 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	err = k.SetActiveTopics(ctx, topicId)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to set active topics")
+	}
+
+	// Scheduling the topic replaced its previous churning block. A topic left over from a
+	// block the chain already passed is still listed at that block, so drop the stale
+	// listing; otherwise it stays listed at two blocks and the activity invariant breaks.
+	if wasScheduled {
+		err = k.removeTopicFromBlock(ctx, topicId, previousChurningBlock)
+		if err != nil {
+			return errorsmod.Wrap(err, "failed to remove topic from its previous churning block")
+		}
 	}
 
 	sdkCtx.Logger().Info("Topic activated at block", "topicId", topicId, "block", currentBlock)

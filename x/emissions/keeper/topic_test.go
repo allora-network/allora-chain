@@ -1189,6 +1189,56 @@ func (s *KeeperTestSuite) TestActivateTopicCountsStoredWeightOnceAfterActivityRe
 	s.Require().Equal(weight.String(), total.String())
 }
 
+// TestActivateTopicRemovesStaleListingFromPastChurningBlock covers a topic that was left
+// scheduled at a block the chain has already passed: it is still listed at that block while
+// its schedule points to the past, so `IsTopicActive` reports it as inactive and activation
+// schedules it again. The stale listing must be dropped so the activity invariant holds.
+func (s *KeeperTestSuite) TestActivateTopicRemovesStaleListingFromPastChurningBlock() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+
+	topicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
+	s.Require().NoError(k.ActivateTopic(ctx, topicId))
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+
+	staleBlock, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(20), staleBlock)
+
+	// A schedule and its block listing agree, so the invariant holds even though the block
+	// is in the past.
+	s.WithBlockHeight(30)
+	ctx = s.Ctx()
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+
+	s.Require().NoError(k.ActivateTopic(ctx, topicId))
+
+	newBlock, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(50), newBlock)
+
+	staleTopics, err := k.GetActiveTopicIdsAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().Empty(staleTopics.TopicIds, "the stale block listing must be removed")
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(ctx, staleBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "the stale block metadata must be pruned")
+	newTopics, err := k.GetActiveTopicIdsAtBlock(ctx, newBlock)
+	s.Require().NoError(err)
+	s.Require().Contains(newTopics.TopicIds, topicId, "the topic must be listed at its new churning block")
+
+	// The topic already had its weight counted while scheduled, so activation must not add it again.
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), total.String())
+
+	msg, broken = invariant(ctx)
+	s.Require().False(broken, msg)
+}
+
 // TestAttemptTopicReactivationAlreadyListedAtNextBlock covers the ErrTopicAlreadyActive
 // branch: a topic whose next epoch-end block already lists it only has its churning block
 // moved forward. The weight stays counted and the total is untouched.
