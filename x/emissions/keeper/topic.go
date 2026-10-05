@@ -465,12 +465,42 @@ func (k *TopicKeeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId Top
 }
 
 // wrapper for set operation around activeTopics
-// TODO: Evaluate removing this KV store (activeTopics) - not being used
+// The set mirrors the topics that have a next churning block and is kept for genesis
+// export compatibility. Weight bookkeeping decides activity with IsTopicScheduled, so this
+// store carries no information of its own; removing it needs a genesis and migration change.
 func (k *TopicKeeper) SetActiveTopics(ctx context.Context, topicId TopicId) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "topic id validation failed")
 	}
 	return k.activeTopics.Set(ctx, topicId)
+}
+
+// IsTopicScheduled reports whether the topic has a next churning block. A topic's previous
+// weight is counted in totalSumPreviousTopicWeights exactly while it is scheduled:
+// ActivateTopic adds the weight when it creates the schedule and inactivation removes the
+// weight when it deletes the schedule. Unlike IsTopicActive, the block height is not
+// compared, so the answer depends on state only.
+func (k *TopicKeeper) IsTopicScheduled(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.topicToNextPossibleChurningBlock.Has(ctx, topicId)
+}
+
+// GetScheduledTopicIds returns the ids of the topics that have a next churning block, in
+// ascending id order.
+func (k *TopicKeeper) GetScheduledTopicIds(ctx context.Context) ([]TopicId, error) {
+	iter, err := k.topicToNextPossibleChurningBlock.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to iterate scheduled topics")
+	}
+	defer iter.Close()
+	topicIds := make([]TopicId, 0)
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get scheduled topic id")
+		}
+		topicIds = append(topicIds, topicId)
+	}
+	return topicIds, nil
 }
 
 // wrapper for set operation around blockToActiveTopics
@@ -531,8 +561,12 @@ func (k *TopicKeeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context,
 	return block, block >= currentBlock, nil
 }
 
-// UpdateTopicWeightAfterStakeChange updates the topic weight and total sum of previous topic weights
-// after a stake change occurs, if there is no prior topic weight. This is used by both RemoveReputerStake and RemoveDelegateStake.
+// UpdateTopicWeightAfterStakeChange recomputes the topic weight after a stake change and stores it
+// as the previous topic weight. The total sum of previous topic weights is only adjusted for
+// scheduled topics (those with a next churning block): an inactivated topic already had its weight
+// removed from the sum when its schedule was deleted and only keeps the stored value for
+// reactivation, so touching the sum again would subtract it twice.
+// Topics that never had a weight are left untouched.
 func (k *TopicKeeper) UpdateTopicWeightAfterStakeChange(
 	ctx context.Context,
 	topicId TopicId,
@@ -575,9 +609,21 @@ func (k *TopicKeeper) UpdateTopicWeightAfterStakeChange(
 		return errorsmod.Wrap(err, "error calculating new topic weight")
 	}
 
-	// Update previous topic weight and total sum
-	if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
-		return errorsmod.Wrapf(err, "Setting previous topic weight failed")
+	isScheduled, err := k.IsTopicScheduled(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error checking whether the topic is scheduled")
+	}
+	if isScheduled {
+		if err := k.SetPreviousTopicWeight(ctx, topicId, newWeight); err != nil {
+			return errorsmod.Wrapf(err, "Setting previous topic weight failed")
+		}
+	} else {
+		if err := types.ValidateDec(newWeight); err != nil {
+			return errorsmod.Wrap(err, "weight validation failed")
+		}
+		if err := k.previousTopicWeight.Set(ctx, topicId, newWeight); err != nil {
+			return errorsmod.Wrap(err, "Setting previous topic weight of unscheduled topic failed")
+		}
 	}
 
 	// Emit topic weight updated event

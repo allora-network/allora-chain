@@ -108,7 +108,7 @@ func (s *WorkerTestSuite) TestCloseWorkerNonce_Multi() {
 	s.Require().NoError(err)
 
 	// ------------------------------------------------------------------------------------------------
-	// Move the blockheight until end of wsw
+	// Move the blockHeight until end of wsw
 	// ------------------------------------------------------------------------------------------------
 	s.WithBlockHeight(blockHeight + topic.WorkerSubmissionWindow)
 
