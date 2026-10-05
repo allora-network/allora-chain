@@ -89,11 +89,13 @@ func (s *KeeperTestSuite) TestInactivateTopicWithoutMinWeightReset_TopicFoundInB
 	err := k.SetBlockToActiveTopics(ctx, block, activeTopics)
 	s.Require().NoError(err)
 
-	// Create and set up topicId2 to be active
-	topic := s.MockTopic()
-	topic.Id = topicId2
-	err = k.SetTopic(ctx, topicId2, topic)
-	s.Require().NoError(err)
+	// Create every topic in the bucket so its lowest-weight metadata can be recomputed.
+	for _, topicId := range activeTopics.TopicIds {
+		topic := s.MockTopic()
+		topic.Id = topicId
+		err = k.SetTopic(ctx, topicId, topic)
+		s.Require().NoError(err)
+	}
 
 	// Make it active in the system
 	err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId2, block)

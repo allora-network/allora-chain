@@ -211,6 +211,13 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	err = k.AttemptTopicReactivation(s.Ctx(), topic2Id)
 	s.Require().NoError(err, "Attempting to reactivate topic should not fail")
 
+	activeTopics, err = k.GetActiveTopicIdsAtBlock(s.Ctx(), 15)
+	s.Require().NoError(err)
+	s.Require().Empty(activeTopics.TopicIds)
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(s.Ctx(), 15)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "processed epoch-end bucket metadata must be pruned")
+
 	s.WithBlockHeight(25)
 	setTopicWeight(topic3Id, 50, 10)
 	err = k.ActivateTopic(s.Ctx(), topic3Id)
@@ -1073,4 +1080,111 @@ func (s *KeeperTestSuite) TestSetTopic_CanonicalizesLabelWhitelist() {
 			s.Require().Equal(tc.caseSensitive, stored.LabelCaseSensitive)
 		})
 	}
+}
+
+// TestFailedEpochEndReactivationLeavesTopicCoherent covers the epoch-end path where a topic
+// cannot be re-added to its next block because that block is already held by a heavier topic.
+// The topic must end up fully inactive (out of the active set, weight removed from the total),
+// so that a later activation counts its stored weight exactly once instead of twice.
+func (s *KeeperTestSuite) TestFailedEpochEndReactivationLeavesTopicCoherent() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+
+	params := types.DefaultParams()
+	params.MaxActiveTopicsPerBlock = 1
+	params.MinEpochLength = 1
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(ctx, params))
+
+	heavyTopicId := s.CreateTopic(testutil.WithEpochLength(20), testutil.WithWorkerSubmissionWindow(20))
+	lightTopicId := s.CreateTopic(testutil.WithEpochLength(10), testutil.WithWorkerSubmissionWindow(10))
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(k.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake)))
+	}
+	setTopicWeight(heavyTopicId, 1_000_000, 1_000_000)
+	setTopicWeight(lightTopicId, 10, 10)
+
+	// Block 0: the topics land in different epoch-end blocks (20 and 10), so both activate.
+	s.Require().NoError(k.ActivateTopic(ctx, heavyTopicId))
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId))
+	storeWeight := func(topicId uint64) alloraMath.Dec {
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		s.Require().NoError(err)
+		s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+		return weight
+	}
+	heavyWeight := storeWeight(heavyTopicId)
+	lightWeight := storeWeight(lightTopicId)
+	s.Require().True(lightWeight.Lt(heavyWeight))
+	_, broken := invariant(ctx)
+	s.Require().False(broken)
+
+	// Block 10: the light topic's epoch ends and its next block (20) is held by the heavier topic.
+	s.WithBlockHeight(10)
+	ctx = s.Ctx()
+	s.Require().NoError(k.AttemptTopicReactivation(ctx, lightTopicId))
+
+	scheduled, err := k.IsTopicScheduled(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled, "a topic that could not be re-added must lose its schedule")
+	isActive, err := k.IsTopicActive(ctx, lightTopicId)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+	previousBlockTopics, err := k.GetActiveTopicIdsAtBlock(ctx, 10)
+	s.Require().NoError(err)
+	s.Require().Empty(previousBlockTopics.TopicIds)
+	_, noPriorLowestWeight, err := k.GetLowestActiveTopicWeightAtBlock(ctx, 10)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight, "refused topic's old bucket metadata must be pruned")
+	sumAfterFailedReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), sumAfterFailedReactivation.String(),
+		"the total must only count the topic that stayed active")
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+
+	// Block 11: funding or staking activates the topic again into a free block; its weight counts once.
+	s.WithBlockHeight(11)
+	ctx = s.Ctx()
+	s.Require().NoError(k.ActivateTopic(ctx, lightTopicId))
+	expected, err := heavyWeight.Add(lightWeight)
+	s.Require().NoError(err)
+	sumAfterReactivation, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expected.String(), sumAfterReactivation.String(),
+		"reactivation must add the stored weight exactly once")
+	msg, broken = invariant(ctx)
+	s.Require().False(broken, msg)
+}
+
+// TestActivateTopicCountsStoredWeightOnceAfterActivityRepair covers the consistent state the
+// v16 migration leaves for a topic that was half-active: it is no longer in the active set,
+// has no schedule or block listing, and its weight is no longer counted in the total. Later
+// activation must add the stored weight exactly once.
+func (s *KeeperTestSuite) TestActivateTopicCountsStoredWeightOnceAfterActivityRepair() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithWorkerSubmissionWindow(60))
+	s.Require().NoError(k.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Emulate the migration reconciliation of a half-active topic: drop the schedule and
+	// block listing, remove set membership and recompute the total from valid schedules.
+	s.Require().NoError(k.SetBlockToActiveTopics(ctx, churningBlock, types.TopicIds{TopicIds: nil}))
+	s.Require().NoError(k.RemoveTopicSchedule(ctx, topicId))
+	s.Require().NoError(k.RemoveTopicFromActiveSet(ctx, topicId))
+	s.Require().NoError(k.SetTotalSumPreviousTopicWeights(ctx, alloraMath.ZeroDec()))
+
+	s.Require().NoError(k.ActivateTopic(ctx, topicId))
+	total, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), total.String())
 }
