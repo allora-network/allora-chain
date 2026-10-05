@@ -1188,3 +1188,61 @@ func (s *KeeperTestSuite) TestActivateTopicCountsStoredWeightOnceAfterActivityRe
 	s.Require().NoError(err)
 	s.Require().Equal(weight.String(), total.String())
 }
+
+// TestAttemptTopicReactivationAlreadyListedAtNextBlock covers the ErrTopicAlreadyActive
+// branch: a topic whose next epoch-end block already lists it only has its churning block
+// moved forward. The weight stays counted and the total is untouched.
+func (s *KeeperTestSuite) TestAttemptTopicReactivationAlreadyListedAtNextBlock() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	invariant := keeper.TopicInvariantActiveTopicsScheduledAtChurningBlock(*s.EmissionsKeeper())
+
+	epochLength := int64(20)
+	topicId := s.CreateTopic(testutil.WithEpochLength(epochLength), testutil.WithWorkerSubmissionWindow(epochLength))
+
+	// Activate at block 0: schedule at 20, listed in bucket 20, in the active set.
+	s.Require().NoError(k.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(k.SetPreviousTopicWeight(ctx, topicId, weight))
+	sumBefore, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), sumBefore.String())
+
+	// Pre-list the topic in its next epoch-end block (40): the state the
+	// ErrTopicAlreadyActive branch repairs by advancing only the schedule.
+	nextBlock := int64(40)
+	s.Require().NoError(k.SetBlockToActiveTopics(ctx, nextBlock, types.TopicIds{TopicIds: []uint64{topicId}}))
+
+	// The invariant reports the disagreement before reactivation repairs it.
+	_, broken := invariant(ctx)
+	s.Require().True(broken, "a topic listed at its next block with an older schedule must break the invariant")
+
+	// Block 20: the topic's epoch ends; reactivation finds it already listed at 40.
+	s.WithBlockHeight(epochLength)
+	ctx = s.Ctx()
+	s.Require().NoError(k.AttemptTopicReactivation(ctx, topicId))
+
+	// Only the schedule moved: from 10 to 20. The weight stays counted.
+	schedule, err := k.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(nextBlock, schedule, "the churning block must advance to the next epoch end")
+
+	// The total is untouched: no weight was added or subtracted.
+	sumAfter, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(sumBefore.String(), sumAfter.String(),
+		"reactivation of an already-listed topic must not touch the total")
+
+	// The old block's listing was removed; the topic remains listed at the new block.
+	oldBlockTopics, err := k.GetActiveTopicIdsAtBlock(ctx, epochLength)
+	s.Require().NoError(err)
+	s.Require().Empty(oldBlockTopics.TopicIds, "the old epoch-end listing must be removed")
+	newBlockTopics, err := k.GetActiveTopicIdsAtBlock(ctx, nextBlock)
+	s.Require().NoError(err)
+	s.Require().Contains(newBlockTopics.TopicIds, topicId, "the topic must remain listed at its churning block")
+
+	// The invariant holds after the repair.
+	msg, broken := invariant(ctx)
+	s.Require().False(broken, msg)
+}
