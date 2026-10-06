@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * [#1000](https://github.com/allora-network/allora-chain/pull/1000) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
+* [#1002](https://github.com/allora-network/allora-chain/pull/1002) Fix epoch-end topic reactivation bookkeeping: a refused reschedule now fully inactivates the topic instead of leaving it in the active set without a schedule, so its weight is not double-counted on a later activation.
 
 ### Security
 
