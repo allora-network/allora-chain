@@ -154,7 +154,10 @@ func getOneOutInfererForecastImpliedInferencesReference(
 }
 
 // requireEqualOneOutForecasterValues asserts the two outputs are identical: same
-// length, same (forecaster, withheld inferer) ordering, and Dec-equal values per label.
+// length, same (forecaster, withheld inferer) ordering, and per label both
+// Dec-equal and byte-identical decimal strings. Consensus hashes serialized state,
+// and two decimals can compare Equal yet render with different exponents when the
+// arithmetic path differed, so equality alone is not the real invariant.
 func requireEqualOneOutForecasterValues(
 	t *testing.T,
 	expected, actual []*emissionstypes.OneOutInfererForecasterValue,
@@ -178,6 +181,8 @@ func requireEqualOneOutForecasterValues(
 			require.True(t, expectedValues[j].Value.Equal(actualValues[j].Value),
 				"value mismatch at output index %d label %d: expected %s, got %s",
 				i, j, expectedValues[j].Value.String(), actualValues[j].Value.String())
+			require.Equal(t, expectedValues[j].Value.String(), actualValues[j].Value.String(),
+				"serialized value mismatch at output index %d label %d", i, j)
 		}
 	}
 }
