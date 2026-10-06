@@ -159,6 +159,30 @@ func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, 
 	return nil
 }
 
+// inactivateTopicWithPastSchedule removes the activity of a topic whose churning block has
+// already passed. InactivateTopic cannot do it: a past schedule is not considered active, so
+// it does nothing and the topic would keep its schedule, listing, set membership and weight.
+func (k *TopicKeeper) inactivateTopicWithPastSchedule(
+	ctx context.Context,
+	topicId TopicId,
+	churningBlock BlockHeight,
+) error {
+	if err := k.removeTopicFromBlock(ctx, topicId, churningBlock); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic from its churning block")
+	}
+	if err := k.RemoveTopicSchedule(ctx, topicId); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic schedule")
+	}
+	if err := k.RemoveTopicFromActiveSet(ctx, topicId); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic from active set")
+	}
+	if err := k.RemoveTopicFromPreviousTopicWeights(ctx, topicId); err != nil {
+		return errorsmod.Wrap(err, "failed to remove topic from previous topic weights")
+	}
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false)
+	return nil
+}
+
 func (k *TopicKeeper) RemoveTopicFromPreviousTopicWeights(ctx context.Context, topicId TopicId) error {
 	// Remove previous weight from total sum of previous topic weights, but keep on list
 
@@ -299,8 +323,41 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId) error 
 	}
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
-	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
+	if errorsmod.IsOf(err, types.ErrTopicCannotBeActivated) {
+		sdkCtx.Logger().Info("Topic did not make the cut for its next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
+		// A topic left over from a block the chain already passed cannot be rescheduled;
+		// drop its stale schedule, listing, set membership and weight instead of leaving
+		// the ghost behind.
+		if wasScheduled {
+			err = k.inactivateTopicWithPastSchedule(ctx, topicId, previousChurningBlock)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to inactivate topic with a past schedule")
+			}
+		}
+		return nil
+	}
+	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive) {
 		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
+		// Already listed at the next block; a stale schedule only has to move forward and
+		// its old listing has to be dropped.
+		if wasScheduled {
+			err = k.SetTopicToNextPossibleChurningBlock(ctx, topicId, epochEndBlock)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to set topic to next possible churning block")
+			}
+			err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to reset lowest active topic weight at block")
+			}
+			err = k.SetActiveTopics(ctx, topicId)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to set active topics")
+			}
+			err = k.removeTopicFromBlock(ctx, topicId, previousChurningBlock)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to remove topic from its previous churning block")
+			}
+		}
 		return nil
 	}
 	if err != nil {
