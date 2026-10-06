@@ -343,6 +343,22 @@ func spreadForecast(forecasters, inferers []string, forecastSize int) map[string
 	return out
 }
 
+// constantLossForecast mirrors spreadForecast but gives every element the same
+// forecasted loss, so the derived inferer regrets (NetworkCombinedLoss - loss)
+// can be driven to an exact value when the loss equals NetworkCombinedLoss.
+func constantLossForecast(forecasters, inferers []string, forecastSize int, loss string) map[string][][2]string {
+	out := make(map[string][][2]string, len(forecasters))
+	for f, forecaster := range forecasters {
+		elements := make([][2]string, 0, forecastSize)
+		for i := 0; i < forecastSize; i++ {
+			inferer := inferers[(f+i)%len(inferers)]
+			elements = append(elements, [2]string{inferer, loss})
+		}
+		out[forecaster] = elements
+	}
+	return out
+}
+
 func TestGetOneOutInfererForecastImpliedInferencesEquivalence(t *testing.T) {
 	inferers4 := []string{"inferer0", "inferer1", "inferer2", "inferer3"}
 	inferers6 := []string{"inferer0", "inferer1", "inferer2", "inferer3", "inferer4", "inferer5"}
@@ -470,7 +486,7 @@ func TestGetOneOutInfererForecastImpliedInferencesEquivalence(t *testing.T) {
 			},
 		},
 		{
-			name: "zero regrets everywhere",
+			name: "zero input regrets with nonzero derived regrets",
 			mutate: func(s *oneOutArgsSpec) {
 				s.inferers = inferers4
 				s.infererValues = uniformInfererValues(inferers4, 1, 100)
@@ -478,6 +494,18 @@ func TestGetOneOutInfererForecastImpliedInferencesEquivalence(t *testing.T) {
 				s.forecasters = forecasters2
 				s.forecasts = spreadForecast(forecasters2, inferers4, 2)
 				s.forecasterRegrets = map[string]string{"forecaster0": "0", "forecaster1": "0"}
+				s.networkCombinedLoss = decPtr("100")
+			},
+		},
+		{
+			name: "zero derived regrets from network-loss forecast elements",
+			mutate: func(s *oneOutArgsSpec) {
+				s.inferers = inferers4
+				s.infererValues = uniformInfererValues(inferers4, 1, 100)
+				s.infererRegrets = uniformInfererRegrets(inferers4, "0")
+				s.forecasters = forecasters2
+				s.forecasts = constantLossForecast(forecasters2, inferers4, 2, "100")
+				s.forecasterRegrets = map[string]string{}
 				s.networkCombinedLoss = decPtr("100")
 			},
 		},
