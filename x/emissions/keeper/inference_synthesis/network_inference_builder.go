@@ -280,7 +280,6 @@ func calcForecastImpliedInferenceWithoutInferer(
 	// Filter out the inferer we want to withhold
 	filteredInferers := make([]Inferer, 0, len(args.Inferers)-1)
 	filteredInfererToInference := make(map[Inferer]*emissions.Inference, len(args.InfererToInference)-1)
-	filteredInfererToRegret := make(map[Inferer]*Regret, len(args.InfererToRegret)-1)
 
 	for _, inferer := range args.Inferers {
 		if withhold && inferer == withheldInferer {
@@ -289,9 +288,6 @@ func calcForecastImpliedInferenceWithoutInferer(
 		filteredInferers = append(filteredInferers, inferer)
 		if inference, ok := args.InfererToInference[inferer]; ok {
 			filteredInfererToInference[inferer] = inference
-		}
-		if regret, ok := args.InfererToRegret[inferer]; ok {
-			filteredInfererToRegret[inferer] = regret
 		}
 	}
 
@@ -320,13 +316,10 @@ func calcForecastImpliedInferenceWithoutInferer(
 	filteredForecasterToForecast := map[Forecaster]*emissions.Forecast{
 		forecaster: filteredForecast,
 	}
-	filteredForecasterToRegret := map[Forecaster]*Regret{}
-	if regret, ok := args.ForecasterToRegret[forecaster]; ok {
-		filteredForecasterToRegret[forecaster] = regret
-	}
 
 	// Calculate forecast-implied inference with the filtered data
 	forecastImpliedInferences, err := CalcForecastImpliedInferences(
+		//nolint:exhaustruct // the pipeline derives inferer regrets from forecast element losses and never reads either regret map
 		CalcForecastImpliedInferencesArgs{
 			Logger:                 args.Logger,
 			TopicId:                args.TopicId,
@@ -334,10 +327,8 @@ func calcForecastImpliedInferenceWithoutInferer(
 			AllInferersAreNew:      args.AllInferersAreNew,
 			Inferers:               filteredInferers,
 			InfererToInference:     filteredInfererToInference,
-			InfererToRegret:        filteredInfererToRegret,
 			Forecasters:            filteredForecasters,
 			ForecasterToForecast:   filteredForecasterToForecast,
-			ForecasterToRegret:     filteredForecasterToRegret,
 			NetworkCombinedLoss:    args.NetworkCombinedLoss,
 			EpsilonTopic:           args.EpsilonTopic,
 			PNorm:                  args.PNorm,
