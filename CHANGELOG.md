@@ -84,7 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-* [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the epoch in which ground truth is revealed, rather than at the revelation itself, on topics whose `ground_truth_lag` is not a multiple of `epoch_length`. Previously the next nonce's window opened before the previous nonce closed, so a payload accepted in that gap was consumed and destroyed by the older close, permanently stopping network losses and rewards while every transaction still succeeded. **Requires a coordinated upgrade height; no store migration.** Immediately after the upgrade, fractional-lag topics may log up to two `Sum weight for loss is 0` close failures while payloads accepted under the old window drain; this is expected and self-heals from the following nonce.
+* [#993](https://github.com/allora-network/allora-chain/pull/993) Open the reputer submission window at the end of the reveal epoch, fixing a permanent loss of network losses and rewards on fractional-lag topics.
 * [#980](https://github.com/allora-network/allora-chain/pull/980) Patch a fast-node cache/commit race in `iavl` that caused `AppHash` divergence: the ecosystem treasury account is deleted every block at zero balance, and a concurrent balance query during commit could read its value one block stale, minting the wrong amount and forking the node. Points `iavl` at `github.com/allora-network/iavl` (`v1.2.6` + backport of [cosmos/iavl#1142](https://github.com/cosmos/iavl/pull/1142)). Not consensus-breaking; no migration required.
 
 ### API Breaking Changes
