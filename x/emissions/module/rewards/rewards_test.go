@@ -626,6 +626,32 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.EndBlock()
 }
 
+func (s *RewardsTestSuite) TestFullTopicPassWithFractionalGroundTruthLag() {
+	epochLength := int64(100)
+	groundTruthLag := int64(130)
+
+	topicId, nonce := s.FullTopicPass(
+		[]int{0},
+		[]int{5},
+		testutil.WithEpochLength(epochLength),
+		testutil.WithGroundTruthLag(groundTruthLag),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+
+	// The accepted submission must close into a network loss for the nonce it was
+	// accepted for, and its bundle must be persisted under that nonce by the close.
+	networkLoss, err := s.ReputerLossKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().NotNil(networkLoss.ReputerRequestNonce)
+	s.Require().NotNil(networkLoss.ReputerRequestNonce.ReputerNonce)
+	s.Require().Equal(nonce, networkLoss.ReputerRequestNonce.ReputerNonce.BlockHeight)
+
+	closedBundles, err := s.ReputerLossKeeper().GetReputerLossBundlesAtBlock(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(closedBundles, 1)
+	s.Require().Equal(nonce, closedBundles[0].ReputerRequestNonce.ReputerNonce.BlockHeight)
+}
+
 func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	s.SetParamsForTest()
 

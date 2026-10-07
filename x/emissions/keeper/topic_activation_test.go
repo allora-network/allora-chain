@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	gogoproto "github.com/cosmos/gogoproto/proto"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -185,8 +187,9 @@ func (s *KeeperTestSuite) TestActivateTopicEmitsOpenReputerWindowEvent() {
 	s.Require().NoError(err)
 
 	openedEvents := 0
+	openedEventName := gogoproto.MessageName(&types.EventReputerSubmissionWindowOpened{}) //nolint:exhaustruct // only the registered type name is needed, not an instance
 	for _, event := range s.Ctx().EventManager().Events()[eventStart:] {
-		if event.Type == "emissions.v10.EventReputerSubmissionWindowOpened" {
+		if event.Type == openedEventName {
 			openedEvents++
 		}
 	}
