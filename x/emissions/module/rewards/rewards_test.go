@@ -11,6 +11,7 @@ import (
 
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -624,6 +625,47 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	// Trigger end block - rewards distribution
 	s.EndBlock()
+}
+
+func (s *RewardsTestSuite) TestFullTopicPassWithFractionalGroundTruthLag() {
+	epochLength := int64(100)
+	groundTruthLag := int64(130)
+
+	topicId, nonce := s.FullTopicPass(
+		[]int{0},
+		[]int{5},
+		testutil.WithEpochLength(epochLength),
+		testutil.WithGroundTruthLag(groundTruthLag),
+		testutil.WithWorkerSubmissionWindow(10),
+	)
+
+	// The accepted submission must close into a network loss for the nonce it was
+	// accepted for, and its bundle must be persisted under that nonce by the close.
+	networkLoss, err := s.ReputerLossKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().NotNil(networkLoss.ReputerRequestNonce)
+	s.Require().NotNil(networkLoss.ReputerRequestNonce.ReputerNonce)
+	s.Require().Equal(nonce, networkLoss.ReputerRequestNonce.ReputerNonce.BlockHeight)
+
+	closedBundles, err := s.ReputerLossKeeper().GetReputerLossBundlesAtBlock(s.Ctx(), topicId, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(closedBundles, 1)
+	s.Require().Equal(nonce, closedBundles[0].ReputerRequestNonce.ReputerNonce.BlockHeight)
+
+	// Worker nonces created at the epoch boundaries the pass walks must be closed
+	// on the way; only the nonce created by the final end blocker for the next
+	// cycle should remain unfulfilled.
+	passedTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	_, windowEnd, err := keeper.ReputerSubmissionWindowBounds(
+		passedTopic,
+		types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
+	)
+	s.Require().NoError(err)
+	unfulfilledWorkerNonces, err := s.NonceKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(unfulfilledWorkerNonces.Nonces, 1)
+	s.Require().Equal(windowEnd, unfulfilledWorkerNonces.Nonces[0].BlockHeight)
 }
 
 func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {

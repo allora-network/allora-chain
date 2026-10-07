@@ -17,7 +17,7 @@ Key Features:
 
 The module provides queries to check which nonces are currently open for submission:
 
-- **`GetOpenReputerSubmissionWindows`**: Returns only the reputer nonces that are currently open for submission. A nonce is considered open if the current block height is within its submission window (from when ground truth is revealed until the window closes).
+- **`GetOpenReputerSubmissionWindows`**: Returns only the reputer nonces that are currently open for submission. A nonce is considered open if the current block height is within its submission window (from the end of the epoch in which ground truth is revealed, until the window closes one epoch later).
   
   - Endpoint: `/emissions/v9/open_reputer_submission_windows/{topic_id}`
   - CLI: `allorad query emissions open-reputer-submission-windows [topic_id]`
