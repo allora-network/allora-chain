@@ -38,16 +38,35 @@ func BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.Re
 // reputer payload for this nonce is accepted. Admission, query, and lifecycle
 // code must use these bounds to remain consistent.
 func ReputerSubmissionWindowBounds(topic types.Topic, nonce types.ReputerRequestNonce) (int64, int64, error) {
+	if topic.EpochLength == 0 {
+		return 0, 0, errorsmod.Wrap(types.ErrInvalidValue, "epoch length cannot be 0")
+	}
+	if nonce.ReputerNonce == nil {
+		return 0, 0, errorsmod.Wrap(types.ErrInvalidValue, "reputer nonce cannot be nil")
+	}
+	nonceHeight := nonce.ReputerNonce.BlockHeight
+	if nonceHeight > math.MaxInt64-topic.GroundTruthLag {
+		return 0, 0, errorsmod.Wrapf(types.ErrInvalidValue,
+			"nonce block height %d is too high, adding the ground truth lag %d would overflow",
+			nonceHeight,
+			topic.GroundTruthLag)
+	}
+	revealedGroundTruthBlock := nonceHeight + topic.GroundTruthLag
+
 	extraLag := topic.GroundTruthLag % topic.EpochLength
 	if extraLag != 0 {
 		extraLag = topic.EpochLength - extraLag
 	}
-	revealedGroundTruthBlock := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag
-	if revealedGroundTruthBlock > math.MaxInt64-(extraLag+topic.EpochLength) {
+	if revealedGroundTruthBlock > math.MaxInt64-extraLag {
 		return 0, 0, errorsmod.Wrapf(types.ErrInvalidValue,
 			"nonce block height %d is too high, adding the submission window would overflow",
-			nonce.ReputerNonce.BlockHeight)
+			nonceHeight)
 	}
 	lowerBound := revealedGroundTruthBlock + extraLag
+	if lowerBound > math.MaxInt64-topic.EpochLength {
+		return 0, 0, errorsmod.Wrapf(types.ErrInvalidValue,
+			"nonce block height %d is too high, adding the submission window would overflow",
+			nonceHeight)
+	}
 	return lowerBound, lowerBound + topic.EpochLength, nil
 }

@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/collections"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -72,6 +73,73 @@ func (s *RewardsTestSuite) TestUpdateReputerNonceEmitsMissedOpenEventWithinWindo
 	err = rewards.UpdateReputerNonce(s.Ctx(), *s.EmissionsKeeper(), topic, block)
 	s.Require().NoError(err)
 	s.Require().Equal(1, countReputerSubmissionWindowOpenedEvents(s, eventStart))
+}
+
+// A bundle accepted for a later nonce must not be attributed to, persisted
+// under, or reported for the nonce currently being closed.
+func (s *RewardsTestSuite) TestCloseReputerNonceSkipsBundlesForOtherNonce() {
+	const (
+		epochLength            = int64(100)
+		groundTruthLag         = int64(100)
+		workerSubmissionWindow = int64(10)
+		nonce                  = int64(1000)
+	)
+
+	workerIndexes := testutil.ReturnIndexes(2, 3)
+	reputerIndexes := testutil.ReturnIndexes(0, 2)
+	topic := s.FullTopicSetup(
+		workerIndexes,
+		reputerIndexes,
+		testutil.WithEpochLength(epochLength),
+		testutil.WithGroundTruthLag(groundTruthLag),
+		testutil.WithWorkerSubmissionWindow(workerSubmissionWindow),
+	)
+
+	// First nonce: worker inferences plus a bundle from the first reputer.
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: nonce}))
+	s.Require().NoError(s.NonceKeeper().AddReputerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: nonce}))
+	s.WithBlockHeight(nonce)
+	s.SetupInferences(topic.Id, nonce, workerIndexes)
+	s.WithBlockHeight(nonce + workerSubmissionWindow)
+	s.CloseWorkerNonce(topic, types.Nonce{BlockHeight: nonce})
+
+	// Second nonce, one epoch later: worker inferences plus a bundle from the
+	// second reputer.
+	nextNonce := nonce + epochLength
+	s.Require().NoError(s.NonceKeeper().AddWorkerNonce(s.Ctx(), topic.Id, &types.Nonce{BlockHeight: nextNonce}))
+	s.WithBlockHeight(nextNonce)
+	s.SetupInferences(topic.Id, nextNonce, workerIndexes)
+	s.WithBlockHeight(nextNonce + workerSubmissionWindow)
+	s.CloseWorkerNonce(topic, types.Nonce{BlockHeight: nextNonce})
+
+	// The first reputer submits for the first nonce inside its window.
+	windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(
+		topic,
+		types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(nonce+groundTruthLag, windowStart)
+	s.WithBlockHeight(windowStart)
+	s.Require().NoError(s.InsertReputerLossBundle(topic.Id, nonce, []int{reputerIndexes[0]}))
+
+	// The second reputer submits for the next nonce on the shared close/open
+	// block, which is accepted for the next nonce before the first nonce closes.
+	s.WithBlockHeight(windowEnd)
+	s.Require().NoError(s.InsertReputerLossBundle(topic.Id, nextNonce, []int{reputerIndexes[1]}))
+
+	s.WithBlockHeight(windowEnd)
+	s.Require().NoError(rewards.UpdateReputerNonce(s.Ctx(), *s.EmissionsKeeper(), topic, windowEnd))
+
+	closedBundles, err := s.ReputerLossKeeper().GetReputerLossBundlesAtBlock(s.Ctx(), topic.Id, nonce)
+	s.Require().NoError(err)
+	s.Require().Len(closedBundles, 1)
+	s.Require().Equal(s.AddrsStr(reputerIndexes[0]), closedBundles[0].Reputer)
+
+	networkLoss, err := s.ReputerLossKeeper().GetNetworkLossBundleAtBlock(s.Ctx(), topic.Id, nonce)
+	s.Require().NoError(err)
+	s.Require().NotNil(networkLoss.ReputerRequestNonce)
+	s.Require().NotNil(networkLoss.ReputerRequestNonce.ReputerNonce)
+	s.Require().Equal(nonce, networkLoss.ReputerRequestNonce.ReputerNonce.BlockHeight)
 }
 
 // Test defer execution of CloseReputerNonce

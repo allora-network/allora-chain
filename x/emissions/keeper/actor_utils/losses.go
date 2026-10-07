@@ -118,11 +118,21 @@ func CloseReputerNonce(
 
 	lossBundlesByReputer := make(types.LossBundles, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)
+	retainedReputerAddresses := make([]string, 0, len(activeReputerAddresses))
 	for _, address := range activeReputerAddresses {
 		bundle, err := k.GetReputerLossKeeper().GetReputerLatestLossByTopicId(ctx, topic.Id, address)
 		if err != nil {
 			ctx.Logger().Warn("Could not get latest loss bundle for reputer, skipping", "reputer", address, "topicId", topic.Id, "error", err)
 			continue // Skip this reputer
+		}
+
+		// Loss bundles are keyed by (topic, reputer) with no nonce, so a
+		// submission accepted for a later nonce can still be stored here.
+		// It must not be attributed to, persisted under, or scored for this close.
+		if bundle.ReputerRequestNonce == nil || bundle.ReputerRequestNonce.ReputerNonce == nil ||
+			bundle.ReputerRequestNonce.ReputerNonce.BlockHeight != nonce.BlockHeight {
+			ctx.Logger().Warn("Skipping loss bundle submitted for a different nonce", "reputer", address, "topicId", topic.Id, "closingNonce", nonce.BlockHeight)
+			continue
 		}
 
 		// Check that the reputer enough stake in the topic
@@ -149,6 +159,7 @@ func CloseReputerNonce(
 		// / Filtering done now, now write what we must for inclusion
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 		stakesByReputer[bundle.Reputer] = stake
+		retainedReputerAddresses = append(retainedReputerAddresses, bundle.Reputer)
 	}
 
 	if len(lossBundlesByReputer) == 0 {
@@ -166,10 +177,7 @@ func CloseReputerNonce(
 	}
 
 	// Emit event for active reputers set for topic nonce
-	types.EmitNewActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, activeReputerAddresses)
-
-	// Check that all network bundles correspond to the nonce requested before calling CalcNetworkLosses.
-	// In case of a mismatch, we should remove that
+	types.EmitNewActiveReputersSetEvent(ctx, topic.Id, nonce.BlockHeight, retainedReputerAddresses)
 
 	networkLossBundle, err := synth.CalcNetworkLosses(ctx, topic.Id, nonce.BlockHeight, stakesByReputer, lossBundlesByReputer)
 	if err != nil {

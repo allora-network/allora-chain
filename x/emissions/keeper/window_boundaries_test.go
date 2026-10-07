@@ -509,6 +509,33 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 			expectedErr:   types.ErrInvalidValue,
 			description:   "adding the window must not wrap",
 		},
+		{
+			name:          "zero epoch length is rejected",
+			topic:         types.Topic{EpochLength: 0, GroundTruthLag: 100}, //nolint:exhaustruct
+			nonceHeight:   1000,
+			expectedStart: 0,
+			expectedEnd:   0,
+			expectedErr:   types.ErrInvalidValue,
+			description:   "the modulo that computes extraLag must not divide by zero",
+		},
+		{
+			name:          "ground truth lag overflow is rejected",
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
+			nonceHeight:   math.MaxInt64 - 199,
+			expectedStart: 0,
+			expectedEnd:   0,
+			expectedErr:   types.ErrInvalidValue,
+			description:   "adding the ground truth lag must not wrap before the bounds are checked",
+		},
+		{
+			name:          "lower bound plus epoch length overflow is rejected",
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
+			nonceHeight:   math.MaxInt64 - 200,
+			expectedStart: 0,
+			expectedEnd:   0,
+			expectedErr:   types.ErrInvalidValue,
+			description:   "reveal plus extra lag must not be extended by an epoch past max int64",
+		},
 	}
 
 	for _, tt := range tests {
@@ -538,4 +565,12 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 			s.Require().Less(prevStart, start, tt.description)
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestReputerSubmissionWindowBoundsRejectsMissingNonce() {
+	_, _, err := keeper.ReputerSubmissionWindowBounds(
+		types.Topic{EpochLength: 100, GroundTruthLag: 100}, //nolint:exhaustruct
+		types.ReputerRequestNonce{},                        //nolint:exhaustruct
+	)
+	s.Require().ErrorIs(err, types.ErrInvalidValue)
 }
