@@ -521,11 +521,20 @@ func (s *KeeperTestSuite) TestReputerSubmissionWindowBounds() {
 		{
 			name:          "ground truth lag overflow is rejected",
 			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
-			nonceHeight:   math.MaxInt64 - 199,
+			nonceHeight:   math.MaxInt64 - 129,
 			expectedStart: 0,
 			expectedEnd:   0,
 			expectedErr:   types.ErrInvalidValue,
 			description:   "adding the ground truth lag must not wrap before the bounds are checked",
+		},
+		{
+			name:          "reveal plus extra lag overflow is rejected",
+			topic:         types.Topic{EpochLength: 100, GroundTruthLag: 130}, //nolint:exhaustruct
+			nonceHeight:   math.MaxInt64 - 199,
+			expectedStart: 0,
+			expectedEnd:   0,
+			expectedErr:   types.ErrInvalidValue,
+			description:   "adding extra lag to the revelation must not wrap",
 		},
 		{
 			name:          "lower bound plus epoch length overflow is rejected",
