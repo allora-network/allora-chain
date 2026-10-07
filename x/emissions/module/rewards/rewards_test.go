@@ -11,6 +11,7 @@ import (
 
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -650,6 +651,21 @@ func (s *RewardsTestSuite) TestFullTopicPassWithFractionalGroundTruthLag() {
 	s.Require().NoError(err)
 	s.Require().Len(closedBundles, 1)
 	s.Require().Equal(nonce, closedBundles[0].ReputerRequestNonce.ReputerNonce.BlockHeight)
+
+	// Worker nonces created at the epoch boundaries the pass walks must be closed
+	// on the way; only the nonce created by the final end blocker for the next
+	// cycle should remain unfulfilled.
+	passedTopic, err := s.TopicKeeper().GetTopic(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	_, windowEnd, err := keeper.ReputerSubmissionWindowBounds(
+		passedTopic,
+		types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: nonce}},
+	)
+	s.Require().NoError(err)
+	unfulfilledWorkerNonces, err := s.NonceKeeper().GetUnfulfilledWorkerNonces(s.Ctx(), topicId)
+	s.Require().NoError(err)
+	s.Require().Len(unfulfilledWorkerNonces.Nonces, 1)
+	s.Require().Equal(windowEnd, unfulfilledWorkerNonces.Nonces[0].BlockHeight)
 }
 
 func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {

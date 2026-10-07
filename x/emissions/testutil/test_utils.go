@@ -1452,6 +1452,21 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 		windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *reputerNonces.Nonces[0])
 		s.Require().NoError(err)
 
+		// A worker window closes only when the end blocker runs exactly at the
+		// height registered when the nonce was added (keeper.GetWorkerWindowTopicIds
+		// is a lookup by exact height). A ground truth lag longer than one epoch
+		// makes this helper jump over those heights, so close every worker window
+		// it passes on the way to the reputer close.
+		closeWorkerWindow := func(boundary int64) {
+			s.T().Logf("Moving nonce to worker window close for TopicId: %d, Next block: %v", p.topicID, boundary+topic.WorkerSubmissionWindow)
+			s.WithBlockHeight(boundary + topic.WorkerSubmissionWindow)
+			s.EndBlock()
+		}
+		lagLongerThanEpoch := windowStart > epochEndBlock
+		if lagLongerThanEpoch {
+			closeWorkerWindow(epochEndBlock)
+		}
+
 		// The window starts on the nonce's epoch grid. Run the end blocker on any
 		// grid block between the epoch already processed above and the window
 		// start, otherwise the topic is already inactive when the payload is
@@ -1460,6 +1475,9 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 			s.T().Logf("Moving nonce to epoch boundary for TopicId: %d, Next block: %v", p.topicID, boundary)
 			s.WithBlockHeight(boundary)
 			s.EndBlock()
+			if lagLongerThanEpoch && boundary+topic.WorkerSubmissionWindow < windowStart {
+				closeWorkerWindow(boundary)
+			}
 		}
 
 		reputerTxBlockHeight := windowStart + 1
@@ -1467,6 +1485,9 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 		s.WithBlockHeight(reputerTxBlockHeight)
 		err = s.InsertReputerLossBundle(topic.GetId(), reputerNonces.Nonces[0].ReputerNonce.BlockHeight, reputerIndexes, options...)
 		s.Require().NoError(err)
+		if lagLongerThanEpoch && windowStart+topic.WorkerSubmissionWindow < windowEnd {
+			closeWorkerWindow(windowStart)
+		}
 		rewardsBlockHeight = windowEnd
 	} else {
 		rewardsBlockHeight = nonce + topic.GroundTruthLag + topic.EpochLength
