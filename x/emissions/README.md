@@ -59,7 +59,7 @@ The `UpdateTopic` tx is intentionally limited to a subset of mutable fields. Top
 
 All other topic fields are immutable because they impact state transitions, scheduling/cadence, or other invariants that should remain stable once a topic is created.
 
-`UpdateTopic` is a **full replacement**: every editable field is overwritten by what the message carries, so send the current value back to keep it. An empty `label_whitelist` means *unrestricted*, not *unchanged*, and `max_top_inferers_to_reward` of `0` means *use the global maximum*, not *unchanged*.
+`UpdateTopic` is a **full replacement**: every editable field is overwritten by what the message carries, so send the current value back to keep it. An empty `label_whitelist` means *unrestricted*, not *unchanged*, and `max_top_inferers_to_reward` must be re-sent within the global range to keep it.
 
 ### Constraints
 
