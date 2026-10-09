@@ -507,14 +507,14 @@ func (s *WorkerTestSuite) TestProcessAndStoreNetworkInferencesNoOutliers() {
 
 // countFrozenEvents returns the number of EventEpochLabelRegistryFrozen
 // events currently on the given SDK context's event manager, along with the
-// RegistrySize field from the last such event (so callers can assert on it).
+// last such event (so callers can assert on its fields).
 // It uses sdk.ParseTypedEvent to reconstruct the typed event from its ABCI
 // representation, which keeps the helper agnostic to the proto package
 // version (e.g. v10 -> v11 bumps require no test changes) and reads
 // registry_size as a typed uint64 rather than a stringified attribute.
-func countFrozenEvents(ctx sdk.Context) (int, uint64) {
+func countFrozenEvents(ctx sdk.Context) (int, *types.EventEpochLabelRegistryFrozen) {
 	count := 0
-	var lastSize uint64
+	var last *types.EventEpochLabelRegistryFrozen
 	for _, ev := range ctx.EventManager().Events() {
 		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
 		if err != nil {
@@ -525,9 +525,9 @@ func countFrozenEvents(ctx sdk.Context) (int, uint64) {
 			continue
 		}
 		count++
-		lastSize = frozen.RegistrySize
+		last = frozen
 	}
-	return count, lastSize
+	return count, last
 }
 
 // TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFrozenEventOnce pins
@@ -603,15 +603,22 @@ func (s *WorkerTestSuite) TestCloseActiveInferencesSet_EmitsEpochLabelRegistryFr
 
 	s.Require().NoError(actorutils.CloseWorkerNonce(s.EmissionsKeeper(), s.Ctx(), topic, nonce))
 
-	after, size := countFrozenEvents(s.Ctx())
+	after, frozen := countFrozenEvents(s.Ctx())
 	s.Require().Equal(before+1, after,
 		"CloseWorkerNonce must emit exactly one EventEpochLabelRegistryFrozen")
-	s.Require().Equal(uint64(3), size,
+	s.Require().Equal(uint64(3), frozen.RegistrySize,
 		"registry_size must match the final active registry {a,b,c}")
+	s.Require().Equal([]string{"a", "b", "c"}, frozen.Labels,
+		"labels must be the final active registry in compact-id order")
 
 	storedRegistry, err := s.TopicKeeper().GetEpochLabelRegistry(s.Ctx(), topicId, blockHeight)
 	s.Require().NoError(err)
 	s.Require().Len(storedRegistry.Labels, 3)
+	// The event alone reconstructs the stored registry: labels[i] has id i+1.
+	for i, name := range frozen.Labels {
+		//nolint:gosec // i indexes a three-label registry
+		s.Require().Equal(types.TopicLabel{Id: uint32(i + 1), Name: name}, *storedRegistry.Labels[i])
+	}
 	s.Require().Equal("a", storedRegistry.Labels[0].Name)
 	s.Require().Equal("b", storedRegistry.Labels[1].Name)
 	s.Require().Equal("c", storedRegistry.Labels[2].Name)
