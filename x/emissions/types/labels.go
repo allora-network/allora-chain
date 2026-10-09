@@ -23,3 +23,23 @@ func ValidateSingleArityLabel(label string) error {
 	}
 	return nil
 }
+
+// LabelNamesByID returns the registry's label names in compact-id order:
+// element i is the name of the label with id i+1. It fails unless the ids are
+// exactly 1 through len(Labels), each once.
+func (r EpochLabelRegistry) LabelNamesByID() ([]string, error) {
+	names := make([]string, len(r.Labels))
+	for _, lbl := range r.Labels {
+		if lbl == nil {
+			return nil, errors.Wrap(sdkerrors.ErrLogic, "epoch label registry has a nil label")
+		}
+		if lbl.Id < 1 || int(lbl.Id) > len(r.Labels) {
+			return nil, errors.Wrapf(sdkerrors.ErrLogic, "epoch label registry id %d out of range 1..%d", lbl.Id, len(r.Labels))
+		}
+		if names[lbl.Id-1] != "" {
+			return nil, errors.Wrapf(sdkerrors.ErrLogic, "epoch label registry repeats id %d", lbl.Id)
+		}
+		names[lbl.Id-1] = lbl.Name
+	}
+	return names, nil
+}

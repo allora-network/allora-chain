@@ -119,6 +119,8 @@ message EventNetworkInferenceBundle {
   uint64 topic_id = 1;
   int64 nonce = 2;
 
+  // The epoch's frozen label registry, in compact-id order: the labels of
+  // EventEpochLabelRegistryFrozen for the same topic and nonce.
   repeated string label_names = 3;
 
   repeated string inferer_addresses = 4;
@@ -743,4 +745,7 @@ message EventEpochLabelRegistryFrozen {
   uint64 topic_id = 1;
   int64 nonce_block_height = 2;
   uint64 registry_size = 3;
+  // The frozen registry's canonical label names in compact-id order:
+  // labels[i] is the label with id i+1.
+  repeated string labels = 4;
 }
