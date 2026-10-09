@@ -416,13 +416,17 @@ message EventForecastTaskScoreSet {
 
 message EventWorkerLastCommitSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The height of the block the event is emitted in, which every event already
+  // carries; kept for compatibility.
+  int64 block_height = 2 [deprecated = true];
   emissions.v3.Nonce nonce = 3;
 }
 
 message EventReputerLastCommitSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The height of the block the event is emitted in, which every event already
+  // carries; kept for compatibility.
+  int64 block_height = 2 [deprecated = true];
   emissions.v3.Nonce nonce = 3;
 }
 
