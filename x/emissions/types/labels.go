@@ -29,6 +29,7 @@ func ValidateSingleArityLabel(label string) error {
 // exactly 1 through len(Labels), each once.
 func (r EpochLabelRegistry) LabelNamesByID() ([]string, error) {
 	names := make([]string, len(r.Labels))
+	seen := make([]bool, len(r.Labels))
 	for _, lbl := range r.Labels {
 		if lbl == nil {
 			return nil, errors.Wrap(sdkerrors.ErrLogic, "epoch label registry has a nil label")
@@ -36,9 +37,10 @@ func (r EpochLabelRegistry) LabelNamesByID() ([]string, error) {
 		if lbl.Id < 1 || int(lbl.Id) > len(r.Labels) {
 			return nil, errors.Wrapf(sdkerrors.ErrLogic, "epoch label registry id %d out of range 1..%d", lbl.Id, len(r.Labels))
 		}
-		if names[lbl.Id-1] != "" {
+		if seen[lbl.Id-1] {
 			return nil, errors.Wrapf(sdkerrors.ErrLogic, "epoch label registry repeats id %d", lbl.Id)
 		}
+		seen[lbl.Id-1] = true
 		names[lbl.Id-1] = lbl.Name
 	}
 	return names, nil

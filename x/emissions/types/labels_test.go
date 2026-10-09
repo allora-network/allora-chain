@@ -27,6 +27,7 @@ func TestEpochLabelRegistryLabelNamesByID(t *testing.T) {
 		{name: "id zero", reg: registry(label(0, "a")), want: nil, wantErr: true},
 		{name: "id past the end", reg: registry(label(1, "a"), label(3, "c")), want: nil, wantErr: true},
 		{name: "repeated id", reg: registry(label(1, "a"), label(1, "b")), want: nil, wantErr: true},
+		{name: "repeated id after an empty label", reg: registry(label(1, ""), label(1, "b")), want: nil, wantErr: true},
 		{name: "nil label", reg: registry(nil), want: nil, wantErr: true},
 	}
 	for _, tt := range tests {
