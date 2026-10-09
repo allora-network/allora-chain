@@ -1902,7 +1902,7 @@ func TestEpochEventsEmitNonce(t *testing.T) {
 		{"worker submission window closed", types.NewWorkerSubmissionWindowClosedEventBase(1, 940), AttributeKeyNonceBlockHeight},
 		{"reputer submission window opened", types.NewReputerSubmissionWindowOpenedEventBase(1, 940, 950), AttributeKeyNonceBlockHeight},
 		{"reputer submission window closed", types.NewReputerSubmissionWindowClosedEventBase(1, 940), AttributeKeyNonceBlockHeight},
-		{"epoch label registry frozen", types.NewEpochLabelRegistryFrozenEventBase(1, 940, 1), AttributeKeyNonceBlockHeight},
+		{"epoch label registry frozen", types.NewEpochLabelRegistryFrozenEventBase(1, 940, []string{"up"}), AttributeKeyNonceBlockHeight},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
