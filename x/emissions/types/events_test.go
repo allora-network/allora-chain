@@ -48,7 +48,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 		},
 	}
 
-	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, 10, scores)
+	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -80,11 +80,29 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Contains(t, val.GetValue(), `["100","200"]`)
 }
 
+// The event carries the epoch nonce the scores hold, not the height the
+// scores were computed at.
+func TestEmitNewActorScoresSetEventCarriesTheScoresEpoch(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager()).WithBlockHeight(1000)
+	scores := []types.Score{
+		{TopicId: 1, BlockHeight: 940, Address: "address1", Score: alloraMath.NewDecFromInt64(1)},
+		{TopicId: 1, BlockHeight: 940, Address: "address2", Score: alloraMath.NewDecFromInt64(2)},
+	}
+
+	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+	val, exists := events[0].GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Equal(t, `"940"`, val.GetValue())
+}
+
 func TestEmitNewInfererScoresSetEventWithNoScores(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	scores := []types.Score{}
 
-	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, 10, scores)
+	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores)
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)
@@ -107,7 +125,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 		},
 	}
 
-	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, 10, scores)
+	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, scores)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -143,7 +161,7 @@ func TestEmitNewForecasterScoresSetEventWithNoScores(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	scores := []types.Score{}
 
-	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, 10, scores)
+	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, scores)
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)
@@ -166,7 +184,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 		},
 	}
 
-	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, 10, scores)
+	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, scores)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -202,7 +220,7 @@ func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	scores := []types.Score{}
 
-	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, 10, scores)
+	types.EmitNewActorScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, scores)
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)
