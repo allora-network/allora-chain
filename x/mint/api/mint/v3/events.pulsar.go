@@ -4778,8 +4778,8 @@ type EventEcosystemTokenMintSet struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The height of the block the event is emitted in, which every event already
-	// carries; kept for compatibility.
+	// The height of the block the event is emitted in. The block already records
+	// it, so the field only duplicates it; kept for compatibility.
 	//
 	// Deprecated: Do not use.
 	BlockHeight uint64 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
@@ -4826,8 +4826,8 @@ type EventRewardCurrentBlockEmission struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The height of the block the event is emitted in, which every event already
-	// carries; kept for compatibility.
+	// The height of the block the event is emitted in. The block already records
+	// it, so the field only duplicates it; kept for compatibility.
 	//
 	// Deprecated: Do not use.
 	BlockHeight uint64 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`

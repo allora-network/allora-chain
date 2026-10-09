@@ -67,8 +67,8 @@ func (m *EventTokenomicsSet) XXX_DiscardUnknown() {
 var xxx_messageInfo_EventTokenomicsSet proto.InternalMessageInfo
 
 type EventEcosystemTokenMintSet struct {
-	// The height of the block the event is emitted in, which every event already
-	// carries; kept for compatibility.
+	// The height of the block the event is emitted in. The block already records
+	// it, so the field only duplicates it; kept for compatibility.
 	BlockHeight uint64                `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"` // Deprecated: Do not use.
 	TokenAmount cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=token_amount,json=tokenAmount,proto3,customtype=cosmossdk.io/math.Int" json:"token_amount"`
 }
@@ -115,8 +115,8 @@ func (m *EventEcosystemTokenMintSet) GetBlockHeight() uint64 {
 }
 
 type EventRewardCurrentBlockEmission struct {
-	// The height of the block the event is emitted in, which every event already
-	// carries; kept for compatibility.
+	// The height of the block the event is emitted in. The block already records
+	// it, so the field only duplicates it; kept for compatibility.
 	BlockHeight uint64                `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"` // Deprecated: Do not use.
 	TokenAmount cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=token_amount,json=tokenAmount,proto3,customtype=cosmossdk.io/math.Int" json:"token_amount"`
 }
