@@ -35,24 +35,32 @@ enum ActorType {
 message EventScoresSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 3 [deprecated = true];
   repeated string addresses = 4;
   repeated string scores = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 6;
 }
 
 message EventRewardsSettled {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 3 [deprecated = true];
   repeated string addresses = 4;
   repeated string rewards = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
   int64 block_height_tx = 6;
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 7;
 }
 
 message EventNetworkLossSet {
@@ -441,90 +449,126 @@ message EventEMAScoresSet {
 message EventListeningCoefficientsSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 3 [deprecated = true];
   repeated string addresses = 4;
   repeated string coefficients = 5 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 6;
 }
 
 message EventInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 5;
 }
 
 message EventForecasterNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 5;
 }
 
 message EventNaiveInfererNetworkRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string regrets = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 5;
 }
 
 message EventTopicInitialRegretSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 2 [deprecated = true];
   string regret = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 4;
 }
 
 message EventTopicInitialEmaScoreSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
-  int64 block_height = 3;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 3 [deprecated = true];
   string score = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 5;
 }
 
 message EventRegretStdNormSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 2 [deprecated = true];
   string stdnorm = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 4;
 }
 
 message EventInfererWeightsSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 5;
 }
 
 message EventForecasterWeightsSet {
   uint64 topic_id = 1;
-  int64 block_height = 2;
+  // The epoch nonce, kept under this name for compatibility; read
+  // nonce_block_height instead.
+  int64 block_height = 2 [deprecated = true];
   repeated string addresses = 3;
   repeated string weights = 4 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the values belong to.
+  int64 nonce_block_height = 5;
 }
 
 message EventPreviousPercentageRewardToStakedReputersSet {

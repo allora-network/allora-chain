@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#968](https://github.com/allora-network/allora-chain/pull/968) Per-topic `max_top_inferers_to_reward`, required within the global range, with migration v16
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
+* [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce_block_height`, the epoch nonce, on `EventScoresSet`, `EventRewardsSettled`, `EventListeningCoefficientsSet`, the three network-regret events, `EventTopicInitialRegretSet`, `EventTopicInitialEmaScoreSet`, `EventRegretStdNormSet`, `EventInfererWeightsSet` and `EventForecasterWeightsSet`
 
 ### Changed
 
@@ -76,6 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#1004](https://github.com/allora-network/allora-chain/pull/1004) `EmitNewActorScoresSetEvent` no longer takes a height: `EventScoresSet` always carried the epoch nonce from the scores, and two callers passed the current block height, which was ignored.
 
 ### Deprecated
+
+* [#1005](https://github.com/allora-network/allora-chain/pull/1005) `block_height` on the same 11 events, which held the epoch nonce under the name other events use for the inclusion height; still emitted with the same value as `nonce_block_height`
 
 ### Removed
 
