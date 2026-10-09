@@ -2519,8 +2519,8 @@ func (m *EventForecastTaskScoreSet) GetNonce() int64 {
 
 type EventWorkerLastCommitSet struct {
 	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	// The height of the block the event is emitted in, which every event already
-	// carries; kept for compatibility.
+	// The height of the block the event is emitted in. The block already records
+	// it, so the field only duplicates it; kept for compatibility.
 	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"` // Deprecated: Do not use.
 	Nonce       *Nonce `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
@@ -2582,8 +2582,8 @@ func (m *EventWorkerLastCommitSet) GetNonce() *Nonce {
 
 type EventReputerLastCommitSet struct {
 	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	// The height of the block the event is emitted in, which every event already
-	// carries; kept for compatibility.
+	// The height of the block the event is emitted in. The block already records
+	// it, so the field only duplicates it; kept for compatibility.
 	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"` // Deprecated: Do not use.
 	Nonce       *Nonce `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
 }
