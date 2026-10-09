@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 * [#1000](https://github.com/allora-network/allora-chain/pull/1000) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
+* [ENGN-9626](https://linear.app/alloralabs/issue/ENGN-9626/emissions-topic-creation-enables-whitelist-gates-without-emitting) Topic creation now emits the worker/reputer whitelist Enabled events and the creation-fee `EventFundTopic`; the enable/disable message handlers no longer emit duplicates, and repeated no-op gate changes emit nothing. A zero fee amount now skips the no-op balance check, coin transfer and fee-revenue credit, while activation is still attempted because it depends on the topic's current weight, not on the amount.
 
 ### Security
 

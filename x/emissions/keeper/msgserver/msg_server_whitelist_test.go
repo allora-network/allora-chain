@@ -3,6 +3,9 @@ package msgserver_test
 import (
 	"context"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -997,4 +1000,55 @@ func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 			}
 		})
 	}
+}
+
+// TestTopicGateHandlersEmitSingleEvent pins that the enable/disable message
+// handlers rely on the keeper for gate event emission: exactly one event per
+// actual transition, none for a repeated no-op call.
+func (s *MsgServerTestSuite) TestTopicGateHandlersEmitSingleEvent() {
+	msgServer := s.EmissionsMsgServer()
+	admin := s.AddrsStr(0)
+
+	createMsg := s.MockTopicMsg()
+	createMsg.EnableWorkerWhitelist = false
+	createMsg.EnableReputerWhitelist = false
+	res, err := msgServer.CreateNewTopic(s.Ctx(), createMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
+
+	ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+
+	enableMsg := &types.EnableTopicWorkerWhitelistRequest{Sender: admin, TopicId: topicId}
+	_, err = msgServer.EnableTopicWorkerWhitelist(ctx, enableMsg)
+	s.Require().NoError(err)
+	_, err = msgServer.EnableTopicWorkerWhitelist(ctx, enableMsg)
+	s.Require().NoError(err)
+	enabled, disabled := countWorkerGateEvents(ctx)
+	s.Require().Equal(1, enabled, "repeated enable must emit exactly one event")
+	s.Require().Zero(disabled)
+
+	disableMsg := &types.DisableTopicWorkerWhitelistRequest{Sender: admin, TopicId: topicId}
+	_, err = msgServer.DisableTopicWorkerWhitelist(ctx, disableMsg)
+	s.Require().NoError(err)
+	_, err = msgServer.DisableTopicWorkerWhitelist(ctx, disableMsg)
+	s.Require().NoError(err)
+	enabled, disabled = countWorkerGateEvents(ctx)
+	s.Require().Equal(1, enabled)
+	s.Require().Equal(1, disabled, "repeated disable must emit exactly one event")
+}
+
+func countWorkerGateEvents(ctx sdk.Context) (enabled, disabled int) {
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventTopicWorkerWhitelistEnabled:
+			enabled++
+		case *types.EventTopicWorkerWhitelistDisabled:
+			disabled++
+		}
+	}
+	return enabled, disabled
 }

@@ -134,6 +134,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		return nil, errorsmod.Wrap(err, "error adding topic fee revenue")
 	}
 
+	// The creation fee is credited to the topic's fee revenue, so emit the same
+	// event as FundTopic to keep the fee-revenue event stream complete.
+	types.EmitNewFundTopicEvent(ctx, topicId, msg.Creator, params.CreateTopicFee)
+
 	types.EmitNewCreateNewTopicEvent(ctx, &topic)
 	return &types.CreateNewTopicResponse{TopicId: topicId}, nil
 }

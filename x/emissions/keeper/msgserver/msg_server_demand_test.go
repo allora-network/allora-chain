@@ -222,3 +222,35 @@ func (s *MsgServerTestSuite) TestTopicWeightDoesNotChangeWithDifferentEpochLengt
 	s.Require().Equal(topicWeight1.Gt(topicWeight2), true, "Topic1 weight should > Topic2 weight because prev topic weights are smaller than current ones and Topic1 has a longer epoch length")
 
 }
+
+// TestFundTopicZeroAmountStillActivatesWeightSufficientTopic pins that a
+// zero-amount funding skips only the transfer and fee-revenue credit, which
+// would be no-ops, and still attempts activation: activation depends on the
+// topic's current weight, not on the amount.
+func (s *MsgServerTestSuite) TestFundTopicZeroAmountStillActivatesWeightSufficientTopic() {
+	ctx := s.Ctx()
+	topicId := uint64(1)
+
+	// Give the topic enough weight to clear the activation threshold, directly
+	// at the keeper so no activation trigger runs in setup. A topic with zero
+	// fee revenue has zero weight, so both stake and revenue are needed.
+	err := s.StakingKeeper().AddReputerStake(ctx, topicId, s.AddrsStr(1), cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+	err = s.TopicKeeper().AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(500000))
+	s.Require().NoError(err)
+
+	active, err := s.TopicKeeper().IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(active, "topic must start inactive")
+
+	_, err = s.EmissionsMsgServer().FundTopic(ctx, &types.FundTopicRequest{
+		Sender:  s.AddrsStr(0),
+		TopicId: topicId,
+		Amount:  cosmosMath.ZeroInt(),
+	})
+	s.Require().NoError(err)
+
+	active, err = s.TopicKeeper().IsTopicActive(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(active, "zero-amount funding must still attempt activation")
+}
