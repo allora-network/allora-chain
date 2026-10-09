@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `block_height` on the same 11 events, which held the epoch nonce under the name other events use for the inclusion height; still emitted with the same value as `nonce`
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce_block_height` on those 13 events and `current_nonce_block_height` on the submission-window status responses; still emitted with the same value as `nonce`
+* [#1006](https://github.com/allora-network/allora-chain/pull/1006) `block_height` on `EventWorkerLastCommitSet`, `EventReputerLastCommitSet`, `EventEcosystemTokenMintSet` and `EventRewardCurrentBlockEmission`, which only repeats the height of the block the event is emitted in; still emitted
 
 ### Removed
 
