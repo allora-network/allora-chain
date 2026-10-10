@@ -3,6 +3,8 @@ package msgserver_test
 import (
 	"strings"
 
+	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -296,6 +298,131 @@ func (s *MsgServerTestSuite) TestCreateNewTopic() {
 			}
 		})
 	}
+}
+
+// TestCreateNewTopicEmitsGateAndFeeEvents pins the event contract of topic
+// creation: one Enabled event per requested whitelist gate, one funding event
+// for the creation fee credited to topic fee revenue, and the topic creation
+// event, all in the same transaction and in emission order.
+func (s *MsgServerTestSuite) TestCreateNewTopicEmitsGateAndFeeEvents() {
+	msgServer := s.EmissionsMsgServer()
+	creator := s.AddrsStr(0)
+
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+
+	testCases := []struct {
+		name              string
+		enableWorker      bool
+		enableReputer     bool
+		wantWorkerEvents  int
+		wantReputerEvents int
+	}{
+		{name: "both gates", enableWorker: true, enableReputer: true, wantWorkerEvents: 1, wantReputerEvents: 1},
+		{name: "worker gate only", enableWorker: true, enableReputer: false, wantWorkerEvents: 1, wantReputerEvents: 0},
+		{name: "reputer gate only", enableWorker: false, enableReputer: true, wantWorkerEvents: 0, wantReputerEvents: 1},
+		{name: "no gates", enableWorker: false, enableReputer: false, wantWorkerEvents: 0, wantReputerEvents: 0},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			// A fresh event manager isolates this call's events from the
+			// shared suite context.
+			ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+
+			msg := s.MockTopicMsg()
+			msg.EnableWorkerWhitelist = tc.enableWorker
+			msg.EnableReputerWhitelist = tc.enableReputer
+
+			res, err := msgServer.CreateNewTopic(ctx, msg)
+			s.Require().NoError(err)
+			s.Require().NotNil(res)
+			topicId := res.TopicId
+
+			var created, funded, workerEnabled, reputerEnabled, workerDisabled, reputerDisabled, seq int
+			var createdAt, fundedAt int
+			for _, ev := range ctx.EventManager().Events() {
+				parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+				if err != nil {
+					continue
+				}
+				seq++
+				switch e := parsed.(type) {
+				case *types.EventCreateNewTopic:
+					s.Require().Equal(topicId, e.Topic.Id)
+					created++
+					createdAt = seq
+				case *types.EventFundTopic:
+					s.Require().Equal(topicId, e.TopicId)
+					s.Require().Equal(creator, e.Funder)
+					s.Require().Equal(params.CreateTopicFee, e.Amount)
+					funded++
+					fundedAt = seq
+				case *types.EventTopicWorkerWhitelistEnabled:
+					s.Require().Equal(topicId, e.TopicId)
+					workerEnabled++
+				case *types.EventTopicReputerWhitelistEnabled:
+					s.Require().Equal(topicId, e.TopicId)
+					reputerEnabled++
+				case *types.EventTopicWorkerWhitelistDisabled:
+					workerDisabled++
+				case *types.EventTopicReputerWhitelistDisabled:
+					reputerDisabled++
+				}
+			}
+
+			s.Require().Equal(1, created, "exactly one topic creation event")
+			s.Require().Equal(1, funded, "exactly one creation fee funding event")
+			s.Require().Equal(tc.wantWorkerEvents, workerEnabled, "exact worker gate event count")
+			s.Require().Equal(tc.wantReputerEvents, reputerEnabled, "exact reputer gate event count")
+			s.Require().Zero(workerDisabled)
+			s.Require().Zero(reputerDisabled)
+			s.Require().Less(createdAt, fundedAt, "the creation event must precede the fee funding event")
+		})
+	}
+}
+
+// TestCreateNewTopicZeroFeeEmitsNoFundEvent pins that a zero create-topic fee
+// performs no payment, credits no fee revenue, and emits no funding event.
+func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
+	msgServer := s.EmissionsMsgServer()
+
+	// A zero create-topic fee is a valid configuration: validateCreateTopicFee
+	// only rejects negative values.
+	newParams := &types.OptionalParams{ //nolint:exhaustruct
+		CreateTopicFee: []cosmosMath.Int{cosmosMath.ZeroInt()},
+	}
+	_, err := msgServer.UpdateParams(s.Ctx(), &types.UpdateParamsRequest{Sender: s.AddrsStr(0), Params: newParams})
+	s.Require().NoError(err)
+
+	ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+	msg := s.MockTopicMsg()
+	msg.EnableWorkerWhitelist = false
+	msg.EnableReputerWhitelist = false
+
+	res, err := msgServer.CreateNewTopic(ctx, msg)
+	s.Require().NoError(err)
+	s.Require().NotNil(res)
+
+	var created, funded int
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventCreateNewTopic:
+			created++
+		case *types.EventFundTopic:
+			funded++
+		}
+	}
+	s.Require().Equal(1, created)
+	s.Require().Zero(funded, "a zero create fee must not emit a funding event")
+
+	feeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, res.TopicId)
+	s.Require().NoError(err)
+	s.Require().True(feeRevenue.IsZero(), "a zero create fee must not credit fee revenue")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {

@@ -16,6 +16,11 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating sender address")
+	}
+
 	if err = msg.ReputerValueBundle.Validate(); err != nil {
 		return nil, errorsmod.Wrap(err, "failed to validate reputer value bundle")
 	}
@@ -96,7 +101,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
 	}
 
-	// Before accepting data, transfer fee amount from sender to ecosystem bucket
+	// Before accepting data, transfer the fee to the ecosystem bucket
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err

@@ -3,6 +3,9 @@ package msgserver_test
 import (
 	"context"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -997,4 +1000,101 @@ func (s *MsgServerTestSuite) TestBulkTopicWhitelistOperations() {
 			}
 		})
 	}
+}
+
+// TestTopicGateHandlersEmitSingleEvent pins that the enable/disable message
+// handlers rely on the keeper for gate event emission: exactly one event per
+// actual transition, none for a repeated no-op call.
+func (s *MsgServerTestSuite) TestTopicGateHandlersEmitSingleEvent() {
+	msgServer := s.EmissionsMsgServer()
+	admin := s.AddrsStr(0)
+
+	testCases := []struct {
+		name    string
+		enable  func(sdk.Context, uint64) error
+		disable func(sdk.Context, uint64) error
+		count   func(sdk.Context) (enabled, disabled int)
+	}{
+		{
+			name: "worker gate",
+			enable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.EnableTopicWorkerWhitelist(ctx, &types.EnableTopicWorkerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			disable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.DisableTopicWorkerWhitelist(ctx, &types.DisableTopicWorkerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			count: countWorkerGateEvents,
+		},
+		{
+			name: "reputer gate",
+			enable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.EnableTopicReputerWhitelist(ctx, &types.EnableTopicReputerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			disable: func(ctx sdk.Context, topicId uint64) error {
+				_, err := msgServer.DisableTopicReputerWhitelist(ctx, &types.DisableTopicReputerWhitelistRequest{Sender: admin, TopicId: topicId})
+				return err
+			},
+			count: countReputerGateEvents,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			createMsg := s.MockTopicMsg()
+			createMsg.EnableWorkerWhitelist = false
+			createMsg.EnableReputerWhitelist = false
+			res, err := msgServer.CreateNewTopic(s.Ctx(), createMsg)
+			s.Require().NoError(err)
+			topicId := res.TopicId
+
+			ctx := s.Ctx().WithEventManager(sdk.NewEventManager())
+
+			s.Require().NoError(tc.enable(ctx, topicId))
+			s.Require().NoError(tc.enable(ctx, topicId))
+			enabled, disabled := tc.count(ctx)
+			s.Require().Equal(1, enabled, "repeated enable must emit exactly one event")
+			s.Require().Zero(disabled)
+
+			s.Require().NoError(tc.disable(ctx, topicId))
+			s.Require().NoError(tc.disable(ctx, topicId))
+			enabled, disabled = tc.count(ctx)
+			s.Require().Equal(1, enabled)
+			s.Require().Equal(1, disabled, "repeated disable must emit exactly one event")
+		})
+	}
+}
+
+func countWorkerGateEvents(ctx sdk.Context) (enabled, disabled int) {
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventTopicWorkerWhitelistEnabled:
+			enabled++
+		case *types.EventTopicWorkerWhitelistDisabled:
+			disabled++
+		}
+	}
+	return enabled, disabled
+}
+
+func countReputerGateEvents(ctx sdk.Context) (enabled, disabled int) {
+	for _, ev := range ctx.EventManager().Events() {
+		parsed, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch parsed.(type) {
+		case *types.EventTopicReputerWhitelistEnabled:
+			enabled++
+		case *types.EventTopicReputerWhitelistDisabled:
+			disabled++
+		}
+	}
+	return enabled, disabled
 }
