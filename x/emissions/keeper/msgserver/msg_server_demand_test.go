@@ -243,12 +243,25 @@ func (s *MsgServerTestSuite) TestFundTopicZeroAmountStillActivatesWeightSufficie
 	s.Require().NoError(err)
 	s.Require().False(active, "topic must start inactive")
 
+	feeRevenueBefore, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	sender := s.Addrs(0)
+	balanceBefore := s.BankKeeper().GetBalance(ctx, sender, params.DefaultBondDenom)
+
 	_, err = s.EmissionsMsgServer().FundTopic(ctx, &types.FundTopicRequest{
 		Sender:  s.AddrsStr(0),
 		TopicId: topicId,
 		Amount:  cosmosMath.ZeroInt(),
 	})
 	s.Require().NoError(err)
+
+	// The zero amount must be a true no-op: no fee-revenue credit and no coin
+	// movement, in addition to the activation behavior asserted below.
+	feeRevenueAfter, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(feeRevenueBefore, feeRevenueAfter, "zero-amount funding must not change fee revenue")
+	balanceAfter := s.BankKeeper().GetBalance(ctx, sender, params.DefaultBondDenom)
+	s.Require().True(balanceBefore.Equal(balanceAfter), "zero-amount funding must not move coins")
 
 	active, err = s.TopicKeeper().IsTopicActive(ctx, topicId)
 	s.Require().NoError(err)

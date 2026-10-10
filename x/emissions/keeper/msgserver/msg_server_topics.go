@@ -68,10 +68,15 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		return nil, err
 	}
 
-	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = checkBalanceAndSendFee(ctx, ms, msg.Creator, params.CreateTopicFee)
-	if err != nil {
-		return nil, err
+	// Before creating topic, transfer fee amount from creator to ecosystem bucket.
+	// A zero create fee moves and credits nothing, so the payment, the fee
+	// revenue credit, and the funding event are all skipped.
+	chargeFee := !params.CreateTopicFee.IsZero()
+	if chargeFee {
+		err = checkBalanceAndSendFee(ctx, ms, msg.Creator, params.CreateTopicFee)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	topic := types.Topic{
@@ -129,16 +134,22 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		}
 	}
 
-	err = ms.tk.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "error adding topic fee revenue")
+	if chargeFee {
+		err = ms.tk.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error adding topic fee revenue")
+		}
 	}
 
-	// The creation fee is credited to the topic's fee revenue, so emit the same
-	// event as FundTopic to keep the fee-revenue event stream complete.
-	types.EmitNewFundTopicEvent(ctx, topicId, msg.Creator, params.CreateTopicFee)
-
+	// Emit the creation event before the funding event so indexers that
+	// materialize the topic on EventCreateNewTopic see the funding of a topic
+	// they already know.
 	types.EmitNewCreateNewTopicEvent(ctx, &topic)
+	if chargeFee {
+		// The creation fee is credited to the topic's fee revenue, so emit the
+		// same event as FundTopic to keep the fee-revenue event stream complete.
+		types.EmitNewFundTopicEvent(ctx, topicId, msg.Creator, params.CreateTopicFee)
+	}
 	return &types.CreateNewTopicResponse{TopicId: topicId}, nil
 }
 

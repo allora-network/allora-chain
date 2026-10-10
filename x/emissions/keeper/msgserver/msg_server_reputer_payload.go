@@ -16,6 +16,11 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
+	err = types.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating sender address")
+	}
+
 	if err = msg.ReputerValueBundle.Validate(); err != nil {
 		return nil, errorsmod.Wrap(err, "failed to validate reputer value bundle")
 	}
