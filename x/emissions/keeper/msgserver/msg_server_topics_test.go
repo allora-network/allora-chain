@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -400,6 +401,10 @@ func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
 	msg.EnableWorkerWhitelist = false
 	msg.EnableReputerWhitelist = false
 
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	s.Require().NoError(err)
+	balanceBefore := s.BankKeeper().GetBalance(ctx, creator, params.DefaultBondDenom)
+
 	res, err := msgServer.CreateNewTopic(ctx, msg)
 	s.Require().NoError(err)
 	s.Require().NotNil(res)
@@ -423,6 +428,9 @@ func (s *MsgServerTestSuite) TestCreateNewTopicZeroFeeEmitsNoFundEvent() {
 	feeRevenue, err := s.TopicKeeper().GetTopicFeeRevenue(ctx, res.TopicId)
 	s.Require().NoError(err)
 	s.Require().True(feeRevenue.IsZero(), "a zero create fee must not credit fee revenue")
+
+	balanceAfter := s.BankKeeper().GetBalance(ctx, creator, params.DefaultBondDenom)
+	s.Require().True(balanceBefore.Equal(balanceAfter), "a zero create fee must not move coins")
 }
 
 func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
