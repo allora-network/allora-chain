@@ -52,6 +52,9 @@ Before the first commit in any session, run these checks. If any fail, **stop an
 ### Git Remote Protocol
 **Never change the git remote URL.** The remote must stay as it is unless otherwise requested. Do not switch HTTPS/SSH, do not run `git remote set-url`, and do not run `gh auth setup-git`, unless explicitly stated, requested and only execute if approved by the user.
 
+### Commit Message Suggestions
+When you finish a fix that is complete and self-contained (ready to commit as-is), propose a one-line commit message as a suggestion for the user. Match the repo style (e.g. `fix(emissions): ...`). This is a suggestion only: do not commit unless the user explicitly asks.
+
 ## AUTOCLI
 Do not use FlagOptions on params unless really necessary. Follow existing style.
 

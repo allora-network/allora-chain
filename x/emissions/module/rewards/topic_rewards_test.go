@@ -101,6 +101,75 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	s.Require().Equal(1, len(activeTopics.TopicIds), "Should retrieve exactly one active topics")
 }
 
+// A topic refused at epoch-end reactivation is inactivated by AttemptTopicReactivation and
+// must not be rewarded for the epoch, matching the below-minimum-weight branch.
+func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsSkipsRefusedReactivation() {
+	params := types.DefaultParams()
+	params.BlocksPerMonth = 864000
+	params.MaxActiveTopicsPerBlock = 1
+	params.MaxPageLimit = uint64(100)
+	params.MinEpochLength = 1
+	params.MinTopicWeight = alloraMath.ZeroDec()
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.OneDec()
+	s.Require().NoError(s.ParamsKeeper().SetParams(s.Ctx(), params))
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		s.Require().NoError(s.TopicKeeper().AddTopicFeeRevenue(s.Ctx(), topicId, cosmosMath.NewInt(revenue)))
+		s.Require().NoError(s.StakingKeeper().SetTopicStake(s.Ctx(), topicId, cosmosMath.NewInt(stake)))
+	}
+
+	// The heavy topic holds block 20; the light topic's epoch also targets block 20.
+	heavyTopic := s.MockTopic()
+	heavyTopic.Id = 2
+	heavyTopic.EpochLength = 20
+	heavyTopic.GroundTruthLag = heavyTopic.EpochLength
+	heavyTopic.WorkerSubmissionWindow = heavyTopic.EpochLength
+	lightTopic := s.MockTopic()
+	lightTopic.Id = 3
+	lightTopic.EpochLength = 8
+	lightTopic.GroundTruthLag = lightTopic.EpochLength
+	lightTopic.WorkerSubmissionWindow = lightTopic.EpochLength
+
+	s.WithBlockHeight(0)
+	setTopicWeight(heavyTopic.Id, 1_000_000, 1_000_000)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), heavyTopic.Id, heavyTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), heavyTopic.Id))
+
+	s.WithBlockHeight(4)
+	setTopicWeight(lightTopic.Id, 10, 10)
+	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), lightTopic.Id, lightTopic))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), lightTopic.Id))
+
+	// Store both weights so the lowest-weight comparison at block 20 is deterministic.
+	heavyWeight, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), heavyTopic.Id)
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), heavyTopic.Id, heavyWeight))
+	lightWeight, err := s.TopicKeeper().GetTopicWeightFromTopicId(s.Ctx(), lightTopic.Id)
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), lightTopic.Id, lightWeight))
+	s.Require().True(lightWeight.Lt(heavyWeight))
+
+	// Block 12: the light topic's epoch ends and its next block (20) is held by the heavier topic.
+	block := int64(12)
+	s.WithBlockHeight(block)
+	weights, _, _, err := rewards.GetAndUpdateActiveTopicWeights(s.Ctx(), *s.EmissionsKeeper(), block)
+	s.Require().NoError(err)
+
+	_, rewarded := weights[lightTopic.Id]
+	s.Require().False(rewarded, "a topic refused at reactivation must not be rewarded")
+	_, rewardedHeavy := weights[heavyTopic.Id]
+	s.Require().False(rewardedHeavy, "only topics whose epoch ends at this block are processed")
+	scheduled, err := s.TopicKeeper().IsTopicScheduled(s.Ctx(), lightTopic.Id)
+	s.Require().NoError(err)
+	s.Require().False(scheduled, "a refused topic must be inactivated")
+
+	total, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	s.Require().NoError(err)
+	s.Require().Equal(heavyWeight.String(), total.String(), "only the scheduled topic stays counted")
+}
+
 func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	block := int64(1)
 	s.WithBlockHeight(block)

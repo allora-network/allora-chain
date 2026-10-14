@@ -384,3 +384,132 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateStoreRepairsTotalSumPrevious
 	s.Require().NoError(v16.MigrateStore(s.Ctx(), *s.EmissionsKeeper()))
 	s.Require().Equal(expected.String(), s.totalSum().String())
 }
+
+// A topic left in the active set and accumulator without a schedule or block-bucket entry
+// is made fully inactive. A later activation must count its stored weight exactly once.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsRepairsHalfActiveTopic() {
+	ctx := s.Ctx()
+	topicKeeper := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Reproduce the persisted state left by the old failed-reactivation path.
+	s.Require().NoError(topicKeeper.SetBlockToActiveTopics(ctx, churningBlock, emissionstypes.TopicIds{TopicIds: nil}))
+	s.Require().NoError(topicKeeper.SetBlockToLowestActiveTopicWeight(ctx, churningBlock, emissionstypes.TopicIdWeightPair{
+		TopicId: topicId,
+		Weight:  weight,
+	}))
+	s.Require().NoError(topicKeeper.RemoveTopicSchedule(ctx, topicId))
+	activeIds, err := topicKeeper.GetActiveTopicIds(ctx)
+	s.Require().NoError(err)
+	s.Require().Contains(activeIds, topicId)
+	s.Require().Equal(weight.String(), s.totalSum().String())
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(ctx, *s.EmissionsKeeper()))
+
+	scheduled, err := topicKeeper.IsTopicScheduled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled)
+	activeIds, err = topicKeeper.GetActiveTopicIds(ctx)
+	s.Require().NoError(err)
+	s.Require().NotContains(activeIds, topicId)
+	s.Require().True(s.totalSum().IsZero())
+	_, noPriorLowestWeight, err := topicKeeper.GetLowestActiveTopicWeightAtBlock(ctx, churningBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight)
+
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	s.Require().Equal(weight.String(), s.totalSum().String())
+}
+
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsResetsLowestWeightForValidBucket() {
+	ctx := s.Ctx()
+	topicKeeper := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	s.Require().NoError(topicKeeper.SetBlockToLowestActiveTopicWeight(ctx, churningBlock, emissionstypes.TopicIdWeightPair{
+		TopicId: topicId + 1000,
+		Weight:  alloraMath.NewDecFromInt64(999),
+	}))
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(ctx, *s.EmissionsKeeper()))
+
+	lowest, noPrior, err := topicKeeper.GetLowestActiveTopicWeightAtBlock(ctx, churningBlock)
+	s.Require().NoError(err)
+	s.Require().False(noPrior)
+	s.Require().Equal(topicId, lowest.TopicId)
+}
+
+// A topic scheduled at a block the chain already passed can never be processed again, even
+// though its schedule and bucket listing agree. The migration has to drop it fully so its
+// weight does not stay in the accumulator forever.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsDropsPastSchedule() {
+	ctx := s.Ctx()
+	topicKeeper := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(weight.String(), s.totalSum().String())
+
+	// The chain moved past the churning block without processing its bucket.
+	s.WithBlockHeight(churningBlock + 1)
+	ctx = s.Ctx()
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(ctx, *s.EmissionsKeeper()))
+
+	scheduled, err := topicKeeper.IsTopicScheduled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().False(scheduled)
+	activeIds, err := topicKeeper.GetActiveTopicIds(ctx)
+	s.Require().NoError(err)
+	s.Require().NotContains(activeIds, topicId)
+	bucketTopics, err := topicKeeper.GetActiveTopicIdsAtBlock(ctx, churningBlock)
+	s.Require().NoError(err)
+	s.Require().Empty(bucketTopics.TopicIds)
+	_, noPriorLowestWeight, err := topicKeeper.GetLowestActiveTopicWeightAtBlock(ctx, churningBlock)
+	s.Require().NoError(err)
+	s.Require().True(noPriorLowestWeight)
+	s.Require().True(s.totalSum().IsZero())
+}
+
+// A schedule at the migration height is still pending: the EndBlock of that same block
+// processes its bucket, so the migration keeps the topic scheduled and counted.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsKeepsScheduleAtCurrentBlock() {
+	ctx := s.Ctx()
+	topicKeeper := s.TopicKeeper()
+	topicId := s.CreateTopic()
+	s.Require().NoError(topicKeeper.ActivateTopic(ctx, topicId))
+
+	weight := alloraMath.NewDecFromInt64(100)
+	s.Require().NoError(topicKeeper.SetPreviousTopicWeight(ctx, topicId, weight))
+	churningBlock, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+
+	s.WithBlockHeight(churningBlock)
+	ctx = s.Ctx()
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(ctx, *s.EmissionsKeeper()))
+
+	scheduled, err := topicKeeper.IsTopicScheduled(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(scheduled)
+	schedule, err := topicKeeper.GetTopicSchedule(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(churningBlock, schedule)
+	bucketTopics, err := topicKeeper.GetActiveTopicIdsAtBlock(ctx, churningBlock)
+	s.Require().NoError(err)
+	s.Require().Contains(bucketTopics.TopicIds, topicId)
+	s.Require().Equal(weight.String(), s.totalSum().String())
+}
