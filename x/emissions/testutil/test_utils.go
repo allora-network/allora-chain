@@ -1395,13 +1395,12 @@ func (s *TestSuite) FullTopicSetup(workerIndexes, reputerIndexes []int, options 
 //   - finds the next churning block for the topic and uses it as the nonce,
 //   - submits inferences for the unfulfilled worker nonce,
 //   - forwards the chain to the end of the epoch,
-//   - submits reputer loss bundles for the unfulfilled reputer nonce,
-//   - forwards the chain to the rewards end blocker,
+//   - submits reputer loss bundles for the unfulfilled reputer nonce at a block inside
+//     its submission window, derived from keeper.ReputerSubmissionWindowBounds so the
+//     helper works for any ground_truth_lag/epoch_length ratio,
+//   - forwards the chain to the window end block,
 //   - runs the end blocker for closing the reputer nonce and calculating and distributing rewards (when appropriate),
 //   - when running on a newly created topic, there will be no losses, so no rewards will be distributed.
-//
-// Limitations:
-//   - with the current design, `ground_truth_lag` needs to be the same as `epoch_length`.
 func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options ...Option) (uint64, int64) {
 	p := new(customParams)
 	for _, opt := range options {
@@ -1448,15 +1447,52 @@ func (s *TestSuite) FullTopicPass(workerIndexes, reputerIndexes []int, options .
 	reputerNonces, err := s.NonceKeeper().GetUnfulfilledReputerNonces(s.Ctx(), p.topicID)
 	s.Require().NoError(err)
 
+	var rewardsBlockHeight int64
 	if len(reputerNonces.Nonces) > 0 {
-		reputerTxBlockHeight := reputerNonces.Nonces[0].ReputerNonce.BlockHeight + topic.GroundTruthLag + 1
+		windowStart, windowEnd, err := keeper.ReputerSubmissionWindowBounds(topic, *reputerNonces.Nonces[0])
+		s.Require().NoError(err)
+
+		// A worker window closes only when the end blocker runs exactly at the
+		// height registered when the nonce was added (keeper.GetWorkerWindowTopicIds
+		// is a lookup by exact height). A ground truth lag longer than one epoch
+		// makes this helper jump over those heights, so close every worker window
+		// it passes on the way to the reputer close.
+		closeWorkerWindow := func(boundary int64) {
+			s.T().Logf("Moving nonce to worker window close for TopicId: %d, Next block: %v", p.topicID, boundary+topic.WorkerSubmissionWindow)
+			s.WithBlockHeight(boundary + topic.WorkerSubmissionWindow)
+			s.EndBlock()
+		}
+		lagLongerThanEpoch := windowStart > epochEndBlock
+		if lagLongerThanEpoch {
+			closeWorkerWindow(epochEndBlock)
+		}
+
+		// The window starts on the nonce's epoch grid. Run the end blocker on any
+		// grid block between the epoch already processed above and the window
+		// start, otherwise the topic is already inactive when the payload is
+		// submitted and the submission re-grids it off the nonce's schedule.
+		for boundary := nonce + 2*topic.EpochLength; boundary <= windowStart; boundary += topic.EpochLength {
+			s.T().Logf("Moving nonce to epoch boundary for TopicId: %d, Next block: %v", p.topicID, boundary)
+			s.WithBlockHeight(boundary)
+			s.EndBlock()
+			if lagLongerThanEpoch && boundary+topic.WorkerSubmissionWindow < windowStart {
+				closeWorkerWindow(boundary)
+			}
+		}
+
+		reputerTxBlockHeight := windowStart + 1
 		s.T().Logf("Moving nonce to insert loss bundles from reputers for TopicId: %d, Next block: %v, Nonce: %v", p.topicID, reputerTxBlockHeight, nonce)
 		s.WithBlockHeight(reputerTxBlockHeight)
 		err = s.InsertReputerLossBundle(topic.GetId(), reputerNonces.Nonces[0].ReputerNonce.BlockHeight, reputerIndexes, options...)
 		s.Require().NoError(err)
+		if lagLongerThanEpoch && windowStart+topic.WorkerSubmissionWindow < windowEnd {
+			closeWorkerWindow(windowStart)
+		}
+		rewardsBlockHeight = windowEnd
+	} else {
+		rewardsBlockHeight = nonce + topic.GroundTruthLag + topic.EpochLength
 	}
 
-	rewardsBlockHeight := nonce + topic.GroundTruthLag + topic.EpochLength
 	s.T().Logf("Moving nonce to rewards end blocker for TopicId: %d, Next block: %v", p.topicID, rewardsBlockHeight)
 	s.WithBlockHeight(rewardsBlockHeight)
 	s.EndBlock()
