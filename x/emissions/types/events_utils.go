@@ -22,12 +22,12 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 		scoreValues[i] = score.Score
 	}
 	return &EventScoresSet{
-		ActorType:        actorType,
-		TopicId:          topicId,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Scores:           clampDecs(scoreValues),
-		NonceBlockHeight: blockHeight,
+		ActorType:   actorType,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Addresses:   addresses,
+		Scores:      clampDecs(scoreValues),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -496,9 +496,9 @@ func NewTopicReputerWhitelistRemovedEventBase(topicId TopicId, address string) p
 
 func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec, nonce int64) proto.Message {
 	return &EventForecastTaskScoreSet{
-		TopicId:          topicId,
-		Score:            clampDec(score),
-		NonceBlockHeight: nonce,
+		TopicId: topicId,
+		Score:   clampDec(score),
+		Nonce:   nonce,
 	}
 }
 
@@ -535,13 +535,13 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx Bloc
 		rewardValues[i] = reward.Reward
 	}
 	return &EventRewardsSettled{
-		ActorType:        actorType,
-		TopicId:          topicId,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Rewards:          clampDecs(rewardValues),
-		BlockHeightTx:    blockHeightTx,
-		NonceBlockHeight: blockHeight,
+		ActorType:     actorType,
+		TopicId:       topicId,
+		BlockHeight:   blockHeight,
+		Addresses:     addresses,
+		Rewards:       clampDecs(rewardValues),
+		BlockHeightTx: blockHeightTx,
+		Nonce:         blockHeight,
 	}
 }
 
@@ -579,12 +579,12 @@ func NewReputerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, 
 
 func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, addresses []string, actorType ActorType, coefficients []alloraMath.Dec) proto.Message {
 	return &EventListeningCoefficientsSet{
-		ActorType:        actorType,
-		TopicId:          topicID,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Coefficients:     clampDecs(coefficients),
-		NonceBlockHeight: blockHeight,
+		ActorType:    actorType,
+		TopicId:      topicID,
+		BlockHeight:  blockHeight,
+		Addresses:    addresses,
+		Coefficients: clampDecs(coefficients),
+		Nonce:        blockHeight,
 	}
 }
 
@@ -592,79 +592,79 @@ func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, add
 
 func NewInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventInfererNetworkRegretSet{
-		TopicId:          topicID,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Regrets:          clampDecs(regrets),
-		NonceBlockHeight: blockHeight,
+		TopicId:     topicID,
+		BlockHeight: blockHeight,
+		Addresses:   addresses,
+		Regrets:     clampDecs(regrets),
+		Nonce:       blockHeight,
 	}
 }
 
 func NewForecasterNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventForecasterNetworkRegretSet{
-		TopicId:          topicID,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Regrets:          clampDecs(regrets),
-		NonceBlockHeight: blockHeight,
+		TopicId:     topicID,
+		BlockHeight: blockHeight,
+		Addresses:   addresses,
+		Regrets:     clampDecs(regrets),
+		Nonce:       blockHeight,
 	}
 }
 
 func NewNaiveInfererNetworkRegretSetEventBase(topicID uint64, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventNaiveInfererNetworkRegretSet{
-		TopicId:          topicID,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Regrets:          clampDecs(regrets),
-		NonceBlockHeight: blockHeight,
+		TopicId:     topicID,
+		BlockHeight: blockHeight,
+		Addresses:   addresses,
+		Regrets:     clampDecs(regrets),
+		Nonce:       blockHeight,
 	}
 }
 
 func NewTopicInitialRegretSetEventBase(topicID uint64, blockHeight int64, regret alloraMath.Dec) proto.Message {
 	return &EventTopicInitialRegretSet{
-		TopicId:          topicID,
-		BlockHeight:      blockHeight,
-		Regret:           clampDec(regret),
-		NonceBlockHeight: blockHeight,
+		TopicId:     topicID,
+		BlockHeight: blockHeight,
+		Regret:      clampDec(regret),
+		Nonce:       blockHeight,
 	}
 }
 
 func NewTopicInitialEmaScoreSetEventBase(actorType ActorType, topicId uint64, blockHeight int64, score alloraMath.Dec) proto.Message {
 	return &EventTopicInitialEmaScoreSet{
-		ActorType:        actorType,
-		TopicId:          topicId,
-		BlockHeight:      blockHeight,
-		Score:            clampDec(score),
-		NonceBlockHeight: blockHeight,
+		ActorType:   actorType,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Score:       clampDec(score),
+		Nonce:       blockHeight,
 	}
 }
 
 func NewRegretStdNormSetEventBase(topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) proto.Message {
 	return &EventRegretStdNormSet{
-		TopicId:          topicId,
-		BlockHeight:      blockHeight,
-		Stdnorm:          clampDec(stdNorm),
-		NonceBlockHeight: blockHeight,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Stdnorm:     clampDec(stdNorm),
+		Nonce:       blockHeight,
 	}
 }
 
 func NewInfererWeightsSetEventBase(topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
 	return &EventInfererWeightsSet{
-		TopicId:          topicId,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Weights:          clampDecs(weights),
-		NonceBlockHeight: blockHeight,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Addresses:   addresses,
+		Weights:     clampDecs(weights),
+		Nonce:       blockHeight,
 	}
 }
 
 func NewForecasterWeightsSetEventBase(topicId uint64, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
 	return &EventForecasterWeightsSet{
-		TopicId:          topicId,
-		BlockHeight:      blockHeight,
-		Addresses:        addresses,
-		Weights:          clampDecs(weights),
-		NonceBlockHeight: blockHeight,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Addresses:   addresses,
+		Weights:     clampDecs(weights),
+		Nonce:       blockHeight,
 	}
 }
 
@@ -703,25 +703,25 @@ func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amou
 
 func NewActiveReputersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string) proto.Message {
 	return &EventActiveReputersSet{
-		TopicId:          topicId,
-		Addresses:        addresses,
-		NonceBlockHeight: nonceBlockHeight,
+		TopicId:   topicId,
+		Addresses: addresses,
+		Nonce:     nonceBlockHeight,
 	}
 }
 
 func NewActiveInferersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string) proto.Message {
 	return &EventActiveInferersSet{
-		TopicId:          topicId,
-		Addresses:        addresses,
-		NonceBlockHeight: nonceBlockHeight,
+		TopicId:   topicId,
+		Addresses: addresses,
+		Nonce:     nonceBlockHeight,
 	}
 }
 
 func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, addresses []string) proto.Message {
 	return &EventActiveForecastersSet{
-		TopicId:          topicId,
-		Addresses:        addresses,
-		NonceBlockHeight: nonceBlockHeight,
+		TopicId:   topicId,
+		Addresses: addresses,
+		Nonce:     nonceBlockHeight,
 	}
 }
 
@@ -734,37 +734,37 @@ func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool) proto.Messag
 
 func NewNetworkInferenceInfererWeightsSetEventBase(topicId TopicId, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
 	return &EventNetworkInferenceInfererWeightsSet{
-		TopicId:          topicId,
-		NonceBlockHeight: blockHeight,
-		Addresses:        addresses,
-		Weights:          clampDecs(weights),
+		TopicId:   topicId,
+		Nonce:     blockHeight,
+		Addresses: addresses,
+		Weights:   clampDecs(weights),
 	}
 }
 
 func NewNetworkInferenceForecasterWeightsSetEventBase(topicId TopicId, blockHeight int64, addresses []string, weights []alloraMath.Dec) proto.Message {
 	return &EventNetworkInferenceForecasterWeightsSet{
-		TopicId:          topicId,
-		NonceBlockHeight: blockHeight,
-		Addresses:        addresses,
-		Weights:          clampDecs(weights),
+		TopicId:   topicId,
+		Nonce:     blockHeight,
+		Addresses: addresses,
+		Weights:   clampDecs(weights),
 	}
 }
 
 func NewNetworkInferenceInfererRegretsUsedSetEventBase(topicId TopicId, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventNetworkInferenceInfererRegretsUsedSet{
-		TopicId:          topicId,
-		NonceBlockHeight: blockHeight,
-		Addresses:        addresses,
-		Regrets:          clampDecs(regrets),
+		TopicId:   topicId,
+		Nonce:     blockHeight,
+		Addresses: addresses,
+		Regrets:   clampDecs(regrets),
 	}
 }
 
 func NewNetworkInferenceForecasterRegretsUsedSetEventBase(topicId TopicId, blockHeight int64, addresses []string, regrets []alloraMath.Dec) proto.Message {
 	return &EventNetworkInferenceForecasterRegretsUsedSet{
-		TopicId:          topicId,
-		NonceBlockHeight: blockHeight,
-		Addresses:        addresses,
-		Regrets:          clampDecs(regrets),
+		TopicId:   topicId,
+		Nonce:     blockHeight,
+		Addresses: addresses,
+		Regrets:   clampDecs(regrets),
 	}
 }
 
@@ -789,31 +789,31 @@ func NewTopicFeeRevenueDrippedEventBase(topicId TopicId, oldRevenue math.Int, ne
 // Submission window events
 func NewWorkerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowEndBlock int64) proto.Message {
 	return &EventWorkerSubmissionWindowOpened{
-		TopicId:          topicId,
-		NonceBlockHeight: nonceBlockHeight,
-		WindowEndBlock:   windowEndBlock,
+		TopicId:        topicId,
+		Nonce:          nonceBlockHeight,
+		WindowEndBlock: windowEndBlock,
 	}
 }
 
 func NewWorkerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight int64) proto.Message {
 	return &EventWorkerSubmissionWindowClosed{
-		TopicId:          topicId,
-		NonceBlockHeight: nonceBlockHeight,
+		TopicId: topicId,
+		Nonce:   nonceBlockHeight,
 	}
 }
 
 func NewReputerSubmissionWindowOpenedEventBase(topicId TopicId, nonceBlockHeight int64, windowEndBlock int64) proto.Message {
 	return &EventReputerSubmissionWindowOpened{
-		TopicId:          topicId,
-		NonceBlockHeight: nonceBlockHeight,
-		WindowEndBlock:   windowEndBlock,
+		TopicId:        topicId,
+		Nonce:          nonceBlockHeight,
+		WindowEndBlock: windowEndBlock,
 	}
 }
 
 func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight int64) proto.Message {
 	return &EventReputerSubmissionWindowClosed{
-		TopicId:          topicId,
-		NonceBlockHeight: nonceBlockHeight,
+		TopicId: topicId,
+		Nonce:   nonceBlockHeight,
 	}
 }
 
@@ -824,8 +824,8 @@ func NewReputerSubmissionWindowClosedEventBase(topicId TopicId, nonceBlockHeight
 // advertise the size here so explorers don't have to read state.
 func NewEpochLabelRegistryFrozenEventBase(topicId TopicId, nonceBlockHeight int64, registrySize uint64) proto.Message {
 	return &EventEpochLabelRegistryFrozen{
-		TopicId:          topicId,
-		NonceBlockHeight: nonceBlockHeight,
-		RegistrySize:     registrySize,
+		TopicId:      topicId,
+		Nonce:        nonceBlockHeight,
+		RegistrySize: registrySize,
 	}
 }

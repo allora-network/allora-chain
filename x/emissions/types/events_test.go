@@ -18,19 +18,19 @@ import (
 )
 
 const (
-	AttributeKeyActorType        = "actor_type"
-	AttributeKeyTopicId          = "topic_id"
-	AttributeKeyBlockHeight      = "block_height"
-	AttributeKeyBlockHeightTx    = "block_height_tx"
-	AttributeKeyNonceBlockHeight = "nonce_block_height"
-	AttributeKeyAddresses        = "addresses"
-	AttributeKeyScores           = "scores"
-	AttributeKeyRewards          = "rewards"
-	AttributeKeyValueBundle      = "bundle"
-	AttributeKeyCoefficients     = "coefficients"
-	AttributeKeyRegrets          = "regrets"
-	AttributeKeyRegret           = "regret"
-	AttributeKeyWeights          = "weights"
+	AttributeKeyActorType     = "actor_type"
+	AttributeKeyTopicId       = "topic_id"
+	AttributeKeyBlockHeight   = "block_height"
+	AttributeKeyBlockHeightTx = "block_height_tx"
+	AttributeKeyNonce         = "nonce"
+	AttributeKeyAddresses     = "addresses"
+	AttributeKeyScores        = "scores"
+	AttributeKeyRewards       = "rewards"
+	AttributeKeyValueBundle   = "bundle"
+	AttributeKeyCoefficients  = "coefficients"
+	AttributeKeyRegrets       = "regrets"
+	AttributeKeyRegret        = "regret"
+	AttributeKeyWeights       = "weights"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -1245,8 +1245,8 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Contains(t, attributes, "score")
 	require.Equal(t, "\"10\"", attributes["score"])
 
-	require.Contains(t, attributes, "nonce_block_height")
-	require.Equal(t, "\"10\"", attributes["nonce_block_height"])
+	require.Contains(t, attributes, "nonce")
+	require.Equal(t, "\"10\"", attributes["nonce"])
 }
 
 func TestNewLastCommitSetEvent(t *testing.T) {
@@ -1785,7 +1785,7 @@ func TestEmitNewNetworkInferenceInfererWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute("nonce_block_height")
+	val, exists = event.GetAttribute("nonce")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1817,7 +1817,7 @@ func TestEmitNewNetworkInferenceForecasterWeightsSetEvent(t *testing.T) {
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "1")
 
-	val, exists = event.GetAttribute("nonce_block_height")
+	val, exists = event.GetAttribute("nonce")
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
 
@@ -1863,8 +1863,8 @@ func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 }
 
 // Events whose epoch nonce used to be emitted only as block_height carry it
-// under nonce_block_height too, with the same value in both.
-func TestEpochEventsEmitNonceBlockHeight(t *testing.T) {
+// under nonce too, with the same value in both.
+func TestEpochEventsEmitNonce(t *testing.T) {
 	one := alloraMath.NewDecFromInt64(1)
 	score := types.Score{TopicId: 1, BlockHeight: 940, Address: "address1", Score: one}
 	reward := types.TaskReward{TopicId: 1, Address: "address1", Reward: one, Type: types.WorkerInferenceRewardType}
@@ -1893,8 +1893,8 @@ func TestEpochEventsEmitNonceBlockHeight(t *testing.T) {
 			events := ctx.EventManager().Events()
 			require.Len(t, events, 1)
 
-			nonce, ok := events[0].GetAttribute(AttributeKeyNonceBlockHeight)
-			require.True(t, ok, "nonce_block_height is emitted")
+			nonce, ok := events[0].GetAttribute(AttributeKeyNonce)
+			require.True(t, ok, "nonce is emitted")
 			require.Equal(t, `"940"`, nonce.GetValue())
 			old, ok := events[0].GetAttribute(AttributeKeyBlockHeight)
 			require.True(t, ok, "block_height is still emitted")
