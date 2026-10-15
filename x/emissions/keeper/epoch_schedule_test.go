@@ -26,6 +26,8 @@ func (s *KeeperTestSuite) TestStartNewEpochOpensWorkerWindowAndSchedulesLaterTra
 	epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
 	s.Require().NoError(err)
 	s.Require().Equal(types.EpochState_WORKER_SUBMISSION, epoch.State)
+	s.Require().Equal(ctx.BlockHeight(), epoch.StartBlockHeight)
+	s.Require().Equal(types.Nonce{BlockHeight: ctx.BlockHeight()}, epoch.LegacyNonce())
 	s.Require().Equal(start, epoch.WorkerSubmissionWindow.OpenAt)
 	s.Require().Equal(start.Add(10*time.Second), epoch.WorkerSubmissionWindow.CloseAt)
 
@@ -48,6 +50,24 @@ func (s *KeeperTestSuite) TestStartNewEpochOpensWorkerWindowAndSchedulesLaterTra
 	openReputer, err := s.SchedulerKeeper().GetTask(ctx, schedulertypes.TaskID(types.OpenEpochReputerWindowTask+taskIDSuffix))
 	s.Require().NoError(err)
 	s.Require().Equal(epoch.ReputerSubmissionWindow.OpenAt, *openReputer.ScheduledFor)
+}
+
+func (s *KeeperTestSuite) TestStartNewEpochRecordsStartBlockHeightBridge() {
+	ctx := s.Ctx().WithBlockHeight(1_234)
+	topicId := s.CreateTopic(testutil.WithEpochLength(60), testutil.WithGroundTruthLag(60), testutil.WithWorkerSubmissionWindow(10))
+
+	s.Require().NoError(s.EmissionsKeeper().StartNewEpoch(ctx, topicId))
+
+	lastNonce, found, err := s.EmissionsKeeper().GetTopicLastEpochNonce(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+
+	epoch, err := s.EmissionsKeeper().GetEpoch(ctx, topicId, lastNonce)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(1_234), epoch.StartBlockHeight)
+	s.Require().Equal(types.Nonce{BlockHeight: 1_234}, epoch.LegacyNonce())
+	// Canonical id remains NonceV2 — not the start height payload.
+	s.Require().NotEqual(uint64(1_234), epoch.Nonce.Payload())
 }
 
 func (s *KeeperTestSuite) TestActivateTopicStartsEpochAndPeriodicTask() {
