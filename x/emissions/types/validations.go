@@ -981,6 +981,18 @@ const (
 	maxTopicUnityTolerance = "0.01"
 )
 
+// EffectiveMaxTopInferersToReward clamps a stored per-topic cap into the global
+// range: the minimum raises it, and the maximum is applied last so it always
+// wins. Applying the ceiling last keeps the active set within the global-sized
+// score-retention window even if the range is inverted, which params validation
+// already prevents.
+func EffectiveMaxTopInferersToReward(topicCap, globalMin, globalMax uint64) uint64 {
+	if topicCap < globalMin {
+		topicCap = globalMin
+	}
+	return min(topicCap, globalMax)
+}
+
 // Validate checks if the given Topic is valid
 func (topic Topic) Validate(params Params) error {
 	if topic.Id == 0 {
@@ -1073,6 +1085,10 @@ func (topic Topic) Validate(params Params) error {
 	if topic.CNorm.Lt(validationCNormMinDec) || topic.CNorm.Gt(validationCNormMaxDec) {
 		return errors.Wrap(sdkerrors.ErrInvalidType, "topic c_norm must be between -100 and 100")
 	}
+	// MaxTopInferersToReward is not bounded by the globals here: they bound
+	// admission, not storage, so a governance change cannot make an existing
+	// topic fail re-validation on write. EffectiveMaxTopInferersToReward clamps
+	// the stored value when it is used.
 	if err := ValidateClassificationConsistency(
 		topic.TopicType,
 		topic.OutputArity,

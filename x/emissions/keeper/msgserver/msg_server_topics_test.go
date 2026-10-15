@@ -322,6 +322,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 	// Create a topic first
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -359,6 +360,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccess() {
 
 	// Update topic with new values
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Updated metadata",
@@ -421,6 +423,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsMaxLabelsPerSubmissionOutOfRa
 			require.NoError(err)
 
 			updateTopicMsg := &types.UpdateTopicRequest{
+				MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 				Sender:                 sender,
 				TopicId:                createResult.TopicId,
 				Metadata:               originalTopic.Metadata,
@@ -467,6 +470,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsLabelWhitelistAboveMax() {
 	}
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                createResult.TopicId,
 		Metadata:               originalTopic.Metadata,
@@ -509,6 +513,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsNonzeroLabelDefaultValueWhenR
 	require.NotNil(createResult)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                createResult.TopicId,
 		Metadata:               "Updated metadata",
@@ -539,6 +544,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 	// Create a topic
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -572,6 +578,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNotTopicCreator() {
 
 	// Try to update topic with different user
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 otherUser,
 		TopicId:                topicId,
 		Metadata:               "Updated metadata",
@@ -598,6 +605,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNonexistentTopic() {
 	nonexistentTopicId := uint64(999)
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                nonexistentTopicId,
 		Metadata:               "Updated metadata",
@@ -626,6 +634,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test empty loss method
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "valid metadata",
@@ -645,6 +654,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long loss method
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "valid metadata",
@@ -664,6 +674,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicValidationInvalidFields() {
 
 	// Test too long metadata
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               strings.Repeat("a", 257),
@@ -695,6 +706,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Create a topic first
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "original metadata",
 		LossMethod:               "mse",
@@ -734,6 +746,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicSuccessfulUpdate() {
 
 	// Test successful update
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "updated metadata",
@@ -771,6 +784,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -802,6 +816,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	topicId := createResult.TopicId
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -826,6 +841,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm with valid values
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -847,6 +863,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value -100
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -868,6 +885,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 
 	// Test updating CNorm to boundary value 100
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -893,6 +911,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParams() {
 	s.WithBlockHeight(50)
 	ctx = s.Ctx()
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -918,6 +937,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid alpha_regret (<=0)
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -935,6 +955,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid merit_sortition_alpha (>1)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -952,6 +973,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid p_norm (below range)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -969,6 +991,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid c_norm (below -100)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -986,6 +1009,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicNumericParamsInvalid() {
 
 	// Invalid c_norm (above 100)
 	updateTopicMsg = &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "metadata",
@@ -1012,6 +1036,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	s.WithBlockHeight(10)
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -1052,6 +1077,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionBlockedWhenWorkerWindo
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -1083,6 +1109,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	// Topic inactive by default
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 	createTopicMsg := &types.CreateNewTopicRequest{
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 		Creator:                  sender,
 		Metadata:                 "Original metadata",
 		LossMethod:               "mse",
@@ -1120,6 +1147,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMeritSortitionInactiveIgnoresWindow(
 	ctx = s.Ctx()
 
 	updateTopicMsg := &types.UpdateTopicRequest{
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 		Sender:                 sender,
 		TopicId:                topicId,
 		Metadata:               "Original metadata",
@@ -1176,6 +1204,7 @@ func (s *MsgServerTestSuite) createTopicForWSWTests(sender string) uint64 {
 		MaxLabelsPerSubmission:   4,
 		LabelWhitelist:           []string{"a", "b", "c"},
 		LabelDefaultValue:        alloraMath.ZeroDec(),
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 	}
 	resp, err := msgServer.CreateNewTopic(ctx, create)
 	require.NoError(err)
@@ -1228,8 +1257,9 @@ func (s *MsgServerTestSuite) TestSetTopicCanonicalizesLabelWhitelist() {
 		MaxLabelsPerSubmission:   types.DefaultMaxLabelsPerSubmission,
 		// Whitespace and case collapse under the default case-insensitive
 		// canonicalizer; a canonical duplicate should be rejected.
-		LabelWhitelist:    []string{"  Foo  ", "foo"},
-		LabelDefaultValue: alloraMath.ZeroDec(),
+		LabelWhitelist:         []string{"  Foo  ", "foo"},
+		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.CreateNewTopic(ctx, create)
 	require.ErrorIs(err, types.ErrInvalidLabelName, "canonical duplicate must be rejected at SetTopic")
@@ -1272,6 +1302,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicMaxLabelsBlockedWhenWorkerWindowOpen
 		MaxLabelsPerSubmission: 8, // changed -> must be rejected
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1310,6 +1341,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistBlockedWhenWorkerWindowOpen
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b"}, // changed: dropped "c"
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1348,6 +1380,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedWhenWorkerWindowO
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.OneDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1390,6 +1423,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistAllowedAfterWSWClosed() {
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         []string{"  A  ", "b/c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
@@ -1441,6 +1475,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicLabelDefaultBlockedAtExactWSWCloseBl
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.OneDec(), // changed -> must be rejected
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,
@@ -1487,6 +1522,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicRejectsOutOfRangeMaxLabelsPerSubmiss
 				CNorm:                  alloraMath.MustNewDecFromString("0.75"),
 				MaxLabelsPerSubmission: tc.cap,
 				LabelWhitelist:         nil,
+				MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 			}
 			_, err := msgServer.UpdateTopic(ctx, msg)
 			require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
@@ -1525,6 +1561,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicFullPayloadClearsLabelWhitelist() {
 		CNorm:                  alloraMath.MustNewDecFromString("0.75"),
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         nil,
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
@@ -1574,6 +1611,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockBlocksWhenOlderNonceStillWith
 		MaxLabelsPerSubmission: 8, // changed -> must be rejected
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable,
@@ -1607,6 +1645,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicAllowsNonGuardedFieldsDuringOpenWSW(
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"a", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)
@@ -1644,6 +1683,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllChangedGuardedFields(
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         []string{"a", "b"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1678,6 +1718,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWSWLockListsAllFourGuardedFields() {
 		MaxLabelsPerSubmission: 8,
 		LabelWhitelist:         []string{"a", "b"},
 		LabelDefaultValue:      alloraMath.OneDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.ErrorIs(err, types.ErrWorkerNonceWindowNotAvailable)
@@ -1715,6 +1756,7 @@ func (s *MsgServerTestSuite) TestUpdateTopicWhitelistCosmeticChangeAllowedDuring
 		MaxLabelsPerSubmission: 4,
 		LabelWhitelist:         []string{"  a  ", "b", "c"},
 		LabelDefaultValue:      alloraMath.ZeroDec(),
+		MaxTopInferersToReward: types.DefaultParams().MaxTopInferersToReward,
 	}
 	_, err := msgServer.UpdateTopic(ctx, msg)
 	require.NoError(err)

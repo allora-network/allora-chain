@@ -39,6 +39,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		TaskRewardAlpha:                     []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
 		ValidatorsVsAlloraPercentReward:     []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
 		MaxSamplesToScaleScores:             []uint64{1234},
+		MinTopInferersToReward:              []uint64{3},
 		MaxTopInferersToReward:              []uint64{1234},
 		MaxTopForecastersToReward:           []uint64{1234},
 		MaxTopReputersToReward:              []uint64{1234},
@@ -108,6 +109,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.TaskRewardAlpha[0], updatedParams.TaskRewardAlpha)
 	require.Equal(newParams.ValidatorsVsAlloraPercentReward[0], updatedParams.ValidatorsVsAlloraPercentReward)
 	require.Equal(newParams.MaxSamplesToScaleScores[0], updatedParams.MaxSamplesToScaleScores)
+	require.Equal(newParams.MinTopInferersToReward[0], updatedParams.MinTopInferersToReward)
 	require.Equal(newParams.MaxTopInferersToReward[0], updatedParams.MaxTopInferersToReward)
 	require.Equal(newParams.MaxTopForecastersToReward[0], updatedParams.MaxTopForecastersToReward)
 	require.Equal(newParams.MaxTopReputersToReward[0], updatedParams.MaxTopReputersToReward)
@@ -146,6 +148,35 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxCanonicalLabelByteLength[0], updatedParams.MaxCanonicalLabelByteLength)
 	require.Equal(newParams.MaxTopicLabelWhitelistSize[0], updatedParams.MaxTopicLabelWhitelistSize)
 	require.Equal(newParams.MaxEpochLabelRegistrySize[0], updatedParams.MaxEpochLabelRegistrySize)
+}
+
+// TestUpdateMinTopInferersToReward covers updating only the floor: it changes and
+// the ceiling is left untouched. Zero is accepted, meaning no floor.
+func (s *MsgServerTestSuite) TestUpdateMinTopInferersToReward() {
+	ctx, msgServer := s.Ctx(), s.EmissionsMsgServer()
+	require := s.Require()
+
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	require.NoError(s.WhitelistsKeeper().AddWhitelistAdmin(ctx, adminAddr.String()))
+
+	before, err := s.ParamsKeeper().GetParams(ctx)
+	require.NoError(err)
+
+	for _, want := range []uint64{5, 0} {
+		_, err = msgServer.UpdateParams(ctx, &types.UpdateParamsRequest{
+			Sender: adminAddr.String(),
+			Params: &types.OptionalParams{ //nolint:exhaustruct
+				MinTopInferersToReward: []uint64{want},
+			},
+		})
+		require.NoError(err)
+
+		after, err := s.ParamsKeeper().GetParams(ctx)
+		require.NoError(err)
+		require.Equal(want, after.MinTopInferersToReward)
+		require.Equal(before.MaxTopInferersToReward, after.MaxTopInferersToReward)
+	}
 }
 
 func (s *MsgServerTestSuite) TestUpdateMaxCanonicalLabelByteLength() {

@@ -195,6 +195,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MaxEpochLabelRegistrySize) == 1 {
 		existingParams.MaxEpochLabelRegistrySize = newParams.MaxEpochLabelRegistrySize[0]
 	}
+	if len(newParams.MinTopInferersToReward) == 1 {
+		existingParams.MinTopInferersToReward = newParams.MinTopInferersToReward[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err

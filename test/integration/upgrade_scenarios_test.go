@@ -4,6 +4,7 @@ import (
 	"github.com/allora-network/allora-chain/app/upgrades/v0_15_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_16_0"
 	"github.com/allora-network/allora-chain/app/upgrades/v0_17_0"
+	"github.com/allora-network/allora-chain/app/upgrades/v0_18_0"
 )
 
 // ModuleCheckType denotes the kind of assertion that should be applied to a module's consensus version.
@@ -31,7 +32,7 @@ type UpgradeScenario struct {
 
 const DefaultPlanHeightDelta = int64(50)
 
-var DefaultUpgradeTarget = v0_17_0.UpgradeName
+var DefaultUpgradeTarget = v0_18_0.UpgradeName
 
 var UpgradeScenarios = map[string]UpgradeScenario{
 	v0_15_0.UpgradeName: {
@@ -111,6 +112,36 @@ var UpgradeScenarios = map[string]UpgradeScenario{
 				CheckType:  ModuleCheckExpectIncrease,
 				ExpectedVersion: func() *uint64 {
 					version := uint64(15)
+					return &version
+				}(),
+			},
+			{
+				ModuleName: "mint",
+				CheckType:  ModuleCheckExpectEqual,
+				ExpectedVersion: func() *uint64 {
+					version := uint64(6)
+					return &version
+				}(),
+			},
+		},
+	},
+	v0_18_0.UpgradeName: {
+		UpgradeName:     v0_18_0.UpgradeName,
+		PlanHeightDelta: DefaultPlanHeightDelta,
+		ModuleChecks: []ModuleCheck{
+			{
+				ModuleName: "scheduler",
+				CheckType:  ModuleCheckExpectEqual,
+				ExpectedVersion: func() *uint64 {
+					version := uint64(1)
+					return &version
+				}(),
+			},
+			{
+				ModuleName: "emissions",
+				CheckType:  ModuleCheckExpectIncrease,
+				ExpectedVersion: func() *uint64 {
+					version := uint64(16)
 					return &version
 				}(),
 			},

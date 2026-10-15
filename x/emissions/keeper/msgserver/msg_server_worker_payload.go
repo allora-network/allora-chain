@@ -135,12 +135,19 @@ func (ms msgServer) processWorkerInferencePayload(
 		return err
 	}
 
+	// Clamp the stored cap into the global [min, max] on every payload, keeping
+	// the active set within the global-sized score-retention window.
+	maxTopInferersToReward := types.EffectiveMaxTopInferersToReward(
+		topic.MaxTopInferersToReward,
+		moduleParams.MinTopInferersToReward,
+		moduleParams.MaxTopInferersToReward,
+	)
 	plan, err := ms.wk.PlanInferenceAdmission(
 		sdkCtx,
 		topic,
 		nonceBlockHeight,
 		rawInference.Inferer,
-		moduleParams.MaxTopInferersToReward,
+		maxTopInferersToReward,
 	)
 	if err != nil {
 		return errorsmod.Wrap(err, "Error planning inference admission")

@@ -85,6 +85,12 @@ message Topic {
   // change the canonical form of every already-persisted label (whitelist
   // entries and epoch registry names).
   bool label_case_sensitive = 30;
+  // Per-topic cap on inferers admitted to the active set, enforced at
+  // worker-payload insert: an inferer is admitted while the set is below the
+  // cap, otherwise it must out-score the lowest member. CreateNewTopic and
+  // UpdateTopic require it to be within the global range; admission clamps the
+  // stored value into the live global range on every payload.
+  uint64 max_top_inferers_to_reward = 31;
 }
 
 enum TopicType {

@@ -1235,11 +1235,16 @@ func (s *TestSuite) MockTopic() types.Topic {
 		LabelWhitelist:           nil,
 		LabelDefaultValue:        alloraMath.ZeroDec(),
 		LabelCaseSensitive:       false,
+		MaxTopInferersToReward:   types.DefaultParams().MaxTopInferersToReward,
 	}
 }
 
 func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 	topic := s.MockTopic()
+	// Read the live ceiling rather than the module default so the mock stays
+	// valid in tests that move the global max_top_inferers_to_reward.
+	params, err := s.ParamsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
 	return &types.CreateNewTopicRequest{
 		Creator:                  topic.Creator,
 		Metadata:                 topic.Metadata,
@@ -1265,6 +1270,7 @@ func (s *TestSuite) MockTopicMsg() *types.CreateNewTopicRequest {
 		MaxLabelsPerSubmission:   topic.MaxLabelsPerSubmission,
 		LabelWhitelist:           topic.LabelWhitelist,
 		LabelDefaultValue:        topic.LabelDefaultValue,
+		MaxTopInferersToReward:   params.MaxTopInferersToReward,
 	}
 }
 
