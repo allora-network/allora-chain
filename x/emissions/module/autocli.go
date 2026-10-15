@@ -967,10 +967,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Long: `Add a new topic to the network.
 
 max_top_inferers_to_reward caps how many inferers are admitted to the topic's
-active set. Pass 0 to use the global max_top_inferers_to_reward: the current
-global value is resolved and stored. The topic keeps that number even if the
-global changes later - but is effectively clamped to the global range.
-Any other value must lie within the global [min_top_inferers_to_reward, max_top_inferers_to_reward] range.`,
+active set. It must lie within the global
+[min_top_inferers_to_reward, max_top_inferers_to_reward] range; query the
+emissions params to see the current range.`,
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
@@ -1011,11 +1010,10 @@ creation.
 Fields sent here REPLACE the stored values — there is no "leave as-is". In
 particular an empty label_whitelist sets the topic to UNRESTRICTED instead of
 preserving the current one, so re-send the full list to keep a restriction.
-A max_top_inferers_to_reward of 0 means "use the global max_top_inferers_to_reward":
-the current global value is resolved and stored. Any other value must lie within
-the global [min_top_inferers_to_reward, max_top_inferers_to_reward] range, so a
-topic whose stored cap is below a raised floor cannot resubmit that cap — it must
-send 0 or a value at or above the floor to change any other field.
+max_top_inferers_to_reward must lie within the global
+[min_top_inferers_to_reward, max_top_inferers_to_reward] range. Because it is a
+full replacement, a topic whose stored cap sits outside the current range must
+send a value inside it to change any other field.
 
 The keeper rejects these label changes and max_top_inferers_to_reward changes
 while a worker submission window is open.`,
