@@ -124,7 +124,7 @@ func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 	for k := range m { //nolint:maprange // reason: iteration to array before sorting
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	slices.Sort(keys)
 	return keys
 }
 

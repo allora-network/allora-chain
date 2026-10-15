@@ -46,7 +46,7 @@ The WSW guard exists because those fields steer active-set admission or label se
 | `max_labels_per_submission` | `uint64` | **Editable (WSW-guarded)** | In `[1, 1024]`. |
 | `label_whitelist` | `[]string` | **Editable (WSW-guarded)** | Empty means unrestricted. Canonicalized before storage. |
 | `label_default_value` | `Dec` | **Editable (WSW-guarded)** | Any finite `Dec`. |
-| `max_top_inferers_to_reward` | `uint64` | **Editable (WSW-guarded)** | `0` means "use the global maximum". See below. |
+| `max_top_inferers_to_reward` | `uint64` | **Editable (WSW-guarded)** | Within the global range. See below. |
 
 ---
 
@@ -94,28 +94,21 @@ All four below are rejected while a worker submission window is open for **any**
 
 Per-topic cap on how many inferers are admitted to the active inference set. At worker-payload insert time an inferer is admitted while the active set is below the cap; otherwise it must out-score the lowest current member.
 
-**`0` is a sentinel meaning "use the global maximum".** It is resolved at write time, so the topic stores a concrete number, not the sentinel:
-
-```
-requested 0  ->  stored as the current global max_top_inferers_to_reward
-```
-
-This pins the topic to the global value **as it was when the topic was written**. A later governance change to the global does not retroactively move it. To re-sync a topic to a new global, send `0` again.
-
-**Accepted range.** A non-zero request must fall within the global `[min_top_inferers_to_reward, max_top_inferers_to_reward]`:
+**Accepted range.** A request must fall within the global `[min_top_inferers_to_reward, max_top_inferers_to_reward]` (query the emissions params for the current range) and is stored as given:
 
 | Request | Result |
 |---|---|
-| `0` | Accepted → stored as the global maximum |
-| `< min_top_inferers_to_reward` | Rejected, `ErrTopicMaxTopInferersToRewardTooSmall` |
+| `< min_top_inferers_to_reward` (`0` included) | Rejected, `ErrTopicMaxTopInferersToRewardTooSmall` |
 | within range | Accepted, stored verbatim |
 | `> max_top_inferers_to_reward` | Rejected, `ErrTopicMaxTopInferersToRewardTooBig` |
 
-**Consequence worth knowing.** Because the floor applies to *requests*, raising the global floor above a topic's stored cap makes that stored value un-resubmittable. Such a topic can still be updated — any value in the new `[min, max]`, or `0` — but it **cannot keep its old cap**. Two knock-on effects:
+**A stored cap does not move with the globals.** Governance moving the range never rewrites a topic; admission clamps the stored value instead.
 
-- Read-modify-write clients break: fetching the topic and resubmitting it verbatim now fails, because the fetched cap is below the new floor.
+**Consequence worth knowing.** Because the range applies to *requests* and updates are full replacements, moving the range so a topic's stored cap falls outside it makes that value un-resubmittable. Such a topic can still be updated — any value in the new `[min, max]` — but it **cannot keep its old cap**. Two knock-on effects:
+
+- Read-modify-write clients break: fetching the topic and resubmitting it verbatim now fails, because the fetched cap is outside the new range.
 - Since the cap is forced to change, the update always trips the WSW guard, so such a topic can only be edited **between** submission windows.
 
-Admission is separately defensive: it re-resolves the stored value through the global range on every payload, so a value below the floor (reachable only via a hand-written genesis) is raised to the floor, and the global maximum is applied last and always wins. The cap can therefore never push the active set past the global-sized score-retention window.
+Admission is separately defensive: it clamps the stored value into the global range on every payload, so a value below the floor is raised to the floor and the global maximum is applied last and always wins. The cap can therefore never push the active set past the global-sized score-retention window.
 
-`Topic.Validate` deliberately does **not** bound this field against the globals. The globals bound *admission*, not storage, so a stored value outside the range stays loadable rather than making the topic unreadable after a governance change.
+`Topic.Validate` deliberately does **not** bound this field against the globals. The globals bound *admission*, not storage, so a governance change cannot make an existing topic fail re-validation when the chain rewrites it.
