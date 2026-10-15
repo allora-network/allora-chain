@@ -74,13 +74,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the default and live ceiling for the per-topic cap; score-history retention still uses the global value.
+* [#968](https://github.com/allora-network/allora-chain/pull/968) The global `max_top_inferers_to_reward` now rejects zero and serves as the live ceiling for the per-topic cap; score-history retention still uses the global value.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+* [#1000](https://github.com/allora-network/allora-chain/pull/1000) Fix bug on accumulated topic weight sum which could drift when unstaking from an inactive topic.
 
 ### Security
 

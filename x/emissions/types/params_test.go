@@ -201,9 +201,8 @@ func TestParamsValidate_RejectsZeroMaxCanonicalLabelByteLength(t *testing.T) {
 	require.Error(t, p.Validate())
 }
 
-// TestValidateMaxTopInferersToReward exercises the hardened global bound: zero
-// is rejected because the global value is the ceiling and default for the
-// per-topic Topic.MaxTopInferersToReward, and any positive value is accepted.
+// TestValidateMaxTopInferersToReward: zero is rejected because the global value
+// is the ceiling for Topic.MaxTopInferersToReward; any positive value is accepted.
 func TestValidateMaxTopInferersToReward(t *testing.T) {
 	cases := []struct {
 		name string
