@@ -15,12 +15,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"google.golang.org/grpc"
 )
 
 var (
 	_ module.HasGenesis         = AppModule{} //nolint:exhaustruct
 	_ appmodule.AppModule       = AppModule{} //nolint:exhaustruct
+	_ module.HasServices        = AppModule{} //nolint:exhaustruct
 	_ appmodule.HasBeginBlocker = AppModule{} //nolint:exhaustruct
 )
 
@@ -49,14 +49,19 @@ func (AppModule) Name() string {
 // RegisterLegacyAminoCodec registers the scheduler module's types for the given codec.
 func (AppModule) RegisterLegacyAminoCodec(_ *codec.LegacyAmino) {}
 
+// RegisterInterfaces registers interfaces and implementations of the scheduler module.
 func (AppModule) RegisterInterfaces(_ codectypes.InterfaceRegistry) {}
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the scheduler module.
-func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {}
+func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
+	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
+		panic(err)
+	}
+}
 
 // RegisterServices registers module services.
-func (am AppModule) RegisterServices(registrar grpc.ServiceRegistrar) error {
-	return nil
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
 }
 
 // DefaultGenesis returns the scheduler module's default genesis state.
