@@ -135,4 +135,6 @@ var (
 	EpochsKey                                 = collections.NewPrefix(109)
 	EpochsByStateKeyPrefix                    = collections.NewPrefix(110)
 	EpochsByStateAndTopicKeyPrefix            = collections.NewPrefix(111)
+	// TopicLastEpochNonceKey stores the last allocated NonceV2 per topic for epoch sequencing.
+	TopicLastEpochNonceKey = collections.NewPrefix(112)
 )
