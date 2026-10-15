@@ -12,25 +12,22 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// resolveMaxTopInferersToReward rejects a create/update request outside the
-// global [min, max] range, then resolves it to the concrete value to store via
-// types.EffectiveMaxTopInferersToReward.
-func resolveMaxTopInferersToReward(requested, globalMin, globalMax uint64) (uint64, error) {
+// validateMaxTopInferersToReward rejects a create/update request outside the
+// global [min, max] range.
+func validateMaxTopInferersToReward(requested, globalMin, globalMax uint64) error {
 	if requested > globalMax {
-		return 0, errorsmod.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrTopicMaxTopInferersToRewardTooBig,
 			"requested %d exceeds global maximum %d", requested, globalMax,
 		)
 	}
-	// 0 means "use the global maximum", so it is resolved rather than rejected;
-	// the value it resolves to is >= the floor by construction.
-	if requested != 0 && requested < globalMin {
-		return 0, errorsmod.Wrapf(
+	if requested < globalMin {
+		return errorsmod.Wrapf(
 			types.ErrTopicMaxTopInferersToRewardTooSmall,
 			"requested %d is below global minimum %d", requested, globalMin,
 		)
 	}
-	return types.EffectiveMaxTopInferersToReward(requested, globalMin, globalMax), nil
+	return nil
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
@@ -66,9 +63,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	if uint64(msg.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(msg.EpochLength) {
 		return nil, types.ErrGroundTruthLagTooBig
 	}
-	maxTopInferersToReward, err := resolveMaxTopInferersToReward(
-		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward)
-	if err != nil {
+	if err := validateMaxTopInferersToReward(
+		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward); err != nil {
 		return nil, err
 	}
 
@@ -108,10 +104,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		LabelDefaultValue:      msg.LabelDefaultValue,
 		// LabelCaseSensitive is immutable after creation (UpdateTopic never
 		// changes it because updatedTopic is derived from the existing topic).
-		LabelCaseSensitive: msg.LabelCaseSensitive,
-		// Per-topic inferer cap, resolved above (0 -> global default, bounded by
-		// the global ceiling). Always stored as a concrete value >= 1.
-		MaxTopInferersToReward: maxTopInferersToReward,
+		LabelCaseSensitive:     msg.LabelCaseSensitive,
+		MaxTopInferersToReward: msg.MaxTopInferersToReward,
 	}
 	_, err = ms.tk.IncrementTopicId(ctx)
 	if err != nil {
@@ -164,9 +158,8 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "not permitted to modify topic")
 	}
 
-	maxTopInferersToReward, err := resolveMaxTopInferersToReward(
-		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward)
-	if err != nil {
+	if err := validateMaxTopInferersToReward(
+		msg.MaxTopInferersToReward, params.MinTopInferersToReward, params.MaxTopInferersToReward); err != nil {
 		return nil, err
 	}
 
@@ -177,10 +170,9 @@ func (ms msgServer) UpdateTopic(ctx context.Context, msg *types.UpdateTopicReque
 	updatedTopic.MeritSortitionAlpha = msg.MeritSortitionAlpha
 	updatedTopic.PNorm = msg.PNorm
 	updatedTopic.CNorm = msg.CNorm
-	// Per-topic inferer cap: full replacement, with 0 resolving to the global
-	// maximum. The keeper's UpdateTopic rejects this change while a worker
-	// submission window is open (see the guarded-fields set there).
-	updatedTopic.MaxTopInferersToReward = maxTopInferersToReward
+	// Full replacement; the keeper's UpdateTopic rejects a change while a worker
+	// submission window is open.
+	updatedTopic.MaxTopInferersToReward = msg.MaxTopInferersToReward
 	// Label registry settings: always apply the requested value. The keeper
 	// rejects unsafe mutations while a worker submission window is open and
 	// canonicalizes the whitelist before persistence.
