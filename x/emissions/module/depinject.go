@@ -67,6 +67,8 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.SchedulerKeeper,
 		feeCollectorName,
 	)
+	// Keep lifecycle hooks bound to this keeper instance used by the module.
+	k.GetTopicKeeper().SetLifecycleHooks(&k)
 	m := NewAppModule(in.Cdc, k)
 
 	return ModuleOutputs{Module: m, Keeper: k, TaskHandlers: k.TaskHandlers(), Out: depinject.Out{}}
