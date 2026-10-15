@@ -537,7 +537,9 @@ func (k *WorkerKeeper) PlanInferenceAdmission(
 		return plan, nil
 	}
 
-	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
+	// Eviction needs a member to evict; with an empty set and no open slot
+	// (cap 0) nobody is admitted.
+	if len(workerAddresses) > 0 && previousEmaScore.Score.Gt(lowestEmaScore.Score) {
 		plan.Kind = InferenceAdmissionEvictLowest
 	}
 	return plan, nil

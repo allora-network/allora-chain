@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	v16 "github.com/allora-network/allora-chain/x/emissions/migrations/v16"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -305,4 +306,81 @@ func (s *EmissionsV16MigrationTestSuite) TestMigrateStoreWithZeroCeilingAndFloor
 	s.Require().NoError(err)
 	s.Require().Equal(emissionstypes.DefaultParams().MaxTopInferersToReward, repaired.MaxTopInferersToReward)
 	s.Require().Equal(emissionstypes.DefaultMinTopInferersToReward, repaired.MinTopInferersToReward)
+}
+
+// seedTopicWeights creates the given topics, activates the ones flagged active and
+// stores a distinct previous weight for every topic. It returns the sum of the
+// weights of the active topics, which is what the accumulator must equal.
+func (s *EmissionsV16MigrationTestSuite) seedTopicWeights(active []bool) alloraMath.Dec {
+	params, err := s.EmissionsKeeper().GetParams(s.Ctx())
+	s.Require().NoError(err)
+	params.MaxActiveTopicsPerBlock = uint64(len(active))
+	s.Require().NoError(s.EmissionsKeeper().SetParams(s.Ctx(), params))
+
+	expected := alloraMath.ZeroDec()
+	for i, isActive := range active {
+		topicId := s.CreateTopic()
+		weight := alloraMath.NewDecFromInt64(int64((i + 1) * 100))
+		if isActive {
+			s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topicId))
+			expected, err = expected.Add(weight)
+			s.Require().NoError(err)
+		}
+		s.Require().NoError(s.TopicKeeper().SetPreviousTopicWeight(s.Ctx(), topicId, weight))
+		if !isActive {
+			// Mirror inactivation bookkeeping: the weight stays stored but leaves the sum.
+			s.Require().NoError(s.TopicKeeper().RemoveTopicFromPreviousTopicWeights(s.Ctx(), topicId))
+		}
+	}
+	return expected
+}
+
+func (s *EmissionsV16MigrationTestSuite) totalSum() alloraMath.Dec {
+	total, err := s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
+	s.Require().NoError(err)
+	return total
+}
+
+// a drifted accumulator is reset to the sum over active topics; inactive topics
+// keep their stored weight but do not count.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsRepairsDrift() {
+	expected := s.seedTopicWeights([]bool{true, false, true})
+	s.Require().Equal(expected.String(), s.totalSum().String())
+
+	drifted, err := expected.Sub(alloraMath.NewDecFromInt64(150))
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), drifted))
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(s.Ctx(), *s.EmissionsKeeper()))
+	s.Require().Equal(expected.String(), s.totalSum().String())
+}
+
+// a consistent accumulator is left as is and a second run changes nothing.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsIdempotent() {
+	expected := s.seedTopicWeights([]bool{true, true})
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(s.Ctx(), *s.EmissionsKeeper()))
+	s.Require().Equal(expected.String(), s.totalSum().String())
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(s.Ctx(), *s.EmissionsKeeper()))
+	s.Require().Equal(expected.String(), s.totalSum().String())
+}
+
+// with no active topics the accumulator is reset to zero.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateTotalSumPreviousTopicWeightsNoActiveTopics() {
+	s.seedTopicWeights([]bool{false, false})
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), alloraMath.NewDecFromInt64(42)))
+
+	s.Require().NoError(v16.MigrateTotalSumPreviousTopicWeights(s.Ctx(), *s.EmissionsKeeper()))
+	s.Require().True(s.totalSum().IsZero())
+}
+
+// the top-level MigrateStore entry point also repairs the accumulator.
+func (s *EmissionsV16MigrationTestSuite) TestMigrateStoreRepairsTotalSumPreviousTopicWeights() {
+	expected := s.seedTopicWeights([]bool{true, false})
+	drifted, err := expected.Add(alloraMath.NewDecFromInt64(7))
+	s.Require().NoError(err)
+	s.Require().NoError(s.TopicKeeper().SetTotalSumPreviousTopicWeights(s.Ctx(), drifted))
+
+	s.Require().NoError(v16.MigrateStore(s.Ctx(), *s.EmissionsKeeper()))
+	s.Require().Equal(expected.String(), s.totalSum().String())
 }
