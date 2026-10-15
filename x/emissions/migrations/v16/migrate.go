@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -19,7 +20,9 @@ import (
 // parameter. Existing topics decode this new field as zero and are backfilled
 // with the current on-chain global value so their admission behavior is
 // unchanged after the upgrade. It also backfills the new
-// Params.MinTopInferersToReward floor.
+// Params.MinTopInferersToReward floor and recomputes totalSumPreviousTopicWeights
+// from the scheduled topics so any drift accumulated by the incremental
+// bookkeeping is cleared.
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 15 TO VERSION 16")
 	storageService := emissionsKeeper.GetStorageService()
@@ -38,16 +41,72 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
+	if err := MigrateTotalSumPreviousTopicWeights(ctx, emissionsKeeper); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTotalSumPreviousTopicWeights() FROM VERSION 15 TO VERSION 16")
+		return err
+	}
+
 	ctx.Logger().Info("MIGRATION EMISSIONS MODULE FROM VERSION 15 TO VERSION 16 COMPLETE")
+	return nil
+}
+
+// MigrateTotalSumPreviousTopicWeights recomputes totalSumPreviousTopicWeights as the
+// sum of the stored previous weights of the scheduled topics, those with a next churning
+// block. The accumulator is otherwise only ever adjusted incrementally, so an earlier
+// bookkeeping error (such as subtracting an inactivated topic's weight twice on stake
+// removal, or keeping the weight of a topic that lost its schedule) persists in state after
+// the code is fixed. Recomputing from the schedule is idempotent and a no-op when the
+// accumulator is already consistent.
+func MigrateTotalSumPreviousTopicWeights(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	topicKeeper := emissionsKeeper.GetTopicKeeper()
+
+	scheduledTopicIds, err := topicKeeper.GetScheduledTopicIds(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get scheduled topic ids")
+	}
+
+	recomputed := alloraMath.ZeroDec()
+	for _, topicId := range scheduledTopicIds {
+		weight, noPrior, err := topicKeeper.GetPreviousTopicWeight(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to get previous weight of topic %d", topicId)
+		}
+		if noPrior {
+			continue
+		}
+		recomputed, err = recomputed.Add(weight)
+		if err != nil {
+			return errorsmod.Wrapf(err, "MIGRATION V16: failed to add previous weight of topic %d", topicId)
+		}
+	}
+
+	current, err := topicKeeper.GetTotalSumPreviousTopicWeights(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to get total sum of previous topic weights")
+	}
+	if current.Equal(recomputed) {
+		ctx.Logger().Info("MIGRATION V16: total sum of previous topic weights already consistent", "value", current.String())
+		return nil
+	}
+
+	if err := topicKeeper.SetTotalSumPreviousTopicWeights(ctx, recomputed); err != nil {
+		return errorsmod.Wrap(err, "MIGRATION V16: failed to set recomputed total sum of previous topic weights")
+	}
+	ctx.Logger().Info(
+		"MIGRATION V16: total sum of previous topic weights recomputed from scheduled topics",
+		"previous", current.String(),
+		"recomputed", recomputed.String(),
+		"scheduledTopics", len(scheduledTopicIds),
+	)
 	return nil
 }
 
 // MigrateParams backfills Params.MinTopInferersToReward, which an existing chain
 // decodes as zero. Zero means "no floor", so this installs one where there was
-// none; it changes no admission outcome at upgrade time only because
-// MigrateTopics has already raised every topic cap to the ceiling. A non-zero
-// value is left alone: an unset field is indistinguishable from a deliberate
-// zero, so only the zero case is backfilled.
+// none. It changes no admission outcome at upgrade time because MigrateTopics
+// runs first and has already set every topic cap to the ceiling, which is at or
+// above this floor. A non-zero value is left alone: an unset field is
+// indistinguishable from a deliberate zero, so only the zero case is backfilled.
 func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
@@ -129,16 +188,13 @@ func MigrateTopics(ctx sdk.Context, emissionsKeeper keeper.Keeper, store storety
 		}
 		topic.MaxTopInferersToReward = backfillValue
 
-		// No per-topic re-validation here: the backfilled cap equals the
-		// current global Params.MaxTopInferersToReward, which is exactly the
-		// value Topic.Validate treats as the ceiling, so the new field is
-		// valid by construction (>= 1 and <= the global) regardless of any
-		// other field on the topic. Running full Topic.Validate would also
-		// re-check unrelated, param-dependent fields (e.g. ground-truth-lag
-		// vs epoch-length bounds) that a pre-existing dormant topic could
-		// violate after some other param was tightened over time; halting the
-		// whole chain upgrade for a reason unrelated to this backfill is
-		// avoided by deliberately skipping that broader check.
+		// No per-topic re-validation here: Topic.Validate does not bound this
+		// field, so the backfill cannot fail on it. Running full Topic.Validate
+		// would also re-check unrelated, param-dependent fields (e.g.
+		// ground-truth-lag vs epoch-length bounds) that a pre-existing dormant
+		// topic could violate after some other param was tightened over time;
+		// halting the whole chain upgrade for a reason unrelated to this
+		// backfill is avoided by skipping that broader check.
 
 		updates = append(updates, kv{
 			key:   append([]byte(nil), iterator.Key()...),
