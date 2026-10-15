@@ -28,10 +28,17 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
-	if blockHeight <= nonce.BlockHeight ||
-		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
-		return types.ErrWorkerNonceWindowNotAvailable
+	// Height windows apply to the EndBlocker path. Scheduler-managed topics close
+	// on wall-clock; WorkerSubmissionWindow is seconds, not blocks.
+	managed, err := k.IsTopicSchedulerManaged(ctx, topic.Id)
+	if err != nil {
+		return err
+	}
+	if !managed {
+		if blockHeight <= nonce.BlockHeight ||
+			blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
+			return types.ErrWorkerNonceWindowNotAvailable
+		}
 	}
 
 	defer func() {
