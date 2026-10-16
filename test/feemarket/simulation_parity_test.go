@@ -140,6 +140,26 @@ func (suite *SimulationParityTestSuite) TestSimulatedGasCoversDeliveredGasWithFr
 	suite.Less(simGas-deliverGas, parityMaxSurplus, "simulated gas over-covers delivered gas")
 }
 
+// Large fee amounts increase the bytes written by the fee path (escrow,
+// deduction and tip payouts) at deliver via WritePerByte, so the simulation
+// compensation must also hold for transactions carrying very large fees.
+func (suite *SimulationParityTestSuite) TestSimulatedGasCoversDeliveredGasLargeFee() {
+	msg := banktypes.NewMsgSend(
+		suite.chain.SenderAccount.GetAddress(),
+		suite.chain.SenderAccounts[1].SenderAccount.GetAddress(),
+		sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1)),
+	)
+	// A 19-digit fee (well above the 10-digit LargeFeeAmount used elsewhere) to
+	// exercise the fee-path byte variance. The genesis sender is funded with
+	// 1e19 stake, so it can pay.
+	fee := sdk.NewInt64Coin(sdk.DefaultBondDenom, 1_000_000_000_000_000_000)
+	simGas, deliverGas := suite.simulateAndDeliver([]sdk.Msg{msg}, fee, parityGasLimit)
+
+	suite.T().Logf("sim gas: %d, deliver gas: %d", simGas, deliverGas)
+	suite.GreaterOrEqual(simGas, deliverGas, "simulated gas must cover delivered gas")
+	suite.Less(simGas-deliverGas, parityMaxSurplus, "simulated gas over-covers delivered gas")
+}
+
 // The fee path is per-transaction: one escrow, one fee deduction and one tip
 // payout regardless of the payload size, so the simulation compensation must
 // hold for heavy multi-message transactions just as for single-message ones.
