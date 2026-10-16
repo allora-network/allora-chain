@@ -1627,7 +1627,9 @@ message GetWorkerSubmissionWindowStatusRequest {
 
 message GetWorkerSubmissionWindowStatusResponse {
   bool is_open = 1 [(amino.dont_omitempty) = true];
-  int64 current_nonce = 2;
+  // The epoch nonce of the open window, kept under this name for
+  // compatibility; read nonce instead.
+  int64 current_nonce_block_height = 2 [deprecated = true];
   int64 window_start_block = 3;
   int64 window_end_block = 4;
   int64 next_window_start_block = 5;
@@ -1635,6 +1637,8 @@ message GetWorkerSubmissionWindowStatusResponse {
   bool is_registered = 7 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_whitelisted = 8 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_topic_active = 9 [(amino.dont_omitempty) = true];
+  // The epoch nonce of the open window.
+  int64 nonce = 10;
 }
 
 message GetReputerSubmissionWindowStatusRequest {
@@ -1644,7 +1648,9 @@ message GetReputerSubmissionWindowStatusRequest {
 
 message GetReputerSubmissionWindowStatusResponse {
   bool is_open = 1 [(amino.dont_omitempty) = true];
-  int64 current_nonce = 2;
+  // The epoch nonce of the open window, kept under this name for
+  // compatibility; read nonce instead.
+  int64 current_nonce_block_height = 2 [deprecated = true];
   int64 window_start_block = 3;
   int64 window_end_block = 4;
   int64 next_window_start_block = 5;
@@ -1652,4 +1658,6 @@ message GetReputerSubmissionWindowStatusResponse {
   bool is_registered = 7 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_whitelisted = 8 [(amino.dont_omitempty) = true]; // Only filled when address is provided
   bool is_topic_active = 9 [(amino.dont_omitempty) = true];
+  // The epoch nonce of the open window.
+  int64 nonce = 10;
 }
