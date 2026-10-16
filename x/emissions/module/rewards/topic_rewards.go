@@ -14,38 +14,6 @@ import (
 type BlockHeight = int64
 type TopicId = uint64
 
-// The amount of emission rewards to be distributed to a topic
-// E_{t,i} = f_{t,i}*E_i
-// f_{t,i} is the reward fraction for that topic
-// E_i is the reward emission total for that epoch
-func GetTopicReward(
-	topicRewardFraction alloraMath.Dec,
-	totalReward alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	return topicRewardFraction.Mul(totalReward)
-}
-
-// The reward fraction for a topic
-// normalize the topic reward weight
-// f{t,i} = (1 - f_v) * (w_{t,i}) / (∑_t w_{t,i})
-// where f_v is a global parameter set that controls the
-// fraction of total reward emissions for cosmos network validators
-// we don't use f_v here, because by the time the emissions module runs
-// the validator rewards have already been distributed to the fee_collector account
-// (this is done in the mint and then distribution module)
-// w_{t,i} is the weight of topic t
-// and the sum is naturally the total of all the weights for all topics
-func GetTopicRewardFraction(
-	//	f_v alloraMath.Dec,
-	topicWeight *alloraMath.Dec,
-	totalWeight alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	if topicWeight == nil {
-		return alloraMath.ZeroDec(), types.ErrInvalidValue
-	}
-	return (*topicWeight).Quo(totalWeight)
-}
-
 // At the end of epoch, we should update nonce status of active topics, skim the top N by weight.
 // Update worker/reputer nonces, also add reward topic nonce to get reward for this nonce.
 func UpdateNoncesOfActiveTopics(
@@ -123,6 +91,10 @@ func UpdateNoncesOfActiveTopics(
 // Iterates through every active topic, computes its target weight, then exponential moving average to get weight.
 // Returns the total sum of weight, topic revenue, map of all of the weights by topic.
 // Note that the outputted weights are not normalized => not dependent on pan-topic data.
+// The computed weights are NOT persisted here: they only take effect for the
+// next epoch, so they are committed via CommitTopicWeights after this block's
+// rewards have been distributed. Topic fee revenue dripping and topic
+// (in)activation are still applied here.
 func GetAndUpdateActiveTopicWeights(
 	ctx sdk.Context,
 	k keeper.Keeper,
@@ -173,12 +145,8 @@ func GetAndUpdateActiveTopicWeights(
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get current topic weight")
 		}
-		Logger(ctx).Debug("Setting previous topic weight for topic", "topicId", topic.Id, "weight", weight.String())
-		err = k.GetTopicKeeper().SetPreviousTopicWeight(ctx, topic.Id, weight)
-		if err != nil {
-			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to set previous topic weight")
-		}
-		// Emit topic weight updated event
+		// Emit topic weight updated event; the weight is committed to state by
+		// CommitTopicWeights after this block's rewards are distributed
 		types.EmitNewTopicWeightUpdatedEvent(ctx, topic.Id, weight, topicStake, topicFeeRevenue)
 
 		// This revenue will be paid to top active topics of this block (the churnable topics).
@@ -219,4 +187,28 @@ func GetAndUpdateActiveTopicWeights(
 	}
 
 	return weights, sumWeight, totalRevenue, nil
+}
+
+// CommitTopicWeights persists the weights computed by GetAndUpdateActiveTopicWeights,
+// updating the total sum of topic weights along the way. It is called after the
+// block's rewards have been distributed, so that reward calculations see the
+// weights that were in effect during the epochs being paid, and the newly
+// computed weights only take effect from the next block on.
+func CommitTopicWeights(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	weights map[TopicId]*alloraMath.Dec,
+) error {
+	for _, topicId := range alloraMath.GetSortedKeys(weights) {
+		weight := weights[topicId]
+		if weight == nil {
+			return errors.Wrapf(types.ErrInvalidValue, "nil weight for topic %d", topicId)
+		}
+		Logger(ctx).Debug("Setting previous topic weight for topic", "topicId", topicId, "weight", weight.String())
+		err := k.GetTopicKeeper().SetPreviousTopicWeight(ctx, topicId, *weight)
+		if err != nil {
+			return errors.Wrapf(err, "failed to set previous topic weight for topic %d", topicId)
+		}
+	}
+	return nil
 }

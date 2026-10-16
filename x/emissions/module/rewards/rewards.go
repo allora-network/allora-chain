@@ -14,12 +14,11 @@ import (
 
 type CalcTopicRewardsArgs struct {
 	Ctx                             sdk.Context
-	Weights                         map[uint64]*alloraMath.Dec // weights of all active topics in this block
-	SortedTopics                    []uint64                   // topics sorted by weight in descending order
-	SumTopicWeights                 alloraMath.Dec             // sum of all active topic weights
-	TotalAvailableInRewardsTreasury alloraMath.Dec             // Maximum amount of rewards available in treasury
-	EpochLengths                    map[uint64]int64           // epoch lengths for each topic
-	CurrentRewardsEmissionPerBlock  alloraMath.Dec             // Rewards emission per block
+	K                               keeper.Keeper
+	BlockHeight                     BlockHeight
+	SortedTopics                    []uint64         // topics sorted by weight in descending order
+	TotalAvailableInRewardsTreasury alloraMath.Dec   // Maximum amount of rewards available in treasury
+	EpochLengths                    map[uint64]int64 // epoch lengths for each topic
 }
 
 type GenerateRewardsDistributionByTopicParticipantArgs struct {
@@ -50,7 +49,49 @@ type EmitRewardsArgs struct {
 	TotalRevenue cosmosMath.Int
 }
 
+// recordBlockRewardByTotalWeight appends this block's reward emission divided
+// by the total sum of topic weights to the keeper's Fenwick tree. Since this
+// block's topic weight updates are committed only after rewards are
+// distributed, the sum reflects the weights in effect during this block.
+// Nothing is recorded when the emission or the weight sum is zero, as missing
+// entries count as zero when summing over block ranges.
+func recordBlockRewardByTotalWeight(args EmitRewardsArgs) error {
+	currentBlockEmission, err := args.K.GetRewardCurrentBlockEmission(args.Ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get current block emission")
+	}
+	if currentBlockEmission.IsZero() {
+		return nil
+	}
+	totalSumPreviousTopicWeights, err := args.K.GetTopicKeeper().GetTotalSumPreviousTopicWeights(args.Ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get total sum of previous topic weights")
+	}
+	if totalSumPreviousTopicWeights.IsZero() {
+		Logger(args.Ctx).Warn("No topic weights set, skipping block reward by total weight recording")
+		return nil
+	}
+	currentBlockEmissionDec, err := alloraMath.NewDecFromSdkInt(currentBlockEmission)
+	if err != nil {
+		return errors.Wrapf(err, "failed to convert current block emission to decimal")
+	}
+	rewardByTotalWeight, err := currentBlockEmissionDec.Quo(totalSumPreviousTopicWeights)
+	if err != nil {
+		return errors.Wrapf(err, "failed to divide block emission by total sum of topic weights")
+	}
+	return args.K.AppendBlockRewardByTotalWeight(args.Ctx, args.BlockHeight, rewardByTotalWeight)
+}
+
 func EmitRewards(args EmitRewardsArgs) error {
+	// Record this block's reward emission per unit of topic weight, so that
+	// topic rewards can be computed as sums over their epochs' blocks. This
+	// must happen every block, before any early return below, otherwise the
+	// skipped blocks' emissions would never be credited to any topic.
+	err := recordBlockRewardByTotalWeight(args)
+	if err != nil {
+		return errors.Wrapf(err, "failed to record block reward by total weight")
+	}
+
 	// Get current total treasury, to confirm it covers the rewards to give
 	totalRewardTreasury, err := args.K.GetBankingKeeper().GetTotalRewardToDistribute(args.Ctx)
 	if err != nil {
@@ -75,14 +116,6 @@ func EmitRewards(args EmitRewardsArgs) error {
 		sortedRewardableTopics = sortedRewardableTopics[:args.ModuleParams.MaxActiveTopicsPerBlock]
 	}
 
-	// Get the global total sum of previous topic weights
-	totalSumPreviousTopicWeights, err := args.K.GetTopicKeeper().GetTotalSumPreviousTopicWeights(args.Ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get total sum of previous topic weights")
-	}
-	if totalSumPreviousTopicWeights.IsZero() {
-		return errors.Wrapf(types.ErrInvalidReward, "No total weights set, no rewards")
-	}
 	// Get epoch lengths for sorted rewardable topics
 	epochLengths := make(map[uint64]int64)
 	for _, topicId := range sortedRewardableTopics {
@@ -93,27 +126,15 @@ func EmitRewards(args EmitRewardsArgs) error {
 		epochLengths[topicId] = topic.EpochLength
 	}
 
-	// Get current block emission, to be extrapolated to be used in rewards calculation
-	currentBlockEmission, err := args.K.GetRewardCurrentBlockEmission(args.Ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get current block emission")
-	}
-	Logger(args.Ctx).Debug("Current block emission", "currentBlockEmission", currentBlockEmission.String())
-
-	currentBlockEmissionDec, err := alloraMath.NewDecFromSdkInt(currentBlockEmission)
-	if err != nil {
-		return errors.Wrapf(err, "failed to convert current block emission to decimal")
-	}
 	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
 	// The reward and revenue calculations are coupled here to minimize excessive compute
 	calcTopicRewardsArgs := CalcTopicRewardsArgs{
 		Ctx:                             args.Ctx,
-		Weights:                         args.Weights,
+		K:                               args.K,
+		BlockHeight:                     args.BlockHeight,
 		SortedTopics:                    sortedRewardableTopics,
-		SumTopicWeights:                 totalSumPreviousTopicWeights,
 		TotalAvailableInRewardsTreasury: totalRewardTreasury,
 		EpochLengths:                    epochLengths,
-		CurrentRewardsEmissionPerBlock:  currentBlockEmissionDec,
 	}
 	topicRewards, err := CalcTopicRewards(calcTopicRewardsArgs)
 	if err != nil {
@@ -237,7 +258,7 @@ func CalcTopicRewards(args CalcTopicRewardsArgs) (
 	err error,
 ) {
 	// General case calculation
-	topicRewards, totalTopicRewardsSum, err := calculateRewardsForCurrentTopics(args)
+	topicRewards, topicWeights, totalTopicRewardsSum, err := calculateRewardsForCurrentTopics(args)
 	if err != nil {
 		return nil, errors.Wrapf(err, "calcTopicRewards: calculate rewards for current topics error")
 	}
@@ -250,7 +271,7 @@ func CalcTopicRewards(args CalcTopicRewardsArgs) (
 			topicId := args.SortedTopics[0]
 			topicRewards[topicId] = &args.TotalAvailableInRewardsTreasury
 		} else {
-			topicRewards, err = calculateRewardsFromWholeTreasury(args)
+			topicRewards, err = calculateRewardsFromWholeTreasury(args, topicWeights)
 			if err != nil {
 				return nil, errors.Wrapf(err, "calcTopicRewards: distribute rewards treasury to current topics error")
 			}
@@ -259,46 +280,60 @@ func CalcTopicRewards(args CalcTopicRewardsArgs) (
 	return topicRewards, nil
 }
 
-// Calculates rewards per-block based on their weights vs all active topics.
-// The notion emission per-block is used to calculate the rewards per-block.
-// Rewards are then calculated per epoch, so topic's epochLength is used to calculate epoch rewards.
-func calculateRewardsForCurrentTopics(args CalcTopicRewardsArgs) (topicRewards map[uint64]*alloraMath.Dec, totalTopicRewardsSum alloraMath.Dec, err error) {
+// Calculates each topic's reward for the epoch ending at this block.
+// Every block credits emission / totalTopicWeight to each unit of topic weight
+// (see recordBlockRewardByTotalWeight); a topic's reward for its epoch is its
+// weight times the sum of these per-unit-weight credits over the epoch's blocks,
+// computed efficiently from the Fenwick tree.
+// The weight used is the one in effect during the epoch being paid, i.e. the
+// stored value: this block's weight update is committed only after rewards are
+// distributed. It is also returned per topic for use in the treasury fallback.
+func calculateRewardsForCurrentTopics(args CalcTopicRewardsArgs) (
+	topicRewards map[uint64]*alloraMath.Dec,
+	topicWeights map[uint64]*alloraMath.Dec,
+	totalTopicRewardsSum alloraMath.Dec,
+	err error,
+) {
 	totalTopicRewardsSum = alloraMath.ZeroDec()
 	topicRewards = make(map[uint64]*alloraMath.Dec)
+	topicWeights = make(map[uint64]*alloraMath.Dec)
 	for _, topicId := range args.SortedTopics {
-		topicWeight := args.Weights[topicId]
-		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, args.SumTopicWeights)
+		topicWeight, _, err := args.K.GetTopicKeeper().GetPreviousTopicWeight(args.Ctx, topicId)
 		if err != nil {
-			return nil, alloraMath.Dec{}, errors.Wrapf(err, "topic reward fraction error")
+			return nil, nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous weight of topic %d", topicId)
 		}
-		if alloraMath.ZeroDec().Equal(topicRewardFraction) {
-			args.Ctx.Logger().Warn("Skipping rewards for topic - zero weights", "topicId", topicId)
-			continue
-		}
-		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, args.CurrentRewardsEmissionPerBlock)
-		if err != nil {
-			return nil, alloraMath.Dec{}, errors.Wrapf(err, "topic reward error")
-		}
+		topicWeights[topicId] = &topicWeight
 		epochLength := args.EpochLengths[topicId]
 		if epochLength <= 0 {
-			return nil, alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidLengthTopic, "epoch length is nil or zero for topic %d", topicId)
+			return nil, nil, alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidLengthTopic, "epoch length is nil or zero for topic %d", topicId)
 		}
-		epochLengthDec := alloraMath.NewDecFromInt64(epochLength)
-		topicRewardPerEpoch, err := topicRewardPerBlock.Mul(epochLengthDec)
+		// Sum the per-unit-weight credits over the last epochLength blocks,
+		// including the current block's.
+		startBlock := args.BlockHeight - epochLength + 1
+		if startBlock < 1 {
+			startBlock = 1
+		}
+		rewardPerUnitWeight, err := args.K.SumBlockRewardsByTotalWeight(args.Ctx, startBlock, args.BlockHeight+1)
 		if err != nil {
-			return nil, alloraMath.Dec{}, errors.Wrapf(err, "calcTopicRewards:topic reward multiplication with epoch length fraction error")
+			return nil, nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to sum block rewards by total weight for topic %d", topicId)
+		}
+		topicRewardPerEpoch, err := topicWeight.Mul(rewardPerUnitWeight)
+		if err != nil {
+			return nil, nil, alloraMath.Dec{}, errors.Wrapf(err, "calcTopicRewards: topic reward multiplication with reward per unit weight error")
 		}
 		topicRewards[topicId] = &topicRewardPerEpoch
 		totalTopicRewardsSum, err = totalTopicRewardsSum.Add(topicRewardPerEpoch)
 		if err != nil {
-			return nil, alloraMath.Dec{}, errors.Wrapf(err, "calcTopicRewards: total topic rewards sum error")
+			return nil, nil, alloraMath.Dec{}, errors.Wrapf(err, "calcTopicRewards: total topic rewards sum error")
 		}
 	}
-	return topicRewards, totalTopicRewardsSum, nil
+	return topicRewards, topicWeights, totalTopicRewardsSum, nil
 }
 
-// Distributes the whole rewards treasury across the topics based on their factor
-func calculateRewardsFromWholeTreasury(args CalcTopicRewardsArgs) (topicRewards map[uint64]*alloraMath.Dec, err error) {
+// Distributes the whole rewards treasury across the topics based on their factor.
+// The passed weights are the ones used for the general case calculation, i.e.
+// the weights in effect during the epochs being paid.
+func calculateRewardsFromWholeTreasury(args CalcTopicRewardsArgs, topicWeights map[uint64]*alloraMath.Dec) (topicRewards map[uint64]*alloraMath.Dec, err error) {
 	// Factors of each topic, relative to the total factor of topics. Not using weight because already used in this context.
 	topicFactors := make(map[uint64]*alloraMath.Dec)
 	totalTopicFactors := alloraMath.ZeroDec()
@@ -307,7 +342,7 @@ func calculateRewardsFromWholeTreasury(args CalcTopicRewardsArgs) (topicRewards 
 
 	// Calculate topic factors
 	for _, topicId := range args.SortedTopics {
-		topicWeight := args.Weights[topicId]
+		topicWeight := topicWeights[topicId]
 		topicEpochLength := args.EpochLengths[topicId]
 		topicFactor, err := topicWeight.Mul(alloraMath.NewDecFromInt64(topicEpochLength))
 		if err != nil {
