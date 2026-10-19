@@ -686,19 +686,21 @@ func NewPruneRecordsSetEventBase(blockHeight int64, topicId TopicId) proto.Messa
 	}
 }
 
-func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec) proto.Message {
+func NewDelegateRewardShareUpdatedEventBase(topicId TopicId, reputer string, rewardPerShare alloraMath.Dec, nonce int64) proto.Message {
 	return &EventDelegateRewardShareUpdated{
 		TopicId:        topicId,
 		Reputer:        reputer,
 		RewardPerShare: clampDec(rewardPerShare),
+		Nonce:          nonce,
 	}
 }
 
-func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int) proto.Message {
+func NewDelegateRewardDistributedEventBase(topicId TopicId, reputer string, amount math.Int, nonce int64) proto.Message {
 	return &EventDelegateRewardDistributed{
 		TopicId: topicId,
 		Reputer: reputer,
 		Amount:  amount,
+		Nonce:   nonce,
 	}
 }
 

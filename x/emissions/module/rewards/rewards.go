@@ -540,6 +540,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		taskReputerReward,
 		reputers,
 		reputersRewardFractions,
+		args.BlockHeight,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer rewards")

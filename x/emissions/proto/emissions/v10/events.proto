@@ -599,6 +599,8 @@ message EventDelegateRewardShareUpdated {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
+  // The epoch nonce the reward distribution belongs to.
+  int64 nonce = 4;
 }
 
 message EventDelegateRewardDistributed {
@@ -610,6 +612,8 @@ message EventDelegateRewardDistributed {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  // The epoch nonce the reward distribution belongs to.
+  int64 nonce = 4;
 }
 
 message EventActiveReputersSet {

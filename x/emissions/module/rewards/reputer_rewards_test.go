@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	abci "github.com/cometbft/cometbft/abci/types"
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -46,6 +47,7 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputerAddrs,
 		reputerFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(reputerRewards))
@@ -205,6 +207,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputerAddrs,
 		reputerFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(reputerRewards))
@@ -215,6 +218,67 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	s.Require().True(
 		finalBalance.Amount.GT(inicialBalance.Amount),
 	)
+}
+
+// The delegate reward events carry the epoch nonce handed to
+// GetRewardPerReputer, so consumers can bind them to the epoch they pay out.
+func (s *RewardsTestSuite) TestGetRewardPerReputerEmitsDelegateEventsWithNonce() {
+	topicId := uint64(1)
+	block := int64(1003)
+
+	reputerIndexes := []int{0}
+	reputerAddrs := []string{s.AddrsStr(0)}
+
+	mockReputersData(s, topicId, block, reputerIndexes)
+
+	err := s.BankKeeper().MintCoins(
+		s.Ctx(),
+		types.AlloraRewardsAccountName,
+		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(100000000))),
+	)
+	s.Require().NoError(err)
+
+	err = s.StakingKeeper().AddDelegateStake(s.Ctx(), topicId, s.AddrsStr(5), reputerAddrs[0], cosmosMath.NewInt(10000000000))
+	s.Require().NoError(err)
+
+	em := sdk.NewEventManager()
+	ctx := s.Ctx().WithEventManager(em)
+
+	_, err = rewards.GetRewardPerReputer(
+		ctx,
+		*s.EmissionsKeeper(),
+		topicId,
+		alloraMath.MustNewDecFromString("1017.5559072418691"),
+		reputerAddrs,
+		[]alloraMath.Dec{alloraMath.OneDec()},
+		block,
+	)
+	s.Require().NoError(err)
+
+	shareEvents := 0
+	distributedEvents := 0
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch e := msg.(type) {
+		case *types.EventDelegateRewardShareUpdated:
+			shareEvents++
+			s.Require().Equal(topicId, e.TopicId)
+			s.Require().Equal(reputerAddrs[0], e.Reputer)
+			s.Require().Equal(block, e.Nonce)
+			s.Require().True(e.RewardPerShare.Gt(alloraMath.ZeroDec()))
+		case *types.EventDelegateRewardDistributed:
+			distributedEvents++
+			s.Require().Equal(topicId, e.TopicId)
+			s.Require().Equal(reputerAddrs[0], e.Reputer)
+			s.Require().Equal(block, e.Nonce)
+			s.Require().True(e.Amount.IsPositive())
+		}
+	}
+	s.Require().Equal(1, shareEvents)
+	s.Require().Equal(1, distributedEvents)
 }
 
 // After removing the number of reputers, the rewards should increase for the remaining reputers
@@ -256,6 +320,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputers,
 		reputersRewardFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(reputerRewards))
@@ -318,6 +383,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputers,
 		reputersRewardFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(4, len(newReputerRewards))

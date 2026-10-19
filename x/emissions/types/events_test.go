@@ -1834,6 +1834,70 @@ func TestEmitNewNetworkInferenceForecasterWeightsSetEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), `["0.5","0.3"]`)
 }
 
+func TestEmitNewDelegateRewardShareUpdatedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	rewardPerShare := alloraMath.MustNewDecFromString("0.25")
+	nonce := int64(1003)
+
+	types.EmitNewDelegateRewardShareUpdatedEvent(ctx, topicId, reputer, rewardPerShare, nonce)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventDelegateRewardShareUpdated", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("reward_per_share")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), rewardPerShare.String())
+
+	val, exists = event.GetAttribute(AttributeKeyNonce)
+	require.True(t, exists)
+	require.Equal(t, `"1003"`, val.GetValue())
+}
+
+func TestEmitNewDelegateRewardDistributedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	amount := cosmosMath.NewInt(1234)
+	nonce := int64(1003)
+
+	types.EmitNewDelegateRewardDistributedEvent(ctx, topicId, reputer, amount, nonce)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventDelegateRewardDistributed", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute(AttributeKeyNonce)
+	require.True(t, exists)
+	require.Equal(t, `"1003"`, val.GetValue())
+}
+
 func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

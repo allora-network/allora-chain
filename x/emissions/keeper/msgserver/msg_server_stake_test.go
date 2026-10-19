@@ -1456,6 +1456,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputers,
 		reputersRewardFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(reputerRewards))
@@ -1505,6 +1506,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		alloraMath.MustNewDecFromString("1020.5559072418691"),
 		reputers,
 		reputersRewardFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(newReputerRewards))
@@ -1616,6 +1618,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStakeOnUnregisteredReputer() {
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputers,
 		reputersRewardFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(reputerRewards))
@@ -1682,6 +1685,7 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputers,
 		reputersRewardFractions,
+		int64(1003),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(reputerRewards))
