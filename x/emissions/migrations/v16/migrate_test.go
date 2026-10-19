@@ -322,7 +322,7 @@ func (s *EmissionsV16MigrationTestSuite) seedTopicWeights(active []bool) alloraM
 		topicId := s.CreateTopic()
 		weight := alloraMath.NewDecFromInt64(int64((i + 1) * 100))
 		if isActive {
-			s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED))
+			s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topicId, emissionstypes.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 			expected, err = expected.Add(weight)
 			s.Require().NoError(err)
 		}

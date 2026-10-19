@@ -49,7 +49,7 @@ func activateTopicIfWeightAtLeastGlobalMin(
 		}
 
 		if newTopicWeight.Gte(params.MinTopicWeight) {
-			err = ms.tk.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING)
+			err = ms.tk.ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING, newTopicWeight, params.MinTopicWeight)
 			if err != nil {
 				return err
 			}

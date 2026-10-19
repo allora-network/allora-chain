@@ -749,7 +749,7 @@ func (s *KeeperTestSuite) TestActiveTopicStakeRemoval() {
 		testutil.WithEpochLength(epochLength),
 		testutil.WithWorkerSubmissionWindow(epochLength),
 	)
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Verify the topic is active
@@ -806,7 +806,7 @@ func (s *KeeperTestSuite) TestDelegateStakeRemoval() {
 		testutil.WithEpochLength(epochLength),
 		testutil.WithWorkerSubmissionWindow(epochLength),
 	)
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Verify the topic is active
@@ -918,7 +918,7 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationAfterStakeRemoval() {
 		testutil.WithEpochLength(epochLength),
 		testutil.WithWorkerSubmissionWindow(epochLength),
 	)
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Add stake and fee revenue
@@ -992,9 +992,9 @@ func (s *KeeperTestSuite) TestTopicWeightRecalculationWithMultipleTopics() {
 	topicId1, topicId2 :=
 		s.CreateTopic(testutil.WithEpochLength(epochLength)),
 		s.CreateTopic(testutil.WithEpochLength(epochLength))
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId1, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId1, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId2, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Add stake and fee revenue to both topics

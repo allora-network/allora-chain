@@ -52,7 +52,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	setTopicWeight(topic1.Id, 10, 10)
 	err = s.TopicKeeper().SetTopic(s.Ctx(), topic1.Id, topic1)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	totalSumPreviousTopicWeights, err = s.TopicKeeper().GetTotalSumPreviousTopicWeights(s.Ctx())
@@ -62,7 +62,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	setTopicWeight(topic2.Id, 30, 10)
 	err = s.TopicKeeper().SetTopic(s.Ctx(), topic2.Id, topic2)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err, "Activating topic should not fail")
 
 	block := 10
@@ -140,11 +140,11 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeightsEmitsStatusReasons(
 
 	setTopicWeight(topic1.Id, 10, 10)
 	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic1.Id, topic1))
-	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic1.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	setTopicWeight(topic2.Id, 30, 10)
 	s.Require().NoError(s.TopicKeeper().SetTopic(s.Ctx(), topic2.Id, topic2))
-	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED))
+	s.Require().NoError(s.TopicKeeper().ActivateTopic(s.Ctx(), topic2.Id, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec()))
 
 	// First epoch: both topics keep their slots.
 	em := sdk.NewEventManager()
@@ -387,7 +387,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.Require().True(previousTopicWeight.Equal(totalSumPreviousTopicWeights), "Total sum of previous topic weights should not be zero after endBlocker")
 
 	// Inactivate the topic
-	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().InactivateTopic(s.Ctx(), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Check previousTopicWeights and totalPreviousTopicWeights after inactivation
@@ -401,7 +401,7 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	s.Require().True(alloraMath.ZeroDec().Equal(inactiveTotalSumPreviousTopicWeights), "Total sum of previous topic weights should be zero after inactivation")
 
 	// Reactivate the topic
-	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
+	err = s.TopicKeeper().ActivateTopic(s.Ctx(), topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED, alloraMath.ZeroDec(), alloraMath.ZeroDec())
 	s.Require().NoError(err)
 
 	// Check previousTopicWeights and totalPreviousTopicWeights after reactivation

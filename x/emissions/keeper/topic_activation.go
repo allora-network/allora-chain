@@ -92,8 +92,16 @@ func (k *TopicKeeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, b
 	return nil
 }
 
-// Set a topic to inactive if the topic exists and is active, else does nothing
-func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topicId TopicId, reason types.TopicStatusChangeReason) error {
+// Set a topic to inactive if the topic exists and is active, else does nothing.
+// The event carries the weight and minimum the caller made the decision on, so
+// the path adds no reads (and no failure modes) of its own.
+func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(
+	ctx context.Context,
+	topicId TopicId,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+) error {
 	topicExists, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to check if topic exists")
@@ -153,17 +161,8 @@ func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, 
 		return errorsmod.Wrap(err, "failed to remove topic from previous topic weights")
 	}
 
-	weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to get topic weight")
-	}
-	params, err := k.paramsKeeper.GetParams(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to get params")
-	}
-
 	// Emit topic deactivation event
-	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, reason, weight, params.MinTopicWeight)
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, reason, weight, minWeight)
 
 	return nil
 }
@@ -196,11 +195,15 @@ func (k *TopicKeeper) RemoveTopicFromPreviousTopicWeights(ctx context.Context, t
 	return nil
 }
 
+// The event carries the weight and minimum the caller made the activation
+// decision on, so the path adds no reads (and no failure modes) of its own.
 func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	ctx context.Context,
 	topicId TopicId,
 	block BlockHeight,
 	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params, err := k.paramsKeeper.GetParams(ctx)
@@ -220,11 +223,6 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 		}
 	}
 
-	weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
 	// If the number of active topics at the block is at the limit, remove the topic with the lowest weight
 	if uint64(len(existingActiveTopics)) >= params.MaxActiveTopicsPerBlock {
 		// Remove the topic with the lowest weight
@@ -233,11 +231,16 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 			return err
 		}
 
-		if weight.Lt(lowestWeight.Weight) {
+		weightAtLimit, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		if err != nil {
+			return err
+		}
+
+		if weightAtLimit.Lt(lowestWeight.Weight) {
 			sdkCtx.Logger().Warn("Topic cannot be activated due to less than lowest weight at block", "topicId", topicId, "block", block)
 			return types.ErrTopicCannotBeActivated
 		}
-		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT)
+		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT, lowestWeight.Weight, params.MinTopicWeight)
 		if err != nil {
 			return err
 		}
@@ -260,13 +263,21 @@ func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	}
 
 	// Emit topic activation event
-	types.EmitNewTopicStatusChangedEvent(ctx, topicId, true, reason, weight, params.MinTopicWeight)
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, true, reason, weight, minWeight)
 
 	return nil
 }
 
-// Set a topic to active if the topic exists, else does nothing
-func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId, reason types.TopicStatusChangeReason) error {
+// Set a topic to active if the topic exists, else does nothing.
+// The activation event carries the weight and minimum the caller made the
+// decision on.
+func (k *TopicKeeper) ActivateTopic(
+	ctx context.Context,
+	topicId TopicId,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+) error {
 	topicExists, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to check if topic exists")
@@ -292,7 +303,7 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId, reason
 	currentBlock := sdkCtx.BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
-	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock, reason)
+	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock, reason, weight, minWeight)
 	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
 		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
 		return nil
@@ -330,17 +341,27 @@ func (k *TopicKeeper) ActivateTopic(ctx context.Context, topicId TopicId, reason
 	return nil
 }
 
-// Inactivate the topic
-func (k *TopicKeeper) InactivateTopic(ctx context.Context, topicId TopicId, reason types.TopicStatusChangeReason) error {
-	err := k.inactivateTopicWithoutMinWeightReset(ctx, topicId, reason)
+// Inactivate the topic.
+// The deactivation event carries the weight and minimum the caller made the
+// decision on.
+func (k *TopicKeeper) InactivateTopic(
+	ctx context.Context,
+	topicId TopicId,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+) error {
+	err := k.inactivateTopicWithoutMinWeightReset(ctx, topicId, reason, weight, minWeight)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to inactivate topic without min weight reset")
 	}
 	return nil
 }
 
-// If the topic weight is not less than lowest weight keep it as activated
-func (k *TopicKeeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) error {
+// If the topic weight is not less than lowest weight keep it as activated.
+// The reactivation event carries the weight and minimum the caller made the
+// decision on.
+func (k *TopicKeeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId, weight alloraMath.Dec, minWeight alloraMath.Dec) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
@@ -356,7 +377,7 @@ func (k *TopicKeeper) AttemptTopicReactivation(ctx context.Context, topicId Topi
 		return errorsmod.Wrap(err, "failed to remove current active topic from block")
 	}
 
-	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATED)
+	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_REACTIVATED, weight, minWeight)
 	if errorsmod.IsOf(err, types.ErrTopicAlreadyActive, types.ErrTopicCannotBeActivated) {
 		sdkCtx.Logger().Info("Failed to add topic at next epoch", "topicId", topicId, "epochEndBlock", epochEndBlock, "error", err)
 		return nil
@@ -393,10 +414,17 @@ func (k *TopicKeeper) removeCurrentTopicFromBlock(ctx context.Context, topicId T
 	return nil
 }
 
-func (k *TopicKeeper) activateTopicAndResetLowestWeightAtBlock(ctx context.Context, topicId TopicId, epochEndBlock BlockHeight, reason types.TopicStatusChangeReason) error {
+func (k *TopicKeeper) activateTopicAndResetLowestWeightAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	epochEndBlock BlockHeight,
+	reason types.TopicStatusChangeReason,
+	weight alloraMath.Dec,
+	minWeight alloraMath.Dec,
+) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Add to next epoch end block if greater than lowest weight
-	err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock, reason)
+	err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock, reason, weight, minWeight)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to add topic to active set respecting limits without min weight reset")
 	}
