@@ -85,7 +85,7 @@ func (s *KeeperTestSuite) TestGenesisRoundTripComprehensive() {
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
 	s.Require().NoError(err)
 
 	// PARAMS — use existing defaults, they're already set
@@ -664,7 +664,7 @@ func (s *KeeperTestSuite) TestGenesisSubKeeperTopicRoundTrip() {
 	}
 	err := s.TopicKeeper().SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
-	err = s.TopicKeeper().ActivateTopic(ctx, topicId)
+	err = s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
 	s.Require().NoError(err)
 	err = s.TopicKeeper().SetTopicRewardNonce(ctx, topicId, blockHeight)
 	s.Require().NoError(err)

@@ -1981,6 +1981,41 @@ func TestEmitNewRemoveStakeEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), topicStake.String())
 }
 
+func TestEmitNewTopicStatusChangedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	weight := alloraMath.MustNewDecFromString("0.4")
+	minWeight := alloraMath.MustNewDecFromString("0.5")
+
+	types.EmitNewTopicStatusChangedEvent(ctx, topicId, false, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM, weight, minWeight)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventTopicStatusChanged", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("is_active")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "false")
+
+	val, exists = event.GetAttribute("reason")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "WEIGHT_BELOW_MINIMUM")
+
+	val, exists = event.GetAttribute("weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), weight.String())
+
+	val, exists = event.GetAttribute("min_weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), minWeight.String())
+}
+
 func TestEmitNewTopicWeightUpdatedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

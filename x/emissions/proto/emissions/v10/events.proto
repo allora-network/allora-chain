@@ -32,6 +32,23 @@ enum ActorType {
   ACTOR_TYPE_REPUTER = 2;
 }
 
+// Why a topic's active status changed.
+enum TopicStatusChangeReason {
+  TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED = 0;
+  // The topic's weight fell below the minimum weight for active topics.
+  TOPIC_STATUS_CHANGE_REASON_WEIGHT_BELOW_MINIMUM = 1;
+  // The topic could not be re-added to the active set at its next epoch.
+  TOPIC_STATUS_CHANGE_REASON_REACTIVATION_FAILED = 2;
+  // The topic had the lowest weight in a full active set and a higher-weight
+  // topic took its place.
+  TOPIC_STATUS_CHANGE_REASON_EVICTED_BY_HIGHER_WEIGHT = 3;
+  // Funding (fees or stake) raised the topic's weight to the minimum for
+  // active topics.
+  TOPIC_STATUS_CHANGE_REASON_ACTIVATED_BY_FUNDING = 4;
+  // The topic kept its place in the active set at its next epoch.
+  TOPIC_STATUS_CHANGE_REASON_REACTIVATED = 5;
+}
+
 message EventScoresSet {
   ActorType actor_type = 1;
   uint64 topic_id = 2;
@@ -665,6 +682,18 @@ message EventActiveForecastersSet {
 message EventTopicStatusChanged {
   uint64 topic_id = 1;
   bool is_active = 2;
+  // Why the status changed.
+  TopicStatusChangeReason reason = 3;
+  // The topic's weight at the change.
+  string weight = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  // The minimum weight for active topics that applied.
+  string min_weight = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message EventNetworkInferenceInfererWeightsSet {

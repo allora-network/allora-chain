@@ -733,10 +733,13 @@ func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, a
 	}
 }
 
-func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool) proto.Message {
+func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) proto.Message {
 	return &EventTopicStatusChanged{
-		TopicId:  topicId,
-		IsActive: isActive,
+		TopicId:   topicId,
+		IsActive:  isActive,
+		Reason:    reason,
+		Weight:    clampDec(weight),
+		MinWeight: clampDec(minWeight),
 	}
 }
 

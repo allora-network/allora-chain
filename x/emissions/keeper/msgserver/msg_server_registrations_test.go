@@ -16,7 +16,7 @@ func (s *MsgServerTestSuite) TestRegistration() {
 	topicId := uint64(1)
 
 	// Setup topic once
-	err := s.TopicKeeper().ActivateTopic(ctx, topicId)
+	err := s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
 	s.Require().NoError(err)
 
 	testCases := []struct {
@@ -72,7 +72,7 @@ func (s *MsgServerTestSuite) TestRemoveRegistration() {
 	topicId := uint64(1)
 
 	// Setup topic once
-	err := s.TopicKeeper().ActivateTopic(ctx, topicId)
+	err := s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
 	s.Require().NoError(err)
 
 	testCases := []struct {
@@ -156,7 +156,7 @@ func (s *MsgServerTestSuite) TestRegistrationErrors() {
 			name: "Insufficient balance for registration fee",
 			setup: func() *types.RegisterRequest {
 				topicId := uint64(1)
-				err := s.TopicKeeper().ActivateTopic(ctx, topicId)
+				err := s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
 				s.Require().NoError(err)
 
 				addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
@@ -175,7 +175,7 @@ func (s *MsgServerTestSuite) TestRegistrationErrors() {
 			name: "Insufficient funds with partial stake",
 			setup: func() *types.RegisterRequest {
 				topicId := uint64(1)
-				err := s.TopicKeeper().ActivateTopic(ctx, topicId)
+				err := s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
 				s.Require().NoError(err)
 
 				addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
@@ -198,7 +198,7 @@ func (s *MsgServerTestSuite) TestRegistrationErrors() {
 			name: "Blacklisted address cannot register",
 			setup: func() *types.RegisterRequest {
 				topicId := uint64(1)
-				err := s.TopicKeeper().ActivateTopic(ctx, topicId)
+				err := s.TopicKeeper().ActivateTopic(ctx, topicId, types.TopicStatusChangeReason_TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED)
 				s.Require().NoError(err)
 
 				blockedReputer := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())

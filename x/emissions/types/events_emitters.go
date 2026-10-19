@@ -518,10 +518,10 @@ func EmitNewActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonc
 	}
 }
 
-func EmitNewTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool) {
+func EmitNewTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_STATUS_CHANGED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicStatusChangedEventBase(topicId, isActive))
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicStatusChangedEventBase(topicId, isActive, reason, weight, minWeight))
 	if err != nil {
 		sdkCtx.Logger().Warn("Error emitting TopicStatusChangedEvent", "error", err)
 	}

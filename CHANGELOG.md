@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#XXXX](https://github.com/allora-network/allora-chain/pull/XXXX) `nonce`, the epoch nonce the reward distribution belongs to, on `EventDelegateRewardShareUpdated` and `EventDelegateRewardDistributed`
 * [#XXXX](https://github.com/allora-network/allora-chain/pull/XXXX) `EventTopicWeightUpdatedAfterStakeChange`, with the same payload as `EventTopicWeightUpdated`, emitted when a stake change recomputes the topic weight; `EventTopicWeightUpdated` now only comes from the epoch path
 * [#XXXX](https://github.com/allora-network/allora-chain/pull/XXXX) `topic_stake`, the topic's total stake after the change, on `EventAddStake` and `EventRemoveStake`
+* [#XXXX](https://github.com/allora-network/allora-chain/pull/XXXX) `reason` (why the status changed), `weight` (the topic's weight at the change) and `min_weight` (the active-set minimum that applied) on `EventTopicStatusChanged`
 
 ### Changed
 
