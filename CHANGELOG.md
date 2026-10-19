@@ -82,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) Epoch-nonce fields superseded by `nonce`, still emitted with the same value: `block_height` on `EventScoresSet`, `EventRewardsSettled`, `EventListeningCoefficientsSet`, `Event{Inferer,Forecaster,NaiveInferer}NetworkRegretSet`, `EventTopicInitialRegretSet`, `EventTopicInitialEmaScoreSet`, `EventRegretStdNormSet` and `Event{Inferer,Forecaster}WeightsSet`, where the name collides with the inclusion height other events report; `nonce_block_height` on `EventForecastTaskScoreSet`, `EventActive{Reputers,Inferers,Forecasters}Set`, `EventNetworkInference{Inferer,Forecaster}{Weights,RegretsUsed}Set`, `Event{Worker,Reputer}SubmissionWindow{Opened,Closed}` and `EventEpochLabelRegistryFrozen`; `current_nonce_block_height` on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `block_height` on `EventWorkerLastCommitSet`, `EventReputerLastCommitSet`, `EventEcosystemTokenMintSet` and `EventRewardCurrentBlockEmission`, which only repeats the height of the block the event is emitted in; still emitted
+* [#XXXX](https://github.com/allora-network/allora-chain/pull/XXXX) `block_height` on `EventPreviousPercentageRewardToStakedReputersSet`, which only repeats the height of the block the event is emitted in; still emitted
 
 ### Removed
 
