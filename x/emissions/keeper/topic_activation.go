@@ -93,8 +93,7 @@ func (k *TopicKeeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, b
 }
 
 // Set a topic to inactive if the topic exists and is active, else does nothing.
-// The event carries the weight and minimum the caller made the decision on, so
-// the path adds no reads (and no failure modes) of its own.
+// The event carries the weight and minimum the caller made the decision on.
 func (k *TopicKeeper) inactivateTopicWithoutMinWeightReset(
 	ctx context.Context,
 	topicId TopicId,
@@ -196,7 +195,7 @@ func (k *TopicKeeper) RemoveTopicFromPreviousTopicWeights(ctx context.Context, t
 }
 
 // The event carries the weight and minimum the caller made the activation
-// decision on, so the path adds no reads (and no failure modes) of its own.
+// decision on.
 func (k *TopicKeeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	ctx context.Context,
 	topicId TopicId,
