@@ -40,6 +40,8 @@ type payoutTestFixture struct {
 func newPayoutTestFixture(t *testing.T) payoutTestFixture {
 	t.Helper()
 
+	params.SetAddressPrefixes()
+
 	keyEmissions := storetypes.NewKVStoreKey("emissions")
 	keyAccount := storetypes.NewKVStoreKey("account")
 	keyBank := storetypes.NewKVStoreKey("bank")
@@ -165,6 +167,75 @@ func TestPayoutRewardsEmitsInvalidPayoutAddressEvent(t *testing.T) {
 	require.Equal(t, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_INVALID_PAYOUT_ADDRESS, event.Reason)
 }
 
+// A worker whose registration info is missing emits EventRewardPayoutFailed
+// with the worker-info-lookup reason.
+func TestPayoutRewardsEmitsWorkerInfoLookupFailureEvent(t *testing.T) {
+	f := newPayoutTestFixture(t)
+	em := sdk.NewEventManager()
+	ctx := f.ctx.WithEventManager(em)
+	nonce := int64(940)
+
+	// Valid bech32, but no worker registered under it.
+	worker := sdk.AccAddress([]byte("worker1_____________")).String()
+	rewards := []types.TaskReward{
+		{
+			TopicId: 1,
+			Address: worker,
+			Reward:  alloraMath.NewDecFromInt64(10),
+			Type:    types.WorkerInferenceRewardType,
+		},
+	}
+	errs := payoutRewards(ctx, f.keeper, rewards, nonce)
+	require.Len(t, errs, 1)
+
+	event := lastRewardPayoutFailedEvent(t, em)
+	require.NotNil(t, event)
+	require.Equal(t, uint64(1), event.TopicId)
+	require.Equal(t, nonce, event.Nonce)
+	require.Equal(t, worker, event.Address)
+	require.Equal(t, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, event.ActorType)
+	require.True(t, alloraMath.NewDecFromInt64(10).Equal(event.Amount))
+	require.Equal(t, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_WORKER_INFO_LOOKUP, event.Reason)
+}
+
+// A worker payout whose module-to-account send fails (empty rewards account)
+// emits EventRewardPayoutFailed with the account-send reason.
+func TestPayoutRewardsEmitsAccountSendFailureEvent(t *testing.T) {
+	f := newPayoutTestFixture(t)
+	em := sdk.NewEventManager()
+	ctx := f.ctx.WithEventManager(em)
+	nonce := int64(940)
+
+	owner := sdk.AccAddress([]byte("owner_______________")).String()
+	worker := sdk.AccAddress([]byte("worker2_____________")).String()
+	topicId := uint64(1)
+	require.NoError(t, f.keeper.GetWorkerKeeper().InsertWorker(ctx, topicId, worker, types.OffchainNode{
+		Owner:       owner,
+		NodeAddress: worker,
+	}))
+
+	rewards := []types.TaskReward{
+		{
+			TopicId: topicId,
+			Address: worker,
+			Reward:  alloraMath.NewDecFromInt64(10),
+			Type:    types.WorkerForecastRewardType,
+		},
+	}
+	// The rewards module account holds nothing, so the send fails.
+	errs := payoutRewards(ctx, f.keeper, rewards, nonce)
+	require.Len(t, errs, 1)
+
+	event := lastRewardPayoutFailedEvent(t, em)
+	require.NotNil(t, event)
+	require.Equal(t, topicId, event.TopicId)
+	require.Equal(t, nonce, event.Nonce)
+	require.Equal(t, worker, event.Address)
+	require.Equal(t, types.ActorType_ACTOR_TYPE_FORECASTER, event.ActorType)
+	require.True(t, alloraMath.NewDecFromInt64(10).Equal(event.Amount))
+	require.Equal(t, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_ACCOUNT_SEND, event.Reason)
+}
+
 // A reputer reward whose restake fails (zero stake to add after conversion is
 // not possible here, so use a reward that converts to a positive amount but an
 // empty module account) emits EventRewardPayoutFailed with the module-send
@@ -175,7 +246,7 @@ func TestPayoutRewardsEmitsModuleSendFailureEvent(t *testing.T) {
 	ctx := f.ctx.WithEventManager(em)
 	nonce := int64(940)
 
-	reputer := "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqnrql8a"
+	reputer := sdk.AccAddress([]byte("reputer_____________")).String()
 	rewards := []types.TaskReward{
 		{
 			TopicId: 1,

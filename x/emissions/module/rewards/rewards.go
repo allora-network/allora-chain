@@ -668,6 +668,7 @@ func payoutRewards(
 			nodeInfo, err := k.GetWorkerKeeper().GetWorkerInfo(ctx, reward.Address)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to get worker info: %s", reward.Address))
+				emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_WORKER_INFO_LOOKUP)
 				continue
 			}
 
@@ -684,6 +685,7 @@ func payoutRewards(
 					types.AlloraRewardsAccountName,
 					nodeInfo.Owner,
 				))
+				emitRewardPayoutFailedEvent(ctx, reward, nonce, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_ACCOUNT_SEND)
 				continue
 			}
 

@@ -43,6 +43,10 @@ enum RewardPayoutFailureReason {
   REWARD_PAYOUT_FAILURE_REASON_ADD_STAKE = 3;
   // The payout address is not valid.
   REWARD_PAYOUT_FAILURE_REASON_INVALID_PAYOUT_ADDRESS = 4;
+  // The worker's registration info could not be read.
+  REWARD_PAYOUT_FAILURE_REASON_WORKER_INFO_LOOKUP = 5;
+  // The module-to-account send to the payout address failed.
+  REWARD_PAYOUT_FAILURE_REASON_ACCOUNT_SEND = 6;
 }
 
 // Why a topic's active status changed.
