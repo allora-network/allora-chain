@@ -733,6 +733,17 @@ func NewActiveForecastersSetEventBase(topicId TopicId, nonceBlockHeight int64, a
 	}
 }
 
+func NewRewardPayoutFailedEventBase(topicId TopicId, nonce int64, address string, actorType ActorType, amount alloraMath.Dec, reason RewardPayoutFailureReason) proto.Message {
+	return &EventRewardPayoutFailed{
+		TopicId:   topicId,
+		Nonce:     nonce,
+		Address:   address,
+		ActorType: actorType,
+		Amount:    clampDec(amount),
+		Reason:    reason,
+	}
+}
+
 func NewTopicStatusChangedEventBase(topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) proto.Message {
 	return &EventTopicStatusChanged{
 		TopicId:   topicId,

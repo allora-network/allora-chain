@@ -518,6 +518,15 @@ func EmitNewActiveForecastersSetEvent(ctx context.Context, topicId TopicId, nonc
 	}
 }
 
+func EmitNewRewardPayoutFailedEvent(ctx context.Context, topicId TopicId, nonce int64, address string, actorType ActorType, amount alloraMath.Dec, reason RewardPayoutFailureReason) {
+	metrics.IncrProducerEventCount(metrics.REWARD_PAYOUT_FAILED_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewRewardPayoutFailedEventBase(topicId, nonce, address, actorType, amount, reason))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting RewardPayoutFailedEvent", "error", err)
+	}
+}
+
 func EmitNewTopicStatusChangedEvent(ctx context.Context, topicId TopicId, isActive bool, reason TopicStatusChangeReason, weight, minWeight alloraMath.Dec) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_STATUS_CHANGED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

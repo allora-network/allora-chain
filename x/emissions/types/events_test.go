@@ -1981,6 +1981,46 @@ func TestEmitNewRemoveStakeEvent(t *testing.T) {
 	require.Contains(t, val.GetValue(), topicStake.String())
 }
 
+func TestEmitNewRewardPayoutFailedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	nonce := int64(940)
+	address := "address1"
+	amount := alloraMath.NewDecFromInt64(10)
+
+	types.EmitNewRewardPayoutFailedEvent(ctx, topicId, nonce, address, types.ActorType_ACTOR_TYPE_REPUTER, amount, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_ADD_STAKE)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventRewardPayoutFailed", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute(AttributeKeyNonce)
+	require.True(t, exists)
+	require.Equal(t, `"940"`, val.GetValue())
+
+	val, exists = event.GetAttribute("address")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), address)
+
+	val, exists = event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "REPUTER")
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute("reason")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "ADD_STAKE")
+}
+
 func TestEmitNewTopicStatusChangedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

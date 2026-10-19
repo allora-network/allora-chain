@@ -32,6 +32,19 @@ enum ActorType {
   ACTOR_TYPE_REPUTER = 2;
 }
 
+// Why paying a topic participant's reward failed.
+enum RewardPayoutFailureReason {
+  REWARD_PAYOUT_FAILURE_REASON_UNSPECIFIED = 0;
+  // The reward could not be converted to an integer coin amount.
+  REWARD_PAYOUT_FAILURE_REASON_REWARD_CONVERSION = 1;
+  // The module-to-module send into the staking account failed.
+  REWARD_PAYOUT_FAILURE_REASON_MODULE_SEND = 2;
+  // The reputer's reward could not be restaked.
+  REWARD_PAYOUT_FAILURE_REASON_ADD_STAKE = 3;
+  // The payout address is not valid.
+  REWARD_PAYOUT_FAILURE_REASON_INVALID_PAYOUT_ADDRESS = 4;
+}
+
 // Why a topic's active status changed.
 enum TopicStatusChangeReason {
   TOPIC_STATUS_CHANGE_REASON_UNSPECIFIED = 0;
@@ -852,6 +865,22 @@ message EventReputerSubmissionWindowClosed {
   int64 nonce_block_height = 2 [deprecated = true];
   // The epoch nonce.
   int64 nonce = 3;
+}
+
+// Emitted when paying one topic participant's reward fails; the payout loop
+// skips the actor and continues with the rest.
+message EventRewardPayoutFailed {
+  uint64 topic_id = 1;
+  // The epoch nonce the reward distribution belongs to.
+  int64 nonce = 2;
+  string address = 3;
+  ActorType actor_type = 4;
+  // The reward that could not be paid.
+  string amount = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  RewardPayoutFailureReason reason = 6;
 }
 
 // Emitted once per epoch at CloseWorkerNonce, after the EpochLabelRegistry is
