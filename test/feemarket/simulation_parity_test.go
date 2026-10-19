@@ -140,6 +140,32 @@ func (suite *SimulationParityTestSuite) TestSimulatedGasCoversDeliveredGasWithFr
 	suite.Less(simGas-deliverGas, parityMaxSurplus, "simulated gas over-covers delivered gas")
 }
 
+// The minimum valid fee under the fee market is ceil(min gas price × gas
+// limit), the boundary where the post handler's fee check accepts the fee
+// with equality (payCoin == required fee). The fee prices the gas limit while
+// the tip is the difference against the gas actually consumed, so even at the
+// base gas price the tip stays positive (a literal zero-tip tx would require
+// gas used == gas limit) and the full fee path still runs at deliver. The
+// simulation compensation must cover this boundary case as well.
+func (suite *SimulationParityTestSuite) TestSimulatedGasCoversDeliveredGasMinFee() {
+	msg := banktypes.NewMsgSend(
+		suite.chain.SenderAccount.GetAddress(),
+		suite.chain.SenderAccounts[1].SenderAccount.GetAddress(),
+		sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1)),
+	)
+
+	minGasPrice, err := suite.app.FeeMarketKeeper.GetMinGasPrice(suite.chain.GetContext(), sdk.DefaultBondDenom)
+	suite.Require().NoError(err)
+	feeAmount := minGasPrice.Amount.MulInt64(int64(parityGasLimit)).Ceil().RoundInt()
+	fee := sdk.NewCoin(sdk.DefaultBondDenom, feeAmount)
+
+	simGas, deliverGas := suite.simulateAndDeliver([]sdk.Msg{msg}, fee, parityGasLimit)
+
+	suite.T().Logf("sim gas: %d, deliver gas: %d", simGas, deliverGas)
+	suite.GreaterOrEqual(simGas, deliverGas, "simulated gas must cover delivered gas")
+	suite.Less(simGas-deliverGas, parityMaxSurplus, "simulated gas over-covers delivered gas")
+}
+
 // Large fee amounts increase the bytes written by the fee path (escrow,
 // deduction and tip payouts) at deliver via WritePerByte, so the simulation
 // compensation must also hold for transactions carrying very large fees.
