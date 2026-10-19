@@ -1898,6 +1898,70 @@ func TestEmitNewDelegateRewardDistributedEvent(t *testing.T) {
 	require.Equal(t, `"1003"`, val.GetValue())
 }
 
+func TestEmitNewTopicWeightUpdatedEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	newWeight := alloraMath.MustNewDecFromString("0.625")
+	topicStake := cosmosMath.NewInt(1000)
+	topicFeeRevenue := cosmosMath.NewInt(500)
+
+	types.EmitNewTopicWeightUpdatedEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventTopicWeightUpdated", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("new_weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), newWeight.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+
+	val, exists = event.GetAttribute("topic_fee_revenue")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicFeeRevenue.String())
+}
+
+func TestEmitNewTopicWeightUpdatedAfterStakeChangeEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	newWeight := alloraMath.MustNewDecFromString("0.625")
+	topicStake := cosmosMath.NewInt(1000)
+	topicFeeRevenue := cosmosMath.NewInt(500)
+
+	types.EmitNewTopicWeightUpdatedAfterStakeChangeEvent(ctx, topicId, newWeight, topicStake, topicFeeRevenue)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventTopicWeightUpdatedAfterStakeChange", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("new_weight")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), newWeight.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+
+	val, exists = event.GetAttribute("topic_fee_revenue")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicFeeRevenue.String())
+}
+
 func TestEmitNewTopicFeeRevenueDrippedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

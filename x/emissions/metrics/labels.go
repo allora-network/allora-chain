@@ -27,6 +27,7 @@ const (
 	NETWORK_INFERENCE_INFERER_REGRET_USED_EVENT             = "network_inference_inferer_regret_used_event"
 	NETWORK_INFERENCE_FORECASTER_REGRET_USED_EVENT          = "network_inference_forecaster_regret_used_event"
 	TOPIC_WEIGHT_UPDATED_EVENT                              = "topic_weight_updated_event"
+	TOPIC_WEIGHT_UPDATED_AFTER_STAKE_CHANGE_EVENT           = "topic_weight_updated_after_stake_change_event"
 	TOPIC_FEE_REVENUE_DRIPPED_EVENT                         = "topic_fee_revenue_dripped_event"
 	WORKER_SUBMISSION_WINDOW_OPENED_EVENT                   = "worker_submission_window_opened_event"
 	WORKER_SUBMISSION_WINDOW_CLOSED_EVENT                   = "worker_submission_window_closed_event"

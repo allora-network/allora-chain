@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#969](https://github.com/allora-network/allora-chain/pull/969) New global `min_top_inferers_to_reward` as the floor for the per-topic inferer cap (default `5`)
 * [#1005](https://github.com/allora-network/allora-chain/pull/1005) `nonce`, the epoch nonce, on every `emissions.v10` event that carries the epoch under `block_height` or `nonce_block_height` (listed under Deprecated), and on the `Get{Worker,Reputer}SubmissionWindowStatus` responses
 * [#XXXX](https://github.com/allora-network/allora-chain/pull/XXXX) `nonce`, the epoch nonce the reward distribution belongs to, on `EventDelegateRewardShareUpdated` and `EventDelegateRewardDistributed`
+* [#XXXX](https://github.com/allora-network/allora-chain/pull/XXXX) `EventTopicWeightUpdatedAfterStakeChange`, with the same payload as `EventTopicWeightUpdated`, emitted when a stake change recomputes the topic weight; `EventTopicWeightUpdated` now only comes from the epoch path
 
 ### Changed
 

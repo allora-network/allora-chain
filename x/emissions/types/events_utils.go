@@ -787,6 +787,15 @@ func NewTopicWeightUpdatedEventBase(topicId TopicId, newWeight alloraMath.Dec, t
 	}
 }
 
+func NewTopicWeightUpdatedAfterStakeChangeEventBase(topicId TopicId, newWeight alloraMath.Dec, topicStake math.Int, topicFeeRevenue math.Int) proto.Message {
+	return &EventTopicWeightUpdatedAfterStakeChange{
+		TopicId:         topicId,
+		NewWeight:       clampDec(newWeight),
+		TopicStake:      topicStake,
+		TopicFeeRevenue: topicFeeRevenue,
+	}
+}
+
 func NewTopicFeeRevenueDrippedEventBase(topicId TopicId, oldRevenue math.Int, newRevenue math.Int, dripAmount math.Int) proto.Message {
 	return &EventTopicFeeRevenueDripped{
 		TopicId:    topicId,

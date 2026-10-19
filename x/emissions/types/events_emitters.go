@@ -584,6 +584,15 @@ func EmitNewTopicWeightUpdatedEvent(ctx context.Context, topicId TopicId, newWei
 	}
 }
 
+func EmitNewTopicWeightUpdatedAfterStakeChangeEvent(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec, topicStake cosmosMath.Int, topicFeeRevenue cosmosMath.Int) {
+	metrics.IncrProducerEventCount(metrics.TOPIC_WEIGHT_UPDATED_AFTER_STAKE_CHANGE_EVENT)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err := sdkCtx.EventManager().EmitTypedEvent(NewTopicWeightUpdatedAfterStakeChangeEventBase(topicId, newWeight, topicStake, topicFeeRevenue))
+	if err != nil {
+		sdkCtx.Logger().Warn("Error emitting TopicWeightUpdatedAfterStakeChangeEvent", "error", err)
+	}
+}
+
 func EmitNewTopicFeeRevenueDrippedEvent(ctx context.Context, topicId TopicId, oldRevenue cosmosMath.Int, newRevenue cosmosMath.Int, dripAmount cosmosMath.Int) {
 	metrics.IncrProducerEventCount(metrics.TOPIC_FEE_REVENUE_DRIPPED_EVENT)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

@@ -41499,6 +41499,602 @@ func (x *fastReflection_EventTopicWeightUpdated) ProtoMethods() *protoiface.Meth
 }
 
 var (
+	md_EventTopicWeightUpdatedAfterStakeChange                   protoreflect.MessageDescriptor
+	fd_EventTopicWeightUpdatedAfterStakeChange_topic_id          protoreflect.FieldDescriptor
+	fd_EventTopicWeightUpdatedAfterStakeChange_new_weight        protoreflect.FieldDescriptor
+	fd_EventTopicWeightUpdatedAfterStakeChange_topic_stake       protoreflect.FieldDescriptor
+	fd_EventTopicWeightUpdatedAfterStakeChange_topic_fee_revenue protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v10_events_proto_init()
+	md_EventTopicWeightUpdatedAfterStakeChange = File_emissions_v10_events_proto.Messages().ByName("EventTopicWeightUpdatedAfterStakeChange")
+	fd_EventTopicWeightUpdatedAfterStakeChange_topic_id = md_EventTopicWeightUpdatedAfterStakeChange.Fields().ByName("topic_id")
+	fd_EventTopicWeightUpdatedAfterStakeChange_new_weight = md_EventTopicWeightUpdatedAfterStakeChange.Fields().ByName("new_weight")
+	fd_EventTopicWeightUpdatedAfterStakeChange_topic_stake = md_EventTopicWeightUpdatedAfterStakeChange.Fields().ByName("topic_stake")
+	fd_EventTopicWeightUpdatedAfterStakeChange_topic_fee_revenue = md_EventTopicWeightUpdatedAfterStakeChange.Fields().ByName("topic_fee_revenue")
+}
+
+var _ protoreflect.Message = (*fastReflection_EventTopicWeightUpdatedAfterStakeChange)(nil)
+
+type fastReflection_EventTopicWeightUpdatedAfterStakeChange EventTopicWeightUpdatedAfterStakeChange
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EventTopicWeightUpdatedAfterStakeChange)(x)
+}
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v10_events_proto_msgTypes[70]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType
+var _ protoreflect.MessageType = fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType{}
+
+type fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType struct{}
+
+func (x fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EventTopicWeightUpdatedAfterStakeChange)(nil)
+}
+func (x fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType) New() protoreflect.Message {
+	return new(fastReflection_EventTopicWeightUpdatedAfterStakeChange)
+}
+func (x fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicWeightUpdatedAfterStakeChange
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Descriptor() protoreflect.MessageDescriptor {
+	return md_EventTopicWeightUpdatedAfterStakeChange
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Type() protoreflect.MessageType {
+	return _fastReflection_EventTopicWeightUpdatedAfterStakeChange_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) New() protoreflect.Message {
+	return new(fastReflection_EventTopicWeightUpdatedAfterStakeChange)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Interface() protoreflect.ProtoMessage {
+	return (*EventTopicWeightUpdatedAfterStakeChange)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_EventTopicWeightUpdatedAfterStakeChange_topic_id, value) {
+			return
+		}
+	}
+	if x.NewWeight != "" {
+		value := protoreflect.ValueOfString(x.NewWeight)
+		if !f(fd_EventTopicWeightUpdatedAfterStakeChange_new_weight, value) {
+			return
+		}
+	}
+	if x.TopicStake != "" {
+		value := protoreflect.ValueOfString(x.TopicStake)
+		if !f(fd_EventTopicWeightUpdatedAfterStakeChange_topic_stake, value) {
+			return
+		}
+	}
+	if x.TopicFeeRevenue != "" {
+		value := protoreflect.ValueOfString(x.TopicFeeRevenue)
+		if !f(fd_EventTopicWeightUpdatedAfterStakeChange_topic_fee_revenue, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.new_weight":
+		return x.NewWeight != ""
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_stake":
+		return x.TopicStake != ""
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_fee_revenue":
+		return x.TopicFeeRevenue != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicWeightUpdatedAfterStakeChange"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicWeightUpdatedAfterStakeChange does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.new_weight":
+		x.NewWeight = ""
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_stake":
+		x.TopicStake = ""
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_fee_revenue":
+		x.TopicFeeRevenue = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicWeightUpdatedAfterStakeChange"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicWeightUpdatedAfterStakeChange does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.new_weight":
+		value := x.NewWeight
+		return protoreflect.ValueOfString(value)
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_stake":
+		value := x.TopicStake
+		return protoreflect.ValueOfString(value)
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_fee_revenue":
+		value := x.TopicFeeRevenue
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicWeightUpdatedAfterStakeChange"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicWeightUpdatedAfterStakeChange does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.new_weight":
+		x.NewWeight = value.Interface().(string)
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_stake":
+		x.TopicStake = value.Interface().(string)
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_fee_revenue":
+		x.TopicFeeRevenue = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicWeightUpdatedAfterStakeChange"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicWeightUpdatedAfterStakeChange does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v10.EventTopicWeightUpdatedAfterStakeChange is not mutable"))
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.new_weight":
+		panic(fmt.Errorf("field new_weight of message emissions.v10.EventTopicWeightUpdatedAfterStakeChange is not mutable"))
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_stake":
+		panic(fmt.Errorf("field topic_stake of message emissions.v10.EventTopicWeightUpdatedAfterStakeChange is not mutable"))
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_fee_revenue":
+		panic(fmt.Errorf("field topic_fee_revenue of message emissions.v10.EventTopicWeightUpdatedAfterStakeChange is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicWeightUpdatedAfterStakeChange"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicWeightUpdatedAfterStakeChange does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.new_weight":
+		return protoreflect.ValueOfString("")
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_stake":
+		return protoreflect.ValueOfString("")
+	case "emissions.v10.EventTopicWeightUpdatedAfterStakeChange.topic_fee_revenue":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v10.EventTopicWeightUpdatedAfterStakeChange"))
+		}
+		panic(fmt.Errorf("message emissions.v10.EventTopicWeightUpdatedAfterStakeChange does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v10.EventTopicWeightUpdatedAfterStakeChange", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EventTopicWeightUpdatedAfterStakeChange) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EventTopicWeightUpdatedAfterStakeChange)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		l = len(x.NewWeight)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TopicStake)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TopicFeeRevenue)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicWeightUpdatedAfterStakeChange)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.TopicFeeRevenue) > 0 {
+			i -= len(x.TopicFeeRevenue)
+			copy(dAtA[i:], x.TopicFeeRevenue)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TopicFeeRevenue)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.TopicStake) > 0 {
+			i -= len(x.TopicStake)
+			copy(dAtA[i:], x.TopicStake)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TopicStake)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.NewWeight) > 0 {
+			i -= len(x.NewWeight)
+			copy(dAtA[i:], x.NewWeight)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NewWeight)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EventTopicWeightUpdatedAfterStakeChange)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicWeightUpdatedAfterStakeChange: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EventTopicWeightUpdatedAfterStakeChange: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewWeight", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NewWeight = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicStake", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TopicStake = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicFeeRevenue", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TopicFeeRevenue = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
 	md_EventTopicFeeRevenueDripped             protoreflect.MessageDescriptor
 	fd_EventTopicFeeRevenueDripped_topic_id    protoreflect.FieldDescriptor
 	fd_EventTopicFeeRevenueDripped_old_revenue protoreflect.FieldDescriptor
@@ -41524,7 +42120,7 @@ func (x *EventTopicFeeRevenueDripped) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventTopicFeeRevenueDripped) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v10_events_proto_msgTypes[70]
+	mi := &file_emissions_v10_events_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -42120,7 +42716,7 @@ func (x *EventWorkerSubmissionWindowOpened) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventWorkerSubmissionWindowOpened) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v10_events_proto_msgTypes[71]
+	mi := &file_emissions_v10_events_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -42666,7 +43262,7 @@ func (x *EventWorkerSubmissionWindowClosed) ProtoReflect() protoreflect.Message 
 }
 
 func (x *EventWorkerSubmissionWindowClosed) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v10_events_proto_msgTypes[72]
+	mi := &file_emissions_v10_events_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -43168,7 +43764,7 @@ func (x *EventReputerSubmissionWindowOpened) ProtoReflect() protoreflect.Message
 }
 
 func (x *EventReputerSubmissionWindowOpened) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v10_events_proto_msgTypes[73]
+	mi := &file_emissions_v10_events_proto_msgTypes[74]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -43714,7 +44310,7 @@ func (x *EventReputerSubmissionWindowClosed) ProtoReflect() protoreflect.Message
 }
 
 func (x *EventReputerSubmissionWindowClosed) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v10_events_proto_msgTypes[74]
+	mi := &file_emissions_v10_events_proto_msgTypes[75]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44216,7 +44812,7 @@ func (x *EventEpochLabelRegistryFrozen) ProtoReflect() protoreflect.Message {
 }
 
 func (x *EventEpochLabelRegistryFrozen) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v10_events_proto_msgTypes[75]
+	mi := &file_emissions_v10_events_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48736,6 +49332,67 @@ func (x *EventTopicWeightUpdated) GetTopicFeeRevenue() string {
 	return ""
 }
 
+// Same payload as EventTopicWeightUpdated, emitted when a stake change (not
+// the epoch path) recomputes the topic weight.
+type EventTopicWeightUpdatedAfterStakeChange struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId         uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	NewWeight       string `protobuf:"bytes,2,opt,name=new_weight,json=newWeight,proto3" json:"new_weight,omitempty"`
+	TopicStake      string `protobuf:"bytes,3,opt,name=topic_stake,json=topicStake,proto3" json:"topic_stake,omitempty"`
+	TopicFeeRevenue string `protobuf:"bytes,4,opt,name=topic_fee_revenue,json=topicFeeRevenue,proto3" json:"topic_fee_revenue,omitempty"`
+}
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) Reset() {
+	*x = EventTopicWeightUpdatedAfterStakeChange{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v10_events_proto_msgTypes[70]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventTopicWeightUpdatedAfterStakeChange) ProtoMessage() {}
+
+// Deprecated: Use EventTopicWeightUpdatedAfterStakeChange.ProtoReflect.Descriptor instead.
+func (*EventTopicWeightUpdatedAfterStakeChange) Descriptor() ([]byte, []int) {
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) GetNewWeight() string {
+	if x != nil {
+		return x.NewWeight
+	}
+	return ""
+}
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) GetTopicStake() string {
+	if x != nil {
+		return x.TopicStake
+	}
+	return ""
+}
+
+func (x *EventTopicWeightUpdatedAfterStakeChange) GetTopicFeeRevenue() string {
+	if x != nil {
+		return x.TopicFeeRevenue
+	}
+	return ""
+}
+
 type EventTopicFeeRevenueDripped struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -48750,7 +49407,7 @@ type EventTopicFeeRevenueDripped struct {
 func (x *EventTopicFeeRevenueDripped) Reset() {
 	*x = EventTopicFeeRevenueDripped{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v10_events_proto_msgTypes[70]
+		mi := &file_emissions_v10_events_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -48764,7 +49421,7 @@ func (*EventTopicFeeRevenueDripped) ProtoMessage() {}
 
 // Deprecated: Use EventTopicFeeRevenueDripped.ProtoReflect.Descriptor instead.
 func (*EventTopicFeeRevenueDripped) Descriptor() ([]byte, []int) {
-	return file_emissions_v10_events_proto_rawDescGZIP(), []int{70}
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *EventTopicFeeRevenueDripped) GetTopicId() uint64 {
@@ -48814,7 +49471,7 @@ type EventWorkerSubmissionWindowOpened struct {
 func (x *EventWorkerSubmissionWindowOpened) Reset() {
 	*x = EventWorkerSubmissionWindowOpened{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v10_events_proto_msgTypes[71]
+		mi := &file_emissions_v10_events_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -48828,7 +49485,7 @@ func (*EventWorkerSubmissionWindowOpened) ProtoMessage() {}
 
 // Deprecated: Use EventWorkerSubmissionWindowOpened.ProtoReflect.Descriptor instead.
 func (*EventWorkerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
-	return file_emissions_v10_events_proto_rawDescGZIP(), []int{71}
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *EventWorkerSubmissionWindowOpened) GetTopicId() uint64 {
@@ -48878,7 +49535,7 @@ type EventWorkerSubmissionWindowClosed struct {
 func (x *EventWorkerSubmissionWindowClosed) Reset() {
 	*x = EventWorkerSubmissionWindowClosed{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v10_events_proto_msgTypes[72]
+		mi := &file_emissions_v10_events_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -48892,7 +49549,7 @@ func (*EventWorkerSubmissionWindowClosed) ProtoMessage() {}
 
 // Deprecated: Use EventWorkerSubmissionWindowClosed.ProtoReflect.Descriptor instead.
 func (*EventWorkerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
-	return file_emissions_v10_events_proto_rawDescGZIP(), []int{72}
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *EventWorkerSubmissionWindowClosed) GetTopicId() uint64 {
@@ -48936,7 +49593,7 @@ type EventReputerSubmissionWindowOpened struct {
 func (x *EventReputerSubmissionWindowOpened) Reset() {
 	*x = EventReputerSubmissionWindowOpened{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v10_events_proto_msgTypes[73]
+		mi := &file_emissions_v10_events_proto_msgTypes[74]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -48950,7 +49607,7 @@ func (*EventReputerSubmissionWindowOpened) ProtoMessage() {}
 
 // Deprecated: Use EventReputerSubmissionWindowOpened.ProtoReflect.Descriptor instead.
 func (*EventReputerSubmissionWindowOpened) Descriptor() ([]byte, []int) {
-	return file_emissions_v10_events_proto_rawDescGZIP(), []int{73}
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *EventReputerSubmissionWindowOpened) GetTopicId() uint64 {
@@ -49000,7 +49657,7 @@ type EventReputerSubmissionWindowClosed struct {
 func (x *EventReputerSubmissionWindowClosed) Reset() {
 	*x = EventReputerSubmissionWindowClosed{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v10_events_proto_msgTypes[74]
+		mi := &file_emissions_v10_events_proto_msgTypes[75]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -49014,7 +49671,7 @@ func (*EventReputerSubmissionWindowClosed) ProtoMessage() {}
 
 // Deprecated: Use EventReputerSubmissionWindowClosed.ProtoReflect.Descriptor instead.
 func (*EventReputerSubmissionWindowClosed) Descriptor() ([]byte, []int) {
-	return file_emissions_v10_events_proto_rawDescGZIP(), []int{74}
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *EventReputerSubmissionWindowClosed) GetTopicId() uint64 {
@@ -49062,7 +49719,7 @@ type EventEpochLabelRegistryFrozen struct {
 func (x *EventEpochLabelRegistryFrozen) Reset() {
 	*x = EventEpochLabelRegistryFrozen{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v10_events_proto_msgTypes[75]
+		mi := &file_emissions_v10_events_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -49076,7 +49733,7 @@ func (*EventEpochLabelRegistryFrozen) ProtoMessage() {}
 
 // Deprecated: Use EventEpochLabelRegistryFrozen.ProtoReflect.Descriptor instead.
 func (*EventEpochLabelRegistryFrozen) Descriptor() ([]byte, []int) {
-	return file_emissions_v10_events_proto_rawDescGZIP(), []int{75}
+	return file_emissions_v10_events_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *EventEpochLabelRegistryFrozen) GetTopicId() uint64 {
@@ -49912,6 +50569,27 @@ var file_emissions_v10_events_proto_rawDesc = []byte{
 	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
 	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
 	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0f, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x46, 0x65, 0x65, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x22, 0xcd, 0x02, 0x0a, 0x27,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x41, 0x66, 0x74, 0x65, 0x72, 0x53, 0x74, 0x61, 0x6b,
+	0x65, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x49, 0x64, 0x12, 0x56, 0x0a, 0x0a, 0x6e, 0x65, 0x77, 0x5f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
+	0x09, 0x6e, 0x65, 0x77, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x51, 0x0a, 0x0b, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
+	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4,
+	0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a,
+	0x01, 0x52, 0x0a, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x5c, 0x0a,
+	0x11, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e,
+	0x75, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0f, 0x74, 0x6f, 0x70, 0x69,
 	0x63, 0x46, 0x65, 0x65, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x22, 0xb1, 0x02, 0x0a, 0x1b,
 	0x45, 0x76, 0x65, 0x6e, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x46, 0x65, 0x65, 0x52, 0x65, 0x76,
 	0x65, 0x6e, 0x75, 0x65, 0x44, 0x72, 0x69, 0x70, 0x70, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74,
@@ -50017,7 +50695,7 @@ func file_emissions_v10_events_proto_rawDescGZIP() []byte {
 }
 
 var file_emissions_v10_events_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_emissions_v10_events_proto_msgTypes = make([]protoimpl.MessageInfo, 76)
+var file_emissions_v10_events_proto_msgTypes = make([]protoimpl.MessageInfo, 77)
 var file_emissions_v10_events_proto_goTypes = []interface{}{
 	(ActorType)(0),                                           // 0: emissions.v10.ActorType
 	(*EventScoresSet)(nil),                                   // 1: emissions.v10.EventScoresSet
@@ -50090,30 +50768,31 @@ var file_emissions_v10_events_proto_goTypes = []interface{}{
 	(*EventNetworkInferenceInfererRegretsUsedSet)(nil),       // 68: emissions.v10.EventNetworkInferenceInfererRegretsUsedSet
 	(*EventNetworkInferenceForecasterRegretsUsedSet)(nil),    // 69: emissions.v10.EventNetworkInferenceForecasterRegretsUsedSet
 	(*EventTopicWeightUpdated)(nil),                          // 70: emissions.v10.EventTopicWeightUpdated
-	(*EventTopicFeeRevenueDripped)(nil),                      // 71: emissions.v10.EventTopicFeeRevenueDripped
-	(*EventWorkerSubmissionWindowOpened)(nil),                // 72: emissions.v10.EventWorkerSubmissionWindowOpened
-	(*EventWorkerSubmissionWindowClosed)(nil),                // 73: emissions.v10.EventWorkerSubmissionWindowClosed
-	(*EventReputerSubmissionWindowOpened)(nil),               // 74: emissions.v10.EventReputerSubmissionWindowOpened
-	(*EventReputerSubmissionWindowClosed)(nil),               // 75: emissions.v10.EventReputerSubmissionWindowClosed
-	(*EventEpochLabelRegistryFrozen)(nil),                    // 76: emissions.v10.EventEpochLabelRegistryFrozen
-	(*v3.ValueBundle)(nil),                                   // 77: emissions.v3.ValueBundle
-	(*InputLabeledValue)(nil),                                // 78: emissions.v10.InputLabeledValue
-	(*Topic)(nil),                                            // 79: emissions.v10.Topic
-	(*v9.Params)(nil),                                        // 80: emissions.v9.Params
-	(*v3.Nonce)(nil),                                         // 81: emissions.v3.Nonce
+	(*EventTopicWeightUpdatedAfterStakeChange)(nil),          // 71: emissions.v10.EventTopicWeightUpdatedAfterStakeChange
+	(*EventTopicFeeRevenueDripped)(nil),                      // 72: emissions.v10.EventTopicFeeRevenueDripped
+	(*EventWorkerSubmissionWindowOpened)(nil),                // 73: emissions.v10.EventWorkerSubmissionWindowOpened
+	(*EventWorkerSubmissionWindowClosed)(nil),                // 74: emissions.v10.EventWorkerSubmissionWindowClosed
+	(*EventReputerSubmissionWindowOpened)(nil),               // 75: emissions.v10.EventReputerSubmissionWindowOpened
+	(*EventReputerSubmissionWindowClosed)(nil),               // 76: emissions.v10.EventReputerSubmissionWindowClosed
+	(*EventEpochLabelRegistryFrozen)(nil),                    // 77: emissions.v10.EventEpochLabelRegistryFrozen
+	(*v3.ValueBundle)(nil),                                   // 78: emissions.v3.ValueBundle
+	(*InputLabeledValue)(nil),                                // 79: emissions.v10.InputLabeledValue
+	(*Topic)(nil),                                            // 80: emissions.v10.Topic
+	(*v9.Params)(nil),                                        // 81: emissions.v9.Params
+	(*v3.Nonce)(nil),                                         // 82: emissions.v3.Nonce
 }
 var file_emissions_v10_events_proto_depIdxs = []int32{
 	0,  // 0: emissions.v10.EventScoresSet.actor_type:type_name -> emissions.v10.ActorType
 	0,  // 1: emissions.v10.EventRewardsSettled.actor_type:type_name -> emissions.v10.ActorType
-	77, // 2: emissions.v10.EventNetworkLossSet.value_bundle:type_name -> emissions.v3.ValueBundle
+	78, // 2: emissions.v10.EventNetworkLossSet.value_bundle:type_name -> emissions.v3.ValueBundle
 	4,  // 3: emissions.v10.EventNetworkLossSet.bundle:type_name -> emissions.v10.EventValueBundle
-	78, // 4: emissions.v10.EventInsertInfererPayload.values:type_name -> emissions.v10.InputLabeledValue
-	79, // 5: emissions.v10.EventCreateNewTopic.topic:type_name -> emissions.v10.Topic
-	79, // 6: emissions.v10.EventTopicUpdated.topic:type_name -> emissions.v10.Topic
+	79, // 4: emissions.v10.EventInsertInfererPayload.values:type_name -> emissions.v10.InputLabeledValue
+	80, // 5: emissions.v10.EventCreateNewTopic.topic:type_name -> emissions.v10.Topic
+	80, // 6: emissions.v10.EventTopicUpdated.topic:type_name -> emissions.v10.Topic
 	4,  // 7: emissions.v10.EventInsertReputerPayload.bundle:type_name -> emissions.v10.EventValueBundle
-	80, // 8: emissions.v10.EventParamsSet.params:type_name -> emissions.v9.Params
-	81, // 9: emissions.v10.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
-	81, // 10: emissions.v10.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	81, // 8: emissions.v10.EventParamsSet.params:type_name -> emissions.v9.Params
+	82, // 9: emissions.v10.EventWorkerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
+	82, // 10: emissions.v10.EventReputerLastCommitSet.nonce:type_name -> emissions.v3.Nonce
 	0,  // 11: emissions.v10.EventEMAScoresSet.actor_type:type_name -> emissions.v10.ActorType
 	0,  // 12: emissions.v10.EventListeningCoefficientsSet.actor_type:type_name -> emissions.v10.ActorType
 	0,  // 13: emissions.v10.EventTopicInitialEmaScoreSet.actor_type:type_name -> emissions.v10.ActorType
@@ -50973,7 +51652,7 @@ func file_emissions_v10_events_proto_init() {
 			}
 		}
 		file_emissions_v10_events_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventTopicFeeRevenueDripped); i {
+			switch v := v.(*EventTopicWeightUpdatedAfterStakeChange); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -50985,7 +51664,7 @@ func file_emissions_v10_events_proto_init() {
 			}
 		}
 		file_emissions_v10_events_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWorkerSubmissionWindowOpened); i {
+			switch v := v.(*EventTopicFeeRevenueDripped); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -50997,7 +51676,7 @@ func file_emissions_v10_events_proto_init() {
 			}
 		}
 		file_emissions_v10_events_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventWorkerSubmissionWindowClosed); i {
+			switch v := v.(*EventWorkerSubmissionWindowOpened); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -51009,7 +51688,7 @@ func file_emissions_v10_events_proto_init() {
 			}
 		}
 		file_emissions_v10_events_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerSubmissionWindowOpened); i {
+			switch v := v.(*EventWorkerSubmissionWindowClosed); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -51021,7 +51700,7 @@ func file_emissions_v10_events_proto_init() {
 			}
 		}
 		file_emissions_v10_events_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EventReputerSubmissionWindowClosed); i {
+			switch v := v.(*EventReputerSubmissionWindowOpened); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -51033,6 +51712,18 @@ func file_emissions_v10_events_proto_init() {
 			}
 		}
 		file_emissions_v10_events_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EventReputerSubmissionWindowClosed); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v10_events_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EventEpochLabelRegistryFrozen); i {
 			case 0:
 				return &v.state
@@ -51051,7 +51742,7 @@ func file_emissions_v10_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_v10_events_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   76,
+			NumMessages:   77,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

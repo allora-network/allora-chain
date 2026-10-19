@@ -1,8 +1,10 @@
 package keeper_test
 
 import (
+	abci "github.com/cometbft/cometbft/abci/types"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -694,6 +696,42 @@ func (s *KeeperTestSuite) TestRemoveTopicFromPreviousTopicWeights() {
 	finalTotalSum, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	s.Require().NoError(err)
 	s.Require().True(finalTotalSum.Equal(newTotalSum), "Total sum should remain unchanged after removing non-existent topic")
+}
+
+// Stake-driven weight recomputes emit EventTopicWeightUpdatedAfterStakeChange,
+// not the epoch-path EventTopicWeightUpdated, so consumers can tell the two
+// sources of weight updates apart.
+func (s *KeeperTestSuite) TestUpdateTopicWeightAfterStakeChangeEmitsStakeChangeEvent() {
+	ctx := s.Ctx()
+	k := s.TopicKeeper()
+	topicId := uint64(1)
+
+	err := k.SetPreviousTopicWeight(ctx, topicId, alloraMath.NewDecFromInt64(10))
+	s.Require().NoError(err)
+	err = k.SetTopic(ctx, topicId, s.MockTopic())
+	s.Require().NoError(err)
+
+	em := sdk.NewEventManager()
+	err = k.UpdateTopicWeightAfterStakeChange(ctx.WithEventManager(em), topicId)
+	s.Require().NoError(err)
+
+	stakeChangeEvents := 0
+	epochPathEvents := 0
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch e := msg.(type) {
+		case *types.EventTopicWeightUpdatedAfterStakeChange:
+			stakeChangeEvents++
+			s.Require().Equal(topicId, e.TopicId)
+		case *types.EventTopicWeightUpdated:
+			epochPathEvents++
+		}
+	}
+	s.Require().Equal(1, stakeChangeEvents)
+	s.Require().Equal(0, epochPathEvents)
 }
 
 // TestUpdateTopicWeightAfterStakeChangeOnInactiveTopic verifies that removing stake from an
