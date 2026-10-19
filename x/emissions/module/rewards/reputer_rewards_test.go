@@ -161,6 +161,71 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputSameFractio
 	}
 }
 
+// The delegate reward events carry the epoch nonce handed to
+// GenerateRewardsDistributionByTopicParticipant as BlockHeight, not the
+// height of the block the distribution runs in.
+func (s *RewardsTestSuite) TestGenerateRewardsDistributionEmitsDelegateEventsWithRewardNonce() {
+	workerIndexes := testutil.ReturnIndexes(5, 5)
+	reputerIndexes := testutil.ReturnIndexes(0, 3)
+	topicId, _ := s.FullTopicPass(workerIndexes, reputerIndexes)
+	_, rewardNonce := s.FullTopicPass(workerIndexes, reputerIndexes, testutil.WithTopicID(topicId))
+
+	// Delegate stake on reputer 0 in the same order of magnitude as the
+	// reputer's own authority, so the delegator share trims to a positive
+	// integer and both delegate events fire.
+	reputer0Authority, err := s.StakingKeeper().GetStakeReputerAuthority(s.Ctx(), topicId, s.AddrsStr(reputerIndexes[0]))
+	s.Require().NoError(err)
+	s.MintTokensToAddress(s.Addrs(40), reputer0Authority)
+	err = s.StakingKeeper().AddDelegateStake(s.Ctx(), topicId, s.AddrsStr(40), s.AddrsStr(reputerIndexes[0]), reputer0Authority)
+	s.Require().NoError(err)
+
+	// The rewards account must cover the distribution for the delegate events
+	// to fire.
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000000000000))
+
+	// Rewards are generated at a later block than the epoch nonce.
+	s.WithBlockHeight(rewardNonce + 50)
+	s.Require().NotEqual(s.Ctx().BlockHeight(), rewardNonce)
+
+	em := sdk.NewEventManager()
+	ctx := s.Ctx().WithEventManager(em)
+
+	topicTotalRewards := alloraMath.NewDecFromInt64(1000000000000)
+	p, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	_, _, err = rewards.GenerateRewardsDistributionByTopicParticipant(
+		rewards.GenerateRewardsDistributionByTopicParticipantArgs{
+			Ctx:          ctx,
+			K:            *s.EmissionsKeeper(),
+			TopicId:      topicId,
+			TopicReward:  &topicTotalRewards,
+			BlockHeight:  rewardNonce,
+			ModuleParams: p,
+		})
+	s.Require().NoError(err)
+
+	shareEvents := 0
+	distributedEvents := 0
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		switch e := msg.(type) {
+		case *types.EventDelegateRewardShareUpdated:
+			shareEvents++
+			s.Require().Equal(topicId, e.TopicId)
+			s.Require().Equal(rewardNonce, e.Nonce, "nonce must be the reward nonce, not the current block height")
+		case *types.EventDelegateRewardDistributed:
+			distributedEvents++
+			s.Require().Equal(topicId, e.TopicId)
+			s.Require().Equal(rewardNonce, e.Nonce, "nonce must be the reward nonce, not the current block height")
+		}
+	}
+	s.Require().GreaterOrEqual(shareEvents, 1)
+	s.Require().GreaterOrEqual(distributedEvents, 1)
+}
+
 func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegators() {
 	topicId := uint64(1)
 	block := int64(1003)
