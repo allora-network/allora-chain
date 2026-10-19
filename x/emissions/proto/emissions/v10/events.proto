@@ -212,6 +212,13 @@ message EventAddStake {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  // The topic's total stake after the addition.
+  string topic_stake = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message EventRemoveStake {
@@ -219,6 +226,13 @@ message EventRemoveStake {
   string reputer = 2;
   string delegator = 3;
   string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // The topic's total stake after the removal.
+  string topic_stake = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,

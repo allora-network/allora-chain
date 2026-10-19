@@ -1898,6 +1898,89 @@ func TestEmitNewDelegateRewardDistributedEvent(t *testing.T) {
 	require.Equal(t, `"1003"`, val.GetValue())
 }
 
+func TestEmitNewAddStakeEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	delegator := "address2"
+	amount := cosmosMath.NewInt(100)
+	totalStake := cosmosMath.NewInt(150)
+	topicStake := cosmosMath.NewInt(400)
+
+	types.EmitNewAddStakeEvent(ctx, topicId, reputer, delegator, amount, totalStake, topicStake)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 2)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventAddStake", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("delegator")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), delegator)
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+
+	// The derived reputer stake update follows with the reputer's own total.
+	updated := events[1]
+	require.Equal(t, "emissions.v10.EventReputerStakeUpdated", updated.Type)
+	val, exists = updated.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), totalStake.String())
+}
+
+func TestEmitNewRemoveStakeEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	reputer := "address1"
+	delegator := "address2"
+	amount := cosmosMath.NewInt(100)
+	totalStake := cosmosMath.NewInt(50)
+	topicStake := cosmosMath.NewInt(300)
+
+	types.EmitNewRemoveStakeEvent(ctx, topicId, reputer, delegator, amount, totalStake, topicStake)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 2)
+
+	event := events[0]
+	require.Equal(t, "emissions.v10.EventRemoveStake", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute("reputer")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), reputer)
+
+	val, exists = event.GetAttribute("delegator")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), delegator)
+
+	val, exists = event.GetAttribute("amount")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), amount.String())
+
+	val, exists = event.GetAttribute("topic_stake")
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), topicStake.String())
+}
+
 func TestEmitNewTopicWeightUpdatedEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)

@@ -1,12 +1,119 @@
 package keeper_test
 
 import (
+	abci "github.com/cometbft/cometbft/abci/types"
 	cosmosMath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// lastAddStakeEvent and lastRemoveStakeEvent return the most recent event of
+// their type the event manager recorded. Bank sends and bookkeeping emit
+// untyped events in the same flows, so events that fail to parse are skipped.
+func lastAddStakeEvent(em *sdk.EventManager) *types.EventAddStake {
+	var out *types.EventAddStake
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(*types.EventAddStake); ok {
+			out = typed
+		}
+	}
+	return out
+}
+
+func lastRemoveStakeEvent(em *sdk.EventManager) *types.EventRemoveStake {
+	var out *types.EventRemoveStake
+	for _, ev := range em.Events() {
+		msg, err := sdk.ParseTypedEvent(abci.Event(ev))
+		if err != nil {
+			continue
+		}
+		if typed, ok := msg.(*types.EventRemoveStake); ok {
+			out = typed
+		}
+	}
+	return out
+}
+
+// The stake events carry the topic's total stake after the change so consumers
+// do not have to fold the per-actor amounts themselves.
+func (s *KeeperTestSuite) TestStakeEventsEmitPostChangeTopicStake() {
+	ctx := s.Ctx()
+	k := s.StakingKeeper()
+	topicId := uint64(1)
+	reputerAddr := s.AddrsStr(0)
+	delegatorAddr := s.AddrsStr(1)
+	reputerStake := cosmosMath.NewInt(500)
+	delegateStake := cosmosMath.NewInt(300)
+
+	em := sdk.NewEventManager()
+	eventCtx := ctx.WithEventManager(em)
+
+	err := k.AddReputerStake(eventCtx, topicId, reputerAddr, reputerStake)
+	s.Require().NoError(err)
+	addReputerEvent := lastAddStakeEvent(em)
+	s.Require().NotNil(addReputerEvent)
+	s.Require().Equal(topicId, addReputerEvent.TopicId)
+	s.Require().Equal(reputerAddr, addReputerEvent.Reputer)
+	s.Require().Equal(reputerAddr, addReputerEvent.Delegator)
+	s.Require().Equal(reputerStake, addReputerEvent.Amount)
+	s.Require().Equal(reputerStake, addReputerEvent.TopicStake)
+
+	err = k.AddDelegateStake(eventCtx, topicId, delegatorAddr, reputerAddr, delegateStake)
+	s.Require().NoError(err)
+	addDelegateEvent := lastAddStakeEvent(em)
+	s.Require().NotNil(addDelegateEvent)
+	s.Require().Equal(delegatorAddr, addDelegateEvent.Delegator)
+	s.Require().Equal(reputerAddr, addDelegateEvent.Reputer)
+	s.Require().Equal(delegateStake, addDelegateEvent.Amount)
+	s.Require().Equal(reputerStake.Add(delegateStake), addDelegateEvent.TopicStake)
+
+	moduleParams, err := s.ParamsKeeper().GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+
+	err = k.SetDelegateStakeRemoval(eventCtx, types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+		TopicId:               topicId,
+		Delegator:             delegatorAddr,
+		Reputer:               reputerAddr,
+		Amount:                delegateStake,
+	})
+	s.Require().NoError(err)
+	err = k.RemoveDelegateStake(eventCtx, endBlock, topicId, delegatorAddr, reputerAddr, delegateStake)
+	s.Require().NoError(err)
+	removeDelegateEvent := lastRemoveStakeEvent(em)
+	s.Require().NotNil(removeDelegateEvent)
+	s.Require().Equal(delegatorAddr, removeDelegateEvent.Delegator)
+	s.Require().Equal(reputerAddr, removeDelegateEvent.Reputer)
+	s.Require().Equal(delegateStake, removeDelegateEvent.Amount)
+	s.Require().Equal(reputerStake, removeDelegateEvent.TopicStake)
+
+	err = k.SetStakeRemoval(eventCtx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                reputerStake,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+	err = k.RemoveReputerStake(eventCtx, endBlock, topicId, reputerAddr, reputerStake)
+	s.Require().NoError(err)
+	removeReputerEvent := lastRemoveStakeEvent(em)
+	s.Require().NotNil(removeReputerEvent)
+	s.Require().Equal(reputerAddr, removeReputerEvent.Reputer)
+	s.Require().Equal(reputerAddr, removeReputerEvent.Delegator)
+	s.Require().Equal(reputerStake, removeReputerEvent.Amount)
+	s.Require().True(removeReputerEvent.TopicStake.IsZero())
+}
 
 func (s *KeeperTestSuite) TestGetSetTotalStake() {
 	ctx := s.Ctx()

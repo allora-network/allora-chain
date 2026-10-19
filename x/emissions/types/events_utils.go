@@ -170,21 +170,23 @@ func NewTopicUpdatedEventBase(topic *Topic) proto.Message {
 	}
 }
 
-func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount math.Int) proto.Message {
+func NewAddStakeEventBase(topicId TopicId, reputer, delegator string, amount math.Int, topicStake math.Int) proto.Message {
 	return &EventAddStake{
-		TopicId:   topicId,
-		Reputer:   reputer,
-		Delegator: delegator,
-		Amount:    amount,
+		TopicId:    topicId,
+		Reputer:    reputer,
+		Delegator:  delegator,
+		Amount:     amount,
+		TopicStake: topicStake,
 	}
 }
 
-func NewRemoveStakeEventBase(topicId TopicId, reputer string, delegator string, amount math.Int) proto.Message {
+func NewRemoveStakeEventBase(topicId TopicId, reputer string, delegator string, amount math.Int, topicStake math.Int) proto.Message {
 	return &EventRemoveStake{
-		TopicId:   topicId,
-		Reputer:   reputer,
-		Delegator: delegator,
-		Amount:    amount,
+		TopicId:    topicId,
+		Reputer:    reputer,
+		Delegator:  delegator,
+		Amount:     amount,
+		TopicStake: topicStake,
 	}
 }
 
