@@ -1,8 +1,8 @@
 package rewards_test
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/app/params"

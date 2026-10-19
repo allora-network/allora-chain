@@ -57,9 +57,9 @@ func newPayoutTestFixture(t *testing.T) payoutTestFixture {
 	var cdc codec.Codec = encCfg.Codec
 
 	maccPerms := map[string][]string{
-		"fee_collector":                {"minter"},
-		types.AlloraStakingAccountName: {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName: {"minter"},
+		"fee_collector":                                  {"minter"},
+		types.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName:                   {"minter"},
 		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
 	}
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -196,4 +196,3 @@ func TestPayoutRewardsEmitsModuleSendFailureEvent(t *testing.T) {
 	require.Equal(t, types.ActorType_ACTOR_TYPE_REPUTER, event.ActorType)
 	require.Equal(t, types.RewardPayoutFailureReason_REWARD_PAYOUT_FAILURE_REASON_MODULE_SEND, event.Reason)
 }
-

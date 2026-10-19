@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
 	cosmosMath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
