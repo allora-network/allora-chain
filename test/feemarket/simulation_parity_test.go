@@ -23,8 +23,8 @@ const parityGasLimit uint64 = 2_000_000
 // to cost more than the single bank send the feemarket post handler already
 // compensates, otherwise the compensation over-covers the fee path (for
 // example after a fee path change or a dependency change that double
-// counts). Keep the literal in sync with app.feePathSimGasCompensation.
-const parityMaxSurplus uint64 = 46_000
+// counts).
+const parityMaxSurplus = app.FeePathSimGasCompensation
 
 type SimulationParityTestSuite struct {
 	suite.Suite

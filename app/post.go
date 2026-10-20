@@ -15,7 +15,7 @@ type PostHandlerOptions struct {
 	FeeMarketKeeper feemarketpost.FeeMarketKeeper
 }
 
-// feePathSimGasCompensation is the gas charged in simulate mode to account
+// FeePathSimGasCompensation is the gas charged in simulate mode to account
 // for the fee market fee path, which simulation cannot measure. During
 // simulation the fee market runs its fee handling on zero-value dummy coins,
 // so the module-level bank sends it performs at deliver (the ante escrow, the
@@ -29,10 +29,12 @@ type PostHandlerOptions struct {
 // of a single-signer MsgSend on mainnet (32,682) plus the measured cost of
 // creating a first-time tip recipient account (12,953), rounded up. The gas
 // meter is infinite in simulate mode, so charging it can never abort a
-// simulation.
-const feePathSimGasCompensation uint64 = 46_000
+// simulation. TestFeePathSimGasCompensationCoversMeasuredGap pins the
+// measured minimum: if the fee market fee path changes, re-derive the value
+// from measurements rather than from the test harness, whose gap is smaller.
+const FeePathSimGasCompensation uint64 = 46_000
 
-// feePathSimGasCompensationDecorator charges feePathSimGasCompensation gas in
+// feePathSimGasCompensationDecorator charges FeePathSimGasCompensation gas in
 // simulate mode so that simulated gas covers the deliver-time cost of the fee
 // market fee path. Outside simulate mode it is a no-op: deliver-time gas and
 // therefore consensus are unchanged.
@@ -53,7 +55,7 @@ func (feePathSimGasCompensationDecorator) PostHandle(
 	next sdk.PostHandler,
 ) (sdk.Context, error) {
 	if simulate {
-		ctx.GasMeter().ConsumeGas(feePathSimGasCompensation, "fee market fee path simulation gas compensation")
+		ctx.GasMeter().ConsumeGas(FeePathSimGasCompensation, "fee market fee path simulation gas compensation")
 	}
 
 	return next(ctx, tx, simulate, success)

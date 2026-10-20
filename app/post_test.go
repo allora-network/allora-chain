@@ -23,7 +23,7 @@ const measuredFeePathSimGasGap uint64 = 45_635
 // against downward retuning: it must cover the measured worst-case fee-path
 // cost, not just the gap observable in the test harness.
 func TestFeePathSimGasCompensationCoversMeasuredGap(t *testing.T) {
-	require.GreaterOrEqual(t, feePathSimGasCompensation, measuredFeePathSimGasGap)
+	require.GreaterOrEqual(t, FeePathSimGasCompensation, measuredFeePathSimGasGap)
 }
 
 func TestFeePathSimGasCompensationDecorator(t *testing.T) {
@@ -35,8 +35,8 @@ func TestFeePathSimGasCompensationDecorator(t *testing.T) {
 		success      bool
 		wantConsumed uint64
 	}{
-		{name: "simulate after success", simulate: true, success: true, wantConsumed: feePathSimGasCompensation},
-		{name: "simulate after failure", simulate: true, success: false, wantConsumed: feePathSimGasCompensation},
+		{name: "simulate after success", simulate: true, success: true, wantConsumed: FeePathSimGasCompensation},
+		{name: "simulate after failure", simulate: true, success: false, wantConsumed: FeePathSimGasCompensation},
 		{name: "deliver after success", simulate: false, success: true, wantConsumed: 0},
 		{name: "deliver after failure", simulate: false, success: false, wantConsumed: 0},
 	}
