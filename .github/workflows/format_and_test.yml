@@ -29,6 +29,13 @@ jobs:
 
     - name: Test
       uses: robherley/go-test-action@v0.4.1
+      with:
+        omit: |
+          untested
+          successful
+          pkg-tests
+          pkg-output
+          pie
 
   integration-test:
     runs-on: ubuntu-latest
